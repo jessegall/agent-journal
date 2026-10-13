@@ -3,8 +3,8 @@ import re
 from resources.runs import DELIVERED
 from events import Fact
 from events.agents import AgentMessageSent, CommandRan
-from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThirdPersonInChat
-from features.chat_etiquette.details import REMIND
+from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThickProseInChat, ThirdPersonInChat
+from features.chat_etiquette.details import PROSE, REMIND
 from receiving import Listener
 from resources.form_of_address import Profile
 from serving import ReadRows
@@ -51,3 +51,13 @@ class SpotThirdPerson(Listener[AgentMessageSent]):
 class CountJournalLines(Listener[CommandRan]):
     def listen(self, event: CommandRan) -> list[Fact]:
         return [EtiquetteDue(agent=event.agent).due(REMIND)] if event.tool == DELIVERED else []
+
+
+# a person typing at a keyboard almost never writes an em dash, so a turn with this many is agent prose
+THICK = 3
+
+
+class SpotThickProse(Listener[AgentMessageSent]):
+    def listen(self, event: AgentMessageSent) -> list[Fact]:
+        dashes = event.text.count("\u2014")
+        return [ThickProseInChat(agent=event.agent, dashes=dashes).due(PROSE)] if dashes >= THICK else []

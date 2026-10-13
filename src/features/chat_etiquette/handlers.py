@@ -1,6 +1,6 @@
 from events import Fact
-from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThirdPersonInChat
-from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
+from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThickProseInChat, ThirdPersonInChat
+from features.chat_etiquette.details import PROSE, REMIND, SHOP, THIRD_PERSON
 from receiving import Handler
 from serving import Chat
 
@@ -20,4 +20,10 @@ class NameThirdPerson(Handler[ThirdPersonInChat]):
 class RemindOfEtiquette(Handler[EtiquetteDue]):
     def handle(self, event: EtiquetteDue, chat: Chat) -> list[Fact]:
         chat.nudge(REMIND)
+        return []
+
+
+class NameThickProse(Handler[ThickProseInChat]):
+    def handle(self, event: ThickProseInChat, chat: Chat) -> list[Fact]:
+        chat.nudge(PROSE, dashes=event.dashes)
         return []

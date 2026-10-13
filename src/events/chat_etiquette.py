@@ -26,3 +26,11 @@ class EtiquetteDue(Fact):
     """Enough journal lines reached the agent that it is reminded to keep them out of the chat."""
 
     agent: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class ThickProseInChat(Fact):
+    """The agent's chat ran thick with em dashes, the sign of agent prose a person does not type."""
+
+    agent: int
+    dashes: int

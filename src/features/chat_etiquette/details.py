@@ -1,8 +1,8 @@
 from declaring.details import Behaviour, FeatureDetails, Line
-from declaring.trigger import NOTICES, Trigger
+from declaring.trigger import NOTICES, USES, Trigger
 from declaring.groups import Group
 
-SHOP, REMIND, THIRD_PERSON = "shop", "remind", "third person"
+SHOP, REMIND, THIRD_PERSON, PROSE = "shop", "remind", "third person", "prose"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
@@ -68,6 +68,11 @@ class ChatEtiquetteDetails(FeatureDetails):
             title="Remind the agent to keep journal talk out of the chat",
             trigger=Trigger(every=20, unit=NOTICES),
         ),
+        Behaviour(
+            name=PROSE,
+            title="Remind the agent when its chat reads as agent prose",
+            trigger=Trigger(every=100, unit=USES),
+        ),
     ]
 
     lines = [
@@ -83,6 +88,11 @@ class ChatEtiquetteDetails(FeatureDetails):
             name=THIRD_PERSON,
             title='your chat spoke about the user instead of to them - "{{words}}"',
             brief="you are talking to them: say \"you asked\" or \"you want\", and keep their name for addressing them",
+        ),
+        Line(
+            name=PROSE,
+            title="your chat ran to {{dashes}} em dashes, the mark of agent prose",
+            brief="write to the user as a person would: short sentences, a full stop where the dash was",
         ),
         Line(
             name=SHOP,
