@@ -11,7 +11,7 @@ from features.memory_checkpoints.listeners import DecideAtMarks, DecideAtMarksOn
 from features.memory_checkpoints.reread import owed_reading
 from framework.sending import Nudge
 from framework.journal import Journal
-from resources.types import AgentRow, Fact, Rule
+from resources.types import AgentRow, Fact, Reminder, Rule
 
 
 class MemoryCheckpoints(Feature):
@@ -22,6 +22,8 @@ class MemoryCheckpoints(Feature):
     def register(self, journal: Journal) -> None:
         journal.commands.add("rule", Reread(), expects=[
             Given((Rules,)) >> Answered("") & Remembered("cleanup_read_at", WHEN),
+            Given((Rules,), rows=[Rule(n=3, title="Never merge the refactor", brief="until the user approves"), Fact(n=9, title="Old claim", completed=WHEN - 10)])
+                >> Answered("rule 3  Never merge the refactor\nuntil the user approves") & Remembered("cleanup_read_at", WHEN),
             Given((Rules,), rows=[Rule(n=3, title="Never merge the refactor", brief="until the user approves"), Fact(n=9, title="The viewer runs from dist")])
                 >> Answered("rule 3  Never merge the refactor\nuntil the user approves\n\nfact 9  The viewer runs from dist") & Remembered("cleanup_read_at", WHEN),
         ])
@@ -38,11 +40,18 @@ class MemoryCheckpoints(Feature):
             Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[AgentRow(n=1), Fact(n=4, title="a claim")]) >> Dispatches(ContextDecided(agent=1)),
             Given(ResourceCreated(n=4, type="rule", actor="agent"), rows=[AgentRow(n=1), Rule(n=4, title="a ruling")]) >> Dispatches(ContextDecided(agent=1)),
             Given(ResourceCreated(n=4, type="todo", actor="agent"), rows=[AgentRow(n=1)]) >> Dispatches(nothing),
+            Given(ResourceCreated(n=4, type="fact", actor="user"), rows=[AgentRow(n=1), Fact(n=4, title="a claim")]) >> Dispatches(ContextDecided(agent=1)),
+            Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[Fact(n=4, title="a claim")]) >> Dispatches(nothing),
         ])
         journal.events.listen(ResourceCreated, SpotWhatWasKept(), expects=[
             Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[AgentRow(n=1), Fact(n=4, title="the viewer runs from dist")])
                 >> Dispatches(AgentKeptSomething(agent=1, label="Wrote a fact", icon="pin", detail="the viewer runs from dist", ref="fact:4")),
             Given(ResourceCreated(n=4, type="fact", actor="user"), rows=[AgentRow(n=1), Fact(n=4, title="the viewer runs from dist")]) >> Dispatches(nothing),
+            Given(ResourceCreated(n=4, type="rule", actor="agent"), rows=[AgentRow(n=1), Rule(n=4, title="a ruling")])
+                >> Dispatches(AgentKeptSomething(agent=1, label="Wrote a rule", icon="list", detail="a ruling", ref="rule:4")),
+            Given(ResourceCreated(n=4, type="reminder", actor="agent"), rows=[AgentRow(n=1), Reminder(n=4, title="say it again")])
+                >> Dispatches(AgentKeptSomething(agent=1, label="Set a reminder", icon="clock", detail="say it again", ref="reminder:4")),
+            Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[Fact(n=4, title="a claim")]) >> Dispatches(nothing),
             Given(ResourceCreated(n=4, type="todo", actor="agent"), rows=[AgentRow(n=1)]) >> Dispatches(nothing),
         ])
         journal.events.handle(ContextMarkReached, HoldUntilDecided(), expects=[
