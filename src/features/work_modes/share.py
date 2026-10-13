@@ -1,5 +1,5 @@
 from resources.command_runs import command_runs
-from controllers.helpers.reuse import subagent_rows
+from resources.reuse import subagent_rows
 from resources.types import AgentRow, Helper, Work
 from serving import ReadElsewhere, ReadRows
 

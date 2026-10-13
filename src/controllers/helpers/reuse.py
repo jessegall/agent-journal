@@ -8,7 +8,6 @@ from engine.record import Record
 from engine.worktree import lines, present
 from controllers.helper_worktrees import KEPT, Worktrees
 from controllers.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
-from resources.types import SubagentRow
 from serving import SERVED, Processes, Providers
 from resources.base import SYSTEM
 from resources.reuse import FRESH, HELPER_KIND, PATH, RETIRED, RETIRED_KEPT, SHOWN, Kept, is_fresh_kind, knowing, named_paths, refusal, retire, retired, subagent_rows  # noqa: F401

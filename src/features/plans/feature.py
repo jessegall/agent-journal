@@ -41,13 +41,13 @@ from events.answers import Allowed, Refused as Refusal
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
                           ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
 from framework.sending import Nudge
-from controllers.plans import held
 from features.work_tracking.next import ROW_HOLDS
 from events.plans import PlanChanged
 from events.reports import ReportLinked
 from events.todos import TodoUpdated
 from resources.plans import DEPTHS, Plan
 from events.resources import AnyEvent, RowReopened
+from controllers.types import Plans
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import AgentRow, Question, Todo, Work
 
@@ -107,6 +107,10 @@ STILL_CASES = (
     Given(ClockTicked(agent=1), rows=[plan("parked", phases=VISIBLE), row(4366), row(4367), AGENT_ROW]) >> Unchanged(),
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367)]) >> Unchanged(),
 )
+
+
+def held(record, todo) -> bool:
+    return Plans(record, actor=SYSTEM).holds(todo)
 
 
 class PlansFeature(Feature):

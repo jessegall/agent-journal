@@ -158,7 +158,7 @@ def test_a_parked_to_do_is_held_not_doing():
 
 
 def test_an_ended_plan_holds_none_of_its_rows():
-    from controllers.plans import held
+    from features.plans.feature import held
     record = fresh()
     plans, row = Plans(record, actor=AGENT), Todos(record, actor=AGENT).create("moved between plans")
     for title in ("the old plan", "the new plan"):
