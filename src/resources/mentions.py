@@ -7,13 +7,20 @@ from functools import cache
 from resources.types import TYPES
 
 
+# what a type is called in Dutch, for a chat held in Dutch; a type that is the same word in both needs none
+DUTCH = {"todo": "taak", "work": "werk", "doc": "document", "report": "rapport", "fact": "feit", "rule": "regel", "question": "vraag",
+         "message": "bericht", "reminder": "herinnering", "suggestion": "suggestie", "sequence": "reeks", "comment": "opmerking",
+         "notice": "melding", "notification": "notificatie", "check": "controle", "collection": "verzameling", "board": "bord",
+         "template": "sjabloon", "profile": "profiel", "secret": "geheim", "environment": "omgeving", "reaction": "reactie"}
+
+
 @cache
 def named(places: tuple = ()) -> tuple[dict[str, str], re.Pattern]:
-    names = {spelling: name for name, type_ in TYPES.items() for spelling in (name, type_.details.title.lower()) if spelling}
+    names = {spelling: name for name, type_ in TYPES.items() for spelling in (name, type_.details.title.lower(), DUTCH.get(name, "")) if spelling}
     spelled = "|".join(sorted(map(re.escape, names), key=len, reverse=True))
     where = "|".join(sorted(map(re.escape, places), key=len, reverse=True)) or r"(?!)"
     return names, re.compile(rf"(?:\b(?P<place>{where})\s+)?\b(?P<kind>{spelled})s?\s+#?(?P<n>\d+)\b"
-                             r"(?P<more>(?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)#?\d+\b)*)"
+                             r"(?P<more>(?:(?:\s*,\s*(?:(?:and|en)\s+)?|\s+(?:and|en)\s+)#?\d+\b)*)"
                              rf"(?:\s+in\s+(?P<within>{where})\b)?", re.IGNORECASE)
 
 

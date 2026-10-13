@@ -45,7 +45,8 @@ def chipped(text: str, record=None) -> str:
             return marked("chip", mention.ref(mention.numbers[0]), m.group(0))
         chips = [marked("chip", mention.ref(n), f"{mention.spelled} {n}") for n in mention.numbers]
         there = "" if mention.env is None else f" in {mention.env}"
-        return f"{', '.join(chips[:-1])} and {chips[-1]}{there}"
+        joined = "en" if re.search(r"\ben\b", m["more"]) else "and"
+        return f"{', '.join(chips[:-1])} {joined} {chips[-1]}{there}"
 
     return found.sub(chip, text)
 

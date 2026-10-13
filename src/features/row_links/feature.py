@@ -40,6 +40,8 @@ class RowLinks(Feature):
         journal.events.answer(TextFormatting, MarkRows(), expects=[
             Given(shown("I closed to-do 7 for you"), rows=[SEVEN]) >> Answered(Rewritten(f"I closed {CHIP} for you")),
             Given(shown("I closed to-dos 7 and 8 for you"), rows=[SEVEN, EIGHT]) >> Answered(Rewritten(f"I closed {CHIP} and {marked('chip', 'todo:8', 'to-do 8')} for you")),
+            Given(shown("ik heb taak 7 en 8 gesloten"), rows=[SEVEN, EIGHT])
+                >> Answered(Rewritten(f"ik heb {marked('chip', 'todo:7', 'taak 7')} en {marked('chip', 'todo:8', 'taak 8')} gesloten")),
             Given(shown("I closed to-dos 7 and 9 for you"), rows=[SEVEN]) >> Answered(Rewritten("I closed to-dos 7 and 9 for you")),
             Given(shown("I closed to-do 7 for you", SHARED), rows=[SEVEN]) >> Answered(Rewritten(f"I closed {CHIP} for you")),
             Given(shown("I closed to-do 7 for you", "chat"), rows=[SEVEN]) >> Answered(Allowed()),
