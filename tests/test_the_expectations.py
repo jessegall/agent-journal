@@ -591,18 +591,19 @@ def test_a_service_nobody_serves_is_refused_by_name_rather_than_left_out():
 def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_path_and_one_that_did_not_do_it_is_told(tmp_path):
     import time
     import features
-    from events.resources import ResourceCreated
+    from controllers.types import Agents
+    from events.chat_etiquette import ShopTalkInChat
+    from framework.lanes import lane_services
     from framework.played import scratch
     from expects.watching import BROKEN, WAIT, Watch
-    from framework.parts import Context
-    from framework.promises import PROMISED
-    from resources.base import USER
-    from resources.types import Environment, Rule
+    from framework.promises import Promise
+    from receiving import REGISTERED
+    from receiving.ticks import Services
+    from resources.types import AgentRow
 
     features.load()
-    promise = next(one for one in PROMISED.each if one.name == "HoldTicketKnowledge")
-    live = Given(ResourceCreated(n=7, type="rule", action="created", actor=USER),
-                 rows=[Environment(n=4, title="t", data={"owner": "ticket:3"}), Rule(n=7, title="Never skip the gate")])
+    promise = Promise.of(next(one for one in REGISTERED.each if one.name == "NameShopTalk"))
+    live = Given(ShopTalkInChat(agent=1, words="Your message is answered"), rows=[AgentRow(n=1, title="claude-1")])
     told = []
     BROKEN.add(None, lambda record, title, brief: told.append((title, brief)))
     try:
@@ -610,18 +611,19 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
             record, told[:] = scratch(live, tmp_path), []
             watch, event, began = Watch(background=False), live.on, time.time() - 1
             if ran:
-                promise.part.handle(Context.of(promise.feature, record), event)
+                services = Services(lane_services(record, lambda: Agents(record, actor="system").peek(1)))
+                promise.part.handle(event, **services.given(promise.name, promise.feature.name, type(promise.part).wants()))
             watch.ran(promise, event, record, began)
             assert (watch.inbox.qsize(), watch.pending) == (1, []), "the run's own path only notes that it ran; nothing is tested there"
             watch.settle()
             assert [one.number for one in watch.pending] == [0], "the live world is the world the first expectation states, its numbers read as the live ones"
-            assert watch.pending[0].binding.numbers == {("environment", 1): 4, ("rule", 1): 7}, "the two rows the Given states, environment 1 and rule 1, are the live 4 and 7, each bound under its own kind"
+            assert watch.pending[0].binding.numbers == {("agent", 1): 1}, "the row the Given states, agent 1, is bound to the live row under its own kind"
             watch.sweep(began + WAIT - 1)
             assert told == [], "nothing is looked at before its wait is over"
             watch.sweep(began + WAIT + 1)
             assert [title for title, _ in told] == ([] if ran else [told[0][0]]), "a promise that came true says nothing; one that did not is told"
-            assert ran or "rule 1→7" in told[0][1], "what was told names the numbers bound"
-        other = Given(live.on, rows=[Environment(n=4, title="t", data={"owner": ""}), Rule(n=7, title="Never skip the gate")])
+            assert ran or "agent 1→1" in told[0][1], "what was told names the numbers bound"
+        other = Given(live.on, rows=[])
         watch = Watch(background=False)
         watch.ran(promise, other.on, scratch(other, tmp_path), time.time())
         watch.settle()

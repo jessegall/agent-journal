@@ -41,6 +41,10 @@ class Speaker:
     def nudge(self, line: str, **values):
         return self.feature.journal.whisper(self.record, self.row, line, **values)
 
+    def notice(self, line: str, **values):
+        """A line the user reads in the notices, about this agent's environment."""
+        return self.feature.journal.notice(self.record, line, **values)
+
     def remind(self, line: str, **values):
         return self.feature.journal.remind(self.record, self.row, line, **values)
 

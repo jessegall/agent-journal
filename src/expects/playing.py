@@ -99,6 +99,13 @@ class Files(Asked):
     def read(self, path: str) -> str:
         return self.answer(path)
 
+    def exists(self, path: str) -> bool:
+        return path in self.answers.answers
+
+    def listing(self, folder: str) -> list[str]:
+        prefix = folder.rstrip("/") + "/"
+        return sorted({path[len(prefix):].split("/")[0] for path in self.answers.answers if path.startswith(prefix)})
+
     def write(self, path: str, text: str) -> None:
         self.seen.wrote.append((path, text))
 
@@ -122,6 +129,9 @@ class Terminal:
     def move_to_background(self, running: str = "") -> dict:
         self.seen.ran.append(("move to background", running))
         return {}
+
+    def answer_prompt(self, option: int, text: str, options: int) -> None:
+        self.seen.ran.append(("answer prompt", option, text))
 
 
 @dataclass

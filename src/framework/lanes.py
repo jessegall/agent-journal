@@ -8,8 +8,10 @@ from typing import get_args
 
 from agents import control
 from controllers.agents import Agents
+from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from engine import triggering
+from engine import seats
 from engine.command_line import command_line
 from engine.record import Record
 from engine.sessions import Sessions as TheSessions
@@ -23,7 +25,7 @@ from receiving.asking import answered
 from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
-from serving import (SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
+from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
                      Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere)
 
 
@@ -58,6 +60,11 @@ class AgentTerminal:
     def move_to_background(self, running: str = "") -> dict:
         return control.move_to_background(self.record.root, self.record.env, self.agent.title, running)
 
+    def answer_prompt(self, option: int, text: str, options: int) -> None:
+        """Answers the question the agent stands at on its own screen: the option is pressed, or the words typed into the free choice."""
+        session = self.agent.title
+        SERVED.given(Providers).driver(self.agent.provider)(self.record, seats.terminal_of(self.record.root, session) or session).answer_prompt(option, text, options)
+
 
 class AgentHolds:
     """The holds standing against an agent's writes."""
@@ -79,6 +86,24 @@ class Environment:
     def rows(self, kind: type):
         return CONTROLLERS[kind.type](self.record, actor=SYSTEM)
 
+    def rows_named(self, type_name: str):
+        """The controller of a row type named as the record names it, for a reader that goes over every type."""
+        return CONTROLLERS[type_name](self.record, actor=SYSTEM)
+
+    def setting(self, name: str):
+        """A setting of the environment itself rather than of a feature, such as the skills it loads."""
+        return self.record.settings().get(name)
+
+    def place(self):
+        """This environment's own row, as the environments list holds it."""
+        return Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
+
+    def settings(self, feature: str):
+        return FEATURES[feature].values(self.record)
+
+    def is_on(self, feature: str, behaviour: str) -> bool:
+        return FEATURES[feature].on(self.record, behaviour)
+
     def chat(self) -> Speaker:
         agent = Agents(self.record, actor=SYSTEM).primary_to_read()
         if agent is None:
@@ -91,6 +116,9 @@ class TheEnvironments:
 
     def __init__(self, feature, record):
         self.feature, self.record = feature, record
+
+    def here(self) -> Environment:
+        return Environment(self.feature, self.record)
 
     def named(self, env: str) -> Environment:
         return Environment(self.feature, Record(self.record.root, env))
@@ -111,6 +139,14 @@ class ProjectFiles:
 
     def read(self, path: str) -> str:
         return (self.record.root.parent / path).read_text()
+
+    def exists(self, path: str) -> bool:
+        return (self.record.root.parent / path).exists()
+
+    def listing(self, folder: str) -> list[str]:
+        """The names in a folder under the project folder, sorted; none when it is not there."""
+        found = self.record.root.parent / folder
+        return sorted(one.name for one in found.iterdir()) if found.is_dir() else []
 
     def write(self, path: str, text: str) -> None:
         written = self.record.root.parent / path

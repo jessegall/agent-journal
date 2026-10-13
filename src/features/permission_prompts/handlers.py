@@ -1,30 +1,39 @@
-from controllers.types import Agents, Notices
+from events import Fact
 from events.agents import AgentReported
-from framework.parts import AgentContext, Handler
+from events.permission_prompts import PermissionAnswered, PermissionAsked
 from features.permission_prompts.routing import orchestrator_of
 from payload import Asking
-from resources.base import SYSTEM
+from receiving import Handler, Listener
+from resources.types import AgentRow, Notice
+from serving import Chat, Elsewhere, ReadRows, Rows
 
 PERMISSION = "permission"
 ORCHESTRATOR = "orchestrator"
 
 
-class ShowWaitingPermission(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if context.agent.row.subagent:
-            return
-        session = context.agent.session
-        waiting = [n for n in context.journal.get(Notices).rows.standing() if n.data.get("action") == PERMISSION and n.data.get("session") == session]
-        asking = Asking.of(context.agent.row.asking)
-        if asking and not waiting:
-            self.ask(context, asking, session)
-        elif not asking:
-            for notice in waiting:
-                context.journal.clear(notice, "answered")
+class SpotPermissionAsk(Listener[AgentReported]):
+    def listen(self, event: AgentReported, agents: ReadRows[AgentRow], notices: ReadRows[Notice]) -> list[Fact]:
+        row = agents.peek(event.agent)
+        if row.subagent:
+            return []
+        waiting = [n for n in notices.rows.standing() if n.data.get("action") == PERMISSION and n.data.get("session") == row.title]
+        asking = Asking.of(row.asking)
+        if asking:
+            return [] if waiting else [PermissionAsked(agent=event.agent, session=row.title, tool=asking.tool, call=asking.call)]
+        return [PermissionAnswered(notice=notice.n) for notice in waiting]
 
-    def ask(self, context: AgentContext, asking: Asking, session: str) -> None:
-        orchestrator = orchestrator_of(context.record)
-        context.journal.notice("waiting", tool=asking.tool, call=asking.call, tone="warn", session=session, action=PERMISSION, to=ORCHESTRATOR if orchestrator else "")
-        main = Agents(orchestrator, actor=SYSTEM).primary_to_read() if orchestrator else None
-        if main:
-            context.journal.journal.say(orchestrator, main, "routed", environment=context.record.env, tool=asking.tool, call=asking.call)
+
+class ShowTheAsk(Handler[PermissionAsked]):
+    def handle(self, event: PermissionAsked, chat: Chat, elsewhere: Elsewhere) -> list[Fact]:
+        here = elsewhere.here()
+        launcher = orchestrator_of(here.record)
+        chat.notice("waiting", tool=event.tool, call=event.call, tone="warn", session=event.session, action=PERMISSION, to=ORCHESTRATOR if launcher else "")
+        if launcher:
+            elsewhere.named(launcher.env).chat().say("routed", environment=here.record.env, tool=event.tool, call=event.call)
+        return []
+
+
+class ClearTheAsk(Handler[PermissionAnswered]):
+    def handle(self, event: PermissionAnswered, notices: Rows[Notice]) -> list[Fact]:
+        notices.complete(event.notice, how="answered")
+        return []
