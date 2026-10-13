@@ -246,7 +246,12 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert (driver.pump(), driver.held) == ("", ["a line nobody can take yet"]), \
         "a line the terminal could not take is kept and sent again: it is the only road to the agent, so one dropped here is a message from the user that never arrives"
     monkeypatch.setattr(driver, "_deliver", lambda line, by: True)
-    driver.sent_at = 0.0
+    report(engine.record, "compacting", "PreCompact")
+    driver.reported, driver.sent_at = (float("-inf"), None), 0.0
+    assert (driver.pump(), driver.held, driver.ready()) == ("", ["a line nobody can take yet"], False), \
+        "nothing reaches an agent while it compacts: a line typed into a compaction is lost or overflows what it keeps"
+    report(engine.record, "working", "PostToolUse")
+    driver.reported, driver.sent_at = (float("-inf"), None), 0.0
     assert (driver.pump(), driver.held) == ("a line nobody can take yet", []), "and is let go only once it has landed"
     inputs.queue(root, "claude-1", (), "Allow", action=inputs.PERMIT, value="allow")
     assert (engine.permitted(), calls) == ("permission: allow", ["permit True"]), "y for allow"

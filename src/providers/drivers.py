@@ -11,6 +11,7 @@ from payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
 from resources.prompt_answers import PromptAnswer
+from resources.types import COMPACTING
 from engine.wording import counted
 from engine import runtime
 from engine.sessions import Sessions, forebears
@@ -276,14 +277,14 @@ class Driver(ABC):
         return not self.failed
 
     def ready(self) -> bool:
-        return not (self.held or self.yielding or self.groups) and time.time() - self.sent_at >= BETWEEN
+        return not (self.held or self.yielding or self.groups) and time.time() - self.sent_at >= BETWEEN and not self.is_compacting()
 
     def pump(self) -> str:
         if self.yielding and self.waiting():
             self.yielding = []
         if not (self.held or self.yielding or self.groups) or time.time() - self.sent_at < BETWEEN:
             return ""
-        if not self.TAKES_CHANNEL and self.awaits_answer():
+        if self.is_compacting() or (not self.TAKES_CHANNEL and self.awaits_answer()):
             return ""
         self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
@@ -515,6 +516,10 @@ class Driver(ABC):
     def awaits_answer(self) -> bool:
         report = self.last_report()
         return self.asking() or bool(report and report.asking)
+
+    def is_compacting(self) -> bool:
+        report = self.last_report()
+        return bool(report and report.status == COMPACTING)
 
     def last_report(self):
         if time.monotonic() - self.reported[0] >= REPORT_FOR:
