@@ -24,7 +24,9 @@ from resources.base import SYSTEM
 WAIT = 60.0
 IDLE = 5.0
 OWED = (Wrote, Updated, Nudged)
-STAGED = ("clock", "ids", "chat", "commands", "files", "processes", "providers", "transcript", "held", "hook")
+UNSTAGED = ("on", "earlier", "rows", "settings", "remembered")
+STAGED = tuple(name for name in Given.__dataclass_fields__ if name not in UNSTAGED)
+"""Every field of a Given that builds a world the live one cannot be: a field added to the Given is staged by default, so no Fake can be left out."""
 DEFAULTS = {name: Given.__dataclass_fields__[name].default for name in STAGED}
 AGES = 1_000_000_000
 BROKEN = Extension()
