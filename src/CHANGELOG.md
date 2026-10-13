@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.14 — The journal server holds far less memory
+
+- The server keeps at most four conversations in memory, the one read longest ago going first, where it kept every conversation it had opened for as long as it ran. A long conversation held up to 150MB, so a server that had opened a few long ones grew to about 900MB. A conversation let go of comes back from the copy kept on disk in under a second.
+
 ## 3.0.13 — A newer major version is offered on the About page
 
 - The newest-release check keeps the newest release of any major version, so the About page and the update band show 4.0 when it is out, and their Install button installs exactly the version they show. An update at start, like the automatic update check, installs a newer major only when the auto-update setting allows major versions, and journal upgrade without a version stays on its own major.

@@ -312,3 +312,17 @@ def test_a_long_transcript_answers_its_newest_turns_at_once_and_fills_in_behind(
     transcript_cache.CACHE.recents.clear()
     monkeypatch.setattr(transcript_cache, "tail_lines", lambda *given: (_ for _ in ()).throw(AssertionError("the tail was read again")))
     assert claude.recent_rows(transcript) == first_rows, "a start finds the recent rows of a conversation in the folds kept on disk and reads nothing"
+
+
+def test_only_the_last_few_conversations_read_stay_in_memory_and_the_rest_come_back_from_disk(tmp_path):
+    import json
+    from providers import PROVIDERS, transcript_cache
+    cache, claude = transcript_cache.TranscriptCache(tmp_path / "folds"), PROVIDERS["claude"]()
+    paths = []
+    for n in range(transcript_cache.CONVERSATIONS_HELD + 2):
+        path = tmp_path / f"session-{n}.jsonl"
+        path.write_text(json.dumps({"type": "user", "timestamp": "2026-10-13T10:00:00Z", "message": {"content": f"question {n}"}}) + "\n")
+        paths.append(path)
+        cache.transcript(path, claude.extended)
+    assert len(cache.transcripts.held) == transcript_cache.CONVERSATIONS_HELD, "the conversations read longest ago are let go"
+    assert "question 0" in str(cache.transcript(paths[0], claude.extended)), "and one let go reads again whole"

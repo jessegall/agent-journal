@@ -12,6 +12,7 @@ from typing import Callable
 from dataclasses import dataclass
 
 from resources.files import older
+from resources.memo import Memo
 from resources.text import digest
 from providers.jsonl import Read, lines_after, lines_from, read_bytes, rows, tail_lines
 
@@ -21,6 +22,8 @@ KEEP_TRANSCRIPT_EVERY = 300.0
 SEAM = 256
 RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
+# a whole conversation can hold 150MB; the rest come back from the folds on disk
+CONVERSATIONS_HELD = 4
 FOLD_WAIT = 0.2
 FOLD_IN_PLACE_BYTES = 4_000_000
 STATES = "states"
@@ -55,8 +58,8 @@ class TranscriptCache:
         self.folder = folder
         self.recents: dict[str, tuple[int, list]] = {}
         self.folds: dict[tuple, tuple] = {}
-        self.transcripts: dict[str, tuple] = {}
-        self.glimpsed: dict[str, tuple] = {}
+        self.transcripts = Memo(CONVERSATIONS_HELD)
+        self.glimpsed = Memo(CONVERSATIONS_HELD)
         self.kept: dict[tuple, float] = {}
         self.locks: dict[tuple, Lock] = {}
         self.guard = Lock()
@@ -142,8 +145,10 @@ class TranscriptCache:
             lock.release()
 
     def held_turns(self, path: Path, key: tuple, size: int) -> tuple:
-        kept = None if str(path) in self.transcripts else self.stored(key)
-        held = self.transcripts.get(str(path)) or (kept and (kept[0], *kept[1]))
+        held = self.transcripts.kept(str(path))
+        if held is None:
+            kept = self.stored(key)
+            held = kept and (kept[0], *kept[1])
         if not held or held[0] > size or (held[3] and self.before(path, held[0], len(held[3])) != held[3]):
             return 0, 0, [], b""
         return held
@@ -155,13 +160,11 @@ class TranscriptCache:
         except OSError:
             return []
         mark = (stamp.st_size, stamp.st_mtime_ns, stamp.st_ino)
-        kept = self.glimpsed.get(str(path))
-        if kept and kept[0] == mark:
-            return kept[1]
+        return self.glimpsed.get(str(path), mark, lambda: self.glimpsed_turns(path, extend))
+
+    def glimpsed_turns(self, path: Path, extend: Callable[[list, list[bytes], int], list]) -> list:
         read = tail_lines(path, RECENT_BYTES)
-        turns = extend([], read.lines, self.counted_before(path, read))
-        self.glimpsed[str(path)] = (mark, turns)
-        return turns
+        return extend([], read.lines, self.counted_before(path, read))
 
     def turns_behind(self, path: Path, key: tuple, extend: Callable[[list, list[bytes], int], list]) -> None:
         lock = self.lock(key)
@@ -189,7 +192,7 @@ class TranscriptCache:
             seam = self.before(path, read.end, SEAM)
             self.keep(key, read.end, (count, list(turns), seam), KEEP_TRANSCRIPT_EVERY, behind=True)
             self.keep((CURSOR, str(path)), read.end, count, KEEP_TRANSCRIPT_EVERY, behind=True)
-        self.transcripts[str(path)] = (read.end, count, turns, seam)
+        self.transcripts.put(str(path), read.end, (read.end, count, turns, seam))
         return turns
 
     def counted_before(self, path: Path, read: Read) -> int:

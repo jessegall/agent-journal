@@ -23,6 +23,15 @@ class Memo:
             self.freshen(key)
         return held[1]
 
+    def kept(self, key):
+        """The value held under the key, made the newest, or None when nothing is held."""
+        held = self.held.get(key)
+        if held is None:
+            return None
+        if self.limit:
+            self.freshen(key)
+        return held[1]
+
     def freshen(self, key) -> None:
         """Moves a key to the newest end, under the lock and only while it is still there: another thread drops and rewrites the same keys."""
         with self.keeping:
