@@ -7,7 +7,7 @@ from dataclasses import dataclass, field, replace
 from typing import TypedDict
 
 from resources.fields import Loaded
-from features.phone.push import N, on_curve, verified
+from controllers.phone.push import N, on_curve, verified
 from resources.base import Refused
 
 CREATE = "webauthn.create"

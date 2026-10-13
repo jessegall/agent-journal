@@ -1,6 +1,6 @@
 from framework.base import Feature
 from framework.journal import Journal
-from features.phone.controller import phones_live, phones_paired
+from controllers.phone.controller import phones_live, phones_paired
 from features.phone.notifying import told
 from features.phone.details import PhoneDetails
 from features.phone.routes import PhoneRoutes

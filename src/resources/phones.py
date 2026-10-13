@@ -1,6 +1,11 @@
+from resources.base import USER
+from resources.buttons import unspent
 from resources.extension import Extension
+from resources.plans import READY
 
 PHONE_GUARDS = Extension()
+WAITING_CARD = "waiting"
+WAITED = ("question", "plan", "report", "doc")
 
 
 class RecordGuard:
@@ -20,3 +25,9 @@ class RecordGuard:
 def guard_of(record) -> RecordGuard:
     named = [given(record) for given in PHONE_GUARDS.each(record)]
     return named[-1] if named else RecordGuard()
+
+
+def owed(row) -> bool:
+    if row.type == "plan":
+        return row.status == READY
+    return row.type == "question" or USER not in row.seen or bool(unspent(row))

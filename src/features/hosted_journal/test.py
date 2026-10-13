@@ -36,7 +36,7 @@ from features.hosted_journal.watch import DiskWatch
 from engine.disk import DiskFull
 from features.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
 from declaring.trigger import DAY
-from features.phone.controller import Phones
+from controllers.types import Phones
 from controllers.types import Shares
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES
 from features.sharing.server import ShareHandler

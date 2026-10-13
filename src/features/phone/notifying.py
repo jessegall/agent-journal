@@ -1,7 +1,5 @@
-from controllers.types import Shares
-from features.phone.controller import Phones
+from controllers.types import Phones, Shares
 from features.phone.feed import waiting
-from features.phone.push import Keys, send
 from resources.base import SYSTEM
 
 
@@ -19,7 +17,7 @@ def told(record) -> None:
 def tell(phones, phone, address: str) -> None:
     owed = owed_to(phones, phone)
     if set(owed) - set(phone.pushed):
-        send(Keys.kept(phones.record.root), phone.push, f"https://{address}")
+        phones._push(phone, f"https://{address}")
     if owed != phone.pushed:
         phones.keep_pushed(phone.n, owed)
 

@@ -10,17 +10,16 @@ from http.cookies import SimpleCookie
 from engine.multipart import FORWARDED_LIMIT, FORWARDED_LIMIT_MB
 from engine.record import Record
 from resources.base import DEFAULT_PROVIDER
+from resources.phones import WAITING_CARD
 from resources.fields import Loaded
-from features.phone.controller import WAITING_CARD, Phones
 from features.phone.notifying import owed_to
 from features.phone.allow_list import PhoneVisit
 from features.phone.desktop import Desktop
 from features.phone.members import rights_of
-from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import CARDS, PhoneSurface
 from engine.color import identity
 from features.auto_update.countdown import update_state
-from controllers.types import Shares
+from controllers.types import Phones, Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
 from features.sharing.origins import origins_of
@@ -314,10 +313,10 @@ class PhoneRoutes:
 
     def acts(self, handler, phones: Phones, phone, body: dict) -> dict:
         surface = PhoneSurface(phones, phone)
-        return {"passkey/begin": lambda: phones._enrolling(phone, self.relying(handler)),
-                "passkey": lambda: {"passkey": False, "allow_within": round(phones._enrol(phone, self.relying(handler), Enrolment.from_json(body)).until - time.time())},
-                "unlock/begin": lambda: phones._unlocking(phone, self.relying(handler), Unlocking.from_json(body).request),
-                "unlock": lambda: {"unlock": phones._unlock(phone, self.relying(handler), Assertion.from_json(body))},
+        return {"passkey/begin": lambda: phones._enrolling(phone, *self.relying(handler)),
+                "passkey": lambda: {"passkey": False, "allow_within": round(phones._enrol(phone, *self.relying(handler), body).until - time.time())},
+                "unlock/begin": lambda: phones._unlocking(phone, *self.relying(handler), Unlocking.from_json(body).request),
+                "unlock": lambda: {"unlock": phones._unlock(phone, *self.relying(handler), body)},
                 "pause": lambda: done("pause", surface.pause()),
                 "resume": lambda: done("resume", surface.resume()),
                 "stop": lambda: done("stop", surface.stop()),
@@ -353,7 +352,7 @@ class PhoneRoutes:
             return None
         body = handler.rfile.read(size) if size else b""
         phones = self.phones(handler)
-        unlocked = phones._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
+        unlocked = phones._spend(phone, handler.headers.get(UNLOCK, ""), handler.command, handler.path, body)
         marks = {**PhoneVisit(phone.environment, unlocked, phone.member).marks(), **rights_of(phones.record).headers(phones.record, phone.member)}
         return Desktop(handler, handler.path.removeprefix("/p"), marks).forward(body)
 
@@ -396,13 +395,13 @@ class PhoneRoutes:
             return None
         return phone
 
-    def relying(self, handler) -> Relying:
+    def relying(self, handler) -> tuple[str, str]:
         """The site a passkey answers for: this computer under its own name, or else the tunnel address the journal knows, never one the request names."""
         host = handler.headers.get("Host", "")
         if origins_of(handler.shares.record).on_this_machine(handler):
-            return Relying(host.split(":", 1)[0], f"http://{host}")
+            return host.split(":", 1)[0], f"http://{host}"
         address = Shares(handler.shares.record, actor=SYSTEM)._address()
-        return Relying(address, f"https://{address}")
+        return address, f"https://{address}"
 
     def trusted(self, handler, kind: str = "application/json") -> bool:
         return (handler.headers.get("Origin") == origins_of(handler.shares.record).origin(handler) and handler.headers.get(HEADER) == "1"

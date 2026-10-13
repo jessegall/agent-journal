@@ -1,7 +1,8 @@
 from events import Fact
 from events.agents import AgentReported
 from events.status_bar import BarStale, DoingStale, UsageRead
-from features.status_bar.bar import EMPTY, bar, doing
+from features.status_bar.bar import bar, doing
+from resources.status_bar import EMPTY
 from features.status_bar.usage import observe
 from receiving import Handler, Listener
 from resources.types import AgentRow

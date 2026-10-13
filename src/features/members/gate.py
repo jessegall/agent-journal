@@ -16,7 +16,7 @@ from features.hosted_journal.vault import Vault
 from features.members.pages import BELOW_LOGIN, join_page, member_login_page
 from features.members.roles import OWNER_ABILITIES, Abilities, Role
 from features.members.roster import Departure, Member, Roster
-from features.phone.controller import Phones
+from controllers.types import Phones
 from framework.routing import MEMBER, ROLE, SHARED
 from features.phone.allow_list import Action, Page
 from resources.base import OWNER_ID, USER, Resource, as_dict

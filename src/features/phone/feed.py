@@ -19,7 +19,7 @@ from controllers.types import Helpers
 from controllers.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
 from features.phone.chat_view import TURNS, hidden
 from features.phone.members import rights_of
-from features.phone.places import WAITED, owed
+from resources.phones import WAITED, owed
 from controllers.types import Suggestions
 from features.suggestions.details import SuggestionsDetails
 from controllers.types import Plans

@@ -19,7 +19,7 @@ from features.phone.feed import Feed, feed, helper, reaches
 from controllers.types import Plans
 from resources.plans import READY, WAITING
 from controllers.types import Shares
-from features.status_bar.bar import current
+from resources.status_bar import current
 from controllers.types import Suggestions
 from features.work_modes.modes import pick
 from features.work_tracking.auto import automatic

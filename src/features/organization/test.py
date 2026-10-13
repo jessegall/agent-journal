@@ -243,7 +243,7 @@ def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_th
 def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_to_work_in():
     from features.agent_sessions.launch import prepared
     from engine import runtime
-    from features.phone.places import shown
+    from controllers.phone.places import shown
     from overview.summary import summarize
     from resources.types import EnvironmentKind
     features.load()

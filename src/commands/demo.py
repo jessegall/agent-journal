@@ -8,9 +8,9 @@ from engine.record import Record
 from engine.stored import write_json
 from engine.transaction import apart
 from resources.text import digest
-from features.phone.controller import Phones
+from controllers.types import Phones
 from features.phone.surface import CARDS
-from features.phone.resource import Phone
+from controllers.phone.resource import Phone
 from features.phone.routes import read_body
 from controllers.session_recording.demo import Throwaway, frames, leaks
 from controllers.session_recording.scrub import Scrubber

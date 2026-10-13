@@ -1,7 +1,7 @@
 import time
 from typing import ClassVar
 
-from features.phone.passkey import PendingPasskey
+from controllers.phone.passkey import PendingPasskey
 from resources.base import OWNER_ID, PROJECT, Resource, ResourceDetails
 from resources.shapes import NUMBER, TEXT, Field, Shape
 

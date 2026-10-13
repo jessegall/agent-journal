@@ -3,18 +3,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TypedDict
 
-from controllers.types import CONTROLLERS, Agents, Environments, Works
+from controllers.agents import Agents
+from controllers.base import CONTROLLERS
+from controllers.environments import Environments
+from controllers.works import Works
 from engine.color import identity
 from engine.record import Record
 from engine.sessions import Sessions, alive
 from engine.viewer import known, last
-from resources.buttons import unspent
-from resources.plans import READY
-from features.status_bar.bar import current
+from resources.phones import WAITED, owed
+from resources.status_bar import current
 from resources.base import SYSTEM, USER, Refused, Stale
 
 MAIN = "main"
-WAITED = ("question", "plan", "report", "doc")
 TEMPORARY = tuple(dict.fromkeys(Path(folder).resolve() for folder in (tempfile.gettempdir(), "/tmp")))
 
 
@@ -24,12 +25,6 @@ class Detail(TypedDict):
     waiting: dict[str, int]
     inHand: int
     lastActive: float
-
-
-def owed(row) -> bool:
-    if row.type == "plan":
-        return row.status == READY
-    return row.type == "question" or USER not in row.seen or bool(unspent(row))
 
 
 def detail(root: Path, name: str) -> Detail:

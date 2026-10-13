@@ -5,7 +5,6 @@ from dataclasses import asdict, replace
 from pathlib import Path
 from typing import TypedDict
 
-import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
@@ -14,12 +13,12 @@ from controllers.requests import request
 from engine.outbox import Request
 from engine import runtime
 from engine.record import Record
-from features.phone.guard import RecordGuard, guard_of
-from features.phone.passkey import CREATE, GET, Assertion, Challenge, Creating, Enrolment, Getting, Passkey, PendingPasskey, Relying, Unlock, Unverified, creating
-from features.phone.places import Place, place_at, places
-from features.phone.push import Keys, allowed, unpadded
-from features.phone.resource import Phone
-from controllers.types import Shares
+from resources.phones import WAITING_CARD, RecordGuard, guard_of
+from controllers.phone.passkey import CREATE, GET, Assertion, Challenge, Creating, Enrolment, Getting, Passkey, PendingPasskey, Relying, Unlock, Unverified, creating, requested
+from controllers.phone.places import Place, place_at, places
+from controllers.phone.push import Keys, allowed, send, unpadded
+from controllers.phone.resource import Phone
+from controllers.sharing.controller import Shares
 from declaring.trigger import DAY
 from resources.base import OWNER_ID, PROJECT, SYSTEM, USER, Refused, titled
 
@@ -30,7 +29,6 @@ DEVICE_LONGEST = 60
 KEPT = ("key", "code", "short", "code_until", "expires", "environment", "member", "journal", "days", "push", "pushed", "home", "tries", "passkey", "challenge", "unlock", "pending_passkey")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
-WAITING_CARD = "waiting"
 MOST_TRIES = 10
 CHALLENGE_SECONDS = 120
 UNLOCK_SECONDS = 60
@@ -196,16 +194,19 @@ class Phones(Controller):
             raise Refused("a phone's notifications come only through Apple's, Google's, Mozilla's or Microsoft's push service")
         return self._kept(phone.n, push=endpoint, pushed=pushed)
 
+    def _push(self, phone: Phone, url: str) -> None:
+        send(Keys.kept(self.record.root), phone.push, url)
+
     def keep_pushed(self, n: int, refs: list[str]) -> Phone:
         """What this phone was last pushed about, so the next push names only what is new."""
         return self._kept(n, pushed=refs)
 
-    def _enrolling(self, phone: Phone, relying: Relying) -> Creating:
+    def _enrolling(self, phone: Phone, host: str, origin: str) -> Creating:
         if phone.passkey:
             raise Refused("this phone already has its passkey: connect the phone again to make a new one")
-        return creating(self._challenged(phone, CREATE, ""), relying, f"phone-{phone.n}".encode(), phone.title)
+        return creating(self._challenged(phone, CREATE, ""), Relying(host, origin), f"phone-{phone.n}".encode(), phone.title)
 
-    def _enrol(self, phone: Phone, relying: Relying, given: Enrolment) -> PendingPasskey:
+    def _enrol(self, phone: Phone, host: str, origin: str, body: dict) -> PendingPasskey:
         """The passkey the phone made, held until the user allows it on the computer within ALLOW_SECONDS."""
         with self.record.locked(PROJECT):
             challenge = self._taken(phone)
@@ -216,7 +217,7 @@ class Phones(Controller):
                 raise Refused("Face ID for this phone already waits for Allow on your computer")
             if current.waiting_passkey.passkey:
                 self._cleared(current, "the phone asked again")
-            passkey = given.passkey(challenge, relying, time.time())
+            passkey = Enrolment.from_json(body).passkey(challenge, Relying(host, origin), time.time())
             desk = self._desk(current)
             notice = Notices(desk, actor=SYSTEM).create(
                 f"Set up Face ID for phone {current.title}?", tone="warn", action=PASSKEY_NOTICE, phone=current.n,
@@ -268,21 +269,21 @@ class Phones(Controller):
         """The environment on this computer whose chat asks about this phone."""
         return Record(self.record.root, phone.environment if phone.journal is None else self.record.env)
 
-    def _unlocking(self, phone: Phone, relying: Relying, request: str) -> Getting:
+    def _unlocking(self, phone: Phone, host: str, origin: str, request: str) -> Getting:
         if not phone.passkey:
             raise Unverified.because("this phone has no passkey yet")
-        return Passkey.from_json(phone.passkey).asked(self._challenged(phone, GET, request), relying)
+        return Passkey.from_json(phone.passkey).asked(self._challenged(phone, GET, request), Relying(host, origin))
 
-    def _unlock(self, phone: Phone, relying: Relying, given: Assertion) -> str:
+    def _unlock(self, phone: Phone, host: str, origin: str, body: dict) -> str:
         """A one-use unlock for the request the challenge named, good for a minute on this phone alone."""
         with self.record.locked(PROJECT):
             challenge = self._taken(phone)
-            passkey = given.counted(Passkey.from_json(self._phone(phone.n).passkey), challenge, relying, time.time())
+            passkey = Assertion.from_json(body).counted(Passkey.from_json(self._phone(phone.n).passkey), challenge, Relying(host, origin), time.time())
             unlock = secrets.token_urlsafe(32)
             self._kept(phone.n, passkey=asdict(passkey), unlock=asdict(Unlock(hashed(unlock), challenge.request, time.time() + UNLOCK_SECONDS)))
         return unlock
 
-    def _spend(self, phone: Phone, unlock: str, request: str) -> bool:
+    def _spend(self, phone: Phone, unlock: str, command: str, path: str, body: bytes) -> bool:
         """Whether this unlock opens this request; a matching unlock is spent whether or not it does."""
         if not unlock:
             return False
@@ -291,7 +292,7 @@ class Phones(Controller):
             if not kept.fits(hashed(unlock)):
                 return False
             self._kept(phone.n, unlock={})
-        return kept.opens(request, time.time())
+        return kept.opens(requested(command, path, body), time.time())
 
     def _challenged(self, phone: Phone, kind: str, request: str) -> Challenge:
         challenge = Challenge(secrets.token_urlsafe(32), kind, time.time() + CHALLENGE_SECONDS, request)
@@ -322,4 +323,3 @@ def phones_paired(root) -> bool:
 
 
 resources_module.register(Phone)
-types_module.register(Phones)

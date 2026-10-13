@@ -1,5 +1,5 @@
 from features.hosted_journal.vault import Vault
-from features.phone.guard import RecordGuard
+from resources.phones import RecordGuard
 
 PHONES = "phones.json"
 SECRET = ("key", "code", "short", "passkey", "challenge", "unlock", "pending_passkey")

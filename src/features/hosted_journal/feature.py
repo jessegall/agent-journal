@@ -13,7 +13,7 @@ from features.hosted_journal.vault import Vault
 from features.hosted_journal.watch import DiskWatch
 from framework.journal import Journal
 from features.phone.desktop import CLOSED
-from features.phone.guard import PHONE_GUARDS
+from resources.phones import PHONE_GUARDS
 from features.phone.members import MEMBER_RIGHTS
 from engine.address import ANSWERS_AT
 from declaring.registries import SHARE_ORIGINS

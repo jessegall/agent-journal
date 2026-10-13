@@ -563,7 +563,7 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     chosen = Shares(record, actor=USER).readdress()
     assert released == [moved_to] and chosen != moved_to, "the old name is released once the new one is picked"
     from engine.tunnel import alerts
-    from features.phone.controller import Phones
+    from controllers.types import Phones
     Shares(record, actor=USER).complete(share.n, "stopped")
     Phones(record, actor=USER).connect()
     alerts(record.root).set("readdressed", 0)

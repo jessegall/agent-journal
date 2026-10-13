@@ -24,8 +24,8 @@ from features.phone import allow_list, push
 from features.phone import notifying
 from features.phone.notifying import told
 from features.phone import controller as phone_controller
-from features.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
-from features.phone.controller import Phones
+from controllers.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
+from controllers.types import Phones
 from features.phone.feed import POSTED
 from controllers.types import Helpers
 from controllers.types import Tickets
@@ -292,7 +292,7 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         with pytest.raises(Unverified):
             integer(b"\x02\x02\x00\x7f")
         assert integer(b"\x02\x02\x00\x80") == (0x80, b""), "a tag or a padded number is refused, a needed zero is not"
-        import features.phone.passkey as pk
+        import controllers.phone.passkey as pk
 
         def why(act) -> str:
             try:
@@ -697,7 +697,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert [call(base, f"/p/{tap}", {}, key).status for tap in ("pause", "resume")] == [201, 201], "with an agent running, the phone pauses it and resumes it"
     Sessions(record.root).write("claude-4343", environment="")
     Sessions(record.root).write("d2c1c997-real", environment="")
-    from features.phone.places import shown
+    from controllers.phone.places import shown
     Environments(record, actor=USER).create("ticket-4", owner="ticket:4", kind=EnvironmentKind.TICKET)
     assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(shown(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")

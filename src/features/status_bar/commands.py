@@ -1,5 +1,5 @@
 from framework.parts import Command, Context
-from features.status_bar.bar import current
+from resources.status_bar import current
 
 
 class ShowBar(Command):
