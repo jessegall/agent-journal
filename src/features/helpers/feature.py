@@ -6,10 +6,10 @@ from events.helpers import (AnswerToRelay, HelperAsks, HelperBriefed, HelperCont
                             SubagentAsks, SubagentTouched)
 from events.messages import MessageCreated
 from events.questions import QuestionCreated
-from expects import Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
+from expects import Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, nothing
 from framework.base import Feature
 from resources.base import AGENT, USER
-from resources.types import AgentRow, Message, Question, Todo
+from resources.types import AgentRow, Environment, Message, Question, Todo
 from resources.helpers import Helper
 from controllers.types import Helpers
 from features.helpers.details import HelpersDetails
@@ -38,6 +38,8 @@ def updating(actor: str, **fields) -> RowWriting:
 
 HANDED = Todo(n=5, title="Fix the crash", data={"assigned": "helper:3"})
 AT_WORK = Helper(n=3, title="Rhea", data={"name": "Rhea"})
+HELPING_HERE = Environment(n=1, title="t", data={"kind": "helper", "owner": "helper:3", "launched_from": "t"})
+ANSWERING = Helper(n=3, title="Rhea", data={"name": "Rhea", "answering": True})
 BY_AGENT = {"actor": AGENT}
 SUBAGENT_ROW = AgentRow(n=1, title="claude-1", data={"parent": "claude-0", "provider": "claude"})
 NEVER_RUN_TESTS = ("Helpers and subagents write tests but never run them: write the test that proves your change, commit, and name it in your report so the agent that dispatched you runs it. "
@@ -53,9 +55,14 @@ class HelpersFeature(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.listen(AgentChanged, SpotFailedTurn(), expects=[
             Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title="claude-1", data={"event": "failed", "failure": "overloaded"})]) >> Dispatches(nothing),
+            Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title="claude-1", data={"event": "failed", "failure": "overloaded"}), HELPING_HERE, AT_WORK])
+                >> Dispatches(HelperTurnFailed(failure="overloaded")),
+            Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title="claude-1", data={"event": "working"}), HELPING_HERE, AT_WORK]) >> Dispatches(nothing),
         ])
         journal.events.handle(HelperTurnFailed, TellAFailedTurn(), expects=[
             Given(HelperTurnFailed(failure="overloaded"), rows=[AGENT_ROW]) >> Unchanged(),
+            Given(HelperTurnFailed(failure="overloaded"), rows=[AGENT_ROW, HELPING_HERE, AT_WORK])
+                >> Updated(Helper(n=3), report="My turn ended in an error, so I stopped: overloaded", answering=False),
         ])
         journal.events.handle(HelperContinued, MarkTheHelperContinued(), expects=[
             Given(HelperContinued(n=4, type="helper", action="continued"), rows=[AGENT_ROW, Helper(n=4, title="Zed", data={"name": "Zed", "latest": "reading the log"})])
@@ -100,9 +107,17 @@ class HelpersFeature(Feature):
         ])
         journal.events.listen(MessageCreated, SpotAnswerToDispatcher(), expects=[
             Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, Message(n=2, title="done", brief="done", seen=["agent"])]) >> Dispatches(nothing),
+            Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done", seen=["agent"])])
+                >> Dispatches(AnswerToRelay(message=2)),
+            Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, HELPING_HERE, AT_WORK, Message(n=2, title="done", brief="done", seen=["agent"])]) >> Dispatches(nothing),
+            Given(MessageCreated(n=2, type="message", actor="user"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done")]) >> Dispatches(nothing),
+            Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done", seen=["agent"], data={"peer": "Zed"})])
+                >> Dispatches(nothing),
         ])
         journal.events.handle(AnswerToRelay, RelayAnswerToDispatcher(), expects=[
             Given(AnswerToRelay(message=2), rows=[AGENT_ROW, Message(n=2, title="done", brief="done", seen=["agent"])]) >> Unchanged(),
+            Given(AnswerToRelay(message=2), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done", seen=["agent"])])
+                >> Wrote(Message(title="done", brief="done", data={"peer": "Rhea"})),
         ])
         journal.commands.refuse(RowWriting, HandedRowsCloseOnlyThroughTheirHelper(), expects=[
             Given(completing(AGENT), rows=[HANDED, AT_WORK]) >> Refused(KEPT_BY_ITS_HELPER),
