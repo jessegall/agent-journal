@@ -401,6 +401,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="status"),
         Field(default="", name="event"),
         Field(default="", name="tool"),
+        Field(default="", name="effect"),
         Field(default="", name="file"),
         Field(name="wrote"),
         Field(FLAG, False, name="turn_wrote"),

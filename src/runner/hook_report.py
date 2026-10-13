@@ -33,7 +33,7 @@ def end_refused(record: Record, hook: Hook) -> None:
 
 
 def merged(provider, row, hook: Hook, facts: HookFacts) -> dict:
-    return {"event": facts.event, "tool": facts.tool, **facts.transcript_facts, "file": facts.file, "cwd": facts.cwd or row.cwd or "", "at": hook.at,
+    return {"event": facts.event, "tool": facts.tool, "effect": command_effects.effect(hook), **facts.transcript_facts, "file": facts.file, "cwd": facts.cwd or row.cwd or "", "at": hook.at,
             "provider": provider.name, "uses": int(row.uses) + (hook.event == HookEvent.PRE_TOOL_USE), "transcript": facts.transcript or row.transcript,
             "inbox": facts.inbox or row.inbox or "", "model": facts.model or row.model or "", "effort": facts.effort, "started": row.started or hook.at,
             "context": row.context or 0 if facts.context is None else facts.context, "asking": facts.asking,

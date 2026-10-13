@@ -36,6 +36,9 @@ const TOOL_STATES = {
     Bash: "running",
 };
 
+// a shell command that only reads or searches is the agent looking something up, as a Read or a Grep is
+const LOOKING = new Set(["reads", "searches"]);
+
 const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compacting", waiting: "waiting", running: "waiting"};
 
 // An idle agent's figure falls asleep after this many seconds of nothing.
@@ -53,7 +56,7 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
     // the pose says what the agent does, so it waits on the user only while it does nothing else; where it stands says what waits
     if (bar === "idle" && (waitingSince || agent?.data.asking)) return {state: "asking", since: waitingSince || since};
     if (bar === "idle") return {state: now - since >= ASLEEP_AFTER ? "asleep" : "idle", since};
-    const inFlight = agent?.data.event === "PreToolUse" && TOOL_STATES[agent.data.tool];
+    const inFlight = agent?.data.event === "PreToolUse" && (LOOKING.has(agent.data.effect) ? "searching" : TOOL_STATES[agent.data.tool]);
     return {state: inFlight || "thinking", since};
 }
 
