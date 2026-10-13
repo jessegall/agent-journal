@@ -201,6 +201,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     sessions = Sessions(record.root)
     seated = "codex-9"
     sessions.bind(seated, f"{record.env}-rhea", provider="codex")
+    record.set_setting("triggers", {"helpers.watch": {"every": 0, "unit": "minutes"}})
     watch = lambda: tick(record)
     titles = lambda: [n.title for n in Nudges(record, actor=SYSTEM).all() if "helper 1" in n.title]
     watch()

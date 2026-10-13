@@ -19,6 +19,7 @@ class Copy:
         self.process: subprocess.Popen | None = None
         self.port = 0
         self.printed: list[str] = []
+        self.errors = home / f"{name}.stderr"
 
     @property
     def address(self) -> str:
@@ -42,8 +43,10 @@ class Copy:
         """Starts the copy's server on the port it had before, or a free one the first time, and waits until it has printed its address."""
         from scripts.boot_guard import WAIT
         self.printed.clear()
-        self.process = subprocess.Popen([sys.executable, str(self.root / "journal.py"), "--root", str(self.root), "serve", "--port", str(self.port)], cwd=self.root.parent,
-                                        env=self.environment(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+        self.home.mkdir(parents=True, exist_ok=True)
+        with self.errors.open("w") as errors:
+            self.process = subprocess.Popen([sys.executable, str(self.root / "journal.py"), "--root", str(self.root), "serve", "--port", str(self.port)], cwd=self.root.parent,
+                                            env=self.environment(), stdout=subprocess.PIPE, stderr=errors, text=True)
         threading.Thread(target=lambda: self.printed.extend(iter(self.process.stdout.readline, "")), daemon=True).start()
         began = time.time()
         while not self.printed and time.time() - began < WAIT:
@@ -52,6 +55,12 @@ class Copy:
             raise AssertionError(f"{self.name} printed no address within {WAIT} seconds")
         self.port = int(self.printed[0].strip().rstrip("/").rsplit(":", 1)[1])
         return self
+
+    def explained(self) -> str:
+        """Where this copy stands and the last of what it wrote to stderr, for a test that finds it gone."""
+        left = self.errors.read_text()[-600:].strip() if self.errors.is_file() else ""
+        state = "running" if self.running() else f"ended with {self.process.poll()}"
+        return f"{self.name} on port {self.port}, {state}: {left or 'nothing on stderr'}"
 
     def stop(self) -> None:
         """Asks the copy's server to end and waits for it, so the next start finds its port free."""

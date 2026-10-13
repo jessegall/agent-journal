@@ -37,6 +37,7 @@ def test_a_type_that_declares_how_many_rows_it_keeps_is_pruned_to_that_count(mon
 
 def test_keep_zero_leaves_reports_listed():
     kept = fresh()
+    kept.set_setting("triggers", {"auto_archive": {"every": 0, "unit": "minutes"}})
     kept.set_setting("keep", {"report": 0})
     r = Reports(kept, actor=AGENT).create("kept forever")
     age(Reports(kept), r.n, created=time.time() - 300 * 86400)

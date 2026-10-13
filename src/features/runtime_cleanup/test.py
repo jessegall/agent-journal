@@ -114,6 +114,7 @@ def test_the_days_to_keep_is_a_setting():
 
 def test_it_runs_on_its_own_on_the_engines_clock():
     record = fresh()
+    record.set_setting("triggers", {"runtime_cleanup": {"every": 0, "unit": "minutes"}})
     capture = runtime.session_file(record.root, "x", "printed")
     capture.parent.mkdir(parents=True)
     capture.write_bytes(b"y" * 200_000)

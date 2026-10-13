@@ -225,7 +225,7 @@ def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_tha
     world.laptop.start()
     world.desk.start()
     assert len({world.server.port, world.laptop.port, world.desk.port}) == 3 and all(copy.running() for copy in world.copies.values()), \
-        "the server and both local copies each run in a process and folder of their own"
+        "the server and both local copies each run in a process and folder of their own: " + "; ".join(copy.explained() for copy in world.copies.values())
     asked = world.laptop.run("environment", "connect", "--address", world.server.address)
     assert "Traceback" not in asked.stderr, "a local copy can be told to connect to the server by its address, and answers in words whatever the server says"
     world.server.stop()
