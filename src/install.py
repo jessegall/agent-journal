@@ -407,8 +407,19 @@ def release_versions(repository: str | None = None) -> list[str]:
     return sorted(versions, key=version_key, reverse=True)
 
 
-def released(repository: str | None = None) -> str:
-    return next(iter(release_versions(repository)), "")
+def installed_line(root: Path) -> int | None:
+    """The major line the installed code is on, which its updates stay on; none before anything is installed."""
+    from resources.versions import line_of
+    installed = version_in(code(root))
+    if not installed:
+        return None
+    return line_of(installed)
+
+
+def released(repository: str | None = None, line: int | None = None) -> str:
+    """The newest release, or the newest of one major line: an install on 2.x keeps receiving 2.x patches after 3.0.0 is out, and moves only when a version is named."""
+    from resources.versions import line_of
+    return next((one for one in release_versions(repository) if line is None or line_of(one) == line), "")
 
 
 def fetch(into: Path, repository: str | None = None, ref: str = "") -> tuple[str, str]:
@@ -539,7 +550,7 @@ def upgrading(project: Path, root: Path, version: str | None = None) -> list[str
         stepping(root, "Fetching the new version")
         from framework.updating.branch import followed_branch
         branch = followed_branch(root)
-        newest = "" if branch else (version or released())
+        newest = "" if branch else (version or released(line=installed_line(root)))
         if newest and newest == version_in(code(root)) and packed(root):
             return done + [f"package already at {newest}"] + finish(project, root)
         temporary = Path(tempfile.mkdtemp())

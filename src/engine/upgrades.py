@@ -5,7 +5,8 @@ from pathlib import Path
 from engine import runtime
 from engine.stored import write_text
 from install import fetch, released
-from resources.versions import newer, shared_parts  # noqa: F401  their home is resources
+from engine.version import version
+from resources.versions import line_of, newer, shared_parts  # noqa: F401  their home is resources
 
 __all__ = ["fetch"]
 
@@ -38,7 +39,7 @@ def fetched(cache: Path) -> None:
 
 def kept_newest(cache: Path) -> None:
     cache.parent.mkdir(parents=True, exist_ok=True)
-    newest = released()
+    newest = released(line=line_of(version()))
     if not newest:
         cache.touch(exist_ok=True)
         return

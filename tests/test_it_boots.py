@@ -399,6 +399,44 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(t
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
+PLANTED_REFUSAL = """
+
+from events.agents import AgentReported as _Reported
+from receiving import Listener as _Listener
+
+
+class AsksForNothingServed(_Listener[_Reported]):
+    def listen(self, event: _Reported, nothing: int) -> list:
+        return []
+
+
+_register = FactsFeature.register
+
+
+def _planted(self, journal):
+    _register(self, journal)
+    journal.events.listen(_Reported, AsksForNothingServed(), expects=[])
+
+
+FactsFeature.register = _planted
+"""
+
+
+def test_a_build_whose_boot_refuses_a_registration_goes_back_and_names_the_refusal(tmp_path):
+    place, root = tmp_path, installed(tmp_path, CODE)
+    good = (root / "journal.pyz").resolve()
+    bad = root / "journal-99.0.0-refused0000.pyz"
+    with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
+        for item in source.infolist():
+            if not item.filename.startswith("features/facts/feature."):
+                target.writestr(item, source.read(item))
+        target.writestr("features/facts/feature.py", source.read("features/facts/feature.py").decode() + PLANTED_REFUSAL)
+    point(root, bad)
+    launches(place, root / "journal.py", "codex", during=heals(root, good))
+    assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "a build whose boot refuses a registration is rolled back like one that dies"
+    assert "AsksForNothingServed asks for nothing" in (root / "runtime" / "engine.log").read_text(), "and the log names the refusal"
+
+
 def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
     place, root = tmp_path, installed(tmp_path, CODE)
     good = (root / "journal.pyz").resolve()

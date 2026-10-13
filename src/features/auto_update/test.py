@@ -956,6 +956,14 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
     git("commit", "-qam", "work after the release")
     source = str(origin)
     assert released(source) == "2.10.0", "the newest release is chosen by version, not by name"
+    for version in ("3.0.0", "2.10.1"):
+        (origin / "VERSION").write_text(version)
+        git("commit", "-qam", version)
+        git("tag", f"v{version}")
+    assert (released(source, line=2), released(source, line=3), released(source)) == ("2.10.1", "3.0.0", "3.0.0"), \
+        "an install on 2.x keeps receiving 2.x patches after 3.0.0 is tagged, and the newest of all is 3.0.0"
+    for version in ("3.0.0", "2.10.1"):
+        git("tag", "-d", f"v{version}")
     _, failed = fetch(tmp_path / "copy", source, f"refs/tags/v{released(source)}")
     assert (failed, (tmp_path / "copy" / "VERSION").read_text()) == ("", "2.10.0"), "the release tag is installed, not the commits after it"
     import socket

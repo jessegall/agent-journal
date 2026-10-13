@@ -8,3 +8,8 @@ def newer(version: str, than: str) -> bool:
 
 def shared_parts(version: str, other: str, parts: int) -> bool:
     return version_key(version)[:parts] == version_key(other)[:parts]
+
+
+def line_of(version: str) -> int:
+    """The major line a version belongs to, which an install keeps receiving patches on until it is moved to another by name."""
+    return version_key(version)[0]
