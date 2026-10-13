@@ -7,14 +7,14 @@ def carried(messages, row) -> str:
     paths = messages.paths(row.n) if row.files else []
     linked = [ref for ref in row.refs if not ref.startswith("message:")]
     brought = [part for part in (", ".join(paths), ", ".join(linked)) if part]
-    sections = f" (and {plural(len(row.sections), 'section')}: journal message read {row.n})" if row.sections else ""
+    sections = f" (and {plural(len(row.sections), 'section')})" if row.sections else ""
     return (f" — it brings {'; '.join(brought)}" if brought else "") + sections
 def said(row, messages=None) -> str:
-    """The message as the line names it: who wrote it, its number, the message it answers, and whatever it carries. Not the words themselves - the line says one has arrived, and journal message read is how the agent takes it in, so what was written reaches the agent once instead of twice and only for a message it opens."""
+    """The message as the line names it: who wrote it, its number, the message it answers, and whatever it carries. Not the words, and not the command that opens it, which the messages skill teaches once: the line names what waits and stops."""
     who = row.data.get("peer") or ("user" if row.author == USER else row.author)
     answers = "".join(f" on message {ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
     rest = carried(messages, row) if messages is not None else ""
-    return f"{who} message {row.n}{answers}: journal message read {row.n}{rest}"
+    return f"{who} message {row.n}{answers}{rest}"
 def still_to_answer(numbers: list, record, **_) -> str:
     """The line about a message the agent has already read and not answered: it says how to answer, because by then the agent has the words."""
     said = answered(numbers, record)
