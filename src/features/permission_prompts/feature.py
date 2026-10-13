@@ -30,6 +30,13 @@ class PermissionPrompts(Feature):
                 >> Dispatches(PermissionAnswered(notice=2)),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"parent": "claude-0", "asking": {"tool": "Bash", "call": "ls"}})])
                 >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"asking": {"tool": "Bash", "call": "ls"}}), Notice(n=2, data={"action": "permission", "session": "claude-2"})])
+                >> Dispatches(PermissionAsked(agent=1, session="claude-1", tool="Bash", call="ls")),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"asking": {"tool": "Bash", "call": "ls"}}), Notice(n=2, completed=1.0, data={"action": "permission", "session": "claude-1"})])
+                >> Dispatches(PermissionAsked(agent=1, session="claude-1", tool="Bash", call="ls")),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1"), Notice(n=2, data={"action": "permission", "session": "claude-1"}), Notice(n=3, data={"action": "permission", "session": "claude-1"})])
+                >> Dispatches(PermissionAnswered(notice=2)) & Dispatches(PermissionAnswered(notice=3)),
         ])
         journal.events.handle(PermissionAsked, ShowTheAsk(), expects=[
             Given(PermissionAsked(agent=1, session="claude-1", tool="Bash", call="rm -rf build"), rows=[AgentRow(n=1, title="claude-1")])
