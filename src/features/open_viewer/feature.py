@@ -1,17 +1,21 @@
 from controllers.types import Agents, Environments, Features
 from events.agents import AgentChanged
-from expects import Answered, Given, Refused, Unchanged
+from expects import Answered, Dispatches, Given, Ran, Refused, answering, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.open_viewer.commands import (Appoint, Control, Force, Pause, Relaunch, Resume, RunShell, SaveSettings, SendKeys, ShowAttachments, ShowAttachmentsPage, ShowEvents, ShowHooks, ShowLinks,
                                           ShowManifest, ShowOnline, ShowOptions, ShowScreen, ShowSettings, ShowSummary, ShowTranscript, WireHooks)
 from features.open_viewer.details import OpenViewerDetails
 from features.open_viewer.handlers import ShowViewerTab
+from features.open_viewer.listeners import SpotAgentStart
+from events.open_viewer import ViewerTabToOpen
 from resources.types import AgentRow
 
 OFFLINE = "session '{}' is not online: no agent's terminal reports it as its session"
 SESSION = "claude-1"
 AGENT_ROW = AgentRow(n=1, title=SESSION)
+STARTED = AgentRow(n=1, title=SESSION, data={"event": "SessionStart"})
+URL = "http://127.0.0.1:8420"
 
 
 def offline(command: tuple) -> Given:
@@ -30,8 +34,16 @@ class OpenViewer(Feature):
     details = OpenViewerDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(ShowViewerTab(), expects=[
-            Given(AgentChanged(agent=1, action="updated"), rows=[AGENT_ROW]) >> Unchanged(),
+        journal.events.listen(AgentChanged, SpotAgentStart(), expects=[
+            Given(AgentChanged(agent=1, action="updated"), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(AgentChanged(agent=1, action="updated"), rows=[STARTED], viewer=answering({("running",): URL}))
+                >> Dispatches(ViewerTabToOpen(url=URL).once(f"viewer opened|{SESSION}")),
+            Given(AgentChanged(agent=1, action="updated"), rows=[STARTED]) >> Dispatches(nothing),
+            Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title=SESSION, data={"event": "SessionStart", "parent": "claude-0"})], viewer=answering({("running",): URL}))
+                >> Dispatches(nothing),
+        ])
+        journal.events.handle(ViewerTabToOpen, ShowViewerTab(), expects=[
+            Given(ViewerTabToOpen(url=URL), rows=[AGENT_ROW], viewer=answering({("running",): URL})) >> Ran(("show", URL, "t")),
         ])
         journal.commands.add("environment", ShowManifest(), expects=[
             Given((Environments,)) >> Answered(Carrying("project", "environment", "version", "build", "actions", "actors")),

@@ -1,15 +1,10 @@
-from engine import viewer
-from events.agents import AgentChanged
-from framework.parts import AgentContext, Handler, in_background
-from payload import HookEvent
+from events import Fact
+from events.open_viewer import ViewerTabToOpen
+from receiving import Handler
+from serving import Elsewhere, Viewer
 
 
-class ShowViewerTab(Handler):
-    def handle(self, context: AgentContext, event: AgentChanged) -> None:
-        row = context.agent.row
-        if not (event.written or event.action == "reported") or row.event != HookEvent.SESSION_START or row.parent or in_background(context.record):
-            return
-        url = viewer.lately_running(context.record.root)
-        if not url or not context.once("viewer opened", row.title):
-            return
-        viewer.show(url, context.record.env)
+class ShowViewerTab(Handler[ViewerTabToOpen]):
+    def handle(self, event: ViewerTabToOpen, viewer: Viewer, elsewhere: Elsewhere) -> list[Fact]:
+        viewer.show(event.url, elsewhere.here().name)
+        return []
