@@ -48,8 +48,8 @@ class LookAfterTickets(Handler):
                 tickets.close_merged()
                 tickets.clear_worktrees()
         tickets.start_queued()
-        tickets._stop_orphaned()
-        tickets._build_approved_plans()
+        tickets.stop_orphaned()
+        tickets.build_approved_plans()
         raise_waiting_plans(context, tickets)
         pass_on_calls(context, tickets)
         look_at_stuck(context, tickets)
@@ -58,8 +58,8 @@ class LookAfterTickets(Handler):
 
 def raise_waiting_plans(context: AgentContext, tickets: Tickets) -> None:
     paused = Boards(context.record, actor=SYSTEM).paused()
-    for ticket in [t for t in tickets._awaiting_orchestrator() if not (t.board and int(t.board) in paused) and not tickets._reviewing(t)]:
-        plan = tickets._plans(ticket).load(ticket.plan)
+    for ticket in [t for t in tickets.awaiting_orchestrator() if not (t.board and int(t.board) in paused) and not tickets.reviewing(t)]:
+        plan = tickets.plans_of(ticket).load(ticket.plan)
         if context.once(PLAN_WAITS_ONCE, f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
             tickets.raise_moment(ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS)
 
@@ -96,8 +96,8 @@ def handed_in(context, agent) -> list[Sent]:
 
 
 def look_at_stuck(context: AgentContext, tickets: Tickets) -> None:
-    for ticket, state in tickets._needing_a_look(tickets._orchestrating()):
-        if state.kind == "stopped" and tickets._revive(ticket):
+    for ticket, state in tickets.needing_a_look(tickets.orchestrating()):
+        if state.kind == "stopped" and tickets.revive(ticket):
             context.agent.nudge("ticket_restarted", ticket=ticket.n, title=ticket.title)
         elif context.every(ATTENTION_EVERY, f"{ticket.ref}|{state.kind}", Trigger(every=LOOK_AGAIN, unit=MINUTES)):
             tickets.raise_moment(ticket.n, STUCK, reason=state.text)
@@ -112,7 +112,7 @@ class HoldTicketKnowledge(Handler):
 class WakeTheTicketAgent(Handler):
     def handle(self, context: Context, event: QuestionCompleted) -> None:
         tickets = Tickets(context.record, actor=SYSTEM)
-        n = tickets._owned_by(context.record.env, "ticket")
+        n = tickets.owner_of(context.record.env, "ticket")
         if not n:
             return
         question = Questions(context.record, actor=SYSTEM).load(event.n)
@@ -126,7 +126,7 @@ class WakeTheTicketAgent(Handler):
 class FinishTheBoardWithItsLastTicket(Handler):
     def handle(self, context: Context, event: TicketCompleted) -> None:
         tickets = Tickets(context.record, actor=SYSTEM)
-        board = tickets._board(tickets.load(event.n))
+        board = tickets.board_of(tickets.load(event.n))
         if not board or not board.started or board.finished:
             return
         if any(int(other.board) == board.n for other in tickets.rows.standing()):
@@ -135,7 +135,7 @@ class FinishTheBoardWithItsLastTicket(Handler):
 
 
 def watched(tickets: Tickets) -> list:
-    boards = tickets._orchestrating()
+    boards = tickets.orchestrating()
     if not boards:
         return []
     paused = Boards(tickets.record, actor=SYSTEM).paused()
@@ -153,15 +153,15 @@ def ticket_calls(kind: str):
 def decisions(permission: str):
     def about(context, agent) -> list[Sent]:
         return [Sent(ticket.ref, {"ticket": ticket.n, "title": ticket.title})
-                for ticket, waiting in Tickets(context.record, actor=SYSTEM)._awaiting_decisions() if waiting == permission]
+                for ticket, waiting in Tickets(context.record, actor=SYSTEM).awaiting_decisions() if waiting == permission]
     return about
 
 
 def boards_to_check(context, agent) -> list[Sent]:
     """The boards worth looking at: a board whose tickets are all waiting has no agent to check, and asking every five minutes costs the orchestrator a turn each time for nothing."""
     tickets = Tickets(context.record, actor=SYSTEM)
-    running = {int(ticket.board) for ticket in tickets._running() if ticket.board}
-    boards = [n for n in tickets._orchestrating() if n in running]
+    running = {int(ticket.board) for ticket in tickets.running() if ticket.board}
+    boards = [n for n in tickets.orchestrating() if n in running]
     if not boards or all_parked(context.record):
         return []
     if agent.idle_for < float(context.feature.cadence(context.record, "board check").every) * MINUTE:

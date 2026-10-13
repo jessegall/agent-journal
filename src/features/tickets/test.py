@@ -220,10 +220,10 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     import time
     record.set_setting("tickets", {"running": 5})
     assert tickets.load(ticket.n).agent_seen and not tickets.load(ticket.n).launched, "an agent that reported is remembered as seen"
-    assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
+    assert [(t.n, state.kind) for t, state in tickets.needing_a_look([board.n])] == [(ticket.n, "stopped")], \
         "a ticket whose agent was seen working and then died needs a look, long after its launch"
     tickets.update(ticket.n, launched=time.time() - 120)
-    assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
+    assert [(t.n, state.kind) for t, state in tickets.needing_a_look([board.n])] == [(ticket.n, "stopped")], \
         "a started ticket whose agent is gone needs a look; one launched a moment ago does not yet"
     never = tickets.create("Never ran", board=board.n)
     tickets.update(never.n, work_environment=f"ticket-{never.n}", launched=time.time() - 120, agent_seen=0.0)
@@ -234,20 +234,20 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     here = record.sibling(f"ticket-{ticket.n}")
     held = Todos(here, actor=AGENT).create("wait for the secret")
     Todos(here, actor=AGENT).block(held.n, "the user has not granted the secret")
-    assert tickets._needing_a_look([board.n]) == [], \
+    assert tickets.needing_a_look([board.n]) == [], \
         "an agent whose every open row is blocked is idle because the work is, not because it is stuck"
     Todos(here, actor=AGENT).unblock(held.n)
-    assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
+    assert [(t.n, state.kind) for t, state in tickets.needing_a_look([board.n])] == [(ticket.n, "stopped")], \
         "and once a row it could take is ready, a silent agent needs a look again"
     Todos(here, actor=AGENT).strike(held.n, "no longer wanted")
     tickets.update(ticket.n, dependencies={third.ref: "confirmed"})
-    assert tickets._needing_a_look([board.n]) == [], "an agent idle because its ticket waits on an open ticket is not stuck"
+    assert tickets.needing_a_look([board.n]) == [], "an agent idle because its ticket waits on an open ticket is not stuck"
     tickets.update(ticket.n, dependencies={})
-    assert tickets._revive(tickets.load(ticket.n)) and launched[-1][0] == f"ticket-{ticket.n}", "its agent is started again, once"
+    assert tickets.revive(tickets.load(ticket.n)) and launched[-1][0] == f"ticket-{ticket.n}", "its agent is started again, once"
     tickets.update(ticket.n, launched=time.time() - 120)
-    assert not tickets._revive(tickets.load(ticket.n)), "a second loss is told to the orchestrator instead of restarted"
+    assert not tickets.revive(tickets.load(ticket.n)), "a second loss is told to the orchestrator instead of restarted"
     tickets.stop(ticket.n)
-    assert tickets._needing_a_look([board.n]) == [], "a ticket stopped on purpose is left alone"
+    assert tickets.needing_a_look([board.n]) == [], "a ticket stopped on purpose is left alone"
     drafted = Tickets(record, actor=USER, agent="board-filler").create("Light mode", board=board.n)
     tickets.move(drafted.n, "Building")
     assert launched[-1][1] == "claude", "the agent that wrote the ticket is its author, never the provider that runs it"
@@ -352,7 +352,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert (place.kind, tickets.close_merged(), bool(tickets.load(ticket.n).completed)) == (EnvironmentKind.TICKET, [], False), \
         "its environment stays a ticket's, hidden from the lists, and the sweep does not close it again the minute it is open, though its branch was merged"
     assert git("rev-parse", f"worktree-{ticket.work_environment}").stdout.strip() == tickets.load(ticket.n).base, "work is counted from where the merged branch stands"
-    assert (tickets._plan_of(tickets.update(ticket.n, plan=99)), tickets._plan_status(tickets.load(ticket.n))) == (None, ""), \
+    assert (tickets._plan_of(tickets.update(ticket.n, plan=99)), tickets.plan_status(tickets.load(ticket.n))) == (None, ""), \
         "a plan the ticket's environment no longer holds stops nothing: a start does not fail on it"
     tickets.update(ticket.n, plan=0)
     import agents.terminal
@@ -457,7 +457,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert Docs(record).load(unmerged.n).deleted, "a doc a ticket proposed goes with it when the ticket closes without its branch merged"
     from engine.worktree import Repository
     from controllers.tickets.landing import Landing
-    assert tickets._clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
+    assert tickets.is_clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
     assert [Landing(Repository(project), f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(Repository(project), f"worktree-{second.work_environment}", ticket.base, home).state()] \
         == ["merged", "changed"], "a branch is merged, changed or untouched by where its commits are"
     nested = project / "autoscaling"
@@ -495,8 +495,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
         idle.setattr(Tickets, "_plan_status", lambda self, found: ACTIVE)
         idle.setattr(Agents, "state", lambda self, env: IDLE_STATE)
         idle.setattr(Tickets, "_told", lambda self, n, note: told_to.append(note) or self.update(n, told=time.time()))
-        tickets._build_approved_plans()
-        tickets._build_approved_plans()
+        tickets.build_approved_plans()
+        tickets.build_approved_plans()
     tickets.update(ticket.n, plan=0)
     assert len(told_to) == 1 and told_to[0].startswith("Build your approved plan"), \
         "a ticket agent idle at its prompt with an approved plan is told by the journal to build it, once in ten minutes, not left waiting for typed text"
@@ -609,7 +609,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     user.update(ui.n, work_environment="ticket-ui")
     with monkeypatch.context() as working:
         working.setattr(Tickets, "_live", lambda self, found: True)
-        assert [r.n for r in user._running()] == [api.n], "a ticket that waits on another holds no running slot, though its agent works"
+        assert [r.n for r in user.running()] == [api.n], "a ticket that waits on another holds no running slot, though its agent works"
         from controllers.types import Agents
         from framework.loaded import FEATURES
         from framework.parts import AgentContext
@@ -623,7 +623,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
             user.update(api.n, halted=True)
             assert boards_to_check(context, looking) == [], \
                 "and one whose tickets are all waiting is not: there is no agent to check, and asking every five minutes costs the orchestrator a turn each time for nothing"
-        assert user._running() == [], "a stopped agent frees its slot at once"
+        assert user.running() == [], "a stopped agent frees its slot at once"
     user.update(api.n, halted=False, work_environment="")
     user.update(ui.n, work_environment="")
     assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
@@ -646,7 +646,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         planned.setattr(Tickets, "_decide_plan", lambda self, n, status, word, method, told: decided.append((n, status)))
         assert user.approve_plan(ui.n).approved_early is True, "an approval given while the ticket still waits is kept, not refused"
         assert decided == [], "and nothing is approved yet"
-        assert ui.n not in [waiting.n for waiting in Tickets(record, actor=SYSTEM)._awaiting_orchestrator()] and Tickets(record, actor=SYSTEM)._idle_by_design(user.load(ui.n)), \
+        assert ui.n not in [waiting.n for waiting in Tickets(record, actor=SYSTEM).awaiting_orchestrator()] and Tickets(record, actor=SYSTEM)._idle_by_design(user.load(ui.n)), \
             "a plan approved while its ticket waits is neither handed to the orchestrator to review again nor taken for a stuck agent"
         user.complete(api.n, how="shipped")
         assert (decided, user.load(ui.n).approved_early) == ([(ui.n, READY)], False), "the plan is approved the moment the ticket it waited on closes"
@@ -713,7 +713,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
     Boards(record, actor=AGENT).orchestrate("off")
     Boards(record, actor=SYSTEM).finish(board.n)
-    assert [waiting.n for waiting in Tickets(record, actor=SYSTEM)._awaiting_orchestrator()] == [ticket.n], \
+    assert [waiting.n for waiting in Tickets(record, actor=SYSTEM).awaiting_orchestrator()] == [ticket.n], \
         "who orchestrates is the board's orchestrator field: once Play's run has ended and the board has closed, its open tickets' waiting plans still reach that environment"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it, with or without a live run"
@@ -835,10 +835,10 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     monkeypatch.setattr(ticket_calls, "deciding", lambda held: False)
     assert ticket_calls.rule_for(owner, asked("which of the two approaches"), "ticket-1").endswith("Otherwise ask the user"), "outside that mode the orchestrator is told to answer only what is its to decide"
     monkeypatch.setattr(Tickets, "_plan_status", lambda self, found: ticket_calls.PLAN_DONE)
-    monkeypatch.setattr(Tickets, "_clean", lambda self, found: True)
+    monkeypatch.setattr(Tickets, "is_clean", lambda self, found: True)
     tickets = Tickets(record, actor=SYSTEM)
     assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
-    monkeypatch.setattr(Tickets, "_clean", lambda self, found: False)
+    monkeypatch.setattr(Tickets, "is_clean", lambda self, found: False)
     assert not ticket_calls.handed_in(tickets, ticket), "a dirty branch is not handed in"
     from types import SimpleNamespace as Told
     assert ticket_calls.ended_turns(record, Told(told=0)) == [], "a turn that has not ended says nothing"
@@ -862,14 +862,14 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     handlers.look_at_stuck(context, tickets)
     assert moments[-1] == handlers.STUCK, "one that cannot be restarted is raised to the orchestrator"
     delivered = []
-    monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: ticket.n)
+    monkeypatch.setattr(Tickets, "owner_of", lambda self, env, kind: ticket.n)
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: delivered.append(note))
     question = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     Questions(record, actor=USER).complete(question.n, how="Both")
     assert delivered == [f"Your question {question.n}, Which one?, is answered: Both. That is the answer of the one who runs your board: act on it, and never file the question again."], "a ticket's agent is told when the user answers its question"
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
     handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
-    monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: 0)
+    monkeypatch.setattr(Tickets, "owner_of", lambda self, env, kind: 0)
     handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
 
 

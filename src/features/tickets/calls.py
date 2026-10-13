@@ -47,7 +47,7 @@ def rule_for(tickets, question, env) -> str:
 
 def handed_in(tickets, ticket) -> bool:
     working = Agents(tickets.record, actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
-    return tickets._plan_status(ticket) == PLAN_DONE and tickets._clean(ticket) and not working
+    return tickets.plan_status(ticket) == PLAN_DONE and tickets.is_clean(ticket) and not working
 
 
 def calls(tickets, ticket) -> list[tuple[str, str, dict, int]]:

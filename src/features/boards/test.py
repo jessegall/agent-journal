@@ -326,10 +326,10 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     assert Boards(record, actor=USER).load(board.n).started and mode_of(record) == "orchestrator", \
         "the board remembers when Play was pressed and the environment switches to orchestrator mode"
     from features.session_briefing.start import start_block
-    assert (Tickets(record, actor=SYSTEM)._orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([board.n], True), \
+    assert (Tickets(record, actor=SYSTEM).orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([board.n], True), \
         "Play turns orchestrating on for this environment, and the start block says so"
     Boards(record, actor=AGENT).orchestrate("off")
-    assert (Tickets(record, actor=SYSTEM)._orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([board.n], False), \
+    assert (Tickets(record, actor=SYSTEM).orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([board.n], False), \
         "off, the start block stops saying so, but the board's orchestrator field still names this environment, whose boards' nudges keep reaching it"
     Boards(record, actor=AGENT).orchestrate("on")
     Boards(record, actor=USER).pause(board.n)

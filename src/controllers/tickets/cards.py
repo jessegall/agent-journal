@@ -78,7 +78,7 @@ class TicketCards:
         """A board's lanes, each its first `size` cards and how many it holds, or with `lane` and `after` the cards after the cursor a lane's last page ended at; `query` keeps the cards whose number or title holds those words."""
         stages = self._stages(n)
         sessions = Sessions(self.record.root).all()
-        running = self._running()
+        running = self.running()
         words = None if query is None else query.strip().lower()
         wanted = lambda stage: lambda r: r["board"] not in (None, "") and int(r["board"]) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
         order = lambda r: (position_of(r["rank"], r["n"]), r["n"])
@@ -96,7 +96,7 @@ class TicketCards:
         """Where a ticket stands: its plan with the progress of its rows, what its agent does now, and whether it works or awaits."""
         from controllers.plans import Tally, counts
         ticket = self.load(n)
-        state = self._runtime(ticket, Sessions(self.record.root).all(), len(self._running()))
+        state = self._runtime(ticket, Sessions(self.record.root).all(), len(self.running()))
         if not ticket.work_environment:
             return asdict(TicketStatus(state.kind, state.text))
         place = self.record.sibling(ticket.work_environment)
@@ -117,7 +117,7 @@ class TicketCards:
 
     def _role_work(self) -> dict:
         working: dict = {}
-        for place, ticket in {ticket.work_environment: ticket for ticket in self._running()}.items():
+        for place, ticket in {ticket.work_environment: ticket for ticket in self.running()}.items():
             plan = self._plan_owner(place)
             plan_label = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
             todos = Todos(self.record.sibling(place), actor=SYSTEM)
@@ -181,7 +181,7 @@ class TicketCards:
         return [action for applies, actions in offers if applies for action in actions]
 
     def _meaning(self, ticket) -> str:
-        board = self._board(ticket)
+        board = self.board_of(ticket)
         return board.meanings.get(ticket.stage, "") if board else ""
 
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
@@ -196,7 +196,7 @@ class TicketCards:
             return CardState("you", f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}")
         if not place:
             return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState.plain()
-        reviewing = self._reviewing(ticket)
+        reviewing = self.reviewing(ticket)
         if reviewing:
             return CardState("running", f"under review ({reviewing}) in {place}")
         if ticket.handed_in_at:

@@ -60,7 +60,7 @@ class TicketLanding:
         for name, repo, _ in self._repositories(ticket):
             discarded(repo, folder if name == "." else folder / name, branch, ticket.work_environment)
 
-    def _clean(self, ticket) -> bool:
+    def is_clean(self, ticket) -> bool:
         folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
         return all(folder and not git(folder, "status", "--porcelain").stdout.strip() for folder in folders)
 
@@ -104,7 +104,7 @@ class TicketLanding:
         return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 
     def _into(self, ticket) -> str:
-        board = self._board(ticket)
+        board = self.board_of(ticket)
         return board.branch if board and board.branch else "HEAD"
 
     def _into_at(self, ticket, name: str, place: Path) -> str:

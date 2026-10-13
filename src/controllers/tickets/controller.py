@@ -140,12 +140,12 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             self._refuse(f"{self.type} {ticket.n} has no agent running to {doing}")
         return self.providers.driver(ticket.provider)(Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
 
-    def _build_approved_plans(self) -> None:
+    def build_approved_plans(self) -> None:
         """A ticket agent that stands idle with a plan approved is told to build it: through the journal's channel first, which a prompt that does not take typed text still hears; once in ten minutes."""
         for ticket in self.rows.standing():
             if not ticket.work_environment or not ticket.plan or time.time() - ticket.told < BUILD_AGAIN:
                 continue
-            if not self.agent_session(ticket.n) or self._plan_status(ticket) != ACTIVE or Agents(self.record, actor=SYSTEM).state(ticket.work_environment) != IDLE_STATE:
+            if not self.agent_session(ticket.n) or self.plan_status(ticket) != ACTIVE or Agents(self.record, actor=SYSTEM).state(ticket.work_environment) != IDLE_STATE:
                 continue
             try:
                 self._told(ticket.n, f"Build your approved plan: journal plan progress {ticket.plan} says where it stands. {ticket.brief.strip()[:600]}")
@@ -158,7 +158,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def send_back(self, n: int, note: str):
         ticket = self._told(n, note)
-        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, handed_in_at=0.0, **given(stage=self._board(ticket).stage_for(START)))
+        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, handed_in_at=0.0, **given(stage=self.board_of(ticket).stage_for(START)))
         if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
             self._emit(ticket.n, ESCALATED)
         return ticket
@@ -167,17 +167,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         """The plan a ticket points at, or nothing when that row is not in its environment, so a missing plan stops nothing."""
         if not (ticket.plan and ticket.work_environment):
             return None
-        plans = self._plans(ticket)
+        plans = self.plans_of(ticket)
         return plans.load(ticket.plan) if plans.rows.exists(ticket.plan) else None
 
-    def _plans(self, ticket) -> Plans:
+    def plans_of(self, ticket) -> Plans:
         return Plans(self.record.sibling(ticket.work_environment), actor=self.actor)
 
     @action
     def approve_plan(self, n: int):
         ticket = self.load(n)
         waits = self._waiting_on(ticket)
-        if waits and self._plan_status(ticket) == READY and self._may_decide(ticket):
+        if waits and self.plan_status(ticket) == READY and self._may_decide(ticket):
             return self.update(ticket.n, approved_early=True)
         if waits:
             self._refuse(f"{self.type} {n} waits on {', '.join(ref.replace(':', ' ') for ref in waits)}: its plan is approved once they are merged")
@@ -185,7 +185,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _may_decide(self, ticket) -> bool:
         """Whether whoever acts may approve this ticket's plan: the user always, an agent only as the orchestrator of a board that lets it."""
-        return self.actor != AGENT or (self._orchestrator_may(ticket, PLANS) and int(ticket.board) in self._orchestrating())
+        return self.actor != AGENT or (self._orchestrator_may(ticket, PLANS) and int(ticket.board) in self.orchestrating())
 
     def _apply_early_approvals(self) -> None:
         """A plan approved while its ticket waited is approved the moment the wait ends."""
@@ -202,12 +202,12 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _decide_plan(self, n: int, status: str, word: str, method: str, told: str):
         ticket = self.load(n)
-        if self._plan_status(ticket) != status:
+        if self.plan_status(ticket) != status:
             self._refuse(f"{self.type} {ticket.n} has no plan waiting for you to {word}")
         if self.actor != AGENT:
             request(self.record.root, Request(ticket.work_environment, Plans.resource.type, method, [int(ticket.plan)], actor=self.actor))
             return ticket
-        if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self._orchestrating():
+        if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self.orchestrating():
             self._refuse(self._refusal(ticket, PLANS, f"{word} the plan of {self.type} {ticket.n}"))
         request(self.record.root, Request(ticket.work_environment, Plans.resource.type, method, [int(ticket.plan)]))
         if told and self.agent_session(ticket.n):
@@ -217,7 +217,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 pass
         return ticket
 
-    def _plan_status(self, ticket) -> str:
+    def plan_status(self, ticket) -> str:
         return self.record.remembered(("plan status", ticket.n, ticket.updated), lambda: self._plan_status_now(ticket))
 
     def _plan_status_now(self, ticket) -> str:
@@ -232,11 +232,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return plan.status
 
     def _plan_waits(self, ticket) -> bool:
-        return self._plan_status(ticket) in (READY, WAITING)
+        return self.plan_status(ticket) in (READY, WAITING)
 
     def _idle_by_design(self, ticket) -> bool:
         """A ticket that waits on open tickets, on its plan's approval, on its approved plan's turn, on its merge, or whose every open row is blocked has an agent with nothing to do on purpose."""
-        return bool(self._waiting_on(ticket)) or bool(ticket.handed_in_at) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE) \
+        return bool(self._waiting_on(ticket)) or bool(ticket.handed_in_at) or ticket.approved_early or self.plan_status(ticket) in (READY, WAITING, PLAN_DONE) \
             or self._rows_done(ticket) or self._nothing_ready(ticket)
 
     def _nothing_ready(self, ticket) -> bool:
@@ -252,15 +252,15 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         plan = self._plan_of(ticket)
         return plan is not None and plan.status == ACTIVE and bool(plan.phases) and not first_open_phase(self.record.sibling(ticket.work_environment), plan)
 
-    def _needing_a_look(self, boards: list[int]) -> list[tuple]:
-        sessions, running = Sessions(self.record.root).all(), len(self._running())
+    def needing_a_look(self, boards: list[int]) -> list[tuple]:
+        sessions, running = Sessions(self.record.root).all(), len(self.running())
         started = [ticket for ticket in self.rows.standing() if ticket.work_environment and not ticket.halted and (ticket.agent_seen or ticket.launched)
                    and time.time() - ticket.launched > LAUNCHING_FOR and ticket.board and int(ticket.board) in boards]
         looked = [(ticket, self._runtime(ticket, sessions, running)) for ticket in started]
         return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._idle_by_design(ticket)] + \
                [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
 
-    def _revive(self, ticket) -> bool:
+    def revive(self, ticket) -> bool:
         if ticket.restarts >= MOST_RESTARTS or ticket.queued:
             return False
         self.update(ticket.n, restarts=ticket.restarts + 1)
@@ -286,9 +286,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self._based(ticket, self._started_at(ticket))
 
     def _plan_owner(self, name: str) -> int:
-        return self._owned_by(name, "plan")
+        return self.owner_of(name, "plan")
 
-    def _owned_by(self, name: str, kind: str) -> int:
+    def owner_of(self, name: str, kind: str) -> int:
         place = Environments(self.record, actor=SYSTEM).rows.by_title(name) if name else None
         return place.owned_by(kind) if place else 0
 
@@ -366,7 +366,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             ticket = self.update(ticket.n, plan=0)
         if self._merged(ticket, self._read()):
             ticket = self._based(ticket, self._landed_at(ticket))
-        board = self._board(ticket)
+        board = self.board_of(ticket)
         began = board.stage_for(START) if board else ""
         if began and ticket.stage == board.stage_for(DONE):
             ticket = self.update(ticket.n, stage=began)
@@ -386,7 +386,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return [(rows, rows.peek(row["n"])) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD)
                 for row in rows.rows.by("proposed_for", ticket.ref) if not row["deleted"]]
 
-    def _stop_orphaned(self) -> list[str]:
+    def stop_orphaned(self) -> list[str]:
         kept = {row.ref for row in self.rows.every() if not row.deleted}
         owned = [env.title for env in Environments(self.record, actor=SYSTEM).rows.every()
                  if not env.deleted and env.owned_by(self.type) and env.owner not in kept]
@@ -409,7 +409,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _closed(self, merged: list, landed: bool = False) -> list:
         for ticket in merged:
-            board = self._board(ticket)
+            board = self.board_of(ticket)
             finished = board.stage_for(DONE) if board else ""
             how = f"its branch {self._branch(ticket)} was merged"
             try:
@@ -451,7 +451,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return closed
 
     def _released(self, ticket) -> None:
-        board = self._board(ticket)
+        board = self.board_of(ticket)
         if not board or not board.after_merge.strip():
             return
         code, output = streamed(["/bin/sh", "-c", board.after_merge], self.record.root.parent, RELEASE_TIMEOUT, lambda _: None)
@@ -500,7 +500,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def move(self, n: int, stage: str, model: str | None = None):
         ticket = self.load(n)
-        board = self._board(ticket)
+        board = self.board_of(ticket)
         starting = bool(board) and board.meanings.get(stage.strip()) == START
         if starting:
             self._confirmed(ticket)
@@ -587,7 +587,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         self._confirmed(self.load(n))
         self.mark_seen()
         ticket = self.bind(int(n))
-        if ticket.board and self._board(ticket).finished:
+        if ticket.board and self.board_of(ticket).finished:
             Boards(self.record, actor=SYSTEM).unfinish(int(ticket.board))
         into = self._into(self.load(n))
         if into != "HEAD" and any(name == "." and not present(place, into) for name, place, _ in self._repositories(self.load(n))):
@@ -601,7 +601,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 return self._hand_to_plan(ticket)
             if self._live(ticket):
                 return ticket
-            if 0 < self._limit() <= len({r.work_environment for r in self._running()}):
+            if 0 < self._limit() <= len({r.work_environment for r in self.running()}):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             ticket = self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
             ticket = self._doing(ticket)
@@ -610,7 +610,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _doing(self, ticket):
         """A ticket that is started stands in its board's start stage, unless it is already past it."""
-        board = self._board(ticket)
+        board = self.board_of(ticket)
         began = board.stage_for(START) if board else ""
         if began and ticket.stage != began and self._meaning(ticket) not in (START, REVIEW, DONE):
             return self.update(ticket.n, stage=began)
@@ -724,7 +724,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         first = min((self.load(m).queued_at for m in self._queue()), default=time.time())
         return self.update(ticket.n, queued_at=first - 1)
 
-    def _running(self) -> list:
+    def running(self) -> list:
         """The tickets holding a running slot: an agent that works, not one that was stopped, nor one whose ticket waits on another, which holds none."""
         return self.record.remembered("running tickets", lambda: [r for r in self.rows.standing() if r.work_environment and not r.halted and self._live(r) and not self._waiting_on(r)])
 
@@ -758,7 +758,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         stages = [FieldChoice(stage, stage) for stage in self._stages(r.board)]
         return {field: [asdict(one) for one in choices] for field, choices in (("board", boards), ("stage", stages), ("owner", domains))}
 
-    def _board(self, ticket):
+    def board_of(self, ticket):
         return Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None
 
     def _stages(self, board) -> list:
