@@ -1,6 +1,6 @@
 from events import Fact
 from events.journal_laws import LargerResult, LawMentioned, LongReadRefused
-from events.rules import RuleChanged
+from events.rules import RulesToInject
 from features.journal_laws.briefing import brief
 from features.journal_laws.details import LARGEST_RESULT
 from features.journal_laws.listeners import largest_key
@@ -30,7 +30,7 @@ class NameTheLargestResult(Handler[LargerResult]):
         return []
 
 
-class InjectRules(Handler[RuleChanged]):
-    def handle(self, event: RuleChanged, rules: Rows[Rule]) -> list[Fact]:
+class InjectRules(Handler[RulesToInject]):
+    def handle(self, event: RulesToInject, rules: Rows[Rule]) -> list[Fact]:
         brief(rules.record.root.parent, rules.record)
         return []

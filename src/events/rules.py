@@ -28,6 +28,11 @@ class RuleChanged(ResourceEvent):
 
 
 @dataclass(frozen=True, kw_only=True)
+class RulesToInject(Fact):
+    """A rule changed while the rules feature is on, so the briefing files that carry the injected rules are written again."""
+
+
+@dataclass(frozen=True, kw_only=True)
 class RuleMentioned(Fact):
     """A word the rule is keyed to came up in what the agent did or wrote, so it is whispered to it."""
 

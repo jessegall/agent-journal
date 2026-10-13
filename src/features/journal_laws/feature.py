@@ -7,7 +7,7 @@ from events.agents import AgentMessageSent, ToolCallAnswered, ToolFinished
 from events.answers import Allowed, Refused
 from events.asking import AgentDispatching, ToolCallAsked
 from events.journal_laws import LargerResult, LawMentioned, LongReadRefused
-from events.rules import RuleChanged
+from events.rules import RulesToInject
 from expects import Answered, Dispatches, File, Given, Nudged, Refused as Failed, Remembered, Updated, Wrote, answering, nothing
 from features.journal_laws.answering import EnforceDispatchLaw, RefuseWholeLongReads
 from features.journal_laws.briefing import brief, long_briefings
@@ -22,7 +22,6 @@ from framework.base import Feature
 from framework.journal import Journal
 from framework.recital import WHISPERED_LAW
 from framework.sending import Nudge
-from resources.base import USER
 from resources.types import AgentRow, Rule
 from resources.voices import BUTLER
 
@@ -71,10 +70,10 @@ class JournalLaws(Feature):
             Given((Outputs, "output.txt", "", "nobody")) >> Failed("no such provider: nobody"),
         ])
         START_PARTS.add(self, carry, key=LAW)
-        journal.events.handle(RuleChanged, InjectRules(), expects=[
-            Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate", data={"injected": True})])
+        journal.events.handle(RulesToInject, InjectRules(), expects=[
+            Given(RulesToInject(), rows=[Rule(n=3, title="Never skip the gate", data={"injected": True})])
                 >> Wrote(File("AGENTS.md", "- Never skip the gate")) & Wrote(File("CLAUDE.md", "@AGENTS.md")),
-            Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate")])
+            Given(RulesToInject(), rows=[Rule(n=3, title="Never skip the gate")])
                 >> Wrote(File("AGENTS.md", "agent-journal, form")) & Wrote(File("CLAUDE.md", "@AGENTS.md")),
         ])
         if brief not in CARRIED_IN.each():
