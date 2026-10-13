@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.4 — A parked plan names the phase it stands at
+
+- A plan parked while another ran no longer keeps naming a phase that finished long ago: its phase moves past every phase whose to-dos all closed while it waited, stopping at a checkpoint, and nothing starts until you run it again.
+
 ## 3.0.3 — The figure lands the moment it touches the ground
 
 - A falling figure stops falling and lands the instant its feet meet the ground, instead of holding its fall for a second after a short drop.
