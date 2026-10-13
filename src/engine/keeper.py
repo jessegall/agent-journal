@@ -89,8 +89,9 @@ def teardown(group: int, grace: float) -> None:
             time.sleep(0.05)
 
 
-def state(spec: ServiceSpec, name: str, child=None, **more) -> None:
-    replace(ServiceState.read(spec.status), state=name, at=time.time(), keeper=os.getpid(), pgid=child.pid if child else 0, owner=spec.owner,
+def state(spec: ServiceSpec, name: str, child=None, why: str = "", **more) -> None:
+    """Writes the service's new state; its reason is the one this state gives, so a service running again carries none for having stopped."""
+    replace(ServiceState.read(spec.status), state=name, why=why, at=time.time(), keeper=os.getpid(), pgid=child.pid if child else 0, owner=spec.owner,
             port=spec.port, url=spec.url, build=spec.build, **more).write(spec.status)
 
 

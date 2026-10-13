@@ -194,9 +194,13 @@ const stopped = computed(() => services.value.length - running.value - failing.v
 
 .why {
     margin: 0;
-    color: var(--danger);
+    color: var(--text-3);
     font-size: 12px;
     line-height: 1.45;
+}
+
+.service.failing .why {
+    color: var(--danger);
 }
 
 .url {

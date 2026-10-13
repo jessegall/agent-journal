@@ -359,7 +359,8 @@ class Manager:
             if ran.returncode in BROKEN:
                 verdict, kept = Verdict(FAILED, f"its check cannot run: {spec.when} answered {ran.returncode}{excerpt(ran.stderr or ran.stdout)}"), BROKEN_FOR
             elif ran.returncode:
-                verdict = Verdict(NOT_NEEDED, f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}")
+                said = ran.stdout.strip().replace(str(self.root.parent), "this project")[:160]
+                verdict = Verdict(NOT_NEEDED, f"Not needed here: {said}" if said else "Not needed here.")
             else:
                 verdict = Verdict()
         except (OSError, subprocess.SubprocessError) as e:

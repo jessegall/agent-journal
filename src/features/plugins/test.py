@@ -563,9 +563,9 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
         now[0] += 1.0
     assert status(record.root, "flaky.web").state == "failed" and keeper.waiting["flaky.web"] > now[0], "a service that keeps dying is marked failed and tried again after a wait"
     assert keeper.one(spec("flaky.web")) is False, "and is left alone until the wait is over"
-    asked = spec("asked.web", when="exit 3")
-    assert [keeper.checked(asked, now[0]).state, "answered 3" in keeper.checked(asked, now[0] + 1.0).why] == ["not needed", True], \
-        "a service that is not needed here says what the check answered, and the answer is kept for a while"
+    asked = spec("asked.web", when=f"echo '{record.root.parent} has no Python to judge.'; exit 3")
+    assert [keeper.checked(asked, now[0]).state, keeper.checked(asked, now[0] + 1.0).why] == ["not needed", "Not needed here: this project has no Python to judge."], \
+        "a service that is not needed here says why in the check's own words, with no command, exit code or path, and the answer is kept for a while"
     marker = record.root / "release-binary"
     unready = spec("unready.web", when=f"test -e {marker} || {{ echo 'no such binary' >&2; exit 127; }}")
     broken = keeper.checked(unready, now[0])
@@ -638,6 +638,9 @@ def test_stopping_a_service_stops_every_process_it_forked():
     Manager(record.root, start=keeper_ends_at_once).one(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")))
     assert (status(record.root, "quick.web").state, status(record.root, "quick.web").why) == ("stopped", "the agent session that started it ended"), \
         "a keeper that ends before the manager has returned from starting it keeps its own state and reason, never overwritten by the manager"
+    from engine.keeper import state as kept_as
+    kept_as(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")), "running")
+    assert (status(record.root, "quick.web").state, status(record.root, "quick.web").why) == ("running", ""), "a service running again carries no reason for having stopped"
     stuck = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
     status_file(record.root, "stuck.web").write_text(json.dumps({"state": "starting", "keeper": stuck.pid, "pgid": stuck.pid}))
     manager.one(ServiceSpec(id="stuck.web", plugin="stuck", service="web", run=["true"], when="exit 1", **files_for(record.root, "stuck.web")))
