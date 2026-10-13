@@ -64,7 +64,7 @@ def refused_by_a_feature(call: HookCall) -> str | None:
     tool = call.hook.tool
     if tool.loads_skill:
         return None
-    asked = bus.asked(ToolCallAsked(tool=tool.name, input=input_of(tool), command=tool.shell_command or "", session=call.session, cwd=call.hook.cwd, paths=tuple(tool.paths), writings=tuple(one for one in tool.writings if one), subagent=call.subagent,
+    asked = bus.asked(ToolCallAsked(tool=tool.name, input=input_of(tool), command=tool.shell_command, session=call.session, cwd=call.hook.cwd, paths=tuple(tool.paths), writings=tuple(one for one in tool.writings if one), subagent=call.subagent,
                                     writes=command_effects.writes(call.hook), background=tool.background),
                       call.record)
     return asked.why if isinstance(asked, Refused) else None
@@ -72,7 +72,7 @@ def refused_by_a_feature(call: HookCall) -> str | None:
 
 def dispatch_refused(call: HookCall, dispatch) -> str | None:
     """Why a swept feature's answerer refused the dispatch, asked with the dispatch as the provider read it."""
-    asked = bus.asked(AgentDispatching(session=call.session, subagent=call.subagent, kind=dispatch.kind, model=dispatch.model or "",
+    asked = bus.asked(AgentDispatching(session=call.session, subagent=call.subagent, kind=dispatch.kind, model=dispatch.model,
                                        model_supported=dispatch.model_supported, models=tuple(dispatch.models), name_supported=dispatch.name_supported,
                                        description=dispatch.description, task=dispatch.task, prompt=dispatch.prompt, read_only=dispatch.read_only), call.record)
     return asked.why if isinstance(asked, Refused) else None

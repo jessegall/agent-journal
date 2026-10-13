@@ -39,6 +39,7 @@ from controllers.faults import threw
 from receiving.asking import answered
 from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
+from resources.prompt_answers import PromptAnswer
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Asking, SessionMemory, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
                      Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, CommandWords, ReadOwnWork)
@@ -323,10 +324,10 @@ class AgentTerminal:
     def move_to_background(self, running: str = "") -> dict:
         return control.move_to_background(self.record.root, self.record.env, self.agent.title, running)
 
-    def answer_prompt(self, option: int, text: str, options: int) -> None:
+    def answer_prompt(self, answer: PromptAnswer) -> None:
         """Answers the question the agent stands at on its own screen: the option is pressed, or the words typed into the free choice."""
         session = self.agent.title
-        SERVED.given(Providers).driver(self.agent.provider)(self.record, seats.terminal_of(self.record.root, session) or session).answer_prompt(option, text, options)
+        SERVED.given(Providers).driver(self.agent.provider)(self.record, seats.terminal_of(self.record.root, session) or session).answer_prompt(answer)
 
 
 class AgentHolds:

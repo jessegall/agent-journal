@@ -41,7 +41,7 @@ class AgentDispatching(Asked):
     session: str = ""
     subagent: bool = False
     kind: str = ""
-    model: str = ""
+    model: str | None = None
     model_supported: bool = False
     models: tuple[str, ...] = ()
     """The models the provider offers a dispatch, empty when it cannot tell."""

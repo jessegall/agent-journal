@@ -33,7 +33,7 @@ class MarkTheAnswer(Handler[AnswerGiven]):
 
 class AnswerOnTheScreen(Handler[AnswerOnScreen]):
     def handle(self, event: AnswerOnScreen, terminal: Terminal) -> list[Fact]:
-        terminal.answer_prompt(event.option, event.text, event.options)
+        terminal.answer_prompt(event.answer)
         return []
 
 

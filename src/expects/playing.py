@@ -14,6 +14,7 @@ from engine.record import Record
 from engine.stored import read_json
 from expects import At, Answering, Counting, Expectation, Given
 from resources.base import SYSTEM
+from resources.prompt_answers import PromptAnswer
 
 
 class NotAnswered(LookupError):
@@ -381,8 +382,8 @@ class Terminal:
         self.seen.ran.append(("move to background", running))
         return {}
 
-    def answer_prompt(self, option: int, text: str, options: int) -> None:
-        self.seen.ran.append(("answer prompt", option, text))
+    def answer_prompt(self, answer: PromptAnswer) -> None:
+        self.seen.ran.append(("answer prompt", answer.option, answer.text))
 
 
 @dataclass

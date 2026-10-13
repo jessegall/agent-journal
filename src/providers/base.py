@@ -68,6 +68,16 @@ class SubagentRow:
     status: str
     session: str
 
+    @classmethod
+    def refused(cls, task: str, kind: str, model: str, at: float, why: str) -> "SubagentRow":
+        """A dispatch the journal refused: it never ran, so it has no session, and its task stands in for its id."""
+        return cls(task, task, kind, model, False, at, at, why, "")
+
+    @classmethod
+    def unstarted(cls, task: str, kind: str, model: str, at: float) -> "SubagentRow":
+        """A dispatch whose session the provider has not written yet: running, with nothing known of it but what was asked."""
+        return cls("", task, kind, model, True, at, 0.0, "", "")
+
     def to_json(self) -> dict:
         return asdict(self)
 

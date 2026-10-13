@@ -403,7 +403,7 @@ class Codex(Provider):
     def dispatch(self, tool, project: Path) -> Dispatch | None:
         if not isinstance(tool, AgentCall):
             return None
-        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip() or None, model_supported=True, models=self.models(),
+        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model, model_supported=True, models=self.models(),
                         prompt=tool.prompt, read_only=self.reads_only(project, tool.kind.strip()))
 
     def reads_only(self, project: Path, kind: str) -> bool:
@@ -553,10 +553,10 @@ class Codex(Provider):
 
     def subagent_row(self, path: Path, spawn: SpawnedAgent) -> dict:
         if spawn.refused:
-            return SubagentRow(spawn.task, spawn.task, spawn.type, spawn.model, False, spawn.at, spawn.at, REFUSED, "").to_json()
+            return SubagentRow.refused(spawn.task, spawn.type, spawn.model, spawn.at, REFUSED).to_json()
         session = spawn.session if spawn.session is not None else self.spawned_session(path, spawn)
         if session is None:
-            return SubagentRow("", spawn.task, spawn.type, spawn.model, True, spawn.at, 0.0, "", "").to_json()
+            return SubagentRow.unstarted(spawn.task, spawn.type, spawn.model, spawn.at).to_json()
         running, ended = self.subagent_state(path, session)
         return SubagentRow(session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", session).to_json()
 

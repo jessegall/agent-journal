@@ -223,8 +223,9 @@ class ToolUse(Loaded):
         return self.paths[0] if self.paths else ""
 
     @property
-    def shell_command(self) -> str | None:
-        return None
+    def shell_command(self) -> str:
+        """The command a shell call runs, and none for any other tool."""
+        return ""
 
     @property
     def words(self) -> tuple:
@@ -297,7 +298,7 @@ class BashCall(ToolUse):
         return (self.command,)
 
     @property
-    def shell_command(self) -> str | None:
+    def shell_command(self) -> str:
         return self.command
 
     @property
@@ -464,7 +465,7 @@ class SkillCall(ToolUse):
 class AgentCall(ToolUse):
     aliases = {"kind": ("subagent_type", "agent_type"), "task": ("task_name", "description"), "prompt": ("prompt", "message")}
     kind: str = ""
-    model: str = ""
+    model: str | None = None
     task: str = ""
     prompt: str = ""
 

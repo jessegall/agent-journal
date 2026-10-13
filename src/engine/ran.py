@@ -15,7 +15,7 @@ def announce(record, agent: int, tool: str, command: str, output: str = "", at: 
 
 def tool_ran(record, agent: int, tool) -> None:
     shell = tool.shell_command
-    if shell is not None:
+    if shell:
         asked = original_of(record.root, shell)
         announce(record, agent, SHELL, asked, tool.output, stepped=asked != shell)
         return

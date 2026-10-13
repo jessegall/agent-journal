@@ -474,7 +474,7 @@ class Claude(Provider):
         if not isinstance(tool, AgentCall) or tool.name != "Agent":
             return None
         kind = tool.kind.strip().lower()
-        return Dispatch(kind=kind, model=tool.model.strip() or None, model_supported=kind != "fork", description=tool.task.strip(), name_supported=True,
+        return Dispatch(kind=kind, model=tool.model, model_supported=kind != "fork", description=tool.task.strip(), name_supported=True,
                         prompt=tool.prompt, read_only=self.reads_only(project, tool.kind.strip()))
 
     def reads_only(self, project: Path, kind: str) -> bool:

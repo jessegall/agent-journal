@@ -35,7 +35,6 @@ class Feature(ABC):
     label: ClassVar[str] = ""
     hint: ClassVar[str] = ""
     position: ClassVar[int] = 100
-    commands_only: bool = False
     group: ClassVar[Group] = Group.DEVELOPER
     trigger_label: ClassVar[str] = ""
     trigger: ClassVar[Trigger] = NEVER
@@ -51,6 +50,7 @@ class Feature(ABC):
     nudges: ClassVar[tuple] = ()
     sequences: ClassVar[tuple] = ()
     scope: ClassVar[str] = ENVIRONMENT
+    commands_only: bool = False
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)

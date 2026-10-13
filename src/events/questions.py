@@ -5,6 +5,7 @@ from typing import ClassVar
 
 from events import Fact
 from events.resources import ResourceEvent
+from resources.prompt_answers import PromptAnswer
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,10 @@ class AnswerOnScreen(Fact):
     option: int
     text: str
     options: int
+
+    @property
+    def answer(self) -> PromptAnswer:
+        return PromptAnswer(self.option, self.text, self.options)
 
 
 @dataclass(frozen=True, kw_only=True)

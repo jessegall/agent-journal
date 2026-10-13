@@ -10,6 +10,7 @@ from payload import JOURNAL, MARK, said_by
 from payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
+from resources.prompt_answers import PromptAnswer
 from engine.wording import counted
 from engine import runtime
 from engine.sessions import Sessions, forebears
@@ -235,13 +236,13 @@ class Driver(ABC):
     def deny(self) -> None:
         self._escape()
 
-    def answer_prompt(self, option: int, text: str, options: int) -> bool:
+    def answer_prompt(self, answer: PromptAnswer) -> bool:
         """Answers the question the agent shows on its screen: the option's number, or for a free answer the last choice, the one that takes the agent's own words, then the words; false when no question is on the screen."""
         if not self.asking():
             return False
-        if option:
-            return self._wrote(str(option).encode()) and self._wrote(b"\r")
-        return self._wrote(str(options + 1).encode()) and self._wrote(b"\r") and self._wrote(text.encode() + b"\r")
+        if answer.option:
+            return self._wrote(str(answer.option).encode()) and self._wrote(b"\r")
+        return self._wrote(str(answer.options + 1).encode()) and self._wrote(b"\r") and self._wrote(answer.text.encode() + b"\r")
 
     def asked(self) -> Asking | None:
         if not self.asking():

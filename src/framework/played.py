@@ -29,6 +29,11 @@ from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
 
+FAKED_WHEN_STATED = (("processes", (serving.Processes, serving.ReadProcesses)), ("providers", (serving.Providers,)), ("git", (serving.Git, serving.ReadGit)),
+                     ("journal_root", (serving.JournalRoot, serving.ReadJournalRoot)), ("faults", (serving.Faults,)), ("command_words", (serving.CommandWords,)),
+                     ("viewer", (serving.Viewer, serving.ReadViewer)))
+"""The services a play fakes only when its Given states their answers, by the name the Given and the World share, otherwise the lane's own serve."""
+
 
 class NoEntryForThisKind(LookupError):
     @classmethod
@@ -158,8 +163,7 @@ def formatted(promise, given: Given, record: Record, world: World) -> None:
 
 def provider_of(agent):
     """The provider an agent row names, as the hook would carry it, or none when the Given names an agent with no provider."""
-    from providers import PROVIDERS
-    return PROVIDERS[agent.provider]() if agent is not None and agent.provider in PROVIDERS else None
+    return serving.SERVED.given(serving.Providers).offers(agent.provider) if agent is not None else None
 
 
 def intercepted(promise, given: Given, record: Record, world: World) -> None:
@@ -207,14 +211,10 @@ def answered_a_hook(promise, given: Given, record: Record, world: World) -> None
 
 def play_services(promise, given: Given, record: Record, world: World) -> dict:
     """What a 3.0 receiver asked for, by type: the journal's own services over the scratch record, as the lane hands them, and the Fakes for what reaches outside it."""
-    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.ReadFiles: world.files, serving.Clock: world.clock, serving.Ids: world.ids, serving.Terminal: world.terminal, serving.OwnWork: world.own_work, serving.ReadOwnWork: world.own_work,
-             **({serving.Processes: world.processes, serving.ReadProcesses: world.processes} if given.processes.answers else {}),
-             **({serving.Providers: world.providers} if given.providers.answers else {}),
-             **({serving.Git: world.git, serving.ReadGit: world.git} if given.git.answers else {}),
-             **({serving.JournalRoot: world.journal_root, serving.ReadJournalRoot: world.journal_root} if given.journal_root.answers else {}),
-             **({serving.Faults: world.faults} if given.faults.answers else {}),
-             **({serving.CommandWords: world.command_words} if given.command_words.answers else {}),
-             **({serving.Viewer: world.viewer, serving.ReadViewer: world.viewer} if given.viewer.answers else {})}
+    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.ReadFiles: world.files, serving.Clock: world.clock, serving.Ids: world.ids, serving.Terminal: world.terminal, serving.OwnWork: world.own_work, serving.ReadOwnWork: world.own_work}
+    for name, kinds in FAKED_WHEN_STATED:
+        if getattr(given, name).answers:
+            fakes |= dict.fromkeys(kinds, getattr(world, name))
     services = Services({**lane_services(record, lambda: spoken_to(record, given)), **fakes})
     return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())
 
