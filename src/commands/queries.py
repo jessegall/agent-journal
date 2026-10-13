@@ -127,16 +127,8 @@ def verify(ctx) -> str:
     row = Agents(ctx["record"], actor=ctx["actor"]).by_session(ctx["session"]) if ctx["session"] else None
     if row:
         lines.append(f"this session: {row.status or '?'} after {row.event or '?'}, {row.uses} tool uses")
-    return "\n".join([*lines, *boundaries_report(root)])
+    return "\n".join(lines)
 
-
-def boundaries_report(root: Path) -> list[str]:
-    """What the features still reach for. Reported, not refused, until the moves of plan 33 have closed the list. Read from the package this journal runs, whichever copy that is, and kept for the build it was walked on."""
-    from engine.booted import boundaries, grown
-    where = Path(__file__).resolve().parents[1]
-    newly = grown(root, where)
-    crossed = ["", f"{len(newly)} NEW since the baseline — the list may shrink, never grow:", *(f"  {line}" for line in newly)] if newly else []
-    return ["", "what a feature may not name:", *boundaries(root, where), *crossed]
 
 def settings_text(ctx) -> str:
     record = ctx["record"]

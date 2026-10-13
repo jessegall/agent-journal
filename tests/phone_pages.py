@@ -13,7 +13,7 @@ from controllers.types import Suggestions
 from features.templates.shipped import ship
 from engine import runtime
 from engine.viewer import SERVING
-from features.phone.controller import Phones
+from controllers.phone.controller import Phones
 from controllers.types import Shares
 from features.sharing.details import SharingDetails
 from controllers.sharing.server import ShareHandler

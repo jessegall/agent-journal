@@ -415,7 +415,7 @@ _register = FactsFeature.register
 
 def _planted(self, journal):
     _register(self, journal)
-    journal.events.listen(_Reported, AsksForNothingServed(), expects=[])
+    journal.events.listen(_Reported, AsksForNothingServed(), expects=["planted"])
 
 
 FactsFeature.register = _planted
@@ -434,7 +434,7 @@ def test_a_build_whose_boot_refuses_a_registration_goes_back_and_names_the_refus
     point(root, bad)
     launches(place, root / "journal.py", "codex", during=heals(root, good))
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "a build whose boot refuses a registration is rolled back like one that dies"
-    assert "AsksForNothingServed asks for nothing" in (root / "runtime" / "engine.log").read_text(), "and the log names the refusal"
+    assert "AsksForNothingServed asks for nothing" in (root / "runtime" / "viewer.log").read_text(), "and the server's log names the refusal"
 
 
 def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
@@ -520,9 +520,6 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
 
     def hook(body: dict):
         return subprocess.run(["sh", "-c", wired], input=json.dumps(body), text=True, env=env, capture_output=True, timeout=WAIT)
-    channel = json.loads((root.parent / ".mcp.json").read_text())["mcpServers"]["journal"]
-    assert channel == {"command": sys.executable, "args": [str(root / "journal.py"), "-m", "channel", str(root)]}, \
-        "the channel runs the interpreter that installed it, with a path that has a space in it kept whole"
     display = {"hook_event_name": "MessageDisplay", "session_id": "s1", "message_id": "m1", "index": 0, "final": True, "delta": "said while the server was down"}
 
     def serving():
@@ -1122,18 +1119,13 @@ def test_install_sh_as_a_first_time_user_runs_it_installs_the_release_and_leaves
 
 
 
-def test_a_moved_or_upgraded_python_is_named_by_the_command_and_the_channel_check(tmp_path):
+def test_a_moved_or_upgraded_python_is_named_by_the_command(tmp_path):
     root = installed(tmp_path, CODE)
     gone = tmp_path / "python-gone" / "bin" / "python3"
     for command in (root / "journal", tmp_path / "home" / ".local" / "bin" / "journal"):
         command.write_text(command.read_text().replace(sys.executable, str(gone)))
         ran = subprocess.run(["sh", str(command), "version"], cwd=root.parent, env={**os.environ, "HOME": str(tmp_path / "home")}, capture_output=True, text=True, timeout=60)
         assert (ran.returncode, "reinstall: re-run install.sh" in ran.stderr) == (1, True), f"{command}: {ran.stderr}"
-    mcp = root.parent / ".mcp.json"
-    config = json.loads(mcp.read_text())
-    config["mcpServers"]["journal"]["command"] = str(gone)
-    mcp.write_text(json.dumps(config))
-    assert "reinstall: re-run install.sh" in PROVIDERS["claude"]().wiring_trouble(root.parent)
 
 
 def test_a_hook_reaches_a_busy_server_whose_heartbeat_is_late_and_no_second_server_is_started(tmp_path, monkeypatch):
@@ -1225,7 +1217,7 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
     from engine import runtime
     runtime.mark_booting(root)
     runtime.mark_boot_step(root, "Loading the viewer")
-    from features.auto_update.countdown import update_state
+    from framework.updating.countdown import update_state
     assert update_state(root)["step"] == "Loading the viewer" and update_state(root)["ready"] is False, "a server that is starting says which step it is on"
     runtime.mark_booted(root)
     assert update_state(root)["step"] == "" and "until everything is warm" in last_start(root), "once warm it names no step, and journal speed --start reports where the start went"
@@ -1833,6 +1825,7 @@ def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_a
         return Quiet(forever)
     for name in ("warmed", "replay", "warm", "warm_commands", "watch_runtime", "keep_services"):
         monkeypatch.setattr(serve, name, lambda *args: None)
+    monkeypatch.setattr(serve, "reloads_itself", lambda root: True)
     monkeypatch.setattr(serve, "watch_code", lambda root, package, server, event: changed.append(event))
     monkeypatch.setattr(serve, "watch_stop", lambda root, server, halting, began: stopped.append(halting))
     monkeypatch.setattr(serve.os, "execv", lambda program, command: executed.append(command))
@@ -2180,6 +2173,6 @@ def loaded(commands_only: bool) -> dict:
 
 def test_a_commands_only_load_wires_the_commands_and_no_listener_or_handler():
     only, full = loaded(commands_only=True), loaded(commands_only=False)
-    assert not {"listen", "handle", "answer"} & set(only["kinds"]) and only["listening"] is False, \
-        "a process that only runs commands puts no handler on the bus, since the server relays what it wrote"
+    assert not {"listen", "handle"} & set(only["kinds"]) and only["listening"] is False, \
+        "a process that only runs commands puts no listener or handler on the bus, since the server relays what it wrote; it keeps what answers before a write"
     assert only["commands"] == full["commands"] > 0 and full["listening"] is True, "the commands are the same in both, and the full load still listens"

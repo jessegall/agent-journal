@@ -28,7 +28,7 @@ from commands.http import dispatch, unanswered  # noqa: E402
 from controllers.stored import DEFER, flush_indexes, renew_stamps, watch_marks  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
 from framework.routing import resolve  # noqa: E402
-from framework.ticking import no_feature_reaches_outside  # noqa: E402
+from framework.ticking import no_feature_reaches_outside, no_receiver_asks_for_what_the_lane_cannot_serve  # noqa: E402
 from framework.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from framework.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
@@ -604,6 +604,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     runtime.mark_booting(root)
     runtime.mark_boot_step(root, "Loading the journal")
     no_feature_reaches_outside()
+    no_receiver_asks_for_what_the_lane_cannot_serve()
     mark_first_start(root)
     mended = mend_hooks(root)
     runtime.remember_git_user(root)

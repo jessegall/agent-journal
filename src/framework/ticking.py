@@ -207,9 +207,13 @@ TICKING = Ticking(ADAPTED, REGISTERED)
 
 
 def ordered_once_the_features_have_registered() -> None:
-    """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it. A moved receiver that asks for what the lane does not serve is refused here, at boot."""
-    walked(REGISTERED, set(lane_services(None, lambda: None)))
+    """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it."""
     TICKING.resolve()
+
+
+def no_receiver_asks_for_what_the_lane_cannot_serve() -> None:
+    """Refuses, once at the server's boot, a receiver that asks for what the lane does not serve: there a refused build is rolled back, where a command that crashed on it would leave the journal unable to start."""
+    walked(REGISTERED, set(lane_services(None, lambda: None)))
 
 
 def no_feature_reaches_outside() -> None:
