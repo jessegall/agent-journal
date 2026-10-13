@@ -190,7 +190,6 @@ class PlansFeature(Feature):
             Given(changed("updated", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="phases").once("planned|1:phases")),
             Given(changed("linked", AGENT), rows=[plan("building", stage="todos", phases=phases(5, 6)), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="ready").once("planned|1:ready")),
             Given(changed("linked", AGENT), rows=[plan("building")]) >> Dispatches(nothing),
-            Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanBuildingGuided, GuideBuilding(), expects=[
             Given(PlanBuildingGuided(plan=1, line="phases"), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),

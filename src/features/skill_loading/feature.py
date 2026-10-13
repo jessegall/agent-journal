@@ -98,7 +98,7 @@ class SkillLoading(Feature):
         journal.events.listen(ToolFinished, SpotSkillLoad(), expects=[
             Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SkillLoaded(agent=1, skill="journal", at=WHEN)),
             Given(ToolFinished(agent=1, tool="Bash"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
-            Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")], settings={"skill_loading.chat": False}) >> Dispatches(nothing),
+            Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")], settings={".skill_loading.chat": False}) >> Dispatches(nothing),
         ])
         journal.events.listen(ToolCallAnswered, SpotCommandNeedingSkill(), expects=[
             Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
