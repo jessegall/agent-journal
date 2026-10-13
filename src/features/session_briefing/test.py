@@ -140,9 +140,9 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     Environments(record, actor="system").create("ticket-5", owner="ticket:5")
     ticket = Record(record.root, "ticket-5")
     ticket_agents = Agents(ticket, actor="system")
-    ticket_agents.saw(ticket_agents.by_session("claude-5").n, {"hook": "SessionStart"}, event="SessionStart", status="idle")
+    ticket_agents.saw(ticket_agents.by_session("claude-5").n, {"hook": "SessionStart"}, event="SessionStart", status="idle", at=time.time())
     engine = Engine(ticket, DRIVERS["claude"](ticket, "claude-98"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-5", at=time.time(), asking={})
+    engine.agent.driver.last_report = lambda: SimpleNamespace(n=ticket_agents.by_session("claude-5").n, title="claude-5", at=time.time(), asking={})
     quiet = []
     engine.agent.driver.send = lambda text="", **rest: quiet.append(text) or True
     engine.deliver()
