@@ -6,7 +6,8 @@ from dataclasses import asdict
 from resources.memo import Memo
 from engine.version import version
 from framework.updating.countdown import cancel
-from framework.updating.status import CHANGELOG, standing, upgrading, upstream_standing
+from framework.updating import status
+from framework.updating.status import standing, upgrading, upstream_standing
 from framework.updating.new_feature import mark_seen, shown_announced
 from framework.routing import Reply, Request, handles
 from resources.base import Refused
@@ -32,9 +33,9 @@ def changelog_page(text: str, skip: int) -> tuple[str, int, bool]:
 @handles("GET", "/api/changelog")
 def get_changelog(req: Request) -> Reply:
     from framework.updating.check import journal_repository
-    if not CHANGELOG.is_file():
+    if not status.CHANGELOG.is_file():
         return Reply(404, {"error": "this install carries no changelog"})
-    changelog, releases_so_far, more = changelog_page(CHANGELOG.read_text(), req.counted("skip", 0))
+    changelog, releases_so_far, more = changelog_page(status.CHANGELOG.read_text(), req.counted("skip", 0))
     return Reply(200, {**standing(req.root), "changelog": changelog, "shown": releases_so_far, "more": more,
                        "repository": journal_repository(req.root.parent),
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed_managed(req.root.parent, req.root)]})
@@ -42,7 +43,7 @@ def get_changelog(req: Request) -> Reply:
 
 @handles("GET", "/api/new-feature")
 def get_new_feature(req: Request) -> Reply:
-    return Reply(200, [asdict(one) for one in shown_announced(req.record(), CHANGELOG)])
+    return Reply(200, [asdict(one) for one in shown_announced(req.record(), status.CHANGELOG)])
 
 
 @handles("POST", "/api/new-feature")

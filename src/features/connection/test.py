@@ -385,7 +385,7 @@ def test_every_connection_command_reaches_the_server_its_settings_name(monkeypat
     Features(record, USER).switch("connection", True)
     server = Server(record.root)
     monkeypatch.setattr(commands, "transport_for", lambda record, address: server)
-    monkeypatch.setattr(commands, "push", lambda project, machine: Pushed(("platform",), ("notes",)))
+    monkeypatch.setattr(commands, "push_from_here", lambda project: Pushed(("platform",), ("notes",)))
     monkeypatch.setattr(commands, "pull", lambda project, name: ["a.py", "b.py"])
     run = lambda word, *given: invoked(Environments(record, actor=AGENT), word, given)
     as_you = lambda word, *given: invoked(Environments(record, actor=USER), word, given)

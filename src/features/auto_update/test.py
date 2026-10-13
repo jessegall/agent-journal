@@ -95,7 +95,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     pages = routes.RELEASES_PER_PAGE
     assert (first["changelog"].count("\n## "), first["shown"], first["more"], second["shown"], first["changelog"] + second["changelog"] == whole[:len(first["changelog"] + second["changelog"])]) == (pages, pages, True, 2 * pages, True), \
         "the changelog is the running code's own, served a page of releases at a time, newest first, each page following the one before"
-    monkeypatch.setattr(routes, "CHANGELOG", record.root / "CHANGELOG.md")
+    monkeypatch.setattr(status, "CHANGELOG", record.root / "CHANGELOG.md")
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).code == 404, "running code without a changelog says so"
     (record.root / "CHANGELOG.md").write_text("# 99.0.0\n")
     page = dispatch("GET", "/api/changelog", record.root, {}, {}).body

@@ -20,10 +20,10 @@ from controllers.base import Controller
 from controllers.features import Features
 from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
 from engine.record import Record
-from features.phone import allow_list, push
-from features.phone import notifying
+from controllers.phone import push
+from features.phone import allow_list
 from features.phone.notifying import told
-from features.phone import controller as phone_controller
+from controllers.phone import controller as phone_controller
 from controllers.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
 from controllers.types import Phones
 from features.phone.feed import POSTED
@@ -515,13 +515,14 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
 
 
 def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, monkeypatch):
-    from features.phone import controller, feed, push
+    from controllers.phone import controller, push
+    from features.phone import feed
     record, base = served
     _, key = paired(record, base)
     assert call(base, "/p/push", {"endpoint": "https://example.com/steal"}, key).status == 422, "only a real push service is ever called"
     assert call(base, "/p/push", {"endpoint": "https://web.push.apple.com/abc"}, key).status == 201
     pushed = []
-    monkeypatch.setattr(notifying, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
+    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     question = Questions(record, actor=AGENT).create("Go ahead?")
     told(record)
     told(record)
@@ -543,7 +544,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert [push.allowed(url) for url in ("http://web.push.apple.com/x", "https://x.notify.windows.com/y", "https://evil.example/")] == [False, True, False], \
         "only https endpoints of the known push services are called"
     from types import SimpleNamespace
-    from features.phone import places as phone_places
+    from controllers.phone import places as phone_places
     other = record.root.parent / "elsewhere" / ".journal"
     (other / "environments").mkdir(parents=True)
     monkeypatch.setattr(phone_places, "known", lambda: [SimpleNamespace(root=str(other))])
@@ -558,7 +559,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     told(record)
     assert len(pushed) == 1, "with no tunnel address a push has nowhere to point, so none is sent"
     monkeypatch.undo()
-    monkeypatch.setattr(notifying, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
+    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
     asked = next(item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"question:{question.n}")
     assert asked["hold"] == 3, "the phone holds a picked answer as long as the desktop does, from the same setting"
