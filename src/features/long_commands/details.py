@@ -3,7 +3,7 @@ from declaring.settings import Setting
 from declaring.groups import Group
 from features.work_modes.details import MODES, ORCHESTRATOR
 
-MOVED, KEPT = "moved", "kept"
+MOVED = "moved"
 QUICKLY = 5
 
 RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED = "run ended", "run open", "run stalled", "watch runs"
@@ -74,11 +74,6 @@ class LongCommandsDetails(FeatureDetails):
             name=MOVED,
             title="your command ran {{seconds}}s in the foreground and was moved to the background",
             brief="carry on with other work; you are told when it ends. Start a command you expect to take long in the background yourself",
-        ),
-        Line(
-            name=KEPT,
-            title="your long command stays in the foreground",
-            brief="it was not moved to the background because: {{reason}}",
         ),
         Line(
             name=RUN_ENDED,

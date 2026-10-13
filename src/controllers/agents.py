@@ -212,9 +212,9 @@ class Agents(Controller):
             return row
         return self.appended(row, "cards", Card.named(at=time.time(), **facts).as_data(), KEPT_CARDS)
 
-    def _moved_to_background(self, run, row, **card):
+    def moved_to_background(self, n: int, at: float, command: str, **card):
         """The one card for a long command that carries on in the background, whichever provider's agent runs it: it names the call that runs, and a second call for the same call adds to the same card."""
-        return self.card(row.n, key=f"command:{run.at}", label=MOVED_TO_BACKGROUND, icon="terminal", command=run.command, **card)
+        return self.card(n, key=f"command:{at}", label=MOVED_TO_BACKGROUND, icon="terminal", command=command, **card)
 
     def _noted_on_move(self, row, detail: str):
         """What happened beside a command that was moved, put on its card; no card is made for a command nothing moved."""

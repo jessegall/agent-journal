@@ -13,14 +13,14 @@ STALLED_AFTER = 5 * MINUTE
 GIVEN_UP_ON = 2 * 60 * MINUTE
 
 
-def background_tasks_of(agent) -> BackgroundTasks:
-    reader = SERVED.given(Providers).reader(agent)
+def background_tasks_of(providers, agent) -> BackgroundTasks:
+    reader = providers.reader(agent)
     return reader.background_tasks(Path(agent.transcript)) if reader else BackgroundTasks()
 
 
 def runs_of(agent) -> BackgroundTasks:
     """Every background run the agent has, with the ones whose process is gone marked ended."""
-    tasks = background_tasks_of(agent)
+    tasks = background_tasks_of(SERVED.given(Providers), agent)
     for key, pid in tasks.detached.items():
         if key not in tasks.ended and not alive(pid):
             tasks.ended[key] = time.time()
@@ -65,6 +65,6 @@ def stalled_runs(context, agent) -> list[Sent]:
             if running >= STALLED_AFTER]
 
 
-def running_part(pid: int, chain: str) -> str:
-    """The command of the agent's process tree that is still running and written in the chained command, or nothing when no part of it runs as a process of its own."""
-    return next((clipped(command, 200) for command in reversed(SERVED.given(Processes).leaves(pid)) if command in chain), "")
+def part_of(leaves: list[str], chain: str) -> str:
+    """The command at the end of the agent's process tree that is written in the chained command, or nothing when no part of it runs as a process of its own."""
+    return next((clipped(command, 200) for command in reversed(leaves) if command in chain), "")

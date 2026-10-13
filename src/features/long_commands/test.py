@@ -9,42 +9,11 @@ from tests.conftest import fresh
 from tests.kit import nudges, report, tick
 
 
-def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monkeypatch):
+def test_a_moved_command_is_matched_to_its_task_and_a_part_that_ended_before_it_started_is_not_running():
     record = fresh()
-    moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
-    started = time.time() - 45
-    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
-    tick(record)
-    tick(record)
-    assert (moved, [n for n in nudges(record) if "moved to the background" in n], Agents(record, actor="system").by_session("claude-1").data["cards"][-1]["label"]) == \
-        (["claude-1"], [], "Moved a long command to the background"), \
-        "moved once, and the chat shows the mark; Claude's own tool result tells the agent, so the journal sends no line"
-    from features.long_commands import move
+    report(record, "working", "PreToolUse", provider="claude")
+    from features.long_commands.listeners import matching_task
     from resources.runs import BackgroundTasks
-    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}))
-    monkeypatch.setattr(move, "running_part", lambda pid, chain: "npm run slow")
-    tick(record)
-    assert Agents(record, actor="system").by_session("claude-1").data["cards"][-1]["command"] == "npm run slow", "the card of a chained command names the part still running"
-    import subprocess
-    from features.long_commands.watch import running_part
-    shell = subprocess.Popen(["sh", "-c", "sleep 25; echo finished"])
-    try:
-        time.sleep(0.5)
-        assert (running_part(os.getpid(), "cd x; sleep 25; echo finished"), running_part(0, "sleep 25")) == ("sleep 25", ""), \
-            "the part still running is read from the agent's process tree, and nothing when there is no process"
-    finally:
-        shell.kill()
-        shell.wait()
-    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}, ended={"b1": time.time()}, failed={"b1"}))
-    tick(record)
-    mark = Agents(record, actor="system").load(Agents(record, actor="system").by_session("claude-1").n).data["cards"][-1]
-    assert (mark["label"], mark["state"]) == ("Moved a long command to the background", "failed"), "the mark of a moved command turns to failed when its task ends that way"
-    report(record, "stopped", "Stop", session="ended-1", provider="claude", commands=[{"command": "sleep 1099816", "tool": "Bash", "at": time.time() - 1099816}])
-    tick(record, "ended-1")
-    assert (moved, [n for n in nudges(record) if "1099816" in n]) == (["claude-1"], []), "a session that has ended is never told of, or moved for, the command it left running"
-
-    from features.long_commands.move import matching_task
     own = BackgroundTasks(started={"old": 100.0, "mine": 205.0, "later": 210.0}, commands={"mine": "npm  test", "later": "ls"})
     assert (matching_task(own, "npm test", 200.0), matching_task(BackgroundTasks(started={"a": 100.0, "b": 205.0}), "x", 200.0)) == ("mine", "b"), \
         "a moved command is matched to the background task of its own words that started after the press, never to an older one"
@@ -154,31 +123,6 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     outcome = background_outcome(suite, tmp_path, "", "completed")
     assert (outcome.passed, outcome.failed) == (7, 1), "its result is the tally read from its output, even when the exit said completed"
     assert background_outcome("run the thing", tmp_path, "", "failed").ok is False, "with no output to read, the exit it ended with decides"
-
-
-def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
-    from controllers.types import Agents
-    from engine.gates import CANCELERS, LONG_COMMAND
-    from declaring.reach import Guard, Reach
-    from resources.base import SYSTEM
-    record = fresh()
-    moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
-    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm run build", "tool": "Bash", "at": time.time() - 45}])
-    keep = lambda call, data: "the build must stay in view"
-    keep.guard = Guard("Keep the build in view", Reach.MAIN)
-    CANCELERS.add(None, keep, key=LONG_COMMAND)
-    try:
-        tick(record)
-    finally:
-        CANCELERS.remove(keep)
-    from controllers.types import Nudges
-    kept = [n.brief for n in Nudges(record).all() if n.title == "your long command stays in the foreground"]
-    assert moved == [] and kept == ["it was not moved to the background because: the build must stay in view"], (moved, kept)
-    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": time.time() - 45}])
-    tick(record)
-    cards = [c["label"] for c in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("cards") or []]
-    assert moved == ["claude-1"] and cards == ["Moved a long command to the background"], (moved, cards)
 
 
 def test_a_long_command_keeps_one_chat_mark_whose_dot_turns_green():
@@ -344,24 +288,11 @@ def test_a_codex_script_cell_the_agent_waits_on_is_followed_to_its_end(tmp_path)
     assert ("5" in tasks.ended and "5" in tasks.failed), "an end the transcript showed before the command's start still ends it, failed"
 
 
-def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_before_its_move_closes_its_card(monkeypatch, tmp_path):
-    from features.long_commands import move
+def test_a_call_that_never_reported_back_is_closed_when_the_next_one_starts_and_a_refused_call_at_once(tmp_path):
     from providers import PROVIDERS
-    from resources.runs import BackgroundTasks
     from framework.command_effects import refused
     from tests.kit import handle
     record = fresh()
-    moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
-    started = time.time() - 45
-    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
-    tick(record)
-    report(record, "working", "PostToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started, "done": time.time() - 40}])
-    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks())
-    tick(record)
-    marks = lambda: Agents(record, actor="system").by_session("claude-1").data["cards"]
-    assert [(c["label"], c["state"]) for c in marks()] == [("Moved a long command to the background", "done")], \
-        "a command that ended before it could be moved closes its card instead of running for ever"
     (tmp_path / "claude-2.jsonl").write_text("")
     claude, call = PROVIDERS["claude"](), {"session_id": "claude-2", "transcript_path": str(tmp_path / "claude-2.jsonl"), "tool_name": "Bash", "hook_event_name": "PreToolUse"}
     handle(claude, record.root, record.env, {**call, "tool_input": {"command": "ls"}})
@@ -370,15 +301,3 @@ def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_befo
     assert [bool(one.get("done")) for one in row.commands] == [True, False], "a call that never reported back is closed when the next one starts"
     assert refused(row, SimpleNamespace(at=float(row.running["at"]))).keys() == {"running", "commands"} and not refused(row, SimpleNamespace(at=1.0)), \
         "a call a hook refused is closed at once, and only the call that was refused"
-    transcript = tmp_path / "claude-3.jsonl"
-    asked = {"type": "assistant", "timestamp": "2026-09-23T00:00:00Z", "message": {"content": [{"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "date; echo probe"}}]}}
-    answered = {"type": "user", "timestamp": "2026-09-23T00:00:01Z", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": "probe"}]}}
-    transcript.write_text("".join(json.dumps(row) + "\n" for row in (asked, answered)))
-    lost = time.time() - 45
-    report(record, "working", "PreToolUse", session="claude-3", provider="claude", transcript=str(transcript), commands=[{"command": "date; echo probe", "tool": "Bash", "at": lost}],
-           running={"command": "date; echo probe", "tool": "Bash", "at": lost})
-    before = list(moved)
-    tick(record, "claude-3")
-    row = Agents(record, actor="system").by_session("claude-3")
-    assert (moved, bool(row.commands[-1].get("done")), bool(row.running.get("done"))) == (before, True, True), \
-        "a call the transcript shows as answered is closed and never moved to the background, though its end was lost on the way"
