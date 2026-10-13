@@ -1,4 +1,4 @@
-from controllers.suggestions import Decision
+from resources.suggestions import Decision
 from events import Fact
 from events.suggestions import AnswerTakenBack, SuggestionCompleted, SuggestionFiled, SuggestionReopened, SuggestionToFile, UserAnswered
 from receiving import Listener

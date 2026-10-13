@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 
-from controllers.base import Arguments
+from resources.arguments import Arguments
 from controllers.features import SettingsWrite, writes_what_runs
 from controllers.types import CONTROLLERS
 from resources.fields import Loaded

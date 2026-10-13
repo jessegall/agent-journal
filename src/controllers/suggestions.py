@@ -1,39 +1,15 @@
 import time
-from enum import StrEnum
 
 from controllers.base import Controller
 from controllers.plugins import Plugins
 from resources import types
 from controllers.marks import action
 from resources.base import SYSTEM, USER
+from resources.suggestions import CHANGE, Decision, NO, OPEN_SUGGESTIONS, WORDS, YES
 
-YES, CHANGE, NO = "Yes, I want this", "Change it first", "No, don't do this"
-OPEN_SUGGESTIONS = 5
 ACCEPTING = {"title": YES, "description": "Adds it as a to-do", "code": ""}
 ADJUSTING = {"title": CHANGE, "description": "Write your version as a to-do", "code": ""}
 DECLINING = {"title": NO, "description": "The agent won't suggest it again", "code": ""}
-
-
-class Decision(StrEnum):
-    ACCEPT = "accept"
-    ADJUST = "adjust"
-    DECLINE = "decline"
-    INSTALL = "install"
-    NONE = ""
-
-    @classmethod
-    def of(cls, how: str) -> "Decision":
-        word = how.strip().split(":", 1)[0].strip().lower()
-        if word in WORDS:
-            return WORDS[word]
-        return cls.ADJUST if how.strip() else cls.NONE
-
-    def files_todo(self) -> bool:
-        return self in (Decision.ACCEPT, Decision.ADJUST)
-
-
-WORDS = {YES.lower(): Decision.ACCEPT, "accept": Decision.ACCEPT, NO.lower(): Decision.DECLINE, "decline": Decision.DECLINE,
-         "install": Decision.INSTALL}
 
 
 class Suggestions(Controller):

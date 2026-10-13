@@ -16,7 +16,7 @@ from features.plugins.lifecycle import fetched
 from features.plugins.paths import home
 from features.plugins.preview import preview_rows
 from features.plugins.staging import Unreached
-from controllers.suggestions import Decision, OPEN_SUGGESTIONS
+from resources.suggestions import Decision, OPEN_SUGGESTIONS
 from controllers.types import Suggestions
 from resources.base import Refused, SYSTEM, USER
 

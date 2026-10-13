@@ -1,6 +1,6 @@
 import shutil
 
-from controllers.base import Arguments
+from resources.arguments import Arguments
 from engine.version import version
 from framework.parts import Command, Context
 from features.plugins.answer import Posting, raised
