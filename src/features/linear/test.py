@@ -76,8 +76,8 @@ def test_linear_is_told_the_tunnel_or_server_address_and_a_write_it_refuses_is_k
     world = linear_world(monkeypatch, tmp_path, teams=[{"id": "t1", "key": "ENG", "name": "Engineering"}])
     record, linear = world.record, world.linear
     addresses = {"own": [], "kept": {}}
-    monkeypatch.setattr("features.linear.working.own_address", lambda record: addresses["own"])
-    monkeypatch.setattr("features.linear.working.kept_address", lambda root: addresses["kept"])
+    monkeypatch.setattr("controllers.sharing.controller.own_address", lambda record: addresses["own"])
+    monkeypatch.setattr("controllers.sharing.controller.kept_address", lambda root: addresses["kept"])
     assert linear.webhook_address(record) == "", "with no tunnel and no server address, Linear is told no address"
     addresses["kept"] = {"host": "tunler.example"}
     assert linear.webhook_address(record) == "", "nor with a tunnel host but no subdomain of its own"

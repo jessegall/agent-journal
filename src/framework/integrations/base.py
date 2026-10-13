@@ -19,7 +19,7 @@ from framework.integrations.handlers import CheckOnClock, sending_approved
 from framework.integrations.listeners import SpotApprovedReply
 from events.questions import QuestionCompleted
 from framework.integrations.client import IntegrationClient
-from framework.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
+from controllers.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
 from framework.integrations.state import IntegrationState, read_state, write_state
 from framework.journal import Journal
 from framework.routing import Reply, Request, handles

@@ -4,11 +4,11 @@ import urllib.request
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
+from controllers.integrations.opener import OPENER, TIMEOUT
 from resources.masking import Masker
 from controllers.secrets.values import ValuesFile
 from resources.base import Refused
 
-TIMEOUT = 10.0
 REMAINING, RESET = "X-RateLimit-Requests-Remaining", "X-RateLimit-Requests-Reset"
 
 
@@ -26,16 +26,6 @@ def number(value, kind, otherwise):
         return kind(value)
     except (TypeError, ValueError):
         return otherwise
-
-
-class NoRedirects(urllib.request.HTTPRedirectHandler):
-    """A redirect is an error, so the key in the request header never follows it to another address."""
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
-
-
-OPENER = urllib.request.build_opener(NoRedirects)
 
 
 class IntegrationClient:

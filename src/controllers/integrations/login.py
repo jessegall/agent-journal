@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Callable, ClassVar
 
 from resources.fields import Loaded
-from framework.integrations.client import OPENER, TIMEOUT
+from controllers.integrations.opener import OPENER, TIMEOUT
 from resources.base import Refused
 
 WELL_KNOWN = "/.well-known/oauth-authorization-server"
