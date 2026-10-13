@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import ClassVar
 
 from resources.base import DOCUMENT, PROJECT, SIDEBAR, Resource, ResourceDetails
@@ -82,3 +82,27 @@ class Sequence(Shape, Resource):
 
     def started(self, key: str) -> float:
         return self.run(key).at
+
+
+@dataclass(frozen=True)
+class ShippedSequence:
+    title: str
+    brief: str
+    steps: list
+    starts_on: str = ""
+    started_by: str = ""
+    talks_in: str = ""
+    dispatch: str = ""
+    lasting: bool = False
+    only_when_idle: bool = False
+    unless: dict = field(default_factory=dict)
+    finishes_when: dict = field(default_factory=dict)
+    removes_on_abandon: bool = False
+    words: tuple = ()
+
+    def started_on(self, starts_on: str) -> "ShippedSequence":
+        return replace(self, starts_on=starts_on)
+
+    def written_out(self) -> str:
+        steps = "\n".join(f"{i}. {title}: {body}" for i, (title, body) in enumerate(self.steps, 1))
+        return f"## {self.title}\n\n{self.brief}\n\n{steps}"

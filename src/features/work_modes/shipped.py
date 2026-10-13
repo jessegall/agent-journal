@@ -1,4 +1,4 @@
-from features.sequences.shipping import ShippedSequence
+from resources.sequences import ShippedSequence
 
 NEXT = "Then journal sequence next <this sequence> --about <ref>."
 

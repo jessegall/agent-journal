@@ -1,4 +1,4 @@
-from features.sequences.shipping import ShippedSequence
+from resources.sequences import ShippedSequence
 
 ORCHESTRATION = ShippedSequence(
     title="Orchestrating a board",

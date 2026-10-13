@@ -19,9 +19,9 @@ from events.boards import BoardFillingQuiet, CardsAddedToBoard
 from features.boards.shipped import JOBS, SEQUENCES
 from framework.journal import Journal
 from framework.sending import Nudge
-from features.sequences.dispatch import BOARD_OF_MESSAGE, DISPATCH_MODELS
+from declaring.registries import BOARD_OF_MESSAGE, DISPATCH_MODELS
 from features.boards.orchestration import filler_model, orchestration
-from features.session_briefing.start import ORCHESTRATION, START_PARTS
+from declaring.registries import ORCHESTRATION, START_PARTS
 
 __all__ = ["Boards"]
 

@@ -1,9 +1,7 @@
 from resources.text import clipped
-from resources.extension import Extension
+from declaring.registries import BOARD_OF_MESSAGE, DISPATCH_MODELS  # noqa: F401
 
 REQUEST_TEXT = 400
-DISPATCH_MODELS = Extension()
-BOARD_OF_MESSAGE = Extension()
 
 
 def unchosen(record, provider: str) -> str:

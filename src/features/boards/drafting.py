@@ -1,4 +1,4 @@
-from features.sequences.shipping import ShippedSequence
+from resources.sequences import ShippedSequence
 from features.boards.exploration import FILLER, LOG, PANEL
 from resources.base import USER
 

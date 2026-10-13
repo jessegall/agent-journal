@@ -1,4 +1,4 @@
-from features.sequences.shipping import ShippedSequence
+from resources.sequences import ShippedSequence
 from resources.base import USER
 
 PANEL = "the New work panel"

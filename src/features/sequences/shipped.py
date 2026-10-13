@@ -3,7 +3,7 @@ import re
 from framework.base import REGISTRY
 from framework.loaded import discover
 from controllers.types import Sequences
-from features.sequences.shipping import ShippedSequence
+from resources.sequences import ShippedSequence
 from controllers.types import Triggers
 from resources.base import AGENT, SECTION, SYSTEM
 

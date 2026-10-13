@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.record import Record
 from features.boards.exploration import FILLER
 from serving import SERVED, Providers
 
@@ -47,7 +46,7 @@ AGENT_TYPES = (
 )
 
 
-def written(project: Path, record: Record) -> list[Path]:
+def written(project: Path, record) -> list[Path]:
     from features.boards.details import BoardsDetails
     values = BoardsDetails.values(record)
     return [path for agent in SERVED.given(Providers).every() if agent.present(project)

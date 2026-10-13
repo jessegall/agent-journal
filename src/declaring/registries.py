@@ -71,3 +71,10 @@ ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
 
 STILL_HELD: dict = {}
 """Whether a hold on an agent's writes still stands, by the key of the hold: each is a function of the record and the session, asked before the hold is let go."""
+
+
+DISPATCH_MODELS = Extension()
+"""The model each kind of dispatch is given, by the feature that chooses it."""
+
+BOARD_OF_MESSAGE = Extension()
+"""How a message finds the board it belongs to, by the feature that knows boards."""
