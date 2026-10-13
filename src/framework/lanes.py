@@ -225,6 +225,11 @@ class Environment:
             raise NobodyToSpeakTo.of(f"environment {self.record.env}")
         return Speaker(self.feature, self.record, agent)
 
+    def working_folder(self, agent) -> Path:
+        """Where an agent works: its own folder when it has one, else the project's."""
+        cwd = Path(agent.cwd) if agent.cwd else None
+        return cwd if cwd and cwd.is_dir() else self.record.root.parent
+
     def release(self, behaviour: str = "") -> None:
         """Lets go the holds this feature put on every agent of the environment, under that behaviour."""
         self.feature.release(self.record, behaviour)
