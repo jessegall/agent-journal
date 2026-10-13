@@ -11,7 +11,7 @@
                 "descendant": {
                     "all": [
                         {
-                            "is": "identifier"
+                            "is": "member-access"
                         },
                         {
                             "name": "resource"
@@ -28,7 +28,7 @@
                 "file": "migrations/**"
             },
             {
-                "file": "features/revisions/history.py"
+                "file": "controllers/revisions.py"
             },
             {
                 "testCode": true
