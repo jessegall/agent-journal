@@ -7,13 +7,11 @@ from controllers.base import Arguments
 from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.messages import Messages
-from events.agents import AgentChanged
-from declaring.holds import Runs
-from declaring.reach import Reach
 from engine.state import State
 from framework import held_lines
 from framework.marks import mark_of
 from framework.displayed import send_row_to_chat
+from resources.allowances import Allowance
 from resources.text import digest
 from payload import STATUS, HookEvent
 from declaring import trigger
@@ -94,16 +92,16 @@ class Marks:
     def every(self, kind: str, key: str, cadence: trigger.Trigger) -> bool:
         return triggering.claimed(self.record, self.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", cadence)
 
-    def at_most(self, kind: str, key: str, times: int) -> bool:
-        if self.used_up(kind, key, times):
+    def at_most(self, allowed: Allowance) -> bool:
+        if self.used_up(allowed):
             return False
-        store, name = self._count(kind, key)
+        store, name = self._count(allowed.kind, allowed.key)
         store.set(name, int(store.get(name, 0)) + 1)
         return True
 
-    def used_up(self, kind: str, key: str, times: int) -> bool:
-        store, name = self._count(kind, key)
-        return int(store.get(name, 0)) >= times
+    def used_up(self, allowed: Allowance) -> bool:
+        store, name = self._count(allowed.kind, allowed.key)
+        return int(store.get(name, 0)) >= allowed.times
 
     def _count(self, kind: str, key: str) -> tuple:
         return self.record.state("counts", self.row.title), f"{kind}.{digest(key.strip())}"
@@ -162,11 +160,11 @@ class Context:
     def every(self, kind: str, key: str, cadence: trigger.Trigger) -> bool:
         return self.marks().every(kind, key, cadence)
 
-    def at_most(self, kind: str, key: str, times: int) -> bool:
-        return self.marks().at_most(kind, key, times)
+    def at_most(self, allowed: Allowance) -> bool:
+        return self.marks().at_most(allowed)
 
-    def used_up(self, kind: str, key: str, times: int) -> bool:
-        return self.marks().used_up(kind, key, times)
+    def used_up(self, allowed: Allowance) -> bool:
+        return self.marks().used_up(allowed)
 
     def once(self, kind: str, key: str, then=None) -> bool:
         return self.marks().once(kind, key, then)

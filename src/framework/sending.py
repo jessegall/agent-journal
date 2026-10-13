@@ -1,3 +1,4 @@
+from resources.allowances import Allowance
 from dataclasses import dataclass, replace
 from typing import Callable
 
@@ -54,12 +55,12 @@ class Nudge:
         cadence = self.cadence(context)
         found = self.about(context, agent)
         if self.first:
-            found = [one for one in found if not context.used_up(self.line, one.key, self.most)][:1]
+            found = [one for one in found if not context.used_up(Allowance(self.line, one.key, self.most))][:1]
         due = [one for one in found if context.every(self.behaviour, f"{self.line}:{one.key}", cadence)]
         return self.capped(context, due) if self.most and due else due
 
     def capped(self, context, due: list[Sent]) -> list[Sent]:
-        return [found for found in due if context.at_most(self.line, found.key, self.most)]
+        return [found for found in due if context.at_most(Allowance(self.line, found.key, self.most))]
 
 
 def send(context, nudges: tuple) -> None:

@@ -1,9 +1,9 @@
 from events import Fact
 from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
-                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkBegan, WorkDeclared, WorkEnded, WorkEndedByTodo,
+                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkDeclared, WorkFilesLetGo, WorkEndedByTodo,
                                   WorkNamedInHand, WorkTookTodo, WorkUndeclared)
 from features.work_tracking import tracker
-from features.work_tracking.listeners import NAME, NAMED_PARKED, OPEN_REMINDERS
+from features.work_tracking.listeners import NAME, NAMED_PARKED, open_reminders
 from receiving import Handler
 from resources.types import AgentRow, Todo, Work
 from serving import Chat, Elsewhere, Git, Marks, Remembered, Rows
@@ -24,14 +24,8 @@ class ReleaseOnceDeclared(Handler[WorkDeclared]):
         return []
 
 
-class BeginWork(Handler[WorkBegan]):
-    def handle(self, event: WorkBegan, elsewhere: Elsewhere) -> list[Fact]:
-        tracker.forget(elsewhere.here().record, event.work)
-        return []
-
-
-class EndWork(Handler[WorkEnded]):
-    def handle(self, event: WorkEnded, elsewhere: Elsewhere) -> list[Fact]:
+class LetGoOfWorkFiles(Handler[WorkFilesLetGo]):
+    def handle(self, event: WorkFilesLetGo, elsewhere: Elsewhere) -> list[Fact]:
         tracker.forget(elsewhere.here().record, event.work)
         return []
 
@@ -114,7 +108,7 @@ class AskStillAwaiting(Handler[StillAwaiting]):
 
 class RemindOpenWork(Handler[OpenWorkRemains]):
     def handle(self, event: OpenWorkRemains, chat: Chat, marks: Marks) -> list[Fact]:
-        marks.at_most("open", f"{event.work}:{event.updated}", OPEN_REMINDERS)
+        marks.at_most(open_reminders(event.work, event.updated))
         chat.say("open" if event.logged else "unlogged", n=event.work)
         return []
 

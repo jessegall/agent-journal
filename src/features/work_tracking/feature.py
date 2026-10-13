@@ -13,7 +13,7 @@ from expects import answering, Answered, Dispatches, Given, Held, Nudged, Refuse
 from events.answers import Allowed, Refused as Declined
 from events.asking import ToolCallAsked
 from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
-                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkBegan, WorkDeclared, WorkEnded, WorkEndedByTodo,
+                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkDeclared, WorkFilesLetGo, WorkEndedByTodo,
                                   WorkNamedInHand, WorkTookTodo, WorkUndeclared)
 from declaring.trigger import Mark
 from events.plans import PlanCompleted
@@ -35,9 +35,9 @@ from framework.sending import Nudge
 from features.work_tracking.nudges import CARRY_ON_TIMES, check_in_pace, next_row, nothing_happening, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, working
 from features.work_tracking.answering import RefuseHeldCalls, RefuseWaitingInTheShell
 from features.work_tracking.waiting import WAIT_WAY
-from features.work_tracking.handlers import (AskStillAwaiting, AskStillBlockedRow, BeginWork, ClearWait, CompleteTodoWithWork, EndWork, EndWorkOfTodo, HoldUntilDeclared,
+from features.work_tracking.handlers import (AskStillAwaiting, AskStillBlockedRow, ClearWait, CompleteTodoWithWork, EndWorkOfTodo, HoldUntilDeclared,
                                              HoldUntilLogged, KeepClosedCount, KeepEditCount, LeaveTodoByWork, LinkTodoToWork, NameParkedWork, NameRepeatedChecks,
-                                             NameUnblockedRow, NameWorkInHand, RecordEdit, ReleaseOnceDeclared, RemindOpenWork, ResetEdits)
+                                             LetGoOfWorkFiles, NameUnblockedRow, NameWorkInHand, RecordEdit, ReleaseOnceDeclared, RemindOpenWork, ResetEdits)
 from features.work_tracking.listeners import (SpotBlockedRows, SpotDeclaring, SpotEditedFile, SpotEdits, SpotLogEntry, SpotOpenWork, SpotParkedWork, SpotPolling,
                                               SpotStillAwaiting, SpotUnblockedByPlan, SpotUnblockedByTodo, SpotWaitCleared, SpotWorkEnded, SpotWorkOfDoneTodo, SpotWorkOpened)
 NOTHING_OPEN = 'nothing is open, so this write would not be filed: journal work start "<the work>" first'
@@ -160,16 +160,16 @@ class WorkFeature(Feature):
             Given(AnyEvent(n=1, type="todo", action="created", actor=USER), rows=[AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.listen(WorkCreated, SpotWorkOpened(), expects=[
-            Given(OPENED, rows=[ON_TODO, Todo(n=5, title="Fix the crash")]) >> Dispatches(WorkBegan(work=3)) & Dispatches(WorkTookTodo(work=3, todo=5)),
-            Given(OPENED, rows=[Work(n=3, title="Look around"), Todo(n=5, title="Fix the crash")]) >> Dispatches(WorkBegan(work=3)),
+            Given(OPENED, rows=[ON_TODO, Todo(n=5, title="Fix the crash")]) >> Dispatches(WorkFilesLetGo(work=3)) & Dispatches(WorkTookTodo(work=3, todo=5)),
+            Given(OPENED, rows=[Work(n=3, title="Look around"), Todo(n=5, title="Fix the crash")]) >> Dispatches(WorkFilesLetGo(work=3)),
         ])
         journal.events.listen(WorkCompleted, SpotWorkEnded(), expects=[
-            Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, STARTED_TODO]) >> Dispatches(WorkEnded(work=3)) & Dispatches(TodoDoneWithWork(work=3, todo=5)),
+            Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, STARTED_TODO]) >> Dispatches(WorkFilesLetGo(work=3)) & Dispatches(TodoDoneWithWork(work=3, todo=5)),
             Given(ENDED_ALONE, rows=[ENDED_ON_TODO, STARTED_TODO]) >> Dispatches(TodoLeftByWork(todo=5)),
-            Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, Todo(n=5, title="Fix the crash", completed=1.0)]) >> Dispatches(WorkEnded(work=3)),
-            Given(ENDED_WITH_TODO, rows=[Work(n=3, title="Look around", completed=2.0)]) >> Dispatches(WorkEnded(work=3)),
+            Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, Todo(n=5, title="Fix the crash", completed=1.0)]) >> Dispatches(WorkFilesLetGo(work=3)),
+            Given(ENDED_WITH_TODO, rows=[Work(n=3, title="Look around", completed=2.0)]) >> Dispatches(WorkFilesLetGo(work=3)),
             Given(ENDED_ALONE, rows=[Work(n=3, title="Look around", completed=2.0), Work(n=4, title="Write the report", data={"parked": "the user asked for something first"}), AGENT_ROW])
-                >> Dispatches(WorkEnded(work=3)) & Dispatches(ParkedWorkStands(agent=1, work=4, title="Write the report", why="the user asked for something first", more="",
+                >> Dispatches(WorkFilesLetGo(work=3)) & Dispatches(ParkedWorkStands(agent=1, work=4, title="Write the report", why="the user asked for something first", more="",
                                                                                     parkings=("4:the user asked for something first",))),
         ])
         journal.events.listen(TodoCompleted, SpotParkedWork(), expects=[
@@ -263,11 +263,9 @@ class WorkFeature(Feature):
         journal.events.handle(WorkDeclared, ReleaseOnceDeclared(), expects=[
             Given(WorkDeclared(), rows=[AGENT_ROW, WORKING], held=NOTHING_OPEN) >> Dispatches(nothing),
         ])
-        journal.events.handle(WorkBegan, BeginWork(), expects=[
-            Given(WorkBegan(work=3), rows=[WORKING]) >> Dispatches(nothing),
-        ])
-        journal.events.handle(WorkEnded, EndWork(), expects=[
-            Given(WorkEnded(work=3), rows=[ENDED_ON_TODO]) >> Dispatches(nothing),
+        journal.events.handle(WorkFilesLetGo, LetGoOfWorkFiles(), expects=[
+            Given(WorkFilesLetGo(work=3), rows=[WORKING]) >> Dispatches(nothing),
+            Given(WorkFilesLetGo(work=3), rows=[ENDED_ON_TODO]) >> Dispatches(nothing),
         ])
         journal.events.handle(WorkTookTodo, LinkTodoToWork(), expects=[
             Given(WorkTookTodo(work=3, todo=5), rows=[ON_TODO, Todo(n=5, title="Fix the crash")]) >> Updated(Todo(n=5), status="started", work=3),

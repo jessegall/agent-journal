@@ -16,15 +16,8 @@ class WorkDeclared(Fact):
 
 
 @dataclass(frozen=True, kw_only=True)
-class WorkBegan(Fact):
-    """A piece of work was opened, so the files it records start empty."""
-
-    work: int
-
-
-@dataclass(frozen=True, kw_only=True)
-class WorkEnded(Fact):
-    """A piece of work ended, so the files it recorded are let go."""
+class WorkFilesLetGo(Fact):
+    """A piece of work was opened or ended, so the files it records are let go: an opened one starts empty, an ended one keeps none."""
 
     work: int
 

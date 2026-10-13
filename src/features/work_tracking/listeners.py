@@ -1,4 +1,5 @@
 from declaring.reach import Reach
+from resources.allowances import Allowance
 from resources.command_runs import command_runs
 from events import Fact
 from events.agents import AgentReported, ClockTicked, ToolFinished
@@ -7,7 +8,7 @@ from events.plans import PlanCompleted
 from events.resources import AnyEvent
 from events.todos import TodoCompleted
 from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
-                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkBegan, WorkDeclared, WorkEnded, WorkEndedByTodo,
+                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkDeclared, WorkFilesLetGo, WorkEndedByTodo,
                                   WorkNamedInHand, WorkTookTodo, WorkUndeclared)
 from events.works import WorkCompleted, WorkCreated, WorkUpdated
 from features.work_tracking.next import ready
@@ -20,6 +21,11 @@ NAMED_PARKED = "named_parked"
 ASKED_AGAIN_AFTER = 60
 POLLED = 3
 OPEN_REMINDERS = 3
+
+
+def open_reminders(work: int, updated: float) -> Allowance:
+    """How often one stretch of open work is named back: so many times for the work as it last changed."""
+    return Allowance("open", f"{work}:{updated}", OPEN_REMINDERS)
 
 
 def working(works: ReadRows[Work]) -> list[Work]:
@@ -63,7 +69,7 @@ class SpotDeclaring(Listener[AnyEvent]):
 class SpotWorkOpened(Listener[WorkCreated]):
     def listen(self, event: WorkCreated, works: ReadRows[Work]) -> list[Fact]:
         todo = works.load(event.n).todo
-        facts = [WorkBegan(work=event.n)]
+        facts = [WorkFilesLetGo(work=event.n)]
         if todo:
             facts.append(WorkTookTodo(work=event.n, todo=int(todo)))
         return facts
@@ -72,7 +78,7 @@ class SpotWorkOpened(Listener[WorkCreated]):
 class SpotWorkEnded(Listener[WorkCompleted]):
     def listen(self, event: WorkCompleted, works: ReadRows[Work], todos: ReadRows[Todo], agents: ReadRows[AgentRow], memory: ReadRemembered, elsewhere: ReadElsewhere) -> list[Fact]:
         todo = works.load(event.n).todo
-        facts = [WorkEnded(work=event.n), *parked_to_name(works, agents, memory, elsewhere)]
+        facts = [WorkFilesLetGo(work=event.n), *parked_to_name(works, agents, memory, elsewhere)]
         if todo and not todos.load(todo).completed:
             facts.append(TodoDoneWithWork(work=event.n, todo=int(todo)) if event.todo else TodoLeftByWork(todo=int(todo)))
         return facts
@@ -148,7 +154,7 @@ class SpotStillAwaiting(Listener[ClockTicked]):
 class SpotOpenWork(Listener[AgentReported]):
     def listen(self, event: AgentReported, works: ReadRows[Work], marks: ReadMarks) -> list[Fact]:
         return [OpenWorkRemains(agent=event.agent, work=w.n, updated=w.updated, logged=bool(w.sections)).due() for w in working(works)[:1]
-                if not marks.used_up("open", f"{w.n}:{w.updated}", OPEN_REMINDERS)]
+                if not marks.used_up(open_reminders(w.n, w.updated))]
 
 
 class SpotEdits(Listener[ToolFinished]):
