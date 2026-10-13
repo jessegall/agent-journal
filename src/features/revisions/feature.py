@@ -29,7 +29,7 @@ class RevisionsFeature(Feature):
             Given(DocRevisable(n=1), rows=[Doc(n=1, title="How the viewer is built", abstract="the first idea")]) >> Updated(Doc(n=1), revisions=1),
         ])
         journal.commands.add("doc", Keep(), expects=[
-            Given((Docs, 1), rows=[UNWRITTEN]) >> Refused("revision 0 of doc 1 is already kept"),
+            Given((Docs, 1), rows=[UNWRITTEN]) >> Refused("doc 1 has no revision to keep yet: its first edit opens one"),
             Given((Docs, 1), rows=[OPEN]) >> Updated(Doc(n=1), open_until=0),
             Given((Docs, 1), rows=[KEPT]) >> Refused("revision 2 of doc 1 is already kept"),
         ])

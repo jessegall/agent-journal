@@ -10,6 +10,8 @@ class Keep(Command):
 
     def run(self, context: Context, docs, n: int):
         doc = docs.load(n)
+        if not count(doc):
+            raise Refused(f"doc {doc.n} has no revision to keep yet: its first edit opens one")
         if not is_open(doc):
             raise Refused(f"revision {count(doc)} of doc {doc.n} is already kept")
         return docs.stamp(doc.n, **{OPEN_UNTIL: 0})
