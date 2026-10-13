@@ -52,8 +52,6 @@ def formatted(text: str, record=None, surface: str = "") -> str:
             if record is None:
                 raise
             threw(record.root, record.env, f"the formatter {fn.__name__}")
-    if record is None:
-        return text
     answer = bus.asked(TextFormatting(text=text, surface=surface), record)
     return answer.text if isinstance(answer, Rewritten) else text
 

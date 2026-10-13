@@ -444,7 +444,7 @@ def due_now(feature, record, fact: Fact) -> bool:
 def answering(registered, request, record) -> Answer:
     """A request answered by the features: a refuser that refuses ends it with its reason, before any answerer is read. Over the record, and about the agent of the session the request names, when it names one."""
     services = Services(lane_services(record, lambda: session_agent(record, request.session)))
-    switched_on = lambda feature: FEATURES[feature].enabled(record)  # noqa: E731
+    switched_on = lambda feature: record is None or FEATURES[feature].enabled(record)  # noqa: E731
     for one in registered.of(REFUSE):
         if one.event is not type(request) or not switched_on(one.feature):
             continue

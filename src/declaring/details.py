@@ -14,6 +14,9 @@ VALUES = Memo()
 
 
 def values_of(name: str, declared: list[Setting], record) -> Settings:
+    """A feature's settings in an environment; with no environment, as declared."""
+    if record is None:
+        return Settings(declared, {})
     return VALUES.get((name, str(record.home)), record.settings_file.held()[0], lambda: Settings(declared, record.setting(name, {})))
 
 
