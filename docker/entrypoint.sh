@@ -32,7 +32,7 @@ SETUP
 
 $AS_GATEWAY hosted-journal gateway-settings --address "$JOURNAL_ADDRESS" --proxy caddy --days 7
 # Root holds the login page's port for good and starts the login page on it as gateway, so no agent can take the port.
-env -C / PYTHONPATH=/opt/agent-journal/src PYTHONSAFEPATH=1 python3 -P -m features.hosted_journal.apart keep "$ROOT" --port 8440 &
+env -C / PYTHONPATH=/opt/agent-journal/src PYTHONSAFEPATH=1 python3 -P -m commands.login_apart keep "$ROOT" --port 8440 &
 $AS_GATEWAY hosted-journal password-status
 
 exec $AS_JOURNAL python3 "$ROOT/journal.py" --root "$ROOT" serve --port 8421

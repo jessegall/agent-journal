@@ -2,7 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.features import Features  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.record import Record  # noqa: E402

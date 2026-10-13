@@ -7,7 +7,7 @@ HERE = ROOT / "src"
 FUNNELS = {"engine/sessions.py", "engine/seats.py"}
 FILES = re.compile(r"""["']s(?:ession|eat)\.json["']|\bseat_file\(|\bread_json\(.*session_file\(""")
 HOT = ("runner", "agents", "commands/dispatch.py", "commands/http.py")
-HOT_PATTERNS = ("features/*/handlers.py", "features/*/routes.py")
+HOT_PATTERNS = ("features/*/handlers.py", "features/*/routes.py", "framework/*/routes.py")
 SLOW = {
     "glob": re.compile(r"\.glob\("),
     "rglob": re.compile(r"\.rglob\("),
@@ -26,7 +26,7 @@ ALLOWED = {
     ("agents/terminal.py", "subprocess"): "starting an agent process is the job",
     ("commands/http.py", "resolve"): "compares the root a request names with this server's, on the rare journals-list and switch routes",
     ("features/close_from_commits/handlers.py", "git"): "the commit hook reads the log it closes rows from",
-    ("features/phone/routes.py", "resolve"): "the places route names the root once",
+    ("framework/phone/routes.py", "resolve"): "the places route names the root once",
 }
 
 
