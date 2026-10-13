@@ -36,7 +36,6 @@ WAITS_FOR = "waits_for"
 class Todos(Prioritised, Controller):
     resource = types.Todo
 
-    @action
     def role_of(self, todo):
         """The role of the organization a to-do was delegated to, or none."""
         return organization(self.record.root.parent).domain(todo.data["domain"]).role(todo.data["role"]) if todo.data.get("role") else None
@@ -53,6 +52,7 @@ class Todos(Prioritised, Controller):
         """The to-dos of the role that wait for this one, in whichever environment they are."""
         return [(env, r) for env, r in self.everywhere(domain, role) if r.data.get(WAITS_FOR) == f"{self.record.env}:{n}"]
 
+    @action
     def assign(self, n: int, to: str):
         return self.update(n, assigned=to, pending={})
 

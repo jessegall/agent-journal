@@ -33,7 +33,7 @@ class ExpireOldRows(Handler[ClockTicked]):
                 expired(rows, r, now - days * DAY, days)
         for name, controller in CONTROLLERS.items():
             if controller.resource.kept:
-                here.rows_named(name).prune()
+                here.rows_named(name).prune_kept()
         packing = keep.get("pack", PACK_AFTER)
         for name, controller in CONTROLLERS.items():
             if packing and controller.resource.scope == ENVIRONMENT and controller.resource.type not in UNPACKED:
