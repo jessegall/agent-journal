@@ -228,14 +228,14 @@ def test_an_installed_update_tidies_at_once():
     from controllers.types import Notifications
     from features import load
     from resources.base import SYSTEM
-    from framework.updating.announcing import KIND
+    from resources.types import UPDATE
     load()
     record = fresh()
     left = record.root / "plugins" / ".staging-old"
     left.mkdir(parents=True)
     old = time.time() - 2 * 3600
     os.utime(left, (old, old))
-    Notifications(record, actor=SYSTEM)._logged("Journal updated to 9.9.9", brief="from 9.9.8", kind=KIND, version="9.9.9")
+    Notifications(record, actor=SYSTEM)._logged("Journal updated to 9.9.9", brief="from 9.9.8", kind=UPDATE, version="9.9.9")
     assert not left.exists(), "a new version is housekept the moment it is announced, not an hour later"
 
 

@@ -8,8 +8,8 @@ from engine.stored import write_text
 from engine.version import version as package_version
 from resources.base import SYSTEM
 from framework.managed import LEGACY_COPY_MARKER
+from resources.types import UPDATE
 
-KIND = "update"
 
 
 def announce(root: Path, version: str = "") -> str:
@@ -32,6 +32,6 @@ def announce(root: Path, version: str = "") -> str:
     if location:
         brief += f" Managed files from before the update were copied to {location}."
     Notifications(record, actor=SYSTEM)._logged(f"Journal updated to {version}", brief=brief,
-                                               kind=KIND, version=version)
+                                               kind=UPDATE, version=version)
     copy_note.unlink(missing_ok=True)
     return version

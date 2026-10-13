@@ -2,7 +2,7 @@ from events.agents import ClockTicked
 from events.notifications import NotificationCreated
 from events.runtime_cleanup import UpdateInstalled
 from expects import WHEN, Dispatches, File, Given, Removed, Wrote, answering, at, nothing
-from framework.updating.announcing import KIND
+from resources.types import UPDATE
 from framework.base import Feature
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.handlers import TidyAfterUpdate, TidyRuntime
@@ -27,10 +27,10 @@ class RuntimeCleanup(Feature):
             Given(ClockTicked(agent=1), rows=[AGENT_ROW], files=LEFT_OVER) >> Wrote(File(QUIET_SESSION, "what the agent last showed")),
         ], after=("ExpireOldRows",))
         journal.events.listen(NotificationCreated, SpotUpdateAnnounced(), expects=[
-            Given(ANNOUNCED, rows=[Notification(n=1, title="Updated to a new version", data={"kind": KIND})]) >> Dispatches(UpdateInstalled(notification=1)),
+            Given(ANNOUNCED, rows=[Notification(n=1, title="Updated to a new version", data={"kind": UPDATE})]) >> Dispatches(UpdateInstalled(notification=1)),
             Given(ANNOUNCED, rows=[Notification(n=1, title="Something finished", data={"kind": "other"})]) >> Dispatches(nothing),
         ])
         journal.events.handle(UpdateInstalled, TidyAfterUpdate(), expects=[
-            Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": KIND})], files=LEFT_OVER, clock=LONG_AFTER) >> Removed(File(QUIET_SESSION)),
-            Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": KIND})], files=LEFT_OVER) >> Wrote(File(QUIET_SESSION, "what the agent last showed")),
+            Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": UPDATE})], files=LEFT_OVER, clock=LONG_AFTER) >> Removed(File(QUIET_SESSION)),
+            Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": UPDATE})], files=LEFT_OVER) >> Wrote(File(QUIET_SESSION, "what the agent last showed")),
         ])

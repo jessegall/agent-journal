@@ -498,6 +498,10 @@ class AgentRow(Shape, Resource):
         return next((entry.get("task") or entry.get("command") or "a background run" for entry in self.runs if entry.get("running")), "")
 
 
+UPDATE = "update"
+"""The kind of a notification that says the journal was updated."""
+
+
 class Notification(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Notification",
