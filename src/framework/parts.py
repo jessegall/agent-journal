@@ -138,6 +138,11 @@ class Context:
     def on(self, behaviour: str = "") -> bool:
         return self.feature.on(self.record, behaviour)
 
+    def service(self, kind: type):
+        """A service of the journal, as a receiver of this feature is handed it."""
+        from framework.lanes import lane_services
+        return Services(lane_services(self.record, lambda: None)).given(self.feature.name, self.feature.name, {"service": kind})["service"]
+
     def speaking_to(self, row) -> "AgentContext":
         return AgentContext.of(self.feature, self.record, row, self.provider, self.hook)
 

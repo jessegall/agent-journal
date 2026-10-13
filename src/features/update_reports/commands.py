@@ -3,6 +3,7 @@ import time
 from framework.parts import Command, Context
 from features.update_reports.gather import SECTIONS, UPDATE, clock, gathered, item, opened_until, since, updates
 from resources.base import Refused
+from serving import Git
 
 SINCE_LAST = "What happened since your last update"
 FIRST = "What happened in the last day"
@@ -36,7 +37,7 @@ class Changes(Command):
     def run(self, context: Context, reports) -> list[str]:
         start = since(reports, time.time())
         return [f"since {clock(start)}", *[f"{i['section']} {i['ref']} {i['title']}" + (f" ({i['note']})" if i["note"] else "")
-                                            for i in gathered(context.record, start)]]
+                                            for i in gathered(context.record, context.service(Git), start)]]
 
 
 class Recap(Command):
@@ -46,7 +47,7 @@ class Recap(Command):
         now = time.time()
         start = since(reports, now)
         return reports.create(SINCE_LAST if opened_until(reports) else FIRST, abstract=summary, kind=UPDATE, number=len(updates(reports)) + 1,
-                              since=start, until=now, items=gathered(context.record, start))
+                              since=start, until=now, items=gathered(context.record, context.service(Git), start))
 
 
 class Note(Command):

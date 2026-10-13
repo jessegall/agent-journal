@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from engine.git import Checkout
 from engine.journal_calls import pieces
+from resources.checkout import Checkout
 from serving import ReadGit
 
 VALUED = frozenset({"-m", "--message", "-b", "-B", "-F", "--onto", "-X", "--mainline"})

@@ -82,9 +82,9 @@ class TheGit:
         """The text of each stored file named by its hash, in whichever repository of the project holds it."""
         return blob_texts(self.record.root.parent, shas)
 
-    def commits_since(self, since: float) -> list[tuple[str, str]]:
-        """The commits of the project made since a moment, each as its hash and its subject."""
-        return commits_since(self.record.root.parent, since)
+    def commits_since(self, since: float, most: int = 0, timeout: float = 5) -> list[tuple[str, str]]:
+        """The commits of the project made since a moment, newest first, each as its hash and its subject."""
+        return commits_since(self.record.root.parent, since, most, timeout)
 
     def line_counts(self, pairs: list[tuple[str, str]]) -> dict:
         """How many lines each pair of stored files differs by."""

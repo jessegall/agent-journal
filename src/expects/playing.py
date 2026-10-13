@@ -199,7 +199,7 @@ class Git(Asked):
     def blobs(self, shas: list[str]) -> dict[str, str]:
         return self.answer(("blobs", tuple(shas)))
 
-    def commits_since(self, since: float) -> list[tuple[str, str]]:
+    def commits_since(self, since: float, most: int = 0, timeout: float = 5) -> list[tuple[str, str]]:
         return self.answers.answers.get(("commits",), [])
 
     def line_counts(self, pairs: list[tuple[str, str]]) -> dict:

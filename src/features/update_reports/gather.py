@@ -1,10 +1,10 @@
 import time
 
-from engine.git import commits_since
 from controllers.types import Docs, Questions, Reports, Todos, Works
 from controllers.types import Plans
 from resources.plans import READY, WAITING
 from resources.base import SYSTEM, USER
+from serving import Git
 from typing import TypedDict
 
 UPDATE = "update"
@@ -67,8 +67,8 @@ def moved(record, start: float, waiting_on: set) -> list[dict]:
             if p.updated >= start and not p.deleted and f"plan:{p.n}" not in waiting_on]
 
 
-def commits(record, start: float) -> list[dict]:
-    return [item(COMMITS, f"commit:{sha[:SHORT_SHA]}", subject) for sha, subject in commits_since(record.root.parent, start, MOST_COMMITS, GIT_WAIT)]
+def commits(git: Git, start: float) -> list[dict]:
+    return [item(COMMITS, f"commit:{sha[:SHORT_SHA]}", subject) for sha, subject in git.commits_since(start, MOST_COMMITS, GIT_WAIT)]
 
 
 def written(record, start: float) -> list[dict]:
@@ -78,10 +78,10 @@ def written(record, start: float) -> list[dict]:
     return docs + reports
 
 
-def gathered(record, start: float) -> list[dict]:
+def gathered(record, git: Git, start: float) -> list[dict]:
     need = waiting(record)
     return [*need, *closed(record, start), *working(record), *moved(record, start, {i["ref"] for i in need}),
-            *commits(record, start), *written(record, start)]
+            *commits(git, start), *written(record, start)]
 
 
 def clock(moment: float) -> str:

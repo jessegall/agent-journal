@@ -1,10 +1,10 @@
-from engine.git import Checkout
 from events import Fact
 from events.agents import AgentReported
 from events.close_from_commits import CommitMade, LogRead, TrailerFound
 from features.close_from_commits.trailers import REFLOG, TRAILER, Commit, commits_of, landing_args, reflog_of
 from payload import HookEvent
 from receiving import Listener
+from resources.checkout import Checkout
 from resources.text import digest
 from resources.types import AgentRow
 from serving import ReadElsewhere, ReadGit, ReadRemembered, ReadRows
