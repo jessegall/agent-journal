@@ -15,7 +15,7 @@ class AutoArchive(Feature):
     details = AutoArchiveDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(ExpireOldRows(), expects=[
+        journal.events.handle(ClockTicked, ExpireOldRows(), expects=[
             Given(TICK, rows=[Report(n=1, title="Audit", created=WHEN - 15 * DAY), AGENT_ROW]) >> Updated(Report(n=1), outcome="aged out after 14 days"),
             Given(TICK, rows=[Report(n=1, title="Audit", created=WHEN - 13 * DAY), AGENT_ROW]) >> Unchanged(),
             Given(TICK, rows=[Report(n=1, title="Audit", created=WHEN - 15 * DAY, completed=WHEN - 14 * DAY), AGENT_ROW]) >> Unchanged(),

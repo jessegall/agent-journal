@@ -14,25 +14,6 @@ def age(c, n, **fields):
     c.path(n).write_text(r.dump())
 
 
-def test_reports_and_todos_past_their_keep_days_are_archived_open_ones_never():
-    record = fresh()
-    reports = Reports(record, actor=AGENT)
-    todos = Todos(record, actor=USER)
-    fresh_report = reports.create("checked today")
-    old_report = reports.create("checked a month ago")
-    age(reports, old_report.n, created=time.time() - 30 * 86400)
-    open_row = todos.create("still open")
-    done_row = todos.create("done long ago")
-    todos.complete(done_row.n, "done")
-    age(todos, done_row.n, completed=time.time() - 10 * 86400)
-    tick(record)
-    assert (bool(reports.load(old_report.n).completed), reports.load(old_report.n).outcome) == (True, "aged out after 14 days"), \
-        "a report past its keep days is archived, saying so"
-    assert reports.load(fresh_report.n).completed == 0.0, "a fresh report stays"
-    assert ([t.n for t in todos.all()], [e.data["why"] for e in record.event_log.events() if e.type == "todo" and e.action == "deleted"]) == \
-        ([open_row.n], ["archived 7 days after it was closed"]), "a to-do closed past its keep days is archived, an open one never"
-
-
 def test_a_type_that_declares_how_many_rows_it_keeps_is_pruned_to_that_count(monkeypatch):
     from resources.types import Notification, Nudge
     monkeypatch.setattr(Notification, "kept", 1)
