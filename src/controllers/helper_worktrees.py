@@ -3,12 +3,12 @@ from dataclasses import dataclass
 from textwrap import dedent
 from pathlib import Path
 
-from controllers.base import Controller
+from controllers.base import CONTROLLERS, Controller
 from engine import runtime
 from engine.state import State
 from resources.text import plural
 from engine.running import running_at
-from engine.worktree import WorkspaceFolders, current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
+from engine.worktree import WorkspaceFolders, checkout, current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
 from resources.helper_worktrees import Worktree
 from controllers.agents import Agents
 from controllers.todos import Todos
@@ -240,17 +240,31 @@ class Worktrees(Controller):
         missing = tuple(lines(project, "log", "--format=%h %s", f"{row.branch}..{now}")) if row.branch else (now,)
         return Drift(row.working, row.base, now, missing)
 
-    def _drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]):
-        project = self._project()
-        checked = self._checked_tips()
-        for row in self.rows.standing():
-            if not row.path or not within(Path(row.path), places, commands) or checked.get(str(row.n)) == tip(project, row.working):
-                continue
-            found = self._drift(row)
-            checked.set(str(row.n), found.tip)
-            if not found.current:
-                return row, found
-        return None
+    def drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]) -> list[tuple[Worktree, Drift]]:
+        """The worktrees a call is made in or names whose working branch has a tip not yet checked, with how far each is behind."""
+        project, checked = self._project(), self._checked_tips()
+        return [(row, self._drift(row)) for row in self.rows.standing()
+                if row.path and within(Path(row.path), places, commands) and checked.get(str(row.n)) != tip(project, row.working)]
+
+    def checked_at(self, n: int, working_tip: str) -> None:
+        self._checked_tips().set(str(n), working_tip)
+
+    def strays_from(self, cwd: str) -> Path | None:
+        """The folder this environment's agent belongs in when the folder it works in sits in another checkout, so a compaction there would move it into that checkout's environment."""
+        home = self._home()
+        return None if not cwd or self._checkout_of(Path(cwd)) == self._checkout_of(home) else home
+
+    def _home(self) -> Path:
+        place = CONTROLLERS["environment"](self.record, actor=SYSTEM).rows.by_title(self.record.env)
+        return Path(place.folder) if place and place.folder else self._own_worktree() or self.record.root.parent
+
+    def _own_worktree(self) -> Path | None:
+        """The worktree an environment is named for, when its row does not say where it works, as a ticket's does not: the agent in it is at home there."""
+        folder = self.record.root.parent.joinpath(*self.providers.workspaces().worktree_home, self.record.env)
+        return folder if self.record.env != runtime.DEFAULT_ENV and folder.is_dir() else None
+
+    def _checkout_of(self, folder: Path) -> Path | None:
+        return checkout(folder.resolve(), self.providers.workspaces())
 
     def _kept_branch(self, project: Path, row) -> bool:
         """Keeps what a worktree's branch holds under the ref of the dropped ones, so nothing a helper committed is lost when the branch goes; false when there is no branch to keep."""

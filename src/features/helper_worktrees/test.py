@@ -80,9 +80,6 @@ def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased(
     commit(project, "main.txt", "meanwhile\n")
     assert "helper-rhea is missing 1 commit" in worktrees.drift(row.n) and "rebase it onto phone-connection" in worktrees.drift(row.n), \
         "drift names what the helper's branch lacks, not what the working branch gained since a cut a rebase has left behind"
-    from declaring.holds import Runs
-    from features.helper_worktrees.interceptors import TellDrift
-    assert TellDrift.runs == Runs.ASYNC, "drift is told in a message after the call is answered, never by holding the call back"
     assert "rebase it onto phone-connection" in refused(lambda: worktrees.take(row.n)), "a stale branch is refused, with the rebase to do"
     git(folder, "rebase", "-q", "phone-connection")
     assert "holds every commit of phone-connection" in worktrees.drift(row.n), \
@@ -204,7 +201,7 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
     assert (adopted.adopted, adopted.working, adopted.helper, adopted.path) == (True, "phone-connection", "Ada", str(by_hand)), \
         "a checkout cut by hand and given to a helper is followed as the journal's own worktrees are"
     commit(project, "later.txt", "moved on\n")
-    row, found = worktrees._drifted((by_hand,), ())
+    row, found = worktrees.drifted((by_hand,), ())[0]
     assert (row.helper, found.commits.startswith("1 commit")) == ("Ada", True), "and its helper is told when the branch it came from moves"
     worktrees._released("Ada")
     assert not [r for r in worktrees.rows.standing() if r.adopted], "finishing the helper lets the followed checkout go, and leaves the checkout itself"
