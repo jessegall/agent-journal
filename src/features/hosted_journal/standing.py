@@ -1,5 +1,5 @@
 from features.hosted_journal.settings import FromRecord, FromVault
-from features.sharing.origins import ProxyLookup, ProxyOrigins
+from controllers.sharing.origins import ProxyLookup, ProxyOrigins
 
 
 class Standing:

@@ -5,7 +5,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from features.sharing.page import exported
+from controllers.sharing.page import exported
 
 WORD = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 PAGE = "text/html; charset=utf-8"

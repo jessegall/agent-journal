@@ -13,7 +13,7 @@ from controllers.types import Boards
 from controllers.types import Tickets
 from engine.record import Record
 from controllers.types import Shares
-from features.sharing.server import ShareHandler
+from controllers.sharing.server import ShareHandler
 from resources.base import AGENT, USER
 from tests.conftest import fresh
 

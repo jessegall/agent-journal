@@ -318,8 +318,8 @@ def phones_live(root) -> bool:
     return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM)._live())
 
 
-def phones_paired(root) -> bool:
-    return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM).actives())
+def phones_paired(record) -> bool:
+    return bool(Phones(record, actor=SYSTEM).actives())
 
 
 resources_module.register(Phone)

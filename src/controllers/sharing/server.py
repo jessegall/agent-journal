@@ -12,20 +12,20 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
-from framework.loaded import running
 from resources.sharing import HEALTH, HEALTH_MARKER, LAYOUT_FILE # noqa: E402
-from features.sharing.origins import origins_of  # noqa: E402
+from controllers.sharing.origins import origins_of  # noqa: E402
 from controllers.sharing.page_data import forget  # noqa: E402
 from controllers.sharing.passwords import WrongPasswords, unlocked  # noqa: E402
-from features.sharing.services import LOOPBACK  # noqa: E402
+from controllers.sharing.services import LOOPBACK  # noqa: E402
 from controllers.sharing.visiting import SharedComment  # noqa: E402
-from features.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
+from controllers.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
 from framework.format import SHARED, formatted
-from features.sharing.preview import card, tags  # noqa: E402
+from controllers.sharing.preview import card, tags  # noqa: E402
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS  # noqa: E402
 from controllers.faults import threw  # noqa: E402
 from engine.color import identity  # noqa: E402
-from resources.base import Refused  # noqa: E402
+from controllers.features import Features  # noqa: E402
+from resources.base import SYSTEM, Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")
 TICK_EVERY = 15
@@ -104,8 +104,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         return
 
     def sharing(self) -> bool:
-        from features.sharing.feature import SharingFeature
-        return running(SharingFeature).enabled(self.shares.record)
+        return Features(self.shares.record, actor=SYSTEM).on("sharing")
 
     def opened(self, token: str):
         share = self.shares._by_token(token)
@@ -322,16 +321,9 @@ def serve_on(shares, listening: socket.socket) -> None:
 
 
 def main(argv: list[str]) -> None:
-    import features
-    from engine import runtime
-    from engine.record import Record
-    from controllers.types import Shares
-    from framework.switches import watch_change_log
-    from resources.base import SYSTEM
-    root = Path(argv[0])
-    features.load(root)
-    watch_change_log()
-    serve(Shares(Record(root, runtime.env(root)), actor=SYSTEM), int(argv[1]), *argv[2:3])
+    from controllers.sharing.controller import Shares
+    from framework.process import booted
+    serve(Shares(booted(Path(argv[0])), actor=SYSTEM), int(argv[1]), *argv[2:3])
 
 
 if __name__ == "__main__":

@@ -20,10 +20,10 @@ from features.phone.surface import CARDS, PhoneSurface
 from engine.color import identity
 from framework.updating.countdown import update_state
 from controllers.types import Phones, Shares
-from features.sharing.page import disposition, unshared
-from features.sharing.preview import icon
-from features.sharing.origins import origins_of
-from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
+from controllers.sharing.page import disposition, unshared
+from controllers.sharing.preview import icon
+from controllers.sharing.origins import origins_of
+from controllers.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused, Stale
 from declaring.trigger import DAY
 from resources.text import digest

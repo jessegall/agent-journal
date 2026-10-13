@@ -7,8 +7,8 @@ from resources.extension import Extension
 from engine.viewer import lately_running
 from features.phone.allow_list import Page
 from framework.routing import JSON
-from features.sharing.page import disposition
-from features.sharing.server import APP_HEADERS
+from controllers.sharing.page import disposition
+from controllers.sharing.server import APP_HEADERS
 
 CARRIED = ("Content-Type", "Accept", "Last-Event-ID")
 KEPT = ("Content-Type", "Cache-Control")

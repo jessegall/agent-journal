@@ -6,7 +6,8 @@ from engine.keeper import ServiceSpec
 from engine.package import entry
 from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
-from controllers.types import Shares
+from controllers.features import Features
+from controllers.sharing.controller import Shares
 from resources.sharing import ADDRESS_TAKEN
 from resources.sharing import ended
 from engine.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
@@ -29,11 +30,8 @@ def links_open(root: Path) -> bool:
 
 
 def why_idle(root: Path) -> str:
-    from framework.loaded import running
-    from features.sharing.feature import SharingFeature
     record = Record(root, runtime.env(root))
-    feature = running(SharingFeature)
-    sharing = bool(feature) and feature.enabled(record)
+    sharing = Features(record, actor=SYSTEM).on("sharing")
     if any(keep(root) for keep in SHARE_KEEP_UP.each(record)):
         return ""
     if sharing and open_shares(root):
@@ -68,7 +66,7 @@ def share_services(record, taken: set) -> list:
         return []
     port, blocked = allocate(root, SERVER, place.port, taken)
     taken.add(port)
-    specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("features.sharing.server"), str(root), str(port), place.host],
+    specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("controllers.sharing.server"), str(root), str(port), place.host],
                          cwd=str(Path(root).parent), port=port, blocked=blocked, idle=idle, url=f"http://127.0.0.1:{port}", env={BUILD: current_build(root)},
                          **files_for(root, SERVER))]
     command = tunler()

@@ -1,4 +1,4 @@
-from controllers.sharing.visitors import hold
+from resources.sharing import hold
 from events import Fact
 from events.visitors import TrustedVisitorCommented, VisitorCommented, VisitorCommentRead
 from receiving import Handler

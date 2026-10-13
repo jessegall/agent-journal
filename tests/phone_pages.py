@@ -16,7 +16,7 @@ from engine.viewer import SERVING
 from features.phone.controller import Phones
 from controllers.types import Shares
 from features.sharing.details import SharingDetails
-from features.sharing.server import ShareHandler
+from controllers.sharing.server import ShareHandler
 from resources.base import AGENT, SYSTEM, USER
 from serve import Handler, JournalServer
 from tests.conftest import fresh, returning

@@ -28,7 +28,7 @@ from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.vault import RefusalLog, Vault
 from features.phone.allow_list import Action, GenericPath, Page, post, reach
 from features.phone.desktop import Desktop, closed, encoded
-from features.sharing.origins import origins_of
+from controllers.sharing.origins import origins_of
 from declaring.trigger import DAY
 from resources.base import OWNER_ID, USER, Refused
 

@@ -5,7 +5,7 @@ from itertools import takewhile
 from urllib.parse import quote
 
 from framework.format import SHARED, formatted
-from features.row_links.formatters import Mention, named
+from resources.mentions import Mention, named
 
 CODE_SPAN = re.compile(r"`([^`]+)`")
 BOLD = re.compile(r"\*\*(.+?)\*\*")

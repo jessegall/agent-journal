@@ -1,4 +1,9 @@
-from controllers.sharing.visitors import INDEX, read_now
+import json
+import re
+from typing import TypedDict
+
+from engine.journal_calls import calls
+from resources.sharing import INDEX, SHORTEST_SNIPPET
 from events import Fact
 from events.agents import CommandRan
 from events.comments import CommentCreated
@@ -22,3 +27,25 @@ class SpotVisitorComment(Listener[CommentCreated]):
             return []
         kind = TrustedVisitorCommented if comment.data.get("trusted") else VisitorCommented
         return [kind(agent=agent.n, comment=comment.n, name=comment.data["visitor"], about=comment.refs[0].replace(":", " "))]
+
+
+READERS = re.compile(r"(?:^|[\s;&|(])(?:cat|less|more|head|tail|sed|awk|grep|rg|bat|nl|strings|xxd|od|cut|sort|uniq|python3?|jq)\b")
+
+
+class Visit(TypedDict):
+    n: int
+    snippet: str
+    path: str
+
+
+def shown(entry: Visit, command: str, output: str) -> bool:
+    snippet = entry["snippet"]
+    if len(snippet) >= SHORTEST_SNIPPET and (snippet in output or json.dumps(snippet)[1:-1] in output):
+        return True
+    if any(call.matches("comment", "read", "show") and call.arguments[:1] == (str(entry["n"]),) for call in calls(command)):
+        return True
+    return entry["path"] in command and READERS.search(command) is not None
+
+
+def read_now(index: list[Visit], command: str, output: str) -> list[int]:
+    return sorted({entry["n"] for entry in index if shown(entry, command, output)})

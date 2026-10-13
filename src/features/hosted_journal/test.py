@@ -39,8 +39,8 @@ from declaring.trigger import DAY
 from controllers.types import Phones
 from controllers.types import Shares
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES
-from features.sharing.server import ShareHandler
-from features.sharing.services import share_services
+from controllers.sharing.server import ShareHandler
+from controllers.sharing.services import share_services
 from engine.tunnel import SERVER
 from controllers.types import Docs, Messages, Todos
 from resources.base import OWNER_ID, SYSTEM, USER

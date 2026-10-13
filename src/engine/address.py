@@ -26,7 +26,7 @@ class Claim:
 
 
 def relied_on(record: Record) -> bool:
-    return any(depends(record.root) for depends in RELIED_ON.each(record))
+    return any(depends(record) for depends in RELIED_ON.each(record))
 
 
 def own_address(record: Record) -> list[str]:

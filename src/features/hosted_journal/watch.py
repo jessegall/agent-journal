@@ -1,7 +1,7 @@
 from controllers.types import Messages
 from engine.disk import KEPT_FREE_BYTES, free_bytes, nearly_full
 from engine.tunnel import alerts
-from features.sharing.watchdog import alert_once
+from controllers.sharing.watchdog import alert_once
 from resources.base import SYSTEM
 
 DISK_NEARLY_FULL = "disk_nearly_full"

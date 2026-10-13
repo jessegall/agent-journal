@@ -20,7 +20,8 @@ from engine.address import Claim, own_address, relied_on, this_machine
 from engine.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
 from controllers.sharing.visiting import ShareVisits
 from controllers.sharing.views import VIEWS
-from controllers.sharing.visitors import AGREEMENT, unhold, unindex_comment
+from controllers.sharing.visitors import unindex_comment
+from resources.sharing import AGREEMENT, unhold
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from resources.text import plural
 from declaring.trigger import DAY
@@ -233,6 +234,21 @@ class Shares(ShareVisits, SharePages, Controller):
         if status(self.record.root, TUNNEL).state == FAILED:
             return [TUNNEL_STOPPED]
         return []
+
+    def links_open(self) -> bool:
+        """Whether a share is open, so the journal's address is relied on."""
+        from controllers.sharing.services import links_open
+        return links_open(self.record.root)
+
+    def service_specs(self, taken: set) -> list:
+        """The services the share server and its tunnel are to run as, for the services the journal keeps."""
+        from controllers.sharing.services import share_services
+        return share_services(self.record, taken)
+
+    def watch_tunnel(self) -> list[tuple[str, dict]]:
+        """One look at the tunnel and the share server, repairing what is down; the lines the agent is to be told, each with its values."""
+        from controllers.sharing.watchdog import WATCH
+        return WATCH(self)
 
     def public_origin(self) -> str:
         """The address the outside reaches this journal at, such as https://name.example, or nothing while it has none."""

@@ -19,7 +19,7 @@ from engine.address import ANSWERS_AT
 from declaring.registries import SHARE_ORIGINS
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS
 from declaring.registries import SHARE_KEEP_UP, SHARE_LISTENS
-from features.sharing.services import Listen
+from controllers.sharing.services import Listen
 
 APART = "AGENT_JOURNAL_APART"
 

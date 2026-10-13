@@ -32,10 +32,10 @@ from controllers.types import Tickets
 from controllers.types import Shares
 from controllers.types import Suggestions
 from features.sharing.details import SharingDetails
-from features.sharing.server import ShareHandler
+from controllers.sharing.server import ShareHandler
 from engine.viewer import SERVING
 from serve import Handler, JournalServer
-from features.sharing.services import wanted
+from controllers.sharing.services import wanted
 from resources.base import OWNER_ID, AGENT, SYSTEM, USER, Refused
 from resources.types import EnvironmentKind
 from tests.conftest import fresh

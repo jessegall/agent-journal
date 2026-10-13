@@ -13,11 +13,9 @@ from features.sharing.guard import RefuseClaimedUser, RefuseUntilAgreed
 from features.sharing.handlers import HoldUntilAgreed, NameTrustedVisitorComment, NameVisitorComment
 from features.sharing.listeners import SpotVisitorComment, SpotVisitorCommentRead
 from declaring.registries import RELIED_ON
-from features.sharing.services import links_open, share_services
 from declaring.registries import SHARE_TICKS
-from controllers.sharing.visitors import AGREEMENT
-from features.sharing.watchdog import TunnelWatch
-from resources.base import USER
+from resources.sharing import AGREEMENT
+from resources.base import SYSTEM, USER
 from resources.types import AgentRow, Comment
 
 __all__ = ["Shares"]
@@ -51,8 +49,8 @@ class SharingFeature(Feature):
     details = SharingDetails
 
     def register(self, journal: Journal) -> None:
-        SOURCES.add(None, share_services)
-        RELIED_ON.add(self, links_open)
+        SOURCES.add(None, lambda record, taken: Shares(record, actor=SYSTEM).service_specs(taken))
+        RELIED_ON.add(self, lambda record: Shares(record, actor=SYSTEM).links_open())
         journal.events.listen(CommandRan, SpotVisitorCommentRead(), expects=[
             Given(ran(f'journal share agree 4 "{AGREEMENT}"'), remembered=INDEXED) >> Dispatches(nothing),
             Given(ran("git status", "nothing to commit"), remembered=INDEXED) >> Dispatches(nothing),
@@ -78,7 +76,7 @@ class SharingFeature(Feature):
         journal.events.handle(TrustedVisitorCommented, NameTrustedVisitorComment(), expects=[
             Given(TrustedVisitorCommented(agent=1, comment=3, name="Ana", about="document 2"), rows=[AGENT_ROW]) >> Nudged("trusted", name="Ana", about="document 2", n=3),
         ])
-        SHARE_TICKS.add(self, TunnelWatch(self))
+        SHARE_TICKS.add(self, lambda shares: [self.to_primary(shares.record, line, **values) for line, values in shares.watch_tunnel()])
         journal.events.answer(ToolCallAsked, RefuseUntilAgreed(), expects=[
             Given(shell("git status"), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
             Given(shell(f'journal share agree 4 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Allowed()),

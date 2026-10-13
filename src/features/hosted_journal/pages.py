@@ -1,7 +1,7 @@
 import html
 from enum import Enum
 
-from features.sharing.page import STYLE
+from controllers.sharing.page import STYLE
 
 FORM_STYLE = """
 main { max-width: 400px; padding-top: 18vh; }

@@ -1,6 +1,6 @@
 import time
 
-from controllers.types import Messages
+from controllers.messages import Messages
 from resources.files import mtime
 from engine.keeper import READY, STARTING
 from engine.services import UP, log_file, status, want
@@ -8,10 +8,9 @@ from engine.sessions import alive
 from engine.state import State
 from engine.ports import reached, vouched
 from engine.address import relied_on
-from controllers.types import Shares
-from resources.sharing import HEALTH, HEALTH_MARKER
-from features.sharing.details import HOST_DOWN, RESTARTED
-from features.sharing.services import SERVER, TUNNEL, wanted
+from controllers.sharing.controller import Shares
+from resources.sharing import HEALTH, HEALTH_MARKER, HOST_DOWN, RESTARTED
+from controllers.sharing.services import SERVER, TUNNEL, wanted
 from engine.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, watched_status
 from resources.base import SYSTEM, Refused
 
@@ -37,8 +36,7 @@ HOLD_FOR = 60.0
 
 
 class TunnelWatch:
-    def __init__(self, feature):
-        self.feature = feature
+    def __init__(self):
         self.wall, self.steady, self.route = clock(), stopwatch(), ""
 
     def moved(self) -> bool:
@@ -48,7 +46,13 @@ class TunnelWatch:
         self.wall, self.steady, self.route = wall, steady, route or self.route
         return slept or rerouted
 
-    def __call__(self, shares: Shares) -> None:
+    def __call__(self, shares: Shares) -> list[tuple[str, dict]]:
+        """Watches the tunnel and the share server once; says which lines the agent is to be told, each with its values."""
+        told: list[tuple[str, dict]] = []
+        self.watch(shares, told)
+        return told
+
+    def watch(self, shares: Shares, told: list) -> None:
         record, moved = shares.record, self.moved()
         if not wanted(record.root):
             return
@@ -84,13 +88,13 @@ class TunnelWatch:
             return
         state.set(MISSES, 0)
         if not moved and not reached(f"https://{shares._host()}/", CHECK_SECONDS):
-            alert_once(state, HOST_IS_DOWN, lambda: self.feature.to_primary(record, HOST_DOWN, host=shares._host()))
+            alert_once(state, HOST_IS_DOWN, lambda: told.append((HOST_DOWN, {"host": shares._host()})))
             return
         down = TUNNEL if serving(record.root) else SERVER
         want(record.root, down, UP, nonce=clock())
         state.set(RESTARTED_AT, clock())
         state.set(RESTARTS, int(state.get(RESTARTS, 0)) + 1)
-        self.feature.to_primary(record, RESTARTED, misses=misses, part=PARTS[down])
+        told.append((RESTARTED, {"misses": misses, "part": PARTS[down]}))
 
     def refused(self, shares: Shares, state: State) -> None:
         record = shares.record
@@ -128,3 +132,6 @@ def tunnel_holding(root) -> bool:
 def serving(root) -> bool:
     port = status(root, SERVER).port
     return bool(port) and vouched(f"http://127.0.0.1:{port}/{HEALTH}", HEALTH_MARKER, CHECK_SECONDS)
+
+
+WATCH = TunnelWatch()

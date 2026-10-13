@@ -1,6 +1,6 @@
 import re
 
-from controllers.sharing.visitors import AGREEMENT, UNAGREED
+from resources.sharing import AGREEMENT, UNAGREED
 from engine.journal_calls import parsed, tokens
 from events.answers import Allowed, Answer, Refused
 from events.asking import ToolCallAsked
