@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.3 — The figure lands the moment it touches the ground
+
+- A falling figure stops falling and lands the instant its feet meet the ground, instead of holding its fall for a second after a short drop.
+
 ## 3.0.2 — The figure searches with a magnifying glass
 
 - When the agent searches, the figure holds up a comically large magnifying glass in front of its eyes and sweeps it as it looks. The butler keeps his tablet for writing.
