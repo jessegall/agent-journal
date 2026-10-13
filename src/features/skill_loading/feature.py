@@ -98,6 +98,7 @@ class SkillLoading(Feature):
         journal.events.listen(ToolFinished, SpotSkillLoad(), expects=[
             Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SkillLoaded(agent=1, skill="journal", at=WHEN)),
             Given(ToolFinished(agent=1, tool="Bash"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")], settings={"skill_loading.chat": False}) >> Dispatches(nothing),
         ])
         journal.events.listen(ToolCallAnswered, SpotCommandNeedingSkill(), expects=[
             Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
@@ -127,6 +128,8 @@ class SkillLoading(Feature):
                 >> Remembered("required.claude-1", {"journal-plans": 5.0}),
             Given(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 3.0),)), rows=[AgentRow(n=1, title="claude-1")],
                   remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}}) >> Remembered("required.claude-1", {"journal-plans": 5.0}),
+            Given(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 5.0),)), rows=[AgentRow(n=1, title="claude-1")],
+                  remembered={"skill_loading.required.claude-1": {"journal": 1.0}}) >> Remembered("required.claude-1", {"journal": 1.0, "journal-plans": 5.0}),
         ])
         journal.events.handle(SkillsAsked, AskPrimaryForSkills(), expects=[
             Given(SkillsAsked(agent=1, names="journal-plans", at=5.0), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
@@ -140,6 +143,8 @@ class SkillLoading(Feature):
         ])
         journal.events.handle(SkillLoaded, ShowSkillLoad(), expects=[
             Given(SkillLoaded(agent=1, skill="journal", at=WHEN), rows=[AgentRow(n=1, title="claude-1")]) >> Updated(AgentRow(n=1), skill_loads=[{"skill": "journal"}]),
+            Given(SkillLoaded(agent=1, skill="journal", at=WHEN), rows=[AgentRow(n=1, title="claude-1", data={"skill_loads": [{"skill": "a", "at": 1.0}]})])
+                >> Updated(AgentRow(n=1), skill_loads=[{"skill": "a"}, {"skill": "journal"}]),
         ])
         journal.events.handle(RefusalCounted, KeepRefusalCount(), expects=[
             Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=1))),
@@ -170,4 +175,6 @@ class SkillLoading(Feature):
                 >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
                   files=answering(marked("skill_loading.refused", count=15))) >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
+            Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal": 5.0, "journal-plans": 5.0}})
+                >> Answered(RefusedCall("load journal, journal-plans before anything else - every tool call waits until it is loaded: Skill: journal, Skill: journal-plans")),
         ])
