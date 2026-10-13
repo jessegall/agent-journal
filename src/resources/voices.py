@@ -2,6 +2,10 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 
+from resources.extension import Extension
+
+VOICE_FACES = Extension()
+
 
 class Calling(Enum):
     TITLE_AND_NAME = "title and name"

@@ -10,7 +10,7 @@ from engine import runtime
 from controllers.form_of_address.anchoring import Region, anchored, silhouettes
 from controllers.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
 from resources.form_of_address import Profile
-from resources.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
+from resources.voices import PLAIN_WORDS, BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 from resources.pictures import dimensions
 
@@ -38,6 +38,13 @@ class Profiles(Controller):
         r = self.rows.peek(n)
         return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, introduction=r.introduction, humour=r.humour, naming=r.naming,
                      agent_name=r.agent_name, address=r.address, art=r.art, emoji=r.emoji)
+
+    def how_to_talk(self) -> str:
+        """The line that tells an agent how the user wants it to talk, in their own words."""
+        voice = self.standing()
+        instruction = voice.calling.instruction(voice.calling.called(self.user_title(), self.user_first_name(), voice.address))
+        text = " ".join(part for part in (voice.text, instruction, voice.humour, voice.reacts(), PLAIN_WORDS) if part)
+        return f"HOW THE USER WANTS YOU TO TALK, in their own words: {text}"
 
     def standing(self) -> Voice:
         try:

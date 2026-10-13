@@ -1,10 +1,9 @@
 import time
-from resources.extension import Extension
+from resources.voices import VOICE_FACES
 from resources.base import Refused, Resource, titled
 from controllers.marks import action
 
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩")
-VOICE_FACES = Extension()
 TWICE_WITHIN = 10.0
 
 
