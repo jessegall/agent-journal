@@ -40,7 +40,7 @@ def lines_in(files: ReadFiles, path: Path) -> int:
         text = files.read(str(path))
     except (OSError, UnicodeDecodeError):
         return 0
-    return 0 if "\0" in text[:SEARCHED_LINES] else text.count("\n")
+    return 0 if "\0" in text[:SEARCHED_LINES] else len(text.splitlines())
 
 
 def printed_whole(event: ToolCallAsked) -> tuple[str, bool]:

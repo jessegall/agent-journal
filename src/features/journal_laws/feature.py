@@ -99,6 +99,7 @@ class JournalLaws(Feature):
             Given(reading("Read", file_path="long.py"), files=answering(LONG)) >> Answered(Refused(READ_REFUSED)),
             Given(reading("Read", file_path="long.py", offset=1, limit=50), files=answering(LONG)) >> Answered(Allowed()),
             Given(reading("Read", file_path="short.py"), files=answering({"short.py": "x = 1\n" * 20})) >> Answered(Allowed()),
+            Given(reading("Read", file_path="edge.py"), files=answering({"edge.py": "x = 1\n" * 600 + "x = 1"})) >> Answered(Refused(whole_refusal("edge.py", 601, RANGE))),
             Given(reading("Read", file_path="shot.png"), files=answering({"shot.png": "\x89PNG\0" + "\n" * 900})) >> Answered(Allowed()),
             Given(reading("Bash", command="cat long.py"), files=answering(LONG)) >> Answered(Refused(CAT_REFUSED)),
             Given(reading("Bash", command="cat long.py | head -20"), files=answering(LONG)) >> Answered(Allowed()),
