@@ -45,6 +45,9 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     assert notified(record) == [], "time spent waiting, as on a check a command runs, is not held against the budget"
     with measured(record, "request", "GET /api/main/message"):
         busy(0.08)
+    assert notified(record) == [], "the first time a request is made is cold and is not held against the budget, and nothing is learned of it while the budget is off"
+    with measured(record, "request", "GET /api/main/message"):
+        busy(0.08)
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
     from commands.dispatch import timed
     from engine.timing import Stopwatch
