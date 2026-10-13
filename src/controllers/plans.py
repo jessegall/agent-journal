@@ -105,6 +105,22 @@ class Plans(Controller):
         return self.save(r, "updated", phase=int(p))
 
     @action
+    def move(self, n: int, env: str):
+        """Moves the plan to another environment together with its to-dos, which are renumbered there and named by their new numbers in the phases; refused while one of them is in hand or assigned."""
+        plan = self.load(n)
+        todos = Todos(self.record, actor=self.actor)
+        held = {int(w.todo) for w in Works(self.record, actor=SYSTEM).rows.standing() if w.todo}
+        owned = [t for phase in plan.phases for t in phase.get(PHASE.todos, []) if todos.rows.exists(int(t))]
+        busy = [f"todo {t} is in hand as work" if int(t) in held else f"todo {t} is assigned to {todos.peek(int(t)).assigned}" for t in owned
+                if int(t) in held or todos.peek(int(t)).assigned]
+        if busy:
+            self._refuse(f"plan {n} cannot move while " + "; ".join(busy))
+        renumbered = {int(t): todos.move(int(t), env).n for t in owned}
+        moved = super().move(n, env)
+        phases = [{**phase, PHASE.todos: [renumbered[int(t)] for t in phase.get(PHASE.todos, []) if int(t) in renumbered]} for phase in moved.phases]
+        return self.in_env(env).update(moved.n, phases=phases)
+
+    @action
     def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
         return self._placed(n, p, "todo", todos, move, off)
 

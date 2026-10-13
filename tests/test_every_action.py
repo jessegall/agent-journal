@@ -40,6 +40,7 @@ from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTE
 from resources.pictures import dimensions
 from resources.shapes import normalize_options
 from resources.types import TYPES, EnvironmentKind
+from resources.plans import PHASE
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, load_note, project_on, report, run
 from commands import http  # noqa: F401
@@ -873,6 +874,27 @@ def test_a_row_of_every_type_moved_to_another_environment_keeps_its_words_and_fi
             "archived": (users.load(row.n).deleted > 0, whys) == (True, [f"moved to west as {type_} {moved.n}"]),
         })
     assert wrong == {}, "the moved row keeps its words and its file, and the original is archived with where it went"
+
+
+def test_a_plan_moved_to_another_environment_takes_its_todos_with_it_renumbered_in_its_phases_and_is_refused_while_one_is_assigned():
+    features.load()
+    record = fresh("pm")
+    plans, todos = (CONTROLLERS[type_](record, actor=SYSTEM) for type_ in ("plan", "todo"))
+    plan = plans.create("a plan to carry")
+    plans.phase(plan.n, "first", "the first is done")
+    plans.phase(plan.n, "second", "the second is done")
+    rows = [todos.create(f"row {i}").n for i in range(3)]
+    plans.place(plan.n, 1, rows[:2])
+    plans.place(plan.n, 2, rows[2:])
+    there = CONTROLLERS["todo"](Record(record.root, "west"), actor=SYSTEM)
+    there.create("an older row of west")
+    todos.assign(rows[0], "helper:1")
+    assert "assigned" in refused(lambda: plans.move(plan.n, "west")) and plans.load(plan.n).deleted == 0, "a plan with a to-do assigned to a helper stays where it is"
+    todos.unassign(rows[0])
+    moved = plans.move(plan.n, "west")
+    arrived = [[there.load(n).title for n in phase[PHASE.todos]] for phase in moved.phases]
+    assert (arrived, [todos.load(n).deleted > 0 for n in rows]) == ([["row 0", "row 1"], ["row 2"]], [True, True, True]), \
+        "the plan arrives whole, its phases name the to-dos as they are numbered there, and the originals are archived"
 
 
 def test_a_row_of_every_type_made_twice_in_ten_seconds_is_one_row_unless_the_words_author_or_target_differ_for_every_type_that_deduplicates():
