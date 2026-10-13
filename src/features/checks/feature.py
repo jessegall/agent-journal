@@ -47,6 +47,8 @@ class ChecksFeature(Feature):
         ])
         journal.events.handle(ClockTicked, ForgetDeadRuns(), expects=[
             Given(ClockTicked(agent=1), rows=[Check(n=1, title="Lint", data={"command": "make lint"}), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[Check(n=1, title="Lint", data={"command": "make lint", "running": {"at": WHEN - 60, "pid": 99999}}), AGENT_ROW])
+                >> Updated(Check(n=1, title="Lint"), running={}),
         ])
         journal.events.handle(CheckDue, StartDueCheck(), expects=[
             Given(CheckDue(check=1), rows=[Check(n=1, title="Review", data={"instruction": "Look at the board"}), AGENT_ROW]) >> Updated(Check(n=1), asked_at=WHEN),
