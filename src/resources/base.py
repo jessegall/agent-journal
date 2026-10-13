@@ -192,6 +192,10 @@ class Summary:
                    part_of=raw.get("part_of", ""), draft_of=raw.get("draft_of", ""), plugin=raw.get("plugin", ""), zip=raw.get("zip", ""), extras=extras,
                    stamp=stamp)
 
+    def value(self, field: str):
+        """What the summary holds under a field, whether it is one of the fixed fields or one its type indexes."""
+        return getattr(self, field) if field in SUMMARY_COLUMNS else self.extras.get(field)
+
     @property
     def is_open(self) -> bool:
         return not self.completed and not self.deleted

@@ -432,7 +432,7 @@ class RowStore:
     @final
     def by(self, field: str, value) -> list[Summary]:
         """The summaries whose field is the value, oldest first; the field is one the summaries carry."""
-        return sorted(self.derived(f"by:{field}", lambda row: [row.extras.get(field)]).get(value, {}).values(), key=listed_order)
+        return sorted(self.derived(f"by:{field}", lambda row: [row.value(field)]).get(value, {}).values(), key=listed_order)
 
     @final
     def unread(self, actor: str) -> list[Summary]:
