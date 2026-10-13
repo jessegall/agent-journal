@@ -216,7 +216,6 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     assert [t.title for t in todos.rows.standing()] == [title] and "before any other write" not in held(record, main.title), \
         "and the next breach files a fresh to-do instead of holding the writes"
     from controllers.types import Agents
-    from engine.record import Record
     from resources.text import digest
     elsewhere = Record(record.root, "elsewhere")
     Agents(elsewhere, actor=SYSTEM).create("claude-2")
