@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import re
 
-from engine.shell import without_scripts
+from resources.shell import without_scripts
 
 NOISE = {"cd", "echo", "sleep", "true", "false", "set", "export", "clear", "printf", "done", "fi", "for", "while",
          "until", "if", "elif", "case", "esac", "read", "shift", "wait", "exit"}

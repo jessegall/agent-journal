@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from engine.journal_calls import pieces
-from engine.shell import without_scripts
+from resources.shell import without_scripts
 
 WHOLE_SUITE = "The whole suite"
 MANY = 3

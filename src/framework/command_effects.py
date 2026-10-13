@@ -2,7 +2,7 @@ import re
 from functools import singledispatch
 from pathlib import Path
 
-from engine.shell import without_scripts
+from resources.shell import without_scripts
 from payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, ReadCall, SearchCall, SkillCall, WriteCall
 from dataclasses import replace
 
