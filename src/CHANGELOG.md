@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.13 — A newer major version is offered on the About page
+
+- The newest-release check keeps the newest release of any major version, so the About page and the update band show 4.0 when it is out, and their Install button installs exactly the version they show. An update at start, like the automatic update check, installs a newer major only when the auto-update setting allows major versions, and journal upgrade without a version stays on its own major.
+
 ## 3.0.12 — Reading every message is faster
 
 - A row kept in a packed archive is read straight from the archive, and a read of every row looks the archive index up once, so a cold read of all messages takes about a quarter less time.

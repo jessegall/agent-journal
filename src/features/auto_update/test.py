@@ -983,3 +983,24 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
 
 
 
+
+
+def test_a_newer_major_is_offered_but_installs_at_start_only_when_majors_are_chosen(monkeypatch):
+    import commands.launch_update as launching
+    import engine.upgrades as upgrades
+    from engine import runtime
+    load()
+    record = fresh()
+    cache = runtime.upstream_cache(record.root)
+    monkeypatch.setattr(upgrades, "released", lambda **line: "3.0.12" if line else "4.0.0")
+    upgrades.kept_newest(cache)
+    assert cache.read_text() == "4.0.0", "the newest release of any major is kept, so the About page offers it"
+    Features(record, actor=SYSTEM).switch("auto_update", True)
+    record.set_setting("auto_update", {"installs": "patches"})
+    monkeypatch.setattr(launching, "version", lambda: "3.0.12")
+    monkeypatch.setattr(launching, "fetched", lambda cache: None)
+    monkeypatch.setattr(launching, "journal_repository", lambda project: False)
+    upgrading = []
+    monkeypatch.setattr("install.upgrade", lambda project, root: upgrading.append(root) or [])
+    launching.latest_first(record)
+    assert upgrading == [], "a start on patches does not install the newer major it was offered"
