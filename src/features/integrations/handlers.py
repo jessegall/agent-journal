@@ -11,7 +11,13 @@ class CheckOnClock(Handler[ClockTicked]):
         return []
 
 
-class SendApprovedReply(Handler[ReplyApproved]):
-    def handle(self, event: ReplyApproved, work: OwnWork) -> list[Fact]:
-        work.send_reply(event.ticket, event.text)
-        return []
+def sending_approved(approved: type[ReplyApproved]) -> Handler:
+    """The handler of one service's approved reply, since a handler receives the one fact class it is registered on."""
+
+    class SendApprovedReply(Handler[approved]):
+        def handle(self, event: approved, work: OwnWork) -> list[Fact]:
+            work.send_reply(event.ticket, event.text)
+            return []
+
+    SendApprovedReply.__name__ = SendApprovedReply.__qualname__ = f"Send{approved.__name__}"
+    return SendApprovedReply()

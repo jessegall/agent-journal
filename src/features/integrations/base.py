@@ -14,7 +14,7 @@ from engine import bus
 from framework.base import Feature
 from features.integrations.commands import SyncIntegration
 from features.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
-from features.integrations.handlers import CheckOnClock, SendApprovedReply
+from features.integrations.handlers import CheckOnClock, sending_approved
 from features.integrations.listeners import SpotApprovedReply
 from events.questions import QuestionCompleted
 from features.integrations.client import IntegrationClient
@@ -59,7 +59,7 @@ class IntegrationFeature(Feature):
             Given(self.closed(), rows=[self.proposal(SEND, by=AGENT)]) >> Dispatches(nothing),
             Given(self.closed(), rows=[self.proposal(SEND, service="another")]) >> Dispatches(nothing),
         ])
-        journal.events.handle(self.approved, SendApprovedReply(), expects=[
+        journal.events.handle(self.approved, sending_approved(self.approved), expects=[
             Given(self.approved(question=1, ticket=1, text="Thanks."), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "send_reply", 1, "Thanks.")),
         ])
         journal.commands.add("feature", SyncIntegration(self.name), expects=[

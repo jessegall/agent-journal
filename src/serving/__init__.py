@@ -137,6 +137,11 @@ class OwnWork(Service):
 
     writes = True
 
+    @classmethod
+    def written(cls, asked) -> str:
+        """Nothing two features share: each one's own work is its own."""
+        return ""
+
 
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
