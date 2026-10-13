@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.1 — The figure is on, and its laptop sits on its lap
+
+- The avatar is on by default, and this update switches it on in every project, including those where 3.0.0 left it off. Switch it off under Settings, Chat, Show a figure in the chat.
+- A seated figure's laptop is bigger, rests on its lap with the keyboard over its thighs, and its hands type on the keys instead of below them.
+
 ## 3.0.0 — Every feature declares what it expects, and the figure is drawn in 3D
 
 - Every feature now registers its handlers together with the behaviour it promises of them, and the test suite is generated from those promises: every action on every type, every provider, every expectation and every moment of every resource is played on each run. While the journal runs, a handler that did something its expectation does not say is reported to the agent. Nothing to do; it makes a feature that breaks its own promise visible at once.
