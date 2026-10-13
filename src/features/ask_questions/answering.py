@@ -1,5 +1,6 @@
 import json
 
+from engine.journal_calls import calls, pieces
 from events.answers import Allowed, Answer, Refused
 from events.asking import ToolCallAsked
 from features.ask_questions.choices import FILED, UNPICKED, unpicked
@@ -32,3 +33,13 @@ class AskInTheJournal(Answerer[ToolCallAsked]):
             return Allowed()
         missing = unnamed_pick(asked_in(providers, row, event.tool, event.input))
         return Refused(FEATURES["ask_questions"].line_text(UNPICKED, question=missing.text) if missing else FEATURES["ask_questions"].line_text(FILED))
+
+
+ALONE = "ask a question as a command of its own, never chained or piped with others, so it goes out once and on purpose"
+
+
+class AskOnItsOwn(Answerer[ToolCallAsked]):
+    def answer(self, event: ToolCallAsked) -> Answer:
+        shell = event.command
+        chained = bool(shell) and not event.subagent and any(made.names("question", "ask") for made in calls(shell)) and len(pieces(shell)) >= 2
+        return Refused(ALONE) if chained else Allowed()

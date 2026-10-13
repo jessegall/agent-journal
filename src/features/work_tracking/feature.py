@@ -1,3 +1,4 @@
+from controllers.types import Works
 from events.agents import AgentReported, ToolFinished
 from events.agents import ClockTicked
 from events.files import FileEdited

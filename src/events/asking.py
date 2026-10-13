@@ -27,6 +27,8 @@ class ToolCallAsked(Asked):
     subagent: bool = False
     writes: bool = False
     """Whether the call changes files in the project, as a hold on writes judges it."""
+    background: bool = False
+    """Whether the call asked to run in the background, which a wait in the shell is then no reason to refuse."""
 
 
 @dataclass(frozen=True, kw_only=True)
