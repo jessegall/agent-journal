@@ -6,7 +6,7 @@ from pathlib import Path
 from resources.memo import Memo
 from resources.code import SRC
 from resources.places import upgrade_mark
-from payload import journal_hook
+from resources.hook_commands import journal_hook
 
 MANAGED = "managed-files.json"
 LEGACY_COPY_MARKER = "managed-update-copy"
@@ -94,7 +94,10 @@ def remembered_unchanged(project: Path, root: Path, path: Path) -> bool:
 
 
 def remember_rewritten(project: Path, root: Path, path: Path) -> None:
+    """Records a file the journal wrote again since its install, so the next upgrade knows the change for its own; before the first install records anything there is nothing to add to."""
     target = root / MANAGED
+    if not target.is_file():
+        return
     remembered = json.loads(target.read_text())
     remembered[path.relative_to(project).as_posix()] = managed_hash(path)
     target.write_text(json.dumps(remembered, indent=2, sort_keys=True) + "\n")

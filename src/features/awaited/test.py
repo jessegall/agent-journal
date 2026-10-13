@@ -119,7 +119,7 @@ def test_a_request_never_walks_a_row_folder_the_background_renewal_has_not_reach
 
 
 def test_the_hash_of_a_managed_file_is_made_again_only_when_the_file_changes(tmp_path, monkeypatch):
-    from framework import managed
+    from engine import managed
     made = []
     monkeypatch.setattr(managed, "managed_bytes", lambda path: made.append(path) or path.read_bytes())
     file = tmp_path / "skill.md"

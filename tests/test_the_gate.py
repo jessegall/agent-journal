@@ -91,6 +91,8 @@ def test_the_hooks_of_every_provider_are_checked_at_a_start_and_written_again_wh
     first = repaired(record.root)
     assert len(first) == len(PROVIDERS) and all("no current hook" in line or "no journal hook" in line for line in first), "an agent whose hooks were never wired gets them at the start"
     assert repaired(record.root) == [], "and nothing is said when all is well"
+    from engine.managed import changed_managed, remember_managed
+    remember_managed(project, record.root)
     for name, cls in PROVIDERS.items():
         provider = cls()
         config = provider.config(project)
@@ -98,6 +100,8 @@ def test_the_hooks_of_every_provider_are_checked_at_a_start_and_written_again_wh
     stale = repaired(record.root)
     assert len(stale) == len(PROVIDERS), "hooks that run a path that is gone are written again"
     assert all(cls().unwired(project, HookCommand(code(record.root) / "hook.sh", name, record.root)) == "" for name, cls in PROVIDERS.items()), "and are right after it"
+    assert [path for path in changed_managed(project, record.root) if path.name in ("settings.local.json", "hooks.json")] == [], \
+        "and an upgrade after it knows those hook files for the journal's own writing, not the user's edit"
 
 
 def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch):

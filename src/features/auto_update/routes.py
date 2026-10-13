@@ -11,7 +11,7 @@ from framework.updating.status import standing, upgrading, upstream_standing
 from framework.updating.new_feature import mark_seen, shown_announced
 from framework.routing import Reply, Request, handles
 from resources.base import Refused
-from framework.managed import changed_managed, changed_message
+from engine.managed import changed_managed, changed_message
 from install import release_versions
 
 ENTRY = re.compile(r"^## ", re.M)

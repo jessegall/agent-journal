@@ -878,7 +878,7 @@ def loaded() -> Package:
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
     from engine.runtime import default_env, mark_upgrade, restarting, upgrade_mark
-    from framework import managed
+    from engine import managed
     from framework.updating.new_feature import mark_all_seen
     from framework.updating.waiting import wait_for_commands
     from engine.developing import developing

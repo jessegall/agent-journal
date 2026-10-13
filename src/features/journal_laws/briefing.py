@@ -1,5 +1,5 @@
 import re
-from framework.managed import CURRENT, remember_rewritten, remembered_unchanged
+from engine.managed import CURRENT, remember_rewritten, remembered_unchanged
 from dataclasses import dataclass
 from pathlib import Path
 

@@ -7,6 +7,7 @@ from enum import StrEnum
 from typing import ClassVar
 from pathlib import Path
 
+from resources.hook_commands import LEGACY, journal_hook  # noqa: F401  their home is resources
 from resources.fields import Loaded
 
 
@@ -567,7 +568,6 @@ class Hook(Loaded):
         return replace(hook, session=hook.transcript.stem if hook.transcript else hook.session, tool=call_of(raw, kinds))
 
 
-LEGACY = ".journal/hook.py"
 LIBRARY = ".agents/skills"
 MARK = "[journal]"
 JOURNAL, PERSON = "journal", "person"
@@ -576,10 +576,6 @@ JOURNAL, PERSON = "journal", "person"
 def said_by(who: str) -> str:
     """The mark on a line the journal types for somebody else, so the agent reading it can tell a message from a stray paste."""
     return f"{MARK} a message from the agent in {who}, filed in your own environment as well:"
-
-
-def journal_hook(text: str) -> bool:
-    return LEGACY in text or ("/hook.sh" in text and "/.journal" in text)
 
 
 HEAVY_RUN = re.compile(r"(?:^|[\s;&|])(?:(?:python3?\s+-m\s+)?pytest|vitest|npm\s+(?:run\s+)?test|node\s+\S*browser/\S+\.mjs|journal\s+(?:--\S+\s+\S+\s+)*check\s+(?:run|touched|gate))\b")
