@@ -6,6 +6,7 @@ never runs inside the hook that started it.
 """
 
 import time
+from contextvars import ContextVar
 from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
@@ -23,6 +24,10 @@ class TooManyTicks(RuntimeError):
     @classmethod
     def of(cls, chain: list[str]) -> "TooManyTicks":
         return cls(f"a lane ran {MOST_TICKS} ticks without emptying, so something it dispatches causes itself: {' caused '.join(chain)}")
+
+
+IN_HAND: ContextVar = ContextVar("in_hand", default=None)
+"""The fact the lane's handlers are acting on now, so a service about an agent speaks to the agent that fact names."""
 
 
 class Unserved(LookupError):
@@ -169,6 +174,7 @@ class Lane:
         """What the handlers of these facts did, inside one transaction: a raise rolls the whole tick back and leaves a TickFailed in its place."""
         dispatched: list[Event] = []
         for fact in facts:
+            held = IN_HAND.set(fact)
             try:
                 with bus.unit(), bus.causing(fact.id):
                     for one in self.order.handlers(type(fact), self.registered):
@@ -187,4 +193,6 @@ class Lane:
                 if isinstance(fact, TickFailed):
                     raise
                 dispatched.append(self.named(TickFailed(failed=type(fact).__name__, error=str(raised)), fact))
+            finally:
+                IN_HAND.reset(held)
         return dispatched

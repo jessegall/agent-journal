@@ -28,7 +28,7 @@ from engine import gates
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
 from receiving.asking import answered
-from receiving.ticks import PerAsk, Services, Unserved
+from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
@@ -343,6 +343,11 @@ class JournalCommands:
 
 def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
     """What a receiver is handed, by the service type it asks for, over this record: the same funnels a 2.x handler reached through its Context. The agent is looked up only when a receiver asks for the chat."""
+    def speaking() -> object:
+        """The agent the fact in hand names, else the one the lane is about."""
+        fact = IN_HAND.get()
+        return agent_of_fact(fact, record) if getattr(fact, "agent", 0) else agent()
+
     def controlling(feature: str, asked):
         return CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM)
 
@@ -352,22 +357,22 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Files: ProjectFiles(record),
             ReadFiles: ProjectFiles(record),
             ReadProcesses: PerAsk(lambda feature, asked: SERVED.given(Processes)),
-            Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
+            Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, speaking())),
             Settings: PerAsk(lambda feature, asked: FeatureSettings(FEATURES[feature], record)),
             Rows: PerAsk(controlling),
             ReadRows: PerAsk(controlling),
-            Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent())),
+            Commands: PerAsk(lambda feature, asked: JournalCommands(record, speaking())),
             Remembered: PerAsk(lambda feature, asked: record.state(feature)),
             ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
             Sessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
-            Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, agent())),
+            Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, speaking())),
             Git: PerAsk(lambda feature, asked: TheGit(record)),
             ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
             JournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             ReadJournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
-            Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
-            ReadMarks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
-            Holds: PerAsk(lambda feature, asked: AgentHolds(record, agent())),
+            Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, speaking())),
+            ReadMarks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, speaking())),
+            Holds: PerAsk(lambda feature, asked: AgentHolds(record, speaking())),
             Elsewhere: PerAsk(lambda feature, asked: TheEnvironments(FEATURES[feature], record)),
             ReadElsewhere: PerAsk(lambda feature, asked: TheEnvironments(FEATURES[feature], record)),
             ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
