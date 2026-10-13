@@ -335,9 +335,10 @@ class HalfSwept(Exception):
 def no_feature_is_half_swept() -> None:
     """Refuses a feature that registers for both engines. There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice."""
     adapted = [one for one in ADAPTED.each if one.feature and one.name not in THE_ENGINES_OWN]
-    for feature in sorted({one.feature for one in adapted} & {one.feature for one in REGISTERED.each if one.feature}):
+    moved = [one for one in REGISTERED.each if one.feature and one.name not in THE_ENGINES_OWN]
+    for feature in sorted({one.feature for one in adapted} & {one.feature for one in moved}):
         raise HalfSwept.of(feature, [one.name for one in adapted if one.feature == feature],
-                           [one.name for one in REGISTERED.each if one.feature == feature])
+                           [one.name for one in moved if one.feature == feature])
 
 
 def ordered_once_the_features_have_registered() -> None:

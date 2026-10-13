@@ -149,9 +149,14 @@ class Ids(Service):
 
 
 class Adapted(Service):
-    """The tick's record itself, asked for by the adapter alone, which builds an unswept 2.x handler's Context over it. A swept feature asks for the controller it needs instead."""
+    """The tick's record itself, asked for by the adapter and the engine's own senders of declared nudges, which build a Context over it. A swept feature asks for the controller it needs instead."""
 
     writes = True
+
+    @classmethod
+    def written(cls, asked) -> str:
+        """None that can be named: whatever a Context over the record writes, so no order between two of them can be worked out."""
+        return ""
 
 
 def writing(wants: dict[str, object]) -> set[str]:
@@ -159,8 +164,8 @@ def writing(wants: dict[str, object]) -> set[str]:
     written = set()
     for asked in wants.values():
         service = get_origin(asked) or asked
-        if isinstance(service, type) and issubclass(service, Service) and service.writes:
-            written.add(service.written(asked))
+        if isinstance(service, type) and issubclass(service, Service) and service.writes and (name := service.written(asked)):
+            written.add(name)
     return written
 
 

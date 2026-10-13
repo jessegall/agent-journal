@@ -1,11 +1,14 @@
 from dataclasses import dataclass, replace
-from typing import Callable, ClassVar
+from typing import Callable
 
 from events.agents import AgentReported
 from events.agents import ClockTicked
 from declaring import trigger
 from framework import actions
-from framework.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Handler
+from events import Fact
+from framework.parts import ANY_BUT_POST_TOOL_USE, Context
+from receiving import Handler as Engines
+from serving import Adapted as TheRecord
 
 
 @dataclass(frozen=True)
@@ -28,6 +31,8 @@ class Nudge:
     first: bool = False
     timing: trigger.Trigger = trigger.NEVER
     action: str = actions.SAY
+    expects: tuple = ()
+    """What the nudge promises, played and watched like any registration's: a Given on the clock or on a tool's use, and the nudge it sends."""
 
     def __post_init__(self) -> None:
         if self.first and not self.most:
@@ -66,18 +71,28 @@ def send(context, nudges: tuple) -> None:
             actions.perform(speaking, speaking.agent.row, nudge.action, nudge.line, nudge.private, **found.values)
 
 
-@dataclass
-class SendOnTheClock(Handler):
-    nudges: tuple
+class SendOnTheClock(Engines[ClockTicked]):
+    """The engine's own sender of a feature's declared nudges, on the clock."""
 
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        send(context, self.nudges)
+    owes = False
+
+    def __init__(self, feature, nudges: tuple):
+        self.feature, self.nudges = feature, nudges
+
+    def handle(self, event: ClockTicked, record: TheRecord) -> list[Fact]:
+        send(Context.of(self.feature, record), self.nudges)
+        return []
 
 
-@dataclass
-class SendOnToolUse(Handler):
-    hooks: ClassVar[tuple[str, ...]] = ANY_BUT_POST_TOOL_USE
-    nudges: tuple
+class SendOnToolUse(Engines[AgentReported]):
+    """The engine's own sender of a feature's declared nudges, as the agent uses a tool, but for the report after one."""
 
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        send(context, self.nudges)
+    owes = False
+
+    def __init__(self, feature, nudges: tuple):
+        self.feature, self.nudges = feature, nudges
+
+    def handle(self, event: AgentReported, record: TheRecord) -> list[Fact]:
+        if event.hook in ANY_BUT_POST_TOOL_USE:
+            send(Context.of(self.feature, record), self.nudges)
+        return []

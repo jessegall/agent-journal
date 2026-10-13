@@ -20,6 +20,7 @@ from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from resources.types import STOPPED
 from resources.base import ENVIRONMENT, PROJECT, Refused, SYSTEM
+from events.agents import AgentReported, ClockTicked
 from framework.sending import SendOnTheClock, SendOnToolUse
 
 REGISTRY: dict[str, type] = {}
@@ -93,8 +94,9 @@ class Feature(ABC):
             SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
         SETTINGS_CHANGED.add(None, self.settings_changed, key=self.name)
         if self.nudges:
-            self.journal.events.handler(SendOnTheClock(self.nudges))
-            self.journal.events.handler(SendOnToolUse(self.nudges))
+            promised = [expectation for nudge in self.nudges for expectation in nudge.expects]
+            self.journal.events.handle(ClockTicked, SendOnTheClock(self, self.nudges), [one for one in promised if isinstance(one.given.on, ClockTicked)])
+            self.journal.events.handle(AgentReported, SendOnToolUse(self, self.nudges), [one for one in promised if isinstance(one.given.on, AgentReported)])
 
     @classmethod
     def default_for(cls, root) -> bool:
