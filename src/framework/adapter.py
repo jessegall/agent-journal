@@ -267,6 +267,10 @@ class Ticking:
             self.running.add(one)
         self.order = InOrder.of(self.running)
 
+    def hears(self, pattern: str) -> bool:
+        """Whether a feature written for the 3.0 engine receives the typed event that this pattern names."""
+        return any(issubclass(one.event, TypedEvent) and pattern in one.event.patterns(()) for one in self.moved.each)
+
     def already_runs(self, listener) -> bool:
         return any(getattr(one.receiver, "listener", None) is listener for one in self.registered.of(HANDLE))
 
@@ -351,7 +355,7 @@ def ordered_once_the_features_have_registered() -> None:
 def dispatched_on_a_lane() -> None:
     """From here on a told event is a tick, never a walk over the listeners. Called once, when the features are seated."""
     TICKING.resolve()
-    bus.dispatched_by(TICKING.reaches, TICKING.join, TICKING.leave)
+    bus.dispatched_by(TICKING.reaches, TICKING.join, TICKING.leave, TICKING.hears)
 
 
 def requests_answered() -> None:

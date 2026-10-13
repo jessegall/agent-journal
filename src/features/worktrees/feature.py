@@ -23,5 +23,5 @@ class Worktrees(Feature):
             Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(WorktreeToLink, LinkWorktreeJournal(), expects=[
-            Given(WorktreeToLink(agent=1, top="/work/app-wt"), rows=[IN_A_WORKTREE]) >> Ran(("link", "app-wt")),
+            Given(WorktreeToLink(agent=1, top="/work/app-wt"), rows=[IN_A_WORKTREE], git=answering({("worktree",): Path("/work/app-wt")})) >> Ran(("link", "app-wt")),
         ])

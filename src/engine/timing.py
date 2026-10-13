@@ -4,6 +4,7 @@ import sys
 import threading
 import time
 import traceback
+from pathlib import Path
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 
@@ -157,7 +158,7 @@ class Stopwatch:
             return
         total = self.lap()
         answer = answered if answered else total
-        bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
+        bus.announce(record, TIMING, 0, MEASURED, SYSTEM, {
             "root": str(record.root), "env": record.env, "kind": kind, "target": name, "profile": profile, "stacks": stacks,
             "took": answer.took, "working": answer.working, "after": after, "request": request, "within": 0 if request else inside_request(),
             "garbage": (collecting() - self.garbage) * 1000, "waiting": answer.waiting,
@@ -180,6 +181,6 @@ def measured(record: Record, kind: str, name: str):
 def reported(root, env: str, name: str, took: float) -> None:
     """A command the shim timed from its own start, which the server cannot: a curl that timed out, a cold rerun, a command that never reached the server's clock."""
     if bus.heard(EVENT):
-        bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
+        bus.announce(Record(Path(root), env), TIMING, 0, MEASURED, SYSTEM, {
             "root": str(root), "env": env, "kind": "command", "target": name, "profile": None, "stacks": "", "took": took, "working": 0.0, "after": 0.0,
             "garbage": 0.0, "waiting": 0.0, "whole_reads": []})

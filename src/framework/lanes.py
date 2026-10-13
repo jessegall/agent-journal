@@ -287,7 +287,7 @@ class TheEnvironments:
         return Environment(self.feature, self.record)
 
     def named(self, env: str) -> Environment:
-        return Environment(self.feature, Record(self.record.root, env))
+        return Environment(self.feature, self.record if env == self.record.env else Record(self.record.root, env))
 
 
 class TheClock:

@@ -113,6 +113,11 @@ def nobody_leaves(pattern: str, listener: Listener) -> None:
     """The walk needs no telling who left, for the same reason."""
 
 
+def nobody_hears(pattern: str) -> bool:
+    """The walk over the listeners is the only place a pattern is heard."""
+    return False
+
+
 def nobody_answers(request, record) -> Answer:
     """No engine is seated to answer a request, so what was asked about goes on as it was."""
     return Allowed()
@@ -121,16 +126,16 @@ def nobody_answers(request, record) -> Answer:
 class Dispatch:
     """How a told event reaches what acts on it: the walk over the listeners until the engine is seated, and then the engine's own lane, which runs the same receivers inside a tick. A request is answered the same way: by nobody until the engine is seated."""
 
-    def __init__(self, reaches: Listener, joins=nobody_joins, leaves=nobody_leaves, asks=nobody_answers):
-        self.reaches, self.joins, self.leaves, self.asks = reaches, joins, leaves, asks
+    def __init__(self, reaches: Listener, joins=nobody_joins, leaves=nobody_leaves, asks=nobody_answers, hears=nobody_hears):
+        self.reaches, self.joins, self.leaves, self.asks, self.hears = reaches, joins, leaves, asks, hears
 
 
 _dispatch = Dispatch(over_the_listeners)
 
 
-def dispatched_by(reaches: Listener, joins=nobody_joins, leaves=nobody_leaves) -> None:
-    """Who the told events go to now, and how a listener registered later joins it and leaves it, so the bus keeps one way to be reached."""
-    _dispatch.reaches, _dispatch.joins, _dispatch.leaves = reaches, joins, leaves
+def dispatched_by(reaches: Listener, joins=nobody_joins, leaves=nobody_leaves, hears=nobody_hears) -> None:
+    """Who the told events go to now, how a listener registered later joins it and leaves it, and whether it answers to a pattern, so the bus keeps one way to be reached."""
+    _dispatch.reaches, _dispatch.joins, _dispatch.leaves, _dispatch.hears = reaches, joins, leaves, hears
 
 
 def answered_by(asks: Callable) -> None:
@@ -308,7 +313,7 @@ def listening() -> bool:
 
 
 def heard(pattern: str) -> bool:
-    return bool(_listeners.get(pattern))
+    return bool(_listeners.get(pattern)) or _dispatch.hears(pattern)
 
 
 def clear() -> None:

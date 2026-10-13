@@ -46,5 +46,5 @@ def closing(todos: Todos, works: Works, commit: Commit, held_only: bool = False)
             except Refused:
                 continue
             closed.append(f"to-do {n}")
-            ended += [f"work {w}" for w in open_work if works.load(w).completed]
+            ended += [f"work {w}" for w in open_work]
     return closed, ended
