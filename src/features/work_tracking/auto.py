@@ -1,6 +1,6 @@
 import time
 
-from controllers.features import automatic  # noqa: F401  the feature's own callers name it here
+from framework.auto_mode import automatic  # noqa: F401  the feature's own callers name it here
 from controllers.types import Environments, Works
 from resources.base import SYSTEM
 from resources.types import STOPPED
