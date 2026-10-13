@@ -82,3 +82,10 @@ BOARD_OF_MESSAGE = Extension()
 
 OUTPUT_LINES: list = []
 """Each a function of the record giving the most lines a command's output keeps for the agent, the largest of them wins."""
+
+
+SUMMARY_PARTS = Extension()
+"""What each feature adds to the summary of an environment, by the name it is shown under."""
+
+SUMMARY_COUNTS = Extension()
+"""What each feature adds to the counts of the summary, by the name it is counted under."""

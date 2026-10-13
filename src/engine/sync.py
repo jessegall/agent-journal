@@ -29,11 +29,6 @@ def travelling_files(root: Path) -> list[Path]:
 FOLDER_FIELDS = {"agent": ("cwd", "transcript"), "helper": ("worktree", "checkout"), "worktree": ("path",), "record": ("folder",), "environment": ("folder",)}
 
 
-def utc_minute() -> str:
-    """A date written into a row's text, in UTC, so the same moment reads the same on every machine."""
-    return time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
-
-
 def relative(path: str, project: Path) -> str:
     """A path inside the project as written from its root; one outside it is this machine's alone and becomes empty."""
     if not Path(path).is_absolute():

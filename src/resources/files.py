@@ -3,6 +3,10 @@
 import time
 from pathlib import Path
 
+from resources.base import names
+
+KIND = names("edited", "created", "deleted")
+
 
 def mtime(path: Path) -> int:
     """When the file was last written, in nanoseconds, or zero when there is no reading it."""

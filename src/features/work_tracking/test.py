@@ -42,17 +42,18 @@ def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
         "a reset written by another process, such as the server running journal work log, is read, never an old count kept in memory"
     from events.files import FileEdited
     from features.work_tracking.tracker import record_edit
+    from framework.lanes import TheGit
     agents = Agents(record, actor=SYSTEM)
     agent = agents.by_session("claude-1")
     sed = {"command": "sed -i s/a/b/ a.py", "tool": "Bash", "at": 5.0, "done": 6.0}
     agents.update(agent.n, running={"command": "pytest", "tool": "Bash", "at": 7.0, "before": sed}, commands=[sed, {"command": "a.py", "tool": "Read", "at": 5.0}])
     for added in (2, 3):
-        record_edit(agents.load(agent.n), record, works.rows.standing()[0], FileEdited(agent=agent.n, path="a.py", kind="edit", before="x", after="x", added=added))
+        record_edit(agents.load(agent.n), record, works.rows.standing()[0], FileEdited(agent=agent.n, path="a.py", kind="edit", before="x", after="x", added=added), TheGit(record))
     counted = agents.load(agent.n)
     assert (counted.running["before"]["changed"]["added"], counted.running["before"]["files"]) == (5, ["a.py"]), \
         "an edit made while a command ran is counted on that command, even after the next one started"
     assert [one.get("changed", {}).get("added") for one in counted.commands] == [5, None], "and on its row in the list, never on a read at the same moment"
-    record_edit(agents.load(agent.n), record, works.rows.standing()[0], FileEdited(agent=agent.n, path="b.py", kind="edit", before="0" * 40, after="1" * 40, added=0))
+    record_edit(agents.load(agent.n), record, works.rows.standing()[0], FileEdited(agent=agent.n, path="b.py", kind="edit", before="0" * 40, after="1" * 40, added=0), TheGit(record))
     assert [f["path"] for f in works.rows.standing()[0].changed if f["path"] == "b.py"] == ["b.py"], \
         "an edit whose before blob was never stored is counted against an empty file, never a KeyError"
 

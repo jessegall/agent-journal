@@ -26,7 +26,7 @@ from declaring.registries import READINESS
 from features.work_tracking.next import ready, says_what_is_ready
 from framework.sending import Sent
 from features.work_tracking.auto import automatic
-from overview.parts import SUMMARY_PARTS
+from declaring.registries import SUMMARY_PARTS
 from framework.journal import Journal
 from features.work_tracking.auto import chosen_or_steered, steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork

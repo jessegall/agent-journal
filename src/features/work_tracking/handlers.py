@@ -6,7 +6,7 @@ from features.work_tracking import tracker
 from features.work_tracking.listeners import NAME, NAMED_PARKED, OPEN_REMINDERS
 from receiving import Handler
 from resources.types import AgentRow, Todo, Work
-from serving import Chat, Elsewhere, Marks, Remembered, Rows
+from serving import Chat, Elsewhere, Git, Marks, Remembered, Rows
 
 POLLING = "polling"
 POLLING_NO_WAKE = "polling, no wake"
@@ -88,8 +88,8 @@ class AskStillBlockedRow(Handler[StillBlocked]):
 
 
 class RecordEdit(Handler[EditedInWork]):
-    def handle(self, event: EditedInWork, agents: Rows[AgentRow], works: Rows[Work], elsewhere: Elsewhere) -> list[Fact]:
-        tracker.record_edit(agents.load(event.agent), elsewhere.here().record, works.load(event.work), event)
+    def handle(self, event: EditedInWork, agents: Rows[AgentRow], works: Rows[Work], elsewhere: Elsewhere, git: Git) -> list[Fact]:
+        tracker.record_edit(agents.load(event.agent), elsewhere.here().record, works.load(event.work), event, git)
         return []
 
 

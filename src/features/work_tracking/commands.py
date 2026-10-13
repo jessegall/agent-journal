@@ -2,10 +2,18 @@ import re
 import time
 
 from controllers.types import Works
-from engine.sync import utc_minute
-from features.boards.orchestration import orchestrating
+from framework.loaded import FEATURES
 from framework.parts import Command, Context
 from resources.base import Refused, titled
+
+
+def utc_minute() -> str:
+    """A date written into a work's log, in UTC, so the same moment reads the same on every machine."""
+    return time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
+
+
+def orchestrating(record) -> bool:
+    return bool(FEATURES["boards"].values(record).orchestrating)
 
 
 def in_hand(works: Works, n: int = 0):

@@ -379,6 +379,10 @@ class Helpers(Controller):
         helper = Ref.parse(todo.assigned)
         return helper if self.rows.exists(helper.n) and not self.load(helper.n).completed else None
 
+    def working(self) -> list:
+        """The helpers and subagents of this environment that are working right now."""
+        return [one for one in kept(self.record, self.rows.standing()) if not one.idle]
+
     def open_questions(self, environment: str) -> list:
         """The questions that wait for the user in that environment, hidden ones left out."""
         return [question for question in Questions(Record(self.record.root, environment), actor=SYSTEM).rows.standing() if not question.hidden]

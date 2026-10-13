@@ -1,10 +1,9 @@
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.files import KIND, line_counts
-from engine.git import commits_since
 from resources.command_runs import Delta, counted_runs, current_run
 from resources.base import SYSTEM
+from resources.files import KIND
 from resources.shapes import CHANGE, COMMIT
 from resources.types import AgentRow, Work
 
@@ -13,16 +12,15 @@ def files_of(record, n: int):
     return record.state(f"work-{n}")
 
 
-def committed(project: Path, since: float) -> list[dict]:
-    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, subject in commits_since(project, since)]
+def committed(git, since: float) -> list[dict]:
+    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, subject in git.commits_since(since)]
 
 
 def forget(record, n: int) -> None:
     files_of(record, n).clear()
 
 
-def record_edit(agent: AgentRow, record, work: Work, edit) -> None:
-    project = record.root.parent
+def record_edit(agent: AgentRow, record, work: Work, edit, git) -> None:
     with files_of(record, work.n).changing() as held:
         base = held.setdefault("base", {}).setdefault(edit.path, edit.before)
         made = held.setdefault("created", [])
@@ -33,9 +31,9 @@ def record_edit(agent: AgentRow, record, work: Work, edit) -> None:
     if base == edit.after:
         files.pop(edit.path, None)
     else:
-        total = line_counts(project, [(base, edit.after)])[(base, edit.after)]
+        total = git.line_counts([(base, edit.after)])[(base, edit.after)]
         files[edit.path] = {CHANGE.path: edit.path, CHANGE.added: total.added, CHANGE.removed: total.removed, CHANGE.created: created}
-    commits = committed(project, work.created)
+    commits = committed(git, work.created)
     if list(files.values()) != work.changed or commits != work.commits:
         Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
     finished = current_run(agent).finished

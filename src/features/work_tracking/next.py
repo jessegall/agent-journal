@@ -1,6 +1,5 @@
 from controllers.types import Questions, Todos, Works
 from controllers.types import Helpers
-from controllers.helpers.reuse import kept
 from resources.base import SYSTEM, WHOM
 
 from resources.extension import Extension
@@ -31,7 +30,7 @@ def carried_on(record) -> list:
 
 def helping(record) -> list:
     """The helpers and subagents of this environment that are working right now."""
-    return [one for one in kept(record, Helpers(record, actor=SYSTEM).rows.standing()) if not one.idle]
+    return Helpers(record, actor=SYSTEM).working()
 
 
 def still_next(journal, rows: tuple[str, ...]) -> bool:

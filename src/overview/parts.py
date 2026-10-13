@@ -1,4 +1,1 @@
-from resources.extension import Extension
-
-SUMMARY_PARTS = Extension()
-SUMMARY_COUNTS = Extension()
+from declaring.registries import SUMMARY_COUNTS, SUMMARY_PARTS  # noqa: F401

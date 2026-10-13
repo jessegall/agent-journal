@@ -208,7 +208,8 @@ def test_keys_hashes_and_tokens_never_travel_to_another_machine():
         "the files that hold keys and live state stay on their machine"
     assert (travelling("phone", {"key": "x"}, Path("/p")), travelling("share", {"target": "doc:1", "token": "t", "password": "p"}, Path("/p"))) == (None, {"target": "doc:1"}), \
         "a phone never travels, and a share travels without its token or password"
-    from engine.sync import relative, utc_minute
+    from engine.sync import relative
+    from features.work_tracking.commands import utc_minute
     project = Path("/home/a/project")
     assert (relative("/home/a/project/.claude/worktrees/x", project), relative("/home/a/.claude/projects/t.jsonl", project), relative("src/a.py", project)) == \
         (".claude/worktrees/x", "", "src/a.py"), "a path inside the project is written from its root, one outside it stays on its machine"

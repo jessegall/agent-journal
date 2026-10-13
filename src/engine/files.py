@@ -11,7 +11,7 @@ from engine.project_files import readable_in
 from events.files import EDITED
 from resources.base import SYSTEM, names
 
-KIND = names("edited", "created", "deleted")
+from resources.files import KIND  # noqa: F401
 EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 SNAPSHOT = "files"
 
