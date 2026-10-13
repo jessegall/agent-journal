@@ -351,4 +351,8 @@ def dispatched_on_a_lane() -> None:
     """From here on a told event is a tick, never a walk over the listeners. Called once, when the features are seated."""
     TICKING.resolve()
     bus.dispatched_by(TICKING.reaches, TICKING.join, TICKING.leave)
-    bus.answered_by(lambda request, record: answering(TICKING.running, request, record))
+
+
+def requests_answered() -> None:
+    """From here a request is answered by the features' refusers and answerers, in every process: a command's write is refused where it is made."""
+    bus.answered_by(lambda request, record: answering(REGISTERED, request, record))

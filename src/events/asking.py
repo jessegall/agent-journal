@@ -70,4 +70,6 @@ class RowWriting(Asked):
     reduces = FirstRefusalWins
     type: str = ""
     action: str = ""
+    actor: str = ""
     fields: tuple[tuple[str, object], ...] = field(default_factory=tuple)
+    session: str = ""

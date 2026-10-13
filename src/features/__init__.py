@@ -34,6 +34,8 @@ def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
         rename_aliases(root)
     dispatch_on_a_lane()
     wire()
+    from framework.adapter import requests_answered
+    requests_answered()
     from framework.adapter import ordered_once_the_features_have_registered
     ordered_once_the_features_have_registered()
     subscribe()

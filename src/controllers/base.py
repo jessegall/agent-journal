@@ -9,6 +9,8 @@ from dataclasses import asdict, dataclass, field
 from functools import cache, partial
 
 from engine import bus
+from events.answers import Refused as Refusal
+from events.asking import RowWriting
 from resources.extension import Extension
 from resources.fields import Loaded
 from engine.markers import plain
@@ -288,6 +290,9 @@ class Controller(Files, Links, Discussed, Buttons):
     def _handled(self, action: str, /, **args) -> None:
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             fn(self, **args)
+        asked = bus.asked(RowWriting(type=self.type, action=action, actor=self.actor, fields=tuple(args.items())), self.record)
+        if isinstance(asked, Refusal):
+            raise Refused(asked.why)
 
     def _plugin_twin(self, title: str, data: dict) -> dict | None:
         name = data.get(OWNER)

@@ -1094,6 +1094,35 @@ def test_a_spaced_fact_is_held_back_from_its_lane_and_runs_on_its_own_when_its_s
     assert ran == [3], "and the one run when the span is up is the newest, the last state landing"
 
 
+def test_a_refuser_on_the_write_path_stops_a_controller_write_with_its_reason():
+    """The refuse kind is live: before a controller writes, it asks RowWriting, a swept feature's refuser that refuses raises with its reason, and nothing is written."""
+    import pytest
+    from controllers.types import Todos
+    from events.asking import RowWriting
+    from receiving import REFUSE, REGISTERED, Refuser, Registration
+    from resources.base import SYSTEM, Refused
+    from tests.conftest import fresh
+
+    class NoForbiddenTitles(Refuser[RowWriting]):
+        def refuse(self, event: RowWriting) -> None:
+            if event.type == "todo" and event.action == "create" and dict(event.fields).get("title") == "forbidden":
+                raise Refused("that title is not for a to-do")
+
+    import features
+    features.load()
+    record = fresh()
+    registration = Registration.read(REFUSE, RowWriting, NoForbiddenTitles(), ["an expectation"], "chat_etiquette")
+    REGISTERED.add(registration)
+    try:
+        todos = Todos(record, actor=SYSTEM)
+        with pytest.raises(Refused, match="not for a to-do"):
+            todos.create("forbidden")
+        todos.create("allowed")
+        assert [row.title for row in todos.all()] == ["allowed"], "the refused write left nothing, and the other went through"
+    finally:
+        REGISTERED.forget(registration.kind, registration.feature, registration.name)
+
+
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():
     """There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice.
 

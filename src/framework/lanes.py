@@ -14,10 +14,11 @@ from engine.sessions import Sessions as TheSessions
 from events import Fact
 from framework.loaded import FEATURES
 from framework.parts import Speaker
-from events.answers import Answer
+from events.answers import Answer, Refused as Refusal
+from receiving import REFUSE
 from receiving.asking import answered
 from receiving.ticks import PerAsk, Services
-from resources.base import AGENT, SYSTEM
+from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
                      Remembered, Rows, Sessions, Settings)
@@ -128,9 +129,17 @@ def due_now(feature, record, fact: Fact) -> bool:
 
 
 def answering(registered, request, record) -> Answer:
-    """A request answered by the answerers the features registered, over the record and about the agent of the session it names."""
+    """A request answered by the features: a refuser that refuses ends it with its reason, before any answerer is read. Over the record, and about the agent of the session the request names, when it names one."""
     services = Services(lane_services(record, lambda: session_agent(record, request.session)))
-    return answered(request, registered, services, switched_on=lambda feature: FEATURES[feature].enabled(record))
+    switched_on = lambda feature: FEATURES[feature].enabled(record)  # noqa: E731
+    for one in registered.of(REFUSE):
+        if one.event is not type(request) or not switched_on(one.feature):
+            continue
+        try:
+            one.receiver.refuse(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
+        except Refused as why:
+            return Refusal(why=str(why))
+    return answered(request, registered, services, switched_on=switched_on)
 
 
 def session_agent(record, session: str):

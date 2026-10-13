@@ -200,7 +200,7 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
     for point, entries in zip(points, kept):
         point.entries = [replace(entry, value=spied(entry.value.guard, asked)) for entry in entries]
     every = [entry.value.guard for entries in kept for entry in entries]
-    job = {"subagent_type": "general-purpose", "model": "haiku", "description": "look", "prompt": "look"}
+    job = {"subagent_type": "Explore", "model": "haiku", "description": "Mr. Strunk: read the gate", "prompt": "look"}
     try:
         for subagent in (False, True):
             asked.clear()

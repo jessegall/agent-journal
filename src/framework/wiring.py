@@ -78,8 +78,8 @@ class Events:
         self.register(ANSWER, request, answerer, expects)
 
     def register(self, kind: str, event: type, receiver, expects, after: tuple[str, ...] = ()) -> None:
-        """Holds one registration until the wiring is read; a feature loaded for its commands alone registers none."""
-        if self.feature.commands_only:
+        """Holds one registration until the wiring is read. A feature loaded for its commands alone registers only what answers before a write, since a command's write is refused there or nowhere."""
+        if self.feature.commands_only and kind not in (ANSWER, REFUSE):
             return
         REGISTERED.add(Registration.read(kind, event, receiver, expects, self.feature.name, after))
 
