@@ -118,11 +118,11 @@ def lifted(argv: list[str]) -> tuple[list[str], str]:
 
 
 SHOWS = ("show", "read")
-"""The words whose answer IS the row, so they print it whole. Every other word is a change, and a change prints what it changed: reading a row back to the agent that just wrote it says nothing it does not already know, and in a long session that repetition is most of what the journal costs."""
+"""The words whose answer IS the row, so they print it whole. A change prints what it changed: reading a row back to the agent that just wrote it says nothing it does not already know, and in a long session that repetition is most of what the journal costs. A word that wrote nothing only read, so its row is printed whole too, as journal work active's is."""
 
 
-def answer(command: str, method: str, got, record) -> str:
-    if method in SHOWS and hasattr(got, "read_out"):
+def answer(command: str, method: str, got, record, wrote: bool) -> str:
+    if (method in SHOWS or not wrote) and hasattr(got, "read_out"):
         from framework.format import read_as
         return read_as(got, record).read_out()
     return f"{command} {got.n}" if hasattr(got, "n") else str(got)
@@ -168,6 +168,7 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
+        before = ctx["record"].event_log.last_id()
         with measured(ctx["record"], "command", f"{command} {method}") if not networked(command, method) else nullcontext():
             got = invoked(controller, word, named=args, extra=extra)
     except Refused as e:
@@ -181,7 +182,7 @@ def run(argv: list[str], out=None, err=None) -> int:
     elif got is not None:
         if getattr(got, "preface", ""):
             print(got.preface, file=out)
-        print(answer(command, method, got, ctx["record"]), file=out)
+        print(answer(command, method, got, ctx["record"], wrote=ctx["record"].event_log.last_id() != before), file=out)
     return 0
 
 

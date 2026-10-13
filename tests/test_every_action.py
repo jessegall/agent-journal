@@ -384,6 +384,12 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero(monkeypatch):
     CONTROLLERS["plan"](record, actor=AGENT).phase(plan.n, "first", when="it is done")
     assert ran("plan", "rephrase", str(plan.n), "1", "--checkpoint", "yes")[0] == 0 and CONTROLLERS["plan"](record, actor=AGENT).load(plan.n).phases[0]["checkpoint"], \
         "a yes-or-no option is read from the word"
+    reading = fresh("wa")
+    started, active = io.StringIO(), io.StringIO()
+    cli.run(["--root", str(reading.root), "--env", reading.env, "work", "start", "Profile the slow hooks"], out=started, err=io.StringIO())
+    cli.run(["--root", str(reading.root), "--env", reading.env, "work", "active"], out=active, err=io.StringIO())
+    assert (started.getvalue().strip().startswith("work "), "Profile the slow hooks" in active.getvalue()) == (True, True), \
+        "a word that changes a row prints only which row, and one that only reads it, as work active, prints the row it read"
     from commands.cli import captured
     helped, code = captured(["todo", "--help"], record.root)
     assert (code, "usage:" in helped) == (0, True), "help asked of the server's command line is printed and exits cleanly, never raising"
