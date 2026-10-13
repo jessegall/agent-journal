@@ -12,6 +12,7 @@ from agents import control
 from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.base import CONTROLLERS
+from declaring.trigger import NOTICES
 from engine import triggering
 from engine import project_files, runtime, seats, worktree
 from engine.git import Checkout, checkout_of
@@ -397,10 +398,12 @@ def agent_of_fact(fact, record):
 
 
 def due_now(feature, record, fact: Fact) -> bool:
-    """Counts the moment against the agent the fact is about, then asks the feature's trigger whether its behaviour is due, as a 2.x handler did with noticed and due."""
+    """Asks the feature's trigger whether its behaviour is due; a trigger that counts notices has the moment counted first, any other writes nothing on a hook that is not due."""
     agent = Agents(record, actor=SYSTEM).peek(fact.agent)
     behaviour, = fact.trigger
-    triggering.noticed(record, agent, feature.keyed(behaviour))
+    cadence = feature.cadence(record, behaviour)
+    if (cadence.unit or cadence.on) == NOTICES:
+        triggering.noticed(record, agent, feature.keyed(behaviour))
     return feature.due(record, agent, behaviour)
 
 
