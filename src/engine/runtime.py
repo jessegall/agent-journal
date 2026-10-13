@@ -7,17 +7,14 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.git import config_changed_at, git_user_name
-from engine.locks import RUNTIME
+from engine.locks import RUNTIME  # noqa: F401
+from resources.places import folder, profiles, session_file, sessions  # noqa: F401
 from engine.proc import run
 from engine.stored import read_json, write_json, write_text
 
 DEFAULT_ENV = "main"
 WARM_UP = 20.0
 STARTED: list[float] = [0.0]
-
-
-def folder(root: Path) -> Path:
-    return Path(root) / RUNTIME
 
 
 def env_file(root: Path) -> Path:
@@ -172,14 +169,6 @@ def channel_alive(root: Path, pid: int) -> Path:
     return folder(root) / "channels" / f"{pid}.on"
 
 
-def profiles(root: Path) -> Path:
-    return folder(root) / "slow"
-
-
-def sessions(root: Path) -> Path:
-    return folder(root) / "sessions"
-
-
 def builds(root: Path) -> Path:
     return folder(root) / "builds"
 
@@ -194,10 +183,6 @@ def viewer_log(root: Path) -> Path:
 
 def upstream_cache(root: Path) -> Path:
     return folder(root) / "upstream.cache"
-
-
-def session_file(root: Path, session: str, name: str) -> Path:
-    return sessions(root) / session / name
 
 
 def announced_file(root: Path, session: str) -> Path:

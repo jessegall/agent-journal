@@ -6,7 +6,6 @@ from expects.watching import BROKEN
 from framework.base import Feature
 from framework.journal import Journal
 from features.dev_faults.details import DevFaultsDetails
-from engine.developing import developing
 from events.dev_faults import OverdueTodoClosed, OverdueTodoFiled
 from features.dev_faults.handlers import LiftOverdueHold, ReportSlow, RestartCountOnClose
 from features.dev_faults.listeners import SpotOverdueTodoClosed, SpotOverdueTodoFiled
@@ -17,7 +16,6 @@ from features.dev_faults.reports import Reporting
 from features.dev_faults.reports import OVER
 from features.dev_faults.routes import get_diagnostics, post_clear_diagnostics
 
-__all__ = ["developing"]
 
 SLOW_TITLE = f"request /api/summary {OVER}"
 
@@ -29,7 +27,7 @@ class DevFaults(Feature):
     @classmethod
     def default_for(cls, root) -> bool:
         """On where the journal develops itself, off everywhere else. What it reports - a request over its budget, an error the viewer threw - is for whoever builds the journal; a project that merely runs on it is told none of it until its user asks to be."""
-        return developing(root.parent)
+        return root.developing()
 
     def register(self, journal: Journal) -> None:
         journal.events.handle(Measured, ReportSlow(), expects=[

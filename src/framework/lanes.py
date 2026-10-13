@@ -15,6 +15,8 @@ from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
 from engine import triggering
 from engine import project_files, runtime, seats, viewer, worktree
+from engine.developing import developing
+from engine.disk import last_lines
 from engine.files import blob_texts
 from engine.git import Checkout, checkout_of
 from engine.locks import project_sweep
@@ -100,8 +102,8 @@ class TheFaults:
         FEATURES["dev_faults"].reports.file(self.record, title, brief, **data)
 
     def log(self, line: str) -> None:
-        from features.dev_faults.diagnostics import logged_at
-        logged_at(self.record.root, line)
+        from features.dev_faults.diagnostics import logged
+        logged(TheJournalRoot(self.record), line)
 
 
 class TheViewer:
@@ -141,6 +143,14 @@ class TheJournalRoot:
     def project(self) -> Path:
         """The folder of the project the journal belongs to."""
         return self.root.parent
+
+    def developing(self) -> bool:
+        """Whether the project is the one the journal is built in."""
+        return developing(self.root.parent)
+
+    def tail(self, path: str, lines: int) -> str:
+        """The last lines of a log, read from its end."""
+        return last_lines(self.root / path, lines)
 
     def is_testing(self) -> bool:
         return runtime.tests_running(self.root)

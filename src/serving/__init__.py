@@ -121,7 +121,7 @@ class ReadViewer(Viewer):
 
 
 class JournalRoot(Service):
-    """The journal's own folder, outside the record: its runtime files and logs, the sweeps the whole project shares, and every environment by name."""
+    """The journal's own folder, outside the record: its runtime files and logs, the sweeps the whole project shares, every environment by name, and whether the project is the one the journal is built in."""
 
     writes = True
 

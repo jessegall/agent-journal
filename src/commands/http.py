@@ -240,7 +240,7 @@ def post_console(req: Request) -> Reply:
     faults = features.FEATURES.get("dev_faults")
     fault = req.body_as(ConsoleFault)
     message, where, stack = fault.message[:200], fault.where[:200], fault.stack[:2000]
-    report = (lambda: faults.reports.report_console(req.root, req.params["env"], message, where, stack, fault.kind)) if faults and message else None
+    report = (lambda: faults.reports.report_console(req.record(), message, where, stack, fault.kind)) if faults and message else None
     return Reply(200, {"queued": bool(report)}, after=report)
 
 

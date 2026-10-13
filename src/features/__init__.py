@@ -6,6 +6,7 @@ from pathlib import Path
 
 from engine import bus
 from engine.package import modules
+from framework.lanes import TheJournalRoot
 from engine.stored import write_text
 from framework.loaded import FEATURES, SEATED, SWITCHED, running  # noqa: F401 - the loader fills them; the rest of the journal reads them from there
 
@@ -164,7 +165,7 @@ def seat(root: Path, homes: tuple[str, ...]) -> None:
         with bus.settled():
             for name, feature in FEATURES.items():
                 if name not in known and feature.scope != PROJECT and not rows.rows.n_of_title(name):
-                    rows.create(name, enabled=feature.default_for(root))
+                    rows.create(name, enabled=feature.default_for(TheJournalRoot(record)))
             for name, row in known.items():
                 if name not in FEATURES and not row.missing:
                     rows.update(row.n, missing=True)

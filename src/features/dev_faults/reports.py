@@ -6,11 +6,9 @@ import pstats
 import time
 from pathlib import Path
 
-from engine import runtime
-from engine.record import Record
 from engine.version import version
 from resources.text import digest, plural
-from engine.developing import developing
+from resources.places import folder, profiles
 from features.dev_faults.diagnostics import LOG_PATH, logged
 from resources.types import AgentRow, Environment, Notification, Todo
 from serving import Elsewhere, JournalRoot
@@ -31,9 +29,9 @@ VIEWER = {"overlap": "the viewer sent {where} twice at once", "page": "the viewe
           "refetch": "the viewer refetched {where} with nothing changed"}
 STARVED = "the server is starved"
 STARVED_EVERY = 60.0
-BUDGET_LOG = str(runtime.folder(Path()) / "budget.jsonl")
+BUDGET_LOG = str(folder(Path()) / "budget.jsonl")
 BUDGET_LOG_KEPT = 200_000
-PROFILES = str(runtime.profiles(Path()))
+PROFILES = str(profiles(Path()))
 STARTED_AT: dict[str, float] = {}
 ALL_THREADS = "cProfile records every thread, so cumulative times include work other threads did while this ran.\n\n"
 
@@ -79,7 +77,7 @@ class FaultReports:
 
     def send(self) -> str:
         """What the agent is told to do with a notice: nothing more in the journal's own development project, and send its numbers to the agent-journal session in any other."""
-        return "" if developing(self.root.project()) else SEND.format(version=version())
+        return "" if self.root.developing() else SEND.format(version=version())
 
     @staticmethod
     def _due(standing, agent) -> bool:
@@ -236,8 +234,8 @@ class Reporting:
     def over(record) -> FaultReports:
         return FaultReports.over(record)
 
-    def spent(self, root, env: str, *measured, **more) -> None:
-        self.over(Record(Path(root), env)).spent(env, *measured, **more)
+    def spent(self, record, env: str, *measured, **more) -> None:
+        self.over(record).spent(env, *measured, **more)
 
     def file(self, record, title: str, brief: str, **data) -> None:
         self.over(record).file(record.env, title, brief, **data)
@@ -245,8 +243,8 @@ class Reporting:
     def slow(self, record, *measured, **more) -> None:
         self.over(record).slow(record.env, *measured, **more)
 
-    def kept(self, root, *measured) -> None:
-        self.over(Record(Path(root), "main")).kept(*measured)
+    def kept(self, record, *measured) -> None:
+        self.over(record).kept(*measured)
 
     def send(self, record) -> str:
         return self.over(record).send()
@@ -257,8 +255,8 @@ class Reporting:
     def broken(self, record, title: str, brief: str) -> None:
         self.over(record).broken(record.env, title, brief)
 
-    def report_console(self, root, env: str, message: str, where: str, stack: str, kind: str = "threw") -> bool:
-        return self.over(Record(Path(root), env)).report_console(env, message, where, stack, kind)
+    def report_console(self, record, message: str, where: str, stack: str, kind: str = "threw") -> bool:
+        return self.over(record).report_console(record.env, message, where, stack, kind)
 
 
 def span_of(request: int, within: int) -> str:

@@ -245,6 +245,12 @@ class JournalRoot(Asked):
     def project(self) -> Path:
         return self.named(("project",), Path("/work/app"))
 
+    def developing(self) -> bool:
+        return self.named(("developing",), False)
+
+    def tail(self, path: str, lines: int) -> str:
+        return self.named(("tail", path), "")
+
     def is_testing(self) -> bool:
         return self.named(("tests running",), False)
 

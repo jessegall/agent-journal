@@ -108,8 +108,9 @@ class Feature(ABC):
     def on_for(cls, record) -> bool:
         if cls.fixed:
             return True
+        from framework.lanes import TheJournalRoot
         found = switches(record)
-        return found[cls.name] if cls.name in found else record.features.get(cls.name, cls.default_for(record.root))
+        return found[cls.name] if cls.name in found else record.features.get(cls.name, cls.default_for(TheJournalRoot(record)))
 
     def enabled(self, record) -> bool:
         return self.on_for(record)
