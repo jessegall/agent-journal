@@ -1141,7 +1141,8 @@ const ON_A_LAP = ["sit"];
 
 // Every clip plays out before another starts, so the figure never reads as cut off: one that plays once to its end, a loop to the end of
 // its cycle or of the stretch it names as `leaves`. An `interruptible` clip gives way the moment something else is wanted instead, as the
-// walk does the moment there is nowhere left to go; a beat, a reaction, a hop or a landing never is.
+// walk does the moment there is nowhere left to go and a fall the moment its feet meet the ground; a beat, a reaction, a jump or a
+// landing never is.
 
 export const CLIPS = [
     {name: "idle", frames: 24, fps: 8, loops: true, leaves: 8, postures: GESTURE, pose: idle},
@@ -1165,7 +1166,7 @@ export const CLIPS = [
     {name: "work", frames: 8, fps: 10, loops: true, postures: GESTURE, pose: work},
     {name: "point", frames: 12, fps: 8, loops: true, postures: GESTURE, pose: point},
     {name: "jump", frames: 16, fps: 20, loops: false, postures: MOVE, pose: jump},
-    {name: "fall", frames: 12, fps: 12, loops: false, postures: MOVE, pose: fall},
+    {name: "fall", frames: 12, fps: 12, loops: false, interruptible: true, postures: MOVE, pose: fall},
     {name: "backflip", frames: 22, fps: 20, loops: false, postures: MOVE, pose: backflip},
     {name: "land", frames: 10, fps: 20, loops: false, postures: MOVE, pose: land},
     {name: "type", frames: 24, fps: 8, loops: true, leaves: 8, postures: ON_A_LAP, pose: type},

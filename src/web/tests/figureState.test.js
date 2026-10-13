@@ -147,13 +147,14 @@ test("the walk is never named before the figure stands ready to go, and the leg 
     expect(clipFor(scene({trip: {started: true, moves: true, way: 1}, doing: "idle"}), canDraw)).not.toHaveProperty("startsLeg");
 });
 
-test("the walk is cut short the moment there is nowhere to go, and every other clip plays out", () => {
+test("the walk is cut short the moment there is nowhere to go, a fall the moment it lands, and every other clip plays out", () => {
     const named = Object.fromEntries(CLIPS.map((clip) => [clip.name, clip]));
-    expect(CLIPS.filter((clip) => clip.interruptible).map((clip) => clip.name)).toEqual(["walk"]);
-    // mid-step the walk gives way at once
+    expect(CLIPS.filter((clip) => clip.interruptible).map((clip) => clip.name)).toEqual(["walk", "fall"]);
+    // mid-step the walk gives way at once, and so does a fall whose feet have met the ground
     expect(canSwitch(named.walk, 5, 4)).toBe(true);
+    expect(canSwitch(named.fall, 3, 2)).toBe(true);
     // a hop, a landing and a beat play to their end, and a loop to the end of its cycle or of the stretch it leaves at
-    for (const name of ["jump", "fall", "backflip", "land", "joy", "dismay", "stretch"]) {
+    for (const name of ["jump", "backflip", "land", "joy", "dismay", "stretch"]) {
         expect(canSwitch(named[name], named[name].frames - 1, named[name].frames - 2), name).toBe(false);
         expect(canSwitch(named[name], named[name].frames, named[name].frames - 1), name).toBe(true);
     }
