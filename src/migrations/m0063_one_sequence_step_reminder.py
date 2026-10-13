@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import environment_records
-from features.sequences.handlers import minutes
+from features.sequences.steps import minutes
 from declaring.trigger import MINUTES
 
 FEATURE = "sequences"
