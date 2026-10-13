@@ -5,7 +5,6 @@ method's first argument. The engine reads both at boot and refuses a registratio
 thing, so a dispatch table is never built on a registration's word alone.
 """
 
-import threading
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic, TypeVar, get_args, get_origin, get_type_hints
 
@@ -152,24 +151,13 @@ class Registration:
 class Registrations(ByKind):
     """Every registration of the four kinds, in the order the features declared them, which is the order the boot walk checks and a tick runs."""
 
-    def __init__(self):
-        self.each: list[Registration] = []
-        self.changing = threading.Lock()
-        """Held while the list is replaced: a registration made while another thread forgets or sorts would otherwise be lost with the list it was added to."""
-
     def add(self, registration: Registration) -> None:
-        """Holds one registration of a name. Registering the same name again replaces it, so wiring the features a second time really rewires them rather than leaving two of each. The list is replaced, never changed in place, so a reader holds a whole list."""
-        with self.changing:
-            self.each = [*(one for one in self.each if (one.kind, one.feature, one.name) != (registration.kind, registration.feature, registration.name)), registration]
+        """Holds one registration of a name. Registering the same name again replaces it, so wiring the features a second time really rewires them rather than leaving two of each."""
+        self.keep((registration.kind, registration.feature, registration.name), registration)
 
     def forget(self, kind: str, feature: str, name: str) -> None:
         """Drops one feature's registration of this name, so registering it again leaves one."""
-        with self.changing:
-            self.each = [one for one in self.each if (one.kind, one.feature, one.name) != (kind, feature, name)]
-
-    def sort(self, key) -> None:
-        with self.changing:
-            self.each = sorted(self.each, key=key)
+        self.drop((kind, feature, name))
 
     def on(self, event: type) -> list[Registration]:
         return [one for one in self.each if one.event is event]

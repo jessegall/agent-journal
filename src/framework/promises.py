@@ -57,13 +57,9 @@ class Owing(LookupError):
 class Promises(ByKind):
     """Every registration the features made, in the order they made it."""
 
-    def __init__(self):
-        self.each: list[Promise] = []
-
     def add(self, promise: Promise) -> None:
         """Keeps one entry per registration. Loading the features again re-registers them, and a registry that appended would double every promise it holds."""
-        self.each = [one for one in self.each if one.named_as != promise.named_as]
-        self.each.append(promise)
+        self.keep(promise.named_as, promise)
 
     def owed(self) -> list[Promise]:
         """The registrations that owe expectations and carry none, which is what the boot walk refuses."""
@@ -78,9 +74,6 @@ class Promises(ByKind):
     def played(self) -> list[tuple[Promise, int, object]]:
         """Every expectation of every registration, each with the name a failure is reported under."""
         return [(one, n, expectation) for one in self.each for n, expectation in enumerate(one.expects)]
-
-    def clear(self) -> None:
-        self.each.clear()
 
 
 PROMISED = Promises()
