@@ -35,6 +35,12 @@ def plugins_answer_in_their_own_time(monkeypatch):
     monkeypatch.setattr(working, "HOOK_WAIT", 20.0)
 
 
+def suggest(record, row) -> None:
+    plugins = features.FEATURES["plugins"]
+    if plugins.fitting_wanted(record, row.n):
+        plugins.look_for_fitting(record)
+
+
 def alone(env="t"):
     record = fresh(env)
     record.set_setting("features", {"gate": False, "work_tracking": False})
@@ -951,8 +957,6 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     subprocess.run(["git", "add", "Order.cs"], cwd=spread / "shop", capture_output=True, timeout=30)
     assert fitting.written_in(tracked_files(spread)) == {"C#"}, \
         "a project that is no repository itself is read through the repositories inside it, so their languages count"
-    from events.agents import ClockTicked
-    from framework.parts import AgentContext
     from controllers.types import Suggestions
     from controllers.types import Todos
     from tests.kit import project_on
@@ -972,8 +976,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     subprocess.run(["git", "add", "app.py"], cwd=repo.project, capture_output=True, timeout=30)
     agents = Agents(repo.record, actor="system")
     row = agents.by_session("claude-1")
-    fresh_start = AgentContext.of(features.FEATURES["plugins"], repo.record, agents.stamp(row.n, started=time.time()))
-    fitting.SuggestFittingPlugins().handle(fresh_start, ClockTicked())
+    suggest(repo.record, agents.stamp(row.n, started=time.time()))
     assert Suggestions(repo.record, actor="system").rows.every() == [], "a session that has just started is suggested nothing"
     from types import SimpleNamespace
     from controllers.types import Environments
@@ -981,10 +984,9 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert (fitting.in_use_since(repo.record, SimpleNamespace(started=None)), fitting.in_use_since(repo.record, SimpleNamespace(started=place.created - 7200))) == \
         (place.created, place.created - 7200), "a project counts from whichever began first, its environment or the agent's session, so a project in use for an hour is suggested at once"
     row = agents.stamp(row.n, started=time.time() - fitting.WORKED_FIRST - 1)
-    context = AgentContext.of(features.FEATURES["plugins"], repo.record, row)
 
     def started():
-        fitting.SuggestFittingPlugins().handle(context, ClockTicked())
+        suggest(repo.record, row)
         for thread in [t for t in threading.enumerate() if t.name == "plugin-fit"]:
             thread.join(60)
         return {s.title: s for s in Suggestions(repo.record, actor="system").rows.every()}
@@ -1007,7 +1009,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
         fitting.DECIDED.clear()
         watched.setattr(fitting, "suggest", lambda record, offers: calls.append(offers) or gate.wait(30))
         for _ in range(3):
-            fitting.SuggestFittingPlugins().handle(context, ClockTicked())
+            suggest(repo.record, row)
         running = [t for t in threading.enumerate() if t.name == "plugin-fit"]
         gate.set()
         for thread in running:
@@ -1046,7 +1048,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     monkeypatch.setattr(fitting, "official", lambda root: release.wait(30) and [])
     (repo.record.root / "runtime" / fitting.KEPT).unlink()
     began = time.monotonic()
-    fitting.SuggestFittingPlugins().handle(context, ClockTicked())
+    suggest(repo.record, row)
     stalled = [t for t in threading.enumerate() if t.name == "plugin-fit"]
     assert time.monotonic() - began < 5 and stalled, "a session start returns at once while the official list is still being read"
     release.set()

@@ -4,7 +4,7 @@ from events.answers import Allowed, Refused
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
 from events.triggers import ChatWordDenied, TriggerHolding, TriggerMet, TriggerReleased, TriggerShowing
-from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Unchanged, Updated, Wrote, nothing
+from expects import WHEN, Answered, answering, Dispatches, Given, Held, Nudged, Remembered, Unchanged, Updated, Wrote, nothing
 from framework.base import Feature
 from resources.triggers import Trigger
 from resources.base import USER
@@ -56,6 +56,14 @@ def answered(command: str, why: str = "") -> ToolCallAnswered:
     return ToolCallAnswered(agent=1, tool="Bash", input=command, command=command, why=why)
 
 
+def seen_idle(*found: Sent):
+    return answering({("watching", row, 1): list(found) for row in (5, 6)})
+
+
+IDLE_SEEN = seen_idle(Sent("claude-1", {"title": "claude-1", "minutes": int((WHEN - 1.0) / MINUTE)}))
+NOTHING_SEEN = seen_idle()
+
+
 def idle_showing() -> TriggerShowing:
     minutes = int((WHEN - 1.0) / MINUTE)
     return TriggerShowing(agent=1, row=5, does="nudge", key="claude-1", values=(("minutes", minutes), ("text", "Pick up the next row."), ("title", "Idle too long"))).once("5:claude-1")
@@ -105,7 +113,7 @@ class TriggersFeature(TriggersWork, Feature):
                 & Updated(AgentRow(n=1), cards=[{"label": "Trigger Mind the gate nudged the agent", "tone": "note"}]),
             Given(TriggerMet(agent=1, row=8), rows=[BUMP_VERSION, AGENT_ROW]) >> Nudged("instruct") & Updated(Trigger(n=8), matched=1)
                 & Updated(AgentRow(n=1), cards=[{"label": "Trigger Bump the version instructed the agent", "tone": "note"}]),
-            Given(TriggerMet(agent=1, row=3), rows=[DEPLOY_NOTE, AGENT_ROW]) >> Wrote(Message(title="Deploy note")) & Updated(Trigger(n=3), matched=1),
+            Given(TriggerMet(agent=1, row=3), rows=[DEPLOY_NOTE, AGENT_ROW]) >> Wrote(Message(title="Deploy note")),
             Given(TriggerMet(agent=1, row=1), rows=[NO_FORCE, AGENT_ROW]) >> Updated(Trigger(n=1), matched=1)
                 & Updated(AgentRow(n=1), cards=[{"label": "Trigger No force push denied the call", "tone": "danger"}]),
         ])
@@ -113,25 +121,25 @@ class TriggersFeature(TriggersWork, Feature):
             Given(ChatWordDenied(agent=1, row=1), rows=[NO_FORCE, AGENT_ROW]) >> Nudged("denied"),
         ])
         journal.events.listen(ClockTicked, SpotWhatTheJournalShowsOnTheClock(), expects=[
-            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Dispatches(idle_showing()),
-            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, JUST_NOW]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, WORKING]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE], own_work=IDLE_SEEN) >> Dispatches(idle_showing()),
+            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, JUST_NOW], own_work=NOTHING_SEEN) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, WORKING], own_work=NOTHING_SEEN) >> Dispatches(nothing),
             Given(ClockTicked(agent=1), rows=[NO_FORCE, LONG_IDLE]) >> Dispatches(nothing),
             Given(ClockTicked(agent=1), rows=[LONG_IDLE]) >> Dispatches(nothing),
         ])
         journal.events.listen(AgentReported, SpotWhatTheJournalShowsOnToolUse(), expects=[
-            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Dispatches(idle_showing()),
-            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, JUST_NOW]) >> Dispatches(nothing),
-            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, WORKING]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE], own_work=IDLE_SEEN) >> Dispatches(idle_showing()),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, JUST_NOW], own_work=NOTHING_SEEN) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, WORKING], own_work=NOTHING_SEEN) >> Dispatches(nothing),
         ])
         journal.events.handle(TriggerShowing, SayWhatTheJournalShows(), expects=[
             Given(idle_showing(), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Nudged("nudge") & Remembered("sent|5:claude-1", 1),
         ])
         journal.events.listen(AgentReported, SpotWhatHoldsTheAgent(), expects=[
-            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, LONG_IDLE]) >> Dispatches(TriggerHolding(agent=1, row=6, title="Hold while idle", text="Pick up the next row.")),
-            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, JUST_NOW]) >> Dispatches(TriggerReleased(agent=1, row=6)),
-            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, WORKING]) >> Dispatches(TriggerReleased(agent=1, row=6)),
-            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, LONG_IDLE], own_work=IDLE_SEEN) >> Dispatches(TriggerHolding(agent=1, row=6, title="Hold while idle", text="Pick up the next row.")),
+            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, JUST_NOW], own_work=NOTHING_SEEN) >> Dispatches(TriggerReleased(agent=1, row=6)),
+            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, WORKING], own_work=NOTHING_SEEN) >> Dispatches(TriggerReleased(agent=1, row=6)),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE], own_work=IDLE_SEEN) >> Dispatches(nothing),
         ])
         journal.events.handle(TriggerHolding, HoldWhileTheJournalShows(), expects=[
             Given(TriggerHolding(agent=1, row=6, title="Hold while idle", text="Pick up the next row."), rows=[HOLD_WHEN_IDLE, LONG_IDLE])

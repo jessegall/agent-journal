@@ -23,6 +23,8 @@ def chat_rules(plugins: ReadRows[Plugin]) -> list:
 
 class ApplyPluginChatRules(Answerer[TextFormatting]):
     def answer(self, request: TextFormatting, plugins: ReadRows[Plugin]) -> Answer:
+        if plugins.record is None:
+            return Allowed()
         text = request.text
         for find, becomes in chat_rules(plugins):
             text = re.sub(find, becomes, text)
