@@ -4,9 +4,12 @@ from functools import cache
 
 from engine.markers import MARKER, marked
 from resources.memo import Memo
+from events.answers import Allowed, Answer, Rewritten
+from events.asking import TextFormatting
 from framework.format import SHARED, VIEWER
-from framework.parts import Context, TextFormatter
+from receiving import Answerer
 from resources.types import TYPES
+from serving import ReadElsewhere
 
 KEPT = re.compile(r"`[^`]*`|" + MARKER.pattern)
 CODE = re.compile(r"`[^`]*`")
@@ -89,21 +92,22 @@ def spanned(kept: str, record) -> str:
     return linked if MARKER.fullmatch(linked) else kept
 
 
-class MarkRows(TextFormatter):
+class MarkRows(Answerer[TextFormatting]):
     surfaces = (VIEWER, SHARED)
 
-    def format(self, context: Context, text: str) -> str:
-        if not DIGIT.search(text):
-            return text
-        return outside(KEPT, text, lambda part: chipped(part, context.record), lambda kept: spanned(kept, context.record))
+    def answer(self, request: TextFormatting, elsewhere: ReadElsewhere) -> Answer:
+        if request.surface not in self.surfaces or not DIGIT.search(request.text):
+            return Allowed()
+        record = elsewhere.here().record
+        return Rewritten(outside(KEPT, request.text, lambda part: chipped(part, record), lambda kept: spanned(kept, record)))
 
 
 ONE = MARKER.pattern.replace("(", "(?:").replace("(?:?:", "(?:")
 WRAPPED = re.compile(rf"\((\s*{ONE}(?:\s*(?:,|and|,\s*and)\s*{ONE})*\s*)\)")
 
 
-class UnwrapChips(TextFormatter):
+class UnwrapChips(Answerer[TextFormatting]):
     surfaces = (VIEWER, SHARED)
 
-    def format(self, context: Context, text: str) -> str:
-        return WRAPPED.sub(lambda m: m.group(1).strip(), text)
+    def answer(self, request: TextFormatting) -> Answer:
+        return Rewritten(WRAPPED.sub(lambda m: m.group(1).strip(), request.text)) if request.surface in self.surfaces else Allowed()

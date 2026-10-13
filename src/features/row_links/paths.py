@@ -3,8 +3,11 @@ from pathlib import Path
 
 from engine.markers import marked
 from engine.project_files import matching
+from events.answers import Allowed, Answer, Rewritten
+from events.asking import TextFormatting
 from framework.format import VIEWER
-from framework.parts import Context, TextFormatter
+from receiving import Answerer
+from serving import ReadElsewhere
 from features.row_links.formatters import CODE, KEPT, outside
 
 EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml|ini|sh|zsh|bash|svg|png|jpg|jpeg|gif|webp|csv|lock|php|cs|"
@@ -81,15 +84,16 @@ def coded(span: str, project: Path, names: dict[str, str]) -> str:
     return chip(value, m.expand(r"\3"), names) if value else span
 
 
-class MarkPaths(TextFormatter):
+class MarkPaths(Answerer[TextFormatting]):
     surfaces = (VIEWER,)
 
-    def format(self, context: Context, text: str) -> str:
-        if not LOOKS_LINKED.search(text):
-            return text
-        project = context.record.root.parent
+    def answer(self, request: TextFormatting, elsewhere: ReadElsewhere) -> Answer:
+        text = request.text
+        if request.surface not in self.surfaces or not LOOKS_LINKED.search(text):
+            return Allowed()
+        project = elsewhere.here().record.root.parent
         parts = re.split(r"(`[^`]*`)", text)
         names = labels([value for part in parts for value in found(part, project)])
-        return "".join(coded(part, project, names) if CODE.fullmatch(part) else
-                       outside(KEPT, URL.sub(lambda m: marked("url", m.group(0), m.group(0)), part), lambda rest: linked(rest, project, names))
-                       for part in parts)
+        return Rewritten("".join(coded(part, project, names) if CODE.fullmatch(part) else
+                                 outside(KEPT, URL.sub(lambda m: marked("url", m.group(0), m.group(0)), part), lambda rest: linked(rest, project, names))
+                                 for part in parts))

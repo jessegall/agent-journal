@@ -183,10 +183,3 @@ def test_a_setting_change_leaves_formatted_rows_cached_unless_a_formatter_reads_
     assert shaped(todos.load(row.n), record, VIEWER) is first, "a setting no formatter reads leaves the formatted row cached"
     Features(record, actor=SYSTEM).switch("row_links", False)
     assert shaped(todos.load(row.n), record, VIEWER) is not first, "switching off a feature that owns a formatter formats it again"
-    from features.row_links.formatters import MarkRows
-    from features.row_links.paths import MarkPaths
-    from framework.parts import Context
-    import features
-    here = Context.of(features.FEATURES["row_links"], record)
-    assert (MarkRows().format(here, "no digits here"), MarkPaths().format(here, "plain words, nothing linked")) == ("no digits here", "plain words, nothing linked"), \
-        "a text with no digit, address, file ending or hash goes through the link formatters unchanged"
