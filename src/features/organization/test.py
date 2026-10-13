@@ -108,7 +108,7 @@ def test_the_board_counts_each_role_by_the_tickets_where_its_work_is_in_hand():
     started = todos.create("Build search", domain="engineering", role="developer")
     Works(ticket_env, actor=AGENT).create("Build search", todo=started.n)
     tickets = Tickets(record, actor=AGENT)
-    tickets._running = lambda: [SimpleNamespace(n=7, title="Search", work_environment="ticket-7")]
+    tickets.running = lambda: [SimpleNamespace(n=7, title="Search", work_environment="ticket-7")]
     roles = {role["name"]: role["tickets"] for role in tickets._roles()}
     working = [{"n": 7, "plan": 0, "title": "Search", "env": "", "worktree": "ticket-7"}]
     assert roles == {"engineering/developer": working, "engineering/lead": []}, roles

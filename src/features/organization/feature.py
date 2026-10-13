@@ -46,7 +46,7 @@ class OrganizationFeature(Feature):
             Given(CLOSED, rows=[Todo(n=5, title="Fix the login", completed=1.0, data={"role_environment": "t-developer-5"})]) >> Dispatches(RoleAgentToStop(environment="t-developer-5")),
         ])
         journal.events.handle(RoleTodoToStart, StartNextForGlobalRole(), expects=[
-            Given(RoleTodoToStart(environment="t", n=6, task="Fix the footer\n", role=Role(name="developer", runs=RUNS_AS_AGENT)), rows=[Todo(n=6, title="Fix the footer", data={"blocked": "waits"})],
+            Given(RoleTodoToStart(environment="t", n=6, task="Fix the footer\n", role="developer", title="", cardinality=Role().cardinality, runs=RUNS_AS_AGENT), rows=[Todo(n=6, title="Fix the footer", data={"blocked": "waits"})],
                   processes=answering({("start agent", "t-developer-6", "todo:6", KICKOFF): "t-developer-6"}))
                 >> Updated(Todo(n=6), role_environment="t-developer-6"),
         ])

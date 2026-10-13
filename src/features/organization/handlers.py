@@ -1,3 +1,4 @@
+from engine.organization import Role
 from events import Fact
 from events.organization import RoleAgentToStop, RoleTodoToStart
 from features.organization.agents import start_role_agent
@@ -11,7 +12,8 @@ class StartNextForGlobalRole(Handler[RoleTodoToStart]):
         place = elsewhere.named(event.environment)
         todos = place.rows(Todo)
         todos.unblock(event.n)
-        if started := start_role_agent(place.record, event.role, event.n, event.task, processes):
+        role = Role(name=event.role, title=event.title, cardinality=event.cardinality, runs=event.runs)
+        if started := start_role_agent(place.record, role, event.n, event.task, processes):
             todos.update(event.n, role_environment=started)
         return []
 

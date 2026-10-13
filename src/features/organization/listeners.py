@@ -13,7 +13,8 @@ class SpotRoleWorkToHandOn(Listener[TodoCompleted]):
         role = todos.role_of(todo)
         found = []
         if role:
-            found += [RoleTodoToStart(environment=env, n=waiting.n, task=f"{waiting.title}\n{waiting.brief}", role=role)
+            found += [RoleTodoToStart(environment=env, n=waiting.n, task=f"{waiting.title}\n{waiting.brief}", role=role.name, title=role.title,
+                                   cardinality=role.cardinality, runs=role.runs)
                       for env, waiting in todos.next_in_line(todo.data["domain"], todo.data["role"], todo.n)]
         if todo.data.get("role_environment") and not (role and role.cardinality == PLAN):
             found.append(RoleAgentToStop(environment=todo.data["role_environment"]))

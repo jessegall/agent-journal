@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 
-from engine.organization import Role
 from events import Fact
 
 
@@ -13,7 +12,10 @@ class RoleTodoToStart(Fact):
     environment: str
     n: int
     task: str
-    role: Role
+    role: str
+    title: str
+    cardinality: str
+    runs: str
 
 
 @dataclass(frozen=True, kw_only=True)
