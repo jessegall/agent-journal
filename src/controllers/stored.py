@@ -10,7 +10,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, TypeVar, final
 from resources.files import mtime
-from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource
+from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource, Summary
 from resources.types import TYPES
 from engine.stored import append_text, read_json, read_promised_json, write_json, write_text
 from engine import transaction
@@ -21,7 +21,6 @@ from resources.memo import MEMOS, Memo
 from engine.numbers import rows
 
 T = TypeVar("T")
-DAMAGED = "damaged"
 DRAFT_OF = "draft_of"
 IDEMPOTENCY = "idempotency"
 
@@ -78,7 +77,7 @@ COUNTED: dict[tuple[str, str], tuple] = {}
 HELD: dict[str, Memo] = {}
 ALL = 0   # a memo with no limit keeps every row
 PACKS = Memo()
-INDEXED: dict[str, dict] = {}
+INDEXED: dict[str, dict[int, Summary]] = {}
 PENDING: dict[str, set[int]] = {}
 INDEXED_AT: dict[str, dict[int, str]] = {}
 STAMPED: dict[str, "Stamped"] = {}
@@ -89,7 +88,7 @@ STAMPS_RENEW = STAMPS_FRESH / 2
 KEPT_TIMES = 10   # a request serves stamps this many times older than they should be renewed, since only the renewal walks a folder
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
-UNSAVED: dict[str, tuple["RowStore", Path, dict]] = {}
+UNSAVED: dict[str, tuple["RowStore", Path, dict[int, Summary]]] = {}
 UNCOUNTED: dict[str, "RowStore"] = {}
 SEEDS: dict[str, dict[str, tuple[int, ...]]] = {}
 COUNTERS = "counters.json"
@@ -154,7 +153,7 @@ def file_stamp(path: Path) -> list[int] | None:
     return [found.st_mtime_ns, found.st_size]
 
 
-def summed(weigh: Callable[[dict], tuple[int, ...]], width: int, rows: list[dict]) -> tuple[int, ...]:
+def summed(weigh: Callable[[Summary], tuple[int, ...]], width: int, rows: list[Summary]) -> tuple[int, ...]:
     return tuple(sum(column) for column in zip(*map(weigh, rows))) or (0,) * width
 
 
@@ -256,12 +255,12 @@ def stamp_of(found: os.stat_result) -> str:
     return f"{found.st_mtime_ns}-{found.st_size}"
 
 
-def listed_order(row: dict) -> tuple[float, int]:
-    return row.get("created", 0.0), row["n"]
+def listed_order(row: Summary) -> tuple[float, int]:
+    return row.created, row.n
 
 
-def is_part(row: dict) -> bool:
-    return bool(row.get(PART_OF) or row.get(DRAFT_OF))
+def is_part(row: Summary) -> bool:
+    return bool(row.part_of or row.draft_of)
 
 
 def opened(archive: Path) -> zipfile.ZipFile:
@@ -302,11 +301,11 @@ class Stamped:
     inodes: dict
     noted: int
 
-def saved(folder: Path, rows: dict) -> None:
+def saved(folder: Path, rows: dict[int, Summary]) -> None:
     """Writes a folder's row index to its place, and takes away the index an older version left beside the rows; a folder that is gone gets none, so a late read never brings back a removed environment."""
     if not folder.is_dir():
         return
-    write_json(index_file(folder), rows)
+    write_json(index_file(folder), {n: row.to_disk() for n, row in rows.items()})
     (folder / INDEX).unlink(missing_ok=True)
 
 
@@ -419,10 +418,10 @@ class RowStore:
     @final
     def page(self, where: Callable[[dict], bool], order: Callable[[dict], tuple], after: tuple | None = None, size: int = PAGE) -> Page:
         """The next `size` rows that pass `where` in `order`, after the key a page before it ended at; the cursor is a key, not a position, so rows written, moved or deleted between two pages shift nothing that was already shown."""
-        return paged([row for row in self.summaries() if not row["deleted"] and where(row)], order, after, size)
+        return paged([row for row in self.summaries() if not row.deleted and where(row)], order, after, size)
 
     @final
-    def summaries(self) -> list[dict]:
+    def summaries(self) -> list[Summary]:
         self._after_writes()
         return self._scanned(self._summaries)
 
@@ -437,7 +436,7 @@ class RowStore:
         except FileNotFoundError:
             return scan(self.record.remake_folder(self.type, self.resource.scope))
 
-    def _summaries(self, folder: Path) -> list[dict]:
+    def _summaries(self, folder: Path) -> list[Summary]:
         moved = self._moved(folder)
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
@@ -447,7 +446,7 @@ class RowStore:
             touched = PENDING.pop(str(folder), set())
             if len(touched) < FLUSH_ROWS:
                 return self._patched(folder, moved, held[1], loose, touched)
-        return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].get(DAMAGED)])
+        return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].damaged])
 
     def derived(self, name: str, keys_of: Callable[[dict], list]) -> dict:
         """The summaries grouped by the keys `keys_of` names for each, kept in step with them: a change takes a row out of its groups and puts it in its new ones, so asking never walks the rows."""
@@ -463,30 +462,30 @@ class RowStore:
         return groups
 
     @staticmethod
-    def _grouped(groups: dict, keys_of: Callable[[dict], list], row: dict) -> None:
+    def _grouped(groups: dict, keys_of: Callable[[Summary], list], row: Summary) -> None:
         for group in keys_of(row):
-            groups.setdefault(group, {})[row["n"]] = row
+            groups.setdefault(group, {})[row.n] = row
 
-    def linking(self) -> dict[str, dict[int, dict]]:
+    def linking(self) -> dict[str, dict[int, Summary]]:
         """The rows that name each ref."""
-        return self.derived("refs", lambda row: row["refs"])
+        return self.derived("refs", lambda row: row.refs)
 
     @final
-    def linked_to(self, ref: str) -> list[dict]:
+    def linked_to(self, ref: str) -> list[Summary]:
         return sorted(self.linking().get(ref, {}).values(), key=listed_order)
 
     @final
-    def by(self, field: str, value) -> list[dict]:
+    def by(self, field: str, value) -> list[Summary]:
         """The summaries whose field is the value, oldest first; the field is one the summaries carry."""
         return sorted(self.derived(f"by:{field}", lambda row: [row.get(field)]).get(value, {}).values(), key=listed_order)
 
     @final
-    def unread(self, actor: str) -> list[dict]:
+    def unread(self, actor: str) -> list[Summary]:
         """The open summaries the actor has not seen, oldest first, from the index of what each row has been seen by."""
-        group = self.derived(f"unread:{actor}", lambda row: [True] if not row["completed"] and not row["deleted"] and actor not in row["seen"] else [])
+        group = self.derived(f"unread:{actor}", lambda row: [True] if not row.completed and not row.deleted and actor not in row.seen else [])
         return sorted(group.get(True, {}).values(), key=listed_order)
 
-    def counted(self, name: str, weigh: Callable[[dict], tuple[int, ...]], width: int, rows: list[dict] | None = None) -> tuple[int, ...]:
+    def counted(self, name: str, weigh: Callable[[Summary], tuple[int, ...]], width: int, rows: list[Summary] | None = None) -> tuple[int, ...]:
         """Sums weigh over the summaries, kept in step with them: a change adds and takes away only the rows it touched."""
         rows = rows if rows is not None else self.summaries()
         key = (str(self.folder()), name)
@@ -501,7 +500,7 @@ class RowStore:
         return next(counter for counter in self.resource.counters() if counter.name == name)
 
     @final
-    def counts(self, name: str, rows: list[dict] | None = None) -> tuple[int, ...]:
+    def counts(self, name: str, rows: list[Summary] | None = None) -> tuple[int, ...]:
         """A total the type declares, read from the totals kept with the rows: made from the rows once when none were saved, and saved with the index from then on."""
         counter, folder = self.counter(name), self.folder()
         rows = rows if rows is not None else self.summaries()
@@ -511,7 +510,7 @@ class RowStore:
             UNCOUNTED[str(folder)] = self
         return totals
 
-    def save_index(self, folder: Path, rows: dict) -> None:
+    def save_index(self, folder: Path, rows: dict[int, Summary]) -> None:
         """Writes the index with the totals of its rows beside it, bound to this very file, so a total is only believed while the index it was made with stands."""
         saved(folder, rows)
         stamp = file_stamp(index_file(folder))
@@ -519,10 +518,10 @@ class RowStore:
         totals = {counter.name: list(summed(counter.weigh, counter.width, listed)) for counter in self.resource.counters()}
         write_json(folder / CACHE / COUNTERS, {"index": stamp, "totals": totals})
 
-    def _listed(self, rows: dict) -> list[dict]:
+    def _listed(self, rows: dict[int, Summary]) -> list[Summary]:
         """The summaries an index makes: its rows that are whole, with the packed rows it does not hold."""
-        loose = [row for n, row in sorted(rows.items()) if not row.get(DAMAGED)]
-        seen = {row["n"] for row in loose}
+        loose = [row for n, row in sorted(rows.items()) if not row.damaged]
+        seen = {row.n for row in loose}
         return wholes(sorted(loose + [row for n, row in self.packed().items() if n not in seen], key=listed_order), is_part)
 
     def _seed(self, folder: Path, index_stamp: list[int]) -> None:
@@ -557,7 +556,7 @@ class RowStore:
         (self.folder() / CACHE / COUNTERS).unlink(missing_ok=True)
         UNCOUNTED[folder] = self
 
-    def _carried(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
+    def _carried(self, folder: Path, before: list[Summary], rows: list[Summary], changes: list[tuple[Summary | None, Summary | None]]) -> None:
         self._carried_index(folder, before, rows, changes)
         for key, held in [(key, held) for key, held in COUNTED.copy().items() if key[0] == str(folder) and held[0] is before]:
             _, totals, weigh = held
@@ -565,35 +564,35 @@ class RowStore:
                 totals = tuple(total - was + now for total, was, now in zip(totals, weigh(gone) if gone else (0,) * len(totals), weigh(added) if added else (0,) * len(totals)))
             COUNTED[key] = (rows, totals, weigh)
 
-    def _carried_index(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
+    def _carried_index(self, folder: Path, before: list[Summary], rows: list[Summary], changes: list[tuple[Summary | None, Summary | None]]) -> None:
         for key, (held, groups, keys_of) in [(key, held) for key, held in DERIVED.items() if key[0] == str(folder)]:
             if held is not before:
                 continue
             for gone, added in changes:
                 for group in keys_of(gone) if gone else ():
-                    groups.get(group, {}).pop(gone["n"], None)
+                    groups.get(group, {}).pop(gone.n, None)
                 if added:
                     self._grouped(groups, keys_of, added)
             DERIVED[key] = (rows, groups, keys_of)
 
-    def standing_summaries(self) -> list[dict]:
+    def standing_summaries(self) -> list[Summary]:
         rows = self.summaries()
         held = STANDING.get(str(self.folder()))
         if held and held[0] is rows:
             return held[1]
-        standing = [row for row in rows if not row["completed"] and not row["deleted"]]
+        standing = [row for row in rows if not row.completed and not row.deleted]
         STANDING[str(self.folder())] = (rows, standing)
         return standing
 
-    def _patched(self, folder: Path, moved: Moved, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
+    def _patched(self, folder: Path, moved: Moved, held: list[Summary], loose: dict[int, Summary], touched: set[int]) -> list[Summary]:
         rows = list(held)
-        listed = {row["n"]: row for row in held if row["n"] in touched}
+        listed = {row.n: row for row in held if row.n in touched}
         carried: list[tuple[dict | None, dict | None]] = []
         for n in sorted(touched):
             if n in listed:
                 self._unlisted(rows, listed[n])
             row = loose.get(n) or self.packed().get(n)
-            added = row if row and not row.get(DAMAGED) and not is_part(row) else None
+            added = row if row and not row.damaged and not is_part(row) else None
             if added:
                 insort(rows, added, key=listed_order)
             carried.append((listed.get(n), added))
@@ -605,8 +604,8 @@ class RowStore:
         rows = tuple(sorted(self._stamps(folder).items())) if self.resource.own_folder else ()
         return Moved(mark_of(folder), mark_of(folder / PACKED / INDEX), rows)
 
-    def _summarised(self, folder: Path, moved: Moved, loose: list[dict]) -> list[dict]:
-        seen = {row["n"] for row in loose}
+    def _summarised(self, folder: Path, moved: Moved, loose: list[Summary]) -> list[Summary]:
+        seen = {row.n for row in loose}
         packed = [row for n, row in self.packed().items() if n not in seen]
         rows = wholes(sorted(loose + packed, key=listed_order), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
@@ -637,22 +636,22 @@ class RowStore:
         self._carried(folder, held[1], rows, [(before_row, added)])
 
     @staticmethod
-    def _unlisted(rows: list[dict], row: dict) -> None:
+    def _unlisted(rows: list[Summary], row: Summary) -> None:
         at = bisect_left(rows, listed_order(row), key=listed_order)
-        if at < len(rows) and rows[at]["n"] == row["n"]:
+        if at < len(rows) and rows[at].n == row.n:
             del rows[at]
 
-    def _row(self, r: Resource, stamp: str) -> dict:
-        return {"n": r.n, "created": r.created, IDEMPOTENCY: r.data.get(IDEMPOTENCY, ""), "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
-                "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
-                **{k: getattr(r, k) for k in self.resource.indexed}, "stamp": stamp}
+    def _row(self, r: Resource, stamp: str) -> Summary:
+        return Summary(n=r.n, created=r.created, idempotency=r.data.get(IDEMPOTENCY, ""), title=r.title, deleted=r.deleted, completed=r.completed, seen=r.seen, refs=r.refs, updated=r.updated,
+                       files=len(r.files), part_of=r.data.get(PART_OF, ""), draft_of=r.data.get(DRAFT_OF, ""), plugin=r.data.get(OWNER, ""),
+                       extras={k: getattr(r, k) for k in self.resource.indexed}, stamp=stamp)
 
-    def packed(self) -> dict[int, dict]:
+    def packed(self) -> dict[int, Summary]:
         index = self.folder() / PACKED / INDEX
         stamp = mtime(index)
         if not stamp:
             return {}
-        return PACKS.get(str(index), stamp, lambda: {int(n): {**row, "stamp": stamp} for n, row in read_promised_json(index, dict, {}).items()})
+        return PACKS.get(str(index), stamp, lambda: {int(n): Summary.read(row, self.resource.indexed, stamp) for n, row in read_promised_json(index, dict, {}).items()})
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:
@@ -712,17 +711,16 @@ class RowStore:
         STAMPED[str(folder)] = Stamped(mark, held.checked, stamps, inodes, noted)
         return stamps
 
-    def _indexed(self, folder: Path) -> list[dict]:
+    def _indexed(self, folder: Path) -> list[Summary]:
         rows = self._loose(folder)
-        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
+        return [rows[n] for n in sorted(rows) if not rows[n].damaged]
 
-    def _loose(self, folder: Path) -> dict[int, dict]:
+    def _loose(self, folder: Path) -> dict[int, Summary]:
         stamps = self._stamps(folder)
         held = INDEXED.get(str(folder))
         index_stamp = None if held else file_stamp(index_file(folder))
-        known = held or {int(n): row for n, row in read_json(index_file(folder), dict, read_json(folder / INDEX, dict, {})).items()}
-        needed = {"created", IDEMPOTENCY, "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
-        stale = self._stale(stamps, known, INDEXED_AT.get(str(folder)) if held else None, needed)
+        known = held or {int(n): Summary.read(row, self.resource.indexed) for n, row in read_json(index_file(folder), dict, read_json(folder / INDEX, dict, {})).items()}
+        stale = self._stale(stamps, known, INDEXED_AT.get(str(folder)) if held else None)
         gone = known.keys() - stamps.keys()
         rows = dict(known)
         for n in gone:
@@ -731,7 +729,7 @@ class RowStore:
             try:
                 r = self.load(n)
             except (Refused, OSError) as error:
-                rows[n] = {"n": n, DAMAGED: True, "stamp": stamps[n]}
+                rows[n] = Summary(n=n, damaged=True, stamp=stamps[n])
                 self.on_damage(str(self.path(n)), str(error))
                 continue
             rows[n] = self._row(r, stamps[n])
@@ -753,21 +751,21 @@ class RowStore:
         return rows
 
     @staticmethod
-    def _stale(stamps: dict[int, str], known: dict[int, dict], seen: dict[int, str] | None, needed: set[str]) -> list[int]:
+    def _stale(stamps: dict[int, str], known: dict[int, Summary], seen: dict[int, str] | None) -> list[int]:
         """The rows whose file differs from the row held for it; once a folder is held, only the stamps that differ from the last pass are looked at."""
         if seen is not None:
             return [n for n, _ in stamps.items() - seen.items()]
-        return [n for n, stamp in stamps.items() if (row := known.get(n)) is None or row.get("stamp") != stamp or not (DAMAGED in row or needed <= row.keys())]
+        return [n for n, stamp in stamps.items() if (row := known.get(n)) is None or row.stamp != stamp]
 
     def by_idempotency(self, key: str) -> Resource | None:
-        return self.summarised(next((row["n"] for row in self.summaries() if row[IDEMPOTENCY] == key), None))
+        return self.summarised(next((row.n for row in self.summaries() if row.idempotency == key), None))
 
     def by_title(self, title: str, standing: bool = False) -> Resource | None:
         return self.summarised(self.n_of_title(title, standing))
 
     def n_of_title(self, title: str, standing: bool = False) -> int:
         """The number of the row with the title, 0 when there is none."""
-        return next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), 0)
+        return next((row.n for row in self.summaries() if row.title == title and not row.deleted and not (standing and row.completed)), 0)
 
     def summarised(self, n: int | None) -> Resource | None:
         """The row a summary names, or nothing when it has gone: the summaries and the folder drift, as warm() has long allowed for, and a name left behind is a miss rather than a fault."""
@@ -797,7 +795,7 @@ class RowStore:
             entry = self.packed().get(n)
             if not entry:
                 raise Missing(f"no {self.type} {n}") from error
-            archive = self.folder() / PACKED / entry[ARCHIVE]
+            archive = self.folder() / PACKED / entry.zip
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
         return self.rolling().get(where, stamp, lambda: self._parsed(n))
 
@@ -810,7 +808,7 @@ class RowStore:
         self.rolling().forget(str(self.path(n)))
         entry = self.packed().get(n)
         if entry:
-            self.rolling().forget(f"{self.folder() / PACKED / entry[ARCHIVE]}:{n}")
+            self.rolling().forget(f"{self.folder() / PACKED / entry.zip}:{n}")
 
     @final
     def reparsed(self, n: int) -> Resource:
@@ -827,7 +825,7 @@ class RowStore:
         entry = self.packed().get(n)
         if not entry:
             raise Refused(f"no {self.type} {n}")
-        archive = self.folder() / PACKED / entry[ARCHIVE]
+        archive = self.folder() / PACKED / entry.zip
         try:
             return opened(archive).read(member(n)).decode()
         except (OSError, KeyError, zipfile.BadZipFile) as error:
@@ -857,28 +855,28 @@ class RowStore:
             self._note(n)
         packed = self.packed()
         if n in packed:
-            write_json(folder / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})
+            write_json(folder / PACKED / INDEX, {k: row.to_packed() for k, row in packed.items() if k != n})
             remark(folder / PACKED / INDEX)
         remark(folder)
         self.reindexed(n, before)
 
     def pack(self, before: float) -> int:
         folder = self.folder()
-        chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before and (folder / member(row["n"])).is_file()]
-        days: dict[str, list[dict]] = {}
+        chosen = [row for row in self._indexed(folder) if (row.completed or row.deleted) and row.updated < before and (folder / member(row.n)).is_file()]
+        days: dict[str, list[Summary]] = {}
         for row in chosen:
-            days.setdefault(time.strftime("%Y-%m-%d", time.localtime(row["updated"])), []).append(row)
+            days.setdefault(time.strftime("%Y-%m-%d", time.localtime(row.updated)), []).append(row)
         for day, rows in days.items():
             with self.record.locked(self.resource.scope):
                 self._packed_into(folder, f"{day}.zip", rows)
         return len(chosen)
 
-    def _packed_into(self, folder: Path, name: str, rows: list[dict]) -> None:
+    def _packed_into(self, folder: Path, name: str, rows: list[Summary]) -> None:
         archive = folder / PACKED / name
         archive.parent.mkdir(parents=True, exist_ok=True)
-        texts = {row["n"]: (folder / member(row["n"])).read_bytes() for row in rows}
+        texts = {row.n: (folder / member(row.n)).read_bytes() for row in rows}
         index = self.packed()
-        kept = {n for n, entry in index.items() if entry[ARCHIVE] == name and n not in texts}
+        kept = {n for n, entry in index.items() if entry.zip == name and n not in texts}
         building = archive.with_suffix(".new")
         with zipfile.ZipFile(building, "w", zipfile.ZIP_DEFLATED) as out:
             for n in sorted(kept):
@@ -890,11 +888,11 @@ class RowStore:
                 building.unlink()
                 raise OSError(f"{building} did not read back as written")
         building.replace(archive)
-        write_json(folder / PACKED / INDEX, {**index, **{row["n"]: {**{k: v for k, v in row.items() if k != "stamp"}, ARCHIVE: name} for row in rows}})
+        write_json(folder / PACKED / INDEX, {**{n: entry.to_packed() for n, entry in index.items()}, **{row.n: row.to_packed(name) for row in rows}})
         remark(folder / PACKED / INDEX)
         for row in rows:
-            p = folder / member(row["n"])
-            if p.is_file() and p.read_bytes() == texts[row["n"]]:
+            p = folder / member(row.n)
+            if p.is_file() and p.read_bytes() == texts[row.n]:
                 self.rolling().forget(str(p))
                 p.unlink()
 
@@ -905,7 +903,7 @@ class RowStore:
             return
         for at, row in enumerate(self.standing_summaries()):
             try:
-                self.peek(row["n"])
+                self.peek(row.n)
             except Missing:
                 continue
             if at % 25 == 24:
@@ -915,16 +913,16 @@ class RowStore:
         found = []
         for row in rows:
             try:
-                found.append(self.peek(row["n"]))
+                found.append(self.peek(row.n))
             except Missing:
                 continue
         return found
 
     def viewed(self) -> list[Resource]:
-        return self._peeked(row for row in self.summaries() if not row["deleted"])
+        return self._peeked(row for row in self.summaries() if not row.deleted)
 
     def attached(self) -> list[Resource]:
-        return self._peeked(row for row in self.summaries() if row["files"] and not row["deleted"])
+        return self._peeked(row for row in self.summaries() if row.files and not row.deleted)
 
     def every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
@@ -940,13 +938,13 @@ class RowStore:
         own = [r for r in self.kept(closed_since, closed_last) if (self.resource.hidden_listed or not r.hidden) and self.visible(r)]
         return [*own, *self.also()]
 
-    def kept_summaries(self, closed_since: float = 0, closed_last: int = 0) -> list[dict]:
+    def kept_summaries(self, closed_since: float = 0, closed_last: int = 0) -> list[Summary]:
         """The summaries of the rows still open, and of the ones closed lately when asked for: what a listing that shows a few fields reads, with no row parsed."""
         standing = self.standing_summaries()
         if not closed_since:
             return standing
-        closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
-        return standing + (sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed)
+        closed = [row for row in self.summaries() if row.completed and not row.deleted and row.completed >= closed_since]
+        return standing + (sorted(closed, key=lambda row: row.completed)[-closed_last:] if closed_last else closed)
 
     def kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
         """The rows still open, and the ones closed lately when asked for; inside one event they are listed once, every later ask is answered from that listing."""

@@ -209,3 +209,14 @@ def test_an_engine_asked_with_a_signal_looks_at_its_threads_and_names_the_functi
     found = Sampler().run(0.4, every=0.005)
     worker.join()
     assert "== thread spinner" in found and "spin_for_the_profile" in found, "the report names the thread that was busy and the function it was busy in, at the top of its stack and inside it"
+
+
+def test_a_row_summary_is_written_to_the_index_as_it_always_was_and_an_entry_missing_a_field_is_read_again():
+    from resources.base import Summary
+    from resources.types import Todo
+    kept = Summary(n=3, created=2.0, title="row", seen=["user"], extras={"hidden": True}, stamp="1-2")
+    on_disk = kept.to_disk()
+    assert Summary.read(on_disk, ("hidden",)) == kept and on_disk["hidden"] is True and on_disk["stamp"] == "1-2" and "zip" not in on_disk, \
+        "a summary is written with its fixed fields and its type's own beside them, and reads back as it was"
+    assert Summary.read({"n": 3, "title": "row", "stamp": "1-2"}, Todo.indexed).stamp == "" and kept.to_packed("a.zip")["zip"] == "a.zip" and "stamp" not in kept.to_packed(), \
+        "an entry from an older build gets no stamp so its row is loaded again, and a packed entry names its archive and carries no stamp"

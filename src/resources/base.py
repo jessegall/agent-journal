@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass, field, asdict, fields, is_dataclass, replace
+from collections.abc import Mapping
 from enum import Enum
 from types import SimpleNamespace
 from typing import Callable, ClassVar
@@ -157,28 +158,97 @@ class Pruned(Enum):
         return {Pruned.ANY: True, Pruned.SEEN: USER in r.seen, Pruned.CLOSED: bool(r.completed)}[self]
 
 
+@dataclass(frozen=True, slots=True, eq=False)
+class Summary(Mapping):
+    """What a store keeps of one row to list, order and count it without loading it: the fixed fields every row has, and `extras`, the fields its type indexes besides. It is what the index file holds, one entry per row."""
+
+    n: int
+    created: float = 0.0
+    idempotency: str = ""
+    title: str = ""
+    deleted: bool = False
+    completed: float = 0.0
+    seen: list = field(default_factory=list)
+    refs: list = field(default_factory=list)
+    updated: float = 0.0
+    files: int = 0
+    part_of: str = ""
+    draft_of: str = ""
+    plugin: str = ""
+    stamp: str = ""
+    zip: str = ""
+    damaged: bool = False
+    extras: dict = field(default_factory=dict)
+
+    @classmethod
+    def read(cls, raw: dict, indexed: tuple, stamp: str | None = None) -> "Summary":
+        """The summary an index entry holds. An entry that lacks a field this build keeps gets no stamp, so the row is loaded again; a packed entry, which has no stamp of its own, is given the one passed."""
+        if raw.get("damaged"):
+            return cls(n=raw["n"], damaged=True, stamp=raw.get("stamp", ""))
+        if stamp is None:
+            stamp = raw.get("stamp", "") if SUMMARY_KEYS.union(indexed) <= raw.keys() else ""
+        extras = {key: value for key, value in raw.items() if key not in KEYED}
+        return cls(n=raw["n"], created=raw.get("created", 0.0), idempotency=raw.get("idempotency", ""), title=raw.get("title", ""), deleted=raw.get("deleted", False),
+                   completed=raw.get("completed", 0.0), seen=raw.get("seen") or [], refs=raw.get("refs") or [], updated=raw.get("updated", 0.0), files=raw.get("files", 0),
+                   part_of=raw.get("part_of", ""), draft_of=raw.get("draft_of", ""), plugin=raw.get("plugin", ""), zip=raw.get("zip", ""), extras=extras,
+                   stamp=stamp)
+
+    def to_disk(self) -> dict:
+        if self.damaged:
+            return {"n": self.n, "damaged": True, "stamp": self.stamp}
+        return {**self.to_packed(), "stamp": self.stamp}
+
+    def to_packed(self, archive: str = "") -> dict:
+        packed = {"n": self.n, "created": self.created, "idempotency": self.idempotency, "title": self.title, "deleted": self.deleted, "completed": self.completed, "seen": self.seen,
+                "refs": self.refs, "updated": self.updated, "files": self.files, "part_of": self.part_of, "draft_of": self.draft_of, "plugin": self.plugin, **self.extras}
+        if archive or self.zip:
+            packed["zip"] = archive or self.zip
+        return packed
+
+    def __getitem__(self, key: str):
+        if key in KEYED:
+            return getattr(self, key)
+        return self.extras[key]
+
+    def get(self, key: str, default=None):
+        if key in KEYED:
+            return getattr(self, key)
+        return self.extras.get(key, default)
+
+    def __iter__(self):
+        return iter((*SUMMARY_FIELDS, "stamp", *self.extras))
+
+    def __len__(self) -> int:
+        return len(SUMMARY_FIELDS) + 1 + len(self.extras)
+
+
+SUMMARY_FIELDS = tuple(name for name in Summary.__dataclass_fields__ if name not in ("extras", "damaged", "zip", "stamp"))
+KEYED = frozenset((*SUMMARY_FIELDS, "stamp", "zip", "damaged"))
+SUMMARY_KEYS = frozenset(("created", "idempotency", "files", "part_of", "draft_of", "plugin"))
+
+
 @dataclass(frozen=True)
 class Counter:
     """A total a type keeps over its rows: what one row adds to it, in as many columns as the total has, adjusted by the change of one row and saved with the index."""
 
     name: str
-    weigh: Callable[[dict], tuple[int, ...]]
+    weigh: Callable[[Summary], tuple[int, ...]]
     width: int
 
 
-def overview_weight(row: dict) -> tuple[int, int, int]:
+def overview_weight(row: Summary) -> tuple[int, int, int]:
     """What one row adds to a type's overview: itself, whether it is open, and whether it is open and unread by the user."""
-    if row["deleted"] or row.get("hidden"):
+    if row.deleted or row.extras.get("hidden"):
         return (0, 0, 0)
-    opened = not row["completed"]
-    return (1, int(opened), int(opened and USER not in (row.get("seen") or [])))
+    opened = not row.completed
+    return (1, int(opened), int(opened and USER not in row.seen))
 
 
-def listable_weight(hidden_listed: bool) -> Callable[[dict], tuple[int, int]]:
+def listable_weight(hidden_listed: bool) -> Callable[[Summary], tuple[int, int]]:
     """What one row adds to the rows a listing can show: itself, and whether it is open."""
-    def weigh(row: dict) -> tuple[int, int]:
-        listable = not row["deleted"] and (hidden_listed or not row.get("hidden")) and row["updated"] > 0
-        return int(listable), int(listable and not row["completed"])
+    def weigh(row: Summary) -> tuple[int, int]:
+        listable = not row.deleted and (hidden_listed or not row.extras.get("hidden")) and row.updated > 0
+        return int(listable), int(listable and not row.completed)
     return weigh
 
 
