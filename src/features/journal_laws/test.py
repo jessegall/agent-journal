@@ -189,3 +189,15 @@ def test_a_file_dropped_in_a_dump_is_read_whole():
     assert not isinstance(bus.asked(asked, record), Refused), "a file dropped in a dump is read whole, however long"
 
 
+
+
+def test_codex_is_refused_a_whole_long_file_as_claude_is():
+    features.load()
+    record = fresh()
+    work = record.root.parent
+    (work / "long.py").write_text("x = 1\n" * 900)
+    shell = lambda command: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-read", "cwd": str(work),
+                                                                                   "tool_name": "Bash", "tool_input": {"command": command}})
+    refused = shell("cat long.py")
+    assert refused.get("decision") == "block" and "long.py has 900 lines" in refused.get("reason", ""), "Codex's hook names each shell command as Bash, and a cat of a long file is refused"
+    assert shell("sed -n '1,120p' long.py").get("decision") != "block", "a range of it goes through"
