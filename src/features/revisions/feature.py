@@ -13,6 +13,8 @@ from resources.types import Doc
 
 
 UNWRITTEN = Doc(n=1, title="How the viewer is built")
+OPEN = Doc(n=1, title="How the viewer is built", data={"revisions": 2, "open_until": 4_102_444_800.0})
+KEPT = Doc(n=1, title="How the viewer is built", data={"revisions": 2, "open_until": 500.0})
 
 
 class RevisionsFeature(Feature):
@@ -28,10 +30,14 @@ class RevisionsFeature(Feature):
         ])
         journal.commands.add("doc", Keep(), expects=[
             Given((Docs, 1), rows=[UNWRITTEN]) >> Refused("revision 0 of doc 1 is already kept"),
+            Given((Docs, 1), rows=[OPEN]) >> Updated(Doc(n=1), open_until=0),
+            Given((Docs, 1), rows=[KEPT]) >> Refused("revision 2 of doc 1 is already kept"),
         ])
         journal.commands.add("doc", Revisions(), expects=[
             Given((Docs, 1), rows=[UNWRITTEN]) >> Answered([]),
         ])
         journal.commands.add("doc", Revision(), expects=[
             Given((Docs, 1, 1), rows=[UNWRITTEN]) >> Refused("doc 1 has no revisions yet"),
+            Given((Docs, 1, 3), rows=[KEPT]) >> Refused("doc 1 has revisions 1 to 2"),
+            Given((Docs, 1, 0), rows=[KEPT]) >> Refused("doc 1 has revisions 1 to 2"),
         ])
