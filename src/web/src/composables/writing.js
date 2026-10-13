@@ -18,9 +18,13 @@ watch(
     {immediate: true}
 );
 
+// the rows the agent writes part by part while the user watches them fill; a section added to any other row is simply the latest thing on it
+const WRITTEN_IN_PARTS = new Set(["doc", "report"]);
+
 export function useWriting(key) {
     const now = useNow(TICK);
     return computed(() => {
+        if (!WRITTEN_IN_PARTS.has(key().split(":")[0])) return null;
         const write = store.agentWrites[key()];
         return write && agentWorking.value && now.value - write.at < WRITING_FOR ? write : null;
     });
