@@ -380,7 +380,7 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     tick(record)
     assert (agents.load(agent.n).status, agents.load(held.n).status) == (STOPPED, "working"), \
         "an agent silent past the quiet setting is marked stopped, unless its session is still alive"
-    from features.agent_sessions.handlers import stop_ended
+    from features.agent_sessions.ending import stop_ended
     gone = agents.by_session("claude-3")
     agents.stamp(gone.n, status="working", at=time.time(), running={"command": "sleep 99", "tool": "Bash", "at": time.time() - 99}, stopping={"task": "b1", "at": 1})
     assert ("claude-3" in stop_ended(record.root), agents.load(held.n).status) == (True, "working"), "an upgrade stops the rows of sessions that ended, and only those"

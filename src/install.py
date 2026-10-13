@@ -845,7 +845,7 @@ def loaded() -> Package:
     from features.journal_laws.briefing import brief
     from features.sequences.shipped import ship
     from controllers.form_of_address.controller import ship as ship_profiles
-    from features.agent_sessions.handlers import stop_ended
+    from features.agent_sessions.ending import stop_ended
     from migrations import run as migrate
     from migrations import pending
     from engine.ledger import applied
