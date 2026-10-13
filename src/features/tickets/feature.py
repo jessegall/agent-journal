@@ -15,7 +15,7 @@ from features.tickets.commands import ShowTicketTodos
 from controllers.types import Tickets
 from features.tickets.details import TicketsDetails
 from framework.sending import Nudge
-from controllers.tickets.orchestration import DRAFTS, WAITS
+from resources.tickets import DRAFTS, WAITS
 from features.tickets.handlers import (CommentOnLongWait, FinishTheBoardWithItsLastTicket, HoldTicketKnowledge, LookAfterTickets, PassOnCall, RaiseStuckTicket,
                                        RaiseWaitingPlan, RecordHandedIn, ReviveTicket, TellTicketRestarted, WakeTheTicketAgent)
 from features.tickets.listeners import (SpotAnsweredQuestionOfATicket, SpotBoardOutOfTickets, SpotKnowledgeInATicket, SpotLongWaits, SpotStuckTickets,

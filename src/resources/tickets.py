@@ -86,3 +86,5 @@ class Ticket(Placed, Resource):
 
     def base_of(self, repository: str) -> str:
         return self.base if repository == ROOT else self.bases.get(repository, "")
+
+PLANS, WAITS, DRAFTS = "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts"

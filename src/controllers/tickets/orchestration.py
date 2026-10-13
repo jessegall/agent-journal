@@ -1,10 +1,9 @@
 from controllers.boards.controller import Boards
 from resources.plans import READY, WAITING
 from resources.sequences import RunKey
-from resources.tickets import PROPOSED
+from resources.tickets import DRAFTS, PLANS, PROPOSED, WAITS  # noqa: F401
 from resources.base import AGENT, SYSTEM
 
-PLANS, WAITS, DRAFTS = "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts"
 REVIEW_MOMENTS = ("ticket.plan_waits", "ticket.checkpoint", "ticket.finished")
 
 

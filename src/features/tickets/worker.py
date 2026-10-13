@@ -1,10 +1,9 @@
-from features.agent_sessions.launch import start_agent_in
 from controllers.types import Plans
 from resources.plans import PHASE
 from resources.base import DEFAULT_PROVIDER
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind
-from serving import SERVED, Providers
+from serving import SERVED, Processes, Providers
 
 SHARED = "shared"
 
@@ -34,5 +33,5 @@ def start_worker(record, plan) -> str:
     Plans(record, actor=SYSTEM).delegate(plan.n)
     if plan.worktree == SHARED:
         Plans(record, actor=SYSTEM).update(plan.n, branch=SERVED.given(Providers).driver(DEFAULT_PROVIDER).branch(name))
-    return start_agent_in(record, name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan), EnvironmentKind.TICKET)
+    return SERVED.given(Processes).start_agent(record, name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan), EnvironmentKind.TICKET)
 

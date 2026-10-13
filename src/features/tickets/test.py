@@ -792,7 +792,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     ticket = Tickets(record, actor=USER).create("Dark mode", board=Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"}).n)
     root = record.root
     ticket_calls.PEOPLE[str(root)] = ["jesse"]
-    assert [ticket_calls.waits_on_people(root, text) for text in ("waits for jesse", "asks the user", "the build runs")] == [True, True, False], \
+    assert [ticket_calls.waits_on_people(record, text) for text in ("waits for jesse", "asks the user", "the build runs")] == [True, True, False], \
         "a wait is on a person when it names the user, an approval or the one who owns the git config"
     from types import SimpleNamespace
     asked = lambda title, marked=False: SimpleNamespace(n=4, title=title, brief="", for_user=marked)
