@@ -28,6 +28,8 @@ def said(text: str) -> AgentMessageSent:
 
 
 SEVEN = Todo(n=7, title="Close the old to-do")
+EIGHT = Todo(n=8, title="Open the new to-do")
+X = answering({"src/a/x.py": ""})
 CHIP = marked("chip", "todo:7", "to-do 7")
 
 
@@ -37,6 +39,8 @@ class RowLinks(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.answer(TextFormatting, MarkRows(), expects=[
             Given(shown("I closed to-do 7 for you"), rows=[SEVEN]) >> Answered(Rewritten(f"I closed {CHIP} for you")),
+            Given(shown("I closed to-dos 7 and 8 for you"), rows=[SEVEN, EIGHT]) >> Answered(Rewritten(f"I closed {CHIP} and {marked('chip', 'todo:8', 'to-do 8')} for you")),
+            Given(shown("I closed to-dos 7 and 9 for you"), rows=[SEVEN]) >> Answered(Rewritten("I closed to-dos 7 and 9 for you")),
             Given(shown("I closed to-do 7 for you", SHARED), rows=[SEVEN]) >> Answered(Rewritten(f"I closed {CHIP} for you")),
             Given(shown("I closed to-do 7 for you", "chat"), rows=[SEVEN]) >> Answered(Allowed()),
             Given(shown("I closed to-do 9 for you"), rows=[SEVEN]) >> Answered(Rewritten("I closed to-do 9 for you")),
@@ -48,6 +52,12 @@ class RowLinks(Feature):
             Given(shown("Nothing to link here")) >> Answered(Allowed()),
             Given(shown("See https://example.com/page now")) >> Answered(Rewritten(f"See {marked('url', 'https://example.com/page', 'https://example.com/page')} now")),
             Given(shown("See https://example.com/page now", SHARED)) >> Answered(Allowed()),
+            Given(shown("See src/a/x.py now"), files=X) >> Answered(Rewritten(f"See {marked('file', 'src/a/x.py', 'x.py')} now")),
+            Given(shown("See src/a/x.py:12 now"), files=X) >> Answered(Rewritten(f"See {marked('file', 'src/a/x.py#L12', 'x.py:12')} now")),
+            Given(shown("Open `src/a/x.py` now"), files=X) >> Answered(Rewritten(f"Open {marked('file', 'src/a/x.py', 'x.py')} now")),
+            Given(shown("Open `src/a/gone.py` now"), files=X) >> Answered(Rewritten("Open `src/a/gone.py` now")),
+            Given(shown("Fixed in abc1234def today")) >> Answered(Rewritten(f"Fixed in {marked('commit', 'abc1234def', 'abc1234')} today")),
+            Given(shown("Seen 1234567 times")) >> Answered(Rewritten("Seen 1234567 times")),
         ])
         journal.events.answer(TextFormatting, UnwrapChips(), expects=[
             Given(shown(f"I closed ({CHIP}) for you")) >> Answered(Rewritten(f"I closed {CHIP} for you")),
