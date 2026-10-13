@@ -62,6 +62,12 @@ class ReadSessions(Sessions):
     writes = False
 
 
+class Terminal(Service):
+    """The terminal of the agent the event is about, which the journal presses keys in, such as moving its running command to the background."""
+
+    writes = True
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

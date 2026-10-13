@@ -4,7 +4,6 @@ The Fakes answer and remember. Nothing here knows what any one outcome word mean
 record of the play itself - so a word added to the grammar is a word added in one place.
 """
 
-import time
 from dataclasses import dataclass, field
 from typing import ClassVar
 
@@ -115,6 +114,17 @@ class Providers(Asked):
 
 
 @dataclass
+class Terminal:
+    """Keys pressed in the agent's terminal, which the play has none of: each press is remembered as a run."""
+
+    seen: Seen
+
+    def move_to_background(self, running: str = "") -> dict:
+        self.seen.ran.append(("move to background", running))
+        return {}
+
+
+@dataclass
 class Clock:
     """The time the Given fixed. It never comes from the module, so an expectation is exact."""
 
@@ -145,6 +155,7 @@ class World:
     files: Files
     processes: Processes
     providers: Providers
+    terminal: Terminal
     clock: Clock
     ids: Ids
 
@@ -152,7 +163,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Terminal(seen), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

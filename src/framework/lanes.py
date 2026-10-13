@@ -6,6 +6,7 @@ import time
 from collections.abc import Callable
 from typing import get_args
 
+from agents import control
 from controllers.agents import Agents
 from controllers.base import CONTROLLERS
 from engine import triggering
@@ -21,7 +22,7 @@ from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings)
+                     Remembered, Rows, Sessions, Settings, Terminal)
 
 
 class NobodyToSpeakTo(LookupError):
@@ -44,6 +45,16 @@ class FeatureSettings:
 
     def of(self, name: str):
         return FEATURES[name].values(self.record)
+
+
+class AgentTerminal:
+    """The keys the journal presses in an agent's terminal."""
+
+    def __init__(self, record, agent):
+        self.record, self.agent = record, agent
+
+    def move_to_background(self, running: str = "") -> dict:
+        return control.move_to_background(self.record.root, self.record.env, self.agent.title, running)
 
 
 class TheClock:
@@ -100,6 +111,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Remembered: PerAsk(lambda feature, asked: record.state(feature)),
             ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
             Sessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
+            Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, agent())),
             ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
 
 

@@ -60,9 +60,6 @@ class Speaker:
         """Holds the line for the agent's next tool call, where it is told beside the hook's answer."""
         held_lines.keep(self.record, self.session, line)
 
-    def move_to_background(self, running: str = "") -> dict:
-        from agents.control import move_to_background
-        return move_to_background(self.record.root, self.record.env, self.session, running)
 
 
 @dataclass
