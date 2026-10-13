@@ -306,7 +306,8 @@ class MessagesFeature(Feature):
             Given(TurnEnded(agent=1, words="what the Codex agent said"), rows=[CODEX], transcript=in_a_codex_transcript("what the Codex agent said")) >> Wrote(File(LEDGER.replace("claude-1", "codex-1"), "_sent")),
         ], after=("SendCutOffWords",))
         journal.events.handle(PromptBegan, BeginTurn(), expects=[
-            Given(PromptBegan(agent=1), rows=[TURN], transcript=in_a_transcript("Never delivered.")) >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("Never delivered."),))),
+            Given(PromptBegan(agent=1), rows=[TURN], transcript=in_a_transcript("Never delivered.")) >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("Never delivered."),)))
+                & Wrote(File(LEDGER, fingerprint("Never delivered."))),
             Given(PromptBegan(agent=1), rows=[TURN], files=answering(ledger(_sent=["a" * 40, "plain"]))) >> Wrote(File(LEDGER, "plain")),
         ])
         journal.events.handle(TurnCutOff, PostCutOffTurn(), expects=[
