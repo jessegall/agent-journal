@@ -107,6 +107,7 @@ class TriggersFeature(TriggersWork, Feature):
             Given(answered("make build"), rows=[DEPLOY_NUDGE, DEPLOY_NOTE, AGENT_ROW]) >> Dispatches(nothing),
             Given(answered("git push --force", why="No force push - Never force push."), rows=[NO_FORCE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=1)),
             Given(answered("git push --force", why="Something else"), rows=[NO_FORCE, AGENT_ROW]) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Bash", input="make deploy", command="make deploy", subagent=True), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(TriggerMet, FireTrigger(), expects=[
             Given(TriggerMet(agent=1, row=2), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Nudged("nudge") & Updated(Trigger(n=2), matched=1)
@@ -154,5 +155,6 @@ class TriggersFeature(TriggersWork, Feature):
             Given(asked("git push --force"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Answered(Allowed()),
             Given(asked("git push --force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Allowed()),
             Given(asked("git push force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Refused("No force - Never force.")),
+            Given(ToolCallAsked(tool="Bash", input="git push --force", command="git push --force", session="claude-1", subagent=True), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Allowed()),
         ])
         STILL_HELD["triggers.hold"] = reminding
