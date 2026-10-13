@@ -117,7 +117,7 @@ class Plans(Controller):
             self._refuse(f"plan {n} cannot move while " + "; ".join(busy))
         renumbered = {int(t): todos.move(int(t), env).n for t in owned}
         moved = super().move(n, env)
-        phases = [{**phase, PHASE.todos: [renumbered[int(t)] for t in phase.get(PHASE.todos, []) if int(t) in renumbered]} for phase in moved.phases]
+        phases = [{**phase, PHASE.todos: [renumbered[int(t)] for t in phase.get(PHASE.todos, []) if int(t) in renumbered]} for phase in plan.phases]
         return self.in_env(env).update(moved.n, phases=phases)
 
     @action
