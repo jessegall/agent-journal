@@ -215,8 +215,9 @@ function slide() {
 // clip on screen is drawn in that posture first, so the figure gets to its feet or takes its grip where it is before the first leg
 async function moveTo(spot, {straight = false, pace = 1} = {}) {
     if (!tripTo(place.value, spot, figureSize(), {straight, pace})) return settle(spot);
-    const trip = {to: spot, straight, pace, footing: footingOn(spot)};
-    moving.value = trip;
+    moving.value = {to: spot, straight, pace, footing: footingOn(spot)};
+    // read back, since the ref hands out its reactive copy, never the object it was given
+    const trip = moving.value;
     step();
     if (sliding.value) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
     if (moving.value === trip) setOff();

@@ -128,7 +128,7 @@ const framesOf = (page, ms) =>
                 const look = () => {
                     const element = document.querySelector(figure);
                     const box = element.getBoundingClientRect();
-                    frames.push({x: box.left, y: box.top, walking: element.dataset.walking === "true"});
+                    frames.push({x: box.left, y: box.top, walking: element.dataset.walking === "true", trip: element.dataset.trip, clip: element.dataset.clip});
                     if (performance.now() < until) requestAnimationFrame(look);
                     else done(frames);
                 };
@@ -172,9 +172,21 @@ await runScenarios(process.argv[2], {
         const gliding = longestRun(frames, (frame, before) => !frame.walking && across(frame, before));
         const measured = `${frames.length} frames, ${walked} walking, longest walk on the spot ${onTheSpot}, longest glide ${gliding}`;
         console.log(`the figure's walk: ${measured}`);
-        if (!walked) throw new Error(`the figure never walked to the question's tab: ${measured}`);
+        const state = await page.evaluate((figure) => {
+            const tab = document.querySelector('[data-tab="question"]');
+            const box = tab?.getBoundingClientRect();
+            const shown = document.querySelector(figure)?.dataset || {};
+            return `question tab ${tab ? `${tab.getAttribute("aria-selected")} at ${Math.round(box.left)},${Math.round(box.top)}` : "missing"}, figure ${JSON.stringify(shown)}`;
+        }, FIGURE);
+        if (!walked) throw new Error(`the figure never walked to the question's tab: ${measured}; ${state}`);
         if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`the figure walked on the spot: ${measured}`);
-        if (gliding > CATCH_UP_FRAMES) throw new Error(`the figure moved across without walking: ${measured}`);
+        const runs = [];
+        for (const f of frames) {
+            const said = `${Math.round(f.x)},${Math.round(f.y)}${f.walking ? "W" : ""}:${f.trip || "-"}:${f.clip}`;
+            if (runs.length && runs.at(-1)[0] === said) runs.at(-1)[1]++;
+            else runs.push([said, 1]);
+        }
+        if (gliding > CATCH_UP_FRAMES) throw new Error(`the figure moved across without walking: ${measured}; FRAMES ${runs.map(([said, n]) => `${n}x${said}`).join(" ")}`);
     },
 
     async "a click on the figure sends it walking or hopping out of the box it was in, never across the page in one frame"(page, url) {
