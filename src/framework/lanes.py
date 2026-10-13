@@ -15,7 +15,7 @@ from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
 from engine import bus, triggering
-from engine.stored import write_text
+from framework.auto_mode import automatic
 from framework.diagnostics import logged
 from engine import project_files, runtime, seats, viewer, worktree
 from engine.developing import developing
@@ -62,6 +62,10 @@ class FeatureSettings:
 
     def is_on(self, behaviour: str) -> bool:
         return self.feature.on(self.record, behaviour)
+
+    def automatic(self) -> bool:
+        """Whether this environment's agent works the list without asking, as work tracking decides it."""
+        return automatic(self.record)
 
     def of(self, name: str):
         return FEATURES[name].values(self.record)

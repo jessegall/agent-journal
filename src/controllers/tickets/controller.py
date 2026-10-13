@@ -5,7 +5,7 @@ from dataclasses import asdict
 from controllers.agents import IDLE_STATE, WORKING_STATE
 from controllers.agents import Agents
 from controllers.environments import Environments
-from controllers.features import Features, settings_of, settle_prompts
+from controllers.features import Features, settings_of
 from controllers.messages import Messages
 from controllers.notices import Notices
 from engine import bus, runtime
@@ -111,8 +111,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return max(0, int(settings_of(self.record, TICKETS).running))
 
     def _settle(self, place) -> None:
-        """What a ticket's own environment starts with: its agent is prompted for permission only when auto mode is off there, and the features a ticket has no use for are switched off."""
-        settle_prompts(place)
+        """What a ticket's own environment starts with: the features a ticket has no use for are switched off. Its agent is not prompted for permission, the default, since the ticket that owns the environment steers it and a steered environment works its list on its own."""
         Features(place, actor=SYSTEM).quieten()
 
     @action

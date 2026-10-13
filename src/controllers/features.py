@@ -9,7 +9,7 @@ from declaring.settings import Settings
 from engine.record import Record
 from events.catalogue import CATALOGUE
 from engine.settings_file import PROJECT_PARTS
-from resources.base import AGENT, Refused, SYSTEM, USER
+from resources.base import AGENT, Refused, USER
 from resources import types
 from controllers.marks import action
 
@@ -152,12 +152,3 @@ def setting_value(value: str) -> bool | int | float | str:
     except ValueError:
         return value
     return parsed if isinstance(parsed, (bool, int, float, str)) else value
-
-
-from framework.auto_mode import AUTO_MODE, automatic  # noqa: F401
-PERMISSION_PROMPTS = "permission_prompts"
-
-
-def settle_prompts(record) -> None:
-    """Settles whether an environment's agent is asked for permission: it is not, where it works the list on its own. Named apart from agents.terminal.prompted, which is about launching a terminal with a prompt."""
-    record.change_setting(PERMISSION_PROMPTS, {"skip": automatic(record)})

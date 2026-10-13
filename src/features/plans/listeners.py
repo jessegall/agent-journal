@@ -9,7 +9,7 @@ from receiving import Listener
 from resources.base import AGENT, SYSTEM, USER
 from resources.plans import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, WAITING
 from resources.types import AgentRow, Plan, Todo
-from serving import ReadRows
+from serving import ReadRows, Settings
 
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
@@ -59,15 +59,15 @@ class SpotPlanOfHandedRow(Listener[TodoUpdated]):
 
 
 class SpotCheckpointToPass(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, plans: ReadRows[Plan]) -> list[Fact]:
-        if not plans.passes_checkpoints():
+    def listen(self, event: ClockTicked, plans: ReadRows[Plan], settings: Settings) -> list[Fact]:
+        if not plans.passes_checkpoints(settings.automatic()):
             return []
         return [CheckpointPassed(plan=plan.n) for plan in plans.rows.every() if plan.status == WAITING]
 
 
 class SpotPlansToAdvance(Listener[AnyEvent]):
-    def listen(self, event: AnyEvent, plans: ReadRows[Plan]) -> list[Fact]:
-        return [PlansToAdvance(passing=plans.passes_checkpoints())] if (event.type, event.action) in ADVANCES else []
+    def listen(self, event: AnyEvent, plans: ReadRows[Plan], settings: Settings) -> list[Fact]:
+        return [PlansToAdvance(passing=plans.passes_checkpoints(settings.automatic()))] if (event.type, event.action) in ADVANCES else []
 
 
 class SpotReopenedRowOfAPlan(Listener[RowReopened]):

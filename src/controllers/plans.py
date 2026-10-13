@@ -6,11 +6,10 @@ from dataclasses import asdict, dataclass
 from controllers.base import Controller
 from controllers.docs import Docs
 from controllers.environments import Environments
-from controllers.features import automatic
 from controllers.todos import Todos
 from controllers.works import Works
 from resources.plans import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, TODOS, WAITING, Plan, Tally, standing_of, tally_of,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, WAITING, Plan, Tally, standing_of, tally_of,
 )
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
@@ -321,9 +320,9 @@ class Plans(Controller):
             self._start_phase(plan)
         return not (last or waits)
 
-    def passes_checkpoints(self) -> bool:
-        """Whether a checkpoint passes by itself: auto mode is on and no row steers this environment."""
-        return automatic(self.record) and not Environments(self.record, actor=SYSTEM).steered()
+    def passes_checkpoints(self, auto: bool) -> bool:
+        """Whether a checkpoint passes by itself: auto mode, as the caller found it, is on and no row steers this environment."""
+        return auto and not Environments(self.record, actor=SYSTEM).steered()
 
     def catch_up(self, passing: bool) -> None:
         """Walks every running plan on as far as its closed rows allow, one pass at a time per record."""

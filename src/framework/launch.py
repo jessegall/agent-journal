@@ -11,7 +11,8 @@ from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from resources.base import DEFAULT_PROVIDER
-from controllers.features import settle_prompts
+from framework.auto_mode import automatic
+from resources.permission_prompts import set_skipped
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind, NewEnvironment, Running
 from serving import SERVED, Providers
@@ -26,7 +27,7 @@ def prepared(record, wanted: NewEnvironment) -> Record:
     if not environments.rows.by_title(wanted.name):
         environments.create(wanted.name, abstract=wanted.abstract, owner=wanted.owner, launched_from=record.env, folder=str(wanted.folder), kind=wanted.kind)
     place = Record(record.root, wanted.name)
-    settle_prompts(place)
+    set_skipped(place, automatic(place))
     Features(place, actor=SYSTEM).quieten()
     return place
 
