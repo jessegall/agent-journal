@@ -82,7 +82,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
     tick(record)
     assert sum(f"on board {board.n}" in line and "think up" in line for line in nudged_lines(record)) == 1, "stale ideas ask for new ones once"
     filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
-    import features.boards.handlers as board_handlers
+    import features.boards.listeners as board_handlers
     quiet, board_handlers.QUIET_FILL = board_handlers.QUIET_FILL, -1
     try:
         tick(record)

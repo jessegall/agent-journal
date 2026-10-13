@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from typing import ClassVar
 
+from events import Fact
 from events.resources import ResourceEvent
 
 
@@ -56,3 +57,22 @@ class BoardOrchestrated(ResourceEvent):
 class BoardChanged(ResourceEvent):
     on: ClassVar[str] = "board"
     fields: list = field(default_factory=list)
+
+
+@dataclass(frozen=True, kw_only=True)
+class CardsAddedToBoard(Fact):
+    """Cards were added to a board, which the agent is to offer to place."""
+
+    board: int
+    title: str
+    count: int
+    tickets: str
+    uncovered: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class BoardFillingQuiet(Fact):
+    """A board being drafted has had nothing written to it for this many seconds."""
+
+    board: int
+    seconds: int

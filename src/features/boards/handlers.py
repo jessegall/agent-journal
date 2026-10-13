@@ -1,51 +1,18 @@
-import time
-
-from events.agents import ClockTicked
-from controllers.types import Boards
-from resources.boards import DRAFTING_PHASE
-from framework.sending import Sent
-from framework.parts import AgentContext, Context, Handler
-from resources.base import SYSTEM
-from controllers.types import Boards
-from events.boards import BoardChanged
-
-ADDED = "added"
+from events import Fact
+from events.boards import BoardFillingQuiet, CardsAddedToBoard
+from features.boards.listeners import ADDED
+from receiving import Handler
+from resources.types import Board
+from serving import Chat, Rows
 
 
-class OfferToPlaceAddedCards(Handler):
-    def handle(self, context: Context, event: BoardChanged) -> None:
-        if event.action != "updated" or ADDED not in event.fields:
-            return
-        boards = Boards(context.record, actor=SYSTEM)
-        board = boards.load(event.n)
-        added, speaking = board.added, context.to_primary()
-        if not speaking or not added.get("tickets"):
-            return
-        if speaking.once(ADDED, f"{board.n}:{added['at']}"):
-            speaking.agent.say(ADDED, n=board.n, title=board.title, count=len(added["tickets"]),
-                               tickets=", ".join(f"ticket {t}" for t in added["tickets"]), uncovered=uncovered(boards, board))
+class OfferToPlaceAddedCards(Handler[CardsAddedToBoard]):
+    def handle(self, event: CardsAddedToBoard, chat: Chat) -> list[Fact]:
+        chat.say(ADDED, n=event.board, title=event.title, count=event.count, tickets=event.tickets, uncovered=event.uncovered)
+        return []
 
 
-def uncovered(boards: Boards, board) -> str:
-    missing = boards.uncovered(board) if board.done_when else []
-    return (" Name in the same line what the goal will miss without a card for it: " + "; ".join(missing) + ".") if missing else ""
-
-
-QUIET_FILL = 90
-
-
-class MarkQuietFillingStalled(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        boards = Boards(context.record, actor=SYSTEM)
-        for board in boards.rows.standing():
-            if board.phase != DRAFTING_PHASE:
-                continue
-            quiet = time.time() - max([float(board.updated)] + [float(t.updated) for t in boards.drafts(board)])
-            if quiet > QUIET_FILL:
-                boards.stall(board.n, f"nothing was written to the board for {int(quiet)} seconds")
-
-
-def boards_wanting_ideas(context, agent) -> list[Sent]:
-    every = context.feature.interval(context.record, "ideas")
-    return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.get(Boards).rows.standing()
-            if board.environment == context.record.env and not board.finished and time.time() - float(board.ideas_at) >= every]
+class MarkQuietFillingStalled(Handler[BoardFillingQuiet]):
+    def handle(self, event: BoardFillingQuiet, boards: Rows[Board]) -> list[Fact]:
+        boards.stall(event.board, f"nothing was written to the board for {event.seconds} seconds")
+        return []
