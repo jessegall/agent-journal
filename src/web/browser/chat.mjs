@@ -114,6 +114,17 @@ await runScenarios(process.argv[2], {
         if (kept !== typed.join("")) throw new Error(`the compose box lost what was typed: kept "${kept}", typed "${typed.join("")}"`);
     },
 
+    async "a click on the empty row beside the attach button puts the cursor in the text, so what is typed next lands there"(page, url) {
+        await home(page, url);
+        await page.locator("body").click({position: {x: 5, y: 5}});
+        const box = await page.locator(".compose-box").boundingBox();
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height - 12);
+        await page.keyboard.type("lands in the box");
+        const kept = await compose(page).inputValue();
+        if (kept !== "lands in the box")
+            throw new Error(`a click on the box's bottom row left the text elsewhere: the box holds "${kept}"`);
+    },
+
     async "typing the first words brings the chat to the newest message"(page, url) {
         await home(page, url);
         await page.evaluate(() => {

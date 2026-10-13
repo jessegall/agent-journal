@@ -272,12 +272,14 @@ export function footingOn(spot, at = performance.now()) {
 }
 
 // Where a footing's spot is now, carried along as what it rests on moves, or null when the ground went from under the figure: the element
-// left the page or has no size, or it carried the figure out of its world, as a bubble scrolls out of the chat
+// left the page or has no size, it carried the figure out of its world, as a bubble scrolls out of the chat, or it carried a hanging
+// figure's feet down onto the ground at home, where it lets go and stands
 export function footingNow({element, dx, dy, posture, home}, figure) {
     const edge = home ? groundEdge().edge : element.isConnected && element.getBoundingClientRect();
     if (!home && (!edge?.width || !edge.height)) return null;
-    const spot = {x: edge.left + dx, y: edge.top + dy};
-    return inWorld({...spot, posture}, figure) ? spot : null;
+    const spot = {x: edge.left + dx, y: edge.top + dy, posture};
+    if (posture === "hang" && boxAt(spot, figure).bottom >= groundEdge().edge.top) return null;
+    return inWorld(spot, figure) ? {x: spot.x, y: spot.y} : null;
 }
 
 // how far the ground at home moves within GROUND_JUMP_MS, in pixels, before the figure is thrown up with it or falls with it rather than

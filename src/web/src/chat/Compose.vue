@@ -154,6 +154,15 @@ function unpick(i) {
     area.value && area.value.focus();
 }
 
+// a press anywhere in the box but on one of its controls, as on the empty row beside the attach button, puts the cursor in the text, so
+// what is typed or pasted next lands there
+const CONTROLS = "button, a, input, textarea, select, label, [role=button]";
+function focusText(e) {
+    if (e.target.closest(CONTROLS)) return;
+    e.preventDefault();
+    area.value.focus();
+}
+
 async function go() {
     if (!draft.text.trim()) return;
     const text = draft.text.trim();
@@ -211,7 +220,7 @@ async function use(tool) {
             </div>
         </Transition>
         <WaitEdge :waiting="waiting" @list="emit('waiting-list', $event)">
-            <div class="compose-box floating" :data-figure-home="figureHome ? '' : null">
+            <div class="compose-box floating" :data-figure-home="figureHome ? '' : null" @mousedown="focusText">
                 <template v-if="draft.files.length">
                     <div class="compose-files">
                         <template v-for="(f, i) in draft.files" :key="i">

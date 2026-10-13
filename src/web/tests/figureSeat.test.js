@@ -194,6 +194,11 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     // on the ground at home it keeps to whatever the ground there is, here a bar docked over the compose box
     page(box, {left: 300, top: 556, width: 400, height: 44});
     expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toEqual({x: 310, y: 556});
+    // hanging from a bubble it is carried with it, until the bubble brings its feet down onto that ground, where it lets go
+    const bubbleAt = (top) => ({isConnected: true, getBoundingClientRect: () => ({left: 400, top, width: 200, height: 40})});
+    const hanging = {dx: 20, dy: 40, posture: "hang", home: false};
+    expect(footingNow({...hanging, element: bubbleAt(200)}, FIGURE)).toEqual({x: 420, y: 240});
+    expect(footingNow({...hanging, element: bubbleAt(500)}, FIGURE)).toBe(null);
 });
 
 test("at home the figure is launched when the ground under it rises more than a few pixels in a moment, falls when it drops so, and a drift carries it", () => {
