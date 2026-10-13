@@ -21,8 +21,8 @@ from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given,
                      exited, nothing)
 
 OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered, Set, Whispered)
-GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers")
-SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
+GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root")
+SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root")
 
 
 def promised():
@@ -58,7 +58,7 @@ def test_every_word_the_chapter_names_is_exported_and_every_export_is_named():
         "the Given, the arrow's result, the services and the helpers a Given is written with"
     assert all(issubclass(word, Outcome) for word in OUTCOME_WORDS), "every outcome word is an Outcome, so it joins with &"
     assert [f.name for f in fields(Given)] == list(GIVEN_ARGUMENTS), "Given takes the arguments the chapter names, in that order"
-    assert expects.SERVICES == SERVICE_KINDS, "a Given answers for the nine services the chapter lists and no others"
+    assert expects.SERVICES == SERVICE_KINDS, "a Given answers for the services the chapter lists and no others"
     assert all(callable(helper) for helper in (at, counting, answering, exited)), "the helpers a Given is written with"
 
 

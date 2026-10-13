@@ -4,9 +4,12 @@ The Fakes answer and remember. Nothing here knows what any one outcome word mean
 record of the play itself - so a word added to the grammar is a word added in one place.
 """
 
+from contextlib import contextmanager
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import ClassVar
 
+from engine.git import MAIN
 from engine.record import Record
 from engine.stored import read_json
 from expects import At, Answering, Counting, Expectation, Given
@@ -132,6 +135,104 @@ class Providers(Asked):
         return self.answer(asked)
 
 
+@dataclass(frozen=True)
+class CheckedOut:
+    """A checkout a Given says a folder is in: where it is, on what branch, and what it lands on, in the shape the real one has."""
+
+    top: Path
+    branch: str
+    linked: bool = False
+    landing: str = ""
+
+    @property
+    def name(self) -> str:
+        return f"worktree {self.top.name}" if self.linked else MAIN
+
+    @property
+    def head_log(self) -> Path:
+        return self.top / ".git" / "logs" / "HEAD"
+
+    @property
+    def landing_log(self) -> Path:
+        return self.top / ".git" / "logs" / "refs" / "remotes" / self.landing
+
+
+def checked_out(branch: str = "main", top: str = "/work/app", linked: bool = False, landing: str = "origin/main") -> CheckedOut:
+    return CheckedOut(Path(top), branch, linked, landing)
+
+
+@dataclass
+class Git(Asked):
+    """The git of the project: a checkout and what git printed are what the Given says, and every link it was asked for is remembered. The asks carry no folders, since the play's project is not where an expectation can name."""
+
+    service: ClassVar[str] = "git"
+
+    def checkout(self, folder):
+        return self.answer(("checkout",))
+
+    def worktree(self, folder, workspaces):
+        return self.answer(("worktree",))
+
+    def run(self, top, *args: str) -> str:
+        return self.answer(("git", *args))
+
+    def stamp(self, path) -> int:
+        return self.answer(("stamp", Path(path).name))
+
+    def link(self, top, workspaces) -> None:
+        self.seen.ran.append(("link", Path(top).name))
+
+
+@dataclass
+class JournalRoot(Asked):
+    """The journal's folder: what is in it is what the Given says, every change to it is remembered as a run, and a sweep is taken unless the Given says another process holds it."""
+
+    service: ClassVar[str] = "journal root"
+
+    def named(self, ask: tuple, otherwise):
+        return self.answers.answers.get(ask, otherwise)
+
+    def tests_running(self) -> bool:
+        return self.named(("tests running",), False)
+
+    def warming(self) -> bool:
+        return self.named(("warming",), False)
+
+    def environments(self) -> list[str]:
+        return self.named(("environments",), ["t"])
+
+    @contextmanager
+    def swept(self, name: str, every: float):
+        self.seen.ran.append(("sweep", name))
+        yield self.named(("sweep", name), True)
+
+    def trim_logs(self, keep: int, readers_since: float) -> int:
+        self.seen.ran.append(("trim logs", keep))
+        return self.named(("trim logs",), 0)
+
+    def exists(self, path: str) -> bool:
+        return self.named(("exists", path), False)
+
+    def glob(self, pattern: str) -> list[str]:
+        return self.named(("glob", pattern), [])
+
+    def modified(self, path: str) -> float:
+        return self.named(("modified", path), 0.0)
+
+    def write(self, path: str, text: str) -> None:
+        self.seen.ran.append(("write", path, text))
+
+    def append(self, path: str, line: str, keep: int = 0) -> None:
+        self.seen.ran.append(("append", path, line))
+
+    def remove(self, path: str) -> None:
+        self.seen.ran.append(("remove", path))
+
+    def trim_tail(self, path: str, keep: int) -> bool:
+        self.seen.ran.append(("trim", path, keep))
+        return self.named(("trim", path), True)
+
+
 @dataclass
 class Terminal:
     """Keys pressed in the agent's terminal, which the play has none of: each press is remembered as a run."""
@@ -177,6 +278,8 @@ class World:
     files: Files
     processes: Processes
     providers: Providers
+    git: Git
+    journal_root: JournalRoot
     terminal: Terminal
     clock: Clock
     ids: Ids
@@ -185,7 +288,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Terminal(seen), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Terminal(seen), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

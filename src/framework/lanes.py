@@ -2,7 +2,9 @@
 
 import io
 import shlex
+import shutil
 import time
+from pathlib import Path
 from collections.abc import Callable
 from typing import get_args
 
@@ -11,7 +13,10 @@ from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from engine import triggering
-from engine import project_files, seats
+from engine import project_files, runtime, seats, worktree
+from engine.git import Checkout, checkout_of
+from engine.locks import project_sweep
+from engine.proc import git as run_git
 from engine.command_line import command_line
 from engine.record import Record
 from engine.sessions import Sessions as TheSessions
@@ -26,7 +31,7 @@ from receiving.ticks import PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -49,6 +54,112 @@ class FeatureSettings:
 
     def of(self, name: str):
         return FEATURES[name].values(self.record)
+
+
+class TheGit:
+    """The git checkouts of the project, read and linked through the one place that runs git."""
+
+    def __init__(self, record):
+        self.record = record
+
+    def checkout(self, folder: Path) -> Checkout | None:
+        return checkout_of(Path(folder))
+
+    def worktree(self, folder: Path, workspaces) -> Path | None:
+        """The linked checkout a folder is in, or nothing when it is in the main one or in none."""
+        return worktree.checkout(Path(folder), workspaces)
+
+    def run(self, top: Path, *args: str) -> str:
+        return run_git(list(args), Path(top))
+
+    def stamp(self, path: Path) -> int:
+        """When a git log last moved, in nanoseconds; none when the file is not there."""
+        try:
+            return Path(path).stat().st_mtime_ns
+        except OSError:
+            return 0
+
+    def link(self, top: Path, workspaces) -> None:
+        """Shares the project's journal, skills and hooks with a linked checkout, without git seeing them."""
+        worktree.share_journal(Path(top), self.record.root, workspaces)
+
+
+class TheJournalRoot:
+    """The journal's own folder: paths are read against it, and an absolute one is taken as it is."""
+
+    def __init__(self, record):
+        self.record, self.root = record, record.root
+
+    def tests_running(self) -> bool:
+        return runtime.tests_running(self.root)
+
+    def warming(self) -> bool:
+        return runtime.warming(self.root)
+
+    def environments(self) -> list[str]:
+        return [one.env for one in Record.every(self.root)]
+
+    def swept(self, name: str, every: float):
+        """Says True to whoever runs the sweep the whole project shares, once in `every` seconds, its stamp kept as a file in the runtime folder."""
+        return project_sweep(runtime.folder(self.root) / name, every)
+
+    def trim_logs(self, keep: int, readers_since: float) -> int:
+        """Drops the old events of every environment's log and of the project's, keeping a number of them and whatever a reader has not reached."""
+        records = Record.every(self.root)
+        logs = [one.event_log for one in records] + [one.event_log.project for one in records[:1]]
+        return sum(log.trim(keep, readers_since) for log in logs)
+
+    def exists(self, path: str) -> bool:
+        return (self.root / path).exists()
+
+    def glob(self, pattern: str) -> list[str]:
+        return sorted(str(found.relative_to(self.root)) if found.is_relative_to(self.root) else str(found) for found in self.root.glob(pattern))
+
+    def modified(self, path: str) -> float:
+        """When a file last changed, in seconds; none when it is not there."""
+        try:
+            return (self.root / path).stat().st_mtime_ns / 1e9
+        except OSError:
+            return 0.0
+
+    def write(self, path: str, text: str) -> None:
+        written = self.root / path
+        written.parent.mkdir(parents=True, exist_ok=True)
+        written.write_text(text)
+
+    def append(self, path: str, line: str, keep: int = 0) -> None:
+        """Adds a line to a file, and when it has grown past `keep` bytes first drops the older half; a file that cannot be written is left alone."""
+        file = self.root / path
+        try:
+            file.parent.mkdir(parents=True, exist_ok=True)
+            if keep and file.is_file() and file.stat().st_size > keep:
+                kept = file.read_text().splitlines()
+                file.write_text("\n".join(kept[len(kept) // 2:]) + "\n")
+            with file.open("a") as out:
+                out.write(line + "\n")
+        except OSError:
+            return
+
+    def remove(self, path: str) -> None:
+        """Takes a file or a folder away; one that is not there stays so."""
+        gone = self.root / path
+        if gone.is_dir() and not gone.is_symlink():
+            shutil.rmtree(gone, ignore_errors=True)
+        else:
+            gone.unlink(missing_ok=True)
+
+    def trim_tail(self, path: str, keep: int) -> bool:
+        """Cuts a file down to its last `keep` bytes, and says whether it was longer."""
+        file = self.root / path
+        if file.stat().st_size <= keep:
+            return False
+        with file.open("r+b") as held:
+            held.seek(-keep, 2)
+            tail = held.read()
+            held.seek(0)
+            held.write(tail)
+            held.truncate()
+        return True
 
 
 class AgentTerminal:
@@ -113,6 +224,10 @@ class Environment:
         if agent is None:
             raise NobodyToSpeakTo.of(f"environment {self.record.env}")
         return Speaker(self.feature, self.record, agent)
+
+    def release(self, behaviour: str = "") -> None:
+        """Lets go the holds this feature put on every agent of the environment, under that behaviour."""
+        self.feature.release(self.record, behaviour)
 
     def chats(self) -> list[Speaker]:
         """The chat of every live agent here, for a line each of them must hear."""
@@ -222,6 +337,10 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
             Sessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
             Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, agent())),
+            Git: PerAsk(lambda feature, asked: TheGit(record)),
+            ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
+            JournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
+            ReadJournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
             ReadMarks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
             Holds: PerAsk(lambda feature, asked: AgentHolds(record, agent())),

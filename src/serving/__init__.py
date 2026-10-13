@@ -96,6 +96,30 @@ class ReadElsewhere(Elsewhere):
     writes = False
 
 
+class Git(Service):
+    """The git checkouts of the project: which one a folder is in and on what branch, what git says about it, when its logs last moved, and linking a worktree to the journal."""
+
+    writes = True
+
+
+class ReadGit(Git):
+    """The git checkouts, asked for to read only, as a listener or an answerer reads them."""
+
+    writes = False
+
+
+class JournalRoot(Service):
+    """The journal's own folder, outside the record: its runtime files and logs, the sweeps the whole project shares, and every environment by name."""
+
+    writes = True
+
+
+class ReadJournalRoot(JournalRoot):
+    """The journal's folder, asked for to read only."""
+
+    writes = False
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

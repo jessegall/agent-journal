@@ -23,7 +23,7 @@ __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
-SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
+SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root")
 """Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
 
 def stated(row) -> dict:
@@ -393,6 +393,10 @@ class Given:
     processes: Answering = Answering({})
     """The programs on the machine, by name to where they live. A Given that names none leaves the machine's own; one that names any says every other program is absent."""
     providers: Answering = Answering({})
+    git: Answering = Answering({})
+    """What the project's git says, by what is asked of it: ("checkout",) to the checkout the folder is in (or none), ("worktree",) to the linked checkout, ("git", *arguments) to what the command printed, ("stamp", file name) to when that log last moved. The play's project is no git repository, so nothing is read from one."""
+    journal_root: Answering = Answering({})
+    """What the journal's own folder holds, by path or pattern: ("glob", pattern) to the paths it lists, ("modified", path) to when one changed, ("exists", path), ("sweep", name) to whether this process took the sweep, ("environments",) to the environments there are; every write to it is remembered as a run."""
 
     @classmethod
     def of(cls, on, *rows, **more) -> "Given":
