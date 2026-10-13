@@ -6,7 +6,7 @@ from events.agents import AgentBeat, ClockTicked
 from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
 from features.long_commands.details import background_after, background_switch
 from features.long_commands.watch import background_tasks_of, part_of
-from features.work_modes.modes import kept_mode
+from resources.work_modes import kept_mode
 from framework.command_effects import JOURNAL_CALL
 from receiving import Listener
 from resources.types import AgentRow

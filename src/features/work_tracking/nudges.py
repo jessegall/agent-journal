@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from declaring.trigger import MINUTE
-from features.work_modes.modes import taking
+from framework.work_mode import taking
 from features.work_tracking.auto import automatic
 from features.work_tracking.details import CHECK_IN
 from features.work_tracking.next import carried_on, helping, in_sight, named_rows, ready, waiting_rows

@@ -1,17 +1,7 @@
-from features.work_modes.details import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, WorkModesDetails
-from resources.extension import Extension
+from features.work_modes.details import WorkModesDetails
+from framework.work_mode import CARRIED_IN, mode_of, taking  # noqa: F401
 from resources.base import Refused
-
-CARRIED_IN = Extension()
-"""The writers of the files that carry the mode's words, each taking the project folder and the record; a feature that writes such a file registers here, so the mode is picked without knowing who writes them."""
-
-
-def kept_mode(kept: str) -> str:
-    return kept if kept in MODES else BUILDER
-
-
-def mode_of(record) -> str:
-    return kept_mode(WorkModesDetails.values(record).mode)
+from resources.work_modes import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, kept_mode  # noqa: F401
 
 
 def pick(record, mode: str, actor: str) -> str:
@@ -27,11 +17,6 @@ def pick(record, mode: str, actor: str) -> str:
         write(record.root.parent, record)
     running(WorkModes).to_running(record, MODE_SET, actor=actor, mode=mode, written=MODES[mode].written)
     return mode
-
-
-def taking(record) -> str:
-    """What the mode this environment is in says to do with the next ready row."""
-    return MODES[mode_of(record)].taking
 
 
 def board_in(boards, n: int):

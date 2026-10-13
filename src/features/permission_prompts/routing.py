@@ -1,7 +1,7 @@
 from controllers.types import Environments
 from engine.record import Record
-from features.work_modes.details import ORCHESTRATOR
-from features.work_modes.modes import mode_of
+from framework.work_mode import mode_of
+from resources.work_modes import ORCHESTRATOR
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM
 

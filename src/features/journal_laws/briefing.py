@@ -69,8 +69,8 @@ def how_you_work(record) -> str:
     """What the environment's work mode tells the agent to do, written into the files it reads at every start rather than said once in a line it drifts away from."""
     if record is None:
         return ""
-    from features.work_modes.details import MODES
-    from features.work_modes.modes import mode_of
+    from framework.work_mode import mode_of
+    from resources.work_modes import MODES
     return MODES[mode_of(record)].written
 
 

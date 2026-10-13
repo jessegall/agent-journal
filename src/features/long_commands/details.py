@@ -1,7 +1,7 @@
 from declaring.details import Behaviour, FeatureDetails, Line
 from declaring.settings import Setting
 from declaring.groups import Group
-from features.work_modes.details import MODES, ORCHESTRATOR
+from resources.work_modes import MODES, ORCHESTRATOR
 
 MOVED = "moved"
 QUICKLY = 5

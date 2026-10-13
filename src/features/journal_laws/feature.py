@@ -16,7 +16,7 @@ from features.journal_laws.handlers import MarkTheRefusedRead, NameTheLargestRes
 from features.journal_laws.laws import carry, laws_for
 from features.journal_laws.listeners import SpotLargerResult, SpotLawInCall, SpotLawInChat, SpotLongReadRefused
 from features.session_briefing.start import LAW, START_PARTS
-from features.work_modes.modes import CARRIED_IN
+from framework.work_mode import CARRIED_IN
 from framework.base import Feature
 from framework.journal import Journal
 from framework.recital import WHISPERED_LAW

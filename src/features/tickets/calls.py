@@ -33,8 +33,8 @@ def needs_the_user(question) -> bool:
 
 def deciding(record) -> bool:
     """Whether the orchestrator answers its ticket agents' questions itself: auto mode on and the work mode orchestrator."""
-    from features.work_modes.details import ORCHESTRATOR
-    from features.work_modes.modes import mode_of
+    from framework.work_mode import mode_of
+    from resources.work_modes import ORCHESTRATOR
     from features.work_tracking.auto import automatic
     return automatic(record) and mode_of(record) == ORCHESTRATOR
 
