@@ -158,6 +158,8 @@ class SkillLoading(Feature):
         journal.events.answer(ToolCallAsked, RefuseCommandNeedingSkill(), expects=[
             Given(asked("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
                 >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
+            Given(asked("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering({**PLANS, **marked("skill_loading.refused", count=5)}))
+                >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Answered(Allowed()),
         ])
         journal.events.answer(ToolCallAsked, RefuseUntilLoaded(), expects=[

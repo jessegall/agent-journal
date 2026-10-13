@@ -29,13 +29,18 @@ def next_count(count: int, wanted: bool, limit: int, aside: int) -> int:
     return count % (limit + aside) + 1 if aside else count + 1
 
 
+def stepping_aside(marks: ReadMarks, settings: Settings) -> bool:
+    """Whether the gate lets this call through: it has refused its limit in a row and steps aside for a few tool uses."""
+    limit, aside = max(0, int(settings.most_refusals)), max(0, int(settings.steps_aside))
+    return next_count(marks.last(REFUSED).count, True, limit, aside) > limit
+
+
 class RefuseUntilLoaded(Answerer[ToolCallAsked]):
     def answer(self, event: ToolCallAsked, agents: ReadRows[AgentRow], marks: ReadMarks, settings: Settings, elsewhere: ReadElsewhere) -> Answer:
         record, row = elsewhere.here().record, agents.peek_session(event.session)
         if event.subagent or asks_for_a_load(event.tool, event.input, event.command) or not refusal_wanted(record, row):
             return Allowed()
-        limit, aside = max(0, int(settings.most_refusals)), max(0, int(settings.steps_aside))
-        if next_count(marks.last(REFUSED).count, True, limit, aside) > limit:
+        if stepping_aside(marks, settings):
             return Allowed()
         missing = outstanding(record, row)
         return Refused(FEATURES["skill_loading"].line_text("required", skills=", ".join(missing), loads=", ".join(provider_load(row, name) for name in missing)))
@@ -55,9 +60,9 @@ def skill_not_loaded(command: str, subagent: bool, row: AgentRow, since: float, 
 
 
 class RefuseCommandNeedingSkill(Answerer[ToolCallAsked]):
-    def answer(self, event: ToolCallAsked, agents: ReadRows[AgentRow], marks: ReadMarks, elsewhere: ReadElsewhere) -> Answer:
+    def answer(self, event: ToolCallAsked, agents: ReadRows[AgentRow], marks: ReadMarks, settings: Settings, elsewhere: ReadElsewhere) -> Answer:
         record, row = elsewhere.here().record, agents.peek_session(event.session)
         skill = skill_not_loaded(event.command, event.subagent, row, marks.last(NAME).since, record)
-        if not skill:
+        if not skill or stepping_aside(marks, settings):
             return Allowed()
         return Refused(FEATURES["skill_loading"].line_text("required", skills=skill, loads=provider_load(row, skill)))
