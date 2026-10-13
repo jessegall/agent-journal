@@ -132,6 +132,8 @@ class ToolCallAnswered(AgentEvent):
     input: str = ""
     why: str = ""
     subagent: bool = False
+    cwd: str = ""
+    paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

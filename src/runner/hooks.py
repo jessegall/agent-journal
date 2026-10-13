@@ -64,7 +64,8 @@ def quiet(call: HookCall) -> dict:
 def refused(call: HookCall) -> dict:
     why = refusal(call)
     after_answered(lambda: bus.announce(call.record, "agent", call.row.n, TOOL_ANSWERED, AGENT,
-                                        {"tool": call.hook.tool.name, "input": input_of(call.hook.tool), "why": why or "", "subagent": call.subagent}))
+                                        {"tool": call.hook.tool.name, "input": input_of(call.hook.tool), "why": why or "", "subagent": call.subagent,
+                                         "cwd": call.hook.cwd, "paths": list(call.hook.tool.paths)}))
     return {} if why is None else call.provider.blocking(why)
 
 
