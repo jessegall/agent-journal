@@ -95,10 +95,10 @@ class TheJournalRoot:
         """The folder of the project the journal belongs to."""
         return self.root.parent
 
-    def tests_running(self) -> bool:
+    def is_testing(self) -> bool:
         return runtime.tests_running(self.root)
 
-    def warming(self) -> bool:
+    def is_warming(self) -> bool:
         return runtime.warming(self.root)
 
     def environments(self) -> list[str]:
@@ -138,16 +138,23 @@ class TheJournalRoot:
         written.parent.mkdir(parents=True, exist_ok=True)
         written.write_text(text)
 
-    def append(self, path: str, line: str, keep: int = 0) -> None:
-        """Adds a line to a file, and when it has grown past `keep` bytes first drops the older half; a file that cannot be written is left alone."""
+    def append(self, path: str, line: str) -> None:
+        """Adds a line to a file; a file that cannot be written is left alone."""
         file = self.root / path
         try:
             file.parent.mkdir(parents=True, exist_ok=True)
-            if keep and file.is_file() and file.stat().st_size > keep:
-                kept = file.read_text().splitlines()
-                file.write_text("\n".join(kept[len(kept) // 2:]) + "\n")
             with file.open("a") as out:
                 out.write(line + "\n")
+        except OSError:
+            return
+
+    def halve(self, path: str, keep: int) -> None:
+        """Drops the older half of a file that has grown past `keep` bytes."""
+        file = self.root / path
+        try:
+            if file.is_file() and file.stat().st_size > keep:
+                kept = file.read_text().splitlines()
+                file.write_text("\n".join(kept[len(kept) // 2:]) + "\n")
         except OSError:
             return
 

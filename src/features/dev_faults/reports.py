@@ -171,7 +171,7 @@ class FaultReports:
               waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = (), stacks: str = "", request: int = 0, within: int = 0) -> None:
         if whole_reads:
             logged(self.root, f"{kind} {name} read a whole transcript for {'; '.join(whole_reads)}")
-        if took < min(BUDGET.values() or [0]) or self.cold(kind, name) or self.root.tests_running():
+        if took < min(BUDGET.values() or [0]) or self.cold(kind, name) or self.root.is_testing():
             return
         try:
             seen = self.dispatcher(env)
@@ -198,7 +198,8 @@ class FaultReports:
         """One line for every breach of a budget, with the release and the moment, so a release's effect can be read off the file; it keeps its newest half when it grows too large."""
         line = json.dumps({"version": version(), "kind": kind, "target": name, "took": round(took), "working": None if working is None else round(working), "after": round(after),
                            "request": request, "within": within, "load": round(load(), 2), "time": round(time.time())})
-        self.root.append(BUDGET_LOG, line, keep=BUDGET_LOG_KEPT)
+        self.root.halve(BUDGET_LOG, BUDGET_LOG_KEPT)
+        self.root.append(BUDGET_LOG, line)
 
     def starved(self, env: str, kind: str, name: str, took: float, working: float | None) -> None:
         """A request whose working time is within its budget but which spent more than its budget off the processor, with no lock or check to account for it, on a machine busier than it has cores, was
@@ -225,7 +226,7 @@ class FaultReports:
             return False
         first = kind in FIRST_RUN_COLD and name not in SERVED
         SERVED.add(name)
-        return first or self.root.warming()
+        return first or self.root.is_warming()
 
 
 class Reporting:

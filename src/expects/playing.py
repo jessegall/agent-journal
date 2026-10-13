@@ -195,10 +195,10 @@ class JournalRoot(Asked):
     def project(self) -> Path:
         return self.named(("project",), Path("/work/app"))
 
-    def tests_running(self) -> bool:
+    def is_testing(self) -> bool:
         return self.named(("tests running",), False)
 
-    def warming(self) -> bool:
+    def is_warming(self) -> bool:
         return self.named(("warming",), False)
 
     def environments(self) -> list[str]:
@@ -231,8 +231,11 @@ class JournalRoot(Asked):
     def write(self, path: str, text: str) -> None:
         self.seen.ran.append(("write", path, text))
 
-    def append(self, path: str, line: str, keep: int = 0) -> None:
+    def append(self, path: str, line: str) -> None:
         self.seen.ran.append(("append", path, line))
+
+    def halve(self, path: str, keep: int) -> None:
+        self.seen.ran.append(("halve", path, keep))
 
     def remove(self, path: str) -> None:
         self.seen.ran.append(("remove", path))
