@@ -657,7 +657,7 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
     assert all(said[name] != "moved" for name in handled) and all(said[name] == "moved" for name in said if name not in handled), \
         "a feature reads as moved when it holds no old handler, and as adapted or stuck while it holds one"
     adapted = ADAPTED.of(HANDLE)
-    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and {one.name for one in adapted} >= {"SendOnTheClock"}, \
+    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and {one.name for one in adapted} >= {"AskToStop", "CloseRowsFromCommits"}, \
         "each registers under its old handler's own name, so the ordering can tell them apart and none is registered twice"
 
     ran = []

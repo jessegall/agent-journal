@@ -12,6 +12,7 @@ SENDING, SENT, WRITTEN = "message.sending", "message.sent", "message.written"
 TICKED, BEAT = "ticked", "beat"
 COMMAND_RAN = "command.ran"
 TOOL_ANSWERED = "tool.answered"
+INTERRUPTED = "turn.interrupted"
 
 
 @dataclass(frozen=True)
@@ -136,6 +137,14 @@ class ToolCallAnswered(AgentEvent):
     subagent: bool = False
     cwd: str = ""
     paths: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class TurnInterrupted(AgentEvent):
+    """The person cut a turn off: it ends with no hook, and these are the last words it had written."""
+
+    on: ClassVar[str] = f"agent.{INTERRUPTED}"
+    text: str = ""
 
 
 @dataclass(frozen=True)

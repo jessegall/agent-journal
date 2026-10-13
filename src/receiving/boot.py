@@ -7,6 +7,10 @@ raised on start, by name, rather than on the first event three weeks later.
 
 from typing import get_args
 
+import inspect
+from dataclasses import fields
+
+from events import Fact
 from receiving import ANSWER, HANDLE, KINDS, LISTEN, REFUSE, Registrations
 from receiving.ordering import ordered
 from serving import Service, writing
@@ -42,11 +46,22 @@ class WritesSynchronously(TypeError):
                    f"Move what writes into a handler on the fact it dispatches.")
 
 
+class ShadowsTheEngine(TypeError):
+    @classmethod
+    def of(cls, event: type, shadowed: set[str]) -> "ShadowsTheEngine":
+        return cls(f"{event.__name__} declares {', '.join(sorted(shadowed))}, which every event carries for the engine and the engine sets; name the field for what it is")
+
+
+ENGINES_OWN = frozenset(field.name for field in fields(Fact))
+
+
 def walked(registered: Registrations, served: set[type]) -> None:
     """Checks every registration against the services this journal has. Raises on the first thing that could not work."""
     for one in registered.each:
         if type(one.receiver).adapted:
             continue
+        if shadowed := ENGINES_OWN & set(inspect.get_annotations(one.event)):
+            raise ShadowsTheEngine.of(one.event, shadowed)
         wants = type(one.receiver).wants()
         for name, asked in wants.items():
             if type(None) in get_args(asked):

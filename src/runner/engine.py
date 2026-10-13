@@ -9,6 +9,7 @@ from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notificati
 import features
 from engine.command_runs import command_runs
 from engine import bus, clock, ran, runtime
+from events.agents import INTERRUPTED
 from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.base import asking_row
@@ -236,6 +237,8 @@ class Engine:
         if reading is None or self.agent.state() not in (BUSY, WORKING) or not self.interruption_growth.grew(reading.transcript):
             return
         if reading.provider.interrupted_by_user(reading.transcript):
+            words = [turn.text for turn in reading.provider.turns(reading.transcript) if turn.has_agent_text][-1:]
+            bus.announce(self.record, "agent", reading.row.n, INTERRUPTED, AGENT, {"text": "".join(words)})
             unfinished(self.record.root, reading.row.title, reading.row)
 
     def failed(self) -> str:
