@@ -691,7 +691,7 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         patch.setattr(install, "keep_copy", lambda record: "")
         patch.setattr(install, "installed_here", lambda *args: True)
         patch.delenv(install.BOOTSTRAPPED, raising=False)
-        patch.setattr(install, "released", lambda *args: "9.9.9")
+        patch.setattr(install, "released", lambda *args, **kwargs: "9.9.9")
         patch.setattr(install, "fetch", lambda into, repository=None, ref="": ("", "offline"))
         assert install.upgrading(site, site_root) == ["package not refreshed: offline"], "an upgrade that cannot fetch the release stops with the reason"
         patch.setattr(install, "fetch", lambda into, repository=None, ref="": (into.mkdir(parents=True), ("sha", ""))[1])
