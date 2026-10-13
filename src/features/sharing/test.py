@@ -370,10 +370,11 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel(monkeypatch):
     assert served == [(("127.0.0.1", 8123), watched)], "the share server listens on its own port, for its own journal only"
     assert finished.wait(5) and ticked[0] is watched and "a share server tick" in ticked[1], "its clock runs every tick, and a tick that fails is reported without stopping the others"
     started = []
-    monkeypatch.setattr(module, "serve", lambda given, port: started.append((given.record.root, port)))
+    from commands import share_server
+    monkeypatch.setattr(share_server, "serve", lambda given, port: started.append((given.record.root, port)))
     monkeypatch.setattr(features, "load", lambda root=None: None)
-    monkeypatch.setattr("framework.switches.watch_change_log", lambda: None)
-    module.main([str(watched.record.root), "8124"])
+    monkeypatch.setattr(share_server, "watch_change_log", lambda: None)
+    share_server.main([str(watched.record.root), "8124"])
     assert started == [(watched.record.root, 8124)], "started with a journal and a port, it serves that journal there"
 
 
