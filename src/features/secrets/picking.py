@@ -1,4 +1,4 @@
-from controllers.secrets.controller import Secrets
+from controllers.types import Secrets
 from resources.secrets import SecretField
 from resources.base import Refused, SYSTEM
 

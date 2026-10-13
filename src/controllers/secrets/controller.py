@@ -2,10 +2,10 @@ import re
 import time
 from pathlib import Path
 
-import controllers.types as types_module
 from controllers.base import Controller
 from controllers.marks import action
-from controllers.types import Environments, Messages
+from controllers.environments import Environments
+from controllers.messages import Messages
 from engine.package import entry
 from framework.loaded import FEATURES
 from controllers.secrets.keys import integration_key_variables
@@ -17,6 +17,7 @@ from controllers.secrets.values import ValuesFile, secrets_folder
 from resources.base import AGENT, SYSTEM, USER, Refused
 
 KEPT_DAYS = 30
+SHORTEST_HIDDEN = 8
 NAMED_FOLDER = ("agent-journal/secrets", "agent-journal\\secrets")
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
@@ -195,12 +196,20 @@ class Secrets(Controller):
         here = Path(cwd) if cwd else Path.cwd()
         return any((here / path).resolve().is_relative_to(folder) for path in paths) or any(word in command for word in (*NAMED_FOLDER, str(folder)))
 
+    def values_stamp(self) -> tuple[str, float]:
+        """Where this project's secret values are kept and when that file last changed; zero when it is not there."""
+        path = ValuesFile(self.record.root).path
+        return str(path), path.stat().st_mtime if path.is_file() else 0.0
+
+    def hidden_values(self) -> dict[str, str]:
+        """The value of every hidden field long enough to be told from other text, with the title of the secret it belongs to."""
+        values = ValuesFile(self.record.root).values()
+        fields = ((row.title, SecretField.from_json(raw)) for row in self.rows.every() for raw in row.secret_fields)
+        return {values[field.variable]: title for title, field in fields if field.hidden and len(values.get(field.variable, "")) >= SHORTEST_HIDDEN}
+
     def purge_expired(self) -> list[str]:
         gone = [row for row in self.rows.every(deleted=True) if row.deleted and time.time() - row.deleted > KEPT_DAYS * 86400]
         variables = [raw["variable"] for row in gone for raw in row.secret_fields]
         if variables:
             ValuesFile(self.record.root).drop(variables)
         return variables
-
-
-types_module.register(Secrets)

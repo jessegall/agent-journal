@@ -11,7 +11,7 @@ from functools import cache, partial
 from engine import bus
 from events.answers import Refused as Refusal
 from events.asking import RowWriting
-from resources.extension import Extension
+from declaring.registries import SAVE_CHECKS, SAVE_MARKS, SAVE_REWRITES
 from resources.fields import Loaded
 from engine.markers import plain
 from engine.offline import queue
@@ -119,9 +119,6 @@ def command_held(type_: str, name: str):
     controller = CONTROLLERS.get(type_)
     names = controller.resource.command_names if controller else {}
     return getattr(controller, next((method for method, word in names.items() if word == name), name), None)
-SAVE_REWRITES = Extension()
-SAVE_MARKS = Extension()
-SAVE_CHECKS = Extension()
 UNCHANGED_SINCE = "unchanged_since"
 
 
