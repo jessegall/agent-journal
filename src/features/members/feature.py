@@ -5,7 +5,7 @@ from framework.base import Feature
 from events.answers import Allowed, Rewritten
 from events.asking import TextFormatting
 from expects import Answered, Given
-from framework.format import SHARED, VIEWER
+from framework.format import DOWNLOAD, SHARED, VIEWER
 from framework.hosted_journal.standing import APART
 from framework.hosted_journal.people import PEOPLE
 from framework.journal import Journal
@@ -16,6 +16,7 @@ from framework.words import MemberWords, WrittenBy
 
 MARKED = '<untrusted member="ada">Ship it on Friday</untrusted>'
 PLAIN = "Ship it on Friday"
+OUTSIDE = '<untrusted source="linear" author="ada">![logo](https://x.test/a.png) Ship it</untrusted>'
 
 
 class MembersFeature(Feature):
@@ -30,5 +31,7 @@ class MembersFeature(Feature):
         journal.events.answer(TextFormatting, ReadMarkedWordsPlainly(), expects=[
             Given(TextFormatting(text=MARKED, surface=VIEWER)) >> Answered(Rewritten(PLAIN)),
             Given(TextFormatting(text=MARKED, surface=SHARED), settings={".members": False}) >> Answered(Rewritten(PLAIN)),
+            Given(TextFormatting(text=MARKED, surface=DOWNLOAD)) >> Answered(Rewritten(PLAIN)),
+            Given(TextFormatting(text=OUTSIDE, surface=VIEWER)) >> Answered(Rewritten("logo (image): https://x.test/a.png Ship it")),
             Given(TextFormatting(text=MARKED, surface="")) >> Answered(Allowed()),
         ])
