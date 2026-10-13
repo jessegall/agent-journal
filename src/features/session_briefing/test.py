@@ -129,7 +129,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     agents.update(agents.by_session("claude-1").n, event="SessionStart", status="idle", uses=0)
     time.sleep(0.01)
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time(), asking={})
+    engine.agent.driver.last_report = lambda: SimpleNamespace(n=agents.by_session("claude-1").n, title="claude-1", at=time.time(), asking={})
     sent = []
     engine.agent.driver.send = lambda text="", **rest: sent.extend([text, rest.get("yielding", "")]) or True
     engine.deliver()
