@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from engine.record import Record  # noqa: E402
+from framework.event_reading import EventReading  # noqa: E402
 from resources.text import digest  # noqa: E402
 
 POLL = 0.5
@@ -27,7 +27,7 @@ class Recorder:
         self.frames = folder / "frames.jsonl"
         self.blobs = folder / "blobs"
         self.blobs.mkdir(parents=True, exist_ok=True)
-        self.records: dict[str, Record] = {}
+        self.reading = EventReading(root)
         self.newest: dict[str, int] = {}
         self.stamps: dict[Path, tuple[int, int, str]] = {}
         self.last: dict[str, str] = {}
@@ -49,8 +49,7 @@ class Recorder:
         events = []
         for log in sorted((self.root / "environments").glob("*/events.jsonl")):
             env = log.parent.name
-            record = self.records.setdefault(env, Record(self.root, env))
-            arrived = [event.to_json() for event in record.event_log.events(since=self.newest.get(env, 0))]
+            arrived = self.reading.since(env, self.newest.get(env, 0))
             if arrived:
                 self.newest[env] = arrived[-1]["id"]
             events += arrived
