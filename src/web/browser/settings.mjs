@@ -54,7 +54,8 @@ await runScenarios(process.argv[2], {
         });
     },
     async "what a feature promises is read in words under its help on the settings page"(page, url) {
-        await page.goto(`${url}#/main/settings?q=Questions`);
+        await page.goto(`${url}#/main/settings`);
+        await page.getByPlaceholder("Find a setting in every tab").fill("Ask choices as questions");
         const how = page.getByRole("button", {name: "How it works"});
         await how.first().waitFor({timeout: 30000});
         for (let at = 0; at < (await how.count()); at++) {

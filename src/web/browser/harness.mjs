@@ -82,7 +82,7 @@ export function journal(...words) {
     });
 }
 
-export const numberOf = (output) => JSON.parse(output.slice(output.indexOf("{"), output.indexOf("\n}") + 2)).n;
+export const numberOf = (output) => Number(output.match(/^[a-z_]+ (\d+)$/m)[1]);
 
 export const shot = (page, name) => (process.env.SHOT_DIR ? page.screenshot({path: `${process.env.SHOT_DIR}/${name}.png`}) : null);
 
