@@ -65,6 +65,7 @@ export const WORK_VARIANTS = [["type", 0.7]];
 export const AMBIENT = [
     {clip: "look_around", state: "idle", after: 60, every: [25, 60], odds: 0.6},
     {clip: "stretch", state: "idle", after: 240, every: [90, 180], odds: 0.5},
+    {clip: "polish", state: "idle", after: 90, every: [60, 150], odds: 0.5},
 ];
 
 // the agent has worked for at least this many seconds when it settles, for "work_done" to be a moment

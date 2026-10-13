@@ -471,7 +471,7 @@ async function load(name) {
         const [loaded, module] = await Promise.all([loadVoiceFigure(name), import("../figure/figure.js")]);
         if (name !== voice.value || !canvas.value) return;
         const {FigurePlayer} = await import("../figure/player.js");
-        clips = module.CLIPS;
+        clips = module.CLIPS.filter((clip) => !clip.voices || clip.voices.includes(name));
         hands = [...loaded.stance.free];
         testResultsAfter(agent.value, testStates);
         below.value = module.GROUND;

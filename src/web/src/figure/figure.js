@@ -52,6 +52,8 @@ const SLEEP_TILT = 4;
 const LEFT_OUT = new Set(["butler_tray"]);
 // what a figure holds only in the poses that use it, as the butler's tablet while he writes or searches
 const TABLET = "butler_tablet";
+// the butler's cloth, kept in his pocket and drawn only to polish his visor
+const CLOTH = "butler_towel";
 // how far the hand holding the tablet tips it up toward the face, and where on it the free hand touches, from that hand toward the free side
 const TABLET_TIP = 65;
 const TABLET_TOUCH = [-0.3, -0.22, 0.18];
@@ -96,6 +98,7 @@ class Posing {
         this.hearts = 0;
         this.laptop = false;
         this.tablet = false;
+        this.cloth = false;
         this.glass = "";
         this.posture = posture;
         this.sway = 0;
@@ -218,6 +221,11 @@ class Posing {
         this.tablet = true;
     }
 
+    // the cloth out of the pocket, in the hand that keeps it
+    holdCloth() {
+        this.cloth = true;
+    }
+
     // a magnifying glass, comically large, in the hand on `side`
     holdGlass(side) {
         this.glass = side;
@@ -267,12 +275,12 @@ function hold(pose, side, lift = HOLD_LIFT, forward = 0, tip = 0) {
     pose.face(`hand_${side}`, {x: tip, z: -sign * (HOLD_SWING - HOLD_WRIST)});
 }
 
-function armsAtRest(pose, stance, apart = [], swing = {}) {
+function armsAtRest(pose, stance, apart = [], swing = {}, level = stance.level) {
     for (const side of Object.keys(SIDES)) {
         if (apart.includes(side)) {
             continue;
         }
-        if (stance.level.has(side)) {
+        if (level.has(side)) {
             hold(pose, side);
             continue;
         }
@@ -938,12 +946,36 @@ function search(pose, stance, t) {
     eyesAs(pose, "reading");
 }
 
+// The butler draws his cloth from his pocket, polishes his visor in small circles, and tucks it away again
+const POCKET = [0.55, -0.35, 1.35];
+const VISOR = [0.3, -0.92, 2.22];
+const POLISH_ELBOW = [0.7, 0.2, -1.0];
+const POLISH_RUB = 0.06;
+function polish(pose, stance, t) {
+    breathe(pose, t);
+    const sides = [...stance.cloth];
+    armsAtRest(pose, stance, sides);
+    const up = rise(t, 0.15, 0.3) * (1 - rise(t, 0.75, 0.9));
+    const out = rise(t, 0.08, 0.15) * (1 - rise(t, 0.88, 0.95));
+    const rub = rise(t, 0.3, 0.35) * (1 - rise(t, 0.7, 0.75));
+    trunk(pose, {nod: 6 * up, tilt: 4 * rub * Math.sin(2 * Math.PI * 3 * t)});
+    for (const side of sides) {
+        const sign = SIDES[side];
+        const circle = 2 * Math.PI * 4 * t;
+        const at = POCKET.map((p, axis) => p + (VISOR[axis] - p) * up);
+        const target = new THREE.Vector3(sign * (at[0] + POLISH_RUB * rub * Math.cos(circle)), at[1], at[2] + POLISH_RUB * rub * Math.sin(circle));
+        handTo(pose, side, out, pose.carried(target), new THREE.Vector3(sign * POLISH_ELBOW[0], POLISH_ELBOW[1], POLISH_ELBOW[2]));
+        if (out > 0.5) pose.holdCloth();
+    }
+    eyesAs(pose, rub > 0.5 ? "amused" : "reading");
+}
+
 // writes in small strokes with the free hand at chest height, head bent over it; the squire writes with his quill
 function write(pose, stance, t) {
     const side = freeSide(stance);
     breathe(pose, 0);
     trunk(pose, {lean: 6, nod: 16, turn: -SIDES[side] * 10});
-    armsAtRest(pose, stance, [side]);
+    armsAtRest(pose, stance, [side], {}, new Set([...stance.level, ...stance.tablet]));
     armTo(pose, side, 1, {y: 40 + 6 * waveOf(t, 2), z: -70 + 10 * waveOf(t), bend: 75 + 8 * waveOf(t, 2)});
     onTablet(pose, stance, side, [0.03 * waveOf(t), 0.02 * waveOf(t, 2), 0.02 * waveOf(t, 2)]);
 }
@@ -1179,6 +1211,7 @@ export const CLIPS = [
     {name: "joy", frames: 20, fps: 14, loops: false, postures: GESTURE, pose: joy},
     {name: "dismay", frames: 28, fps: 10, loops: false, postures: GESTURE, pose: dismay},
     {name: "look_around", frames: 24, fps: 10, loops: false, postures: GESTURE, pose: look_around},
+    {name: "polish", frames: 40, fps: 12, loops: false, postures: GESTURE, voices: ["butler"], pose: polish},
     {name: "stretch", frames: 24, fps: 8, loops: false, postures: GESTURE, pose: stretch},
     {name: "squire_chase", frames: 24, fps: 12, loops: false, postures: MOVE, pose: squire_chase},
     {name: "pointed", frames: 20, fps: 10, loops: false, postures: MOVE, pose: pointed},
@@ -1345,7 +1378,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     scene.traverse((node) => node.isSkinnedMesh && meshes.push(node));
     const eyes = {materials: [], shapes: [], hearts: []};
     for (const mesh of meshes) {
-        mesh.visible = shows(mesh) && !LEFT_OUT.has(mesh.userData.item) && mesh.userData.item !== TABLET;
+        mesh.visible = shows(mesh) && !LEFT_OUT.has(mesh.userData.item) && mesh.userData.item !== TABLET && mesh.userData.item !== CLOTH;
         addHullNormals(mesh.geometry);
         const hull = new THREE.SkinnedMesh(mesh.geometry, outlineMaterial(mesh));
         hull.bind(mesh.skeleton, mesh.bindMatrix);
@@ -1367,6 +1400,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     const carried = meshes.filter((mesh) => mesh.visible);
     const busy = handsHolding(carried, BUSY_ITEMS);
     const tablet = meshes.filter((mesh) => mesh.userData.item === TABLET && shows(mesh));
+    const cloth = meshes.filter((mesh) => mesh.userData.item === CLOTH && shows(mesh));
     const stance = {
         voice,
         level: handsHolding(carried, LEVEL_ITEMS),
@@ -1374,12 +1408,14 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
         free: new Set(Object.keys(SIDES).filter((side) => !busy.has(side))),
         tablet: handsHolding(tablet, new Set([TABLET])),
+        cloth: handsHolding(cloth, new Set([CLOTH])),
         shield: handsHolding(carried, new Set(["squire_shield"])),
     };
     const laptop = laptopOf();
     const glass = glassOf();
     scene.add(laptop, glass);
-    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, tablet: tablet.flatMap((mesh) => [mesh, mesh.userData.hull])};
+    const hulls = (shown) => shown.flatMap((mesh) => [mesh, mesh.userData.hull]);
+    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, tablet: hulls(tablet), cloth: hulls(cloth)};
 }
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
@@ -1542,6 +1578,7 @@ function place(figure, pose, facing, blend) {
         figure.glass.matrixWorldNeedsUpdate = true;
     }
     for (const part of figure.tablet) part.visible = pose.tablet;
+    for (const part of figure.cloth) part.visible = pose.cloth;
     if (pose.laptop) {
         figure.laptop.matrix.copy(lapOf(world));
         figure.laptop.matrixWorldNeedsUpdate = true;
