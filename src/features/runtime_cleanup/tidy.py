@@ -1,16 +1,14 @@
-import shutil
-import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 
+from controllers.types import CONTROLLERS
+from engine.record import Record
 from engine.runtime import folder, profiles, sessions
 from engine.sessions import Sessions, alive
-from serving import SERVED, Providers
-from engine.record import Record
-from resources.text import plural
-from resources.files import mtime, older
 from resources.base import Refused
+from resources.text import plural
 from declaring.trigger import DAY
+from serving import SERVED, Clock, Elsewhere, JournalRoot, Providers, ReadSessions
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024,
          "channels/*.jsonl": 1024 * 1024}
@@ -43,75 +41,94 @@ class Tidied:
         return found if found else "nothing to tidy"
 
 
-def tidy(root: Path, days: float) -> Tidied:
+RUNTIME, PROFILES, SESSIONS = (str(where(Path())) for where in (folder, profiles, sessions))
+
+
+@dataclass(frozen=True)
+class Tidy:
+    """The housekeeping of the journal's folder, over the services that reach it."""
+
+    root: JournalRoot
+    elsewhere: Elsewhere
+    sessions: ReadSessions
+    providers: Providers
+    clock: Clock
+
+    @classmethod
+    def over(cls, record) -> "Tidy":
+        """The journal's own services over a record, for whoever runs the housekeeping outside the engine's lanes."""
+        from framework.lanes import TheClock, TheEnvironments, TheJournalRoot
+        return cls(TheJournalRoot(record), TheEnvironments(None, record), Sessions(record.root), SERVED.given(Providers), TheClock())
+
+    def everything(self, days: float) -> Tidied:
+        events = self.root.trim_logs(EVENTS_KEPT, self.clock.now() - READERS_WITHIN)
+        tidied = self.files(days)
+        return replace(tidied, events=events, leftovers=tidied.leftovers + sum(self.drifted(env) for env in self.root.environments()))
+
+    def drifted(self, env: str) -> int:
+        """The totals of every type in an environment that had drifted from their rows, set right."""
+        found, here = 0, self.elsewhere.named(env)
+        for type_name in CONTROLLERS:
+            try:
+                found += here.rows_named(type_name).rows.drifted()
+            except (OSError, Refused):
+                continue
+        return found
+
+    def files(self, days: float) -> Tidied:
+        left = self.leftovers()
+        if not self.root.is_dir(RUNTIME):
+            return Tidied(leftovers=left)
+        now = self.clock.now()
+        quiet, gone = now - days * DAY, now - GONE_FOR
+        ended = {name for name, session in self.sessions.all().items() if not alive(session.pid)}
+        removed = [d for d in self.root.glob(f"{SESSIONS}/*") if self.root.is_dir(d) and self.newest(d) < (gone if Path(d).name in ended else quiet)]
+        for d in removed:
+            self.root.remove(d)
+        spent = self.older(self.root.glob(f"{RUNTIME}/launches/*.log"), days * DAY)
+        for f in spent:
+            self.root.remove(f)
+        trimmed = [f for pattern, keep in TAILS.items() for f in self.root.glob(f"{RUNTIME}/{pattern}")
+                   if self.root.is_file(f) and not self.listened_to(f) and self.root.trim_tail(f, keep)]
+        return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left + len(spent))
+
+    def leftovers(self) -> int:
+        staged = [d for d in self.older(self.root.glob("plugins/.staging-*"), STAGING_FOR) if self.root.is_dir(d)]
+        archived = [f for f in self.older(self.root.glob("attic/*.tar.gz"), ARCHIVES_FOR) if not Path(f).name.startswith("before-")]
+        unkept = self.older(self.root.glob(f"{RUNTIME}/outputs/output-*"), OUTPUTS_FOR)
+        profiled = sorted(self.root.glob(f"{PROFILES}/*.txt"), key=self.root.modified, reverse=True)[PROFILES_KEPT:]
+        left = self.providers.stale_cache(FOLDS_FOR, OTHER_MARKS_FOR)
+        marks, folds = [str(one) for one in left.folders], [str(one) for one in left.files]
+        gone = staged + marks + archived + unkept + profiled + folds
+        for each in gone:
+            self.root.remove(each)
+        return len(gone)
+
+    def older(self, paths: list[str], age: float) -> list[str]:
+        """Of these paths, the ones last written more than that many seconds ago."""
+        now = self.clock.now()
+        return [path for path in paths if (written := self.root.modified(path)) and now - written > age]
+
+    def newest(self, folder_: str) -> float:
+        return max((self.root.modified(each) for each in self.root.glob(f"{folder_}/*")), default=0.0)
+
+    def listened_to(self, queue: str) -> bool:
+        """A queue a channel is reading is never cut: the channel keeps its place by byte offset, and a cut would send it back to the start."""
+        return Path(queue).suffix == ".jsonl" and Path(queue).parent.name == "channels" and self.clock.now() - self.root.modified(str(Path(queue).with_suffix(".on"))) < LISTENING_FOR
+
+
+def over(root: Path) -> Tidy:
     records = Record.every(Path(root))
-    logs = [record.event_log for record in records] + [record.event_log.project for record in records[:1]]
-    events = sum(log.trim(EVENTS_KEPT, time.time() - READERS_WITHIN) for log in logs)
-    tidied = tidy_files(Path(root), days)
-    return replace(tidied, events=events, leftovers=tidied.leftovers + sum(drifted_totals(record) for record in records))
+    return Tidy.over(records[0] if records else Record(Path(root), "main"))
 
 
-def drifted_totals(record: Record) -> int:
-    """The totals of every type in a record that had drifted from their rows, set right."""
-    from controllers.base import CONTROLLERS
-    from resources.base import SYSTEM
-    found = 0
-    for controller in CONTROLLERS.values():
-        try:
-            found += controller(record, actor=SYSTEM).rows.drifted()
-        except (OSError, Refused):
-            continue
-    return found
+def tidy(root: Path, days: float) -> Tidied:
+    return over(root).everything(days)
 
 
 def tidy_files(root: Path, days: float) -> Tidied:
-    left = leftovers(root)
-    kept = folder(root)
-    if not kept.is_dir():
-        return Tidied(leftovers=left)
-    quiet = time.time() - days * DAY
-    gone = time.time() - GONE_FOR
-    ended = set(ended_sessions(root))
-    removed = [d for d in sessions(root).glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < (gone if d.name in ended else quiet)]
-    for d in removed:
-        shutil.rmtree(d, ignore_errors=True)
-    spent = older(kept.glob("launches/*.log"), days * DAY)
-    for f in spent:
-        f.unlink(missing_ok=True)
-    trimmed = [f for pattern, keep in TAILS.items() for f in kept.glob(pattern) if f.is_file() and not listened_to(f) and trim(f, keep)]
-    return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left + len(spent))
-
-
-def listened_to(f: Path) -> bool:
-    """A queue a channel is reading is never cut: the channel keeps its place by byte offset, and a cut would send it back to the start."""
-    return f.suffix == ".jsonl" and f.parent.name == "channels" and time.time() - mtime(f.with_suffix(".on")) / 1e9 < LISTENING_FOR
-
-
-def ended_sessions(root: Path) -> list[str]:
-    return [name for name, session in Sessions(root).all().items() if not alive(session.pid)]
+    return over(root).files(days)
 
 
 def leftovers(root: Path) -> int:
-    staged = [d for d in older((root / "plugins").glob(".staging-*"), STAGING_FOR) if d.is_dir()]
-    archived = [f for f in older((root / "attic").glob("*.tar.gz"), ARCHIVES_FOR) if not f.name.startswith("before-")]
-    unkept = older((folder(root) / "outputs").glob("output-*"), OUTPUTS_FOR)
-    profiled = sorted(profiles(root).glob("*.txt"), key=mtime, reverse=True)[PROFILES_KEPT:]
-    left = SERVED.given(Providers).stale_cache(FOLDS_FOR, OTHER_MARKS_FOR)
-    marks, folds = left.folders, left.files
-    for d in staged + marks:
-        shutil.rmtree(d, ignore_errors=True)
-    for f in archived + unkept + profiled + folds:
-        f.unlink(missing_ok=True)
-    return len(staged) + len(marks) + len(archived) + len(unkept) + len(profiled) + len(folds)
-
-
-def trim(f: Path, keep: int) -> bool:
-    if f.stat().st_size <= keep:
-        return False
-    with f.open("r+b") as held:
-        held.seek(-keep, 2)
-        tail = held.read()
-        held.seek(0)
-        held.write(tail)
-        held.truncate()
-    return True
+    return over(root).leftovers()

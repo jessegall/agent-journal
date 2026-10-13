@@ -213,6 +213,12 @@ class JournalRoot(Asked):
     def exists(self, path: str) -> bool:
         return self.named(("exists", path), False)
 
+    def is_dir(self, path: str) -> bool:
+        return self.named(("is dir", path), False)
+
+    def is_file(self, path: str) -> bool:
+        return self.named(("is file", path), False)
+
     def glob(self, pattern: str) -> list[str]:
         return self.named(("glob", pattern), [])
 

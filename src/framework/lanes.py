@@ -112,6 +112,12 @@ class TheJournalRoot:
     def exists(self, path: str) -> bool:
         return (self.root / path).exists()
 
+    def is_dir(self, path: str) -> bool:
+        return (self.root / path).is_dir()
+
+    def is_file(self, path: str) -> bool:
+        return (self.root / path).is_file()
+
     def glob(self, pattern: str) -> list[str]:
         return sorted(str(found.relative_to(self.root)) if found.is_relative_to(self.root) else str(found) for found in self.root.glob(pattern))
 

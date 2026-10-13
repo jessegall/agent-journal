@@ -1,29 +1,23 @@
-
-from engine import runtime
-from engine.locks import project_sweep
-
+from events import Fact
 from events.agents import ClockTicked
-from features.runtime_cleanup.tidy import tidy, tidy_files
-from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
-from features.auto_update.announcing import KIND
-from controllers.types import Notifications
-from events.notifications import NotificationCreated
+from events.runtime_cleanup import UpdateInstalled
+from features.runtime_cleanup.tidy import Tidy
+from receiving import Handler
+from serving import Clock, Elsewhere, JournalRoot, Providers, ReadSessions, Settings
 
 TIDYING = "tidying.lock"
 ONCE_EVERY = 50 * 60
 
 
-class TidyRuntime(Handler):
-    behaviour = WHOLE_FEATURE
-
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        root = context.record.root
-        with project_sweep(runtime.folder(root) / TIDYING, ONCE_EVERY) as mine:
+class TidyRuntime(Handler[ClockTicked]):
+    def handle(self, event: ClockTicked, root: JournalRoot, elsewhere: Elsewhere, sessions: ReadSessions, providers: Providers, clock: Clock, settings: Settings) -> list[Fact]:
+        with root.swept(TIDYING, ONCE_EVERY) as mine:
             if mine:
-                tidy(root, context.settings.days)
+                Tidy(root, elsewhere, sessions, providers, clock).everything(settings.days)
+        return []
 
 
-class TidyAfterUpdate(Handler):
-    def handle(self, context: Context, event: NotificationCreated) -> None:
-        if context.journal.get(Notifications).load(event.n).data.get("kind") == KIND:
-            tidy_files(context.record.root, context.settings.days)
+class TidyAfterUpdate(Handler[UpdateInstalled]):
+    def handle(self, event: UpdateInstalled, root: JournalRoot, elsewhere: Elsewhere, sessions: ReadSessions, providers: Providers, clock: Clock, settings: Settings) -> list[Fact]:
+        Tidy(root, elsewhere, sessions, providers, clock).files(settings.days)
+        return []
