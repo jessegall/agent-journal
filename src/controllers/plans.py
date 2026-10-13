@@ -337,8 +337,21 @@ class Plans(Controller):
                 plan = self.load(running.n)
                 while self._step(plan, passing):
                     pass
+            for parked in [p for p in self.rows.every() if p.status == PARKED]:
+                self._kept_up(self.load(parked.n))
         finally:
             CATCHING_UP.reset(entered)
+
+    def _kept_up(self, plan) -> None:
+        """A parked plan's phase moves past the phases whose rows all closed while it waited, stopping at a checkpoint, so it names where
+        it stands; nothing starts until it runs again."""
+        at = plan.current
+        while at < len(plan.phases) and not plan.phases[at - 1][PHASE.checkpoint] and self._complete(plan.phases[at - 1]):
+            at += 1
+        if at == plan.current:
+            return
+        plan.current = at
+        self.save(plan, "updated", phase=at)
 
     def _user_only(self, word: str) -> None:
         if self.actor != AGENT:

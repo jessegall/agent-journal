@@ -68,6 +68,10 @@ def plan(status: str, **data) -> Plan:
     return Plan(n=1, title="Ship it", data={"status": status, **data})
 
 
+# a plan being built that has reached its to-dos stage with no phase yet
+AT_TODOS = plan("building", stage="todos", phases=[])
+
+
 def phases(*todos: int, checkpoint: bool = False) -> list:
     return [{"title": f"Phase {n}", "todos": [todo], "checkpoint": checkpoint and n == 1} for n, todo in enumerate(todos, 1)]
 
@@ -185,7 +189,7 @@ class PlansFeature(Feature):
         ])
         journal.events.listen(PlanChanged, SpotBuildingToGuide(), expects=[
             Given(changed("linked", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="phases").once("planned|1:phases")),
-            Given(changed("linked", AGENT), rows=[plan("building", stage="todos", phases=[]), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="todos").once("planned|1:todos")),
+            Given(changed("linked", AGENT), rows=[AT_TODOS, AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="todos").once("planned|1:todos")),
             Given(changed("linked", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("linked", AGENT), rows=[plan("active"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("updated", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="phases").once("planned|1:phases")),
@@ -194,7 +198,7 @@ class PlansFeature(Feature):
         ])
         journal.events.handle(PlanBuildingGuided, GuideBuilding(), expects=[
             Given(PlanBuildingGuided(plan=1, line="phases"), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
-            Given(PlanBuildingGuided(plan=1, line="todos"), rows=[plan("building", stage="todos", phases=[]), AGENT_ROW]) >> Nudged("todos"),
+            Given(PlanBuildingGuided(plan=1, line="todos"), rows=[AT_TODOS, AGENT_ROW]) >> Nudged("todos"),
         ])
         journal.events.listen(ClockTicked, SpotCheckpointToPass(), expects=[
             Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": True})
@@ -223,6 +227,9 @@ class PlansFeature(Feature):
             Given(PlansToAdvance(passing=True), rows=[done(5), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), status="done"),
             Given(PlansToAdvance(passing=False), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))]) >> Updated(Plan(n=1), status="waiting"),
             Given(PlansToAdvance(passing=True), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))]) >> Updated(Plan(n=1), current=2),
+            Given(PlansToAdvance(passing=False), rows=[done(5), done(6), Todo(n=7, title="Row 7"), plan("parked", phases=phases(5, 6, 7), current=1)])
+                >> Updated(Plan(n=1), current=3, status="parked"),
+            Given(PlansToAdvance(passing=False), rows=[done(5), done(6), plan("parked", phases=phases(5, 6, checkpoint=True), current=1)]) >> Unchanged(),
         ])
         journal.events.listen(RowReopened, SpotReopenedRowOfAPlan(), expects=[
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False)),
