@@ -1,12 +1,14 @@
 from engine.markers import marked
 from events.agents import AgentMessageSent
-from expects import Changed, Given, Nudged, Unchanged, answering
+from expects import Changed, Dispatches, Given, Nudged, answering, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.row_links.details import RowLinksDetails
 from features.row_links.formatters import MarkRows, UnwrapChips
 from features.row_links.paths import MarkPaths
 from features.row_links.handlers import NameAmbiguousFiles
+from features.row_links.listeners import SpotAmbiguousFiles
+from events.row_links import AmbiguousFileNamed
 from resources.types import AgentRow, Todo
 
 
@@ -41,9 +43,13 @@ class RowLinks(Feature):
             Given(f"I closed {CHIP} for you") >> Changed(f"I closed {CHIP} for you"),
             Given("I closed (the old one) for you") >> Changed("I closed (the old one) for you"),
         ])
-        journal.events.handler(NameAmbiguousFiles(), expects=[
-            Given(said("Edit helpers.py next"), rows=[AGENT_ROW], files=TWO_HELPERS) >> Nudged("ambiguous", name="helpers.py"),
-            Given(said("Edit helpers.py next"), rows=[AGENT_ROW], files=answering({"src/a/helpers.py": ""})) >> Unchanged(),
-            Given(said("Edit another.py next"), rows=[AGENT_ROW], files=TWO_HELPERS) >> Unchanged(),
-            Given(said("Nothing to name here"), rows=[AGENT_ROW], files=TWO_HELPERS) >> Unchanged(),
+        journal.events.listen(AgentMessageSent, SpotAmbiguousFiles(), expects=[
+            Given(said("Edit helpers.py next"), rows=[AGENT_ROW], files=TWO_HELPERS)
+                >> Dispatches(AmbiguousFileNamed(name="helpers.py", count=2, paths="src/a/helpers.py, src/b/helpers.py").once("ambiguous|1|helpers.py")),
+            Given(said("Edit helpers.py next"), rows=[AGENT_ROW], files=answering({"src/a/helpers.py": ""})) >> Dispatches(nothing),
+            Given(said("Edit another.py next"), rows=[AGENT_ROW], files=TWO_HELPERS) >> Dispatches(nothing),
+            Given(said("Nothing to name here"), rows=[AGENT_ROW], files=TWO_HELPERS) >> Dispatches(nothing),
+        ])
+        journal.events.handle(AmbiguousFileNamed, NameAmbiguousFiles(), expects=[
+            Given(AmbiguousFileNamed(name="helpers.py", count=2, paths="src/a/helpers.py, src/b/helpers.py"), rows=[AGENT_ROW]) >> Nudged("ambiguous", name="helpers.py"),
         ])

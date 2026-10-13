@@ -1,21 +1,11 @@
-import re
-
-from events.agents import AgentMessageSent
-from engine.project_files import matching
-from framework.parts import AgentContext, Handler
+from events import Fact
+from events.row_links import AmbiguousFileNamed
 from features.row_links.details import AMBIGUOUS
-from features.row_links.paths import EXT, a_file
+from receiving import Handler
+from serving import Chat
 
-NAME = re.compile(rf"(?<![\w./-])([\w.-]+\.(?:{EXT}))(?![\w/-])")
 
-
-class NameAmbiguousFiles(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        named = set(context.state.get("ambiguous", []))
-        project = context.record.root.parent
-        for name in dict.fromkeys(m.group(1) for m in NAME.finditer(event.text)):
-            found = matching(project, name) if a_file(name) and name not in named else []
-            if len(found) > 1:
-                named.add(name)
-                context.agent.nudge(AMBIGUOUS, name=name, count=len(found), paths=", ".join(found[:5]))
-        context.state.set("ambiguous", sorted(named))
+class NameAmbiguousFiles(Handler[AmbiguousFileNamed]):
+    def handle(self, event: AmbiguousFileNamed, chat: Chat) -> list[Fact]:
+        chat.nudge(AMBIGUOUS, name=event.name, count=event.count, paths=event.paths)
+        return []
