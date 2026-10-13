@@ -1,4 +1,4 @@
-from features.dev_faults.diagnostics import LOG_PATH
+from features.dev_faults.diagnostics import LOG_PATH, log_file
 from framework.lanes import TheJournalRoot
 from framework.routing import Reply, Request, handles
 
