@@ -29,8 +29,8 @@ class Thinking(Feature):
                 >> Updated(AgentRow(n=1), thinking="Later", thoughts=[{"at": 1.0, "text": "Earlier"}, {"at": WHEN, "text": "Later"}]),
             Given(TranscriptRead(agent=1, path="s.jsonl", offset=40, thinking=""), rows=[HOLDING])
                 >> Updated(AgentRow(n=1), thinking="") & Remembered("transcript|claude-1", {"path": "s.jsonl", "offset": 40}),
-            Given(TranscriptRead(agent=1, path="s.jsonl", offset=40, thoughts=("x" * 2000,)), rows=[AGENT]) >> Updated(AgentRow(n=1), thoughts=[{"at": WHEN, "text": "x" * 1200}]),
-            Given(TranscriptRead(agent=1, path="s.jsonl", offset=40, thoughts=("new",)), rows=[AgentRow(n=1, title="claude-1", data={"thoughts": OLD})])
+            Given(TranscriptRead(agent=1, path="s.jsonl", offset=40, thinking="", thoughts=("x" * 2000,)), rows=[AGENT]) >> Updated(AgentRow(n=1), thoughts=[{"at": WHEN, "text": "x" * 1200}]),
+            Given(TranscriptRead(agent=1, path="s.jsonl", offset=40, thinking="", thoughts=("new",)), rows=[AgentRow(n=1, title="claude-1", data={"thoughts": OLD})])
                 >> Updated(AgentRow(n=1), thoughts=[*OLD[1:], {"at": WHEN, "text": "new"}]),
         ])
         journal.events.listen(AgentMessageSent, SpotVisibleMessage(), expects=[
