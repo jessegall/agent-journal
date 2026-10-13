@@ -11,6 +11,9 @@ class SyncIntegration(Command):
         self.name = f"sync_{service}"
 
     def run(self, context: Context, features) -> str:
+        missing = context.feature.missing(context.record)
+        if missing:
+            return f"{context.feature.details.title} was not checked: {missing}"
         state = context.feature.check(context.record)
         return state.last_error or f"checked {context.feature.details.title}"
 

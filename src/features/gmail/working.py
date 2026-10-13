@@ -8,6 +8,8 @@ from resources.base import SYSTEM
 class GmailWork:
     """What the Gmail feature does, kept out of the feature itself: choosing, reading and answering."""
 
+    unkeyed = "no app password is set"
+
     def choices(self, record) -> Choices:
         values = self.values(record)
         return Choices(str(values.account).strip(), str(values.search).strip(), int(values.board))
@@ -21,13 +23,20 @@ class GmailWork:
         subject = asked if asked.lower().startswith("re:") else f"Re: {asked}"
         mailbox.sent(ticket.data.get("gmail_from", ""), subject, text, ticket.data.get("gmail_id", ""))
 
+    def missing(self, record) -> str:
+        """What keeps a sync from reaching Gmail, in the words the user would act on, or nothing when it can."""
+        if not str(self.values(record).key):
+            return self.unkeyed
+        if not self.choices(record).chosen():
+            return "the address, search and board are not all picked"
+        return "" if self.values(record).fetching else "fetching is switched off"
+
     def check(self, record) -> IntegrationState:
-        """One sync now: nothing unless the address, a search, a board, a password and the fetching switch are all there; failures are noticed once until a sync works again."""
+        """One sync now, unless something it needs is missing; failures are noticed once until a sync works again."""
         before = read_state(record.root, self.name)
-        choices = self.choices(record)
-        if not str(self.values(record).key) or not choices.chosen() or not self.values(record).fetching:
+        if self.missing(record):
             return before
-        write_state(record.root, self.name, synced(record, self.service(record), choices, before))
+        write_state(record.root, self.name, synced(record, self.service(record), self.choices(record), before))
         after = read_state(record.root, self.name)
         self.notice_failure(record, before, after)
         return after

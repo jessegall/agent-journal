@@ -43,6 +43,8 @@ class IntegrationFeature(Feature):
     approved = ReplyApproved
     due = CheckDue
     key_refused: tuple[str, ...] = ()
+    unkeyed: str
+    """What a sync says when the service's key is not set, in the words of that service's settings."""
 
     def client(self, record) -> IntegrationClient:
         """The one client of this project, built when first needed and again when its settings change."""
@@ -69,7 +71,7 @@ class IntegrationFeature(Feature):
             Given(self.approved(question=1, ticket=1, text="Thanks."), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "send_reply", 1, "Thanks.")),
         ])
         journal.commands.add("feature", SyncIntegration(self.name), expects=[
-            Given((Features,)) >> Answered(f"checked {self.details.title}"),
+            Given((Features,)) >> Answered(f"{self.details.title} was not checked: {self.unkeyed}"),
         ])
         journal.routes.add(self.state_route(), self.login_route(), self.logout_route(), self.check_route())
 

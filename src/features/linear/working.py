@@ -14,6 +14,8 @@ CATCH_UP = 30 * 60.0
 class LinearWork:
     """What the Linear feature does, kept out of the feature itself: choosing, syncing, sending, taking a webhook, and the routes the card calls."""
 
+    unkeyed = "no API key is set"
+
     def choices(self, record) -> Choices:
         values = self.values(record)
         stages = tuple(StageState(stage, state) for stage, state in dict(values.stage_states).items() if state)
@@ -70,11 +72,19 @@ class LinearWork:
             work.save(issue)
         write_state(record.root, self.name, replace(read_state(record.root, self.name), webhook_at=time.time()))
 
+    def missing(self, record) -> str:
+        """What keeps a sync from reaching Linear, in the words the user would act on, or nothing when it can."""
+        if not str(self.values(record).key):
+            return self.unkeyed
+        if not self.choices(record).board:
+            return "no board is picked"
+        return "" if self.values(record).fetching else "fetching is switched off"
+
     def check(self, record, catching_up: bool = False) -> IntegrationState:
-        """One sync now: nothing when no key or no board is picked, and while the webhook delivers, the clock only catches up every half hour; failures are noticed once until a sync works again."""
+        """One sync now, unless something it needs is missing; while the webhook delivers, the clock only catches up every half hour; failures are noticed once until a sync works again."""
         before = read_state(record.root, self.name)
         choices = self.choices(record)
-        if not str(self.values(record).key) or not choices.board or not self.values(record).fetching:
+        if self.missing(record):
             return before
         if catching_up and self.waits_for_webhook(record) and time.time() - before.last_checked < CATCH_UP:
             return before
