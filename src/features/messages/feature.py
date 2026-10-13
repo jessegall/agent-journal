@@ -7,7 +7,7 @@ from events.messages import (AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettl
 import json
 from dataclasses import asdict, replace
 
-from expects import Dispatches, Formats, Given, Held, Nudged, Remembered, Updated, Wrote, nothing
+from expects import Dispatches, Formats, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
 from declaring.trigger import Mark
 from framework.base import Feature
 from framework.journal import Journal
@@ -60,6 +60,11 @@ def touched(*numbers: int) -> MessageUpdated:
 ABOUT_A_TODO = asked(refs=["todo:7"])
 FILE_THE_REPORT = replace(ABOUT_A_TODO, title="Please file the report")
 FILE_THE_REPORT_WRITTEN = replace(FILE_THE_REPORT, seen=[USER])
+
+
+def marked(name: str, **fields) -> dict:
+    """The mark file the agent's triggers left for this name, as the play stages it before the registration runs."""
+    return {f".journal/runtime/sessions/claude-1/trigger-{name}.json": json.dumps(asdict(Mark(**fields)))}
 
 
 def after_report(*rows, **more) -> Given:
@@ -117,6 +122,8 @@ class MessagesFeature(Feature):
             after_report(ABOUT_A_TODO, IDLE) >> Dispatches(OWED),
             after_report(asked("Here is the result"), IDLE) >> Dispatches(OWED),
             after_report(asked(), AgentRow(n=1, title="claude-1", data={"status": "working", "uses": 4}), settings={"messages.answering.hold": 2})
+                >> Dispatches(AnswerHeld(agent=1, messages="message 5")) & Dispatches(OWED.due("answering")),
+            after_report(asked(), AgentRow(n=1, title="claude-1", data={"status": "working", "uses": 13}), files=answering(marked("messages.answer hold", uses=3)))
                 >> Dispatches(AnswerHeld(agent=1, messages="message 5")) & Dispatches(OWED.due("answering")),
             after_report(wrote("What do you think about the plan?"), IDLE) >> Dispatches(AnswersSettled(agent=1)),
             after_report(wrote("Here is the plan", seen=(AGENT, USER)), IDLE) >> Dispatches(AnswersSettled(agent=1)),
@@ -179,14 +186,20 @@ class MessagesFeature(Feature):
         ])
         journal.events.handle(InboxSettled, ReleaseInbox(), expects=[
             Given.of(InboxSettled(agent=1), IDLE) >> Dispatches(nothing),
+            Given.of(InboxSettled(agent=1), IDLE, files=answering(marked("messages.unread", count=3))) >> Remembered("trigger-messages.unread", asdict(Mark())),
         ])
         journal.events.handle(InboxUnread, NameInbox(), expects=[
             Given.of(InboxUnread(agent=1), LATER) >> Nudged("inbox") & Remembered("trigger-messages.unread", asdict(Mark(count=1))),
             Given.of(InboxUnread(agent=1), LATER, settings={"messages.unread.patience": 0})
                 >> Nudged("inbox") & Held("your inbox is unread: journal message unread, then journal message read <n> for each, before any other write"),
+            Given.of(InboxUnread(agent=1), LATER, files=answering(marked("messages.unread", count=5)))
+                >> Nudged("inbox") & Held("your inbox is unread: journal message unread, then journal message read <n> for each, before any other write")
+                & Remembered("trigger-messages.unread", asdict(Mark(count=6))),
         ])
         journal.events.handle(AnswersSettled, ReleaseAnswering(), expects=[
             Given.of(AnswersSettled(agent=1), IDLE) >> Dispatches(nothing),
+            Given.of(AnswersSettled(agent=1), IDLE, files=answering({**marked("messages.answering", count=2), **marked("messages.answer hold", uses=5)}))
+                >> Remembered("trigger-messages.answering", asdict(Mark())) & Remembered("trigger-messages.answer hold", asdict(Mark())),
         ])
         journal.events.handle(AnswerWaitBegan, BeginAnswerWait(), expects=[
             Given.of(AnswerWaitBegan(agent=1, uses=3), LATER) >> Remembered("trigger-messages.answer hold", asdict(Mark(uses=3))),
@@ -198,6 +211,8 @@ class MessagesFeature(Feature):
             Given.of(OWED, IDLE) >> Nudged("answer", messages="message 5") & Remembered("trigger-messages.answering", asdict(Mark(count=1))),
             Given.of(OWED, IDLE, settings={"messages.answering.patience": 0})
                 >> Remembered("trigger-messages.answering", asdict(Mark(count=1))),
+            Given.of(AnswerOwed(agent=1, messages="message 5", numbers=(5,), rows=("message:5",)), IDLE, files=answering(marked("messages.answering", count=3)))
+                >> Remembered("trigger-messages.answering", asdict(Mark(count=4))),
         ])
         journal.events.handle(MessageSettled, CloseTheMessage(), expects=[
             Given.of(MessageSettled(n=5, how="handled: todo:7"), asked(refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
