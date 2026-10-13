@@ -25,6 +25,10 @@ class TooManyTicks(RuntimeError):
         return cls(f"a lane ran {MOST_TICKS} ticks without emptying, so something it dispatches causes itself: {' caused '.join(chain)}")
 
 
+class Unserved(LookupError):
+    """A service the receiver asked for has nobody to answer for at this moment, such as a chat with no agent in the environment: the receiver has nothing to act on and is passed over."""
+
+
 class NoSuchService(LookupError):
     @classmethod
     def of(cls, receiver: str, name: str, asked) -> "NoSuchService":
@@ -170,8 +174,12 @@ class Lane:
                     for one in self.order.handlers(type(fact), self.registered):
                         if not self.switched_on(one.feature):
                             continue
+                        try:
+                            given = self.services.given(one.name, one.feature, type(one.receiver).wants())
+                        except Unserved:
+                            continue
                         began = time.time()
-                        for caused in one.receiver.handle(fact, **self.services.given(one.name, one.feature, type(one.receiver).wants())):
+                        for caused in one.receiver.handle(fact, **given):
                             dispatched.append(self.named(caused, fact))
                         self.watch(one, fact, began)
             except Exception as raised:

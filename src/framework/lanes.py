@@ -22,14 +22,14 @@ from engine import gates
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
 from receiving.asking import answered
-from receiving.ticks import PerAsk, Services
+from receiving.ticks import PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
                      Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere)
 
 
-class NobodyToSpeakTo(LookupError):
+class NobodyToSpeakTo(Unserved):
     @classmethod
     def of(cls, about: str) -> "NobodyToSpeakTo":
         return cls(f"a receiver asked for the chat about {about}, and no agent row answers for it")

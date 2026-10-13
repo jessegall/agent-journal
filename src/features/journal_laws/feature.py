@@ -42,7 +42,8 @@ def dispatch(kind: str = "Plan", model: str = "sonnet", models: tuple[str, ...] 
 
 
 def called(tool: str, input: str, why: str = "", subagent: bool = False) -> ToolCallAnswered:
-    return ToolCallAnswered(agent=1, tool=tool, input=input, command=input if tool == SHELL else "", why=why, subagent=subagent)
+    writings = () if tool == SHELL else tuple(value for key, value in json.loads(input).items() if key == "new_string")
+    return ToolCallAnswered(agent=1, tool=tool, input=input, command=input if tool == SHELL else "", why=why, subagent=subagent, writings=writings)
 
 
 def reading(tool: str, **given) -> ToolCallAsked:

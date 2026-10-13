@@ -137,6 +137,8 @@ class ToolCallAnswered(AgentEvent):
     subagent: bool = False
     cwd: str = ""
     paths: tuple[str, ...] = ()
+    writings: tuple[str, ...] = ()
+    """What the call writes in its own words, such as an edit's new text or a dispatch's prompt; never a path it names."""
 
 
 @dataclass(frozen=True)

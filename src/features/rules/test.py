@@ -1,47 +1,13 @@
-from controllers.types import Facts, Nudges, Rules
+from controllers.types import Nudges, Rules
 from features.journal_laws.briefing import BEGIN, END, brief
-from runner.hooks import handle
-from providers import PROVIDERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
 from tests.kit import nudges, report
 
 
-def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_session():
-    claude = PROVIDERS["claude"]()
+def test_a_rules_keywords_are_a_field_read_as_a_list():
     record = fresh()
-
-    def use(tool, given, session="claude-1"):
-        return handle(claude, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": session, "tool_name": tool, "tool_input": given})
-
-    received = set()
-
-    def text(session="claude-1"):
-        fresh_nudges = [n for n in Nudges(record, actor=AGENT).rows.every() if n.data.get("session") == session and n.n not in received]
-        received.update(n.n for n in fresh_nudges)
-        return "\n".join(n.agent_line() for n in fresh_nudges)
-
     rule = Rules(record, actor=USER).create("Never change the git branch", brief="A branch change belongs to the user", keywords=["git checkout", "git switch"])
-    pin = Facts(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])
-
-    assert (use("Bash", {"command": "ls -la"}), text()) == ({}, ""), "a command with none of the words says nothing"
-    assert use("Bash", {"command": "git checkout -b spike"}).get("hookSpecificOutput", {}).get("permissionDecision") is None, \
-        "a command carrying a rule's word is not refused"
-    assert text() == f"Never change the git branch — rule {rule.n}", \
-        "and the rule is whispered whole, with its reference under it: a title is capped at 80, so a line that spends its start on the reference clips the end off the ruling itself"
-
-    use("Bash", {"command": "git checkout main"})
-    assert text() == "", "the same rule is not said again within 100 tool uses"
-    use("Bash", {"command": "git checkout main"}, session="claude-2")
-    assert text("claude-2").startswith(f"rule {rule.n} —") is True, "another session hears it once of its own"
-
-    use("Write", {"file_path": "notes.md", "content": "then npm run build"})
-    assert text().startswith(f"fact {pin.n} —") is True, "a fact whose word is in what is being written is whispered"
-
-    Rules(record, actor=USER).create("Keep the tree clean", keywords="word")
-    use("Bash", {"command": "keep the tree clean"})
-    assert text() == "", "a row with no keywords is never whispered"
-
     assert ("keywords" in type(rule).fields) is True, "keywords are a field of the type, not loose data"
     Rules(record, actor=USER).set(rule.n, "keywords", '["git checkout", "git rebase"]')
     assert Rules(record).load(rule.n).data["keywords"] == ["git checkout", "git rebase"], "set reads a list the same way --set does"

@@ -1,12 +1,10 @@
-import json
-
 from events import Fact
 from events.agents import AgentMessageSent, ToolCallAnswered, ToolFinished
 from events.journal_laws import LargerResult, LawMentioned, LongReadRefused
 from features.journal_laws.details import LARGEST_RESULT
 from features.journal_laws.laws import laws_for
 from features.journal_laws.reading import long_read
-from framework.recital import COMMANDS, TEXT, WHISPER, mentioned
+from framework.recital import COMMANDS, WHISPER, answered_words, mentioned
 from receiving import Listener
 from resources.dumps import Dump
 from resources.form_of_address import Profile
@@ -15,23 +13,6 @@ from serving import ReadFiles, ReadRemembered, ReadRows, Settings
 
 def largest_key(agent: int) -> str:
     return f"largest|{agent}"
-
-
-def strings_in(value) -> list[str]:
-    if isinstance(value, str):
-        return [value]
-    if isinstance(value, dict):
-        value = list(value.values())
-    if not isinstance(value, list):
-        return []
-    return [text for part in value for text in strings_in(part)]
-
-
-def searched(event: ToolCallAnswered, scope: str) -> str:
-    """The words of a call a law's keywords are looked for in: a shell call's command, any other call's text."""
-    if event.command:
-        return "" if scope == TEXT else event.command
-    return "" if scope == COMMANDS else " ".join(strings_in(json.loads(event.input)))
 
 
 def mentions(agent: int, voice_laws, text_in) -> list[Fact]:
@@ -43,7 +24,7 @@ class SpotLawInCall(Listener[ToolCallAnswered]):
     def listen(self, event: ToolCallAnswered, settings: Settings, profiles: ReadRows[Profile]) -> list[Fact]:
         if event.why or event.subagent or not settings.is_on(WHISPER):
             return []
-        return mentions(event.agent, laws_for(profiles.standing()), lambda scope: searched(event, scope))
+        return mentions(event.agent, laws_for(profiles.standing()), lambda scope: answered_words(event, scope))
 
 
 class SpotLawInChat(Listener[AgentMessageSent]):
@@ -63,6 +44,6 @@ class SpotLongReadRefused(Listener[ToolCallAnswered]):
 
 class SpotLargerResult(Listener[ToolFinished]):
     def listen(self, event: ToolFinished, settings: Settings, remembered: ReadRemembered) -> list[Fact]:
-        if not settings.is_on(LARGEST_RESULT) or event.size < int(settings.result_floor) or event.size <= int(remembered.get(largest_key(event.agent)) or 0):
+        if not settings.is_on(LARGEST_RESULT) or event.size < int(settings.result_floor) or event.size <= remembered.get(largest_key(event.agent), 0):
             return []
         return [LargerResult(agent=event.agent, tool=event.tool, size=event.size)]

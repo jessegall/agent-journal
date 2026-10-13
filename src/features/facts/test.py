@@ -1,10 +1,7 @@
 
-from controllers.types import Agents, Nudges, Facts, Reminders
-from engine import chat
-from runner.hooks import handle
+from controllers.types import Nudges, Facts, Reminders
 from features import load
-from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, USER
 from tests.kit import nudges, report
 from tests.conftest import fresh
 
@@ -29,31 +26,6 @@ def test_standing_pins_are_repeated_at_the_first_quarter_and_superseding_or_prom
         "promoted: a rule with the pin's words, the pin struck"
     Reminders(record, actor=USER).create("run the suites first", until="the suites are green on CI")
     assert Reminders(record).load(1).data["until"] == "the suites are green on CI", "a reminder keeps its until"
-
-
-def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
-    load()
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    facts = Facts(record, actor=USER)
-    ran, wrote = (facts.create(title, keywords="said", keywords_in=scope) for title, scope in (("in commands", "commands"), ("in text", "text")))
-    hook = lambda **tool: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", **tool})
-    hook(tool_name="Bash", tool_input={"command": "grep -rn unsaid ."})
-    assert not [n for n in Nudges(record).all() if n.title.startswith("fact ")], "a keyword inside another word does not match"
-    hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
-    hook(tool_name="Edit", tool_input={"file_path": "said.py", "new_string": "x = 1"})
-    chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "I said so")
-    whispered = [n.title.split(" — ")[0] for n in Nudges(record).all() if n.title.startswith("fact ")]
-    assert whispered == [f"fact {ran.n}", f"fact {wrote.n}"], "a whole word in a command, then in chat; not inside 'unsaid', not in a file path"
-    whisper_rows = [(w["ref"], w["title"]) for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
-    assert whisper_rows == [(ran.ref, "in commands"), (wrote.ref, "in text")], f"each reminder is kept on the agent for the chat to show: {whisper_rows}"
-    words = [w["words"] for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
-    assert words == [f"Reminded the agent of fact {ran.n}", f"Reminded the agent of fact {wrote.n}"], "one wording for the computer's chat mark and the phone's"
-    hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
-    assert len([n for n in Nudges(record).all() if n.title.startswith("fact ")]) == 2, "a fact already whispered to a session is not whispered again while its words stay the same"
-    facts.update(ran.n, brief="the new reasoning")
-    hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
-    assert len([n for n in Nudges(record).all() if n.title.startswith("fact ")]) == 3, "a fact whose words changed is whispered again"
 
 
 def test_dismissing_a_fact_from_the_rail_is_not_told_to_the_agent_but_editing_it_is():

@@ -22,9 +22,9 @@ from engine.project_files import walk
 from engine.record import Record
 from expects import Given, Left
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE
-from receiving.ticks import Services
+from receiving.ticks import Services, Unserved
 import serving
-from framework.lanes import lane_services
+from framework.lanes import NobodyToSpeakTo, lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
@@ -190,6 +190,14 @@ def commanded(promise, given: Given, record: Record, world: World) -> None:
         world.seen.refused = str(refusal)
 
 
+def spoken_to(record: Record, given: Given):
+    """The agent row a 3.0 receiver's chat speaks to; with none, the receiver is passed over, as the lane passes it over."""
+    row = speaking(record, given)
+    if row is None:
+        raise NobodyToSpeakTo.of("the Given")
+    return row
+
+
 def answered_a_hook(promise, given: Given, record: Record, world: World) -> None:
     """A responder, which answers the call the engine builds for a hook event: the provider and the agent the Given names, the record, and the hook the Given declares."""
     row = speaking(record, given)
@@ -201,7 +209,7 @@ def play_services(promise, given: Given, record: Record, world: World) -> dict:
     fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.ReadFiles: world.files, serving.Clock: world.clock, serving.Ids: world.ids, serving.Terminal: world.terminal,
              **({serving.Processes: world.processes, serving.ReadProcesses: world.processes} if given.processes.answers else {}),
              **({serving.Providers: world.providers} if given.providers.answers else {})}
-    services = Services({**lane_services(record, lambda: speaking(record, given)), **fakes})
+    services = Services({**lane_services(record, lambda: spoken_to(record, given)), **fakes})
     return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())
 
 
@@ -212,7 +220,11 @@ def listened(promise, given: Given, record: Record, world: World) -> None:
 
 def acted_on_a_fact(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 handler, through its own handle. It never decides whether to act, so what it writes and the facts it answers with are what it did."""
-    world.seen.facts += promise.part.handle(given.on, **play_services(promise, given, record, world)) or []
+    try:
+        services = play_services(promise, given, record, world)
+    except Unserved:
+        return
+    world.seen.facts += promise.part.handle(given.on, **services) or []
 
 
 def answered_a_request(promise, given: Given, record: Record, world: World) -> None:

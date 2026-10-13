@@ -45,7 +45,7 @@ LAWS = (
         "it changes what they should do. A finding, a failure or a decision that waits on them is worth the words; the rest is not. "
         "This binds what you write in the chat. Code, commit messages, briefs to other agents, to-do briefs, docs and reports are as long as they "
         "must be to be understood later.",
-        (), "chat"),
+        (), "text"),
 )
 
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
