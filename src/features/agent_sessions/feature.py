@@ -88,7 +88,7 @@ class AgentSessions(Feature):
             Given(SessionEvicted(agent=1, environment="'work'", by="claude-2", why="it asked"), rows=[AgentRow(n=1, title="claude-1")]) >> Held(EVICTED),
         ])
         journal.events.handle(EvictionLifted, ReleaseEvicted(), expects=[
-            Given(EvictionLifted(agent=1), rows=[AgentRow(n=1, title="claude-1")], held=EVICTED) >> Dispatches(nothing),
+            Given(EvictionLifted(agent=1), rows=[AgentRow(n=1, title="claude-1")], held=EVICTED) >> Dispatches(nothing) & Held(""),
         ])
         journal.events.handle(TakeOverChosen, TakeOverOnAnswer(), expects=[
             Given(TakeOverChosen(session="claude-2", environment="t", place=1), rows=[Environment(n=1, title="t")]) >> Updated(Environment(n=1), holder="claude-2"),
