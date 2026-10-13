@@ -9,13 +9,12 @@ import time
 from contextvars import ContextVar
 from collections.abc import Callable
 from contextlib import contextmanager
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 
 from engine import bus
 from events import Event, Fact
-from receiving import ANSWER, HANDLE, LISTEN, Registrations
+from receiving import LISTEN, Registrations
 from receiving.ordering import InOrder
-from serving import Service
 
 MOST_TICKS = 32
 
@@ -85,7 +84,7 @@ class NothingHeld:
 
 
 KEPT_CLAIMS = 1000
-"""How many claims are remembered. The same number the 2.x once() keeps, in the same store, so a journal that upgrades mid-turn finds its claims where it left them and never handles a held turn twice."""
+"""How many once-claims are remembered, the number the 2.x once() kept; a span claimed by every is kept apart, one per key, so a busy span never pushes a once-claim out."""
 
 
 class Remembered:
@@ -100,15 +99,26 @@ class Remembered:
         self.taken[key] = value
         return True
 
+    def advance(self, key: str, step) -> bool:
+        if self.taken.get(key) == step:
+            return False
+        self.taken[key] = step
+        return True
+
 
 @dataclass
 class Claims:
     """What the engine has claimed for a lane, kept in a store so a restart does not hand a held turn out again."""
 
     held: object = field(default_factory=Remembered)
+    spans: object = field(default_factory=Remembered)
 
     def take(self, key: str, at: float = 0.0) -> bool:
         return self.held.claim(key, at or time.time(), keep=KEPT_CLAIMS)
+
+    def take_span(self, key: str, span: int) -> bool:
+        """Whether this span of the key is yet to be taken, taking it: the span a fact dispatched with every goes in, once."""
+        return self.spans.advance(key, span)
 
 
 @dataclass
@@ -140,6 +150,9 @@ class Lane:
         going = []
         for event in events:
             if getattr(event, "claim", "") and not self.claims.take(event.claim):
+                self.dropped.append(event)
+                continue
+            if getattr(event, "window", ()) and not self.claims.take_span(*event.window):
                 self.dropped.append(event)
                 continue
             if getattr(event, "spacing", ()) and self.held_back(event):

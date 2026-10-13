@@ -436,6 +436,10 @@ def test_the_engine_claims_a_fact_at_dispatch_so_the_same_turn_read_three_ways_i
     kept = Path(tempfile.mkdtemp()) / "once.json"
     assert Claims(State(kept)).take("t3|reply") and not Claims(State(kept)).take("t3|reply"), \
         "a claim taken in one process is refused in the next: an upgrade mid-turn must not hand the held turn out again"
+    spans = State(Path(tempfile.mkdtemp()) / "spans.json")
+    taken = [Claims(State(kept), spans).take_span("open|4", span) for span in (7, 7, 8)]
+    assert (taken, spans.all(), Claims(State(kept)).take("t3|other")) == ([True, False, True], {"open|4": 8}, True), \
+        "a fact sent every span goes once in each span and keeps only its latest span, apart from the once-claims, so it never pushes one out"
 
 
 def test_a_tick_holds_what_it_remembers_until_it_ends_so_order_within_it_never_matters():

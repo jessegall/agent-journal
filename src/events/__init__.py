@@ -31,6 +31,8 @@ class Fact(Event):
     """Something that happened, carrying everything a handler could need, so no handler reads the record to fill in what the listener knew."""
 
     claim: str = ""
+    window: tuple = ()
+    """The key and the span of time a fact dispatched with every belongs to: it goes once in each span, and only the latest span is kept."""
     trigger: tuple = ()
     """The behaviour whose trigger says when this fact goes on, for a fact dispatched with due: empty for one that is not paced, the empty name for the feature's own trigger."""
     spacing: tuple = ()
@@ -46,7 +48,7 @@ class Fact(Event):
 
     def every(self, key: str, seconds: float, now: float) -> "Fact":
         """Dispatched at most once in each span of so many seconds for this key while what raises it holds; one raised again within the span is dropped, never sent late."""
-        return self.once(f"{key}|{int(now // seconds)}")
+        return replace(self, window=(key, int(now // seconds)))
 
     def due(self, behaviour: str = "") -> "Fact":
         """Dispatched only when the dispatching feature's trigger for this behaviour says it is due: the engine counts the moment and drops the fact until then."""

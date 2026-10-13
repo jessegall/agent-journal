@@ -179,7 +179,7 @@ class Ticking:
 
     def lane(self, name: str, record, agent) -> Lane:
         """A lane over this record, about this agent, with every receiver the features registered."""
-        return Lane(name, self.running, Services(lane_services(record, agent)), Claims(record.state("claims")), order=self.order, record=record,
+        return Lane(name, self.running, Services(lane_services(record, agent)), Claims(record.state("claims"), record.state("spans")), order=self.order, record=record,
                     switched_on=lambda feature: not feature or FEATURES[feature].enabled(record),
                     is_due=lambda feature, fact: due_now(FEATURES[feature], record, fact),
                     held_back=lambda fact: self.held_back(fact, record),

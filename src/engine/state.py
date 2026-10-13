@@ -55,6 +55,15 @@ class State:
                     del held[oldest]
             return True
 
+    def advance(self, key: str, step) -> bool:
+        """Moves a key on to a step it has not reached, and says whether it did: a step already taken is not taken again, and only the
+        latest step of each key is kept."""
+        with self.changing() as held:
+            if held.get(key) == step:
+                return False
+            held[key] = step
+            return True
+
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)
         FILES.forget(str(self.path))
