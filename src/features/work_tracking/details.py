@@ -6,7 +6,7 @@ from declaring.trigger import IDLE, MINUTES, Trigger, WORKED
 from declaring.groups import Group
 
 CHECK_IN = "check in"
-CHECK_IN_MINUTES = 15
+CHECK_IN_MINUTES = 30
 
 STARTED = ("work.created",)
 MOVED = ("work.created", "work.updated", "work.completed")
