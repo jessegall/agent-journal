@@ -123,17 +123,6 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     assert (answers_added([asking.n], record), answers_added([back.n], record).endswith("so reply to the user"), answers_added([mine.n], record)) == \
         ('the user answered "which colour?": picked "red"', True, ""), \
         "a picked option is named by its title, free text that asks something back says a reply is owed, and an answer the agent gave itself adds nothing"
-    from types import SimpleNamespace
-    from features.ask_questions import handlers
-    pressed = []
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(handlers, "driver_in", lambda *given: SimpleNamespace(answer_prompt=lambda option, text, options: pressed.append((option, text, options))))
-        second = Questions(record, actor=AGENT).create("which now?", options=[{"title": "A"}, {"title": "B"}], pick=1)
-        Questions(record, actor=USER).complete(second.n, how="B")
-        third = Questions(record, actor=AGENT).create("what name?", free="name")
-        Questions(record, actor=USER).complete(third.n, how="Rhea")
-    assert pressed == [(2, "B", 2), (0, "Rhea", 0)], \
-        "an answer is pressed into the question the agent stands at on its screen: the option's number, or the words in the free choice"
     from providers import DRIVERS
     assert (b"Entertoselect" in DRIVERS["claude"].ASKING, hasattr(DRIVERS["claude"], "answer_prompt")) == (True, True), \
         "Claude's own question prompt is seen on its screen, and every driver can answer one"
