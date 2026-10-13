@@ -36,12 +36,21 @@ const SEAT_DROP = 0.26;
 // the gripping hand of every voice's hang is 2.91 of the picture's 5.4 units above its standing feet: the short arms of these figures
 // reach no higher than the head, so the hand, not the hat, is what meets the bubble's corner
 const HANG_DROP = 0.54;
+// and 1.25 of those units to its own side of the middle, toward the viewer's right for the left hand of a figure facing them
+const GRIP_ASIDE = 1.25 / 5.4;
 export const POSTURES = {
     stand: {drop: 0, travels: "stand"},
     sit: {drop: SEAT_DROP, travels: "stand"},
     hang: {drop: HANG_DROP, travels: "hang"},
     walk: {drop: 0, travels: "stand"},
 };
+
+// Where the gripping hand is in the picture of a figure hanging by its `side` hand, turned `facing` degrees, as shares of the picture's
+// width and height; `below` is the share of the picture under the ground its feet stand on
+export const gripIn = (side, facing, below) => ({
+    x: 0.5 + (side === "l" ? 1 : -1) * GRIP_ASIDE * Math.cos((facing * Math.PI) / 180),
+    y: 1 - below - HANG_DROP,
+});
 
 // how long the figure takes to change from one clip, posture or facing to the next, easing out of the pose before it, in seconds
 export const CHANGE_SECONDS = 0.25;

@@ -18,12 +18,14 @@ import {
     drawnIn,
     facingToward,
     footingOn,
+    gripIn,
     groundUnder,
     hiddenAt,
     landingOn,
     spotOf,
     tripTo,
 } from "../figure/places.js";
+import {STILL, landedSwing, swung} from "../figure/pendulum.js";
 import "../figure/falls.css";
 import {rows} from "../sync/rows.js";
 
@@ -82,6 +84,7 @@ let seenAt = Date.now() / 1000;
 let playing = {name: "", started: 0, shown: null, index: 0};
 // the clip on screen, so the page can draw what the rig has no bones for, such as the bug the squire chases
 const shownClip = ref(null);
+const shownFacing = ref(0);
 // the posture the clip on screen is drawn in
 let drawn = "stand";
 // whether the legs on screen walk, as the page marks it for whoever measures the figure, beside the name of the clip on screen
@@ -155,6 +158,7 @@ function step() {
     const key = keyOf(shown);
     if (playing.name !== key) playing = {name: key, started: performance.now(), shown, index: 0};
     shownClip.value = shown.clip;
+    shownFacing.value = shown.facing;
     const index = frameOf(shown);
     playing.index = index;
     if (shown.once && index >= shown.clip.frames) {
@@ -228,6 +232,8 @@ function setOff() {
     const {to, straight, pace, footing: held} = moving.value;
     const there = landingOn(to, held, figureSize());
     const trip = tripTo(place.value, there, figureSize(), {straight, pace});
+    tripWay = Math.sign(there.x - place.value.x);
+    stopSwinging();
     footing = null;
     if (trip) {
         moving.value = {...moving.value, ...trip};
@@ -280,6 +286,7 @@ function settle(spot, held = footingOn(spot)) {
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
     if (!footing || !here.value || document.hidden) return;
+    sway();
     const ground = groundUnder(footing, place.value, figureSize());
     if (!ground) return uprooted();
     footing = ground.footing;
@@ -299,6 +306,34 @@ function groundMoved(motion) {
     moved.value = motion;
     movedTimer = setTimeout(() => (moved.value = ""), fall.value.ms * 2);
 }
+
+// The figure hanging by a hand swings about it (pendulum.js): out the way its trip went as it lands, and with the hand as the ground under
+// it carries it sideways
+const tilt = ref(0);
+let swing = STILL;
+let swungAt = 0;
+let swungFrom = null;
+let tripWay = 0;
+function sway() {
+    if (place.value.posture !== "hang" || moving.value) return stopSwinging();
+    const time = performance.now() / 1000;
+    swing = swungFrom === null ? landedSwing(tripWay) : swung(swing, time - swungAt, time, place.value.x - swungFrom, SIZE);
+    swungAt = time;
+    swungFrom = place.value.x;
+    tilt.value = swing.angle;
+}
+
+function stopSwinging() {
+    swing = STILL;
+    swungFrom = null;
+    tilt.value = 0;
+}
+
+// where the hand it hangs by is in its picture, which the swing turns about
+const grip = computed(() => {
+    const name = shownClip.value?.name ?? "";
+    return /^hang_[lr]$/.test(name) ? gripIn(name.slice(-1), shownFacing.value, below.value) : null;
+});
 
 function uprooted() {
     footing = null;
@@ -495,6 +530,7 @@ const actorStyle = computed(() => ({
     "--squash": fall.value.squash,
     "--bounce": `${fall.value.bounce}px`,
     ...(chasing.value && {animationDuration: `${chaseMs.value}ms`}),
+    ...(grip.value && {rotate: `${tilt.value}rad`, transformOrigin: `${grip.value.x * 100}% ${grip.value.y * 100}%`}),
 }));
 
 const style = computed(() => ({
@@ -576,6 +612,10 @@ const style = computed(() => ({
     .voice-figure-actor.dropping,
     .voice-figure-actor.launched {
         animation: none;
+    }
+
+    .voice-figure-actor {
+        rotate: none !important;
     }
 }
 
