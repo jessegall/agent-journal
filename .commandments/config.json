@@ -3,6 +3,20 @@
     "paths": [
         "src"
     ],
+    "exclude": [
+        ".venv",
+        "__pycache__",
+        "src/web/dist",
+        "src/web/dist-demo",
+        ".claude/worktrees"
+    ],
+    "disable": {
+        "languages": [
+            "php",
+            "typescript",
+            "csharp"
+        ]
+    },
     "detectors": [
         "PlainViewerTextDetector",
         "PlainServerTextDetector",

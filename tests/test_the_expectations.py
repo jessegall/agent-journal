@@ -613,6 +613,48 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
         BROKEN.entries = [entry for entry in BROKEN.entries if entry.owner is not None]
 
 
+def test_a_row_that_already_held_the_change_and_a_line_the_journal_held_back_are_not_told_as_broken(tmp_path):
+    import time
+    import features
+    from controllers.types import Agents
+    from events.message_todos import TodoLeftUnlinked, TodoNamedInReply
+    from framework.lanes import lane_services
+    from framework.played import scratch
+    from expects.watching import BROKEN, WAIT, Watch
+    from framework.promises import Promise
+    from receiving import REGISTERED
+    from receiving.ticks import Services
+    from resources.types import AgentRow, Message, Todo
+
+    features.load()
+    told = []
+    BROKEN.add(None, lambda record, title, brief: told.append(title))
+
+    def watched(name: str, live: Given, runs: int) -> list[str]:
+        promise = Promise.of(next(one for one in REGISTERED.each if one.name == name))
+        record, told[:] = scratch(live, tmp_path), []
+        services = Services(lane_services(record, lambda: Agents(record, actor="system").peek(1)))
+        run = lambda: promise.part.handle(live.on, **services.given(promise.name, promise.feature.name, type(promise.part).wants()))
+        for _ in range(runs - 1):
+            run()
+        watch, began = Watch(background=False), time.time() - 1
+        run()
+        watch.ran(promise, live.on, record, began)
+        watch.settle()
+        assert watch.pending, f"{name}: the live world is one its expectations state"
+        watch.sweep(began + WAIT + 1)
+        return list(told)
+
+    try:
+        linked = Given(TodoNamedInReply(message=12, todo=7), rows=[Message(n=12, title="look", refs=["todo:7"]), Todo(n=7, title="the thing")])
+        assert watched("LinkTodoToItsMessage", linked, 1) == [], "a message that already links the to-do had nothing to change, and that is not a broken promise"
+        asked = Given(TodoLeftUnlinked(message=12, todo=7), rows=[Message(n=12, title="look"), Todo(n=7, title="the thing"), AgentRow(n=1, title="claude-1")])
+        assert watched("AskWhetherATodoCameFromAMessage", asked, 2) == [], \
+            "a line the handler asked to say counts as said, though the journal held it back as a repeat of the last one"
+    finally:
+        BROKEN.entries = [entry for entry in BROKEN.entries if entry.owner is not None]
+
+
 def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the_bus_ran_them():
     """The cut-over: what the bus walked inline now runs inside a tick, in the order the bus walked it, and a raise is told instead of escaping into the write."""
     from receiving.ticks import Remembered

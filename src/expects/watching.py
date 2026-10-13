@@ -17,7 +17,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS, Nudges
 from resources.extension import Extension
 from engine.record import Record
-from expects import File, Given, Nudged, Updated, Wrote, contains, held, named, stated
+from expects import File, Given, Nudged, Updated, Wrote, contains, held, matches, named, stated
 from expects.playing import Seen, remembered_by
 from resources.base import SYSTEM
 
@@ -151,6 +151,18 @@ def renumbered(outcome, binding: Binding):
     return renamed
 
 
+def already_held(outcome, record: Record) -> bool:
+    """Whether the row an Updated outcome names holds what it is to hold, read from the record as it is now."""
+    if not isinstance(outcome, Updated):
+        return False
+    wanted = {**stated(outcome.row), **dict(outcome.changed)}
+    try:
+        row = CONTROLLERS[kind_of(outcome.row)](record, actor=SYSTEM).rows.peek(wanted["n"])
+    except LookupError:
+        return False
+    return row is not None and matches(row, wanted)
+
+
 def gained(record: Record, began: float) -> Seen:
     """What the record gained from the mark on, read from the events the writes left: the rows created, the rows changed and the nudges sent."""
     wrote, updated, nudged = [], [], []
@@ -200,8 +212,13 @@ class Owed:
     due: float
 
     def broken(self) -> list[str]:
-        seen = gained(self.ran.record, self.ran.began)
-        return [why for outcome in self.outcomes if (why := outcome.holds(seen))]
+        """What is owed and not there. A line the handler asked to say counts as said, since whether it reaches the agent now is the journal's call, and
+        a row the handler had nothing to change in, as it already held what it was to be changed to, counts as changed."""
+        record = self.ran.record
+        spoken = tuple((one.line, "", one.words) for one in self.ran.promise.feature.journal.spoken if one.at >= self.ran.began)
+        seen = gained(record, self.ran.began)
+        seen = replace(seen, nudged=seen.nudged + spoken)
+        return [why for outcome in self.outcomes if not already_held(outcome, record) and (why := outcome.holds(seen))]
 
     def title(self) -> str:
         return f"{self.ran.promise.name} did not do what expectation {self.number} says"[:80]

@@ -1,3 +1,5 @@
+import time
+from collections import deque
 from dataclasses import dataclass, field, replace
 from functools import cached_property
 
@@ -53,9 +55,22 @@ class BoundJournal:
         self.journal.clear(self.record, row, how)
 
 
+SPOKEN_KEPT = 200
+
+
+@dataclass(frozen=True)
+class Spoken:
+    """A line a feature asked to say, before the journal decided whether it reaches the agent now."""
+
+    at: float
+    line: str
+    words: str
+
+
 class Journal:
     def __init__(self, feature):
         self.feature = feature
+        self.spoken: deque[Spoken] = deque(maxlen=SPOKEN_KEPT)
 
     def at(self, record, actor: str = SYSTEM) -> BoundJournal:
         return BoundJournal(self, record, actor)
@@ -77,6 +92,7 @@ class Journal:
         return AgentHooks(self.feature)
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, whisper: bool = False, **values):
+        self.spoken.append(Spoken(time.time(), line, " ".join(str(value) for value in values.values())))
         spec = self.feature.declared_line(line)
         if runtime.upgrading(record.root) or not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
