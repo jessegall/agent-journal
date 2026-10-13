@@ -1,8 +1,9 @@
 from engine.services import SOURCES
 from events.agents import ClockTicked
-from events.hosting import HostedAppAbandoned, HostedAppAttended, HostedAppUnattended
+from events.hosting import HostedAppAbandoned, HostedAppAttended, HostedAppsDue, HostedAppUnattended
 from expects import WHEN, Answered, Dispatches, Given, Refused, Updated, answering, nothing
 from framework.base import Feature
+from framework.due import DueOnClock
 from controllers.types import Tickets
 from resources.tickets import Ticket
 from features.hosting.card import app_on_card
@@ -39,12 +40,15 @@ class HostingFeature(Feature):
         journal.commands.add("ticket", ShowApp(), expects=[
             Given((Tickets, 1), rows=[HOSTED]) >> Answered({"url": "", "state": "not started", "why": ""}),
         ])
-        journal.events.listen(ClockTicked, SpotIdleApps(), expects=[
-            Given(ClockTicked(agent=1), rows=[HOSTED]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[HOSTED], files=HOSTING_FILE) >> Dispatches(HostedAppUnattended(ticket=1)),
-            Given(ClockTicked(agent=1), rows=[idle_for(6)], files=HOSTING_FILE) >> Dispatches(HostedAppAbandoned(ticket=1)),
-            Given(ClockTicked(agent=1), rows=[idle_for(1)], files=HOSTING_FILE) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[Ticket(n=1, title="Card")], files=HOSTING_FILE) >> Dispatches(nothing),
+        journal.events.listen(ClockTicked, DueOnClock(HostedAppsDue), expects=[
+            Given(ClockTicked(agent=1)) >> Dispatches(HostedAppsDue(agent=1).due()),
+        ])
+        journal.events.listen(HostedAppsDue, SpotIdleApps(), expects=[
+            Given(HostedAppsDue(agent=1), rows=[HOSTED]) >> Dispatches(nothing),
+            Given(HostedAppsDue(agent=1), rows=[HOSTED], files=HOSTING_FILE) >> Dispatches(HostedAppUnattended(ticket=1)),
+            Given(HostedAppsDue(agent=1), rows=[idle_for(6)], files=HOSTING_FILE) >> Dispatches(HostedAppAbandoned(ticket=1)),
+            Given(HostedAppsDue(agent=1), rows=[idle_for(1)], files=HOSTING_FILE) >> Dispatches(nothing),
+            Given(HostedAppsDue(agent=1), rows=[Ticket(n=1, title="Card")], files=HOSTING_FILE) >> Dispatches(nothing),
         ])
         journal.events.handle(HostedAppAttended, ClearIdleTime(), expects=[
             Given(HostedAppAttended(ticket=1), rows=[idle_for(6)]) >> Updated(Ticket(n=1), idle_since=0.0),

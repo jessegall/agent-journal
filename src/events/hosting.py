@@ -24,3 +24,10 @@ class HostedAppAbandoned(Fact):
     """The ticket's agent has been gone longer than the app may idle."""
 
     ticket: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class HostedAppsDue(Fact):
+    """The hosting feature's trigger says it is time to look at the hosted apps."""
+
+    agent: int

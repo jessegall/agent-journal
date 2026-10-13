@@ -10,7 +10,7 @@ from tests.conftest import fresh, refused
 
 
 def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_idle(monkeypatch):
-    from events.agents import ClockTicked
+    from events.hosting import HostedAppsDue
     from features.hosting.handlers import ClearIdleTime, StartIdleTime, StopAbandonedApp
     from features.hosting.listeners import SpotIdleApps
     features.load()
@@ -45,7 +45,7 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
         now = staticmethod(time.time)
 
     def sweep():
-        for fact in SpotIdleApps().listen(ClockTicked(agent=1), Project, tickets, Now):
+        for fact in SpotIdleApps().listen(HostedAppsDue(agent=1), Project, tickets, Now):
             {"HostedAppAttended": lambda: ClearIdleTime().handle(fact, tickets), "HostedAppUnattended": lambda: StartIdleTime().handle(fact, tickets, Now),
              "HostedAppAbandoned": lambda: StopAbandonedApp().handle(fact, tickets)}[type(fact).__name__]()
     sweep()

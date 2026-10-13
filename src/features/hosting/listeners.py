@@ -1,7 +1,6 @@
 from resources.organization import FOLDER
 from events import Fact
-from events.agents import ClockTicked
-from events.hosting import HostedAppAbandoned, HostedAppAttended, HostedAppUnattended
+from events.hosting import HostedAppAbandoned, HostedAppAttended, HostedAppsDue, HostedAppUnattended
 from features.hosting.apps import idle_past
 from features.hosting.files import HOSTING, hosting_in
 from receiving import Listener
@@ -9,8 +8,8 @@ from resources.tickets import Ticket
 from serving import Clock, ReadFiles, ReadRows
 
 
-class SpotIdleApps(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, files: ReadFiles, tickets: ReadRows[Ticket], clock: Clock) -> list[Fact]:
+class SpotIdleApps(Listener[HostedAppsDue]):
+    def listen(self, event: HostedAppsDue, files: ReadFiles, tickets: ReadRows[Ticket], clock: Clock) -> list[Fact]:
         path = f"{FOLDER}/{HOSTING}"
         if not files.exists(path):
             return []
