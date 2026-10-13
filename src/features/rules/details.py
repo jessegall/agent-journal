@@ -16,7 +16,7 @@ class RulesDetails(FeatureDetails):
 
     abstract = """
         Rules are repeated to the agent at every quarter of its context. Rules marked for it are
-        written into AGENTS.md and CLAUDE.md.
+        written into the journal's block in AGENTS.md, which CLAUDE.md imports.
     """
 
     help = """
@@ -25,7 +25,7 @@ class RulesDetails(FeatureDetails):
         "<the ruling>" --brief "<the user's reason, and the message it came from>". What is true of this environment is a
         fact, and what to keep doing here is a reminder; both stay in this environment. Right after you make a rule you are
         asked to read it again as one. Only the user strikes a rule, except one you just made that turns out to belong to one
-        environment. journal rule inject <n> keeps a rule in the managed block of both AGENTS.md and CLAUDE.md.
+        environment. journal rule inject <n> keeps a rule in the journal's block in AGENTS.md, which CLAUDE.md imports.
 
         Give it keywords with --set keywords="<word>,<word>": when one appears as a whole word, you are shown the
         row's title once, and the tool call still goes through. --set keywords_in says where they match: text

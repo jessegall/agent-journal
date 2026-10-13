@@ -21,7 +21,7 @@ class LawDetails(FeatureDetails):
     abstract = "Rules every agent follows: how it starts subagents, and how much it reads at once."
 
     help = """
-        Always on. The laws are handed to every session, kept in AGENTS.md and CLAUDE.md, and
+        Always on. The laws are handed to every session, kept in AGENTS.md, which CLAUDE.md imports, and
         enforced before a subagent dispatch.
 
         Each law carries plain keywords and where they match, declared beside it. When one of them appears as a
