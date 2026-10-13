@@ -31,6 +31,13 @@ class Features(Controller):
         row = self.rows.by_title(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
 
+    def quieten(self) -> None:
+        """Switches off here every feature that declares itself quiet in a helper's or a ticket's environment."""
+        from framework.loaded import FEATURES
+        for feature in FEATURES.values():
+            if feature.details.quiet_in_helpers:
+                self.switch(feature.name, False)
+
     @action
     def moved(self) -> dict:
         return {"out": "\n".join(listing() for listing in MOVED.each())}

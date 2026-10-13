@@ -34,7 +34,6 @@ from controllers.plans import Plans
 from resources.plans import ACTIVE, DONE as PLAN_DONE, READY, WAITING
 from resources.tickets import TICKETS
 
-QUIET_IN_TICKETS = ("dev_faults",)
 from resources.base import AGENT, ESCALATED, SYSTEM, USER, Refused, Resource, titled
 from resources.shapes import FieldChoice
 from resources.shapes import rank_before
@@ -114,8 +113,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _settle(self, place) -> None:
         """What a ticket's own environment starts with: its agent is prompted for permission only when auto mode is off there, and the features a ticket has no use for are switched off."""
         settle_prompts(place)
-        for feature in QUIET_IN_TICKETS:
-            Features(place, actor=SYSTEM).switch(feature, False)
+        Features(place, actor=SYSTEM).quieten()
 
     @action
     def tell(self, n: int, note: str) -> str:

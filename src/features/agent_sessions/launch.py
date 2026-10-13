@@ -16,9 +16,6 @@ from resources.base import SYSTEM
 from resources.types import EnvironmentKind, NewEnvironment, Running
 from serving import SERVED, Providers
 
-QUIET = ("dev_faults",)
-
-
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
     prepared(record, NewEnvironment(name, abstract, owner, record.root.parent, kind))
     return launched(record, name, DEFAULT_PROVIDER, prompted_by_file(record.root, name, SERVED.given(Providers).driver(DEFAULT_PROVIDER).within([], worktree), prompt), record.root.parent)
@@ -30,8 +27,7 @@ def prepared(record, wanted: NewEnvironment) -> Record:
         environments.create(wanted.name, abstract=wanted.abstract, owner=wanted.owner, launched_from=record.env, folder=str(wanted.folder), kind=wanted.kind)
     place = Record(record.root, wanted.name)
     settle_prompts(place)
-    for feature in QUIET:
-        Features(place, actor=SYSTEM).switch(feature, False)
+    Features(place, actor=SYSTEM).quieten()
     return place
 
 

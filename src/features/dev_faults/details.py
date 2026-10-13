@@ -9,6 +9,7 @@ class DevFaultsDetails(FeatureDetails):
     label = "Report developer errors"
     has_skill = False
     default = False
+    quiet_in_helpers = True
 
     title = "Developer error reports"
 

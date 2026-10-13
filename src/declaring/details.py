@@ -82,6 +82,8 @@ class FeatureDetails:
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
     has_skill: ClassVar[bool] = True
+    quiet_in_helpers: ClassVar[bool] = False
+    """Switched off in a helper's and a ticket's own environment, where its work is not wanted."""
     skill_of: ClassVar[str] = ""
     default: ClassVar[bool] = True
     scope: ClassVar[str] = ENVIRONMENT
