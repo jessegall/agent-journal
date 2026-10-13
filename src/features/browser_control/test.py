@@ -29,5 +29,5 @@ def test_the_journals_own_extension_may_post_and_no_other_page_or_extension_may(
     import serve
     handler = SimpleNamespace(server=SimpleNamespace(server_port=8420))
     trusted = lambda origin: serve.Handler.trusted_origin(handler, origin)
-    assert (trusted(serve.EXTENSION_ORIGIN), trusted("chrome-extension://abcdefghijklmnopabcdefghijklmnop"), trusted("https://example.com")) == (True, False, False), \
+    assert (trusted(serve.extension_origin()), trusted("chrome-extension://abcdefghijklmnopabcdefghijklmnop"), trusted("https://example.com")) == (True, False, False), \
         "the extension's posts, a picked element's picture among them, are let in by its fixed ID, and nothing else that is not the viewer"

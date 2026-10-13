@@ -1,6 +1,7 @@
 import faulthandler
 import gc
 import base64
+from functools import cache
 import hashlib
 import json
 import os
@@ -60,13 +61,11 @@ SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
 
+@cache
 def extension_origin() -> str:
-    """The origin of the journal's own browser extension, whose posts come from it: its ID is the one Chrome derives from the public key its manifest carries."""
+    """The origin of the journal's own browser extension, whose posts come from it: its ID is the one Chrome derives from the public key its manifest carries. Worked out when a request first asks, since a build being checked imports this file where the extension is not beside it."""
     der = base64.b64decode(json.loads(data("extension", "manifest.json").read_text())["key"])
     return "chrome-extension://" + "".join(chr(ord("a") + int(digit, 16)) for digit in hashlib.sha256(der).hexdigest()[:32])
-
-
-EXTENSION_ORIGIN = extension_origin()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -76,7 +75,7 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def trusted_origin(self, origin: str) -> bool:
-        if origin == EXTENSION_ORIGIN:
+        if origin.startswith("chrome-extension://") and origin == extension_origin():
             return True
         found = LOOPBACK.match(origin)
         ports = {self.server.server_port, *(urlparse(journal.url).port for journal in known())}
