@@ -379,12 +379,10 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     import time
     from controllers.types import Notices
     from events.agents import ClockTicked
-    from features.integrations.handlers import CheckOnClock
-    from framework.parts import Context
     from resources.base import SYSTEM
     world = linear_world(monkeypatch, tmp_path, issues=[issue(1, "2026-10-01T10:00:00Z")])
     record, fake, linear = world.record, world.fake, world.linear
-    ticked = lambda: CheckOnClock().handle(Context.of(linear, record), ClockTicked())
+    ticked = lambda: linear.ticked(record)
     board = linear.choices(record).board
     apply(record, {"linear": {"key": "", "board": 0, "teams": ""}}, USER)
     ticked()

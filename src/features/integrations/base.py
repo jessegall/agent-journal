@@ -7,13 +7,15 @@ from urllib.parse import urlsplit
 
 from controllers.features import Features
 from events.agents import ClockTicked
-from expects import Answered, Given, Unchanged
-from controllers.types import Agents, Notices, Questions
+from events.integrations import ReplyApproved
+from expects import Answered, Dispatches, Given, Ran, nothing
+from controllers.types import Agents, Notices
 from engine import bus
 from framework.base import Feature
 from features.integrations.commands import SyncIntegration
 from features.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
-from features.integrations.handlers import CheckOnClock, SendApproved
+from features.integrations.handlers import CheckOnClock, SendApprovedReply
+from features.integrations.listeners import SpotApprovedReply
 from events.questions import QuestionCompleted
 from features.integrations.client import IntegrationClient
 from features.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
@@ -36,6 +38,7 @@ class IntegrationFeature(Feature):
     """What every integration feature shares: the page of its state, and a client that holds its key in the journal's own process."""
 
     origin = ""
+    approved = ReplyApproved
     key_refused: tuple[str, ...] = ()
 
     def client(self, record) -> IntegrationClient:
@@ -47,13 +50,17 @@ class IntegrationFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         self.clients: dict[str, IntegrationClient] = {}
-        journal.events.handler(CheckOnClock(), expects=[
-            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.handle(ClockTicked, CheckOnClock(), expects=[
+            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "ticked")),
         ])
-        journal.events.handler(SendApproved(), expects=[
-            Given(self.closed(), rows=[self.proposal(KEEP)]) >> Unchanged(),
-            Given(self.closed(), rows=[self.proposal(SEND, by=AGENT)]) >> Unchanged(),
-            Given(self.closed(), rows=[self.proposal(SEND, service="another")]) >> Unchanged(),
+        journal.events.listen(QuestionCompleted, SpotApprovedReply(self.name, self.approved), expects=[
+            Given(self.closed(), rows=[self.proposal(SEND)]) >> Dispatches(self.approved(question=1, ticket=1, text="Thanks.")),
+            Given(self.closed(), rows=[self.proposal(KEEP)]) >> Dispatches(nothing),
+            Given(self.closed(), rows=[self.proposal(SEND, by=AGENT)]) >> Dispatches(nothing),
+            Given(self.closed(), rows=[self.proposal(SEND, service="another")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(self.approved, SendApprovedReply(), expects=[
+            Given(self.approved(question=1, ticket=1, text="Thanks."), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "send_reply", 1, "Thanks.")),
         ])
         journal.commands.add("feature", SyncIntegration(self.name), expects=[
             Given((Features,)) >> Answered(f"checked {self.details.title}"),
@@ -123,12 +130,9 @@ class IntegrationFeature(Feature):
     def ticked(self, record) -> None:
         self.check(record)
 
-    def send_approved(self, record, n: int) -> None:
-        question = Questions(record, actor=SYSTEM).load(n)
-        if question.data.get("proposal") != self.name or question.outcome != SEND or question.data.get("answered_by") != USER:
-            return
-        ticket = Tickets(record, actor=SYSTEM).load(question.refs[0].split(":")[1])
-        bus.defer(lambda: self.push(record, lambda service: self.deliver(service, ticket, question.brief)))
+    def send_reply(self, record, n: int, text: str) -> None:
+        ticket = Tickets(record, actor=SYSTEM).load(n)
+        bus.defer(lambda: self.push(record, lambda service: self.deliver(service, ticket, text)))
 
     def push(self, record, sending) -> None:
         """Sends one write from the journal's own process; a failure is kept in the integration's state, never raised into the move or the answer."""

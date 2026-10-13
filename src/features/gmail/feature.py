@@ -1,3 +1,4 @@
+from events.integrations import GmailReplyApproved
 from expects import Answered, Given, Refused, Wrote
 from features.gmail.commands import ProposeReply
 from features.gmail.details import GmailDetails
@@ -13,6 +14,7 @@ from resources.types import Question
 class Gmail(GmailWork, IntegrationFeature):
     key_refused = ("AUTHENTICATIONFAILED", "Invalid credentials", "Username and Password not accepted")
     details = GmailDetails
+    approved = GmailReplyApproved
 
     def register(self, journal: Journal) -> None:
         super().register(journal)

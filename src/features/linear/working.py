@@ -32,8 +32,6 @@ class LinearWork:
     def move_issue(self, record, n: int) -> None:
         tickets = Tickets(record, actor=SYSTEM)
         ticket = tickets.load(n)
-        if ticket.source != "linear" or ticket.data.get("linear_stage") == ticket.stage:
-            return
         state = self.choices(record).state_of(ticket.stage)
         sending = bool(self.values(record).send_status) and bool(state)
         agreed = {"linear_stage": ticket.stage}

@@ -1,10 +1,10 @@
+from events import Fact
+from events.integrations import LinearStageMoved
+from receiving import Handler
+from serving import OwnWork
 
-from framework.parts import Context, Handler
-from events.tickets import TicketUpdated
 
-
-class MoveIssue(Handler):
-    """A ticket that moves to a mapped stage moves its issue to that state, once the switch is on; what the sync changed is never sent back."""
-
-    def handle(self, context: Context, event: TicketUpdated) -> None:
-        context.feature.move_issue(context.record, event.n)
+class MoveIssue(Handler[LinearStageMoved]):
+    def handle(self, event: LinearStageMoved, work: OwnWork) -> list[Fact]:
+        work.move_issue(event.ticket)
+        return []
