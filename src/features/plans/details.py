@@ -62,6 +62,11 @@ class PlansDetails(FeatureDetails):
             trigger=Trigger(every=5, unit=MINUTES),
         ),
         Behaviour(
+            name="standing still",
+            title="Remind the agent of a running plan it is not working on, while it is busy elsewhere",
+            trigger=Trigger(every=1, unit=MINUTES),
+        ),
+        Behaviour(
             name="blocked",
             title="Recheck a running plan's blocked to-dos",
             trigger=Trigger(every=30, unit=MINUTES),
@@ -82,8 +87,8 @@ class PlansDetails(FeatureDetails):
             reply_kept=True,
             title="plan {{n}}, {{title}}, stands still at {{phase}}: its rows are open and nothing holds them",
             brief="""
-                to-dos {{rows}}, untouched for {{minutes}} minutes: journal todo done <n> --how "<what landed>" for each that
-                is done, or journal todo block <n> "<why>" or journal todo ask <n> "<question>" for what it waits on.
+                to-dos {{rows}}, untouched for {{minutes}} minutes: journal todo start <n> to work one now, journal todo done <n>
+                --how "<what landed>" for one that is done, or journal todo block <n> "<why>" or journal todo ask <n> "<question>".
             """,
         ),
         Line(

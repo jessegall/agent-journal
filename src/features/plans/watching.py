@@ -44,7 +44,7 @@ def blocked_plans(context, agent) -> list[Sent]:
 
 def standing_still(context, agent) -> list[Sent]:
     """A running plan whose current phase has open rows that nothing holds, in a while, and no work in hand on them: the plan stands still and nobody has stopped it, the shape of rows built and left open."""
-    quiet = time.time() - float(context.feature.cadence(context.record, "still").every) * MINUTE
+    quiet = time.time() - float(context.feature.cadence(context.record, "standing still").every) * MINUTE
     plans, taken = Plans(context.record, actor=SYSTEM), {int(w.todo) for w in carried_on(context.record)}
     found = []
     for plan in plans.active():
@@ -56,5 +56,5 @@ def standing_still(context, agent) -> list[Sent]:
     return found
 
 
-STANDING_STILL = Nudge("standing still", behaviour="still", about=standing_still, most=STILL_TIMES,
-                       guarantee="When a running plan's current phase has open rows that nothing blocks and nobody has touched, the agent is told to close them or say what they wait on.")
+STANDING_STILL = Nudge("standing still", behaviour="standing still", about=standing_still,
+                       guarantee="While a running plan's current phase has open rows that nothing blocks and nobody works, the agent is told every minute, busy or not, to work them, close them or say what they wait on.")
