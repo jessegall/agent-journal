@@ -44,7 +44,7 @@ class StartingAgents(Feature):
                 >> Dispatches(nothing),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), *CONVERSATIONS], settings=ON, clock=NOW) >> Dispatches(nothing),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t")], settings=ON, clock=NOW) >> Dispatches(nothing),
-            Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), ended(2, "bea86f27-last", "codex", 200.0, subagent=True)], settings=ON, clock=NOW)
+            Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), ended(2, "bea86f27-last", "codex", 200.0, parent="claude-0")], settings=ON, clock=NOW)
                 >> Dispatches(nothing),
         ])
         journal.events.handle(WakeRequested, CarryOnTheConversation(), expects=[
