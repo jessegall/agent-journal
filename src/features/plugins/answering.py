@@ -1,10 +1,8 @@
 import re
-from dataclasses import fields
 
 from events.answers import Allowed, Answer, Refused, Rewritten
 from events.asking import AgentDispatching, TextFormatting, ToolCallAsked
 from features.plugins.declared import declared
-from payload import Dispatch
 from receiving import Answerer
 from resources.types import Plugin
 from serving import ReadOwnWork, ReadRows
@@ -43,5 +41,5 @@ class AskPluginsToCancel(Answerer[AgentDispatching]):
     def answer(self, request: AgentDispatching, work: ReadOwnWork) -> Answer:
         if request.subagent:
             return Allowed()
-        why = work.cancel_call("agent.dispatching", {one.name: getattr(request, one.name) for one in fields(Dispatch)})
+        why = work.cancel_call("agent.dispatching", request)
         return Refused(why) if why else Allowed()

@@ -1,5 +1,6 @@
 import threading
 import time
+from dataclasses import fields
 from pathlib import Path
 
 from controllers.types import Agents, Plugins
@@ -15,7 +16,7 @@ from features.plugins.payload import refusal
 from features.plugins.refusing import PluginAsk
 from features.plugins.run import PluginReply, call
 from features.plugins.skills import withdrawn
-from payload import HookEvent
+from payload import Dispatch, HookEvent
 from resources.base import SYSTEM
 
 ALTOGETHER = 5.0
@@ -74,8 +75,9 @@ class PluginsWork:
                 return f"{called(row)}: {refused}"
         return ""
 
-    def cancel_call(self, record, event: str, data: dict) -> str:
+    def cancel_call(self, record, event: str, request) -> str:
         """Why a plugin cancels the moment, asked of each enabled plugin that declared it would; nothing when none does."""
+        data = {one.name: getattr(request, one.name) for one in fields(Dispatch)}
         for row in Plugins(record, actor=SYSTEM).rows.standing():
             manifest = declared(row)
             asking = manifest.cancels.get(event)

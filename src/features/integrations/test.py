@@ -409,6 +409,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     assert [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("integration") == "linear"] == [], "and it clears when a sync works again"
     from controllers.types import Questions
     from features.linear.commands import ProposeComment
+    from framework.parts import Context
     from controllers.types import Tickets
     ticket = next(t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "linear")
     words = "Thanks, this is fixed in 1.2"

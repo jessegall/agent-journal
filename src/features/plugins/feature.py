@@ -26,7 +26,7 @@ from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_
 
 OFF = Plugin(n=1, title="Pulse", data={"enabled": False})
 ON = Plugin(n=1, title="Pulse", data={"enabled": True})
-NAMED_ON = Plugin(n=1, title="Pulse", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
+NAMED_ON = Plugin(n=1, title="Pulse named", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
 NAMED = Plugin(n=7, title="Pulse beat", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
 NOT_A_SOURCE = "'nonsense' is neither a repository URL, an owner/repo, nor a folder on this machine"
 OWNED = Todo(n=5, title="Check the pulse", data={"plugin": "pulse", "locked": True})
@@ -84,7 +84,7 @@ class Plugins(PluginsWork, Feature):
             Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[NAMED_ON]) >> Dispatches(PluginRemoved(plugin=1)),
             Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[NAMED_ON, Plugin(n=2, title="Pulse beat", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})])
                 >> Dispatches(nothing),
-            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[ON]) >> Dispatches(nothing),
+            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[Plugin(n=1, title="Unnamed", data={"enabled": True})]) >> Dispatches(nothing),
         ])
         journal.events.handle(PluginRemoved, ClearRemovedPlugin(), expects=[
             Given(PluginRemoved(plugin=1), rows=[NAMED_ON]) >> Ran(("own work", "retire_plugin", 1)),
