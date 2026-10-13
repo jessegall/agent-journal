@@ -192,6 +192,10 @@ class Summary:
                    part_of=raw.get("part_of", ""), draft_of=raw.get("draft_of", ""), plugin=raw.get("plugin", ""), zip=raw.get("zip", ""), extras=extras,
                    stamp=stamp)
 
+    @property
+    def is_open(self) -> bool:
+        return not self.completed and not self.deleted
+
     def to_disk(self) -> dict:
         if self.damaged:
             return {"n": self.n, "damaged": True, "stamp": self.stamp}

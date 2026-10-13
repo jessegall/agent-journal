@@ -182,7 +182,7 @@ def waiting(home: Record, phone) -> list[Waiting]:
     found = []
     for kind in WAITED:
         controller = CONTROLLERS[kind](home, actor=SYSTEM)
-        for n in [row.n for row in controller.rows.summaries() if not row.deleted and not row.completed]:
+        for n in [row.n for row in controller.rows.summaries() if row.is_open]:
             row = controller.load(n)
             if reaches(home, phone, row) and owed(row):
                 found.append(Waiting(ref=row.ref, type=kind, n=row.n, title=row.title, created=row.created))

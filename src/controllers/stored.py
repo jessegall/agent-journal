@@ -580,7 +580,7 @@ class RowStore:
         held = STANDING.get(str(self.folder()))
         if held and held[0] is rows:
             return held[1]
-        standing = [row for row in rows if not row.completed and not row.deleted]
+        standing = [row for row in rows if row.is_open]
         STANDING[str(self.folder())] = (rows, standing)
         return standing
 
