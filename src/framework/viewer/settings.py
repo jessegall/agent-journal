@@ -1,12 +1,10 @@
-import features
-from framework.loaded import FEATURES
+from framework.loaded import FEATURES, settings_changed, switched
 from controllers.features import check_choices, refuse_a_secret, refuse_a_secret_that_runs_commands, refuse_unmet_needs
-from controllers.types import Features, Nudges
+from controllers.features import Features
+from controllers.nudges import Nudges
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
-from features.boards.agent_types import written
-from features.session_briefing.block import rebuild
-from framework.lanes import TheJournalRoot
+from declaring.registries import SETTINGS_APPLIED
 
 
 def renamed() -> dict:
@@ -52,12 +50,11 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             continue
         record.set_setting(key, value)
     switched = body[Record.features] if isinstance(body.get(Record.features), dict) else {}
-    features.settings_changed(record, [*body, *switched], actor)
-    if "boards" in body:
-        written(record.root.parent, record)
-    rebuild(record, TheJournalRoot(record))
+    settings_changed(record, [*body, *switched], actor)
+    for applied in SETTINGS_APPLIED.each(record):
+        applied(record)
     after = switches(record)
-    features.switched(record, before, after, actor)
+    switched(record, before, after, actor)
     aliases = renamed()
     turned = [f"{name} {'on' if on else 'off'}" for name, on in after.items() if name not in aliases and before.get(name) != on]
     if turned:

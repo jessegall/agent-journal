@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from controllers.types import CONTROLLERS
 from resources.base import Refused
-from features.open_viewer.attachments import listed_types
+from framework.viewer.attachments import listed_types
 
 
 @dataclass(frozen=True)

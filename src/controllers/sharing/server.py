@@ -318,13 +318,3 @@ def serve_on(shares, listening: socket.socket) -> None:
     server.socket = listening
     server.server_name, server.server_port = host, port
     run(shares, server)
-
-
-def main(argv: list[str]) -> None:
-    from controllers.sharing.controller import Shares
-    from framework.process import booted
-    serve(Shares(booted(Path(argv[0])), actor=SYSTEM), int(argv[1]), *argv[2:3])
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])

@@ -1,7 +1,8 @@
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Environments
+from controllers.agents import Agents
+from controllers.environments import Environments
 from resources.types import STOPPED
 from engine.record import Record
 from engine.seats import live, live_session, offline

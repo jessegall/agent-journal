@@ -8,7 +8,7 @@ from engine import bus
 from engine.package import modules
 from framework.lanes import TheJournalRoot
 from engine.stored import write_text
-from framework.loaded import FEATURES, LOADER, SEATED, SWITCHED, running  # noqa: F401 - the loader fills them; the rest of the journal reads them from there
+from framework.loaded import FEATURES, LOADER, SEATED, SWITCHED, describe, running, settings_changed, switched  # noqa: F401 - the loader fills them; the rest of the journal reads them from there
 
 CHANGE_SWITCHES = ("feature", "plugin")
 SEATED_STAMP = "features-seated"
@@ -189,24 +189,6 @@ def unload() -> None:
     SWITCHED.clear()
     SEATED.clear()
     rebooted()
-
-
-def settings_changed(record, names, actor: str) -> None:
-    """Tells each feature named that its settings changed: the one funnel the settings write and journal feature configure both use."""
-    for name in names:
-        if name in FEATURES:
-            FEATURES[name].settings_changed(record, actor)
-
-
-def switched(record, before: dict, after: dict, actor: str) -> None:
-    """Tells each feature whose switch moved which way it went."""
-    for name, on in after.items():
-        if name in FEATURES and before.get(name) != on:
-            FEATURES[name].switched(record, actor, bool(on))
-
-
-def describe() -> dict:
-    return {name: f.describe() for name, f in FEATURES.items()}
 
 
 def passed(event, record) -> None:

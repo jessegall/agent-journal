@@ -3,7 +3,7 @@ from events.agents import AgentChanged
 from expects import Answered, Dispatches, Given, Ran, Refused, answering, nothing
 from framework.base import Feature
 from framework.journal import Journal
-from features.open_viewer.commands import (Appoint, Control, Force, Pause, Relaunch, Resume, RunShell, SaveSettings, SendKeys, ShowAttachments, ShowAttachmentsPage, ShowEvents, ShowHooks, ShowLinks,
+from framework.viewer.commands import (Appoint, Control, Force, Pause, Relaunch, Resume, RunShell, SaveSettings, SendKeys, ShowAttachments, ShowAttachmentsPage, ShowEvents, ShowHooks, ShowLinks,
                                           ShowManifest, ShowOnline, ShowOptions, ShowScreen, ShowSettings, ShowSummary, ShowTranscript, WireHooks)
 from features.open_viewer.details import OpenViewerDetails
 from features.open_viewer.handlers import ShowViewerTab

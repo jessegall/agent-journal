@@ -110,3 +110,7 @@ APP_HERE = Extension()
 
 LAUNCH_ARGS: list = []
 """What each provider adds to the arguments an agent is launched with: each a function of the record, the provider and the arguments."""
+
+SETTINGS_APPLIED = Extension()
+"""What each feature runs after a batch of settings was written, with the record, by the feature's name."""
+

@@ -6,13 +6,13 @@ from agents.screen import screen_since
 from controllers.base import LAST
 from engine import typist
 from engine.seats import terminal_of
-from features.open_viewer.appoint import appoint, online
-from features.open_viewer.attachments import FILES_PAGE, FileKind, attachments, attachments_page
-from features.open_viewer.manifest import manifest
-from features.open_viewer.settings import apply, settings
+from framework.viewer.appoint import appoint, online
+from framework.viewer.attachments import FILES_PAGE, FileKind, attachments, attachments_page
+from framework.viewer.manifest import manifest
+from framework.viewer.settings import apply, settings
 from framework.parts import Command, Context
 from controllers.shared import shared
-from framework.skipping import set_skipped
+from resources.permission_prompts import set_skipped
 from overview.summary import lately_summarized
 from serving import SERVED, Providers
 from resources.base import Missing, Refused

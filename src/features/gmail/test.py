@@ -6,7 +6,7 @@ from pytest import fixture
 from framework.integrations.state import read_state
 from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER, Refused
-from features.open_viewer.settings import apply
+from framework.viewer.settings import apply
 from tests.conftest import fresh, refused
 
 PASSWORD = "abcd efgh ijkl mnop"

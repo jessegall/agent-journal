@@ -9,6 +9,7 @@ from resources.types import AgentRow, Message
 from resources.base import SYSTEM
 from declaring.registries import SHIPPED
 from controllers.types import Boards
+from features.boards.agent_types import written
 from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards
 from features.boards.listeners import SpotCardsAdded, SpotQuietFilling
@@ -75,6 +76,9 @@ class BoardsFeature(Feature):
     nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas,
                     guarantee="When a board asks for ideas, the agent is told to think up what might be wanted on it."),)
     sequences = SEQUENCES
+
+    def settings_changed(self, record, actor: str) -> None:
+        written(record.root.parent, record)
 
     def register(self, journal: Journal) -> None:
         START_PARTS.add(self, orchestration, key=ORCHESTRATION)

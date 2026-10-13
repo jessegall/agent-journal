@@ -6,7 +6,7 @@ from controllers.form_of_address.controller import Profiles, ship
 from resources.voices import PLAIN_WORDS, SHIPPED
 from features.session_briefing.start import start_block
 from resources.base import SYSTEM, USER, Refused
-from features.open_viewer.settings import apply
+from framework.viewer.settings import apply
 from tests.conftest import fresh, refused
 from tests.kit import report
 

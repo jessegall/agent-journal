@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from resources.fields import Loaded
 from framework.auto_mode import automatic
+from resources.permission_prompts import SETTING, set_skipped, skipped
 from serving import SERVED, Providers
 
-SETTING = "permission_prompts"
 
 
 @dataclass(frozen=True)
@@ -20,14 +20,6 @@ class Skipping:
 
     possible: bool = False
     running: bool = False
-
-
-def skipped(record) -> bool:
-    return bool(record.setting(SETTING, {}).get("skip", True))
-
-
-def set_skipped(record, on: bool) -> None:
-    record.change_setting(SETTING, {"skip": on})
 
 
 def typed(driver, args: list[str]) -> bool:

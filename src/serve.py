@@ -394,7 +394,7 @@ def warm_texts(root: Path) -> None:
 
 def warm_changed(root: Path) -> None:
     from commands.parser import parser
-    from features.open_viewer.manifest import manifest
+    from framework.viewer.manifest import manifest
     parser()
     manifest(root)
     warm_dashboard(root, default_env(root))

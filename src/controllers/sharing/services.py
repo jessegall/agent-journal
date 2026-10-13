@@ -56,7 +56,7 @@ def share_services(record, taken: set) -> list:
         return []
     port, blocked = allocate(root, SERVER, place.port, taken)
     taken.add(port)
-    specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("controllers.sharing.server"), str(root), str(port), place.host],
+    specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("commands.share_server"), str(root), str(port), place.host],
                          cwd=str(Path(root).parent), port=port, blocked=blocked, idle=idle, url=f"http://127.0.0.1:{port}", env={BUILD: current_build(root)},
                          **files_for(root, SERVER))]
     command = tunler()

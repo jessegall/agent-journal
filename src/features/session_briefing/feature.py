@@ -8,7 +8,9 @@ from resources.types import AgentRow, Environment
 from events.answers import Allowed, Rewritten
 from events.asking import HookResponding
 from features.session_briefing.answering import BriefTheSession
-from features.session_briefing.block import COMPACTED
+from declaring.registries import SETTINGS_APPLIED
+from features.session_briefing.block import COMPACTED, rebuild
+from framework.lanes import TheJournalRoot
 from features.session_briefing.details import SessionBriefingDetails
 from payload import HookEvent
 from events.session_briefing import SessionGreeted, StartBlockStale
@@ -36,6 +38,7 @@ class SessionBriefing(Feature):
     details = SessionBriefingDetails
 
     def register(self, journal: Journal) -> None:
+        SETTINGS_APPLIED.add(self, lambda record: rebuild(record, TheJournalRoot(record)))
         journal.events.listen(SessionStarted, SpotSessionToGreet(), expects=[
             Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SessionGreeted(agent=1, env="t").once("greeted|ready|1")),
             Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1"), Environment(n=1, title="t", data={"owner": "ticket:5"})]) >> Dispatches(nothing),

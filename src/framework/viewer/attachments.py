@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TypedDict
 from urllib.parse import quote
 
-from controllers.types import CONTROLLERS
+from controllers.base import CONTROLLERS
 from engine.paths import contained
 from resources.base import AGENT, USER
 from resources.memo import Memo

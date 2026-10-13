@@ -12,7 +12,7 @@ from framework.integrations.client import IntegrationClient
 from framework.integrations.state import IntegrationState, read_state, state_file, write_state
 from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, USER
-from features.open_viewer.settings import apply
+from framework.viewer.settings import apply
 from tests.conftest import fresh, refused
 
 

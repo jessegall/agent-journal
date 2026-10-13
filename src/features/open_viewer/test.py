@@ -389,7 +389,7 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     shutil.rmtree(viewer.marker(kept).parent)
     import serve
     monkeypatch.setattr("commands.parser.parser", lambda *given: None)
-    monkeypatch.setattr("features.open_viewer.manifest.manifest", lambda root: None)
+    monkeypatch.setattr("framework.viewer.manifest.manifest", lambda root: None)
     asked = []
     monkeypatch.setattr(serve, "dispatch", lambda method, path, *given: asked.append(path))
     serve.warm_changed(kept)
@@ -529,7 +529,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
         "the Files page asks the server for one page of one kind of files at a time, filtered and searched there, with the counts of the whole set"
     http.unanswered(record.root)
     assert not runtime.hook_failures(record.root).exists(), "with no hook failures logged there is nothing to report"
-    from features.open_viewer.manifest import built, watchable
+    from framework.viewer.manifest import built, watchable
     from framework.watched import FACTS
     assert [fact["value"] for fact in watchable(record)] == FACTS.names(record) and all("{over}" in fact["phrase"] and fact["label"] for fact in watchable(record)), \
         "the manifest offers the facts a trigger can watch, with the words to show for each, so the viewer keeps no list of its own"

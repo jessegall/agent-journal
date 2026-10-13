@@ -2,9 +2,9 @@ import re
 from dataclasses import fields
 from pathlib import Path
 
-import features
 from engine.record import Record
-from framework.phone.chat_view import TURNS
+from framework.loaded import describe
+from resources.chat_view import TURNS
 from framework.format import catalogue
 from declaring import groups
 from controllers.base import actions
@@ -15,7 +15,7 @@ from resources.types import priority
 from engine import runtime
 from engine.version import version
 from engine.package import data
-from features.open_viewer.attachments import listed_types
+from framework.viewer.attachments import listed_types
 from framework.watched import FACTS
 from controllers.nudges import Nudges
 from typing import TypedDict
@@ -80,7 +80,7 @@ def manifest(root: Path) -> Manifest:
         "priority": priority(),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "features": catalogue(features.describe(), record),
+        "features": catalogue(describe(), record),
         "groups": groups.describe(),
         "models": default_models(),
         "searchable": listed_types(),

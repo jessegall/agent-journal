@@ -192,7 +192,7 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
     monkeypatch.setattr(sys, "argv", ["server", str(record.root), "0"])
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        runpy.run_module("controllers.sharing.server", run_name="__main__")
+        runpy.run_module("commands.share_server", run_name="__main__")
     monkeypatch.undo()
     try:
         assert post({"Content-Type": "text/plain"})[0] == 403, "a plain form post is refused"
