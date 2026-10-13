@@ -32,6 +32,8 @@ REPRODUCE = Template(n=2, title="Bug fix", brief="Reproduce it first.", sections
 FOR_PLANS = Template(n=2, title="Bug fix", brief="Reproduce it first.", data={"applies_to": ["plan"]})
 CREATING = {"actor": AGENT}
 TELL = TemplateToRead(agent=1, n=2, title="Bug fix", brief="Reproduce it first, then fix it.")
+GONE = Todo(n=5, title="Fix the crash", data={"template": 9})
+PADDED = Template(n=2, title="Bug fix", brief="  Reproduce it first.\n ")
 
 
 def writing(**fields) -> RowWriting:
@@ -63,6 +65,8 @@ class TemplatesFeature(Feature):
             created(Todo(n=5, title="Fix the crash", data={"template": 2}))
                 >> Dispatches(TemplateChosen(type="todo", n=5, ref=REPRODUCE.ref, sections=(("Steps", "Reproduce it in the app"),))),
             created(Todo(n=5, title="Fix the crash")) >> Dispatches(nothing),
+            Given(ResourceCreated(n=5, type="todo", action="created", actor=USER), rows=[BLANK, TEMPLATED])
+                >> Dispatches(TemplateChosen(type="todo", n=5, ref=BLANK.ref, sections=())),
         ])
         journal.events.handle(TemplateChosen, StartFromTheTemplate(), expects=[
             Given(TemplateChosen(type="todo", n=5, ref=REPRODUCE.ref, sections=(("Steps", "Reproduce it in the viewer"),)), rows=[REPRODUCE, Todo(n=5, title="Fix the crash")])
@@ -78,11 +82,16 @@ class TemplatesFeature(Feature):
             Given(STARTED, rows=[BUG_FIX, TEMPLATED, work_on(todo=0), AGENT_ROW]) >> Dispatches(nothing),
             Given(STARTED, rows=[BLANK, TEMPLATED, work_on(), AGENT_ROW]) >> Dispatches(nothing),
             Given(STARTED, rows=[BUG_FIX, TEMPLATED, work_on()]) >> Dispatches(nothing),
+            Given(STARTED, rows=[BUG_FIX, GONE, work_on(), AGENT_ROW]) >> Dispatches(nothing),
+            Given(STARTED, rows=[PADDED, TEMPLATED, work_on(), AGENT_ROW]) >> Dispatches(TemplateToRead(agent=1, n=2, title="Bug fix", brief="Reproduce it first.")),
         ])
         journal.events.listen(SessionStarted, SpotSessionOnATemplate(), expects=[
             Given(SessionStarted(agent=1), rows=[BUG_FIX, TEMPLATED, work_on(), AGENT_ROW]) >> Dispatches(TELL),
             Given(SessionStarted(agent=1), rows=[BUG_FIX, TEMPLATED, AGENT_ROW]) >> Dispatches(nothing),
             Given(SessionStarted(agent=1), rows=[BUG_FIX, Todo(n=5, title="Fix the crash"), work_on(), AGENT_ROW]) >> Dispatches(nothing),
+            Given(SessionStarted(agent=1), rows=[BUG_FIX, GONE, work_on(), AGENT_ROW]) >> Dispatches(nothing),
+            Given(SessionStarted(agent=1), rows=[BLANK, TEMPLATED, work_on(), AGENT_ROW]) >> Dispatches(nothing),
+            Given(SessionStarted(agent=1), rows=[PADDED, TEMPLATED, work_on(), AGENT_ROW]) >> Dispatches(TemplateToRead(agent=1, n=2, title="Bug fix", brief="Reproduce it first.")),
         ])
         journal.events.handle(TemplateToRead, TellTheInstructions(), expects=[
             Given(TELL, rows=[AGENT_ROW]) >> Nudged("instructions", n=2, title="Bug fix", brief="Reproduce it first, then fix it."),
