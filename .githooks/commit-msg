@@ -1,0 +1,16 @@
+#!/bin/sh
+# Refuses a commit whose message or added changelog lines name a word from the private list,
+# which lives outside the repository so the list itself is never published.
+set -eu
+
+words="${AGENT_JOURNAL_PRIVATE_WORDS:-$HOME/.config/agent-journal/private-words}"
+[ -s "$words" ] || exit 0
+
+root=$(git rev-parse --show-toplevel)
+added=$(git -C "$root" diff --cached -U0 -- src/CHANGELOG.md | sed -n 's/^+//p' | grep -v '^++ ' || true)
+found=$(printf '%s\n%s\n' "$(cat "$1")" "$added" | grep -ioF -f "$words" | sort -fu | tr '\n' ' ' || true)
+
+[ -z "$found" ] && exit 0
+echo "commit refused: the message or the changelog names a private word: $found" >&2
+echo "this repository is public; reword it (the list is $words)" >&2
+exit 1
