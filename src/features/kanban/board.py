@@ -2,8 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import TypedDict
 
-from controllers.stored import PAGE, cursor_of, cursor_text, paged
-from controllers.todos import column_order
+from resources.paging import PAGE, column_order, cursor_of, cursor_text, paged
 from resources.shapes import position_of
 from framework.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of

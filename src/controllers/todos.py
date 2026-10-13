@@ -7,6 +7,8 @@ from engine.record import Record
 from controllers.prioritised import Prioritised
 from resources import types
 from resources.base import SYSTEM, Missing, Refused
+from resources.keys import WAITS_FOR  # noqa: F401
+from resources.paging import column_order
 from resources.shapes import CHANGE, COMMIT, LEVELS, rank_before
 from controllers.questions import Questions
 from controllers.marks import action
@@ -23,14 +25,6 @@ def task_state(row, works: dict) -> str:
     if row.n in works:
         return "doing"
     return "waiting"
-
-
-def column_order(todo) -> tuple:
-    """Where a to-do stands in its column: higher priority first, then the place it was dropped at, then its number; the key a board pages its lanes by."""
-    return (-int(todo.priority), todo.position, todo.n)
-
-
-from resources.keys import WAITS_FOR  # noqa: F401
 
 
 class Todos(Prioritised, Controller):

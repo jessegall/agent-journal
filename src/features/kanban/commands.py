@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from controllers.stored import PAGE
+from resources.paging import PAGE
 
 from features.kanban.board import build, card_of, main_agent, sources_of
 from features.kanban.shifts import shift
