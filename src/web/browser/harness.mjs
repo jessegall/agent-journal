@@ -1,7 +1,7 @@
 import {execFileSync, spawnSync} from "node:child_process";
 import {chromium} from "playwright-core";
-import {cpus, loadavg, tmpdir} from "node:os";
-import {join} from "node:path";
+import {cpus, loadavg} from "node:os";
+import {dirname, join} from "node:path";
 
 const FIRST_CHOICE_WAIT = 8000;
 const LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
@@ -47,7 +47,7 @@ export async function runScenarios(url, scenarios, {voice = true, device = {}} =
             try {
                 await scenario(page, url);
             } catch (error) {
-                const picture = join(tmpdir(), `scenario-${Date.now()}.png`);
+                const picture = join(scratchFolder(), `scenario-${Date.now()}.png`);
                 await page.screenshot({path: picture}).catch(() => {});
                 failures[name] = `${failureOf(error)} (the page at that moment: ${picture})`;
             }
@@ -83,6 +83,9 @@ export function journal(...words) {
 }
 
 export const numberOf = (output) => Number(output.match(/^[a-z_]+ (\d+)$/m)[1]);
+
+// the project folder of the scratch journal, which the run that made it removes with it
+export const scratchFolder = () => dirname(process.env.JOURNAL_SCRATCH_ROOT);
 
 export const shot = (page, name) => (process.env.SHOT_DIR ? page.screenshot({path: `${process.env.SHOT_DIR}/${name}.png`}) : null);
 

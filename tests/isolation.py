@@ -5,6 +5,7 @@ import signal
 import socket
 import sys
 import tempfile
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -15,6 +16,11 @@ HOME = "AGENT_JOURNAL_HOME"
 OFFLINE = REPO / "tests" / "fixtures" / "offline-bin"
 BAND = 6
 KEPT_FOLDERS = 3
+KEPT = "agent-journal-kept"
+HELD_BY = "held.lock"
+UNHELD_FOR = 3600
+"""How old a run folder with no lock must be before it is taken for left behind: one made by a run of the code before runs held theirs."""
+HELD = None
 SERIAL = {
     "tests/test_viewer_port.py": "viewer",
     "tests/test_hook_server.py": "viewer",
@@ -68,7 +74,7 @@ def shared(name: str, make: Callable[[Path], None]) -> Path:
 
 def kept(name: str, make: Callable[[Path], None]) -> Path:
     """A folder made once for everything named alike, across runs, so a run on unchanged code finds it already made."""
-    folder = Path(tempfile.gettempdir()) / "agent-journal-kept"
+    folder = Path(tempfile.gettempdir()) / KEPT
     where = made_once(folder, name, make)
     os.utime(where)
     for old in sorted((f for f in folder.iterdir() if f.is_dir()), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_FOLDERS:]:
@@ -130,6 +136,41 @@ def release(port: int) -> None:
 
 def band(size: int = BAND) -> list[int]:
     return [reserve() for _ in range(size)]
+
+
+def hold() -> None:
+    """The run's folder is held for as long as the process that started the run lives, so a run that starts later knows it from one a killed run left behind."""
+    global HELD
+    HELD = open(base() / HELD_BY, "w")
+    fcntl.flock(HELD, fcntl.LOCK_EX)
+
+
+def sweep_left_behind() -> None:
+    """Removes the folders of runs that ended without removing their own, killed or timed out, and the ones older runs left before they were held."""
+    for folder in Path(tempfile.gettempdir()).glob("agent-journal-*"):
+        if folder.name == KEPT or folder == base() or not folder.is_dir():
+            continue
+        if (folder / HELD_BY).is_file() and not unheld(folder / HELD_BY):
+            continue
+        if not (folder / HELD_BY).is_file() and time.time() - folder.stat().st_mtime < UNHELD_FOR:
+            continue
+        shutil.rmtree(folder, ignore_errors=True)
+    for left in (*Path(tempfile.gettempdir()).glob("scenario-*.png"), *Path(tempfile.gettempdir()).glob("shown-*")):
+        if time.time() - left.stat().st_mtime < UNHELD_FOR:
+            continue
+        if left.is_dir():
+            shutil.rmtree(left, ignore_errors=True)
+            continue
+        left.unlink(missing_ok=True)
+
+
+def unheld(lock: Path) -> bool:
+    with open(lock, "a") as probe:
+        try:
+            fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return False
+        return True
 
 
 def sweep() -> None:

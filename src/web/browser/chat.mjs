@@ -1,7 +1,6 @@
 import {mkdtempSync, writeFileSync} from "node:fs";
-import {tmpdir} from "node:os";
 import {join} from "node:path";
-import {journal, numberOf, reply, runScenarios, shot} from "./harness.mjs";
+import {journal, numberOf, reply, runScenarios, scratchFolder, shot} from "./harness.mjs";
 
 const SETTLE = 1500;
 const MESSAGES = /\/api\/main\/message(\?|$)/;
@@ -158,7 +157,7 @@ await runScenarios(process.argv[2], {
         await page.screenshot({path: `${process.env.SHOT_DIR || "/tmp"}/pasted-images.png`});
     },
     async "an agent's line naming an attachment shows that picture as a card in the chat"(page, url) {
-        const folder = mkdtempSync(join(tmpdir(), "shown-"));
+        const folder = mkdtempSync(join(scratchFolder(), "shown-"));
         const picture = join(folder, "IMG_1201.png");
         writeFileSync(picture, Buffer.from(PIXEL, "base64"));
         const n = numberOf(journal("message", "create", `screen ${Date.now()}`, "--brief", "this one"));

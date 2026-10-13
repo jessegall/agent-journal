@@ -101,9 +101,11 @@ def viewer(root: Path) -> str:
 def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -> str:
     live = Path(live).resolve()
     scratch = copy(live)
-    with folds_in(scratch.parent / "folds"):
-        rows = timings(live, scratch, env, runs, url)
-    shutil.rmtree(scratch.parent, ignore_errors=True)
+    try:
+        with folds_in(scratch.parent / "folds"):
+            rows = timings(live, scratch, env, runs, url)
+    finally:
+        shutil.rmtree(scratch.parent, ignore_errors=True)
     rows["runtime/ MB"] = sum(f.stat().st_size for f in (live / "runtime").rglob("*") if f.is_file()) / 1e6
     if out:
         write_text(Path(out), json.dumps({"at": time.time(), "runs": runs, "median_ms": rows}, indent=2))

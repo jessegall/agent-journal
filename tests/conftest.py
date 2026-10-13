@@ -105,6 +105,9 @@ LIVE_RUNTIME = isolation.REPO / ".journal" / "runtime"
 
 
 def pytest_sessionstart(session):
+    if isolation.worker() == "master":
+        isolation.hold()
+        isolation.sweep_left_behind()
     if isolation.worker() == "master" and LIVE_RUNTIME.is_dir():
         (LIVE_RUNTIME / TESTS_RUNNING).write_text(str(os.getpid()))
 
