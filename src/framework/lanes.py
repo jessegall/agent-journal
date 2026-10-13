@@ -31,7 +31,7 @@ from framework.loaded import FEATURES
 from framework.parts import Marks as AgentMarks, Speaker
 from engine import gates
 from engine.state import State
-from engine.stored import write_text
+from engine.stored import read_json, write_json, write_text
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
 from receiving.asking import answered
@@ -236,6 +236,13 @@ class TheJournalRoot:
 
     def read(self, path: str) -> str:
         return (self.root / path).read_text()
+
+    def read_json(self, path: str, kind: type, default):
+        """The JSON a file holds when it is of that kind, else the default."""
+        return read_json(self.root / path, kind, default)
+
+    def write_json(self, path: str, data, indent: int | None = None) -> None:
+        write_json(self.root / path, data, indent)
 
     def write(self, path: str, text: str) -> None:
         write_text(self.root / path, text)
@@ -452,6 +459,11 @@ class JournalCommands:
         code = command_line().run(["--root", str(self.record.root), "--env", self.record.env, "--session", self.agent.title, "--as", AGENT, *shlex.split(command)],
                                   out=out, err=err)
         return Exited(code, (err.getvalue() or out.getvalue() if code else out.getvalue()).strip())
+
+
+def served(record, kind: type, feature: str):
+    """A service of the journal for code that runs outside a lane, such as a command, as a receiver of that feature is handed it."""
+    return Services(lane_services(record, lambda: None)).given(feature, feature, {"service": kind})["service"]
 
 
 def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:

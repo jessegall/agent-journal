@@ -302,6 +302,12 @@ class JournalRoot(Asked):
     def read(self, path: str) -> str:
         return self.named(("read", path), "")
 
+    def read_json(self, path: str, kind: type, default):
+        return self.named(("read json", path), default)
+
+    def write_json(self, path: str, data, indent: int | None = None) -> None:
+        self.seen.ran.append(("write json", path, data))
+
     def shared_state(self, name: str):
         return Held(self.named(("state", name), {}))
 

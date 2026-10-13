@@ -20,7 +20,7 @@ def test_the_other_hooks_are_set_aside_and_put_back_and_skills_stay(tmp_path, mo
     assert json.loads(settings.read_text()) == {"model": "opus", "hooks": {"Stop": [{"hooks": [{"type": "command", "command": JOURNAL}]}]}}, \
         "only the journal's hooks stay, the rest of the file is untouched"
     assert [p.name for p in (project / ".claude" / "skills").iterdir()] == ["graphify"], "skills are never moved"
-    assert others(project, "claude") == [], "nothing else is left to set aside"
+    assert others(record, project, "claude") == [], "nothing else is left to set aside"
 
     from engine.record import Record
     put_back(Record(record.root, "another"))
@@ -46,8 +46,8 @@ def test_putting_back_restores_only_the_hooks_and_keeps_what_changed_meanwhile(t
     settings.unlink()
     put_back(record)
     assert json.loads(settings.read_text())["hooks"] == hooks, "a file deleted meanwhile comes back with its hooks"
-    from features.clean_slate.slate import restore, slate_of
-    restore([{"to": str(tmp_path / "never-kept"), "from": str(tmp_path / "never-restored")}])
+    from features.clean_slate.slate import files, restore, slate_of
+    restore([{"to": str(tmp_path / "never-kept"), "from": str(tmp_path / "never-restored")}], files(record))
     assert (not (tmp_path / "never-restored").exists(), slate_of(record)) == (True, True), "something that was set aside and is gone is not put back, and setting hooks aside is on until it is switched off"
 
 
@@ -153,7 +153,7 @@ def test_codex_is_asked_about_hooks_another_session_already_set_aside_and_no_put
     set_aside(record, project, "claude")
     Sessions(record.root).bind("other", record.env, pid=os.getpid(), provider="claude")
     set_aside(record, project, "codex")
-    assert others(project, "codex") == [], "hooks a live Claude session set aside do not keep Codex's own from being set aside"
+    assert others(record, project, "codex") == [], "hooks a live Claude session set aside do not keep Codex's own from being set aside"
 
     assert asked_slate(record, project, "codex", ask=lambda _: "1", answering=True), \
         "the menu asks although the hook file holds only the journal's hooks, because a live session set the others aside"

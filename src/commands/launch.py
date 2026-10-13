@@ -102,7 +102,7 @@ def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=
     from framework.loaded import FEATURES
     from features.clean_slate.slate import held, others, put_back_held, state
     answering = someone_can_answer() if answering is None else answering
-    hooks, aside = others(project, agent), [Path(m["from"]) for m in held(record, project, agent)]
+    hooks, aside = others(record, project, agent), [Path(m["from"]) for m in held(record, project, agent)]
     if not answering or not FEATURES["clean_slate"].enabled(record) or not (hooks or aside):
         return False
     last = state(record).get("last", True)
