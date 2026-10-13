@@ -23,7 +23,12 @@ def is_bytecode(path: Path) -> bool:
 
 
 def managed_paths(project: Path, root: Path) -> set[Path]:
-    paths = {path for path in (root / SRC).rglob("*") if plain_file(path) and not is_bytecode(path)}
+    return {path for path in (root / SRC).rglob("*") if plain_file(path) and not is_bytecode(path)} | written_into_the_project(project)
+
+
+def written_into_the_project(project: Path) -> set[Path]:
+    """The files the journal writes into the project beside its own code: its skills, agent types, hook settings and instruction files."""
+    paths = set()
     for home in (".agents/skills", ".claude/skills"):
         folder = project / home
         paths.update(path for skill in folder.glob("journal*") if skill.is_dir() and not skill.is_symlink()
@@ -100,16 +105,13 @@ def changed_managed(project: Path, root: Path) -> list[Path]:
     if not target.is_file() or upgrade_mark(root).is_file():
         return []
     remembered = json.loads(target.read_text())
+    # the journal's own code is replaced whole by an upgrade, so a difference there is no edit of the user's to hold it for
+    code = f"{root / SRC}/"
     changed = {project / name for name, digest in remembered.items()
-               if not is_bytecode(Path(name)) and not own_code(root, project / name) and (not (project / name).is_file() or managed_hash(project / name) != digest)}
-    changed.update(path for path in managed_paths(project, root)
-                   if path.relative_to(project).as_posix() not in remembered and not own_code(root, path) and managed_bytes(path))
+               if not f"{project}/{name}".startswith(code) and not is_bytecode(Path(name)) and (not (project / name).is_file() or managed_hash(project / name) != digest)}
+    changed.update(path for path in written_into_the_project(project)
+                   if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
     return sorted(changed)
-
-
-def own_code(root: Path, path: Path) -> bool:
-    """A file of the journal's own code folder: an upgrade replaces it whole, so a difference there is no edit of the user's to hold the upgrade for."""
-    return (root / SRC) in path.parents
 
 
 def changed_message(project: Path, changed: list[Path]) -> str:
