@@ -5,7 +5,7 @@ from receiving import Handler
 from resources.base import USER
 from resources.checks import Check
 from resources.types import AgentRow, Notification
-from serving import Chat, Rows
+from serving import Chat, Elsewhere, Rows
 
 
 def mark(agents: Rows[AgentRow], about: str, label: str, **card) -> None:
@@ -28,17 +28,29 @@ class StartDueCheck(Handler[CheckDue]):
 
 
 class SettlePassingCheck(Handler[CheckPassedAgain]):
-    def handle(self, event: CheckPassedAgain, notifications: Rows[Notification], agents: Rows[AgentRow]) -> list[Fact]:
-        notifications.complete(event.notification, how="the check passes again")
+    def handle(self, event: CheckPassedAgain, elsewhere: Elsewhere) -> list[Fact]:
+        here = elsewhere.here()
+        here.clear(here.rows(Notification).load(event.notification), "the check passes again")
+        return []
+
+
+class MarkPassingCheck(Handler[CheckPassedAgain]):
+    def handle(self, event: CheckPassedAgain, agents: Rows[AgentRow]) -> list[Fact]:
         mark(agents, event.about, f"Check {event.check} passes again", tone="good", key=f"check:{event.check}:cleared:{event.notification}")
         return []
 
 
 class FileFailingCheck(Handler[CheckFailed]):
-    def handle(self, event: CheckFailed, notifications: Rows[Notification], agents: Rows[AgentRow], chat: Chat) -> list[Fact]:
+    def handle(self, event: CheckFailed, elsewhere: Elsewhere) -> list[Fact]:
+        here = elsewhere.here()
         for stale in event.stale:
-            notifications.complete(stale, how="the check reports something else now")
-        chat.notify("failing", title=event.title, output=event.output, about=event.about, reported=event.reported)
+            here.clear(here.rows(Notification).load(stale), "the check reports something else now")
+        here.notify("failing", title=event.title, output=event.output, about=event.about, reported=event.reported)
+        return []
+
+
+class TellAgentOfFailingCheck(Handler[CheckFailed]):
+    def handle(self, event: CheckFailed, agents: Rows[AgentRow], chat: Chat) -> list[Fact]:
         mark(agents, event.about, f"Check {event.check} failed:", name=event.headline, tone="danger", key=f"check:{event.check}:{event.reported}")
         chat.say("failed", title=event.title, n=event.check)
         return []

@@ -8,7 +8,7 @@ from resources.base import SYSTEM
 from resources.types import AgentRow, Notification
 from controllers.types import Checks
 from features.checks.details import ChecksDetails
-from features.checks.handlers import FileFailingCheck, ForgetDeadRuns, SettlePassingCheck, ShowTestsFinished, ShowTestsRunning, StartDueCheck
+from features.checks.handlers import FileFailingCheck, ForgetDeadRuns, MarkPassingCheck, SettlePassingCheck, ShowTestsFinished, ShowTestsRunning, StartDueCheck, TellAgentOfFailingCheck
 from features.checks.listeners import SpotCheckResult, SpotDueChecks, SpotTestRuns
 from events.checks import CheckDue, CheckFailed, CheckPassedAgain, CheckUpdated, TestsFinished, TestsRunning
 from framework.journal import Journal
@@ -64,13 +64,21 @@ class ChecksFeature(Feature):
             Given(CheckUpdated(n=1, type="check", action="updated", actor=SYSTEM, ran=False), rows=[lint(FAILING, ok=False), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(CheckFailed, FileFailingCheck(), expects=[
-            Given(failed(FAILING, ()), rows=[lint(FAILING, ok=False), AGENT_ROW]) >> Wrote(Notification(title=f"check 1 failed - {FAILING}")) & Nudged("failed"),
-            Given(failed("E999 syntax error", (3,)), rows=[lint("E999 syntax error", ok=False), filed(FAILING), AGENT_ROW])
+            Given(failed(FAILING, ()), rows=[lint(FAILING, ok=False)]) >> Wrote(Notification(title=f"check 1 failed - {FAILING}", data={"label": "Check failed"})),
+            Given(failed("E999 syntax error", (3,)), rows=[lint("E999 syntax error", ok=False), filed(FAILING)])
                 >> Updated(Notification(n=3), outcome="the check reports something else now") & Wrote(Notification(title="check 1 failed - E999 syntax error")),
         ])
+        journal.events.handle(CheckFailed, TellAgentOfFailingCheck(), expects=[
+            Given(failed(FAILING, ()), rows=[lint(FAILING, ok=False), AGENT_ROW])
+                >> Nudged("failed") & Updated(AgentRow(n=1), cards=[{"label": "Check 1 failed:", "name": FAILING, "row": "check:1", "side": "user"}]),
+        ])
         journal.events.handle(CheckPassedAgain, SettlePassingCheck(), expects=[
-            Given(CheckPassedAgain(check=1, about="check:1", notification=3), rows=[lint("all good", ok=True), filed(FAILING), AGENT_ROW])
+            Given(CheckPassedAgain(check=1, about="check:1", notification=3), rows=[lint("all good", ok=True), filed(FAILING)])
                 >> Updated(Notification(n=3), outcome="the check passes again"),
+        ])
+        journal.events.handle(CheckPassedAgain, MarkPassingCheck(), expects=[
+            Given(CheckPassedAgain(check=1, about="check:1", notification=3), rows=[lint("all good", ok=True), AGENT_ROW])
+                >> Updated(AgentRow(n=1), cards=[{"label": "Check 1 passes again", "row": "check:1", "side": "user"}]),
         ])
         journal.events.listen(AgentReported, SpotTestRuns(), expects=[
             Given(AgentReported(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
