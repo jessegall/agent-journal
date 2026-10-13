@@ -53,6 +53,19 @@ await runScenarios(process.argv[2], {
             throw new Error(`the switch read ${before} before the change and was not ${changed} after a reload`);
         });
     },
+    async "what a feature promises is read in words under its help on the settings page"(page, url) {
+        await page.goto(`${url}#/main/settings?q=Questions`);
+        const how = page.getByRole("button", {name: "How it works"});
+        await how.first().waitFor({timeout: 30000});
+        for (let at = 0; at < (await how.count()); at++) {
+            await how.nth(at).click();
+            if (await page.getByText("What the journal promises").count()) break;
+        }
+        await page.getByText("What the journal promises").first().waitFor({timeout: 8000});
+        await page.getByText("ask in the journal: given tool call asked").first().waitFor({timeout: 8000}).catch(() => {
+            throw new Error("the settings page shows no line of what the question feature promises about the question tool");
+        });
+    },
     async "a remembered tab that no longer exists opens the first tab instead of an empty page"(page, url) {
         await page.goto(`${url}#/main/settings`);
         await page.evaluate(() => localStorage.setItem("journal.settings.tab", JSON.stringify("tunnel")));

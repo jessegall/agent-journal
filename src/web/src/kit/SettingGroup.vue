@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import {useToggledSet} from "../composables/toggledSet.js";
 import Chip from "./Chip.vue";
+import PromiseList from "./PromiseList.vue";
 import SettingControl from "./SettingControl.vue";
 import SettingHowButton from "./SettingHowButton.vue";
 import Switch from "./Switch.vue";
@@ -49,6 +50,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
         </template>
         <template v-if="opened.has(group.key)">
             <TextDisplay class="setting-help" :text="group.explains" />
+            <PromiseList :lines="group.promises" />
         </template>
         <slot name="before" />
         <template v-if="!bare">
@@ -69,6 +71,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
                         </SettingControl>
                         <template v-if="opened.has(item.key)">
                             <TextDisplay class="setting-help inside" :text="item.explains" />
+                            <PromiseList :lines="item.promises" />
                         </template>
                         <template v-for="row in item.rows" :key="row.key">
                             <SettingControl
@@ -97,6 +100,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
                         </SettingControl>
                         <template v-if="opened.has(item.key) && item.explains">
                             <TextDisplay class="setting-help inside" :text="item.explains" />
+                            <PromiseList :lines="item.promises" />
                         </template>
                     </template>
                 </template>
@@ -114,6 +118,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
                     <template v-for="item in group.always" :key="`${item.key}:explains`">
                         <template v-if="opened.has(item.key)">
                             <TextDisplay class="setting-help inside" :text="item.explains" />
+                            <PromiseList :lines="item.promises" />
                         </template>
                     </template>
                 </template>

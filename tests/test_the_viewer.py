@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import socket
@@ -84,6 +85,13 @@ def test_the_viewers_own_code_passes_its_unit_tests():
 def test_the_viewer_answers_every_state_in_a_browser(shared_browser, scratch_viewer, script):
     shared_browser.play(f"browser/{script}.mjs", scratch_viewer.url, JOURNAL_SCRATCH_ROOT=str(scratch_viewer.root), JOURNAL_SCRATCH_URL=scratch_viewer.url,
                         JOURNAL_PYTHON=sys.executable)
+
+
+def test_the_viewer_is_given_what_each_feature_promises_in_words(scratch_viewer):
+    manifest = json.loads(urllib.request.urlopen(f"{scratch_viewer.url}api/manifest", timeout=10).read())
+    promises = manifest["features"]["ask_questions"]["promises"]
+    assert any(line.startswith("ask in the journal: given tool call asked") and "refuses it" in line for line in promises), \
+        "the Settings page is given each feature's expectations as 'given ..., then ...' lines, said from the expectations themselves"
 
 
 @needs_node_modules

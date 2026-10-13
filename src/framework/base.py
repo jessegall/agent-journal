@@ -218,4 +218,9 @@ class Feature(ABC):
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
                 "nudges": {nudge.line: nudge.describe() for nudge in self.nudges},
-                "settings": [s.describe() for s in self.settings]}
+                "settings": [s.describe() for s in self.settings], "promises": self.promises()}
+
+    def promises(self) -> list[str]:
+        """What this feature's registrations promise, one line each, as the Settings page shows them."""
+        from framework.expectations import words_of
+        return words_of(self.name)

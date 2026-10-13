@@ -98,8 +98,15 @@ def reaching(f) -> str:
     return f"These reach your subagents too: {', '.join(skill_line)}." if skill_line else "Its lines are for the main agent only; none reach a subagent."
 
 
+def promised(f) -> str:
+    """What the journal does about the agent, as the feature's own expectations say it: the contract the suite plays, in words."""
+    from framework.expectations import words_of
+    lines = words_of(f.name, agent_only=True)
+    return "\n### What the journal does\n\n" + "\n".join(f"- {line}" for line in lines) + "\n" if lines else ""
+
+
 def folded_parts(folded: list) -> str:
-    return "".join(f"\n## {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n" for f in folded)
+    return "".join(f"\n## {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n{promised(f)}" for f in folded)
 
 
 def moments(whens: list[str]) -> str:
@@ -117,7 +124,7 @@ def feature_skill(f) -> str:
     when = moments([f.when, *(g.when for g in folded)])
     loaded = f"Load it when {when}. {sentence(f.abstract)}" if when else f"{sentence(f.abstract)} It runs by itself; load it to read how it works."
     return (head(f.name, loaded, [*f.keywords, *(w for g in folded for w in g.keywords)], nouns([f.name, *(g.name for g in folded)]))
-            + f"\n# {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
+            + f"\n# {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n{promised(f)}{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
 
 
 def subject_skill(source: Path) -> str:
