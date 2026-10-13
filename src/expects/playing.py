@@ -95,6 +95,9 @@ class Processes(Asked):
     def alive(self, pid) -> bool:
         return self.answers.answers.get(("alive", pid), False)
 
+    def launched_pid(self, root, name: str) -> int:
+        return self.answers.answers.get(("launched", name), 0)
+
     def start_agent(self, record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind) -> str:
         """An agent started in a new environment, remembered by its name and what it was started with, and answered by it."""
         started = ("start agent", name, owner, prompt)

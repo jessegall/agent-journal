@@ -12,6 +12,7 @@ from engine import bus
 from events.answers import Refused as Refusal
 from events.asking import RowWriting
 from declaring.registries import SAVE_CHECKS, SAVE_MARKS, SAVE_REWRITES
+from resources.pressed import PRESSED, UNCHANGED_SINCE, Pressed  # noqa: F401
 from resources.fields import Loaded
 from engine.markers import plain
 from engine.offline import queue
@@ -76,7 +77,6 @@ def command_held(type_: str, name: str):
     controller = CONTROLLERS.get(type_)
     names = controller.resource.command_names if controller else {}
     return getattr(controller, next((method for method, word in names.items() if word == name), name), None)
-UNCHANGED_SINCE = "unchanged_since"
 
 
 @dataclass(frozen=True)
@@ -88,25 +88,6 @@ class Sender:
     environments: frozenset[str]
 
 
-@dataclass(frozen=True)
-class Pressed:
-    """The row a call writes to, and when it last changed as the person pressing it saw it."""
-
-    type: str = ""
-    n: int = 0
-    updated: float = 0.0
-
-    @classmethod
-    def of(cls, type: str, n, given: dict) -> "Pressed":
-        if UNCHANGED_SINCE not in given or n is None:
-            return cls()
-        return cls(type, int(n), float(given[UNCHANGED_SINCE]))
-
-    def is_row(self, type: str, n: int) -> bool:
-        return (self.type, self.n) == (type, n)
-
-
-PRESSED: ContextVar[Pressed] = ContextVar("pressed", default=Pressed())
 SENDER: ContextVar["Sender | None"] = ContextVar("sender", default=None)
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}

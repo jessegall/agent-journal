@@ -557,10 +557,12 @@ def settle_agents(root: Path) -> None:
     try:
         from engine.handover import after_restore
         from engine.record import Record
+        from engine.sessions import Sessions
         from features.machines.restart import after_restart
+        from serving import SERVED, Processes
         after_restore(root)
         for record in Record.every(root):
-            after_restart(record)
+            after_restart(record, Sessions(root), SERVED.given(Processes))
     except Exception:
         traceback.print_exc()
 

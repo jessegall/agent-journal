@@ -1,4 +1,4 @@
-from controllers.base import PRESSED, Pressed
+from resources.pressed import PRESSED, Pressed
 from resources.base import Resource, Stale
 
 

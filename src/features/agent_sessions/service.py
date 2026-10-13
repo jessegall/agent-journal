@@ -24,6 +24,12 @@ class TheProcesses:
         from engine.sessions import alive
         return alive(pid)
 
+    def launched_pid(self, root: Path, name: str) -> int:
+        """The process the journal launched for that session, or none."""
+        from agents.terminal import Launched
+        from engine.seats import terminal_of
+        return Launched.read(root, terminal_of(root, name) or name).pid
+
     def leaves(self, pid: int) -> list[str]:
         """The commands still running at the ends of the process tree under pid, the newest last; none when the tree cannot be read."""
         if not pid:
