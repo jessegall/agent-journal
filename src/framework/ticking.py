@@ -212,8 +212,11 @@ def ordered_once_the_features_have_registered() -> None:
 
 
 def no_feature_reaches_outside() -> None:
-    """Refuses, once at the server's boot, a feature that names a package outside what a feature may; once, since reading every feature's source takes most of a second."""
-    walked_imports(Path(__file__).resolve().parents[1], refusing=True)
+    """Refuses, once at the server's boot, a feature that names a package outside what a feature may. It walks the source where the journal runs from its folder; an installed build runs from its archive, which was walked before it was released."""
+    source = Path(__file__).resolve().parents[1]
+    if not source.is_dir():
+        return
+    walked_imports(source, refusing=True)
 
 
 def dispatched_on_a_lane() -> None:
