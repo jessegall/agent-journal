@@ -45,6 +45,14 @@ class Speaker:
         """A line the user reads in the notices, about this agent's environment."""
         return self.feature.journal.notice(self.record, line, **values)
 
+    def notify(self, line: str, **values):
+        """A line filed as a notification the user and the agent both see, until it is cleared."""
+        return self.feature.journal.notify(self.record, line, **values)
+
+    def clear(self, row, how: str) -> None:
+        """Closes a notification or notice this feature filed, saying how it was settled."""
+        self.feature.journal.clear(self.record, row, how)
+
     def remind(self, line: str, **values):
         return self.feature.journal.remind(self.record, self.row, line, **values)
 

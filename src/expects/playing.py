@@ -112,6 +112,12 @@ class Files(Asked):
         prefix = folder.rstrip("/") + "/"
         return sorted({path[len(prefix):].split("/")[0] for path in self.answers.answers if path.startswith(prefix)})
 
+    def matching(self, name: str) -> list[str]:
+        return sorted(path for path in self.answers.answers if f"/{path}".endswith(f"/{name.lstrip('./')}"))
+
+    def is_indexed(self) -> bool:
+        return True
+
     def write(self, path: str, text: str) -> None:
         self.seen.wrote.append((path, text))
 

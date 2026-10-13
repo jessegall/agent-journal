@@ -11,7 +11,7 @@ from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from engine import triggering
-from engine import seats
+from engine import project_files, seats
 from engine.command_line import command_line
 from engine.record import Record
 from engine.sessions import Sessions as TheSessions
@@ -114,6 +114,21 @@ class Environment:
             raise NobodyToSpeakTo.of(f"environment {self.record.env}")
         return Speaker(self.feature, self.record, agent)
 
+    def chats(self) -> list[Speaker]:
+        """The chat of every live agent here, for a line each of them must hear."""
+        return [Speaker(self.feature, self.record, agent) for agent in Agents(self.record, actor=SYSTEM).rows.every() if agent.live]
+
+    def is_owed(self, feature: str, line: str, rows: tuple[str, ...]) -> bool:
+        """Whether a line another feature sent about these rows still asks the agent to act."""
+        return FEATURES[feature].is_owed(self.record, line, rows)
+
+    def cursor(self, name: str) -> str:
+        """A reader's place in this environment's event log."""
+        return self.record.event_log.cursor_text(name)
+
+    def keep_cursor(self, name: str, text: str) -> None:
+        self.record.event_log.set_cursor_text(name, text)
+
 
 class TheEnvironments:
     """The other environments of a journal, each reached by its name."""
@@ -151,6 +166,14 @@ class ProjectFiles:
         """The names in a folder under the project folder, sorted; none when it is not there."""
         found = self.record.root.parent / folder
         return sorted(one.name for one in found.iterdir()) if found.is_dir() else []
+
+    def matching(self, name: str) -> list[str]:
+        """The project files a bare name or a path's tail names, from the project's file index."""
+        return project_files.matching(self.record.root.parent, name)
+
+    def is_indexed(self) -> bool:
+        """Whether the project's file index is built, so a name it does not hold is truly absent."""
+        return project_files.is_listed(self.record.root.parent)
 
     def write(self, path: str, text: str) -> None:
         written = self.record.root.parent / path
