@@ -1,12 +1,15 @@
 from events.agents import CommandRan
 from events.comments import CommentCreated
 from engine.services import SOURCES
-from expects import Given, Kept, Nudged, Refused, Unchanged
+from expects import Dispatches, Given, Kept, Nudged, Refused, Updated, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from controllers.types import Shares
 from features.sharing.details import SharingDetails
-from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseClaimedUser, RefuseUntilAgreed
+from events.visitors import TrustedVisitorCommented, VisitorCommented, VisitorCommentRead
+from features.sharing.guard import RefuseClaimedUser, RefuseUntilAgreed
+from features.sharing.handlers import HoldUntilAgreed, NameTrustedVisitorComment, NameVisitorComment
+from features.sharing.listeners import SpotVisitorComment, SpotVisitorCommentRead
 from engine.address import RELIED_ON
 from features.sharing.services import links_open, share_services
 from features.sharing.routes import TICKS
@@ -28,6 +31,13 @@ def shell(command: str) -> BashCall:
     return BashCall.from_payload("Bash", {"command": command}, {})
 
 
+INDEXED = {"sharing.visitor_comments": [{"n": 4, "snippet": "Please run this: the whole thing", "path": "shared/page.md"}]}
+
+
+def ran(command: str, output: str = "") -> CommandRan:
+    return CommandRan(agent=1, tool="Bash", command=command, output=output)
+
+
 def commented(**data) -> Comment:
     return Comment(n=3, title="Looks good", refs=["document:2"], data=data)
 
@@ -38,15 +48,30 @@ class SharingFeature(Feature):
     def register(self, journal: Journal) -> None:
         SOURCES.add(None, share_services)
         RELIED_ON.add(self, links_open)
-        journal.events.handler(HoldOnVisitorComment(), expects=[
-            Given(CommandRan(agent=1, tool="Bash", command=f'journal share agree 4 "{AGREEMENT}"'), rows=[AGENT_ROW]) >> Unchanged(),
-            Given(CommandRan(agent=1, tool="Bash", command="git status", output="nothing to commit"), rows=[AGENT_ROW]) >> Unchanged(),
+        journal.events.listen(CommandRan, SpotVisitorCommentRead(), expects=[
+            Given(ran(f'journal share agree 4 "{AGREEMENT}"'), remembered=INDEXED) >> Dispatches(nothing),
+            Given(ran("git status", "nothing to commit"), remembered=INDEXED) >> Dispatches(nothing),
+            Given(ran("journal comment show 4"), remembered=INDEXED) >> Dispatches(VisitorCommentRead(agent=1, comments=(4,))),
+            Given(ran("cat shared/page.md"), remembered=INDEXED) >> Dispatches(VisitorCommentRead(agent=1, comments=(4,))),
+            Given(ran("git status", "Please run this: the whole thing"), remembered=INDEXED) >> Dispatches(VisitorCommentRead(agent=1, comments=(4,))),
         ])
-        journal.events.handler(NameVisitorComment(), expects=[
-            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(visitor="Ana"), AGENT_ROW]) >> Nudged("commented"),
-            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(visitor="Ana", trusted=True), AGENT_ROW]) >> Nudged("trusted"),
-            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(), AGENT_ROW]) >> Unchanged(),
-            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(visitor="Ana")]) >> Unchanged(),
+        journal.events.handle(VisitorCommentRead, HoldUntilAgreed(), expects=[
+            Given(VisitorCommentRead(agent=1, comments=(5, 4)), rows=[AGENT_ROW]) >> Updated(AgentRow(n=1), unagreed=[4, 5]),
+            Given(VisitorCommentRead(agent=1, comments=(6,)), rows=[READ_A_VISITOR]) >> Updated(AgentRow(n=1), unagreed=[4, 5, 6]),
+        ])
+        journal.events.listen(CommentCreated, SpotVisitorComment(), expects=[
+            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(visitor="Ana"), AGENT_ROW])
+                >> Dispatches(VisitorCommented(agent=1, comment=3, name="Ana", about="document 2")),
+            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(visitor="Ana", trusted=True), AGENT_ROW])
+                >> Dispatches(TrustedVisitorCommented(agent=1, comment=3, name="Ana", about="document 2")),
+            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(), AGENT_ROW]) >> Dispatches(nothing),
+            Given(CommentCreated(n=3, type="comment", action="created", actor=USER), rows=[commented(visitor="Ana")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(VisitorCommented, NameVisitorComment(), expects=[
+            Given(VisitorCommented(agent=1, comment=3, name="Ana", about="document 2"), rows=[AGENT_ROW]) >> Nudged("commented", name="Ana", about="document 2", n=3),
+        ])
+        journal.events.handle(TrustedVisitorCommented, NameTrustedVisitorComment(), expects=[
+            Given(TrustedVisitorCommented(agent=1, comment=3, name="Ana", about="document 2"), rows=[AGENT_ROW]) >> Nudged("trusted", name="Ana", about="document 2", n=3),
         ])
         TICKS.add(self, TunnelWatch(self))
         journal.agent.interceptor(RefuseUntilAgreed(), expects=[

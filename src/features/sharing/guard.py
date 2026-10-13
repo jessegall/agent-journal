@@ -1,13 +1,9 @@
 import re
 
-from controllers.types import Agents, Comments
-from events.agents import CommandRan
-from events.comments import CommentCreated
 from engine.journal_calls import parsed, tokens
-from framework.parts import AgentContext, Context, Handler, ToolInterceptor
+from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
-from controllers.sharing.visitors import AGREEMENT, UNAGREED, hold, read_now
-from resources.base import SYSTEM
+from controllers.sharing.visitors import AGREEMENT, UNAGREED
 from declaring.reach import Reach
 
 PLAIN = re.compile(r"[\w .:@/+-]+")
@@ -55,15 +51,6 @@ def only_agree(command: str) -> bool:
             and call.matches("share", "agree") and len(call.arguments) == 2 and call.arguments[0].isdigit() and call.arguments[1] == AGREEMENT)
 
 
-class HoldOnVisitorComment(Handler):
-    def handle(self, context: AgentContext, event: CommandRan) -> None:
-        if only_agree(event.command):
-            return
-        read = read_now(context.record, event.command, event.output)
-        if read:
-            hold(Agents(context.record, actor=SYSTEM), context.agent.row, read)
-
-
 class RefuseUntilAgreed(ToolInterceptor):
     reach = Reach.BOTH
     runs = Runs.SYNC
@@ -72,14 +59,3 @@ class RefuseUntilAgreed(ToolInterceptor):
         if not held or len(call.commands) == 1 and only_agree(call.commands[0]):
             return ""
         return context.feature.line_text("agree", comments=", ".join(map(str, held)), words=AGREEMENT)
-
-
-class NameVisitorComment(Handler):
-    def handle(self, context: Context, event: CommentCreated) -> None:
-        comment = Comments(context.record, actor=SYSTEM).load(event.n)
-        if not comment.data.get("visitor"):
-            return
-        agent = context.journal.get(Agents).primary()
-        if agent:
-            line = "trusted" if comment.data.get("trusted") else "commented"
-            context.speaking_to(agent).agent.nudge(line, name=comment.data["visitor"], about=comment.refs[0].replace(":", " "), n=comment.n)

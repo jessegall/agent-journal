@@ -77,5 +77,5 @@ def shown(entry: Visit, command: str, output: str) -> bool:
     return entry["path"] in command and READERS.search(command) is not None
 
 
-def read_now(record, command: str, output: str) -> list[int]:
-    return sorted({entry["n"] for entry in record.state("sharing").get(INDEX, []) if shown(entry, command, output)})
+def read_now(index: list[Visit], command: str, output: str) -> list[int]:
+    return sorted({entry["n"] for entry in index if shown(entry, command, output)})
