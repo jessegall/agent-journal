@@ -9,6 +9,23 @@ from tests.conftest import fresh
 from tests.kit import nudges, report, tick
 
 
+def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background_and_a_press_that_took_no_effect_is_made_again(monkeypatch):
+    record = fresh()
+    moved = []
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
+    started = time.time() - 45
+    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
+    tick(record)
+    tick(record)
+    row = Agents(record, actor="system").by_session("claude-1")
+    assert (moved, [n for n in nudges(record) if "moved to the background" in n], row.data["cards"][-1]["label"]) == (["claude-1"], [], "Moved a long command to the background"), \
+        "moved once, and the chat shows the mark; Claude's own tool result tells the agent, so the journal sends no line"
+    record.state("long_commands").set(f"pressed|{row.n}", time.time() - 30)
+    tick(record)
+    tick(record)
+    assert moved == ["claude-1", "claude-1"], "a move that started no task is pressed once more, and only once"
+
+
 def test_a_moved_command_is_matched_to_its_task_and_a_part_that_ended_before_it_started_is_not_running():
     record = fresh()
     report(record, "working", "PreToolUse", provider="claude")

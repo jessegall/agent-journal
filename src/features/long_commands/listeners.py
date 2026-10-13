@@ -57,7 +57,8 @@ class SpotLongCommand(Listener[AgentBeat]):
             return []
         if remembered.get(memory("moved", event.agent)) == str(oldest.at):
             return []
-        [last, *_], stale = open_calls(row, providers)
+        still, stale = open_calls(row, providers)
+        last = still[0] if still else None
         lost = [CallsLost(agent=event.agent, gone=tuple((one.at, one.id) for one in stale))] if stale else []
         if last is None or now - float(last.at) < wait_for(settings, last.command):
             return lost

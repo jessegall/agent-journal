@@ -17,7 +17,14 @@ STARTED = 955.0
 ORCHESTRATING = {"work_modes.mode": "orchestrator"}
 MOVED = {"long_commands.moved|1": "955.0"}
 PRESSED = {**MOVED, "long_commands.pressed|1": 975.0}
-TASKED = {**MOVED, "long_commands.task|1": "b1"}
+TMARKED = {"key": "command:955.0", "label": "Moved a long command to the background", "state": "running", "command": "npm test"}
+
+
+def marked() -> AgentRow:
+    return AgentRow(n=1, title="claude-1", data={"status": "working", "provider": "claude", "cards": [MARKED]})
+
+
+ASKED = {**MOVED, "long_commands.task|1": "b1"}
 
 
 def agent(command: str = "npm test", started: float = STARTED, status: str = "working", provider: str = "claude", **more) -> AgentRow:
@@ -98,10 +105,10 @@ class LongCommands(Feature):
             Given(TaskFound(agent=1, task="b1"), rows=[agent()]) >> Remembered("task|1", "b1"),
         ])
         journal.events.handle(PartRunning, ShowThePartRunning(), expects=[
-            Given(PartRunning(agent=1, started="955.0", part="sleep 25"), rows=[agent()])
+            Given(PartRunning(agent=1, started="955.0", part="sleep 25"), rows=[marked()])
                 >> Remembered("part|1", "sleep 25") & Updated(AgentRow(n=1), cards=[{"key": "command:955.0", "command": "sleep 25"}]),
         ])
         journal.events.handle(MovedCommandEnded, CloseTheMovedCommand(), expects=[
-            Given(MovedCommandEnded(agent=1, started="955.0", state="failed", ended=1_300.0), rows=[agent()])
+            Given(MovedCommandEnded(agent=1, started="955.0", state="failed", ended=1_300.0), rows=[marked()])
                 >> Remembered("ended|1", "955.0") & Updated(AgentRow(n=1), cards=[{"key": "command:955.0", "state": "failed", "ended": 1_300.0}]),
         ])
