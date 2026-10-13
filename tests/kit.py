@@ -23,7 +23,6 @@ from commands.launch import asked_resume  # noqa: F401
 from commands.launch import asked_slate  # noqa: F401
 from commands.launch import defaults  # noqa: F401
 from commands.queries import ended  # noqa: F401
-from migrations.m0062_clean_slate_moved_into_its_file import run as clean_slate_moved  # noqa: F401
 from controllers.types import Plans  # noqa: F401
 from framework.plugins.manifest import MANIFEST  # noqa: F401
 from framework.plugins.manifest import read  # noqa: F401
