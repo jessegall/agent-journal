@@ -78,11 +78,11 @@ class PendingRows:
             return copy.deepcopy(held.delta) if held else {}
 
     def held(self, record, row, change: dict, action: str) -> Pending:
-        """Holds what a hook changed on a row, added to what it already holds under the one guard that the copy of it is read under, so a
-        reader never copies a delta while a hook adds to it."""
+        """Holds a copy of what a hook changed on a row, added to what it already holds under the one guard that the copy of it is read under,
+        so a reader never copies a delta while a hook adds to it, nor while its caller goes on changing the lists and dicts it handed in."""
         with self.guard:
             pending = self.rows.setdefault(self.key(record, row.n), Pending.of(row))
-            pending.delta.update(change)
+            pending.delta.update(copy.deepcopy(change))
             pending.action = action
             return pending
 

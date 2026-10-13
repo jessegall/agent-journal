@@ -506,6 +506,11 @@ def test_the_agent_row_store_holds_back_an_unchanged_status_and_drops_a_removed_
     report(record, "working", "PostToolUse")
     assert path.stat().st_mtime_ns == written, "a second hook with the same status writes nothing"
     assert agents.load(n).data["event"] == "PostToolUse", "and what it reported is read at once"
+    handed = {"commands": [{"command": "npm test"}]}
+    PENDING.held(record, agents.rows.peek(n), handed, "reported")
+    handed["commands"].append({"command": "ls"})
+    assert PENDING.delta(record, n)["commands"] == [{"command": "npm test"}], \
+        "what a hook handed in is held as it was then, so its caller changing it on another thread never changes what a reader copies"
     report(record, "idle", "Stop")
     assert (path.stat().st_mtime_ns > written, agents.rows.peek(n).data["status"]) == (True, "idle"), "a status change is written at once"
     report(record, "idle", "Notification")

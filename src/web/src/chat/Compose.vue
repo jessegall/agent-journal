@@ -154,13 +154,16 @@ function unpick(i) {
     area.value && area.value.focus();
 }
 
-// a press anywhere in the box but on one of its controls, as on the empty row beside the attach button, puts the cursor in the text, so
-// what is typed or pasted next lands there
+// a press anywhere in the box but on one of its controls, as on the empty row beside the attach button or above the first line of the text,
+// where the browser would put the cursor at the start, puts the cursor at the end of the text, so what is typed or pasted next follows what
+// is there
 const CONTROLS = "button, a, input, textarea, select, label, [role=button]";
+const aboveTheText = (e) => e.target === area.value && e.offsetY < parseFloat(getComputedStyle(area.value).paddingTop);
 function focusText(e) {
-    if (e.target.closest(CONTROLS)) return;
+    if (e.target.closest(CONTROLS) && !aboveTheText(e)) return;
     e.preventDefault();
     area.value.focus();
+    area.value.setSelectionRange(draft.text.length, draft.text.length);
 }
 
 async function go() {

@@ -125,6 +125,36 @@ await runScenarios(process.argv[2], {
             throw new Error(`a click on the box's bottom row left the text elsewhere: the box holds "${kept}"`);
     },
 
+    async "twenty quick clicks across the box, each followed at once by a paste or keys, all land in the text in order"(page, url) {
+        await home(page, url);
+        const box = await page.locator(".compose-box").boundingBox();
+        // the bottom row between the buttons, the left and right padding, the top edge, and the text itself
+        const spots = [
+            [box.width / 2, box.height - 12],
+            [6, box.height / 2],
+            [box.width - 8, 14],
+            [box.width * 0.3, 4],
+            [box.width * 0.5, box.height * 0.35],
+        ];
+        let expected = "";
+        for (let round = 0; round < 20; round++) {
+            await page.locator("body").click({position: {x: 5, y: 5}});
+            const [x, y] = spots[round % spots.length];
+            await page.mouse.click(box.x + x, box.y + y);
+            const words = `${round} `;
+            if (round % 2) await page.keyboard.insertText(words);
+            else await page.keyboard.type(words);
+            expected += words;
+        }
+        const kept = await compose(page).inputValue();
+        if (kept !== expected) throw new Error(`quick clicks lost input: the box holds "${kept}", expected "${expected}"`);
+        const [chooser] = await Promise.all([
+            page.waitForEvent("filechooser", {timeout: SETTLE}),
+            page.locator('label[aria-label="Attach files"]').click(),
+        ]);
+        if (!chooser) throw new Error("the attach button no longer opens the file picker");
+    },
+
     async "typing the first words brings the chat to the newest message"(page, url) {
         await home(page, url);
         await page.evaluate(() => {
