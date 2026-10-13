@@ -159,6 +159,7 @@ class MessagesFeature(Feature):
             after_report(ABOUT_A_TODO, reply(), IDLE) >> Dispatches(MessageSettled(n=5, how="handled: todo:7")),
             after_report(FILE_THE_REPORT_WRITTEN, IDLE) >> Dispatches(nothing),
             after_report(asked("Please file the report"), IDLE) >> Dispatches(nothing),
+            after_report(FILE_THE_REPORT, IDLE, settings={"messages.closing": False}) >> Dispatches(nothing),
         ])
         journal.events.listen(MessageUpdated, SpotMessagesSeenByUser(), expects=[
             after_touch(wrote("Done, it is filed.", seen=(AGENT, USER)), IDLE) >> Dispatches(MessageSettled(n=5, how="read by the user")),
@@ -179,11 +180,17 @@ class MessagesFeature(Feature):
             Given.of(ResourceCreated.of("comment", actor=USER), asked(), reply(USER), IDLE) >> Dispatches(nothing),
             after_creating("comment", wrote("Done, it is filed.", seen=(AGENT,)), reply(), IDLE) >> Dispatches(nothing),
             after_creating("todo", asked(), Todo(n=1, title="Row"), IDLE) >> Dispatches(nothing),
+            Given.of(ResourceCreated.of("comment"), asked(), reply(), IDLE, settings={"messages.closing": False}) >> Dispatches(nothing),
+            after_creating("comment", asked(), Comment(n=1, title="Here is my view", refs=["todo:7"], seen=[AGENT]), IDLE) >> Dispatches(nothing),
+            after_creating("comment", asked(), replace(asked(), n=6), Comment(n=1, title="Both", refs=["message:5", "message:6"], seen=[AGENT]), IDLE)
+                >> Dispatches(MessageSettled(n=5, how="answered by the agent")) & Dispatches(MessageSettled(n=6, how="answered by the agent")),
         ])
         journal.events.listen(AgentReported, SpotRunTogether(), expects=[
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON)) >> Dispatches(RunTogether(agent=1)),
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript("This is a sentence.")) >> Dispatches(nothing),
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON.replace(". ", ".\n\n", 1))) >> Dispatches(nothing),
+            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON), settings={"messages.paragraphs": False}) >> Dispatches(nothing),
+            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript("word " * 120)) >> Dispatches(nothing),
         ])
         journal.events.listen(AgentMessageSent, SpotBareNumbers(), expects=[
             Given.of(said("I closed 482 for you."), SENT, Todo(n=482, title="Row"), IDLE) >> Dispatches(BareNumbersNamed(agent=1, n=5, numbers="482")),
@@ -208,6 +215,7 @@ class MessagesFeature(Feature):
             Given.of(said("down from 980 loose files to 3; it waited 4 before"), *NAMED_ROWS, Todo(n=980, title="Row")) >> Dispatches(nothing),
             Given.of(said("all 358 viewer unit tests pass, and 358 viewer unit tests ran"), *NAMED_ROWS, Todo(n=358, title="Row")) >> Dispatches(nothing),
             Given.of(said("a number under 250 is a count, and so is more than 300"), *NAMED_ROWS, Todo(n=250, title="Row"), Todo(n=300, title="Row")) >> Dispatches(nothing),
+            Given.of(said("I closed 482 for you."), SENT, Todo(n=482, title="Row"), IDLE, settings={"messages.numbers": False}) >> Dispatches(nothing),
         ])
         journal.events.handle(TurnToPost, PostTurn(), expects=[
             Given.of(TurnToPost(agent=1, text="Done, it is filed.", turn="turn-1"), IDLE) >> Wrote(Message(title="Done, it is filed.", brief="Done, it is filed.")),
