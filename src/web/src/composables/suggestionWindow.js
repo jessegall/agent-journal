@@ -8,6 +8,8 @@ export const CHECK_MS = 1000;
 const CHAT_BOX = ".compose textarea";
 
 const drafted = () => [...document.querySelectorAll(CHAT_BOX)].some((box) => box.value.trim());
+// the cursor is in a chat box, where words may be on their way from dictation that types nothing until it is done
+const atTheBox = () => Boolean(document.activeElement?.closest?.(".compose"));
 
 export function useSuggestionWindow(suggestions, hours, graceUntil = () => 0) {
     const shown = ref(0);
@@ -30,7 +32,8 @@ export function useSuggestionWindow(suggestions, hours, graceUntil = () => 0) {
             now - typed < IDLE_MS ||
             now - closed < GAP_MS ||
             now < graceUntil() ||
-            drafted()
+            drafted() ||
+            atTheBox()
         );
     }
 

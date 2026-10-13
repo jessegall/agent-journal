@@ -91,6 +91,21 @@ describe("when the window opens", () => {
         vi.advanceTimersByTime(3000);
         expect(window.suggestion.value.n).toBe(1);
     });
+    test("it waits while the cursor is in a chat box, as dictation types nothing until it pastes, and opens once it leaves", () => {
+        const now = 10 * HOUR;
+        const window = scheduled([row(1, now - 4 * HOUR)]);
+        const compose = document.createElement("form");
+        compose.className = "compose";
+        const box = document.createElement("textarea");
+        compose.append(box);
+        document.body.append(compose);
+        box.focus();
+        vi.advanceTimersByTime(IDLE_MS * 3);
+        expect(window.suggestion.value).toBeNull();
+        box.blur();
+        vi.advanceTimersByTime(2000);
+        expect(window.suggestion.value.n).toBe(1);
+    });
 });
 
 describe("right after the journal starts", () => {
