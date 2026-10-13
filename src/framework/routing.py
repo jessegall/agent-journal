@@ -7,6 +7,7 @@ from urllib.parse import unquote
 from uuid import uuid4
 
 from controllers.base import Sender
+from controllers.invoke import invoked
 from controllers.types import CONTROLLERS, Environments
 from engine import runtime
 from resources.extension import Extension
@@ -90,6 +91,10 @@ class Request:
     def as_user(self, kind):
         """The controller of that kind acting for the user, as every viewer request does."""
         return kind(self.record(), actor=USER)
+
+    def invoke(self, kind, word: str, positional: tuple = (), named: dict | None = None):
+        """The word of that kind of controller, called for the user the way a command is."""
+        return invoked(self.as_user(kind), word, positional, named)
 
 
 @dataclass
