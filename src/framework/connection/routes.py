@@ -7,7 +7,7 @@ from engine.handover import give, taken
 from engine.machines import Lease
 from engine.offline import Applied, Write
 from engine.record import Record
-from features.connection.linking import local_hello
+from framework.connection.linking import local_hello
 from framework.routing import Reply, Request, handles
 from resources.base import PROJECT
 

@@ -240,7 +240,7 @@ def shared_browser():
 @pytest.fixture
 def hosted_world(tmp_path):
     """A hosted journal and two local copies in scratch folders, real processes once started; imported here so a run that never asks for it never installs one."""
-    from features.connection.world import World
+    from framework.connection.world import World
     world = World(tmp_path)
     try:
         yield world

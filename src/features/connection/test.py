@@ -14,9 +14,9 @@ from engine.outbox import Outbox, Request
 from engine.record import Record
 from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
-from features.connection.code import Pushed, pull, push
-from features.connection.linking import Synced, hand, join, local_hello, sync
-from features.connection.transport import HttpTransport, ServerKey
+from framework.connection.code import Pushed, pull, push
+from framework.connection.linking import Synced, hand, join, local_hello, sync
+from framework.connection.transport import HttpTransport, ServerKey
 from engine.ledger import applied
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Event
 from tests.conftest import fresh, hosted_world, refused  # noqa: F401
@@ -84,7 +84,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     newer.held_hello = Hello("99.0.0", Shape(PROTOCOL, newer.held_hello.shape.migrations, 0), "server-1")
     join(record, newer)
     assert any("not in step" in n.title for n in Notices(record, actor=SYSTEM).all()), "a server on a newer release leaves a notice that this copy is not in step with it"
-    from features.connection.linking import leave, view, what_travels
+    from framework.connection.linking import leave, view, what_travels
     (record.root / "runtime").mkdir(exist_ok=True)
     (record.root / "runtime" / "live").write_text("never travels")
     travelled = what_travels(record.root)
@@ -204,7 +204,7 @@ def test_code_goes_through_git_as_snapshots_and_is_applied_only_over_files_not_c
     assert (pull(theirs, "laptop"), (theirs / "a.txt").read_text()) == (["a.txt"], "two"), "over a file only changed there the snapshot is applied"
     assert "no snapshot" in refused(lambda: pull(theirs, "nobody")), "a name nobody pushed is said plainly"
     from engine.comparison import Listing
-    from features.connection.code import summary
+    from framework.connection.code import summary
     unhosted = tmp_path / "unhosted"
     run("clone", "-q", str(mine), str(unhosted), cwd=tmp_path)
     assert push(unhosted, "desk") == Pushed((), (".",)), "a repository with no hosted remote is skipped, not failed"

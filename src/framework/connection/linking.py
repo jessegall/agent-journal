@@ -12,7 +12,7 @@ from engine.outbox import Request
 from engine.record import Record
 from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, replay, travelling_files
 from engine.version import version
-from features.connection.transport import EventQuery, ServerKey, Transport
+from framework.connection.transport import EventQuery, ServerKey, Transport
 from engine.ledger import applied
 from resources.base import PROJECT, SYSTEM, Refused
 

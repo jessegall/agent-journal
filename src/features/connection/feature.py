@@ -3,7 +3,7 @@ from expects import Answered, Given, Refused
 from framework.base import Feature
 from features.connection.commands import ConnectToServer, DisconnectFromServer, HandEnvironment, PullCode, PushCode, ShowConnection, SyncWithServer, join_again
 from features.connection.details import ConnectionDetails
-from features.connection.routes import get_sync_hello, post_sync_events, post_sync_handback, post_sync_handover, post_sync_holder, post_sync_write
+from framework.connection.routes import get_sync_hello, post_sync_events, post_sync_handback, post_sync_handover, post_sync_holder, post_sync_write
 from framework.journal import Journal
 
 DISCONNECTED = "disconnected: nothing more is sent to the server, and what it already has stays there"

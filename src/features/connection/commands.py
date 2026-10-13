@@ -1,10 +1,9 @@
 from dataclasses import asdict
 
 from controllers.types import Environments
-from engine.machines import this_machine
-from features.connection.code import pull, push
-from features.connection.linking import fail_to_join, hand, join, leave, sync, view
-from features.connection.transport import HttpTransport, ServerKey, Transport
+from framework.connection.code import pull, push_from_here
+from framework.connection.linking import fail_to_join, hand, join, leave, sync, view
+from framework.connection.transport import HttpTransport, ServerKey, Transport
 from framework.parts import Command, Context
 from resources.base import Refused
 
@@ -67,7 +66,7 @@ class PushCode(Command):
     user_only = True
 
     def run(self, context: Context, environments: Environments) -> str:
-        done = push(context.record.root.resolve().parent, this_machine()[:12])
+        done = push_from_here(context.record.root.resolve().parent)
         return f"pushed {len(done.pushed)} repositories" + (f", skipped {', '.join(done.skipped)} (no git remote called hosted)" if done.skipped else "")
 
 

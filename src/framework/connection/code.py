@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine.comparison import Listing, compare
+from engine.machines import this_machine
 from engine.proc import git
 from engine.snapshots import SNAPSHOT_REFS, Snapshot, apply, key_of, repositories, take
 from resources.base import Refused
@@ -17,6 +18,10 @@ class Pushed:
 
 def has_remote(top: Path) -> bool:
     return bool(git(["remote", "get-url", REMOTE], top).strip())
+
+
+def push_from_here(project: Path) -> Pushed:
+    return push(project, this_machine()[:12])
 
 
 def push(project: Path, name: str) -> Pushed:
