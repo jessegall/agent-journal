@@ -51,7 +51,3 @@ class Suggestions(Controller):
     @action
     def note_window(self, n: int):
         return self.update(n, window_seen=time.time())
-
-
-def waiting_suggestions(record) -> int:
-    return len(Suggestions(record, actor=SYSTEM).rows.standing())

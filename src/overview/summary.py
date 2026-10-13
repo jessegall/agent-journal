@@ -6,7 +6,7 @@ from controllers.types import CONTROLLERS, Agents, Environments, Messages, Notic
 from engine import runtime
 from engine.version import version
 from overview.counts import counts
-from overview.parts import SUMMARY_COUNTS, SUMMARY_PARTS
+from resources.summary import SUMMARY_COUNTS, SUMMARY_PARTS
 from engine.record import Record
 from controllers.agents import SILENT
 from resources.base import SYSTEM

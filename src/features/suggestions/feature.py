@@ -1,13 +1,13 @@
 from expects import Dispatches, Given, Updated, Wrote, nothing
 from framework.base import Feature
-from controllers.suggestions import waiting_suggestions
-from overview.parts import SUMMARY_COUNTS
+from controllers.types import Suggestions
+from resources.summary import SUMMARY_COUNTS
 from framework.journal import Journal
 from features.suggestions.details import SuggestionsDetails
 from features.suggestions.handlers import DropTakenBackMark, FileDecidedSuggestion, ShowAnswerInChat
 from features.suggestions.listeners import SpotDecidedSuggestion, SpotFiledSuggestion, SpotTakenBackAnswer
 from events.suggestions import AnswerTakenBack, SuggestionCompleted, SuggestionFiled, SuggestionReopened, SuggestionToFile, UserAnswered
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from resources.types import AgentRow, Suggestion, Todo
 
 
@@ -20,6 +20,10 @@ def proposed(how: str, outcome: str = "") -> Suggestion:
 
 def decided(actor: str = USER) -> SuggestionCompleted:
     return SuggestionCompleted(n=3, type="suggestion", action="completed", actor=actor)
+
+
+def waiting_suggestions(record) -> int:
+    return len(Suggestions(record, actor=SYSTEM).rows.standing())
 
 
 class SuggestionsFeature(Feature):

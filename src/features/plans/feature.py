@@ -5,7 +5,7 @@ from dataclasses import replace
 from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
 from framework.base import Feature
 from features.plans.summary import plans_shown
-from overview.parts import SUMMARY_PARTS
+from resources.summary import SUMMARY_PARTS
 from framework.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
