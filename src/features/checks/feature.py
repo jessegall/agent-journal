@@ -86,7 +86,7 @@ class ChecksFeature(Feature):
         journal.events.listen(AgentReported, SpotTestRuns(), expects=[
             Given(AgentReported(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(AgentReported(agent=1, hook=HookEvent.PRE_TOOL_USE), rows=[AgentRow(n=1, title="claude-1", data={"running": {"command": "pytest", "effect": "tests", "at": 1.0}})])
-                >> Dispatches(TestsRunning(agent=1, key="tests:1.0", name="The whole suite", command="pytest", title="pytest", started=1.0)),
+                >> Dispatches(TestsRunning(agent=1, key="tests:1.0", name="The whole suite", command="pytest", title="pytest", started=1.0).once("1.0|0.0")),
             Given(AgentReported(agent=1, hook=HookEvent.STOP), rows=[AgentRow(n=1, title="claude-1", data={"running": {"command": "pytest", "effect": "tests", "at": 1.0}})])
                 >> Dispatches(nothing),
             Given(AgentReported(agent=1, hook=HookEvent.PRE_TOOL_USE), rows=[AgentRow(n=1, title="claude-1", data={"running": {"command": "ls", "effect": "reads", "at": 1.0}})])
