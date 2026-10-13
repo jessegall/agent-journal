@@ -13,7 +13,7 @@ from features.session_briefing.details import SessionBriefingDetails
 from payload import HookEvent
 from events.session_briefing import SessionGreeted, StartBlockStale
 from features.session_briefing.handlers import GreetTheSession, RebuildTheStartBlock
-from features.session_briefing.listeners import SpotChangeToTheStartBlock, SpotOrchestrationChange, SpotOutdatedStartBlock, SpotSessionToGreet, stale
+from features.session_briefing.listeners import SpotChangeToTheStartBlock, SpotOrchestrationChange, SpotSessionToGreet, stale
 
 
 CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
@@ -56,9 +56,6 @@ class SessionBriefing(Feature):
         ])
         journal.events.handle(StartBlockStale, RebuildTheStartBlock(), expects=[
             Given(StartBlockStale()) >> Unchanged(),
-        ])
-        journal.events.listen(SessionStarted, SpotOutdatedStartBlock(), expects=[
-            Given(SessionStarted(agent=1), rows=[CLAUDE]) >> Dispatches(stale()),
         ])
         journal.events.answer(HookResponding, BriefTheSession(), expects=[
             Given(HookResponding(event="SessionStart", session="claude-1"), rows=[CLAUDE]) >> Answered(Written()),

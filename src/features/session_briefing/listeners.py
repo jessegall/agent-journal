@@ -3,7 +3,6 @@ from events.agents import SessionStarted
 from events.boards import BoardOrchestrated
 from events.resources import AnyEvent
 from events.session_briefing import SessionGreeted, StartBlockStale
-from features.session_briefing.block import outdated
 from receiving import Listener
 from resources.types import TYPES
 from serving import ReadElsewhere
@@ -36,8 +35,3 @@ class SpotOrchestrationChange(Listener[BoardOrchestrated]):
     def listen(self, event: BoardOrchestrated) -> list[Fact]:
         return [stale()]
 
-
-class SpotOutdatedStartBlock(Listener[SessionStarted]):
-    def listen(self, event: SessionStarted, elsewhere: ReadElsewhere) -> list[Fact]:
-        record = elsewhere.here().record
-        return [stale()] if outdated(record, False) or outdated(record, True) else []
