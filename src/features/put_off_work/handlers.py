@@ -1,26 +1,15 @@
-import re
-
-from events.agents import AgentReported
-from serving import SERVED, Providers
-from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
-from resources.base import AGENT
-
-DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back"
-                    r"|(?:dat|dit|het) doe ik (?:straks|later|daarna)|ik doe (?:dat|dit|het) (?:straks|later|daarna)|(?:daar|hier|er) kom ik (?:straks |later )?op terug"
-                    r"|ik kom (?:er|hier|daar) (?:straks |later )?op terug|hierna|na dit|zodra (?:de|het|dit|dat) \w+ (?:klaar|binnen|er) is|daarna doe ik)\b", re.IGNORECASE)
-RECENT = 200
-SINCE = 600
+from events import Fact
+from events.put_off_work import WorkDeferred
+from features.work_modes.details import ORCHESTRATOR
+from features.work_modes.modes import board_in, filing_on, kept_mode
+from receiving import Handler
+from resources.types import Board
+from serving import Chat, Rows, Settings
 
 
-class NameDeferredWork(Handler):
-    behaviour = WHOLE_FEATURE
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        text = SERVED.given(Providers).last_said(context.agent.row)
-        found = DEFERS.search(text) if text else None
-        if found and not self.parked_since(context, float(context.agent.row.at) - SINCE):
-            from features.work_modes.modes import filing
-            context.agent.say("deferred", words=found.group(0), filing=filing(context.record))
-
-    def parked_since(self, context: Context, when: float) -> bool:
-        return any(e.actor == AGENT and e.type == "todo" and e.action == "created" and e.at >= when for e in context.record.event_log.events(last=RECENT))
+class NameTheDeferral(Handler[WorkDeferred]):
+    def handle(self, event: WorkDeferred, chat: Chat, settings: Settings, boards: Rows[Board]) -> list[Fact]:
+        modes = settings.of("work_modes")
+        board = board_in(boards, int(modes.board)) if kept_mode(modes.mode) == ORCHESTRATOR else None
+        chat.say("deferred", words=event.words, filing=filing_on(board))
+        return []

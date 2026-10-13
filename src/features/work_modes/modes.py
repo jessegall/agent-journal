@@ -6,9 +6,12 @@ CARRIED_IN = Extension()
 """The writers of the files that carry the mode's words, each taking the project folder and the record; a feature that writes such a file registers here, so the mode is picked without knowing who writes them."""
 
 
-def mode_of(record) -> str:
-    kept = WorkModesDetails.values(record).mode
+def kept_mode(kept: str) -> str:
     return kept if kept in MODES else BUILDER
+
+
+def mode_of(record) -> str:
+    return kept_mode(WorkModesDetails.values(record).mode)
 
 
 def pick(record, mode: str, actor: str) -> str:
@@ -31,12 +34,14 @@ def taking(record) -> str:
     return MODES[mode_of(record)].taking
 
 
+def board_in(boards, n: int):
+    return boards.load(n) if n and boards.rows.exists(n) and not boards.load(n).finished else None
+
+
 def board_of(record):
     from controllers.types import Boards
     from resources.base import SYSTEM
-    n = int(WorkModesDetails.values(record).board)
-    boards = Boards(record, actor=SYSTEM)
-    return boards.load(n) if n and boards.rows.exists(n) and not boards.load(n).finished else None
+    return board_in(Boards(record, actor=SYSTEM), int(WorkModesDetails.values(record).board))
 
 
 def filing(record) -> str:
