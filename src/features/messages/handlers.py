@@ -2,7 +2,7 @@ from pathlib import Path
 
 from events import Fact
 from events.agents import ChunkDisplayed
-from events.messages import (FallbackHeld, FaultWindowOver, MessageDisplayed, PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageSettled,
+from events.messages import (FallbackHeld, FaultWindowOver, MessageDisplayed, PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageSettled, MessagesReadByUser,
                              RunTogether, TurnToPost)
 from features.messages.listeners import ANSWER_HOLD, UNREAD_EVERY
 from features.messages.mirroring import cut_off, collect, fault_brief, finish, hold_fault, next_turn, over, undelivered, withdraw
@@ -88,6 +88,12 @@ class NameUnanswered(Handler[AnswerOwed]):
 class CloseTheMessage(Handler[MessageSettled]):
     def handle(self, event: MessageSettled, messages: Rows[Message]) -> list[Fact]:
         messages.close_once(event.n, event.how)
+        return []
+
+
+class CloseReadMessages(Handler[MessagesReadByUser]):
+    def handle(self, event: MessagesReadByUser, messages: Rows[Message]) -> list[Fact]:
+        messages.complete_all(event.numbers, "read by the user")
         return []
 
 

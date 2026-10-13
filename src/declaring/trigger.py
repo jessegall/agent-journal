@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import json
+from dataclasses import asdict, dataclass
 
 from resources.fields import Loaded
 from resources.base import names
@@ -38,6 +39,11 @@ class Mark(Loaded):
     notified: bool | None = None
     notices: int = 0
     viewer_opened: bool = False
+
+    @classmethod
+    def staged(cls, name: str, **fields) -> dict:
+        """The mark file an agent's trigger of this name leaves, as an expectation stages it before the registration runs."""
+        return {f".journal/runtime/sessions/claude-1/trigger-{name}.json": json.dumps(asdict(cls(**fields)))}
 
 
 NEVER = Trigger()

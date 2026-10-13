@@ -1,4 +1,3 @@
-import json
 from dataclasses import asdict
 
 from controllers.types import Agents
@@ -30,9 +29,6 @@ PLANS = {f"{LIBRARY}/journal-plans/SKILL.md": "---\nname: journal-plans\nkeyword
 JOURNAL = {f"{LIBRARY}/journal/SKILL.md": "---\nname: journal\n---\n"}
 
 
-def marked(name: str = "skill_loading", **fields) -> dict:
-    """The mark file the agent's triggers left for this name, as the play stages it before the registration runs."""
-    return {f".journal/runtime/sessions/claude-1/trigger-{name}.json": json.dumps(asdict(Mark(**fields)))}
 
 
 def asked(tool: str, input: str) -> ToolCallAsked:
@@ -65,17 +61,17 @@ class SkillLoading(Feature):
                 >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)) & Dispatches(JournalSkillMissing(agent=1).due()),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "SessionStart", "skills": ["journal-todos"]})])
                 >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)) & Dispatches(WindowSpent(agent=1).due()),
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(marked(notified=True))) >> Dispatches(nothing),
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(marked(notified=False)))
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(Mark.staged("skill_loading", notified=True))) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(Mark.staged("skill_loading", notified=False)))
                 >> Dispatches(JournalSkillMissing(agent=1).due()),
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(marked(at=5.0)))
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(Mark.staged("skill_loading", at=5.0)))
                 >> Dispatches(WindowSpent(agent=1)),
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "SessionStart", "skills": []})], files=answering(marked(notified=False, event="SessionStart")))
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "SessionStart", "skills": []})], files=answering(Mark.staged("skill_loading", notified=False, event="SessionStart")))
                 >> Dispatches(JournalSkillMissing(agent=1).due()),
         ])
         journal.events.listen(AgentReported, SpotReload(), expects=[
-            Given(AgentReported(agent=1), rows=[CLAUDE_TRANSCRIBED], transcript="{}\n", files=answering(marked(since=5.0))) >> Dispatches(SkillsOwed(agent=1, session="claude-1", skills=(("journal", 5.0),))),
-            Given(AgentReported(agent=1), rows=[CLAUDE_TRANSCRIBED], transcript="{}\n", files=answering(marked(since=0.0))) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[CLAUDE_TRANSCRIBED], transcript="{}\n", files=answering(Mark.staged("skill_loading", since=5.0))) >> Dispatches(SkillsOwed(agent=1, session="claude-1", skills=(("journal", 5.0),))),
+            Given(AgentReported(agent=1), rows=[CLAUDE_TRANSCRIBED], transcript="{}\n", files=answering(Mark.staged("skill_loading", since=0.0))) >> Dispatches(nothing),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude"})]) >> Dispatches(nothing),
             Given(AgentReported(agent=1), rows=[CLAUDE], settings={"skill_loading.reload": False}) >> Dispatches(nothing),
         ])
@@ -103,7 +99,7 @@ class SkillLoading(Feature):
         journal.events.listen(ToolCallAnswered, SpotCommandNeedingSkill(), expects=[
             Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
                 >> Dispatches(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 0.0),))),
-            Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering({**PLANS, **marked(since=7.0)}))
+            Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering({**PLANS, **Mark.staged("skill_loading", since=7.0)}))
                 >> Dispatches(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 7.0),))),
             Given(answered("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Dispatches(nothing),
             Given(answered("Bash", "journal plan phase 1 build --when done", subagent=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Dispatches(nothing),
@@ -150,17 +146,17 @@ class SkillLoading(Feature):
         ])
         journal.events.handle(RefusalCounted, KeepRefusalCount(), expects=[
             Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=1))),
-            Given(RefusalCounted(agent=1, wanted=False), rows=[AgentRow(n=1, title="claude-1")], files=answering(marked("skill_loading.refused", count=4)))
+            Given(RefusalCounted(agent=1, wanted=False), rows=[AgentRow(n=1, title="claude-1")], files=answering(Mark.staged("skill_loading.refused", count=4)))
                 >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=0))),
-            Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(marked("skill_loading.refused", count=4)))
+            Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(Mark.staged("skill_loading.refused", count=4)))
                 >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=5))),
-            Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(marked("skill_loading.refused", count=15)))
+            Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(Mark.staged("skill_loading.refused", count=15)))
                 >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=1))),
         ])
         journal.events.answer(ToolCallAsked, RefuseCommandNeedingSkill(), expects=[
             Given(asked("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
                 >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
-            Given(asked("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering({**PLANS, **marked("skill_loading.refused", count=5)}))
+            Given(asked("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering({**PLANS, **Mark.staged("skill_loading.refused", count=5)}))
                 >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Answered(Allowed()),
         ])
@@ -173,12 +169,12 @@ class SkillLoading(Feature):
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
                   settings={"skill_loading.most_refusals": 0}) >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
-                  files=answering(marked("skill_loading.refused", count=5))) >> Answered(Allowed()),
+                  files=answering(Mark.staged("skill_loading.refused", count=5))) >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
-                  files=answering(marked("skill_loading.refused", count=4)))
+                  files=answering(Mark.staged("skill_loading.refused", count=4)))
                 >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
-                  files=answering(marked("skill_loading.refused", count=15))) >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
+                  files=answering(Mark.staged("skill_loading.refused", count=15))) >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal": 5.0, "journal-plans": 5.0}})
                 >> Answered(RefusedCall("load journal, journal-plans before anything else - every tool call waits until it is loaded: Skill: journal, Skill: journal-plans")),
         ])

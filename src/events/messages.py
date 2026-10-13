@@ -132,6 +132,13 @@ class MessageSettled(Fact):
 
 
 @dataclass(frozen=True, kw_only=True)
+class MessagesReadByUser(Fact):
+    """The user has read these messages of the agent's, which closes them all at once."""
+
+    numbers: tuple[int, ...]
+
+
+@dataclass(frozen=True, kw_only=True)
 class RunTogether(Fact):
     """The agent's last turn is one long block that wants paragraphs."""
 

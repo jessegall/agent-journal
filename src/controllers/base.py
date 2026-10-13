@@ -404,8 +404,7 @@ class Controller(Files, Links, Discussed, Buttons):
             r.completed = time.time()
             r.outcome = how
             r.data.update(self._shaped(data))
-            if self.resource.lists_completed_unread and self.actor != USER:
-                r.seen = [who for who in r.seen if who != USER]
+            self._closed_unread(r)
             return self.save(r, "completed", how=how, **data)
 
     @marks.action
@@ -525,6 +524,28 @@ class Controller(Files, Links, Discussed, Buttons):
             if changed:
                 self._emit(changed[0].n, "updated", numbers=[r.n for r in changed], seen=self.actor, by="read")
         return rows
+
+    def _closed_unread(self, r) -> None:
+        """A row of a type the user is shown again once closed, closed by someone else, is unread by the user again."""
+        if self.resource.lists_completed_unread and self.actor != USER:
+            r.seen = [who for who in r.seen if who != USER]
+
+    def complete_all(self, numbers, how: str = "") -> list[Resource]:
+        """Closes every row named that is still open, under one lock, with one event naming them all, as read_all marks many read: closing what a reading of many settles costs one write a row, not a whole close each."""
+        closed = []
+        with self.record.locked(self.resource.scope):
+            for n in dict.fromkeys(int(n) for n in numbers):
+                r = self.load(n)
+                if r.completed:
+                    continue
+                self._handled("complete", n=n, how=how)
+                r.completed, r.outcome = time.time(), how
+                self._closed_unread(r)
+                self.rows.persist(r)
+                closed.append(r)
+            if closed:
+                self._emit(closed[0].n, "completed", numbers=[r.n for r in closed], how=how)
+        return closed
 
     @marks.action
     def unread(self, actor: str | None = None) -> list[Resource]:

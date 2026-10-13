@@ -2,7 +2,7 @@ from declaring.reach import Reach
 from events import Fact
 from events.agents import AgentMessageSent, AgentReported, TurnInterrupted, TurnStopped
 from events.messages import (PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageCreated,
-                             MessageSettled, MessageUpdated, RunTogether, TurnToPost)
+                             MessageSettled, MessagesReadByUser, MessageUpdated, RunTogether, TurnToPost)
 from events.resources import ResourceCreated
 from features.messages.answering import read_and_open, theirs, unanswered
 from features.messages.details import MessagesDetails
@@ -88,8 +88,8 @@ class SpotMessagesHandled(Listener[AgentReported]):
 
 class SpotMessagesSeenByUser(Listener[MessageUpdated]):
     def listen(self, event: MessageUpdated, messages: ReadRows[Message], settings: Settings) -> list[Fact]:
-        seen = [m for m in map(messages.load, event.numbers if settings.is_on("closing") else ()) if not theirs(m) and USER in m.seen]
-        return [MessageSettled(n=m.n, how="read by the user") for m in seen]
+        seen = [m.n for m in map(messages.load, event.numbers if settings.is_on("closing") else ()) if not theirs(m) and USER in m.seen]
+        return [MessagesReadByUser(numbers=tuple(seen))] if seen else []
 
 
 class SpotMessagesProcessed(Listener[MessageUpdated]):

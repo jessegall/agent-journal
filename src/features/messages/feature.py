@@ -1,11 +1,12 @@
 from controllers.types import Messages
+from expects.staged import in_a_transcript
 from events.agents import AgentReported, ChunkDisplayed, TurnInterrupted, TurnStopped
 from events.agents import AgentMessageSent
 from events.resources import ResourceCreated
 from events.answers import Rewritten
 from events.asking import TextFormatting
 from events.messages import (FallbackHeld, FaultWindowOver, MessageDisplayed, PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread,
-                             MessageCreated, MessageSettled, MessageUpdated, RunTogether, TurnToPost)
+                             MessageCreated, MessageSettled, MessagesReadByUser, MessageUpdated, RunTogether, TurnToPost)
 import json
 from dataclasses import asdict, replace
 
@@ -16,7 +17,7 @@ from framework.displayed import FELL_BACK, HELD_FOR, SETTLE, fingerprint
 from framework.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
-from features.messages.handlers import (BeginTurn, CatchUpAfterTurn, HoldFallbackFault, KeepChunk, PostCutOffTurn, PostDisplayed, RaiseHeldFaults, SendCutOffWords, BeginAnswerWait, CloseTheMessage, HoldUntilAnswered, NameBareNumbers, NameFace, NameInbox, NameRunTogether, NameUnanswered, PostTurn,
+from features.messages.handlers import (BeginTurn, CatchUpAfterTurn, HoldFallbackFault, KeepChunk, PostCutOffTurn, PostDisplayed, RaiseHeldFaults, SendCutOffWords, BeginAnswerWait, CloseReadMessages, CloseTheMessage, HoldUntilAnswered, NameBareNumbers, NameFace, NameInbox, NameRunTogether, NameUnanswered, PostTurn,
                                         RearmAnswering, RearmInbox, ReleaseAnswering, ReleaseInbox)
 from features.messages.listeners import (SpotCutOff, SpotPrompt, SpotTurnEnd, SpotArrival, SpotBareNumbers, SpotMessagesAnswered, SpotMessagesHandled, SpotMessagesProcessed, SpotMessagesSeenByUser, SpotRunTogether,
                                          SpotTurnToPost, SpotUnanswered, SpotUnread)
@@ -65,11 +66,6 @@ FILE_THE_REPORT = replace(ABOUT_A_TODO, title="Please file the report")
 FILE_THE_REPORT_WRITTEN = replace(FILE_THE_REPORT, seen=[USER])
 
 
-def marked(name: str, **fields) -> dict:
-    """The mark file the agent's triggers left for this name, as the play stages it before the registration runs."""
-    return {f".journal/runtime/sessions/claude-1/trigger-{name}.json": json.dumps(asdict(Mark(**fields)))}
-
-
 def after_report(*rows, **more) -> Given:
     return Given.of(reported(), *rows, **more)
 
@@ -80,10 +76,6 @@ def after_touch(*rows) -> Given:
 
 def after_creating(kind: str, *rows) -> Given:
     return Given.of(ResourceCreated.of(kind), *rows)
-
-
-def in_a_transcript(text: str) -> str:
-    return json.dumps({"type": "assistant", "timestamp": "2026-01-01T00:00:00+00:00", "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
 
 
 CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
@@ -146,7 +138,7 @@ class MessagesFeature(Feature):
             after_report(FILE_THE_REPORT, IDLE) >> Dispatches(AnswersSettled(agent=1)),
             after_report(ABOUT_A_TODO, IDLE) >> Dispatches(OWED),
             after_report(asked("Here is the result"), IDLE) >> Dispatches(OWED),
-            after_report(asked(), AgentRow(n=1, title="claude-1", data={"status": "working", "uses": 13}), files=answering(marked("messages.answer hold", uses=3)))
+            after_report(asked(), AgentRow(n=1, title="claude-1", data={"status": "working", "uses": 13}), files=answering(Mark.staged("messages.answer hold", uses=3)))
                 >> Dispatches(AnswerHeld(agent=1, messages="message 5")) & Dispatches(OWED.due("answering")),
             after_report(wrote("What do you think about the plan?"), IDLE) >> Dispatches(AnswersSettled(agent=1)),
             after_report(wrote("Here is the plan", seen=(AGENT, USER)), IDLE) >> Dispatches(AnswersSettled(agent=1)),
@@ -162,7 +154,7 @@ class MessagesFeature(Feature):
             after_report(FILE_THE_REPORT, IDLE, settings={".messages.closing": False}) >> Dispatches(nothing),
         ])
         journal.events.listen(MessageUpdated, SpotMessagesSeenByUser(), expects=[
-            after_touch(wrote("Done, it is filed.", seen=(AGENT, USER)), IDLE) >> Dispatches(MessageSettled(n=5, how="read by the user")),
+            after_touch(wrote("Done, it is filed.", seen=(AGENT, USER)), IDLE) >> Dispatches(MessagesReadByUser(numbers=(5,))),
             after_touch(wrote("Done, it is filed.", seen=(AGENT,)), IDLE) >> Dispatches(nothing),
             after_touch(wrote("Please look at this", seen=(USER, AGENT)), IDLE) >> Dispatches(nothing),
         ])
@@ -229,19 +221,19 @@ class MessagesFeature(Feature):
         ])
         journal.events.handle(InboxSettled, ReleaseInbox(), expects=[
             Given.of(InboxSettled(agent=1), IDLE) >> Dispatches(nothing),
-            Given.of(InboxSettled(agent=1), IDLE, files=answering(marked("messages.unread", count=3))) >> Remembered("trigger-messages.unread", asdict(Mark())),
+            Given.of(InboxSettled(agent=1), IDLE, files=answering(Mark.staged("messages.unread", count=3))) >> Remembered("trigger-messages.unread", asdict(Mark())),
         ])
         journal.events.handle(InboxUnread, NameInbox(), expects=[
             Given.of(InboxUnread(agent=1), LATER) >> Nudged("inbox") & Remembered("trigger-messages.unread", asdict(Mark(count=1))),
             Given.of(InboxUnread(agent=1), LATER, settings={"messages.unread.patience": 0})
                 >> Nudged("inbox") & Held("your inbox is unread: journal message unread, then journal message read <n> for each, before any other write"),
-            Given.of(InboxUnread(agent=1), LATER, files=answering(marked("messages.unread", count=5)))
+            Given.of(InboxUnread(agent=1), LATER, files=answering(Mark.staged("messages.unread", count=5)))
                 >> Nudged("inbox") & Held("your inbox is unread: journal message unread, then journal message read <n> for each, before any other write")
                 & Remembered("trigger-messages.unread", asdict(Mark(count=6))),
         ])
         journal.events.handle(AnswersSettled, ReleaseAnswering(), expects=[
             Given.of(AnswersSettled(agent=1), IDLE) >> Dispatches(nothing),
-            Given.of(AnswersSettled(agent=1), IDLE, files=answering({**marked("messages.answering", count=2), **marked("messages.answer hold", uses=5)}))
+            Given.of(AnswersSettled(agent=1), IDLE, files=answering({**Mark.staged("messages.answering", count=2), **Mark.staged("messages.answer hold", uses=5)}))
                 >> Remembered("trigger-messages.answering", asdict(Mark())) & Remembered("trigger-messages.answer hold", asdict(Mark())),
         ])
         journal.events.handle(AnswerWaitBegan, BeginAnswerWait(), expects=[
@@ -254,8 +246,11 @@ class MessagesFeature(Feature):
             Given.of(OWED, IDLE) >> Nudged("answer", messages="message 5") & Remembered("trigger-messages.answering", asdict(Mark(count=1))),
             Given.of(OWED, IDLE, settings={"messages.answering.patience": 0})
                 >> Remembered("trigger-messages.answering", asdict(Mark(count=1))),
-            Given.of(AnswerOwed(agent=1, messages="message 5", numbers=(5,), rows=("message:5",)), IDLE, files=answering(marked("messages.answering", count=3)))
+            Given.of(AnswerOwed(agent=1, messages="message 5", numbers=(5,), rows=("message:5",)), IDLE, files=answering(Mark.staged("messages.answering", count=3)))
                 >> Remembered("trigger-messages.answering", asdict(Mark(count=4))),
+        ])
+        journal.events.handle(MessagesReadByUser, CloseReadMessages(), expects=[
+            Given.of(MessagesReadByUser(numbers=(5,)), wrote("Done, it is filed.", seen=(AGENT, USER)), IDLE) >> Updated(Message(n=5), outcome="read by the user"),
         ])
         journal.events.handle(MessageSettled, CloseTheMessage(), expects=[
             Given.of(MessageSettled(n=5, how="handled: todo:7"), asked(refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),

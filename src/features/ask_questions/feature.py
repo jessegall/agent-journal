@@ -1,5 +1,6 @@
 import json
 
+from expects.staged import in_a_transcript
 from controllers.types import Questions
 from events.agents import AgentReported, ToolCallAnswered
 from events.answers import Allowed, Refused as Declined
@@ -51,8 +52,6 @@ def writing(actor: str = "system", **fields) -> RowWriting:
     return RowWriting(type="question", action="create", actor=actor, fields=tuple(fields.items()))
 
 
-def in_a_transcript(text: str) -> str:
-    return json.dumps({"type": "assistant", "timestamp": "2026-01-01T00:00:00+00:00", "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
 
 
 class AskQuestions(Feature):
