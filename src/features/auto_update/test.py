@@ -523,13 +523,11 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
 
 
 def test_a_launch_repairs_a_half_done_upgrade(tmp_path, monkeypatch):
-    import json
     import shutil
     import sys
     from pathlib import Path
     import features
     from tests.kit import launch_update as launch
-    from controllers.types import Notices
     from engine.record import Record
     from install import git_env, version_file
     here = Path(__file__).resolve().parents[2]
