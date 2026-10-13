@@ -1,5 +1,6 @@
 """Carries a logged event onto the 3.0 engine's lane: the engine's own bus listeners and the catalogue facts the features registered on."""
 
+from pathlib import Path
 from dataclasses import dataclass, replace
 
 from engine import bus
@@ -13,6 +14,7 @@ from framework.lanes import agent_of, agent_of_fact, answering, due_now, lane_se
 from framework.promises import Promise
 from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
 from receiving.boot import walked
+from receiving.imports import walked as walked_imports
 from receiving.ordering import InOrder
 from receiving.ticks import Claims, Lane, Services, TickFailed
 from resources.base import ACTIONS
@@ -207,6 +209,11 @@ def ordered_once_the_features_have_registered() -> None:
     """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it. A moved receiver that asks for what the lane does not serve is refused here, at boot."""
     walked(REGISTERED, set(lane_services(None, lambda: None)))
     TICKING.resolve()
+
+
+def no_feature_reaches_outside() -> None:
+    """Refuses, once at the server's boot, a feature that names a package outside what a feature may; once, since reading every feature's source takes most of a second."""
+    walked_imports(Path(__file__).resolve().parents[1], refusing=True)
 
 
 def dispatched_on_a_lane() -> None:

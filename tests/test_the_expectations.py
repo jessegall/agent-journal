@@ -1066,3 +1066,17 @@ def test_a_refuser_on_the_write_path_stops_a_controller_write_with_its_reason():
         REGISTERED.forget(registration.kind, registration.feature, registration.name)
 
 
+
+
+def test_a_feature_that_names_a_package_outside_its_boundary_is_refused_at_boot_by_name(tmp_path):
+    import shutil
+    from pathlib import Path
+    from receiving.imports import ReachesOutside, walked
+    src = Path(__file__).resolve().parents[1] / "src"
+    assert walked(src, refusing=True).outside == [], "the source as it stands names nothing outside what a feature may"
+    copy = tmp_path / "src"
+    shutil.copytree(src, copy, ignore=shutil.ignore_patterns("web", "__pycache__", "*.pyc", "node_modules"))
+    (copy / "features" / "facts" / "reaching.py").write_text("from engine.record import Record\n")
+    with pytest.raises(ReachesOutside) as refusal:
+        walked(copy, refusing=True)
+    assert "facts" in str(refusal.value) and "engine.record" in str(refusal.value), "the refusal names the feature and what it reached for"
