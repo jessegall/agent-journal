@@ -1,14 +1,10 @@
-from events.agents import ClockTicked
-from resources.text import plural
-from features.record_audit.audit import evidence
-from framework.parts import WHOLE_FEATURE, AgentContext, Handler
+from events import Fact
+from events.record_audit import EvidenceFound
+from receiving import Handler
+from serving import Chat
 
 
-class SayEvidence(Handler):
-    behaviour = WHOLE_FEATURE
-
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        found = evidence(context.record)
-        if found:
-            context.agent.say("evidence", count=plural(len(found), "thing"),
-                              found="; ".join(f"{f.ref} {f.evidence} — {f.retire}" for f in found))
+class SayEvidence(Handler[EvidenceFound]):
+    def handle(self, event: EvidenceFound, chat: Chat) -> list[Fact]:
+        chat.say("evidence", count=event.count, found=event.found)
+        return []

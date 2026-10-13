@@ -5,10 +5,16 @@ from controllers import stored
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.disk import by_repository
 from engine.stored import write_text
-from features.record_audit.audit import evidence
-from resources.base import AGENT, USER
+from features.record_audit.audit import claim_evidence, waiting_evidence
+from framework.lanes import ProjectFiles
+from resources.base import AGENT, SYSTEM, USER
 from tests.kit import nudges, tick
 from tests.conftest import fresh
+
+
+def evidence(record) -> list:
+    claims = (Rules(record, actor=SYSTEM), Facts(record, actor=SYSTEM), Reminders(record, actor=SYSTEM))
+    return claim_evidence(claims, ProjectFiles(record)) + waiting_evidence(Questions(record, actor=SYSTEM), Todos(record, actor=SYSTEM), time.time())
 
 
 def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_path, monkeypatch):
