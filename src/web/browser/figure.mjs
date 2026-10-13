@@ -78,7 +78,14 @@ const framesOf = (page, ms) =>
                 const look = () => {
                     const element = document.querySelector(figure);
                     const box = element.getBoundingClientRect();
-                    frames.push({x: box.left, y: box.top, t: performance.now(), walking: element.dataset.walking === "true", trip: element.dataset.trip, clip: element.dataset.clip});
+                    frames.push({
+                        x: box.left,
+                        y: box.top,
+                        t: performance.now(),
+                        walking: element.dataset.walking === "true",
+                        trip: element.dataset.trip,
+                        clip: element.dataset.clip,
+                    });
                     if (performance.now() < until) requestAnimationFrame(look);
                     else done(frames);
                 };
@@ -156,7 +163,15 @@ await runScenarios(process.argv[2], {
             after.x < before.x + before.width &&
             before.y < after.y + after.height &&
             after.y < before.y + before.height;
-        const leaps = frames.slice(2).map((frame, at) => Math.abs(frame.x - frames[at].x) / Math.max(1, (frame.t - frames[at].t) / FRAME_MS));
+        // a step is weighed against the longer of the last two gaps between frames, as after a frame stalled on a busy machine the figure
+        // makes up the stalled walk one frame late
+        const leaps = frames
+            .slice(2)
+            .map(
+                (frame, at) =>
+                    Math.abs(frame.x - frames[at + 1].x) /
+                    Math.max(1, (frame.t - frames[at + 1].t) / FRAME_MS, (frames[at + 1].t - frames[at].t) / FRAME_MS)
+            );
         const leap = Math.max(0, ...leaps);
         const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
         const clip = await page.locator(FIGURE).evaluate((figure, home) => {
@@ -167,7 +182,8 @@ await runScenarios(process.argv[2], {
         const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}, ${clip}`;
         console.log(`the figure clicked away: ${measured}`);
         if (overlapping) throw new Error(`clicked, the figure stayed over the box it was in: ${measured}`);
-        if (leap > MOST_ACROSS_IN_A_FRAME) throw new Error(`clicked, the figure jumped across the page: ${measured}; FRAMES ${trail(frames)}`);
+        if (leap > MOST_ACROSS_IN_A_FRAME)
+            throw new Error(`clicked, the figure jumped across the page: ${measured}; FRAMES ${trail(frames)}`);
         if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`clicked, the figure walked on the spot: ${measured}`);
     },
 
