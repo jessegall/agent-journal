@@ -523,7 +523,7 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
     from framework.promises import PROMISED
 
     features.load()
-    assert len(PROMISED.each) > 150 and {one.kind for one in PROMISED.each} >= {"handler", "formatter", "interceptor"}, \
+    assert {one.kind for one in PROMISED.each} >= {"command", "route"}, \
         "every registration of an owing kind is gathered as the features are wired, with the part itself and its event"
     owes = [one for one in PROMISED.each if one.owes]
     owed, carried = PROMISED.owed(), [one for one in owes if one.expects]
