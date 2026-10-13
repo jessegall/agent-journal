@@ -1,21 +1,18 @@
-from events.agents import SessionStarted
-from events.works import WorkCreated
-from framework.parts import ActionInterceptor, AgentContext, Context, Handler
+from framework.parts import ActionInterceptor, Context
+from controllers.types import Plans, Templates
 from resources.base import Refused
-from controllers.types import Plans
-from controllers.types import Templates
-from controllers.types import Agents, Todos, Works
 
 INSTRUCTIONS = "instructions"
 
 
-def template_of(journal, row):
+def template_of(row, plans, templates):
+    """The template a row follows: the one it names, else the one of a plan it is linked to."""
     given = row.data.get("template")
     if not given and row.type == "todo":
-        plan = next((p for p in journal.get(Plans).linked_to(row.ref) if p.data.get("template")), None)
+        plan = next((p for p in plans.linked_to(row.ref) if p.data.get("template")), None)
         given = plan.data.get("template") if plan else ""
     try:
-        return journal.get(Templates).chosen(given)
+        return templates.chosen(given)
     except Refused:
         return None
 
@@ -33,29 +30,8 @@ def preface(template, values: dict | None = None) -> str:
 
 class PrefaceShow(ActionInterceptor):
     def intercept(self, feature_context: Context, controller, row=None, **args):
-        template = template_of(feature_context.journal, row) if row is not None else None
+        journal = feature_context.journal
+        template = template_of(row, journal.get(Plans), journal.get(Templates)) if row is not None else None
         if template and template.brief.strip():
             row.preface = preface(template, row.data.get("template_values"))
         return None
-
-
-class TellOnStart(Handler):
-    def handle(self, context: Context, event: WorkCreated) -> None:
-        main = context.journal.get(Agents).primary()
-        if main:
-            tell(context.speaking_to(main), context.journal.get(Works).load(event.n))
-
-
-class TellAgainOnSessionStart(Handler):
-    def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        work = context.journal.get(Works).active()
-        if work and context.agent:
-            tell(context, work)
-
-
-def tell(context: Context, work) -> None:
-    if not work.todo:
-        return
-    template = template_of(context.journal, context.journal.get(Todos).load(work.todo))
-    if template and template.brief.strip():
-        context.agent.nudge(INSTRUCTIONS, n=template.n, title=template.title, brief=template.brief.strip())
