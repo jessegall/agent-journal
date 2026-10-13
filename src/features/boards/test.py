@@ -144,7 +144,11 @@ def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
     agent = Boards(record, actor=AGENT)
     agent.stage(board.n, "Shipped", "done")
     agent.log(board.n, "Made the stages from section 1")
-    Tickets(record, actor=AGENT).create("CSV export", abstract="CSV export", board=board.n, stage="Shipped")
+    shipped = Tickets(record, actor=AGENT).create("CSV export", abstract="CSV export", board=board.n, stage="Shipped")
+    assert f"ticket {shipped.n} still stands on Shipped" in refused(lambda: agent.unstage(board.n, "Shipped")), "a stage a ticket stands on is not taken away"
+    agent.stage(board.n, "Parked", "review")
+    left = agent.unstage(board.n, "Parked")
+    assert ("Parked" in left.stages, "Parked" in left.meanings) == (False, False), "an empty stage goes, and its meaning with it"
     assert agent.built(board.n, "1 stage, 1 ticket").building["log"][0]["text"] == "Made the stages from section 1"
     assert "not being built" in refused(lambda: agent.log(board.n, "Late")), "a finished build takes no more lines"
     boards.discard(board.n)

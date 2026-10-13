@@ -44,6 +44,18 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         return self.update(board.n, stages=[*board.stages, name.strip()], meanings=with_meaning(board.meanings, name.strip(), meaning))
 
     @action
+    def unstage(self, n: int, name: str):
+        """Takes a stage off the board with its meaning; refused while a ticket stands on it, so no ticket is left on a stage its board no longer has."""
+        board, stage = self.load(n), name.strip()
+        if stage not in board.stages:
+            raise Refused(f"board {board.n} has no stage {stage}; its stages are {', '.join(board.stages)}")
+        tickets = self._cards(SYSTEM)
+        standing = [t.n for t in (tickets.load(row.n) for row in tickets.rows.standing()) if t.board == board.n and t.stage == stage]
+        if standing:
+            raise Refused(f"ticket {', '.join(map(str, standing))} still stands on {stage}: move it to another stage of board {board.n} first")
+        return self.update(board.n, stages=[kept for kept in board.stages if kept != stage], meanings=with_meaning(board.meanings, stage, ""))
+
+    @action
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(n)
         return self.update(board.n, meanings=with_meaning(board.meanings, stage, meaning))
