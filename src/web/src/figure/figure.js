@@ -484,7 +484,7 @@ function eyesAs(pose, mood, strength = 1) {
 }
 
 // where the hands rest to type on a laptop on the lap, and where they cover the eyes
-const TYPING_HANDS = [0.3, -0.4, 1.9];
+const TYPING_HANDS = [0.3, -0.45, 2.0];
 const EYE_HANDS = [0.34, -0.82, 2.32];
 
 // head down at a laptop on its lap, the hands moving, and now and then a pause
@@ -1497,7 +1497,7 @@ function heldGlassOf(world, side) {
 
 // Where the laptop sits: level on the thighs with its hinge at the knees, its keyboard back over the thighs, turned the way the thighs
 // point, so it turns with the figure
-const LAP_REACH = 1.25;
+const LAP_REACH = 1.95;
 const THIGH_TOP = 0.3;
 
 function lapOf(world) {
