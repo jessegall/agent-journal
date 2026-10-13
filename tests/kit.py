@@ -77,6 +77,11 @@ def tick(record, session="claude-1"):
     emit_clock(record, session)
 
 
+def always_due(record, trigger: str) -> None:
+    """Lets every tick find this trigger due: an interval of nothing at all would read as the default minute, so it is a millionth of one."""
+    record.change_setting("triggers", {trigger: {"every": 0.000001, "unit": "minutes"}})
+
+
 def idle(record, **more):
     report(record, "working", "PreToolUse", **more)
     report(record, "idle", "Stop", **more)

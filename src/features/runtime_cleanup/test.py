@@ -7,7 +7,7 @@ from pathlib import Path
 from engine import runtime
 from framework.loaded import FEATURES
 from features.runtime_cleanup.tidy import tidy
-from tests.kit import tick
+from tests.kit import always_due, tick
 from tests.conftest import fresh
 
 
@@ -114,7 +114,7 @@ def test_the_days_to_keep_is_a_setting():
 
 def test_it_runs_on_its_own_on_the_engines_clock():
     record = fresh()
-    record.set_setting("triggers", {"runtime_cleanup": {"every": 0, "unit": "minutes"}})
+    always_due(record, "runtime_cleanup")
     capture = runtime.session_file(record.root, "x", "printed")
     capture.parent.mkdir(parents=True)
     capture.write_bytes(b"y" * 200_000)
