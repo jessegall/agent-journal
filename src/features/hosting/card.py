@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.keeper import READY
+from resources.services import READY
 from features.hosting.apps import address
 from features.hosting.files import hosting_of
 
@@ -19,7 +19,7 @@ def app_on_card(record, ticket) -> CardExtra:
         return CardExtra([])
     if not ticket.hosted:
         return CardExtra([{"label": "Run its app", "action": "host"}])
-    app = address(record.root, ticket)
+    app = address(record, ticket)
     stop = [{"label": "Stop its app", "action": "unhost"}]
     if app["state"] == READY:
         return CardExtra(stop, app["url"], "Open app")

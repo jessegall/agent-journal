@@ -323,16 +323,16 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel(monkeypatch):
     share, doc = shared_with_comments(record)
     shares = Shares(record, actor=USER)
     shares.update(share.n, approved=True)
-    running = share_services(record.root, set())
+    running = share_services(record, set())
     assert running and not any(spec.idle for spec in running), "an open share runs the server"
     shares.complete(share.n, "stopped")
-    idle = share_services(record.root, set())
+    idle = share_services(record, set())
     assert idle and all("nothing is shared" in spec.idle.lower() for spec in idle), \
         "with the last share stopped, the server and its tunnel are declared idle, saying plainly that nothing is shared"
     assert "Nothing is shared on this link" in unshared(), "a stopped, ended or unknown link lands on one calm page"
     monkeypatch.setattr("features.sharing.services.tunler", lambda: "tunler")
     monkeypatch.setattr(Shares, "_subdomain", lambda self: (_ for _ in ()).throw(Refused("no address yet")))
-    assert [spec.service for spec in share_services(record.root, set())] == ["server"], "with no address for the tunnel yet, only the share server is declared"
+    assert [spec.service for spec in share_services(record, set())] == ["server"], "with no address for the tunnel yet, only the share server is declared"
     from types import SimpleNamespace
     from controllers.sharing import controller as sharing_controller
     monkeypatch.setattr(Shares, "_unusable", lambda self, standing: "")
@@ -503,15 +503,15 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
     share, _ = shared_with_comments(record)
     shares.update(share.n, approved=True)
     monkeypatch.setattr(share_pages, "tunler", lambda: "")
-    assert [spec.id for spec in share_pages.share_services(record.root, set())] == [share_pages.SERVER], "with no tunler only the server runs, never a tunnel"
+    assert [spec.id for spec in share_pages.share_services(record, set())] == [share_pages.SERVER], "with no tunler only the server runs, never a tunnel"
     from engine.services import log_file
     from engine.tunnel import OWNED, TUNNEL
     monkeypatch.setattr(share_pages, "tunler", lambda: shutil.which("true"))
     log_file(record.root, TUNNEL).write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
-    tunnel_spec = next(spec for spec in share_pages.share_services(record.root, set()) if spec.id == TUNNEL)
+    tunnel_spec = next(spec for spec in share_pages.share_services(record, set()) if spec.id == TUNNEL)
     assert "another tunler account" in tunnel_spec.blocked, "a tunnel whose address another account owns waits for the user instead of being retried"
     log_file(record.root, TUNNEL).write_text("")
-    tunnel_spec = next(spec for spec in share_pages.share_services(record.root, set()) if spec.id == TUNNEL)
+    tunnel_spec = next(spec for spec in share_pages.share_services(record, set()) if spec.id == TUNNEL)
     assert not tunnel_spec.blocked, "any other failure is retried forever by the manager"
     tunnel.KEPT_STATUS.clear()
 
@@ -938,7 +938,7 @@ def keeps_the_tunnel_across_upgrades_and_ports_apart(tmp_path, monkeypatch):
     builds = []
     for journal_build in ("build-a", "build-b"):
         monkeypatch.setattr(share_pages, "current_build", lambda root, named=journal_build: named)
-        specs = share_pages.share_services(record.root, set())
+        specs = share_pages.share_services(record, set())
         builds.append(next(spec.env[BUILD] for spec in specs if spec.id == share_pages.TUNNEL))
     assert builds[0] == builds[1], "the tunnel's build does not change when the journal's does"
     assert builds[0].endswith(f":{next(spec.port for spec in specs if spec.id == share_pages.TUNNEL)}"), "it does follow the ports"

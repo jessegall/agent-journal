@@ -1,6 +1,6 @@
 from declaring.details import FeatureDetails
 from features.hosting.files import HOSTING
-from engine.organization import FOLDER
+from resources.organization import FOLDER
 from declaring.trigger import MINUTES, Trigger
 from declaring.groups import Group
 

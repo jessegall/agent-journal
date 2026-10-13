@@ -1,17 +1,18 @@
-from pathlib import Path
-
+from controllers.types import Tickets
 from engine.services import claimed, local_url, service_spec
 from engine.wording import fill
 from features.hosting.apps import APP, hosted, service_of, worktree_of
 from features.hosting.files import hosting_of
+from resources.base import SYSTEM
 
 
-def ticket_apps(root: Path, taken: set) -> list:
+def ticket_apps(record, taken: set) -> list:
+    root = record.root
     hosting = hosting_of(root.parent)
     if not hosting:
         return []
     apps = []
-    for ticket in hosted(root):
+    for ticket in hosted(Tickets(record, actor=SYSTEM)):
         sid = service_of(ticket)
         port, blocked = claimed(root, sid, None, taken)
         where = worktree_of(root.parent, ticket)

@@ -20,10 +20,9 @@ from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS, position_of
 from resources.types import IDLE
 from controllers.marks import action
-from resources.extension import Extension
+from declaring.registries import CARD_EXTRAS
 
 SILENT_AFTER = 300.0
-CARD_EXTRAS = Extension()
 REPOSITORY_STATES: dict = {}
 LOOK_AGAIN_AFTER = 30
 STATES_KEPT = 500

@@ -1,4 +1,4 @@
-from engine.organization import FOLDER
+from resources.organization import FOLDER
 from events import Fact
 from events.agents import ClockTicked
 from events.hosting import HostedAppAbandoned, HostedAppAttended, HostedAppUnattended

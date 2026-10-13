@@ -1,6 +1,6 @@
 from features.hosting.apps import address
 from features.hosting.files import HOSTING, hosting_of
-from engine.organization import FOLDER
+from resources.organization import FOLDER
 from framework.parts import Command, Context
 
 
@@ -25,4 +25,4 @@ class ShowApp(Command):
     name = "app"
 
     def run(self, context: Context, tickets, n: int):
-        return address(context.record.root, tickets.load(n))
+        return address(context.record, tickets.load(n))

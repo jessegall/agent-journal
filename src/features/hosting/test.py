@@ -34,7 +34,7 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
         assert (card.app_on_card(record, hosted).link, card.app_on_card(record, hosted).link_label) == extra, "a card links to its app once ready and says why it is not"
     monkeypatch.undo()
     assert COMMANDS["ticket"]["app"](tickets, ticket.n) == {"url": "", "state": "not started", "why": ""}, "the address of an app that was never started says so"
-    [app] = ticket_apps(record.root, set())
+    [app] = ticket_apps(record, set())
     assert (app.id, app.cwd.endswith(f".claude/worktrees/ticket-{ticket.n}"), app.run, app.path) == \
         (f"ticket-{ticket.n}.app", True, f"npm run dev -- --port {app.port}", "/health"), "the app runs from the ticket's worktree on a port of its own"
     class Project:
@@ -51,11 +51,11 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
     sweep()
     tickets.update(ticket.n, idle_since=time.time() - 6 * 60)
     sweep()
-    assert (tickets.load(ticket.n).hosted, ticket_apps(record.root, set())) == (False, []), \
+    assert (tickets.load(ticket.n).hosted, ticket_apps(record, set())) == (False, []), \
         "an app whose ticket's agent is gone past the idle minutes stops"
     host(ticket.n)
     COMMANDS["ticket"]["unhost"](tickets, ticket.n)
-    assert (tickets.load(ticket.n).hosted, ticket_apps(record.root, set())) == (False, []), "an app stopped by hand stops at once"
+    assert (tickets.load(ticket.n).hosted, ticket_apps(record, set())) == (False, []), "an app stopped by hand stops at once"
     host(ticket.n)
     tickets.update(ticket.n, idle_since=time.time() - 3 * 60)
     monkeypatch.setattr(Tickets, "agent_session", lambda self, n: "claude-1")

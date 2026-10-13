@@ -5,8 +5,8 @@ from pathlib import Path
 
 from resources.fields import Loaded
 from resources.base import Refused
+from resources.organization import FOLDER
 
-FOLDER = "agentic-organization"
 WORKTREE, PLURAL, GLOBAL, PLAN = "worktree", "plural", "global", "plan"
 CARDINALITIES = (WORKTREE, PLURAL, GLOBAL, PLAN)
 AGENT, SUBAGENT = "agent", "subagent"

@@ -62,7 +62,8 @@ def listen_place(root: Path) -> Listen:
     return placed[0] if placed else Listen()
 
 
-def share_services(root: Path, taken: set) -> list:
+def share_services(record, taken: set) -> list:
+    root = record.root
     idle = why_idle(root)
     place = listen_place(root)
     if not place.kept:

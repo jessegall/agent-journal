@@ -171,9 +171,10 @@ def gather(root: Path, sources, faulted=ignore) -> tuple[list[ServiceSpec], bool
     taken: set[int] = set()
     found: list[ServiceSpec] = []
     complete = True
-    for source in (*sources, *SOURCES.each(Record(root, env(root)))):
+    record = Record(root, env(root))
+    for source, given in [*((one, root) for one in sources), *((one, record) for one in SOURCES.each(record))]:
         try:
-            found.extend(source(root, taken))
+            found.extend(source(given, taken))
         except Exception:
             complete = False
             faulted(f"the services of {getattr(source, '__name__', source)}")

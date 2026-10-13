@@ -12,7 +12,7 @@ from features.hosting.handlers import ClearIdleTime, StartIdleTime, StopAbandone
 from features.hosting.listeners import SpotIdleApps
 from features.hosting.services import ticket_apps
 from framework.journal import Journal
-from controllers.tickets.cards import CARD_EXTRAS
+from declaring.registries import CARD_EXTRAS
 
 
 HOSTED = Ticket(n=1, title="Card", data={"hosted": True})

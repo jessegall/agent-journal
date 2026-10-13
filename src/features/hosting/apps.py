@@ -1,10 +1,8 @@
 from pathlib import Path
 from typing import TypedDict
 
-from engine import runtime
-from engine.record import Record
-from engine.services import status
 from controllers.types import Tickets
+from engine.services import status
 from resources.base import SYSTEM
 from serving import SERVED, Providers
 
@@ -19,8 +17,8 @@ def worktree_of(project: Path, ticket) -> Path:
     return project.joinpath(*SERVED.given(Providers).driver(ticket.provider).WORKTREES, ticket.work_environment)
 
 
-def hosted(root: Path) -> list:
-    return [r for r in Tickets(Record(root, runtime.env(root)), actor=SYSTEM).rows.standing() if r.hosted and r.work_environment]
+def hosted(tickets) -> list:
+    return [r for r in tickets.rows.standing() if r.hosted and r.work_environment]
 
 
 class AppAddress(TypedDict):
@@ -29,8 +27,8 @@ class AppAddress(TypedDict):
     why: str
 
 
-def address(root: Path, ticket) -> AppAddress:
-    state = status(root, service_of(ticket))
+def address(record, ticket) -> AppAddress:
+    state = status(record.root, service_of(ticket))
     return {"url": state.url, "state": state.state or "not started", "why": state.why}
 
 
@@ -39,5 +37,5 @@ def idle_past(ticket, minutes: int, now: float) -> bool:
 
 
 def app_here(record) -> str:
-    ticket = next((r for r in hosted(record.root) if r.work_environment == record.env), None)
-    return address(record.root, ticket)["url"] if ticket else ""
+    ticket = next((r for r in hosted(Tickets(record, actor=SYSTEM)) if r.work_environment == record.env), None)
+    return address(record, ticket)["url"] if ticket else ""

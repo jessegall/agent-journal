@@ -13,54 +13,14 @@ from dataclasses import asdict, dataclass, field, fields, replace
 from pathlib import Path
 
 from engine.stored import read_json, write_json
+from resources.services import BUILD, EXITED, GRACE, READY, STARTING, STOPPED, ServiceSpec, known
 
 TAKEN = 3
 WATCH = 0.5
-GRACE = 5.0
 KILL_AFTER = 2.0
 PROBE = 1.0
 LEASE_WAIT = 5.0
 SESSION_ENDED = "the agent session that started it ended"
-STARTING, READY, STOPPED, EXITED = "starting", "ready", "stopped", "exited"
-
-
-def known(cls, raw: dict) -> dict:
-    return {f.name: raw[f.name] for f in fields(cls) if f.name in raw}
-
-
-BUILD = "JOURNAL_BUILD"
-
-
-@dataclass(frozen=True)
-class ServiceSpec:
-    id: str
-    plugin: str
-    service: str
-    run: object
-    lock: str
-    log: str
-    status: str
-    spec: str
-    port: int = 0
-    blocked: str = ""
-    cwd: str = ""
-    env: dict = field(default_factory=dict)
-    path: str = ""
-    restart: str = "on-failure"
-    grace: float = GRACE
-    show: dict = field(default_factory=dict)
-    url: str = ""
-    owner: int = 0
-    when: str = ""
-    idle: str = ""
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "ServiceSpec":
-        return cls(**known(cls, raw))
-
-    @property
-    def build(self) -> str:
-        return self.env.get(BUILD, "")
 
 
 @dataclass(frozen=True)

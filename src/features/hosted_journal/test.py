@@ -214,9 +214,9 @@ def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_view
     assert "owner password set" in logged and PASSWORD not in logged and code not in logged and token not in logged
     shares = Shares(hosted.record, actor=SYSTEM)
     assert shares._address() == ADDRESS and shares.tunnel()["problems"] == []
-    assert SERVER in [spec.id for spec in share_services(hosted.record.root, set())]
+    assert SERVER in [spec.id for spec in share_services(hosted.record, set())]
     Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "apart", "true")
-    assert share_services(hosted.record.root, set()) == [], "a login page run apart under its own user is never started by the journal"
+    assert share_services(hosted.record, set()) == [], "a login page run apart under its own user is never started by the journal"
 
 
 def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_minutes_pass(hosted, capsys, monkeypatch):
