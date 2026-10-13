@@ -611,7 +611,7 @@ def test_stopping_an_environment_asks_its_terminal_or_ends_the_process_that_hold
 def test_an_update_check_asked_for_reads_the_newest_release_once_at_a_time(monkeypatch):
     from engine import runtime, upgrades
     record = fresh()
-    monkeypatch.setattr(upgrades, "released", lambda repository=None: "v9.9.9")
+    monkeypatch.setattr(upgrades, "released", lambda repository=None, line=None: "v9.9.9")
     cache = runtime.upstream_cache(record.root)
     with upgrades.FETCHING:
         assert post(record, "/api/update/check").code == 200 and not cache.exists(), "a check asked for while another runs is not started twice"
