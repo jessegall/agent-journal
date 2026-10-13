@@ -10,14 +10,14 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Iterator
 
-from controllers.types import Agents
+from controllers.agents import Agents
 from engine import bus, chat, runtime, waits
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
 from events.agents import CHUNK
 from payload import Chunk
-from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM
+from serving import SERVED, Providers
 from resources.text import digest
 from engine.record import Record
 
@@ -128,7 +128,7 @@ def send_row_to_chat(record: Record, row, text: str, turn: str | None = None, st
 
 
 def display_chunks(raw: dict) -> list[Chunk]:
-    return [chunk for provider in PROVIDERS.values() if (chunk := provider.display_chunk(raw)) is not None]
+    return [chunk for provider in SERVED.given(Providers).every() if (chunk := provider.display_chunk(raw)) is not None]
 
 
 def announce_chunk(root: Path, chunk: Chunk) -> None:
