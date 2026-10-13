@@ -8,10 +8,8 @@ from engine.markers import plain
 from resources.marks import Marks
 from engine.generation import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
-from resources.extension import Extension
 from resources.memo import Memo
 
-FORMATTERS = Extension()
 DOWNLOAD = "download"
 VIEWER = "viewer"
 SHARED = "shared"
@@ -43,15 +41,6 @@ def forget_mentions(words) -> None:
 
 def formatted(text: str, record=None, surface: str = "") -> str:
     text = "" if text is None else str(text)
-    for fn, where in FORMATTERS.each():
-        if where and surface not in where:
-            continue
-        try:
-            text = str(fn(text, record) or text)
-        except Exception:
-            if record is None:
-                raise
-            threw(record.root, record.env, f"the formatter {fn.__name__}")
     try:
         answer = bus.asked(TextFormatting(text=text, surface=surface), record)
     except Exception:

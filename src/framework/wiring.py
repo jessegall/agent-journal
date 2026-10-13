@@ -1,70 +1,20 @@
 import inspect
-import time
-from typing import get_type_hints
 
 from controllers.base import COMMANDS, HANDLERS
-from controllers.types import Agents
-from engine import bus
 from events.asking import TextFormatting
-from events.typed import AgentEvent
-from engine.gates import CANCELERS, RESPONDERS, HookCall, policies
-from declaring.reach import Guard
 from engine.wording import APPENDS, Addition
-from framework.format import FORMATTERS, FORMATTING_FEATURES
-from framework.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
-from resources.base import SYSTEM, USER, Refused
+from framework.format import FORMATTING_FEATURES
+from framework.parts import ActionInterceptor, Command, Context
+from resources.base import USER, Refused
 from framework.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
-from framework.adapter import adapted_beside_the_bus, watched
 from framework.promises import PROMISED, Promise
-
-
-def wanted(part, feature, record, row, timed: bool = True) -> bool:
-    if part.behaviour is None:
-        return True
-    if not timed or not feature.cadence(record, part.behaviour):
-        return feature.on(record, part.behaviour)
-    return bool(row) and feature.due(record, row, part.behaviour)
-
-
-def agent_row(record, n: int):
-    """The agent's row for a handler to read: the one the store holds, not a copy, since a handler that changes the agent does it through the controller."""
-    if record.memo is None:
-        return Agents(record, actor=SYSTEM).peek(n)
-    key = ("agent row", n)
-    if key not in record.memo:
-        record.memo[key] = Agents(record, actor=SYSTEM).peek(n)
-    return record.memo[key]
 
 
 class Events:
     def __init__(self, feature):
         self.feature = feature
         self.names: list[str] = []
-
-    def handler(self, handler: Handler, expects=()) -> None:
-        if self.feature.commands_only:
-            return
-        kind, feature = get_type_hints(handler.handle)["event"], self.feature
-        promise = Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects))
-        PROMISED.add(promise)
-
-        def run(event, record) -> None:
-            typed = kind.read(event)
-            if not typed.wanted():
-                return
-            if isinstance(typed, AgentEvent) and not typed.agent:
-                return
-            row = agent_row(record, typed.agent) if isinstance(typed, AgentEvent) else None
-            if wanted(handler, feature, record, row):
-                began = time.time()
-                handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
-                watched(promise, typed, record, began)
-        run.__qualname__ = type(handler).__name__
-        self.names.append(kind.name())
-        for pattern in kind.patterns(handler.hooks):
-            bus.on(pattern, run, enabled=feature.enabled)
-        adapted_beside_the_bus(feature, handler, run, kind)
 
     def listen(self, event: type, listener: Listener, expects) -> None:
         """Reads the event and dispatches the facts it recognises; read-only, in the tick the event belongs to."""
@@ -84,85 +34,16 @@ class Events:
         """Holds one registration until the wiring is read. A feature loaded for its commands alone registers only what answers before a write, since a command's write is refused there or nowhere."""
         if self.feature.commands_only and kind not in (ANSWER, REFUSE):
             return
+        self.names.append(event.__name__)
         REGISTERED.add(Registration.read(kind, event, receiver, expects, self.feature.name, after))
-
-
-class Client:
-    def __init__(self, feature):
-        self.feature = feature
-
-    def formatter(self, formatter: TextFormatter, expects=()) -> None:
-        PROMISED.add(Promise(self.feature, "formatter", type(formatter).__name__, formatter, str, tuple(expects)))
-        feature = self.feature
-        if feature not in FORMATTING_FEATURES:
-            FORMATTING_FEATURES.append(feature)
-        FORMATTERS.add(None, (lambda text, record: formatter.format(Context.of(feature, record), text)
-                           if not record or (feature.enabled(record) and wanted(formatter, feature, record, None, timed=False)) else text,
-                           formatter.surfaces))
-
-
-def refusals(interceptor: type) -> str:
-    return f"refused.{interceptor.__name__}"
-
-
-def limited(context: AgentContext, interceptor: ToolInterceptor, refused: str) -> str:
-    key = refusals(type(interceptor))
-    limit = max(0, int(context.settings[interceptor.limit]))
-    aside = max(0, int(context.settings[interceptor.steps_aside])) if interceptor.steps_aside else 0
-    count = int(context.state.get(key, 0))
-    if not refused:
-        count = 0
-    elif aside:
-        count = count % (limit + aside) + 1
-    else:
-        count += 1
-    context.state.set(key, count)
-    return refused if count <= limit else ""
-
-
-def hooked(feature, call: HookCall) -> AgentContext:
-    return AgentContext.of(feature, call.record, call.row, call.provider, call.hook)
 
 
 class AgentHooks:
     def __init__(self, feature):
         self.feature = feature
-        self.guards: list[Guard] = []
 
     def append_to_line(self, on: str, addition, instead: bool = False) -> None:
         APPENDS.add(None, Addition(addition, instead), key=on)
-
-    def interceptor(self, interceptor: ToolInterceptor, expects=()) -> None:
-        PROMISED.add(Promise(self.feature, "interceptor", type(interceptor).__name__, interceptor, object, tuple(expects)))
-        feature, guard = self.feature, Guard.of(interceptor)
-        self.guards.append(guard)
-
-        def policy(call: HookCall) -> str:
-            if call.hook.tool.loads_skill:
-                return ""
-            context = hooked(feature, call)
-            if not feature.enabled(call.record) or not wanted(interceptor, feature, call.record, call.row, timed=False):
-                return ""
-            refused = interceptor.intercept(context, call.hook.tool) or ""
-            return limited(context, interceptor, refused) if interceptor.limit else refused
-        policy.guard = guard
-        policies(interceptor.runs).add(None, policy)
-
-    def canceler(self, canceler: Canceler, expects=()) -> None:
-        feature, guard = self.feature, Guard.of(canceler)
-        PROMISED.add(Promise(feature, "canceler", type(canceler).__name__, canceler, object, tuple(expects)))
-        self.guards.append(guard)
-
-        def cancel(call: HookCall, data) -> str:
-            if not feature.enabled(call.record):
-                return ""
-            return canceler.cancel(hooked(feature, call), data) or ""
-        cancel.guard = guard
-        CANCELERS.add(None, cancel, key=canceler.event)
-
-    def responder(self, event: str, respond, expects=()) -> None:
-        PROMISED.add(Promise(self.feature, "responder", getattr(respond, "__name__", event), respond, object, tuple(expects)))
-        RESPONDERS.add(None, respond, key=event)
 
 
 class Commands:

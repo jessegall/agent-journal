@@ -185,47 +185,6 @@ class AgentContext(Context):
 WHOLE_FEATURE = ""
 
 
-class Handler:
-    behaviour: ClassVar[str | None] = None
-    hooks: ClassVar[tuple[str, ...]] = ()
-
-    def handle(self, context: Context, event) -> None:
-        raise NotImplementedError
-
-
-class OnAgentUpdated:
-    def handle(self, context: AgentContext, event: AgentChanged) -> None:
-        if event.action == "updated":
-            super().handle(context, event)
-
-
-class TextFormatter:
-    surfaces: ClassVar[tuple] = ()
-    behaviour: ClassVar[str | None] = None
-
-    def format(self, context: Context, text: str) -> str:
-        raise NotImplementedError
-
-
-class ToolInterceptor:
-    reach: ClassVar[Reach]
-    behaviour: ClassVar[str | None] = None
-    runs: ClassVar[Runs]
-    limit: ClassVar[str] = ""
-    steps_aside: ClassVar[str] = ""
-
-    def intercept(self, context: "AgentContext", call) -> str:
-        raise NotImplementedError
-
-
-class Canceler:
-    reach: ClassVar[Reach]
-    event: ClassVar[str] = ""
-
-    def cancel(self, context: "AgentContext", data) -> str:
-        raise NotImplementedError
-
-
 class Command:
     name: ClassVar[str] = ""
     network: ClassVar[bool] = False

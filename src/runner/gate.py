@@ -10,7 +10,7 @@ from events.asking import AgentDispatching, ToolCallAsked
 from engine.journal_calls import JournalCall, pieces
 from framework import command_effects
 from engine import runtime
-from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
+from engine.gates import HookCall
 from declaring.reach import Reach
 from resources.base import AGENT
 
@@ -44,10 +44,6 @@ class ShellLine:
         return self.runnable and bool(self.calls) and not self.others and all(answers(call) for call in self.calls)
 
 
-def serving(policy, call: HookCall) -> bool:
-    return policy.guard.reaches(call.subagent)
-
-
 def paused(call: HookCall) -> bool:
     return bool(call.row.paused) and PAUSE.reaches(call.subagent)
 
@@ -59,9 +55,8 @@ def updating(call: HookCall) -> bool:
 
 def gated(call: HookCall) -> str | None:
     dispatch = call.provider.dispatch(call.hook.tool, call.record.root.parent)
-    reason = (cancelled(DISPATCHING, call, dispatch) or dispatch_refused(call, dispatch)) if dispatch else None
-    afterwards(call)
-    return reason or refused_by_a_feature(call) or next((reason for policy in POLICIES.each() if serving(policy, call) and (reason := policy(call))), None)
+    reason = dispatch_refused(call, dispatch) if dispatch else None
+    return reason or refused_by_a_feature(call)
 
 
 def refused_by_a_feature(call: HookCall) -> str | None:
@@ -84,11 +79,6 @@ def dispatch_refused(call: HookCall, dispatch) -> str | None:
 def input_of(tool) -> str:
     """What a tool call asks, as the engine names it: a shell call by its command, any other by its input."""
     return tool.shell_command or json.dumps(tool.tool_input, sort_keys=True)
-
-
-def afterwards(call: HookCall) -> None:
-    """Runs the parts that declared themselves asynchronous on a thread of their own, so what one of them does cannot reach the hook's answer however it is later written."""
-    bus.background(f"afterwards:{call.session}:{call.hook.at}", lambda: [policy(call) for policy in AFTERWARDS.each() if serving(policy, call)])
 
 
 def refusal(call: HookCall) -> str | None:

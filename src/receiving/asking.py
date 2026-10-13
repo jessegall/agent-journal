@@ -26,7 +26,7 @@ def answered(request: Request, registered: Registrations, services: Services, sw
         raise AnswersNothing.of(type(request))
     said = []
     for one in registered.of(ANSWER):
-        if one.event is not type(request) or not switched_on(one.feature):
+        if one.event is not type(request) or not (type(one.receiver).always or switched_on(one.feature)):
             continue
         answer = one.receiver.answer(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
         if isinstance(answer, Rewritten):

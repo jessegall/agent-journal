@@ -49,7 +49,10 @@ class Receiver(Generic[E]):
     """False only for the engine's own receivers registered for a feature, such as the senders of its declared nudges, whose expectations are its declarations' own and may be none."""
 
     adapted: ClassVar[bool] = False
-    """True only of the adapter that runs an unswept 2.x handler: it names its event in the registration rather than in its class, and owes no expectations, because the feature it belongs to has not been swept yet."""
+    """True only of the engine's own carriers of a logged event (its bus listeners): they name their event in the registration rather than in their class, and owe no expectations."""
+
+    always: ClassVar[bool] = False
+    """True of a receiver that runs whatever its feature's switch says, such as plain reading of words marked while the feature was on."""
 
     def called(self) -> str:
         """What this receiver is named in a walk and in an ordering: its class, unless it stands in for another receiver, which then lends its name."""

@@ -217,5 +217,4 @@ class Feature(ABC):
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
                 "nudges": {nudge.line: nudge.describe() for nudge in self.nudges},
-                "guards": [asdict(guard) for guard in self.journal.agent.guards],
                 "settings": [s.describe() for s in self.settings]}

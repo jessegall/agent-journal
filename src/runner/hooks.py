@@ -4,7 +4,7 @@ from agents.seat import HookBinding
 from controllers.types import Agents
 from engine import bus, runtime
 from engine.after_answer import after_answered
-from engine.gates import HookCall, responded
+from engine.gates import HookCall
 from engine.record import Record
 from providers.base import asking_row
 from payload import PERMISSION, STATUS, Hook, HookEvent
@@ -72,7 +72,7 @@ def refused(call: HookCall) -> dict:
 
 
 def started(call: HookCall) -> dict:
-    return call.provider.response(call.hook.event, responded(call) + handed_over(call))
+    return call.provider.response(call.hook.event, handed_over(call))
 
 
 def handed_over(call: HookCall) -> str:

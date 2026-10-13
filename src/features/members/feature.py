@@ -2,13 +2,19 @@ import os
 
 from controllers.base import SAVE_MARKS
 from framework.base import Feature
-from framework.format import DOWNLOAD, FORMATTERS, SHARED, VIEWER
+from events.answers import Allowed, Rewritten
+from events.asking import TextFormatting
+from expects import Answered, Given
+from framework.format import SHARED, VIEWER
 from features.hosted_journal.feature import APART
 from features.hosted_journal.people import PEOPLE
 from framework.journal import Journal
 from features.members.details import MembersDetails
 from features.members.gate import MemberLogins
-from features.members.words import MemberWords, WrittenBy, unmarked
+from features.members.words import MemberWords, ReadMarkedWordsPlainly, WrittenBy
+
+MARKED = '<untrusted member="ada">Ship it on Friday</untrusted>'
+PLAIN = "Ship it on Friday"
 
 
 class MembersFeature(Feature):
@@ -20,5 +26,8 @@ class MembersFeature(Feature):
         PEOPLE.add(guarding, MemberLogins())
         SAVE_MARKS.add(None, MemberWords())
         SAVE_MARKS.add(None, WrittenBy())
-        # People read a member's words plainly, even with the feature off; agents read them marked.
-        FORMATTERS.add(None, (unmarked, (VIEWER, SHARED, DOWNLOAD)))
+        journal.events.answer(TextFormatting, ReadMarkedWordsPlainly(), expects=[
+            Given(TextFormatting(text=MARKED, surface=VIEWER)) >> Answered(Rewritten(PLAIN)),
+            Given(TextFormatting(text=MARKED, surface=SHARED), settings={".members": False}) >> Answered(Rewritten(PLAIN)),
+            Given(TextFormatting(text=MARKED, surface="")) >> Answered(Allowed()),
+        ])

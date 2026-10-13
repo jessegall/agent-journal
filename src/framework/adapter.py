@@ -1,24 +1,16 @@
-"""Runs an unswept 2.x handler under the 3.0 engine, so the sweep can move one feature at a time.
-
-A 2.x handler takes a Context and writes through controllers; a 3.0 handler takes a fact, asks for its
-services by type and returns the facts of what it did. OldHandler stands in the gap: it is a handler of
-its event like any other, and it declares itself adapted, which is what exempts it from the rules a
-swept feature is held to. It asks for one thing, the tick's record, and nothing else may ask for that.
-"""
+"""Carries a logged event onto the 3.0 engine's lane: the engine's own bus listeners and the catalogue facts the features registered on."""
 
 from dataclasses import dataclass, replace
 
-from declaring.registries import MOVED
 from engine import bus
 from engine.record import Record
-from events import Fact, Request
+from events import Fact
 from events.typed import AgentEvent, TypedEvent
 from engine.developing import developing
 from expects.watching import WATCH, tell
 from framework.loaded import FEATURES
 from framework.lanes import agent_of, agent_of_fact, answering, due_now, lane_services
-from framework.parts import Context, Handler as OldStyle
-from framework.promises import THE_ENGINES_OWN, Promise
+from framework.promises import Promise
 from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
 from receiving.boot import walked
 from receiving.ordering import InOrder
@@ -28,64 +20,7 @@ from resources.types import TYPES
 from serving import Adapted as TheRecord
 
 ADAPTED = Registrations()
-"""The old handlers on the adapter, kept apart from the registry of the swept features, so removing the adapter removes them whole and nothing that clears the registry takes them with it."""
-
-NOT_ADAPTABLE: dict[tuple[str, str], str] = {}
-"""The old handlers that could not be put on the adapter, by feature and name, with why: the listing names them, so no feature reads as moved while one is left."""
-
-
-class CannotBeAdapted(TypeError):
-    @classmethod
-    def of(cls, handler: type, why: str) -> "CannotBeAdapted":
-        return cls(f"{handler.__name__} cannot run on the adapter: {why}. Its feature is swept rather than adapted.")
-
-
-@dataclass(frozen=True)
-class Moved:
-    """Where one feature stands: swept to the four kinds, or still running its handlers on the adapter, or holding a handler that cannot run there until the feature is swept."""
-
-    feature: str
-    adapted: tuple[str, ...] = ()
-    stuck: tuple[str, ...] = ()
-
-    @property
-    def is_moved(self) -> bool:
-        return not self.adapted and not self.stuck
-
-    def says(self) -> str:
-        if self.is_moved:
-            return f"{self.feature}: moved"
-        parts = [f"adapted ({', '.join(self.adapted)})"] if self.adapted else []
-        parts += [f"cannot be adapted ({', '.join(self.stuck)}), swept first"] if self.stuck else []
-        return f"{self.feature}: {'; '.join(parts)}"
-
-
-class OldHandler(Handler[Fact]):
-    """One 2.x handler, registered as a handler of the event it was written for."""
-
-    adapted = True
-
-    def called(self) -> str:
-        return type(self.handler).__name__
-
-    def __init__(self, feature, handler: OldStyle):
-        self.feature, self.handler = feature, handler
-
-    @classmethod
-    def wants(cls) -> dict[str, type]:
-        """The tick's record, and nothing else: a 2.x handler reaches for what it needs through the Context built over it."""
-        return {"record": TheRecord}
-
-    def handle(self, event, record) -> list[Fact]:
-        """Runs the old handler against a Context over the tick's record. It dispatches nothing itself: whatever it wrote reaches the engine as the funnel's own resource facts."""
-        self.handler.handle(Context.of(self.feature, record), event)
-        return []
-
-
-def moved(features, adapted: dict[str, tuple[str, ...]], stuck: dict[str, tuple[str, ...]]) -> list[Moved]:
-    """Every feature, and whether its handlers have moved to the four kinds or still run on the adapter. What `journal feature moved` prints."""
-    return [Moved(name, tuple(sorted(adapted.get(name, ()))), tuple(sorted(stuck.get(name, ())))) for name in sorted(features)]
-
+"""The engine's own receivers of a logged event, the bus listeners and the catalogue facts, kept apart from the features' registry so the boot walk's rules for a feature do not bind them."""
 
 def ran_on_the_bus(receiver, event: "OldEvent", record) -> list[Fact]:
     """What a receiver of the lane does in place of the bus: hands the logged event to what the bus would have run, if this one would have heard it. It dispatches nothing: whatever the listener wrote reaches the engine as the funnel's own resource facts."""
@@ -99,55 +34,6 @@ class OldEvent(Fact):
     """A bridge: a logged event wrapped so the lane can carry it to the old handlers. The row that removes the adapter removes this class."""
 
     logged: object
-
-
-class LoggedHandler(OldHandler):
-    """An old handler on the adapter beside the bus: it hears an OldEvent and runs for the events the bus would have given it."""
-
-    def __init__(self, feature, handler: OldStyle, run, kind):
-        if getattr(kind, "marked_as", Fact) is Request:
-            raise CannotBeAdapted.of(type(handler), "it answers a request, which is read before anything writes and not handled after")
-        super().__init__(feature, handler)
-        self.listener, self.kind = run, kind
-
-    def patterns(self) -> tuple[str, ...]:
-        """The bus patterns this handler listened on."""
-        return tuple(self.kind.patterns(self.handler.hooks))
-
-    def hears(self, logged, record) -> bool:
-        """Whether the bus would have given the handler this event: a pattern it listened on, and its feature on."""
-        return bool(set(bus.patterns(logged)) & set(self.patterns())) and self.feature.enabled(record)
-
-    def handle(self, event: OldEvent, record) -> list[Fact]:
-        """Runs the bus's own run of the handler, so the adapter holds no second way to read the event or build the Context."""
-        return ran_on_the_bus(self, event, record)
-
-
-def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
-    """Registers an old handler on the adapter too, once. Nothing dispatches an OldEvent yet, so it runs nothing."""
-    try:
-        receiver = LoggedHandler(feature, handler, run, kind)
-    except CannotBeAdapted as refusal:
-        NOT_ADAPTABLE[feature.name, type(handler).__name__] = str(refusal)
-        return
-    TICKING.let_go(run)
-    ADAPTED.add(Registration.read(HANDLE, OldEvent, receiver, (), feature.name))
-    TICKING.resolve()
-
-
-def listing() -> str:
-    """Per feature, adapted or moved: what `journal feature moved` prints."""
-    from framework.loaded import FEATURES
-    adapted: dict[str, list[str]] = {}
-    for one in ADAPTED.of(HANDLE):
-        adapted.setdefault(one.feature, []).append(one.name)
-    stuck: dict[str, list[str]] = {}
-    for (feature, name) in NOT_ADAPTABLE:
-        stuck.setdefault(feature, []).append(name)
-    return "\n".join(one.says() for one in moved(FEATURES, {k: tuple(v) for k, v in adapted.items()}, {k: tuple(v) for k, v in stuck.items()}))
-
-
-MOVED.add(None, listing)
 
 
 SLOTS = (bus.ANY, "type", "action", "type.action", "event", "hook", "hook.*")
@@ -271,24 +157,14 @@ class Ticking:
         """Whether a feature written for the 3.0 engine receives the typed event that this pattern names."""
         return any(issubclass(one.event, TypedEvent) and pattern in one.event.patterns(()) for one in self.moved.each)
 
-    def already_runs(self, listener) -> bool:
-        return any(getattr(one.receiver, "listener", None) is listener for one in self.registered.of(HANDLE))
-
     def join(self, pattern: str, listener, enabled) -> None:
-        """A listener the bus has taken runs on the lane too, unless a feature's wiring already put it there as an old handler."""
-        if self.already_runs(listener):
-            return
+        """A listener the bus has taken runs on the lane too."""
         self.registered.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, enabled), ()))
         self.resolve()
 
     def leave(self, pattern: str, listener) -> None:
         one = next((one for one in self.registered.of(HANDLE) if getattr(one.receiver, "listener", None) is listener and getattr(one.receiver, "pattern", "") == pattern), None)
         if one is not None:
-            self.registered.forget(HANDLE, one.feature, one.name)
-
-    def let_go(self, listener) -> None:
-        """A listener the bus took before its feature's wiring reached the adapter: the old handler replaces it, so it is not run twice."""
-        for one in [one for one in self.registered.of(HANDLE) if getattr(one.receiver, "listener", None) is listener]:
             self.registered.forget(HANDLE, one.feature, one.name)
 
     def reaches(self, logged, record) -> None:
@@ -327,27 +203,8 @@ TICKING = Ticking(ADAPTED, REGISTERED)
 """The one lane every receiver runs on, adapted or moved."""
 
 
-class HalfSwept(Exception):
-    """A feature registering for both engines at once, which the boot refuses rather than let every handler of it fire twice."""
-
-    @classmethod
-    def of(cls, feature: str, adapted: list[str], moved: list[str]) -> "HalfSwept":
-        return cls(f"{feature} registers {', '.join(sorted(adapted))} on the 2.x bus and {', '.join(sorted(moved))} on the 3.0 engine; "
-                   "a feature is swept whole or not at all, because both run on the same lane and every handler of it would fire twice")
-
-
-def no_feature_is_half_swept() -> None:
-    """Refuses a feature that registers for both engines. There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice."""
-    adapted = [one for one in ADAPTED.each if one.feature and one.name not in THE_ENGINES_OWN]
-    moved = [one for one in REGISTERED.each if one.feature and one.name not in THE_ENGINES_OWN]
-    for feature in sorted({one.feature for one in adapted} & {one.feature for one in moved}):
-        raise HalfSwept.of(feature, [one.name for one in adapted if one.feature == feature],
-                           [one.name for one in moved if one.feature == feature])
-
-
 def ordered_once_the_features_have_registered() -> None:
     """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it. A moved receiver that asks for what the lane does not serve is refused here, at boot."""
-    no_feature_is_half_swept()
     walked(REGISTERED, set(lane_services(None, lambda: None)))
     TICKING.resolve()
 

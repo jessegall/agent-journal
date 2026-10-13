@@ -94,9 +94,8 @@ def sentence(text: str) -> str:
 
 
 def reaching(f) -> str:
-    skill_line = [*(f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN),
-            *(f"the guard {guard.name}" for guard in f.journal.agent.guards if guard.reach != Reach.MAIN)]
-    return f"These reach your subagents too: {', '.join(skill_line)}." if skill_line else "Its lines and guards are for the main agent only; none reach a subagent."
+    skill_line = [f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN]
+    return f"These reach your subagents too: {', '.join(skill_line)}." if skill_line else "Its lines are for the main agent only; none reach a subagent."
 
 
 def folded_parts(folded: list) -> str:

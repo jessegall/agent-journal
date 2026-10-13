@@ -480,42 +480,6 @@ def test_a_tick_holds_what_it_remembers_until_it_ends_so_order_within_it_never_m
         "the write really happened: it was the snapshot that hid it, not the write that failed"
 
 
-def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot():
-    from dataclasses import dataclass
-
-    from events import Fact
-    from framework.adapter import OldHandler, moved
-    from framework.parts import Handler as OldStyle
-    from receiving import Registration, Registrations
-    from receiving.boot import walked
-    from receiving.ticks import Lane, Services
-    from serving import Adapted as TheRecord
-
-    @dataclass(frozen=True, kw_only=True)
-    class TodoCreated(Fact):
-        n: int
-
-    minded = []
-
-    class MindTheBoard(OldStyle):
-        def handle(self, context, event):
-            minded.append((event.n, context.record))
-
-    registered = Registrations()
-    registered.add(Registration.read("handle", TodoCreated, OldHandler(None, MindTheBoard()), [], "tickets"))
-    out = Lane("project", registered, Services({TheRecord: "the tick's record"})).run(TodoCreated(n=7))
-
-    assert minded == [(7, "the tick's record")], \
-        "a 2.x handler runs as a handler of its event, against a Context built over the tick's own record"
-    assert [type(one).__name__ for one in out] == ["TodoCreated"], \
-        "it dispatches nothing itself: what it wrote reaches the engine as the funnel's own resource facts"
-    walked(registered, set()), "the adapter is exempt from the boot rules by declaring itself adapted, not by a name the checker knows"
-
-
-    assert [one.says() for one in moved(["plans", "tickets"], {"tickets": ("MindTheBoard",)}, {})] == \
-        ["plans: moved", "tickets: adapted (MindTheBoard)"], "the listing says, per feature, moved or adapted"
-
-
 def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads_the_play_itself():
     import features
     from expects import Given, Nudged, Printed, Ran, Refused, Unchanged, Wrote, answering, at, counting, exited
@@ -634,58 +598,6 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
         assert watch.inbox.qsize() == 0, "a run with no record cannot be watched: there is nothing to read what it did from"
     finally:
         BROKEN.entries = [entry for entry in BROKEN.entries if entry.owner is not None]
-
-
-def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_listing_says_where_each_feature_stands():
-    from types import SimpleNamespace
-
-    import features
-    from events import Fact, Request
-    from framework.adapter import ADAPTED, CannotBeAdapted, LoggedHandler, OldEvent, listing
-    from framework.parts import Handler as OldStyle
-    from framework.promises import PROMISED
-    from receiving import HANDLE, Registration, Registrations
-    from receiving.ticks import Lane, Services
-    from resources.base import Event
-    from serving import Adapted as TheRecord
-
-    features.load()
-    said = dict(line.split(": ", 1) for line in listing().splitlines())
-    assert {said[name] for name in ("command_tags", "chat_etiquette", "acknowledgements", "sequences")} == {"moved"}, \
-        "the four features on the sending path are swept, since a handler there could not run on the adapter at all"
-    handled = {one.feature.name for one in PROMISED.each if one.kind == "handler"}
-    assert all(said[name] != "moved" for name in handled) and all(said[name] == "moved" for name in said if name not in handled), \
-        "a feature reads as moved when it holds no old handler, and as adapted or stuck while it holds one"
-    adapted = ADAPTED.of(HANDLE)
-    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and all(one.name == type(one.receiver.handler).__name__ for one in adapted if one.feature), \
-        "each registers under its old handler's own name, so the ordering can tell them apart and none is registered twice"
-
-    ran = []
-
-    class MindTheBoard(OldStyle):
-        hooks = ()
-
-        def handle(self, context, event):
-            raise AssertionError("the adapter runs the bus's own run, never the handler directly")
-
-    class Switched:
-        on = True
-
-        def enabled(self, record) -> bool:
-            return self.on
-
-    kind = SimpleNamespace(marked_as=Fact, patterns=lambda hooks: ("todo.created",))
-    feature = Switched()
-    registered = Registrations()
-    registered.add(Registration.read(HANDLE, OldEvent, LoggedHandler(feature, MindTheBoard(), lambda logged, record: ran.append((logged.n, record)), kind), [], "tickets"))
-    lane = lambda: Lane("project", registered, Services({TheRecord: "the tick's record"}))
-    lane().run(OldEvent(logged=Event(1, 0.0, "todo", 3, "created", "agent")))
-    lane().run(OldEvent(logged=Event(2, 0.0, "todo", 4, "updated", "agent")))
-    feature.on = False
-    lane().run(OldEvent(logged=Event(3, 0.0, "todo", 5, "created", "agent")))
-    assert ran == [(3, "the tick's record")], "the old handler runs for the events the bus would have given it and while its feature is on, and for no other"
-    with pytest.raises(CannotBeAdapted):
-        LoggedHandler(feature, MindTheBoard(), None, SimpleNamespace(marked_as=Request, patterns=lambda hooks: ()))
 
 
 def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the_bus_ran_them():
@@ -1154,47 +1066,3 @@ def test_a_refuser_on_the_write_path_stops_a_controller_write_with_its_reason():
         REGISTERED.forget(registration.kind, registration.feature, registration.name)
 
 
-def test_a_feature_registered_for_both_engines_is_refused_at_boot():
-    """There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice.
-
-    A half-swept feature would put a handler on the bus and a receiver on the lane, and the lane runs both, so every
-    handler of that feature would fire twice. The boot refuses it instead, naming both halves.
-    """
-    import pytest
-
-    from framework.adapter import ADAPTED, HalfSwept, no_feature_is_half_swept
-    from receiving import HANDLE, REGISTERED, Registration
-
-    from dataclasses import dataclass
-
-    from events import Fact
-    from receiving import Handler, Listener
-
-    @dataclass(frozen=True, kw_only=True)
-    class TurnWritten(Fact):
-        text: str
-
-    class TagsInText(Listener[TurnWritten]):
-        def listen(self, event: TurnWritten) -> list[Fact]:
-            return []
-
-    class RunTheTags(Handler[TurnWritten]):
-        def handle(self, event: TurnWritten) -> list[Fact]:
-            return []
-
-    import features
-    features.load()
-    no_feature_is_half_swept()
-    moved = Registration.read("listen", TurnWritten, TagsInText(), ["an expectation"], "command_tags")
-    adapted = Registration.read(HANDLE, TurnWritten, RunTheTags(), ["an expectation"], "command_tags")
-    REGISTERED.add(moved)
-    ADAPTED.add(adapted)
-    try:
-        with pytest.raises(HalfSwept) as refusal:
-            no_feature_is_half_swept()
-        assert "command_tags" in str(refusal.value) and "fire twice" in str(refusal.value), \
-            f"the refusal names the feature and why both halves cannot run: {refusal.value}"
-    finally:
-        REGISTERED.forget(moved.kind, moved.feature, moved.name)
-        ADAPTED.forget(adapted.kind, adapted.feature, adapted.name)
-    no_feature_is_half_swept()

@@ -5,7 +5,7 @@ from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine import runtime
 from engine.wording import appended
-from framework.wiring import AgentHooks, Client, Commands, Events, Routes
+from framework.wiring import AgentHooks, Commands, Events, Routes
 from resources.base import SYSTEM, titled
 
 
@@ -67,10 +67,6 @@ class Journal:
     @cached_property
     def events(self) -> Events:
         return Events(self.feature)
-
-    @cached_property
-    def client(self) -> Client:
-        return Client(self.feature)
 
     @cached_property
     def commands(self) -> Commands:

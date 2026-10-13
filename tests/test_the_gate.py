@@ -13,7 +13,7 @@ from commands.http import dispatch as request
 from commands.parser import parser
 from controllers.types import Agents, Notices, Nudges, Works
 from engine import runtime
-from engine.gates import AFTERWARDS, CANCELERS, HookCall, LONG_COMMAND, POLICIES, cancelled, gate_file, held
+from engine.gates import gate_file, held
 from engine.sessions import ACTIVE_ENV, Sessions
 from engine.wording import APPENDS
 from providers import PROVIDERS, claude_channel as channel
@@ -162,15 +162,7 @@ def values_for(feature, key: str, line) -> dict:
     return {**{p.name: [1] if p.annotation is list else "1" for p in appended}, **{name: "1" for name in line.placeholders()}}
 
 
-def spied(guard, asked: list):
-    def ask(*given):
-        asked.append(guard)
-        return ""
-    ask.guard = guard
-    return ask
-
-
-def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
+def test_every_line_reaches_exactly_the_agents_its_reach_names():
     features.load()
     record = fresh()
     agents = Agents(record, actor=SYSTEM)
@@ -192,28 +184,6 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
                 f"{feature.name}.{key} is told to the viewer under a switch the journal does not honour"
             assert nudge["guarantee"].endswith("."), \
                 f"{feature.name}.{key} is shown to the user without a sentence saying when it is sent and what the agent is told"
-
-    provider = PROVIDERS["claude"]()
-    asked: list = []
-    points = (POLICIES, AFTERWARDS, CANCELERS)
-    kept = [list(point.entries) for point in points]
-    for point, entries in zip(points, kept):
-        point.entries = [replace(entry, value=spied(entry.value.guard, asked)) for entry in entries]
-    every = [entry.value.guard for entries in kept for entry in entries]
-    job = {"subagent_type": "Explore", "model": "haiku", "description": "Mr. Strunk: read the gate", "prompt": "look"}
-    try:
-        for subagent in (False, True):
-            asked.clear()
-            called = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Agent", "tool_input": job}
-            hook = Hook.read({**called, "agent_id": "helper"} if subagent else called, provider.tool_kinds)
-            call = HookCall(provider, record, hook, main)
-            gated(call)
-            cancelled(LONG_COMMAND, call, {})
-            wanted = sorted((g for g in every if g.reaches(subagent)), key=repr)
-            assert sorted(asked, key=repr) == wanted, f"a {'subagent' if subagent else 'main agent'}'s call asks exactly the guards that reach it"
-    finally:
-        for point, entries in zip(points, kept):
-            point.entries = entries
 
 
 PATCH = "*** Begin Patch\n*** Add File: web/x.py\n+print(1)\n*** End Patch"

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from controllers.base import Arguments, Controller
 from controllers.plugins import Plugins
 from declaring.details import values_of
-from declaring.registries import MOVED, QUIET_IN_HELPERS, SECRET_CHECKS, SETTING_KEYS, SETTINGS_CHANGED
+from declaring.registries import QUIET_IN_HELPERS, SECRET_CHECKS, SETTING_KEYS, SETTINGS_CHANGED
 from declaring.settings import Settings
 from engine.record import Record
 from events.catalogue import CATALOGUE
@@ -35,10 +35,6 @@ class Features(Controller):
         """Switches off here every feature that declares itself quiet in a helper's or a ticket's environment."""
         for name in QUIET_IN_HELPERS.each():
             self.switch(name, False)
-
-    @action
-    def moved(self) -> dict:
-        return {"out": "\n".join(listing() for listing in MOVED.each())}
 
     @action
     def events(self) -> dict:
