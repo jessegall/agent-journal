@@ -81,6 +81,9 @@ class SharingFeature(Feature):
             Given(shell("git status"), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
             Given(shell(f'journal share agree 4 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Allowed()),
             Given(shell("git status"), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell('journal share agree 4 "yes"'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
+            Given(shell(f'journal share agree 4 5 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
+            Given(ToolCallAsked(tool="Read", input="x.py", session="claude-1"), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
         ])
         journal.events.answer(ToolCallAsked, RefuseClaimedUser(), expects=[
             Given(shell('journal todo create "Later" --as ' + "user"), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
@@ -90,6 +93,13 @@ class SharingFeature(Feature):
             Given(shell(f"journal todo create x --set '{NAMED}'"), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
             Given(shell("journal --as=" + "user todo all"), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
             Given(shell('journal todo create "Later"'), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(ToolCallAsked(tool="Write", input="note --as " + "user", command="", session="claude-1"), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell("curl -X POST localhost/api/main/todos?" + NAMED), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
+            Given(shell("curl localhost/api/main/todos"), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell("journal todo all --set=" + NAMED), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
+            Given(shell("FOO=1 JOURNAL_" + "ACTOR=user journal todo all"), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
+            Given(shell("JOURNAL_" + "ACTOR=user make test"), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell("journal todo all --as " + "USER"), rows=[AGENT_ROW]) >> Answered(Declined(CLAIM)),
             Given(shell('echo "pass --as user to journal"'), rows=[AGENT_ROW]) >> Answered(Allowed()),
             Given(shell(f"python3 -c 'Messages(record, {NAMED.upper()}).create(1)'"), rows=[AGENT_ROW]) >> Answered(Allowed()),
             Given(shell(f"grep -rn '{NAMED.upper()}' src"), rows=[AGENT_ROW]) >> Answered(Allowed()),
