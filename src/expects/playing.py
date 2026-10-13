@@ -248,6 +248,20 @@ class Viewer(Asked):
         return url
 
 
+class Held:
+    """A shared state file the play keeps in memory: what the Given says it holds, changed as the real one is."""
+
+    def __init__(self, held: dict):
+        self.held = dict(held)
+
+    def get(self, key: str, default=None):
+        return self.held.get(key, default)
+
+    @contextmanager
+    def changing(self):
+        yield self.held
+
+
 @dataclass
 class Faults(Asked):
     """The fault reports: each one filed is remembered as a run, with its title."""
@@ -284,6 +298,9 @@ class JournalRoot(Asked):
 
     def is_warming(self) -> bool:
         return self.named(("warming",), False)
+
+    def shared_state(self, name: str):
+        return Held(self.named(("state", name), {}))
 
     def environments(self) -> list[str]:
         return self.named(("environments",), ["t"])

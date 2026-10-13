@@ -30,6 +30,7 @@ from events import Fact
 from framework.loaded import FEATURES
 from framework.parts import Marks as AgentMarks, Speaker
 from engine import gates
+from engine.state import State
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
 from receiving.asking import answered
@@ -177,6 +178,10 @@ class TheJournalRoot:
 
     def __init__(self, record):
         self.record, self.root = record, record.root
+
+    def shared_state(self, name: str) -> State:
+        """A small JSON file of state beside the runtime that every environment of the project shares, changed under its lock."""
+        return State(runtime.folder(self.root) / name)
 
     def project(self) -> Path:
         """The folder of the project the journal belongs to."""

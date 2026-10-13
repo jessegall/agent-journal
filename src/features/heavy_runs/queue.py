@@ -8,10 +8,7 @@ ORDER is not, and that is the part an orchestrator was keeping in its head. It i
 
 import time
 from dataclasses import dataclass
-from pathlib import Path
 
-from engine import runtime
-from engine.state import State
 
 QUEUE = "queue"
 
@@ -39,8 +36,8 @@ class Run:
 class HeavyRuns:
     """What is running and what waits, for the whole project. It is one file beside the runtime, because a queue of one environment is no queue at all."""
 
-    def __init__(self, root: Path, forgotten_after: float):
-        self.state = State(runtime.folder(Path(root)) / "heavy-runs.json")
+    def __init__(self, state, forgotten_after: float):
+        self.state = state
         self.forgotten_after = forgotten_after
 
     def waiting(self, now: float = 0.0) -> list[Run]:

@@ -1,17 +1,18 @@
 """Rule 4 enforced from the queue rather than from an orchestrator's memory: one heavy run at a time."""
 
 from controllers.types import Agents, Environments
-from engine.record import Record
 from features.heavy_runs.queue import HeavyRuns
 from payload import runs_tests
 from resources.base import SYSTEM
+
+STATE_FILE = "heavy-runs.json"
 
 
 def heavy_now(record) -> list[tuple[str, str]]:
     """Every heavy run going in the project now, as the environment it runs in and the command it runs, read from the agent rows rather than from anything anyone remembers."""
     return [(place.title, entry.get("command", ""))
             for place in Environments(record, actor=SYSTEM).rows.standing()
-            for row in Agents(Record(record.root, place.title), actor=SYSTEM).rows.standing()
+            for row in Agents(record, actor=SYSTEM).in_env(place.title).rows.standing()
             for entry in row.runs
             if entry.get("running") and runs_tests(entry.get("command", ""))]
 
@@ -21,5 +22,5 @@ def ahead_of(record, shell: str) -> list[tuple[str, str]]:
     return [(where, command) for where, command in heavy_now(record) if where != record.env] if shell and runs_tests(shell) else []
 
 
-def queue_of(record, forgotten_after) -> HeavyRuns:
-    return HeavyRuns(record.root, float(forgotten_after) * 60)
+def queue_of(journal_root, forgotten_after) -> HeavyRuns:
+    return HeavyRuns(journal_root.shared_state(STATE_FILE), float(forgotten_after) * 60)
