@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, TypeVar
 
 from engine.developing import found, project_of
+from resources.files import RUNTIME
 from resources.memo import Memo
 
 T = TypeVar("T")
@@ -78,11 +79,14 @@ def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
 
 
 def read_promised_json(path: Path, into: Callable[[Any], T], default: T) -> T:
-    """A file's content for the reader that is promised real state: a mark, a setting, a seat, a stored record. Where the journal develops itself a file that is there and answers the default is said, naming the path; everywhere else, and for a file that is not there, it answers the default as read_json does."""
+    """A file's content for the reader that is promised real state: a mark, a setting, a seat, a stored record. Where the journal develops itself a file that is there and answers the default is said, naming the path; everywhere else, and for a file that is not there, it answers the default as read_json does. Under runtime everything is a cache, so a file there that cannot be read is dropped to be made again, never said."""
     answer = read_json(path, into, default)
-    if answer is default and Path(path).is_file():
-        return found(project_of(path), "a file that is there but is not what its reader promised", str(path), (), default, blank=default)
-    return answer
+    if answer is not default or not Path(path).is_file():
+        return answer
+    if RUNTIME in Path(path).parts:
+        Path(path).unlink(missing_ok=True)
+        return default
+    return found(project_of(path), "a file that is there but is not what its reader promised", str(path), (), default, blank=default)
 
 
 class OutsideRepository(RuntimeError):

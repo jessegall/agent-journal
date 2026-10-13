@@ -284,6 +284,10 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
         read_promised_json(broken, dict, {})
     with pytest.raises(AnsweredBlank, match="nowhere"):
         transcript_reader(agent)
+    cache = record.root / "runtime" / "sessions" / "s1" / "session.json"
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text("")
+    assert (read_promised_json(cache, dict, {}), cache.exists()) == ({}, False), "under runtime an unreadable file is a cache: dropped to be made again, never said"
     monkeypatch.delenv("DEVELOPMENT_MODE")
     blocked = record.root.parent / "not-a-folder"
     blocked.write_text("")
