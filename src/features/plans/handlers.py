@@ -1,189 +1,75 @@
-import time
-
-from controllers.types import Todos, Works
-from events.agents import ClockTicked
-from events.resources import AnyEvent, RowReopened
-from events.todos import TodoCompleted, TodoUpdated
-from controllers.types import Plans
-from resources.plans import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING
-from framework.sending import Nudge, Sent, send
-from declaring.trigger import MINUTE
-from resources.plans import PHASE, PHASE_FIELDS
-from features.work_tracking.auto import passes_checkpoints
-from features.work_tracking.next import carried_on, free, named_rows, ready, waiting_rows
-from framework.parts import AgentContext, Context, Handler
-from resources.base import AGENT, SYSTEM, USER
-from events.plans import PlanChanged
-from events.reports import ReportLinked
-
-STILL_TIMES = 3
-ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
+from events import Fact
+from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
+                          ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
+from receiving import Handler
+from resources.plans import ACTIVE
+from resources.types import Plan
+from serving import Chat, Rows
 
 
-def delegate_plans_holding(record, todo) -> None:
-    plans = Plans(record, actor=SYSTEM)
-    for plan in plans.rows.every():
-        if plan.status in RUNNING and plan.has_in_phase(todo):
-            plans.delegate(plan.n)
-
-
-class DelegatePlansOfHandedRows(Handler):
-    def handle(self, context: Context, event: TodoUpdated) -> None:
-        row = Todos(context.record, actor=SYSTEM).load(event.n)
-        if row.assigned.startswith("helper:") and not row.completed:
-            delegate_plans_holding(context.record, row)
-
-
-class StartBuilding(Handler):
-    def handle(self, context: Context, event: PlanChanged) -> None:
-        speaking = context.to_primary()
-        if event.action == "created" and event.actor == USER and speaking:
-            plan = context.journal.get(Plans).load(event.n)
-            speaking.agent.say("started", n=plan.n, title=plan.title, depth=DEPTHS[plan.depth])
-
-
-class StartApproved(Handler):
-    def handle(self, context: Context, event: PlanChanged) -> None:
-        speaking = context.to_primary()
-        if event.action != "updated" or event.actor not in (USER, SYSTEM) or not speaking:
-            return
-        plan = context.journal.get(Plans).load(event.n)
-        if plan.status == APPROVED and speaking.once("approved", str(plan.n)):
-            speaking.agent.say("approved", n=plan.n, title=plan.title)
-
-
-class TellParkedAndPickedUp(Handler):
-    def handle(self, context: Context, event: PlanChanged) -> None:
-        speaking = context.to_primary()
-        if event.action != "updated" or event.actor != USER or event.status not in (ACTIVE, PARKED) or event.parked_for or not speaking:
-            return
-        plan = context.journal.get(Plans).load(event.n)
-        line = "picked up" if event.status == ACTIVE else "parked"
-        speaking.agent.say(line, n=plan.n, title=plan.title, phase=plan.current)
-
-
-class GuideBuilding(Handler):
-    def handle(self, context: Context, event: PlanChanged) -> None:
-        if not (event.written or event.action == "linked") or event.actor != AGENT:
-            return
-        plan = context.journal.get(Plans).load(event.n)
-        speaking = context.to_primary()
-        if plan.status != BUILDING or not speaking:
-            return
-        stage = plan.stage or PHASES
-        filled = bool(plan.phases) and not plan.empty_phases()
-        line = "ready" if stage != PHASES and filled else stage
-        if speaking.once("planned", f"{plan.n}:{line}"):
-            speaking.agent.say(line, n=plan.n)
-
-
-class PassCheckpointsInAuto(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        if not passes_checkpoints(context.record):
-            return
-        plans = context.journal.get(Plans)
-        for plan in plans.rows.every():
-            if plan.status == WAITING:
-                plans.resume(plan.n)
-
-
-class TakeStruckRowsOutOfUnapprovedPlans(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not context.journal.get(Todos).load(event.n).data.get("struck"):
-            return
-        plans = context.journal.get(Plans)
-        for plan in plans.rows.every():
-            p = plan.phase_of("todo", event.n)
-            if p and plan.status in (BUILDING, DRAFT, READY, REVIEWING):
-                plans.place(plan.n, p, [event.n], off=True)
-
-
-class AdvancePlans(Handler):
-    def handle(self, context: Context, event: AnyEvent) -> None:
-        if (event.type, event.action) in ADVANCES:
-            Plans(context.record, actor=SYSTEM)._catch_up(passes_checkpoints(context.record))
-
-
-class ReopenPlansWithTheirRows(Handler):
-    def handle(self, context: Context, event: RowReopened) -> None:
-        if event.type not in PHASE_FIELDS:
-            return
-        plans = Plans(context.record, actor=SYSTEM)
-        for plan in plans.rows.every():
-            found = plan.phase_of(event.type, event.n)
-            if not found or plan.status == ABANDONED:
-                continue
-            if not (plan.completed or (plan.status in RUNNING and plan.current > found)):
-                continue
-            plan = plans.reopen(plan.n, why=f"{event.type} {event.n} of phase {found} was reopened") if plan.completed else plans.load(plan.n)
-            plan.status, plan.current = ACTIVE, found
-            plans.save(plan, "updated", phase=found, status=ACTIVE)
-
-
-def still_plans(context, agent) -> list[Sent]:
-    quiet = agent.idle_for
-    if quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE or carried_on(context.record):
+class StartBuilding(Handler[PlanBuildBegun]):
+    def handle(self, event: PlanBuildBegun, chat: Chat) -> list[Fact]:
+        chat.say("started", n=event.plan, title=event.title, depth=event.depth)
         return []
-    found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._active()]
-    return [Sent(f"{plan.n}:{plan.updated}", {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]
 
 
-def doable(record, plan) -> str:
-    phase = plan.current_phase
-    if phase is None:
-        return ""
-    mine = set(phase[PHASE.todos])
-    going = [f"to-do {w.todo}" for w in Works(record, actor=SYSTEM).rows.standing() if int(w.todo) in mine and not w.parked and not w.awaiting]
-    taking = [f"to-do {t.n}" for t in ready(record) if t.n in mine]
-    parts = []
-    if going:
-        parts.append(f"go on with {', '.join(going)}")
-    if taking:
-        parts.append(f"take {', '.join(taking)}")
-    return ", then ".join(parts)
+class StartApproved(Handler[PlanApproved]):
+    def handle(self, event: PlanApproved, chat: Chat) -> list[Fact]:
+        chat.say("approved", n=event.plan, title=event.title)
+        return []
 
 
-def blocked_plans(context, agent) -> list[Sent]:
-    found = []
-    for plan in Plans(context.record, actor=SYSTEM)._active():
-        held = waiting_rows(context.record, {n for phase in plan.phases for n in phase[PHASE.todos]})
-        if held:
-            found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": named_rows(held)}))
-    return found
+class TellParkedAndPickedUp(Handler[PlanMovedByUser]):
+    def handle(self, event: PlanMovedByUser, chat: Chat) -> list[Fact]:
+        chat.say(event.line, n=event.plan, title=event.title, phase=event.phase)
+        return []
 
 
-class EndReviewWithItsReport(Handler):
-    def handle(self, context: Context, event: ReportLinked) -> None:
-        plans = context.journal.acting(SYSTEM).get(Plans)
-        plan = plans._under_review(event.to)
-        if not plan:
-            return
-        plans.build(plan.n)
-        speaking = context.to_primary()
-        if speaking:
-            speaking.agent.say("reviewed", n=plan.n, title=plan.title, report=event.n)
+class GuideBuilding(Handler[PlanBuildingGuided]):
+    def handle(self, event: PlanBuildingGuided, chat: Chat) -> list[Fact]:
+        chat.say(event.line, n=event.plan)
+        return []
 
 
-def standing_still(context, agent) -> list[Sent]:
-    """A running plan whose current phase has open rows that nothing holds, in a while, and no work in hand on them: the plan stands still and nobody has stopped it, the shape of rows built and left open."""
-    quiet = time.time() - float(context.feature.cadence(context.record, "still").every) * MINUTE
-    plans, taken = Plans(context.record, actor=SYSTEM), {int(w.todo) for w in carried_on(context.record)}
-    found = []
-    for plan in plans._active():
-        phase = plan.current_phase
-        rows = [row for row in plans._members(phase) if not row.completed] if phase else []
-        if rows and all(row.type == "todo" and free(context.record, row) and row.n not in taken and row.updated < quiet for row in rows):
-            found.append(Sent(f"{plan.n}:{plan.current}", {"n": plan.n, "title": plan.title, "phase": phase[PHASE.title],
-                                                           "rows": ", ".join(str(row.n) for row in rows), "minutes": int((time.time() - max(row.updated for row in rows)) // MINUTE)}))
-    return found
+class DelegatePlansOfHandedRows(Handler[PlanHandedToHelper]):
+    def handle(self, event: PlanHandedToHelper, plans: Rows[Plan]) -> list[Fact]:
+        plans.delegate(event.plan)
+        return []
 
 
-STANDING_STILL = Nudge("standing still", behaviour="still", about=standing_still, most=STILL_TIMES,
-                       guarantee="When a running plan's current phase has open rows that nothing blocks and nobody has touched, the agent is told to close them or say what they wait on.")
+class PassCheckpointsInAuto(Handler[CheckpointPassed]):
+    def handle(self, event: CheckpointPassed, plans: Rows[Plan]) -> list[Fact]:
+        plans.resume(event.plan)
+        return []
 
 
-class NameStandingPlans(Handler):
-    behaviour = "still"
+class AdvancePlans(Handler[PlansToAdvance]):
+    def handle(self, event: PlansToAdvance, plans: Rows[Plan]) -> list[Fact]:
+        plans.catch_up(event.passing)
+        return []
 
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        send(context, (STANDING_STILL,))
+
+class ReopenPlansWithTheirRows(Handler[PlanRowReopened]):
+    def handle(self, event: PlanRowReopened, plans: Rows[Plan]) -> list[Fact]:
+        plan = plans.reopen(event.plan, why=f"{event.type} {event.n} of phase {event.phase} was reopened") if event.was_done else plans.load(event.plan)
+        plan.status, plan.current = ACTIVE, event.phase
+        plans.save(plan, "updated", phase=event.phase, status=ACTIVE)
+        return []
+
+
+class TakeStruckRowsOutOfUnapprovedPlans(Handler[StruckRowInUnapprovedPlan]):
+    def handle(self, event: StruckRowInUnapprovedPlan, plans: Rows[Plan]) -> list[Fact]:
+        plans.place(event.plan, event.phase, [event.todo], off=True)
+        return []
+
+
+class EndReviewWithItsReport(Handler[ReviewReportLinked]):
+    def handle(self, event: ReviewReportLinked, plans: Rows[Plan]) -> list[Fact]:
+        plans.build(event.plan)
+        return []
+
+
+class TellReviewEnded(Handler[ReviewEndedWithReport]):
+    def handle(self, event: ReviewEndedWithReport, chat: Chat) -> list[Fact]:
+        chat.say("reviewed", n=event.plan, title=event.title, report=event.report)
+        return []

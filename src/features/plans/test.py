@@ -137,7 +137,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     from features.plans.summary import plans_shown
     assert [(entry["title"], entry["status"], entry["phase"], entry["phases"], entry["rows"], entry["done"]) for entry in plans_shown(record)] == \
         [("Port everything", "active", "Third", 3, 5, 4), ("Another", "building", "", 0, 0, 0)], "the viewer's plan list shows each plan with its phase and how many of its rows are done, one still being written included"
-    from features.plans.handlers import doable
+    from features.plans.watching import doable
     from types import SimpleNamespace
     assert doable(record, SimpleNamespace(current_phase=None)) == "", "a plan with no phase in hand has nothing to take next"
     assert doable(record, by_agent.load(plan.n)) == "take to-do 4", "a plan's next step names the to-dos ready to take"
@@ -235,14 +235,14 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env, monke
         by_user.start(by_user.approve(walked.n).n)
         monkeypatch.setattr(Plans, "save", plan_save)
         todos.complete(last.n, "the last row closes")
-        Plans(record, actor=SYSTEM)._catch_up(passes_checkpoints(record))
+        Plans(record, actor=SYSTEM).catch_up(passes_checkpoints(record))
         monkeypatch.setattr(Plans, "save", saving)
         return by_agent.load(walked.n)
 
     def reentering(self, r, action, **event):
         saved = saving(self, r, action, **event)
         if event.get("complete"):
-            self._catch_up(passes_checkpoints(self.record))
+            self.catch_up(passes_checkpoints(self.record))
         return saved
 
     def closed_elsewhere(self, r, action, **event):
@@ -470,7 +470,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 1 and f"ticket:{first.n}" in plans.load(plan.n).refs, "a phase holds tickets and the plan links them"
     assert started == [f"plan-{plan.n}", first.n], "starting the plan starts its worker agent and the first phase's tickets"
     tickets.complete(first.n, how="merged", yes=True)
-    Plans(record, actor=SYSTEM)._catch_up(passes_checkpoints(record))
+    Plans(record, actor=SYSTEM).catch_up(passes_checkpoints(record))
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"

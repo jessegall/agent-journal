@@ -46,7 +46,7 @@ def helping(record, p) -> list[Helping]:
 def open_tickets(record, p) -> list[int]:
     if not p.delegated or p.current_phase is None:
         return []
-    return [row.n for row in Plans(record, actor=SYSTEM)._members(p.current_phase) if row.type == "ticket" and not row.completed]
+    return [row.n for row in Plans(record, actor=SYSTEM).members(p.current_phase) if row.type == "ticket" and not row.completed]
 
 
 def plan(record, p, todos: dict) -> PlanSummary:

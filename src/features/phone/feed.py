@@ -209,14 +209,14 @@ def feed(home: Record, phone, before: float = math.inf) -> Feed:
 
 def plan_strips(home: Record) -> list[PlanStrip]:
     plans = Plans(home, actor=SYSTEM)
-    return [plan_strip(home, plans, plan) for plan in sorted(plans._running(), key=lambda plan: (plan.delegated, plan.n))]
+    return [plan_strip(home, plans, plan) for plan in sorted(plans.running(), key=lambda plan: (plan.delegated, plan.n))]
 
 
 def plan_strip(home: Record, plans: Plans, plan) -> PlanStrip:
     phases = [PlanPhase(title=formatted(phase[PHASE.title], home, VIEWER), checkpoint=bool(phase[PHASE.checkpoint]),
-                        todos=[PlanTodo(n=row.n, title=formatted(row.title, home, VIEWER), done=bool(row.completed)) for row in plans._members(phase)])
+                        todos=[PlanTodo(n=row.n, title=formatted(row.title, home, VIEWER), done=bool(row.completed)) for row in plans.members(phase)])
               for phase in plan.phases]
-    open_rows = [row for row in plans._members(plan.current_phase) if not row.completed] if plan.delegated and plan.current_phase else []
+    open_rows = [row for row in plans.members(plan.current_phase) if not row.completed] if plan.delegated and plan.current_phase else []
     helpers = Helpers(home, actor=SYSTEM)
     names = sorted({helpers.load(int(row.assigned.partition(":")[2])).name for row in open_rows if row.assigned.startswith("helper:")})
     return PlanStrip(n=plan.n, title=formatted(plan.title, home, VIEWER), abstract=formatted(plan.abstract, home, VIEWER), status=plan.status,

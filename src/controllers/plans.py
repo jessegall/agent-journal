@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from controllers.base import Controller
 from controllers.docs import Docs
 from controllers.environments import Environments
+from controllers.features import automatic
 from controllers.todos import Todos
 from controllers.works import Works
 from resources.plans import (
@@ -140,7 +141,7 @@ class Plans(Controller):
     def review(self, n: int):
         return self._status(self.load(n), REVIEWING, BUILDING, DRAFT, READY)
 
-    def _under_review(self, ref: str):
+    def under_review(self, ref: str):
         kind, _, n = ref.partition(":")
         plan = self.load(n) if kind == "plan" and n.isdigit() else None
         return plan if plan and plan.status == REVIEWING else None
@@ -211,7 +212,7 @@ class Plans(Controller):
         r = self.load(n)
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
         for i, phase in enumerate(r.phases, 1):
-            rows = self._members(phase)
+            rows = self.members(phase)
             lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {tally_of(rows).text()}")
             if i == r.current:
                 lines += [f"  {row.type} {row.n} {row.title}: {standing_of(row)}" for row in rows]
@@ -248,13 +249,13 @@ class Plans(Controller):
             raise Refused(f"plan {r.n} has no phase {p}")
         return r.phases[int(p) - 1]
 
-    def _running(self) -> list:
+    def running(self) -> list:
         return [p for p in self.rows.every() if p.status in RUNNING]
 
-    def _active(self) -> list:
+    def active(self) -> list:
         return [p for p in self.rows.every() if p.status == ACTIVE]
 
-    def _members(self, phase: dict) -> list:
+    def members(self, phase: dict) -> list:
         found = []
         for key, kind in {PHASE.todos: Todos, **PHASE_ROWS.keyed()}.items():
             rows = kind(self.record, actor=self.actor)
@@ -262,20 +263,20 @@ class Plans(Controller):
         return found
 
     def _complete(self, phase: dict) -> bool:
-        return all(row.completed for row in self._members(phase))
+        return all(row.completed for row in self.members(phase))
 
     def _opened_early(self, plan, found) -> bool:
         phase = plan.current_phase
         return plan.status == ACTIVE and phase is not None and found.phase > plan.current and self._only_waiting(phase)
 
     def _only_waiting(self, phase: dict) -> bool:
-        open_rows = [row for row in self._members(phase) if not row.completed]
+        open_rows = [row for row in self.members(phase) if not row.completed]
         return bool(open_rows) and all(row.type == "todo" and row.blocked for row in open_rows)
 
     def _first_open(self, plan) -> int:
         return next((p for p, phase in enumerate(plan.phases, 1) if not self._complete(phase)), 0)
 
-    def _holds(self, todo) -> bool:
+    def holds(self, todo) -> bool:
         plans = self.rows.every()
         placements = [(plan, found) for plan in plans if (found := plan.placement(todo))]
         if placements:
@@ -304,7 +305,11 @@ class Plans(Controller):
             self._start_phase(plan)
         return not (last or waits)
 
-    def _catch_up(self, passing: bool) -> None:
+    def passes_checkpoints(self) -> bool:
+        """Whether a checkpoint passes by itself: auto mode is on and no row steers this environment."""
+        return automatic(self.record) and not Environments(self.record, actor=SYSTEM).steered()
+
+    def catch_up(self, passing: bool) -> None:
         """Walks every running plan on as far as its closed rows allow, one pass at a time per record."""
         home = str(self.record.home)
         walking = CATCHING_UP.get()
@@ -313,7 +318,7 @@ class Plans(Controller):
             return
         entered = CATCHING_UP.set(walking | {home})
         try:
-            for running in self._running():
+            for running in self.running():
                 plan = self.load(running.n)
                 while self._step(plan, passing):
                     pass
@@ -338,9 +343,9 @@ def first_open_phase(record, plan) -> int:
 
 
 def held(record, todo) -> bool:
-    return Plans(record, actor=SYSTEM)._holds(todo)
+    return Plans(record, actor=SYSTEM).holds(todo)
 
 
 def counts(record, plan) -> Tally:
     """How the rows a plan holds stand, over all its phases."""
-    return tally_of([row for phase in plan.phases for row in Plans(record, actor=SYSTEM)._members(phase)])
+    return tally_of([row for phase in plan.phases for row in Plans(record, actor=SYSTEM).members(phase)])

@@ -9,8 +9,7 @@ AUTO = "work_tracking.auto"
 
 
 def steered(record) -> str:
-    place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
-    return str(place.owner) if place else ""
+    return Environments(record, actor=SYSTEM).steered()
 
 
 def chosen_or_steered(chosen: bool, record, key: str) -> bool:

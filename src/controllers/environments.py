@@ -47,6 +47,11 @@ class Environments(Controller):
     PICKED_UP = (Works, Todos, Questions, Messages)
     resource = types.Environment
 
+    def steered(self) -> str:
+        """The row that owns this environment and steers its agent, or none."""
+        place = self.rows.by_title(self.record.env)
+        return str(place.owner) if place else ""
+
     def working_under(self) -> list[str]:
         """The environments launched from this one, and those launched from them in turn: where its helpers, tickets and their helpers work."""
         launched: dict[str, list[str]] = {}

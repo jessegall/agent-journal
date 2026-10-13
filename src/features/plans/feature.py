@@ -1,7 +1,6 @@
-from controllers.types import Works
 from events.agents import ClockTicked
 from events.todos import TodoCompleted
-from expects import WHEN, Given, Kept, Nudged, Refused, Unchanged, Updated
+from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Updated, nothing
 from framework.base import Feature
 from features.plans.summary import plans_shown
 from overview.parts import SUMMARY_PARTS
@@ -18,21 +17,35 @@ from features.plans.handlers import (
     StartBuilding,
     TakeStruckRowsOutOfUnapprovedPlans,
     TellParkedAndPickedUp,
-    blocked_plans,
-    still_plans,
-    STILL_TIMES,
-    NameStandingPlans,
+    TellReviewEnded,
 )
+from features.plans.listeners import (
+    SpotApprovedPlan,
+    SpotBuildingToGuide,
+    SpotCheckpointToPass,
+    SpotPlanBegun,
+    SpotPlanMovedByUser,
+    SpotPlanOfHandedRow,
+    SpotPlansToAdvance,
+    SpotReopenedRowOfAPlan,
+    SpotReviewReport,
+    SpotStruckRowOfAnUnapprovedPlan,
+)
+from features.plans.answering import RefusePlanMode
+from features.plans.refusing import HoldWhilePlanned
+from features.plans.watching import STANDING_STILL, STILL_TIMES, blocked_plans, still_plans
+from events.asking import RowWriting, ToolCallAsked
+from events.answers import Allowed
+from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
+                          ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
 from framework.sending import Nudge
-from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from controllers.plans import held
 from features.work_tracking.next import ROW_HOLDS
 from events.plans import PlanChanged
 from events.reports import ReportLinked
-from events.resources import RowReopened
 from events.todos import TodoUpdated
-from resources.plans import Plan
-from payload import ToolUse
+from resources.plans import DEPTHS, Plan
+from events.resources import AnyEvent, RowReopened
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import AgentRow, Question, Todo, Work
 
@@ -42,6 +55,10 @@ NOT_IN_THE_CURRENT_PHASE = "todo {} is not in the active plan's current phase: f
 A_PLAN_IS_ACTIVE = "a plan is active: open work for a row of its current phase with journal todo start <n>, or --force \"<why>\""
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
+
+
+def writing(**fields) -> RowWriting:
+    return RowWriting(type="work", action="open", actor=AGENT, fields=tuple(fields.items()))
 
 
 def plan(status: str, **data) -> Plan:
@@ -80,95 +97,131 @@ class PlansFeature(Feature):
     nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES,
                     guarantee="When a running plan has not moved for a while, the agent is told, a few times."),
               Nudge("blocked", behaviour="blocked", about=blocked_plans,
-                    guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."))
+                    guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."),
+              STANDING_STILL)
 
     def register(self, journal: Journal) -> None:
         SUMMARY_PARTS.add(None, plans_shown, key="plans")
         ROW_HOLDS.add(self, held)
-        journal.events.handler(NameStandingPlans(), expects=[
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), AGENT_ROW])
-                >> Nudged("standing still", phase="Every nudge is visible", rows="4366, 4367"),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), Question(n=1, title="Which branch?", refs=["todo:4367"]), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, after=["todo:9000"]), row(4367), row(9000), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), Todo(n=4366, title="Row 4366", updated=WHEN - 60), row(4367), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), Work(n=3, title="Build it", data={"todo": 4367}), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), done(4366), done(4367), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("parked", phases=VISIBLE), row(4366), row(4367), AGENT_ROW]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367)]) >> Unchanged(),
+        journal.events.listen(PlanChanged, SpotPlanBegun(), expects=[
+            Given(changed("created", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["normal"])),
+            Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("created", USER), rows=[plan("building")]) >> Dispatches(nothing),
         ])
-        journal.events.handler(StartBuilding(), expects=[
-            Given(changed("created", USER), rows=[plan("building"), AGENT_ROW]) >> Nudged("started"),
-            Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("created", USER), rows=[plan("building")]) >> Unchanged(),
+        journal.events.handle(PlanBuildBegun, StartBuilding(), expects=[
+            Given(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["normal"]), rows=[plan("building"), AGENT_ROW]) >> Nudged("started"),
         ])
-        journal.events.handler(DelegatePlansOfHandedRows(), expects=[
-            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", data={"assigned": "helper:3"}), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), delegated=True),
-            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))]) >> Unchanged(),
-            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"assigned": "helper:3"}), plan("active", phases=phases(5))]) >> Unchanged(),
+        journal.events.listen(TodoUpdated, SpotPlanOfHandedRow(), expects=[
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", data={"assigned": "helper:3"}), plan("active", phases=phases(5))])
+                >> Dispatches(PlanHandedToHelper(plan=1)),
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))]) >> Dispatches(nothing),
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"assigned": "helper:3"}), plan("active", phases=phases(5))])
+                >> Dispatches(nothing),
         ])
-        journal.events.handler(StartApproved(), expects=[
-            Given(changed("updated", USER), rows=[plan("approved"), AGENT_ROW]) >> Nudged("approved"),
-            Given(changed("updated", SYSTEM), rows=[plan("approved"), AGENT_ROW]) >> Nudged("approved"),
-            Given(changed("updated", AGENT), rows=[plan("approved"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("updated", USER), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("updated", USER), rows=[plan("approved")]) >> Unchanged(),
+        journal.events.handle(PlanHandedToHelper, DelegatePlansOfHandedRows(), expects=[
+            Given(PlanHandedToHelper(plan=1), rows=[plan("active", phases=phases(5))]) >> Updated(Plan(n=1), delegated=True),
         ])
-        journal.events.handler(EndReviewWithItsReport(), expects=[
-            Given(reviewed("plan:1"), rows=[plan("reviewing"), AGENT_ROW]) >> Nudged("reviewed"),
-            Given(reviewed("plan:1"), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
-            Given(reviewed("todo:5"), rows=[plan("reviewing"), AGENT_ROW]) >> Unchanged(),
+        journal.events.listen(PlanChanged, SpotApprovedPlan(), expects=[
+            Given(changed("updated", USER), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(PlanApproved(plan=1, title="Ship it").once("approved|1")),
+            Given(changed("updated", SYSTEM), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(PlanApproved(plan=1, title="Ship it").once("approved|1")),
+            Given(changed("updated", AGENT), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("updated", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("updated", USER), rows=[plan("approved")]) >> Dispatches(nothing),
         ])
-        journal.events.handler(TellParkedAndPickedUp(), expects=[
-            Given(changed("updated", USER, "active"), rows=[plan("active"), AGENT_ROW]) >> Nudged("picked up"),
-            Given(changed("updated", USER, "parked"), rows=[plan("parked"), AGENT_ROW]) >> Nudged("parked"),
-            Given(changed("updated", USER, "parked", parked_for=2), rows=[plan("parked"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("updated", AGENT, "parked"), rows=[plan("parked"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("updated", USER, "approved"), rows=[plan("approved"), AGENT_ROW]) >> Unchanged(),
+        journal.events.handle(PlanApproved, StartApproved(), expects=[
+            Given(PlanApproved(plan=1, title="Ship it"), rows=[plan("approved"), AGENT_ROW]) >> Nudged("approved"),
         ])
-        journal.events.handler(GuideBuilding(), expects=[
-            Given(changed("linked", AGENT), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
-            Given(changed("linked", AGENT), rows=[plan("building", stage="todos", phases=[]), AGENT_ROW]) >> Nudged("todos"),
-            Given(changed("linked", USER), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("linked", AGENT), rows=[plan("active"), AGENT_ROW]) >> Unchanged(),
-            Given(changed("updated", AGENT), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
+        journal.events.listen(ReportLinked, SpotReviewReport(), expects=[
+            Given(reviewed("plan:1"), rows=[plan("reviewing"), AGENT_ROW])
+                >> Dispatches(ReviewReportLinked(plan=1)) & Dispatches(ReviewEndedWithReport(plan=1, title="Ship it", report=9)),
+            Given(reviewed("plan:1"), rows=[plan("reviewing")]) >> Dispatches(ReviewReportLinked(plan=1)),
+            Given(reviewed("plan:1"), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(reviewed("todo:5"), rows=[plan("reviewing"), AGENT_ROW]) >> Dispatches(nothing),
         ])
-        journal.events.handler(PassCheckpointsInAuto(), expects=[
-            Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": True}) >> Updated(Plan(n=1), status="active"),
-            Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": False}) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[AGENT_ROW, Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)], settings={"features.work_tracking.auto": True}) >> Unchanged(),
+        journal.events.handle(ReviewReportLinked, EndReviewWithItsReport(), expects=[
+            Given(ReviewReportLinked(plan=1), rows=[plan("reviewing")]) >> Updated(Plan(n=1), status="building"),
         ])
-        journal.events.handler(AdvancePlans(), expects=[
-            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Updated(Plan(n=1), current=2),
-            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)]) >> Updated(Plan(n=1), status="active"),
-            Given(TodoCompleted.of(5), rows=[done(5), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), status="done"),
-            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": False}) >> Updated(Plan(n=1), status="waiting"),
-            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": True}) >> Updated(Plan(n=1), current=2),
-            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Unchanged(),
-            Given(TodoCompleted.of(5), rows=[done(5), plan("parked", phases=phases(5))]) >> Unchanged(),
+        journal.events.handle(ReviewEndedWithReport, TellReviewEnded(), expects=[
+            Given(ReviewEndedWithReport(plan=1, title="Ship it", report=9), rows=[plan("building"), AGENT_ROW]) >> Nudged("reviewed"),
         ])
-        journal.events.handler(ReopenPlansWithTheirRows(), expects=[
-            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Updated(Plan(n=1), status="active", current=1),
-            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=1)]) >> Unchanged(),
-            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("abandoned", phases=phases(5, 6), current=2)]) >> Unchanged(),
-            Given(reopened(9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6), current=2)]) >> Unchanged(),
+        journal.events.listen(PlanChanged, SpotPlanMovedByUser(), expects=[
+            Given(changed("updated", USER, "active"), rows=[plan("active"), AGENT_ROW]) >> Dispatches(PlanMovedByUser(line="picked up", plan=1, title="Ship it", phase=1)),
+            Given(changed("updated", USER, "parked"), rows=[plan("parked"), AGENT_ROW]) >> Dispatches(PlanMovedByUser(line="parked", plan=1, title="Ship it", phase=1)),
+            Given(changed("updated", USER, "parked", parked_for=2), rows=[plan("parked"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("updated", AGENT, "parked"), rows=[plan("parked"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("updated", USER, "approved"), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(nothing),
         ])
-        journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans(), expects=[
-            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))]) >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
-            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Unchanged(),
-            Given(TodoCompleted.of(5), rows=[done(5), plan("building", phases=phases(5))]) >> Unchanged(),
+        journal.events.handle(PlanMovedByUser, TellParkedAndPickedUp(), expects=[
+            Given(PlanMovedByUser(line="picked up", plan=1, title="Ship it", phase=1), rows=[plan("active"), AGENT_ROW]) >> Nudged("picked up"),
+            Given(PlanMovedByUser(line="parked", plan=1, title="Ship it", phase=1), rows=[plan("parked"), AGENT_ROW]) >> Nudged("parked"),
         ])
-        journal.agent.interceptor(RefusePlanMode(), expects=[
-            Given(ToolUse.from_payload("EnterPlanMode", {}, {})) >> Refused(PLAN_MODE_REFUSED),
-            Given(ToolUse.from_payload("Read", {}, {})) >> Kept(),
+        journal.events.listen(PlanChanged, SpotBuildingToGuide(), expects=[
+            Given(changed("linked", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="phases").once("planned|1:phases")),
+            Given(changed("linked", AGENT), rows=[plan("building", stage="todos", phases=[]), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="todos").once("planned|1:todos")),
+            Given(changed("linked", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("linked", AGENT), rows=[plan("active"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("updated", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="phases").once("planned|1:phases")),
         ])
-        journal.commands.intercept("work.open", HoldWhilePlanned(), expects=[
-            Given((Works, {"actor": AGENT}, {"todo": 6}), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(6)),
-            Given((Works, {"actor": AGENT}, {"todo": 5}), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Kept(),
-            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(9)),
-            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9", data={"priority": 300}), plan("active", phases=phases(5, 6))]) >> Kept(),
-            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9")]) >> Kept(),
-            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9"), plan("parked", phases=phases(5, 6))]) >> Kept(),
-            Given((Works, {"actor": AGENT}, {}), rows=[plan("active", phases=phases(5, 6))]) >> Refused(A_PLAN_IS_ACTIVE),
-            Given((Works, {"actor": AGENT}, {}), rows=[plan("parked", phases=phases(5, 6))]) >> Kept(),
+        journal.events.handle(PlanBuildingGuided, GuideBuilding(), expects=[
+            Given(PlanBuildingGuided(plan=1, line="phases"), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
+            Given(PlanBuildingGuided(plan=1, line="todos"), rows=[plan("building", stage="todos", phases=[]), AGENT_ROW]) >> Nudged("todos"),
+        ])
+        journal.events.listen(ClockTicked, SpotCheckpointToPass(), expects=[
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": True})
+                >> Dispatches(CheckpointPassed(plan=1)),
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": False})
+                >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW, Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)], settings={"features.work_tracking.auto": True})
+                >> Dispatches(nothing),
+        ])
+        journal.events.handle(CheckpointPassed, PassCheckpointsInAuto(), expects=[
+            Given(CheckpointPassed(plan=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)]) >> Updated(Plan(n=1), status="active"),
+        ])
+        journal.events.listen(AnyEvent, SpotPlansToAdvance(), expects=[
+            Given(AnyEvent(n=5, type="todo", action="completed", actor=USER), rows=[done(5), plan("active", phases=phases(5))], settings={"features.work_tracking.auto": False})
+                >> Dispatches(PlansToAdvance(passing=False)),
+            Given(AnyEvent(n=5, type="todo", action="completed", actor=USER), rows=[done(5), plan("active", phases=phases(5))], settings={"features.work_tracking.auto": True})
+                >> Dispatches(PlansToAdvance(passing=True)),
+            Given(AnyEvent(n=5, type="todo", action="created", actor=USER), rows=[done(5), plan("active", phases=phases(5))]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(PlansToAdvance, AdvancePlans(), expects=[
+            Given(PlansToAdvance(passing=True), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Updated(Plan(n=1), current=2),
+            Given(PlansToAdvance(passing=True), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)]) >> Updated(Plan(n=1), status="active"),
+            Given(PlansToAdvance(passing=True), rows=[done(5), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), status="done"),
+            Given(PlansToAdvance(passing=False), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))]) >> Updated(Plan(n=1), status="waiting"),
+            Given(PlansToAdvance(passing=True), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))]) >> Updated(Plan(n=1), current=2),
+        ])
+        journal.events.listen(RowReopened, SpotReopenedRowOfAPlan(), expects=[
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False)),
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=1)]) >> Dispatches(nothing),
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("abandoned", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
+            Given(reopened(9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(PlanRowReopened, ReopenPlansWithTheirRows(), expects=[
+            Given(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)])
+                >> Updated(Plan(n=1), status="active", current=1),
+        ])
+        journal.events.listen(TodoCompleted, SpotStruckRowOfAnUnapprovedPlan(), expects=[
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))])
+                >> Dispatches(StruckRowInUnapprovedPlan(plan=1, phase=1, todo=5)),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Dispatches(nothing),
+            Given(TodoCompleted.of(5), rows=[done(5), plan("building", phases=phases(5))]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(StruckRowInUnapprovedPlan, TakeStruckRowsOutOfUnapprovedPlans(), expects=[
+            Given(StruckRowInUnapprovedPlan(plan=1, phase=1, todo=5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))])
+                >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
+        ])
+        journal.events.answer(ToolCallAsked, RefusePlanMode(), expects=[
+            Given(ToolCallAsked(tool="EnterPlanMode", session="claude-1")) >> Answered(Refused(PLAN_MODE_REFUSED)),
+            Given(ToolCallAsked(tool="Read", session="claude-1")) >> Answered(Allowed()),
+        ])
+        journal.commands.refuse(RowWriting, HoldWhilePlanned(), expects=[
+            Given(writing(todo=6), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(6)),
+            Given(writing(todo=5), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Kept(),
+            Given(writing(todo=9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(9)),
+            Given(writing(todo=9), rows=[Todo(n=9, title="Row 9", data={"priority": 300}), plan("active", phases=phases(5, 6))]) >> Kept(),
+            Given(writing(todo=9), rows=[Todo(n=9, title="Row 9")]) >> Kept(),
+            Given(writing(todo=9), rows=[Todo(n=9, title="Row 9"), plan("parked", phases=phases(5, 6))]) >> Kept(),
+            Given(writing(), rows=[plan("active", phases=phases(5, 6))]) >> Refused(A_PLAN_IS_ACTIVE),
+            Given(writing(), rows=[plan("parked", phases=phases(5, 6))]) >> Kept(),
         ])
