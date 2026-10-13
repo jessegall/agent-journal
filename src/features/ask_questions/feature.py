@@ -101,7 +101,8 @@ class AskQuestions(Feature):
             Given(ProseOffersChoices(agent=1), rows=[CLAUDE]) >> Nudged("prose") & Held(PROSE_HELD),
         ])
         journal.events.handle(AskingSettled, ReleaseOnceSettled(), expects=[
-            Given(AskingSettled(agent=1), rows=[CLAUDE], held=PROSE_HELD) >> Dispatches(nothing),
+            Given(AskingSettled(agent=1), rows=[CLAUDE], held=PROSE_HELD) >> Dispatches(nothing) & Held(""),
+            Given(AskingSettled(agent=1), rows=[CLAUDE]) >> Dispatches(nothing) & Held(""),
         ])
         journal.events.handle(AnswerGiven, MarkTheAnswer(), expects=[
             Given(AnswerGiven(agent=1, n=3, answer="main", ref="question:3"), rows=[CLAUDE, BRANCH])
