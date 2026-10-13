@@ -31,7 +31,7 @@ from framework.journal import Journal
 from features.work_tracking.auto import chosen_or_steered, steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import CHECK_IN, WorkDetails
-from framework.sending import Nudge
+from framework.sending import Cap, Nudge
 from features.work_tracking.nudges import CARRY_ON_TIMES, check_in_pace, next_row, nothing_happening, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, working
 from features.work_tracking.answering import RefuseHeldCalls, RefuseWaitingInTheShell
 from features.work_tracking.waiting import WAIT_WAY
@@ -103,17 +103,17 @@ def todo_ready(context, agent, over: float) -> list[Sent]:
 
 class WorkFeature(Feature):
     details = WorkDetails
-    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=1,
+    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, cap=Cap(1),
                     guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready."),
-              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=1,
+              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, cap=Cap(1),
                     guarantee="When the work in hand is waiting on something, the agent is offered the next ready to-do rather than sitting out the wait."),
-              Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, most=1,
+              Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, cap=Cap(1),
                     guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
                     guarantee="When the agent stops with work still in hand, it is asked once to carry on with it."),
-              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, most=CARRY_ON_TIMES,
+              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(CARRY_ON_TIMES),
                     guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, a few times."),
-              Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, most=CARRY_ON_TIMES,
+              Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(CARRY_ON_TIMES),
                     guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."),
               Nudge(CHECK_IN, behaviour=CHECK_IN, about=nothing_happening, pace=check_in_pace,
                     guarantee="When nothing has happened for the check-in interval, the agent is asked whether anything is left to do and told what this environment holds, whether or not it has work in hand."))

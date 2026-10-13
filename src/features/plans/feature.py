@@ -41,7 +41,7 @@ from events.asking import RowWriting, ToolCallAsked
 from events.answers import Allowed, Refused as Refusal
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
                           ReviewEndedWithReport, ReviewReportLinked, RowLeavesPhase)
-from framework.sending import Nudge
+from framework.sending import Cap, Nudge
 from declaring.registries import ROW_HOLDS
 from events.plans import PlanChanged
 from events.reports import ReportLinked
@@ -116,7 +116,7 @@ def held(record, todo) -> bool:
 
 class PlansFeature(Feature):
     details = PlansDetails
-    nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES,
+    nudges = (Nudge("still", behaviour="still", about=still_plans, cap=Cap(STILL_TIMES),
                     guarantee="When a running plan has not moved for a while, the agent is told, a few times."),
               Nudge("blocked", behaviour="blocked", about=blocked_plans,
                     guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."),

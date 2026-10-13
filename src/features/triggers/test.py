@@ -50,10 +50,10 @@ def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
 
 def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_setting_is_refused():
     import pytest
-    from framework.sending import Nudge, send
+    from framework.sending import Cap, Nudge, send
     from declaring.settings import Settings
     with pytest.raises(ValueError, match="needs most"):
-        Nudge("line", "behaviour", lambda context, agent: [], first=True)
+        Cap(first=True)
     with pytest.raises(AttributeError, match="no setting called nothing"):
         Settings([], {}).nothing
     from types import SimpleNamespace

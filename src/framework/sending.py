@@ -1,4 +1,3 @@
-from resources.allowances import Allowance
 from dataclasses import dataclass, replace
 from typing import Callable
 
@@ -10,12 +9,28 @@ from events import Fact
 from framework.parts import ANY_BUT_POST_TOOL_USE, Context
 from receiving import Handler as Engines
 from serving import Adapted as TheRecord
+from resources.allowances import Allowance
 
 
 @dataclass(frozen=True)
 class Sent:
     key: str
     values: dict
+
+
+@dataclass(frozen=True)
+class Cap:
+    """How often a nudge may be sent about one row: at most so many times, none when it is uncapped, and whether it offers only the first row still under its cap."""
+
+    most: int = 0
+    first: bool = False
+
+    def __post_init__(self) -> None:
+        if self.first and not self.most:
+            raise ValueError("a cap that offers the first row under it needs most")
+
+
+UNCAPPED = Cap()
 
 
 @dataclass(frozen=True)
@@ -28,20 +43,15 @@ class Nudge:
     private: bool = True
     pace: Callable | None = None
     once: bool = False
-    most: int = 0
-    first: bool = False
+    cap: Cap = UNCAPPED
     timing: trigger.Trigger = trigger.NEVER
     action: str = actions.SAY
     expects: tuple = ()
     """What the nudge promises, played and watched like any registration's: a Given on the clock or on a tool's use, and the nudge it sends."""
 
-    def __post_init__(self) -> None:
-        if self.first and not self.most:
-            raise ValueError(f"nudge {self.line} offers the first row under a cap, so it needs most")
-
     def describe(self) -> dict:
         """What the viewer needs to show a nudge beside the switch that governs it: the behaviour that switches it, and its own cadence when it does not take that behaviour's."""
-        return {"behaviour": self.behaviour, "guarantee": self.guarantee, "timing": self.timing.described(), "once": self.once, "most": self.most}
+        return {"behaviour": self.behaviour, "guarantee": self.guarantee, "timing": self.timing.described(), "once": self.once, "most": self.cap.most}
 
     def cadence(self, context) -> trigger.Trigger:
         cadence = self.timing or context.feature.cadence(context.record, self.behaviour)
@@ -54,13 +64,13 @@ class Nudge:
             return [found for found in self.about(context, agent) if context.once(self.line, found.key)]
         cadence = self.cadence(context)
         found = self.about(context, agent)
-        if self.first:
-            found = [one for one in found if not context.used_up(Allowance(self.line, one.key, self.most))][:1]
+        if self.cap.first:
+            found = [one for one in found if not context.used_up(Allowance(self.line, one.key, self.cap.most))][:1]
         due = [one for one in found if context.every(self.behaviour, f"{self.line}:{one.key}", cadence)]
-        return self.capped(context, due) if self.most and due else due
+        return self.capped(context, due) if self.cap.most and due else due
 
     def capped(self, context, due: list[Sent]) -> list[Sent]:
-        return [found for found in due if context.at_most(Allowance(self.line, found.key, self.most))]
+        return [found for found in due if context.at_most(Allowance(self.line, found.key, self.cap.most))]
 
 
 def send(context, nudges: tuple) -> None:
