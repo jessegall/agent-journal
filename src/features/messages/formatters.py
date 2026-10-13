@@ -20,10 +20,9 @@ def after_path(text: str, at: int) -> bool:
 
 class CommandsAsCode(Answerer[TextFormatting]):
     def answer(self, request: TextFormatting, command_words: CommandWords) -> Answer:
-        queries = command_words.queries()
-        return Rewritten("`".join(part if at % 2 else CODE.sub(lambda found: self.command(found, command_words, queries), part) for at, part in enumerate(request.text.split("`"))))
+        return Rewritten("`".join(part if at % 2 else CODE.sub(lambda found: self.command(found, command_words), part) for at, part in enumerate(request.text.split("`"))))
 
-    def command(self, found, command_words: CommandWords, queries: set[str]) -> str:
+    def command(self, found, command_words: CommandWords) -> str:
         noun, word = found.group(1), found.group(2)
         if noun is None:
             return found.group(0) if after_path(found.string, found.start()) else f"`{found.group(0)}`"
@@ -31,6 +30,6 @@ class CommandsAsCode(Answerer[TextFormatting]):
             if word in command_words.words(noun):
                 return f"`{found.group(0)}`"
             return f"`journal {noun}`" if not word else found.group(0)
-        if noun in queries:
+        if noun in command_words.queries():
             return f"`journal {noun}`{found.group(0)[found.group(0).index(noun) + len(noun):]}"
         return found.group(0)

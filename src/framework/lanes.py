@@ -127,14 +127,18 @@ class TheCommandWords:
 
     NO_NOUN = "queries"
 
-    def words(self, noun: str) -> set[str]:
-        return set(command_line().words(noun))
-
-    def queries(self) -> set[str]:
+    def line(self):
+        """The command line wired into this process, its parser built."""
         line = command_line()
         if not line.queries:
             line.parser(self.NO_NOUN)
-        return set(line.queries)
+        return line
+
+    def words(self, noun: str) -> set[str]:
+        return set(self.line().words(noun))
+
+    def queries(self) -> set[str]:
+        return set(self.line().queries)
 
     def nouns(self) -> dict[str, set[str]]:
         """Every noun to the words it takes."""

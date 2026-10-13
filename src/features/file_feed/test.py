@@ -134,13 +134,12 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (served.code, served.body["text"]) == (200, "1\n"), "the viewer's request for an edited file is served whole"
     assert asked({"id": older.edits[0].id, "side": "sideways"}).code == 400, "a side that is neither before nor after is refused"
     assert asked({"id": "no-such-edit", "side": Side.AFTER}).code == 404, "an edit nobody made is not found"
-    import features.file_feed.feed as feeding
-    kept = feeding.blob_texts
-    feeding.blob_texts = lambda project, shas: {}
+    kept = TheGit.blobs
+    TheGit.blobs = lambda self, shas: {}
     try:
         assert asked({"id": older.edits[0].id, "side": Side.AFTER}).code == 404, "an edit whose file is no longer kept in git is not found either"
     finally:
-        feeding.blob_texts = kept
+        TheGit.blobs = kept
     listed = dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/older", project.record.root, {"before": str(newest.edits[0].at), "last": "2"}, {})
     assert (listed.code, len(listed.body["edits"])) == (200, 1), "the older page is served as the viewer asks for it"
 
@@ -280,4 +279,4 @@ def test_a_picture_a_helper_makes_is_a_card_with_its_bytes_even_where_the_projec
     project.changed()
     cards = edits_since(project.record, TheGit(project.record), project.agent, 0, PAGE).edits
     assert [(card.path, card.kind, card.image, card.rows) for card in cards] == [("art/rig.png", "new", True, ())], "an ignored picture is a card with no lines to diff"
-    assert edited_image(project.record, project.agent, cards[0].id).data == picture, "the card's picture comes back byte for byte"
+    assert edited_image(project.record, TheGit(project.record), project.agent, cards[0].id).data == picture, "the card's picture comes back byte for byte"

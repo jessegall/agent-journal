@@ -84,6 +84,7 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
 
 def test_a_trailer_on_main_closes_a_row_a_helper_holds_whatever_the_sha_and_the_sweep_closes_any_open_row(tmp_path):
     from features.close_from_commits.commands import SweepLanded
+    from framework.lanes import served
 
     def git(*a):
         return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *a], cwd=tmp_path, capture_output=True, text=True, timeout=5, check=True).stdout.strip()
@@ -101,5 +102,5 @@ def test_a_trailer_on_main_closes_a_row_a_helper_holds_whatever_the_sha_and_the_
     report(record, "idle", "SessionStart")
     assert [bool(todos.load(n).completed) for n in (held, plain, pending)] == [True, False, True], \
         "a first look at main closes the rows a helper holds whose trailer is already on main, and leaves the agent's own rows"
-    assert SweepLanded().run(type("C", (), {"record": record})(), todos) == f"closed to-do {plain}" and todos.load(plain).completed, \
+    assert SweepLanded().run(type("C", (), {"record": record, "service": lambda self, kind: served(record, kind, "close_from_commits")})(), todos) == f"closed to-do {plain}" and todos.load(plain).completed, \
         "the sweep closes any open row whose trailer is on main"

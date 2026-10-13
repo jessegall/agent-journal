@@ -89,7 +89,7 @@ def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everyt
     settings = project / ".claude" / "settings.local.json"
     settings.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
     before = settings.read_text()
-    monkeypatch.setattr(slate, "others", lambda project, agent: [settings])
+    monkeypatch.setattr(slate, "others", lambda record, project, agent: [settings])
     monkeypatch.setattr(slate, "kept", lambda settings: (_ for _ in ()).throw(OSError("disk full")))
     assert set_aside(record, project, "claude").startswith("nothing set aside"), "a failure part way says so instead of crashing the launch"
     assert settings.read_text() == before, "and the hook file is as it was"

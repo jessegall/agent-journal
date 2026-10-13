@@ -3,7 +3,8 @@ import time
 from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
-from features.status_bar.bar import bar, current, doing
+from features.status_bar.bar import bar, doing
+from resources.status_bar import current
 from tests.conftest import fresh, refused
 
 
