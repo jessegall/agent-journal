@@ -75,6 +75,9 @@ class WorkModes(Feature):
             Given(ToolCallAnswered(agent=1, tool="Read", input="{}", paths=("/work/a.py",)), settings=ORCHESTRATOR) >> Dispatches(nothing),
             Given(ToolCallAnswered(agent=1, tool="Edit", input="{}", paths=("/work/a.py",), why="held"), settings=ORCHESTRATOR) >> Dispatches(nothing),
             Given(ToolCallAnswered(agent=1, tool="Edit", input="{}", paths=("/work/a.py",), subagent=True), settings=ORCHESTRATOR) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Edit", input="{}", paths=()), settings=ORCHESTRATOR) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Write", input="{}", paths=("/work/a.py",)), settings=ORCHESTRATOR) >> Dispatches(EditCounted(agent=1, mode="orchestrator", edits=1)),
+            Given(EDITED, settings=BUILDER) >> Dispatches(EditCounted(agent=1, mode="builder", edits=1)),
         ])
         journal.events.handle(EditCounted, CountTheEdit(), expects=[
             Given(EditCounted(agent=1, mode="orchestrator", edits=3), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("edits.orchestrator|1", 3),
