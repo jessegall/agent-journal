@@ -149,11 +149,12 @@ class Ticking:
         """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them, and the moved features' own receivers after them."""
         self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
         self.registered.add(Registration.read(LISTEN, LoggedEvent, CatalogueFacts(self.moved), ()))
-        self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in patterns_of(one.receiver)), default=4))
-        self.running = Registrations()
+        self.registered.sort(key=lambda one: min((slot_of(pattern) for pattern in patterns_of(one.receiver)), default=4))
+        running = Registrations()
         for one in (*self.registered.each, *self.moved.each):
-            self.running.add(one)
-        self.order = InOrder.of(self.running)
+            running.add(one)
+        order = InOrder.of(running)
+        self.running, self.order = running, order
 
     def hears(self, pattern: str) -> bool:
         """Whether a feature written for the 3.0 engine receives the typed event that this pattern names."""

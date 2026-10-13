@@ -157,6 +157,15 @@ def test_the_four_registration_kinds_name_their_event_and_the_boot_walk_checks_i
     assert len(held.of("handle")) == 1 and len(held.on(MessageTagged)) == 2, \
         "the registrations are kept in declaration order and read back by kind and by event"
     assert [one.name for one in Registrations().each] == [], "a test that wants an empty registry builds one; the journal's own is never emptied under it"
+    import threading
+    from dataclasses import replace
+    crowded = Registrations()
+    writers = [threading.Thread(target=lambda i=i: [crowded.add(replace(read[0], feature=f"feature-{i}-{n}")) for n in range(60)]) for i in range(8)]
+    for writer in writers:
+        writer.start()
+    for writer in writers:
+        writer.join()
+    assert len(crowded.each) == 480, "registrations made at the same moment by several threads are all kept, none lost with a list another thread replaced"
 
 
 def test_handlers_on_one_fact_are_ordered_by_name_and_the_boot_walk_checks_it():
