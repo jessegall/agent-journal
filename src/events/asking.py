@@ -8,7 +8,7 @@ nothing about them writes until the fact that follows them ticks.
 
 from dataclasses import dataclass, field, replace
 
-from events.answers import Asked, FirstRefusalWins, KeepingWins, TextsCompose
+from events.answers import Asked, FirstRefusalWins, KeepingWins, TextsCompose, TextsJoin
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -73,6 +73,16 @@ class TextFormatting(Asked):
 
     def rewritten(self, text: str) -> "Asked":
         return replace(self, text=text)
+
+
+@dataclass(frozen=True, kw_only=True)
+class HookResponding(Asked):
+    """What is handed over on a hook's own answer, beside what the older responders add. Nothing wins: every text is joined in the order the answerers gave it."""
+
+    reduces = TextsJoin
+    event: str = ""
+    session: str = ""
+    compacted: bool = False
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -9,6 +9,8 @@ from engine.record import Record
 from providers.base import asking_row
 from payload import PERMISSION, STATUS, Hook, HookEvent
 from events.agents import TOOL_ANSWERED
+from events.answers import Rewritten
+from events.asking import HookResponding
 from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow
 from runner import chat_mirror
@@ -70,7 +72,13 @@ def refused(call: HookCall) -> dict:
 
 
 def started(call: HookCall) -> dict:
-    return call.provider.response(call.hook.event, responded(call))
+    return call.provider.response(call.hook.event, responded(call) + handed_over(call))
+
+
+def handed_over(call: HookCall) -> str:
+    """The text the swept features hand over on this hook's answer, asked as the engine's request."""
+    answer = bus.asked(HookResponding(event=call.hook.event, session=call.session, compacted=bool(call.provider.compacted(call.hook))), call.record)
+    return answer.text if isinstance(answer, Rewritten) else ""
 
 
 def ended(call: HookCall) -> dict:

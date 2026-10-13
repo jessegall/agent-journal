@@ -81,6 +81,15 @@ class KeepingWins(Reduced):
     stops = (Kept,)
 
 
+class TextsJoin(Reduced):
+    """A text handed over beside a hook's own answer: what every answerer wrote, in the order they answered."""
+
+    @classmethod
+    def reduce(cls, given: list[Answer]) -> Answer:
+        written = [answer.text for answer in given if isinstance(answer, Rewritten)]
+        return Rewritten("".join(written)) if written else Allowed()
+
+
 class TextsCompose(Reduced):
     """A text to format: no answer wins, because every formatter reads what the one before it wrote."""
 
