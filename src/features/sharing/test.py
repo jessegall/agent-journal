@@ -18,7 +18,7 @@ from features.sharing.feature import SharingFeature
 from runner.hooks import handle
 from engine.ran import announce
 from controllers.types import Shares
-from features.sharing import server as server_module
+from controllers.sharing import server as server_module
 from controllers.sharing.server import COMMENT_HEADER, ShareHandler
 from resources.sharing import AGREEMENT
 from providers import PROVIDERS
@@ -343,7 +343,7 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel(monkeypatch):
     assert shares._problems({"host": ""}) == [sharing_controller.TUNNEL_STOPPED], "a tunnel that stopped on its own is named as stopped"
     from types import SimpleNamespace
     import features
-    from features.sharing import server as module
+    from controllers.sharing import server as module
     watched = Shares(fresh(), actor=SYSTEM)
     served, finished, ticked = [], threading.Event(), []
 
@@ -466,7 +466,7 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
         raise AssertionError("only the user logs tunler in")
     except Refused:
         pass
-    from features.sharing import services as share_pages
+    from controllers.sharing import services as share_pages
     from resources.sharing import LOGGED_OUT, NOT_INSTALLED
     flag = tmp_path / "logged-in"
     flag.write_text("")
@@ -520,7 +520,7 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     import features
     from engine import runtime
     from engine.services import log_file
-    from features.sharing import watchdog
+    from controllers.sharing import watchdog
     from engine.tunnel import OWNED, kept_address
     features.load()
     record = fresh()
@@ -927,7 +927,7 @@ def keeps_the_tunnel_across_upgrades_and_ports_apart(tmp_path, monkeypatch):
     import features
     from engine import services
     from engine.keeper import BUILD
-    from features.sharing import services as share_pages
+    from controllers.sharing import services as share_pages
     features.load()
     record = fresh()
     approved_share(record)
