@@ -3,6 +3,7 @@ import json
 import features
 import pytest
 from controllers.types import Features
+from migrations import m0089_avatar_on
 from migrations.m0088_version_3 import LAST_OF_VERSION_2, run
 from resources.base import Refused, SYSTEM
 from tests.conftest import fresh
@@ -75,3 +76,11 @@ def test_a_profile_that_named_a_picture_names_its_voice():
     profiles.save(profile, "updated", fields=["art"])
     assert run(record.root) == "1 profile now named by voice"
     assert (profiles.load(made.n).voice, "art" in profiles.load(made.n).data) == ("coach", False), "the picture's file becomes the voice it was read for"
+
+
+def test_the_avatar_is_switched_on_for_every_project_that_had_it_off():
+    features.load()
+    record = fresh()
+    Features(record, actor=SYSTEM).switch("avatar", False)
+    assert m0089_avatar_on.run(record.root) == "the avatar is switched on"
+    assert Features(record, actor=SYSTEM).on("avatar", default=False), "a project that had the avatar off has it on after the migration"
