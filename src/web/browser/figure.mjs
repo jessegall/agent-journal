@@ -1,4 +1,4 @@
-import {journal, runScenarios, shot} from "./harness.mjs";
+import {journal, numberOf, runScenarios, shot} from "./harness.mjs";
 
 // The figure belongs to the avatar feature, which is off in a fresh journal, so without this every scenario here waits for a
 // figure that is never mounted and times out. It was off for long enough that all seven did.
@@ -6,6 +6,10 @@ journal("feature", "switch", "avatar", "--on");
 
 const FIGURE = ".voice-figure";
 const HOME = "[data-figure-home]";
+const DOCKS = "[data-figure-docked-bars]";
+const CLOSE_THE_BAR = 'section[aria-label="Update report"] .btn.icon';
+// the most of its whole fall the figure may come down in one frame as the bar under it goes
+const MOST_OF_A_FALL_IN_A_FRAME = 0.5;
 
 // the environment's agent as the agent list reports it, with `data` on its row
 async function agentAs(page, data) {
@@ -94,6 +98,17 @@ const framesOf = (page, ms) =>
         [FIGURE, ms]
     );
 
+// How far the figure moved on each frame, by `of`, weighed against the longer of the last two gaps between frames in frames' worth of
+// time, as after a frame stalled on a busy machine the figure makes up the stalled stretch one frame late
+const weighedSteps = (frames, of) =>
+    frames
+        .slice(2)
+        .map(
+            (frame, at) =>
+                Math.abs(of(frame) - of(frames[at + 1])) /
+                Math.max(1, (frame.t - frames[at + 1].t) / FRAME_MS, (frames[at + 1].t - frames[at].t) / FRAME_MS)
+        );
+
 // the longest run of frames for which `holds(frame, before)` is true
 const longestRun = (frames, holds) => {
     let run = 0;
@@ -128,6 +143,39 @@ const FRAME_MS = 1000 / 60;
 // how long a picture may take to finish easing from one posture to the next once the figure moves off, CHANGE_SECONDS, in milliseconds
 const SETTLING_MS = 300;
 
+// the scenario of a bar closing under the figure: it is docked, the figure stands on it, the bar is closed and every frame is read
+async function fallsWhenClosed(page, url, agent) {
+    await agent(page);
+    await page.goto(`${url}#/main`);
+    await page.locator(FIGURE).waitFor({state: "visible"});
+    await page.locator(DOCKS).waitFor({state: "attached"});
+    await settled(page);
+    const frames = await page.evaluate(
+        ([figure, close]) =>
+            new Promise((done) => {
+                const element = document.querySelector(figure);
+                const frames = [];
+                const until = performance.now() + 2500;
+                document.querySelector(close).click();
+                const look = () => {
+                    frames.push({bottom: element.getBoundingClientRect().bottom, t: performance.now()});
+                    if (performance.now() < until) requestAnimationFrame(look);
+                    else done(frames);
+                };
+                requestAnimationFrame(look);
+            }),
+        [FIGURE, CLOSE_THE_BAR]
+    );
+    const drop = frames.at(-1).bottom - frames[0].bottom;
+    const steps = weighedSteps(frames, (frame) => frame.bottom);
+    const longest = Math.max(0, ...steps);
+    const falling = steps.filter((step) => step > 0.5).length;
+    const measured = `fell ${drop.toFixed(1)}px over ${falling} frames, longest step ${longest.toFixed(1)}px a frame; FRAMES ${frames.map((frame) => `${frame.bottom.toFixed(0)}@${frame.t.toFixed(0)}`).join(" ")}`;
+    console.log(`the figure's fall: ${measured}`);
+    if (drop < 10) throw new Error(`the bar closed, the figure did not come down: ${measured}`);
+    if (longest > drop * MOST_OF_A_FALL_IN_A_FRAME) throw new Error(`the bar closed, the figure snapped down: ${measured}`);
+}
+
 await runScenarios(process.argv[2], {
     async "the walk plays only while the figure moves across, and the figure moves across only while it walks"(page, url) {
         await working(page);
@@ -148,6 +196,17 @@ await runScenarios(process.argv[2], {
         if (gliding > CATCH_UP_FRAMES) throw new Error(`the figure moved across without walking: ${measured}; FRAMES ${trail(frames)}`);
     },
 
+    async "closing the bar docked under the figure lets it fall down onto the compose box, never down in one frame"(page, url) {
+        for (const agent of [paused, working]) {
+            const report = numberOf(journal("report", "recap", "The figure stands on this bar until it is closed."));
+            try {
+                await fallsWhenClosed(page, url, agent);
+            } finally {
+                journal("report", "dismiss", String(report));
+            }
+        }
+    },
+
     async "a click on the figure sends it walking or hopping out of the box it was in, never across the page in one frame"(page, url) {
         await working(page);
         await page.goto(`${url}#/main`);
@@ -163,15 +222,7 @@ await runScenarios(process.argv[2], {
             after.x < before.x + before.width &&
             before.y < after.y + after.height &&
             after.y < before.y + before.height;
-        // a step is weighed against the longer of the last two gaps between frames, as after a frame stalled on a busy machine the figure
-        // makes up the stalled walk one frame late
-        const leaps = frames
-            .slice(2)
-            .map(
-                (frame, at) =>
-                    Math.abs(frame.x - frames[at + 1].x) /
-                    Math.max(1, (frame.t - frames[at + 1].t) / FRAME_MS, (frames[at + 1].t - frames[at].t) / FRAME_MS)
-            );
+        const leaps = weighedSteps(frames, (frame) => frame.x);
         const leap = Math.max(0, ...leaps);
         const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
         const clip = await page.locator(FIGURE).evaluate((figure, home) => {

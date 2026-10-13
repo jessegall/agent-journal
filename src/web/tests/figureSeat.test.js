@@ -34,11 +34,7 @@ const CHAT = {left: 200, top: 100, right: 900, bottom: 800};
 const page = (box, docked = null, {chat = CHAT, tabs = {}} = {}) => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
     globalThis.CSS = {escape: (text) => text};
-    const bars = docked && {
-        isConnected: true,
-        hasAttribute: (name) => name === "data-figure-docked-bars",
-        getBoundingClientRect: () => docked,
-    };
+    const bars = docked && {isConnected: true, getBoundingClientRect: () => docked};
     const thread = {
         getBoundingClientRect: () => chat,
         querySelector: (selector) => (selector === "[data-figure-docked-bars]" ? bars : null),
@@ -188,7 +184,7 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     page(box);
     const home = groundEdge().element;
     const seat = seatOf(FIGURE, {x: 700, y: 600});
-    expect(footingOn(seat)).toEqual({element: home, dx: seat.x - 300, dy: 0, posture: "sit", home: true, bars: false});
+    expect(footingOn(seat, 5)).toEqual({element: home, dx: seat.x - 300, dy: 0, posture: "sit", home: true, ground: {y: 600, at: 5}});
     expect(footingOn({...seat, on: null})).toBe(null);
     const moved = {isConnected: true, getBoundingClientRect: () => ({...box, left: 320, top: 580})};
     const kept = {element: moved, dx: 10, dy: 0, posture: "stand", home: false};
@@ -200,29 +196,35 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toEqual({x: 310, y: 556});
 });
 
-test("at home the figure falls as the bars under it shrink or go and is lifted as they grow or come, and rises with a growing box", () => {
+test("at home the figure is launched when the ground under it rises more than a few pixels in a moment, falls when it drops so, and a drift carries it", () => {
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
     const spot = spotOf(null, FIGURE, {x: 640, y: 600});
-    const footing = footingOn(spot);
-    // the compose box grows as the user types, and carries it up with no hop, as the flat figure sat on it
-    box.top = 580;
-    expect(groundUnder(footing, spot, FIGURE)).toMatchObject({spot: {x: spot.x, y: 580}, motion: "carried"});
-    // a bar docks over the box, and lifts it
-    page(box, {left: 300, top: 540, width: 400, height: 40});
-    const lifted = groundUnder(footing, {...spot, y: 580}, FIGURE);
-    expect(lifted).toMatchObject({spot: {x: spot.x, y: 540}, motion: "launched"});
-    // the bar folds smaller as the chat scrolls up, and it falls with it
-    page(box, {left: 300, top: 560, width: 400, height: 20});
-    const fell = groundUnder(lifted.footing, lifted.spot, FIGURE);
-    expect(fell).toMatchObject({spot: {x: spot.x, y: 560}, motion: "dropping"});
-    // the bar goes, and it falls to the compose box: the bars it stood on lose their mark in that same moment, as the last one goes
-    fell.footing.element.hasAttribute = () => false;
+    let at = 0;
+    let now = {spot, footing: footingOn(spot, at)};
+    const frame = () => (now = groundUnder(now.footing, now.spot, FIGURE, (at += 16)));
+    // the compose box drifts up a few pixels, and carries it
+    box.top = 596;
+    expect(frame()).toMatchObject({spot: {x: spot.x, y: 596}, motion: "carried"});
+    // the box grows a line as the user types, and it is thrown up
+    box.top = 576;
+    expect(frame()).toMatchObject({spot: {y: 576}, motion: "launched"});
+    expect(frame().motion).toBe("carried");
+    // a bar docks over the box a few pixels a frame, carrying it until the ground has risen more than a few pixels, and then throwing it up
+    for (const [top, motion] of [
+        [573, "carried"],
+        [570, "carried"],
+        [566, "launched"],
+    ]) {
+        page(box, {left: 300, top, width: 400, height: 576 - top});
+        expect(frame()).toMatchObject({spot: {y: top}, motion});
+    }
+    // the bar goes in one frame, and it falls to the compose box, from where it stood
     page(box);
-    expect(groundUnder(fell.footing, fell.spot, FIGURE)).toMatchObject({spot: {x: spot.x, y: 580}, motion: "dropping"});
+    expect(frame()).toMatchObject({spot: {x: spot.x, y: 576}, motion: "dropping"});
     // carried out of its world, its ground is gone
     box.top = 2000;
-    expect(groundUnder(fell.footing, fell.spot, FIGURE)).toBe(null);
+    expect(frame()).toBe(null);
 });
 
 test("a figure stepping out of the way takes the first free spot on the right of where it was, and one on its left only then", () => {

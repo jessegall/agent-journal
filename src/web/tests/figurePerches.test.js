@@ -85,6 +85,13 @@ test("every place the figure roams to comes up by its odds and is stayed at betw
     expect(new Set(ROAMS.map((each) => each.where))).toEqual(new Set(["seat", "edge", "bubble", "tab"]));
 });
 
+test("mostly the figure strolls along the compose box's edge and sits on its corners, and no stay keeps it still for long", () => {
+    const odds = Object.fromEntries(ROAMS.map((each) => [each.where, each.odds]));
+    expect(odds.edge).toBe(Math.max(...Object.values(odds)));
+    expect(odds.edge + odds.seat).toBeGreaterThanOrEqual(0.7);
+    expect(Math.max(...ROAMS.map((each) => each.stay[1]))).toBeLessThanOrEqual(40);
+});
+
 test("a figure sitting or hanging stands where its bubble's corner is, and is let go when the bubble leaves the thread's view or the page", () => {
     const one = at(300, 260, 500);
     const sitting = {bubble: one, kind: SITS, side: "right", grip: ""};

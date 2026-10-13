@@ -261,14 +261,14 @@ export function groundEdge() {
 }
 
 // What a figure resting on a spot keeps of it: the element it rests on, the spot's place from that element's edge, the posture it rests in
-// there, and whether it rests on the ground at home, which is then whatever is the ground at home, as bars dock over the compose box and go;
-// null when it rests on nothing on the page
-export function footingOn(spot) {
+// there, whether it rests on the ground at home, which is then whatever is the ground at home, as bars dock over the compose box and go,
+// and the height of that edge and the moment `at` it was there; null when it rests on nothing on the page
+export function footingOn(spot, at = performance.now()) {
     const element = spot.on;
     if (!element?.isConnected) return null;
     const home = element === groundEdge().element;
     const edge = home ? groundEdge().edge : element.getBoundingClientRect();
-    return {element, dx: spot.x - edge.left, dy: spot.y - edge.top, posture: spot.posture, home, bars: home && isBars(element)};
+    return {element, dx: spot.x - edge.left, dy: spot.y - edge.top, posture: spot.posture, home, ground: {y: edge.top, at}};
 }
 
 // Where a footing's spot is now, carried along as what it rests on moves, or null when the ground went from under the figure: the element
@@ -280,24 +280,30 @@ export function footingNow({element, dx, dy, posture, home}, figure) {
     return inWorld({...spot, posture}, figure) ? spot : null;
 }
 
-// whether an element is the bars docked over the compose box
-const isBars = (element) => Boolean(element?.hasAttribute?.(DOCKED_BARS.slice(1, -1)));
+// how far the ground at home moves within GROUND_JUMP_MS, in pixels, before the figure is thrown up with it or falls with it rather than
+// carried along
+const GROUND_JUMP = 8;
+const GROUND_JUMP_MS = 200;
 
-// Where a figure resting at `spot` by `footing` is now, with the footing it keeps and how it got there, or null once its ground has gone
-// from under it. Anywhere but home it is carried along with what it rests on. At home it stays where it stood along the ground, at its
-// height above whatever is the ground there now, and when that ground is or was the bars docked over the compose box it moves with them
-// as the flat figure did: "dropping" when they shrink or go, "launched" when they grow or come; else it is "carried", as on a compose box
-// that grows while the user types.
-export function groundUnder(footing, spot, figure) {
+// Where a figure resting at `spot` by `footing` is now, at the moment `at`, with the footing it keeps and how it got there, or null once its
+// ground has gone from under it. Anywhere but home it is carried along with what it rests on. At home it stays where it stood along the
+// ground, at its height above whatever is the ground there now, and moves with it as the flat figure did: "launched" when the ground rose
+// more than GROUND_JUMP pixels within GROUND_JUMP_MS, as when a bar docks over the compose box or the box grows a line, "dropping" when it
+// fell so, as when a bar goes, else "carried", as on a ground that drifts. The footing's ground is where the edge was when that moment
+// began, and it starts again once the edge stands still, jumps, or the moment is over.
+export function groundUnder(footing, spot, figure, at = performance.now()) {
     const now = footingNow(footing, figure);
     if (!now) return null;
     if (!footing.home) return {spot: {...spot, ...now}, footing, motion: "carried"};
     const {element, edge} = groundEdge();
     const there = {...spot, y: now.y};
-    // the bars the figure stood on lose their mark the moment the last of them goes, so whether it stood on bars is what the footing kept
-    const bars = isBars(element) || footing.bars;
-    const motion = !bars || Math.abs(there.y - spot.y) <= 0.3 ? "carried" : there.y > spot.y ? "dropping" : "launched";
-    return {spot: there, footing: {...footing, element, dx: spot.x - edge.left, bars: isBars(element)}, motion};
+    const shift = edge.top - footing.ground.y;
+    const within = at - footing.ground.at <= GROUND_JUMP_MS;
+    const jumped = within && Math.abs(shift) > GROUND_JUMP;
+    const still = Math.abs(there.y - spot.y) <= 0.3;
+    const ground = jumped || still || !within ? {y: edge.top, at} : footing.ground;
+    const motion = !jumped ? "carried" : shift > 0 ? "dropping" : "launched";
+    return {spot: there, footing: {...footing, element, dx: spot.x - edge.left, ground}, motion};
 }
 
 // The trip of a figure resting at `place` to `spot` (tripBetween), from its picture in the posture it travels in where it is to its picture

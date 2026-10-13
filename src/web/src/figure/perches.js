@@ -13,13 +13,14 @@ export const HANGS = "hang";
 export const HANG_SHARE = 0.4;
 
 // Where the figure goes when nothing calls it elsewhere, and how long it stays, in seconds between the two: each time a stay is over it
-// draws the next by its odds. It sits on a corner of the compose box to take it easy, strolls along that edge, perches on a message bubble
-// or crosses to stand on one of the page's tabs, and whatever the agent is doing it does from there. A hang is short, as hanging is work.
+// draws the next by its odds. Mostly it strolls along the compose box's edge and sits a while on a corner of it, now and then perches on a
+// message bubble or crosses to stand on one of the page's tabs, and whatever the agent is doing it does from there. A hang is short, as
+// hanging is work.
 export const ROAMS = [
-    {where: "seat", odds: 0.45, stay: [40, 120]},
-    {where: "edge", odds: 0.15, stay: [15, 40]},
-    {where: "bubble", odds: 0.2, stay: [20, 60]},
-    {where: "tab", odds: 0.2, stay: [15, 40]},
+    {where: "seat", odds: 0.3, stay: [15, 40]},
+    {where: "edge", odds: 0.4, stay: [8, 20]},
+    {where: "bubble", odds: 0.15, stay: [15, 40]},
+    {where: "tab", odds: 0.15, stay: [10, 25]},
 ];
 export const HANG_STAY = [8, 20];
 
