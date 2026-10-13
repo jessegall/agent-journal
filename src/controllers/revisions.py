@@ -3,17 +3,7 @@ from pathlib import Path
 
 from engine.stored import write_text
 from resources.base import SECTION
-
-
-REVISIONS, OPEN_UNTIL, REVISION, CHANGE = "revisions", "open_until", "revision", "change"
-
-
-def count(doc) -> int:
-    return int(doc.revisions)
-
-
-def is_open(doc) -> bool:
-    return bool(count(doc)) and time.time() < float(doc.open_until)
+from resources.revisions import CHANGE, OPEN_UNTIL, REVISION, REVISIONS, count, is_open  # noqa: F401  their home is resources
 
 
 def path(docs, n: int, k: int) -> Path:

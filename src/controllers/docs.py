@@ -3,7 +3,7 @@ from pathlib import Path
 
 from controllers.base import Controller
 from controllers.doc_hits import located, terms
-from controllers.revisions import revise
+from controllers.revisions import read, revise
 from resources import types
 from resources.base import SECTION, Refused
 from controllers.marks import action
@@ -27,6 +27,10 @@ class Written:
 
 class Docs(Controller):
     resource = types.Doc
+
+    def kept_revision(self, n: int, k: int):
+        """The kept revision k of doc n as a row, or nothing when there is none."""
+        return read(self, n, k)
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):

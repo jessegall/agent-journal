@@ -1,7 +1,7 @@
 import time
 
 from framework.parts import Command, Context
-from controllers.revisions import CHANGE, OPEN_UNTIL, REVISION, count, is_open, read
+from resources.revisions import CHANGE, OPEN_UNTIL, REVISION, count, is_open
 from resources.base import Refused
 
 
@@ -19,7 +19,7 @@ class Revisions(Command):
     name = "revisions"
 
     def run(self, context: Context, docs, n: int) -> list[str]:
-        return [listed(read(docs, n, k)) for k in range(1, count(docs.load(n)) + 1)]
+        return [listed(docs.kept_revision(n, k)) for k in range(1, count(docs.load(n)) + 1)]
 
 
 class Revision(Command):
@@ -29,7 +29,7 @@ class Revision(Command):
         found = count(docs.load(n))
         if not 1 <= int(number) <= found:
             raise Refused(f"doc {n} has revisions 1 to {found}" if found else f"doc {n} has no revisions yet")
-        return read(docs, n, number)
+        return docs.kept_revision(n, number)
 
 
 def listed(doc) -> str:
