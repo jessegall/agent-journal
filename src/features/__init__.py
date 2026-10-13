@@ -69,7 +69,7 @@ def wire() -> None:
 
 def seat_services() -> None:
     """What answers each service here, seated before any feature module is imported: a feature's own declaration may ask for a service, so this cannot wait until wiring. The layer that can do the work says so once, and a process that only runs commands has them too."""
-    import features.agent_sessions.service  # noqa: F401
+    import framework.processes  # noqa: F401
     import providers.service  # noqa: F401
 
 

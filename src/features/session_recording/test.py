@@ -76,7 +76,7 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     from controllers.session_recording import controller
     assert "full path" in refused(lambda: recordings.start("relative/demo")), "a recording goes to a folder given in full"
     monkeypatch.setattr(controller, "entry", lambda name: ["recorder"])
-    monkeypatch.setattr("features.agent_sessions.launch.subprocess.Popen", lambda command, **kept: SimpleNamespace(pid=4243))
+    monkeypatch.setattr("framework.launch.subprocess.Popen", lambda command, **kept: SimpleNamespace(pid=4243))
     assert "recording into" in recordings.start(str(tmp_path / "next")) and (tmp_path / "next").is_dir(), "a recording starts its recorder in the folder it was given"
     monkeypatch.setattr(controller, "alive", lambda pid: pid == 4243)
     assert "already recording" in refused(lambda: recordings.start(str(tmp_path / "other"))), "only one recording runs at a time"

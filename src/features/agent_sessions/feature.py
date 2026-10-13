@@ -1,4 +1,3 @@
-import features.agent_sessions.service  # noqa: F401  seats what answers the Processes service
 from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, StopAsked,
                                    SubagentAlive, SubagentReportLinked, TakeOverChosen)
 from events.agents import AgentChanged, AgentReported, ClockTicked
@@ -13,7 +12,7 @@ from features.agent_sessions.listeners import (SpotCompaction, SpotEndedSessions
                                                SpotSilentSessions, SpotStopAsked, SpotSubagentAlive, SpotSubagentReport, SpotTakeOver)
 from framework.base import Feature
 from framework.journal import Journal
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.types import AgentRow, Environment, Question, Todo
 
 WORKING = AgentRow(n=1, title="claude-1", data={"status": "working", "event": "PostToolUse"})
@@ -59,7 +58,7 @@ class AgentSessions(Feature):
         ])
         journal.events.listen(AgentChanged, SpotStopAsked(), expects=[
             Given(AgentChanged(agent=1, action="updated"), rows=[STOPPING])
-                >> Dispatches(StopAsked(agent=1, task="t1", description="the build", how=PROVIDERS["claude"]().stop_instruction("t1")).once("1:t1|5")),
+                >> Dispatches(StopAsked(agent=1, task="t1", description="the build", how=SERVED.given(Providers).of("claude").stop_instruction("t1")).once("1:t1|5")),
             Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "working"})]) >> Dispatches(nothing),
         ])
         journal.events.listen(ResourceCreated, SpotSubagentAlive(), expects=[

@@ -111,11 +111,11 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
         ("0199aa11-bb22-7c33-8d44-556677889900", "0199aa11-bb22-7c33-8d44-556677889900", ""), \
         "the session an agent named when it ended is read from its launch log, so an ended helper resumes its own session"
     from engine.sessions import Sessions
-    from features.agent_sessions.launch import running_in, stop_in, tell_in
+    from framework.launch import running_in, stop_in, tell_in
     Sessions(record.root).bind("claude-8", "helper-env", provider="claude")
     assert (running_in(record, "helper-env"), running_in(record, "elsewhere"), tell_in(Running(record, "elsewhere", "claude"), "hi")) == ("claude-8", "", False), \
         "an environment with an agent seated in it is running, and nothing can be typed into one without"
-    from features.agent_sessions import launch
+    from framework import launch
     with monkeypatch.context() as relaunched:
         relaunched.setattr(launch, "running", lambda found: False)
         relaunched.setattr(launch, "launched_in", lambda root, environment: "claude-9")
@@ -143,7 +143,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert (networked("helper", "finish"), networked("helper", "retire"), networked("helper", "all")) == (True, True, False), \
         "a command is known to wait on the agent by the word it is called with, not only by its method's name"
     later = todos.create("handed but never launched").n
-    monkeypatch.setattr("features.agent_sessions.launch.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
+    monkeypatch.setattr("framework.launch.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
     assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
         "a helper that cannot be launched gives back the to-dos it was handed"
     ghost = Helpers(record, actor=SYSTEM).create("Ghost job", name="Ghost", provider="claude", model="sonnet", environment="helper-env")
@@ -152,9 +152,9 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert "has no environment left to stop" in refused(lambda: helpers.stop(lost.n)), "a helper whose environment is gone has nothing to stop"
     assert "say why" in refused(lambda: helpers.retire(lost.n)), "retiring a helper takes a reason"
     assert "Are you sure you can't reuse" in refused(lambda: helpers.retire(lost.n, why="its job is done")), "the reason is read back with the way to reuse the helper before it is retired"
-    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda *given: True)
+    monkeypatch.setattr("framework.launch.tell_in", lambda *given: True)
     typed = []
-    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda running, words: typed.append(words) or True)
+    monkeypatch.setattr("framework.launch.tell_soon", lambda running, words: typed.append(words) or True)
     assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
     sent = Messages(Record(record.root, "helper-env"), actor=SYSTEM).rows.every()
     assert [(m.brief, m.data.get("from_main")) for m in sent] == [("carry on", True)], "and is kept in the helper's chat as a message from the main agent, so its inspector can show it"
@@ -185,10 +185,10 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]][1:] == ["Changed helpers.kept from 5 to 12"], \
         "an agent changing a setting shows a mark once, and a person's change shows none"
     marks = lambda: [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"] if c.get("kind") == "helpers"]
-    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda *given: True)
+    monkeypatch.setattr("framework.launch.tell_soon", lambda *given: True)
     Helpers(record, actor=AGENT).say(1, "the next thing")
     assert marks()[-1] == "Briefed helper 1", "telling a helper that is already working shows it as briefed"
-    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda *given: False)
+    monkeypatch.setattr("framework.launch.tell_soon", lambda *given: False)
     monkeypatch.setattr(Helpers, "_revive", lambda self, row, words: None)
     Helpers(record, actor=AGENT).say(1, "pick it up again")
     assert marks()[-1] == "Continued helper 1", "starting a helper again after its agent stopped shows it as continued, which is what the chat could not tell before"
@@ -277,8 +277,8 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     rhea, mira = (Helpers(Record(record.root, f"{record.env}-{name}"), actor=AGENT) for name in ("rhea", "mira"))
     Agents(Record(record.root, f"{record.env}-mira"), actor=SYSTEM).create("claude-mira")
     pushed = []
-    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda running, text: pushed.append((running.provider, text)) or running.provider == "codex")
-    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda running, text: pushed.append((running.provider, text)) or running.provider == "codex")
+    monkeypatch.setattr("framework.launch.tell_in", lambda running, text: pushed.append((running.provider, text)) or running.provider == "codex")
+    monkeypatch.setattr("framework.launch.tell_soon", lambda running, text: pushed.append((running.provider, text)) or running.provider == "codex")
     assert rhea.peers() == ["helper 2, Mira, on claude: Write the hook docs"], "a helper lists the other helpers its dispatcher started"
     assert mira.say(1, "which hook is slowest?") == "sent to Rhea" and pushed[-1][0] == "codex" and 'answer with journal helper say 2 "<text>"' in pushed[-1][1], \
         "a Claude helper's words reach a Codex helper at once, with how to answer"
@@ -312,8 +312,8 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
     assert relayed.ref in reported.data["rows"] and features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
         "a report is named while it stands"
-    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda *given: True)
-    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda *given: True)
+    monkeypatch.setattr("framework.launch.tell_in", lambda *given: True)
+    monkeypatch.setattr("framework.launch.tell_soon", lambda *given: True)
     Helpers(record, actor=AGENT).say(1, "Now profile the start-up too")
     assert not features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
         "once the helper is given new work, its report is named no more"
@@ -475,8 +475,8 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     Todos(repo.record, actor=SYSTEM).assign(stranded, to="helper:99")
     assert todos.unassign(stranded).assigned == "", "a row held by a helper that no longer exists is the agent's to take back"
     sent_texts = []
-    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda running, text: sent_texts.append(text) or True)
-    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda running, text: sent_texts.append(text) or True)
+    monkeypatch.setattr("framework.launch.tell_in", lambda running, text: sent_texts.append(text) or True)
+    monkeypatch.setattr("framework.launch.tell_soon", lambda running, text: sent_texts.append(text) or True)
     helpers.dispatch("Tess", "More tunnel work", "codex", "gpt-5.5")
     later = todos.create("check the certificate").n
     helpers.say(helpers.all()[-1].n, "also this one", todos=str(later))

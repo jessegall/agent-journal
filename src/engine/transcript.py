@@ -7,9 +7,7 @@ from resources.text import digest
 
 from resources.types import IDLE
 
-HUMAN, AGENT, TOOL = "human", "agent", "tool"
-INJECTED, TASK, PEER, SENT = "injected", "task", "peer", "sent"
-SUMMARY, SUPERSEDED = "summary", "superseded"
+from resources.turns import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL  # noqa: F401
 
 
 @dataclass(frozen=True)

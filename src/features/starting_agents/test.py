@@ -196,7 +196,7 @@ def test_a_running_agents_screen_is_read_from_where_the_viewer_stopped_and_a_liv
 def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only_when_told_to(capsys, monkeypatch):
     import commands.launch as launch
     from commands.launch import asked_for, banner, choose, defaults
-    from features.agent_sessions.launch import prepared
+    from framework.launch import prepared
     from controllers.types import Helpers
     from resources.types import EnvironmentKind
     from engine.sessions import Sessions

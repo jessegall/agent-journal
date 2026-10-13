@@ -165,7 +165,7 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
         "a full-agent role gets an environment of its own, working in the ticket's worktree"
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plan"\nruns = "agent"\n')
     entered = []
-    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda running, text: entered.append(running.environment) or len(entered) > 1)
+    monkeypatch.setattr("framework.launch.tell_in", lambda running, text: entered.append(running.environment) or len(entered) > 1)
     plan = Todos(Record(record.root, "plan-3"), actor=AGENT)
     agents = [COMMANDS["todo"]["delegate"](plan, task, "engineering")["agent"] for task in ("Draw the header", "Draw the footer")]
     assert (agents, len(launched)) == (["plan-3-developer", "plan-3-developer"], 2), \
@@ -173,7 +173,7 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
     assert Todos(ticket, actor=AGENT).load(given["todo"]).data["role_environment"] == "ticket-5-developer-1" and "Nothing to dispatch" in given["brief"]
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plural"\nruns = "agent"\n')
     stopped = []
-    monkeypatch.setattr("features.agent_sessions.launch.stop_in", lambda record, name: stopped.append(name))
+    monkeypatch.setattr("framework.launch.stop_in", lambda record, name: stopped.append(name))
     Todos(ticket, actor=AGENT).complete(given["todo"], "built")
     assert stopped == ["ticket-5-developer-1"], "the agent a finished task had of its own is stopped"
 
@@ -241,7 +241,7 @@ def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_th
 
 
 def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_to_work_in():
-    from features.agent_sessions.launch import prepared
+    from framework.launch import prepared
     from engine import runtime
     from controllers.phone.places import shown
     from overview.summary import summarize

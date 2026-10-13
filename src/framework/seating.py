@@ -2,7 +2,7 @@
 
 from agents.control import permit as press_permit
 from engine.seats import live_session
-from engine.sessions import Sessions
+from engine.sessions import Sessions, live
 
 
 def sessions_of(record) -> Sessions:
@@ -17,3 +17,8 @@ def live_seat(record, title: str):
 def permit(record, env: str, session: str, allow: bool) -> dict:
     """Answers the permission an agent asks for in that environment, with the keys that press it."""
     return press_permit(record.root, env, session, allow)
+
+
+def still_live(session) -> bool:
+    """Whether a session still stands as an environment's own: running, and not succeeded by another."""
+    return live(session)

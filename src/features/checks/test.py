@@ -118,7 +118,7 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     (repo.project / "hooks" / "deep" / "inner.py").write_text("inner\n")
     assert "ran hooks/test.py" in touched_output and "no test covers notes.txt" in touched_output, "the test beside a changed file runs, and what no test covers is named"
     spawned = []
-    monkeypatch.setattr("features.agent_sessions.launch.subprocess.Popen", lambda args, **how: spawned.append((args, how)))
+    monkeypatch.setattr("framework.launch.subprocess.Popen", lambda args, **how: spawned.append((args, how)))
     checks.gate(suite.n, "change the hook", paths="hooks/code.py")
     args, how = spawned[0]
     assert args[-6:] == ["gate", str(suite.n), "change the hook", "--paths", "hooks/code.py", "--wait"] and how["start_new_session"], \
