@@ -285,7 +285,9 @@ function settle(spot, held = footingOn(spot)) {
 // ground at home and on to its place there
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
-    if (!footing || !here.value || document.hidden) return;
+    if (!here.value || document.hidden) return;
+    followTripGround();
+    if (!footing) return;
     sway();
     const ground = groundUnder(footing, place.value, figureSize());
     if (!ground) return uprooted();
@@ -294,6 +296,23 @@ function watchFooting() {
     if (ground.motion !== "carried") groundMoved(ground.motion);
     place.value = ground.spot;
     rest();
+}
+
+// On its way, the figure keeps to the ground it is headed for as that moves: the legs that end on it, the one under way among them, are
+// carried with it, so a walk or a jump goes where the ground is now rather than landing where it was and sliding after
+function followTripGround() {
+    const trip = moving.value;
+    if (!trip?.moves || !trip.footing) return;
+    const landed = landingOn(trip.to, trip.footing, figureSize());
+    const dx = landed.x - trip.to.x;
+    const dy = landed.y - trip.to.y;
+    if (Math.hypot(dx, dy) <= 0.3) return;
+    const end = (trip.legs.at(-1) ?? leg.value).y;
+    const carried = (each) => (each.y === end ? {...each, x: each.x + dx, y: each.y + dy} : each);
+    moving.value = {...trip, to: landed, legs: trip.legs.map(carried)};
+    if (leg.value.y !== end) return;
+    leg.value = carried(leg.value);
+    at.value = {x: leg.value.x, y: leg.value.y};
 }
 
 // The bars under the figure shrank, went, grew or came, and it falls with them or is lifted by them as the flat figure did, for twice the
