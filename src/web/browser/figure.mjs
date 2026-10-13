@@ -40,6 +40,9 @@ async function agentAs(page, data) {
 // at work with a search in flight
 const working = (page) => agentAs(page, {status: "working", event: "PreToolUse", tool: "Grep"});
 
+// idle, waiting for the user's next message
+const idle = (page) => agentAs(page, {status: "idle"});
+
 // paused, so its figure sits on a corner of the compose box
 const paused = (page) => agentAs(page, {status: "idle", paused: true});
 
@@ -143,6 +146,37 @@ const FRAME_MS = 1000 / 60;
 // how long a picture may take to finish easing from one posture to the next once the figure moves off, CHANGE_SECONDS, in milliseconds
 const SETTLING_MS = 300;
 
+// a click on the figure while its agent is as `agent` sets: it walks or hops out of the box it was in, never across the page in one frame
+async function clickedAway(page, url, agent) {
+    await agent(page);
+    await page.goto(`${url}#/main`);
+    await page.locator(FIGURE).waitFor({state: "visible"});
+    await settled(page);
+    const before = await page.locator(FIGURE).boundingBox();
+    await page.locator(`${FIGURE}-body`).click();
+    const frames = await framesOf(page, 8000);
+    await settled(page);
+    const after = await page.locator(FIGURE).boundingBox();
+    const overlapping =
+        before.x < after.x + after.width &&
+        after.x < before.x + before.width &&
+        before.y < after.y + after.height &&
+        after.y < before.y + before.height;
+    const leaps = weighedSteps(frames, (frame) => frame.x);
+    const leap = Math.max(0, ...leaps);
+    const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
+    const clip = await page.locator(FIGURE).evaluate((figure, home) => {
+        const ground = document.querySelector(home)?.getBoundingClientRect();
+        const trip = figure.dataset.trip ? `, ${figure.dataset.trip}` : ", on no trip";
+        return `${figure.dataset.clip} clip, walking ${figure.dataset.walking}${trip}, ground ${ground ? `${Math.round(ground.left)}..${Math.round(ground.right)} at ${Math.round(ground.top)}` : "none"}`;
+    }, HOME);
+    const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}, ${clip}`;
+    console.log(`the figure clicked away, ${agent.name}: ${measured}`);
+    if (overlapping) throw new Error(`clicked while ${agent.name}, the figure stayed over the box it was in: ${measured}`);
+    if (leap > MOST_ACROSS_IN_A_FRAME) throw new Error(`clicked, the figure jumped across the page: ${measured}; FRAMES ${trail(frames)}`);
+    if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`clicked, the figure walked on the spot: ${measured}`);
+}
+
 // the scenario of a bar closing under the figure: it is docked, the figure stands on it, the bar is closed and every frame is read
 async function fallsWhenClosed(page, url, agent) {
     await agent(page);
@@ -208,34 +242,7 @@ await runScenarios(process.argv[2], {
     },
 
     async "a click on the figure sends it walking or hopping out of the box it was in, never across the page in one frame"(page, url) {
-        await working(page);
-        await page.goto(`${url}#/main`);
-        await page.locator(FIGURE).waitFor({state: "visible"});
-        await settled(page);
-        const before = await page.locator(FIGURE).boundingBox();
-        await page.locator(`${FIGURE}-body`).click();
-        const frames = await framesOf(page, 8000);
-        await settled(page);
-        const after = await page.locator(FIGURE).boundingBox();
-        const overlapping =
-            before.x < after.x + after.width &&
-            after.x < before.x + before.width &&
-            before.y < after.y + after.height &&
-            after.y < before.y + before.height;
-        const leaps = weighedSteps(frames, (frame) => frame.x);
-        const leap = Math.max(0, ...leaps);
-        const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
-        const clip = await page.locator(FIGURE).evaluate((figure, home) => {
-            const ground = document.querySelector(home)?.getBoundingClientRect();
-            const trip = figure.dataset.trip ? `, ${figure.dataset.trip}` : ", on no trip";
-            return `${figure.dataset.clip} clip, walking ${figure.dataset.walking}${trip}, ground ${ground ? `${Math.round(ground.left)}..${Math.round(ground.right)} at ${Math.round(ground.top)}` : "none"}`;
-        }, HOME);
-        const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}, ${clip}`;
-        console.log(`the figure clicked away: ${measured}`);
-        if (overlapping) throw new Error(`clicked, the figure stayed over the box it was in: ${measured}`);
-        if (leap > MOST_ACROSS_IN_A_FRAME)
-            throw new Error(`clicked, the figure jumped across the page: ${measured}; FRAMES ${trail(frames)}`);
-        if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`clicked, the figure walked on the spot: ${measured}`);
+        for (const agent of [working, idle, paused]) await clickedAway(page, url, agent);
     },
 
     async "while it gets up to go, the figure keeps to the compose box as the box moves under it, and then walks level along it"(
