@@ -46,7 +46,12 @@ const THINK_HAND = [1.0, -0.4, 0.35];
 const THINK_TIP = 25;
 const SLEEP_TILT = 4;
 // what the butler once carried on the platter is left out, so its hands are empty; the cloth stays over the forearm it holds level
-const LEFT_OUT = new Set(["butler_tray", "butler_tablet"]);
+const LEFT_OUT = new Set(["butler_tray"]);
+// what a figure holds only in the poses that use it, as the butler's tablet while he writes or searches
+const TABLET = "butler_tablet";
+// how far the hand holding the tablet tips it up toward the face, and where on it the free hand touches, from that hand toward the free side
+const TABLET_TIP = 65;
+const TABLET_TOUCH = [-0.3, -0.22, 0.18];
 const LEVEL_ITEMS = new Set(["butler_towel", "colleague_mug"]);
 const BUSY_ITEMS = new Set([...LEVEL_ITEMS, "squire_shield", "coach_clipboard"]);
 const BLINK_OPENNESS = [1.0, 0.5, 0.06, 0.5];
@@ -87,6 +92,7 @@ class Posing {
         this.eyeTint = null;
         this.hearts = 0;
         this.laptop = false;
+        this.tablet = false;
         this.posture = posture;
         this.sway = 0;
         this.stride = stride;
@@ -201,6 +207,11 @@ class Posing {
     // a laptop open on the lap, its lid toward the face
     holdLaptop() {
         this.laptop = true;
+    }
+
+    // the tablet in the hand at the end of the forearm held across the waist, for the free hand to write on or swipe
+    holdTablet() {
+        this.tablet = true;
     }
 
     // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
@@ -911,6 +922,7 @@ function search(pose, stance, t) {
     trunk(pose, {lean: 26, nod: 20, turn: -SIDES[side] * 28 * sweep, twist: -SIDES[side] * 10 * sweep});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: 55, z: -55 + 30 * sweep, bend: 35});
+    onTablet(pose, stance, side, [0.06 * sweep, 0, 0]);
     eyesAs(pose, "reading");
 }
 
@@ -921,6 +933,20 @@ function write(pose, stance, t) {
     trunk(pose, {lean: 6, nod: 16, turn: -SIDES[side] * 10});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: 40 + 6 * waveOf(t, 2), z: -70 + 10 * waveOf(t), bend: 75 + 8 * waveOf(t, 2)});
+    onTablet(pose, stance, side, [0.03 * waveOf(t), 0.02 * waveOf(t, 2), 0.02 * waveOf(t, 2)]);
+}
+
+// a figure that has a tablet tips it up toward its face in the hand holding it, and touches it with the free hand, `stroke` off the
+// spot it touches
+function onTablet(pose, stance, side, stroke) {
+    for (const held of stance.tablet) {
+        const sign = SIDES[held];
+        pose.face(`hand_${held}`, {x: TABLET_TIP, z: -sign * HOLD_TWIST});
+        const touch = TABLET_TOUCH.map((at, axis) => at + stroke[axis]);
+        const spot = pose.head(`hand_${held}`, pose.matrix(`hand_${held}`)).add(new THREE.Vector3(sign * touch[0], touch[1], touch[2]));
+        pose.reach(side, spot, new THREE.Vector3(-sign * THINK_ELBOW[0], THINK_ELBOW[1], THINK_ELBOW[2]));
+        pose.holdTablet();
+    }
 }
 
 // hammers away with the free hand, the body dipping into each blow
@@ -1306,11 +1332,12 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     scene.traverse((node) => node.isSkinnedMesh && meshes.push(node));
     const eyes = {materials: [], shapes: [], hearts: []};
     for (const mesh of meshes) {
-        mesh.visible = shows(mesh) && !LEFT_OUT.has(mesh.userData.item);
+        mesh.visible = shows(mesh) && !LEFT_OUT.has(mesh.userData.item) && mesh.userData.item !== TABLET;
         addHullNormals(mesh.geometry);
         const hull = new THREE.SkinnedMesh(mesh.geometry, outlineMaterial(mesh));
         hull.bind(mesh.skeleton, mesh.bindMatrix);
         hull.visible = mesh.visible;
+        mesh.userData.hull = hull;
         hull.frustumCulled = mesh.frustumCulled = false;
         mesh.material = flatMaterial(mesh);
         mesh.parent.add(hull);
@@ -1326,16 +1353,18 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     }
     const carried = meshes.filter((mesh) => mesh.visible);
     const busy = handsHolding(carried, BUSY_ITEMS);
+    const tablet = meshes.filter((mesh) => mesh.userData.item === TABLET && shows(mesh));
     const stance = {
         voice,
         level: handsHolding(carried, LEVEL_ITEMS),
         busy,
         carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
         free: new Set(Object.keys(SIDES).filter((side) => !busy.has(side))),
+        tablet: handsHolding(tablet, new Set([TABLET])),
     };
     const laptop = laptopOf();
     scene.add(laptop);
-    return {scene, rig: rigOf(scene), stance, eyes, laptop};
+    return {scene, rig: rigOf(scene), stance, eyes, laptop, tablet: tablet.flatMap((mesh) => [mesh, mesh.userData.hull])};
 }
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
@@ -1453,6 +1482,7 @@ function place(figure, pose, facing, blend) {
         if (material.uniforms.light) material.uniforms.colour.value.set(...(pose.eyeTint ?? material.userData.colour));
     }
     figure.laptop.visible = pose.laptop;
+    for (const part of figure.tablet) part.visible = pose.tablet;
     if (pose.laptop) {
         figure.laptop.matrix.copy(lapOf(world));
         figure.laptop.matrixWorldNeedsUpdate = true;
