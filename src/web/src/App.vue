@@ -196,7 +196,7 @@ watch(
                         <StatusBar />
                     </template>
                     <Transition name="page" mode="out-in">
-                        <div :key="route.page || 'home'" class="page" data-figure-floor>
+                        <div :key="route.page || 'home'" class="page">
                             <AppPages :page="page" />
                         </div>
                     </Transition>

@@ -1,4 +1,4 @@
-import {elapsed} from "../format/time.js";
+import {ago, elapsed} from "../format/time.js";
 import {helperEnvironment, helperName, helperState} from "./helpers.js";
 
 export const SILENT = "silent";
@@ -77,6 +77,21 @@ export function stateOf(agent, works) {
     if (reported === "idle" && waitsFor(works)) return "waiting";
     if (reported === "idle" && backgroundRun(agent)) return "running";
     return REPORTED.includes(reported) ? reported : waitsFor(works) ? "waiting" : currentWork(works) ? "working" : "busy";
+}
+
+const ENDINGS = {
+    completed: {word: "Done", dot: "done"},
+    returned: {word: "Done", dot: "done"},
+    failed: {word: "Failed", dot: "failed"},
+    refused: {word: "Refused", dot: "failed"},
+    stopped: {word: "Stopped", dot: ""},
+    killed: {word: "Stopped", dot: ""},
+};
+
+// the dot and words an agent's run that has ended is shown by: how it ended, and when
+export function ending(status, at) {
+    const ended = ENDINGS[status] || ENDINGS.completed;
+    return {dot: ended.dot, word: at ? `${ended.word} ${ago(at)}` : ended.word};
 }
 
 export function named(w) {

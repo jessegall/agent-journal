@@ -95,25 +95,19 @@ test("whatever it plays, the figure's feet never go below the edge it rests on: 
     expect(POSTURES[seat.posture].travels).toBe("stand");
 });
 
-test("on the floor of a page the figure sits on the same line it stands on, so sitting down to work never lifts it and getting up never drops it", () => {
+test("before the chat is drawn the figure sits on the foot of the window on the same line it stands on, so sitting down never lifts it", () => {
     globalThis.window = {innerWidth: 1280, innerHeight: 720};
-    const floor = {getBoundingClientRect: () => ({left: 240, top: 0, width: 1040, right: 1280, bottom: 720})};
-    for (const found of [null, floor]) {
-        globalThis.document = {
-            querySelector: (selector) => (selector === "[data-figure-floor]" ? found : null),
-            querySelectorAll: () => [],
-        };
-        for (const near of [
-            {x: 0, y: 700},
-            {x: 1280, y: 700},
-        ]) {
-            const seat = seatOf(FIGURE, near);
-            expect(seat).toMatchObject({y: 720, posture: "sit"});
-            expect(spotOf(null, FIGURE, near).y).toBe(seat.y);
-            expect(seat.x).toBeGreaterThanOrEqual((found ? 240 : 0) + FIGURE.size / 2);
-            expect(seat.x).toBeLessThanOrEqual(1280 - FIGURE.size / 2);
-            expect(boxAt(seat, FIGURE).top).toBeGreaterThanOrEqual(0);
-        }
+    globalThis.document = {querySelector: () => null, querySelectorAll: () => []};
+    for (const near of [
+        {x: 0, y: 700},
+        {x: 1280, y: 700},
+    ]) {
+        const seat = seatOf(FIGURE, near);
+        expect(seat).toMatchObject({y: 720, posture: "sit"});
+        expect(spotOf(null, FIGURE, near).y).toBe(seat.y);
+        expect(seat.x).toBeGreaterThanOrEqual(FIGURE.size / 2);
+        expect(seat.x).toBeLessThanOrEqual(1280 - FIGURE.size / 2);
+        expect(boxAt(seat, FIGURE).top).toBeGreaterThanOrEqual(0);
     }
 });
 

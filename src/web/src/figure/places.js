@@ -4,9 +4,6 @@ import {flips} from "./reactions.js";
 // chat's compose box is home, and each of Home's tabs is a place it can go to point at what waits there.
 export const HOME = "[data-figure-home]";
 
-// the page area, whose foot is the figure's floor on a page with no compose box
-export const FLOOR = "[data-figure-floor]";
-
 // the bars docked over the main chat's compose box, such as a report's, which the figure is pushed up onto while they are there
 export const DOCKED_BARS = "[data-figure-docked-bars]";
 
@@ -112,10 +109,9 @@ export const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top 
 // hovered; where the page cannot say, it is taken as drawn
 const visible = (element) => element.checkVisibility?.({opacityProperty: true, visibilityProperty: true}) ?? true;
 
-// The box the figure lives in, which no part of it is ever drawn outside: the main chat's window while the page has one, else the page
-// area, else the window
+// The box the figure lives in, which no part of it is ever drawn outside: the main chat's window, else the window
 export function worldBox() {
-    const world = document.querySelector(HOME)?.closest(".thread") || document.querySelector(FLOOR);
+    const world = document.querySelector(HOME)?.closest(".thread");
     return world ? world.getBoundingClientRect() : {left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight};
 }
 
@@ -255,14 +251,13 @@ export function clearOf(box, figure, near, seated) {
 }
 
 // The edge a figure stands on at home: the bars docked over the main chat's compose box while there are any, else the compose box, else
-// the floor of the page itself, else the foot of the window
+// the foot of the window
 export function groundEdge() {
     const home = document.querySelector(HOME);
-    const top = home?.closest(".thread")?.querySelector(DOCKED_BARS) || home;
-    const element = top || document.querySelector(FLOOR);
+    const element = home?.closest(".thread")?.querySelector(DOCKED_BARS) || home;
     if (!element) return {element: null, edge: {left: 0, width: window.innerWidth, top: window.innerHeight}};
     const box = element.getBoundingClientRect();
-    return {element, edge: {left: box.left, width: box.width, top: top ? box.top : box.bottom}};
+    return {element, edge: {left: box.left, width: box.width, top: box.top}};
 }
 
 // What a figure resting on a spot keeps of it: the element it rests on, the spot's place from that element's edge, the posture it rests in
@@ -335,7 +330,7 @@ export function facingToward(key, x) {
 }
 
 // Where the figure stands at a view's tab, or null when the tab is gone or no spot on it is inside the figure's world; with no view, where
-// it stands at home, on the main chat's compose box, or on the floor of a page without one. Each spot names the element it rests on as
+// it stands at home, on the main chat's compose box or the bars docked over it. Each spot names the element it rests on as
 // `on`, so the figure can tell when that element has gone or moved.
 export function spotOf(view, figure, near) {
     if (view) {

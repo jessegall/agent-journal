@@ -397,7 +397,16 @@ function react(moment) {
 
 // the figure appears at home on its feet, where its entrance plays, keeping to that ground from the start, so a compose box that mounts
 // after it, as on coming back to Home, carries it up from the floor rather than leaving it there
+let homeFrame = 0;
+
+// The figure takes its place at home, on the chat's compose box or the bars docked over it, waiting for the chat to be drawn, as on coming
+// back to Home the page can be drawn a frame or more before it.
 function home() {
+    cancelAnimationFrame(homeFrame);
+    if (!document.querySelector(HOME)) {
+        homeFrame = requestAnimationFrame(home);
+        return;
+    }
     settle(spotOf(null, figureSize()));
     rest();
 }
@@ -457,6 +466,7 @@ onMounted(() => {
 });
 onUnmounted(() => {
     cancelAnimationFrame(footFrame);
+    cancelAnimationFrame(homeFrame);
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
     clearTimeout(frameTimer);

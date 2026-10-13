@@ -1,7 +1,7 @@
 import {createApp, h, reactive} from "vue";
 import {beforeEach, describe, expect, test} from "vitest";
 import WaitEdge from "../src/kit/WaitEdge.vue";
-import {lineOf, stateOf, waitingFor, waitingOn, wordOf} from "../src/domain/agentState.js";
+import {ending, lineOf, stateOf, waitingFor, waitingOn, wordOf} from "../src/domain/agentState.js";
 import {STATE_WORDS} from "../src/domain/journals.js";
 import {ref} from "vue";
 import {useWaiting} from "../src/composables/waiting.js";
@@ -150,4 +150,12 @@ describe("the waiting state follows the agent it is given", () => {
         expect(own.text).toBe("the test suite");
         expect(useWaiting(ref([]), ref(agent()), () => []).waiting.value).toBeNull();
     });
+});
+
+test("a run that has ended says plainly how it ended and when, for the inspector's header", () => {
+    const fourMinutesAgo = Date.now() / 1000 - 240;
+    expect(ending("completed", fourMinutesAgo)).toEqual({dot: "done", word: "Done 4m ago"});
+    expect(ending("failed", fourMinutesAgo)).toEqual({dot: "failed", word: "Failed 4m ago"});
+    expect(ending("killed", fourMinutesAgo).word).toBe("Stopped 4m ago");
+    expect(ending("", 0)).toEqual({dot: "done", word: "Done"});
 });

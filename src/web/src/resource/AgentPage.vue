@@ -6,6 +6,7 @@ import {useAgentLinks} from "../composables/agentLinks.js";
 import {usePoll} from "../composables/poll.js";
 import {useScope} from "../composables/scope.js";
 import {modelFamily, providerName} from "../domain/agents.js";
+import {ending} from "../domain/agentState.js";
 import {project} from "../state/identity.js";
 import {store} from "../state/store.js";
 import {span} from "../format/time.js";
@@ -40,7 +41,6 @@ const STATES = {
     busy: {word: "Working", dot: "running"},
     idle: {word: "Idle", dot: "queued"},
     compacting: {word: "Compacting its context", dot: "running"},
-    stopped: {word: "Stopped", dot: ""},
     paused: {word: "Paused", dot: "queued"},
 };
 const stateKey = computed(() => {
@@ -74,7 +74,7 @@ const mainInfo = computed(() => ({
     kind: "Main agent",
     name: project.value,
     title: task.value,
-    state: {key: stateKey.value, ...STATES[stateKey.value]},
+    state: {key: stateKey.value, ...(stateKey.value === "stopped" ? ending("stopped", props.resource.updated) : STATES[stateKey.value])},
     facts: factsOf.value,
     counts: {subagents: data.value.subagents || 0, skills: (data.value.skills || []).length},
     link: sessionLink.value ? {href: sessionLink.value, label: "Open its session on claude.ai"} : null,
@@ -105,13 +105,7 @@ const subagentInfo = computed(() => ({
     name: picked.value.type || "general",
     title: picked.value.task,
     back: "Main agent",
-    state: picked.value.running
-        ? {key: "working", word: "Working", dot: "running"}
-        : {
-              key: "idle",
-              word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Closed",
-              dot: "done",
-          },
+    state: picked.value.running ? {key: "working", word: "Working", dot: "running"} : {key: "idle", ...ending(picked.value.status, picked.value.ended)},
     facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.n}`, environment.value],
     actions: [],
 }));
