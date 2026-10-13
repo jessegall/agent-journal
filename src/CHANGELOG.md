@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.12 — Reading every message is faster
+
+- A row kept in a packed archive is read straight from the archive, and a read of every row looks the archive index up once, so a cold read of all messages takes about a quarter less time.
+
 ## 3.0.11 — The journal repeats itself less
 
 - Standing facts, rules and reminders are handed to the agent when a session starts and after each compaction, where they came at every quarter of the context. Their keywords still bring each one back when it comes up. Settings can set the old cadence again.

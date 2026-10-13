@@ -735,6 +735,9 @@ class RowStore:
     @final
     def peek(self, n: int) -> Resource:
         self._after_writes()
+        return self._held(n, self.packed())
+
+    def _held(self, n: int, packs: dict[int, Summary]) -> Resource:
         p = self.path(n)
         try:
             stamps = self._stamps(p.parent) if WATCHED.on and not self.resource.own_folder else {}
@@ -744,11 +747,11 @@ class RowStore:
                 found = p.stat()
                 stamp, where = (found.st_mtime_ns, found.st_size), str(p)
         except OSError as error:
-            entry = self.packed().get(n)
+            entry = packs.get(n)
             if not entry:
                 raise Missing(f"no {self.type} {n}") from error
             archive = self.folder() / PACKED / entry.zip
-            stamp, where = (mtime(archive), 0), f"{archive}:{n}"
+            return self.rolling().get(f"{archive}:{n}", (mtime(archive), 0), lambda: self._loaded(n, self._unpacked(n, archive)))
         return self.rolling().get(where, stamp, lambda: self._parsed(n))
 
     def rolling(self) -> Memo:
@@ -777,16 +780,21 @@ class RowStore:
         entry = self.packed().get(n)
         if not entry:
             raise Refused(f"no {self.type} {n}")
-        archive = self.folder() / PACKED / entry.zip
+        return self._unpacked(n, self.folder() / PACKED / entry.zip)
+
+    def _unpacked(self, n: int, archive: Path) -> str:
         try:
             return opened(archive).read(member(n)).decode()
         except (OSError, KeyError, zipfile.BadZipFile) as error:
             raise Refused(f"{self.type} {n} is missing from {archive}") from error
 
     def _parsed(self, n: int) -> Resource:
+        return self._loaded(n, self.text(n))
+
+    def _loaded(self, n: int, text: str) -> Resource:
         sys.audit(PARSED, self.type, n)
         try:
-            return self.resource.load(self.text(n))
+            return self.resource.load(text)
         except (ValueError, TypeError) as error:
             raise Refused(f"{self.type} {n} is damaged: {self.path(n)}") from error
 
@@ -862,10 +870,11 @@ class RowStore:
                 time.sleep(0.001)
 
     def _peeked(self, rows) -> list[Resource]:
-        found = []
+        self._after_writes()
+        packs, found = self.packed(), []
         for row in rows:
             try:
-                found.append(self.peek(row.n))
+                found.append(self._held(row.n, packs))
             except Missing:
                 continue
         return found
