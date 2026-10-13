@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.10 — The check-in waits thirty minutes
+
+- When nothing has happened for a while, the agent is checked in with after thirty minutes by default instead of fifteen. Settings still sets it per project.
+
 ## 3.0.9 — The laptop clears the hands, and searching shows the magnifying glass
 
 - The seated figure's laptop sits out in front so the typing hands rest on its keys without passing through it.
