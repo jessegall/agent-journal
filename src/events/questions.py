@@ -6,6 +6,7 @@ from typing import ClassVar
 from events import Fact
 from events.resources import ResourceEvent
 from resources.prompt_answers import PromptAnswer
+from resources.put_questions import PutQuestion
 
 
 @dataclass(frozen=True)
@@ -71,7 +72,7 @@ class QuestionSettled(Fact):
 
 @dataclass(frozen=True, kw_only=True)
 class QuestionsToFile(Fact):
-    """The agent put these questions to its provider's question tool, which the journal asks instead: each is a text, its options and the agent's pick, as JSON."""
+    """The agent put these questions to its provider's question tool, which the journal asks instead."""
 
     agent: int
-    asked: str
+    asked: tuple[PutQuestion, ...]

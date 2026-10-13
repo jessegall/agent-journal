@@ -10,6 +10,7 @@ from features.ask_questions.choices import FILED, offers_choices
 from framework.loaded import FEATURES
 from receiving import Listener
 from resources.base import USER, Ref
+from resources.put_questions import PutQuestion
 from resources.types import AgentRow, Question
 from serving import Providers, ReadRows, ReadSessions, Settings
 
@@ -69,4 +70,4 @@ class SpotQuestionToolRefused(Listener[ToolCallAnswered]):
         asked = asked_in(providers, agents.peek(event.agent), event.tool, event.input)
         if unnamed_pick(asked):
             return []
-        return [QuestionsToFile(agent=event.agent, asked=json.dumps([{"text": one.text, "options": one.options, "pick": one.pick} for one in asked]))]
+        return [QuestionsToFile(agent=event.agent, asked=tuple(PutQuestion(one.text, json.dumps(one.options), one.pick) for one in asked))]

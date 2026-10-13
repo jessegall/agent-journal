@@ -10,6 +10,7 @@ from events.messages import MessageCreated
 from events.questions import AnswerGiven, AnswerOnScreen, AskingSettled, ProseOffersChoices, QuestionCompleted, QuestionCreated, QuestionSettled, QuestionsToFile
 from expects import Answered, Dispatches, Given, Held, Kept, Nudged, Ran, Refused, Updated, answering, exited, nothing
 from resources.base import AGENT, Ref
+from resources.put_questions import PutQuestion
 from resources.types import AgentRow, Question, Todo
 from framework.base import Feature
 from framework.watched import FACTS, state_facts
@@ -94,7 +95,7 @@ class AskQuestions(Feature):
         ])
         journal.events.listen(ToolCallAnswered, SpotQuestionToolRefused(), expects=[
             Given(ToolCallAnswered(agent=1, tool="AskUserQuestion", input=asked_call(("main (Recommended)", "the usual"), ("dev", "for tries")), why=FILED_LINE), rows=[CLAUDE])
-                >> Dispatches(QuestionsToFile(agent=1, asked=json.dumps([{"text": "which branch?", "options": TWO, "pick": 1}]))),
+                >> Dispatches(QuestionsToFile(agent=1, asked=(PutQuestion("which branch?", json.dumps(TWO), 1),))),
             Given(ToolCallAnswered(agent=1, tool="AskUserQuestion", input=asked_call(("main (Recommended)", ""), ("dev", "")), why=FILED_LINE, subagent=True), rows=[CLAUDE]) >> Dispatches(nothing),
             Given(ToolCallAnswered(agent=1, tool="AskUserQuestion", input=asked_call(("main (Recommended)", ""), ("dev", "")), why="held"), rows=[CLAUDE]) >> Dispatches(nothing),
         ])
@@ -116,8 +117,8 @@ class AskQuestions(Feature):
             Given(QuestionSettled(n=3, why="to-do 7, which it was about, is closed"), rows=[Question(n=3, title="keep the header?", refs=["todo:7"])]) >> Updated(Question(n=3), dismissed=True),
         ])
         journal.events.handle(QuestionsToFile, FileQuestions(), expects=[
-            Given(QuestionsToFile(agent=1, asked=json.dumps([{"text": "which branch?", "options": TWO, "pick": 1}])),
-                  rows=[CLAUDE], commands=answering({ask({"text": "which branch?", "options": TWO, "pick": 1}): exited(0, "question 4")})) >> Nudged("filed as", numbers="4"),
+            Given(QuestionsToFile(agent=1, asked=(PutQuestion("which branch?", json.dumps(TWO), 1),)),
+                  rows=[CLAUDE], commands=answering({ask(PutQuestion("which branch?", json.dumps(TWO), 1)): exited(0, "question 4")})) >> Nudged("filed as", numbers="4"),
         ])
         journal.agent.append_to_line("question.completed", answers_added)
         journal.events.answer(ToolCallAsked, AskInTheJournal(), expects=[

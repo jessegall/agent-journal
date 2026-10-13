@@ -1,4 +1,3 @@
-import json
 import re
 import shlex
 
@@ -6,7 +5,8 @@ from events import Fact
 from events.questions import AnswerGiven, AnswerOnScreen, AskingSettled, ProseOffersChoices, QuestionSettled, QuestionsToFile
 from features.ask_questions.listeners import ASKING
 from receiving import Handler
-from resources.base import SYSTEM, USER, titled
+from resources.base import USER, titled
+from resources.put_questions import PutQuestion
 from resources.types import AgentRow, Question
 from serving import Chat, Commands, Rows, Terminal
 
@@ -45,11 +45,11 @@ class DismissSettledQuestion(Handler[QuestionSettled]):
 
 class FileQuestions(Handler[QuestionsToFile]):
     def handle(self, event: QuestionsToFile, commands: Commands, chat: Chat) -> list[Fact]:
-        filed = [commands.run(ask(one)) for one in json.loads(event.asked)]
+        filed = [commands.run(ask(one)) for one in event.asked]
         chat.nudge("filed as", numbers=", ".join(number.group() for ran in filed if (number := re.search(r"\d+", ran.output))) or "none")
         return []
 
 
-def ask(one: dict) -> str:
-    pick = f" --set pick={one['pick']}" if one["pick"] else ""
-    return f"question ask {shlex.quote(titled(one['text']))} --brief {shlex.quote(one['text'])} --set options={shlex.quote(json.dumps(one['options']))}{pick}"
+def ask(one: PutQuestion) -> str:
+    pick = f" --set pick={one.pick}" if one.pick else ""
+    return f"question ask {shlex.quote(titled(one.text))} --brief {shlex.quote(one.text)} --set options={shlex.quote(one.options)}{pick}"
