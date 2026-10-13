@@ -644,7 +644,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert claude.wiring_trouble(bare).endswith("which does not exist"), "a hook that names a journal that is gone is told so"
     (bare / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "other"}]}]}}))
     assert [found["path"] for found in claude.hooks_elsewhere(bare)] == [".claude/settings.json"], "hooks kept in another settings file of the project are listed with where they are"
-    from features.open_viewer import commands as viewer_commands
+    from framework.viewer import commands as viewer_commands
     monkeypatch.setattr(viewer_commands, "terminal_of", lambda root, session: "term-1" if session == "claude-1" else "")
     monkeypatch.setattr(viewer_commands.typist, "send", lambda root, terminal, keys: terminal == "term-1" and keys == b"hi")
     monkeypatch.setattr(viewer_commands, "relaunch", lambda root, env, session: {"relaunched": session})
