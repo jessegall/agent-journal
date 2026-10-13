@@ -1,4 +1,4 @@
-from controllers.helpers.reuse import named_paths, refusal
+from resources.reuse import named_paths, refusal
 from events.answers import Allowed, Answer, Refused
 from events.asking import AgentDispatching, ToolCallAsked
 from payload import runs_tests

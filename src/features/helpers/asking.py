@@ -1,4 +1,4 @@
-from controllers.helpers.reuse import subagent_rows
+from resources.reuse import subagent_rows
 
 
 def listed_options(question) -> str:

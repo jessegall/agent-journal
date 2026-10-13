@@ -9,6 +9,7 @@ from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.messages import Messages
 from controllers.nudges import Nudges
+from controllers.questions import Questions
 from controllers.todos import Todos
 from engine import attic, bus
 from engine.outbox import Request
@@ -377,6 +378,10 @@ class Helpers(Controller):
             return None
         helper = Ref.parse(todo.assigned)
         return helper if self.rows.exists(helper.n) and not self.load(helper.n).completed else None
+
+    def open_questions(self, environment: str) -> list:
+        """The questions that wait for the user in that environment, hidden ones left out."""
+        return [question for question in Questions(Record(self.record.root, environment), actor=SYSTEM).rows.standing() if not question.hidden]
 
     def census(self) -> list:
         return kept(self.record, self.rows.standing())

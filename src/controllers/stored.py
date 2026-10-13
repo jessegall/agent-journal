@@ -22,7 +22,7 @@ from engine.numbers import rows
 
 T = TypeVar("T")
 DRAFT_OF = "draft_of"
-IDEMPOTENCY = "idempotency"
+from resources.keys import IDEMPOTENCY  # noqa: F401
 
 INDEX = "index.json"
 CACHE = ".index"

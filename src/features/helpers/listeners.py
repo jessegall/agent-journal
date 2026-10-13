@@ -4,7 +4,7 @@ from events.helpers import (AnswerToRelay, HelperAsks, HelperIdle, HelperQuiet, 
                             SubagentTouched)
 from events.messages import MessageCreated
 from events.questions import QuestionCreated
-from controllers.stored import IDEMPOTENCY
+from resources.keys import IDEMPOTENCY
 from declaring.trigger import MINUTE
 from features.helpers.asking import listed_options, subagent_name
 from receiving import Listener

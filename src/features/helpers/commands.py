@@ -1,5 +1,5 @@
 from controllers.types import Agents
-from controllers.helpers.reuse import retire, subagent_rows
+from resources.reuse import retire, subagent_rows
 from framework.parts import Command, Context
 from resources.base import Refused
 
