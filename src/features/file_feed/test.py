@@ -78,12 +78,20 @@ def test_a_changed_file_becomes_a_card_and_the_cursor_reads_only_what_came_after
     assert [inside(f"python3 {root}/src/x.py", root), inside(f"{root}/src/x.py", root), inside("ls /etc/hosts", root)] == ["python3 src/x.py", "src/x.py", "ls /etc/hosts"], "a command or path inside the project is recorded relative to it"
 
 
-def test_a_deleted_file_is_one_line_with_its_removed_count():
-    project = project_with({"old.md": "a\nb\nc\n"})
+def test_a_deleted_file_is_one_line_with_its_removed_count(monkeypatch):
+    from engine.proc import ListingFailed
+    project = project_with({"old.md": "a\nb\nc\n", "kept.md": "x\n"})
     (project.root / "old.md").unlink()
     project.changed()
     card = edits_since(project.record, TheGit(project.record), project.agent, 0, PAGE).edits[0]
     assert (card.kind, card.removed, card.rows) == ("deleted", 3, ()), "a deleted file carries no diff rows"
+    shown = len(edits_since(project.record, TheGit(project.record), project.agent, 0, PAGE).edits)
+    monkeypatch.setattr(files, "git_listed", lambda args, cwd, timeout=5: (_ for _ in ()).throw(ListingFailed.of(args, cwd)))
+    project.changed()
+    monkeypatch.undo()
+    project.changed()
+    assert len(edits_since(project.record, TheGit(project.record), project.agent, 0, PAGE).edits) == shown, \
+        "a look git did not answer reads as nothing, never as every file gone and then created again"
     from features.file_feed import diff as diffing
     long = diffing.Diff.between([], [f"line {i}" for i in range(diffing.MOST_ROWS + 25)])
     assert (len(long.rows), long.rows[-1].kind, long.added) == (diffing.MOST_ROWS + 1, "fold", diffing.MOST_ROWS + 25), "a very long change shows its first rows and says how many more there are"

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine import bus
-from engine.proc import git, git_blob, git_objects
+from engine.proc import ListingFailed, git, git_blob, git_listed, git_objects
 from engine.project_files import readable_in
 from events.files import EDITED
 from resources.base import SYSTEM
@@ -85,7 +85,7 @@ LINKED_REPOSITORY = "160000"
 def ignored_images(project: Path) -> list[str]:
     """The pictures git ignores, such as a project that ignores *.png: an agent still makes them, so its feed shows them."""
     wanted = [*(f"*{suffix}" for suffix in IMAGE_SUFFIXES), *(f":(exclude,glob)**/{name}/**" for name in SKIPPED)]
-    return [path for path in git(["ls-files", "-o", "-i", "--exclude-standard", "-z", "--", *wanted], project).split("\0") if path]
+    return [path for path in git_listed(["ls-files", "-o", "-i", "--exclude-standard", "-z", "--", *wanted], project).split("\0") if path]
 
 
 def project_repositories(project: Path) -> tuple[Path, ...]:
@@ -135,7 +135,7 @@ def tracked_in(project: Path) -> dict:
     if held is not None and held.stamp == stamp:
         return held.tree
     tree = {}
-    for entry in git(["ls-files", "-s", "-z"], project).split("\0"):
+    for entry in git_listed(["ls-files", "-s", "-z"], project).split("\0"):
         meta, _, path = entry.partition("\t")
         if path and not meta.startswith(LINKED_REPOSITORY):
             tree[path] = meta.split()[1]
@@ -167,7 +167,7 @@ def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
 
 def blobs_in(project: Path) -> dict:
     tree = dict(tracked_in(project))
-    dirty = list(dict.fromkeys(p for p in [*git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0"), *ignored_images(project)] if p))
+    dirty = list(dict.fromkeys(p for p in [*git_listed(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0"), *ignored_images(project)] if p))
     present = [p for p in dirty if readable_in(project, p) and (project / p).is_file()]
     UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
@@ -291,7 +291,11 @@ def announce_writes(record, agent: int, homes: tuple[str, ...], cwd: str = "") -
 
 def announce(record, agent: int, homes: tuple[str, ...], folder: Path) -> None:
     project = folder
-    now = blobs(record, project, homes)
+    try:
+        now = blobs(record, project, homes)
+    except ListingFailed:
+        # a listing git did not answer would read as every file gone, and as created again on the next look
+        return
     with record.state(snapshot_name(record, folder)).changing() as held:
         last = held.get("tree")
         held["tree"] = now

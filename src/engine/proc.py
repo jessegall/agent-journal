@@ -74,6 +74,22 @@ def git(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> s
     return done.stdout if done else ""
 
 
+class ListingFailed(RuntimeError):
+    """A git listing that did not answer: its silence is not an empty list."""
+
+    @classmethod
+    def of(cls, args: list[str], cwd) -> "ListingFailed":
+        return cls(f"git {' '.join(args[:2])} did not answer in {cwd}")
+
+
+def git_listed(args: list[str], cwd, timeout: float = 5) -> str:
+    """What a git listing printed, for a caller that would take silence as nothing there: a listing that failed or timed out raises."""
+    done = git_ran(args, cwd, timeout)
+    if done is None or done.returncode != 0:
+        raise ListingFailed.of(args, cwd)
+    return done.stdout
+
+
 def nothing_started(group: int) -> None:
     """What a caller that does not need the process group is given in its place."""
 
