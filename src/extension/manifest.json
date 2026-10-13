@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Agent journal",
-  "version": "1.4.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1oWbJL1QeZ710yxagnq169hK4rNe2+CxVySXuAOsnMJZpcUrOcYfIKEc9afYIsKleeoswOdKbShE/c9o67k4UWsoabQo9hW27WxZa6HRid9CJXYAxwxI0abaA+DZSmg3+PblzcgtzMhR7d7hSN8WCdApQwHUWlFTqi2b6xE73157RipiDg2IP08GSb3kz++c36Dnl5YeoO66QkJRw79AaCSxR5TxAv9JyROc81bbKW0gOPFBkIdUMEh7ygvb7Vm+0vq8MdZw1yIxZIStRBfL5zcEBEky8CUBR+Ti7NN7SPtVGH2QkisSkNSuROamUNqNSgl8kZXOWefPLjsWV3UzZwIDAQAB",
+  "version": "1.5.0",
   "description": "Point at anything on a page and send it to the agent's journal, with a picture of what you pointed at.",
   "permissions": [
     "activeTab",

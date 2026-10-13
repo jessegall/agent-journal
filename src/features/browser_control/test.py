@@ -22,3 +22,12 @@ def test_the_extension_drives_a_tab_answers_an_ask_and_its_picture_is_attached()
     assert "an ask is one of" in refused(lambda: agent.ask("fly")), "an ask the extension does not know is refused with the ones it does"
     waiting = agent.ask("text", wait=1)
     assert not waiting.completed, "an ask nobody answers in time comes back still waiting"
+
+
+def test_the_journals_own_extension_may_post_and_no_other_page_or_extension_may():
+    from types import SimpleNamespace
+    import serve
+    handler = SimpleNamespace(server=SimpleNamespace(server_port=8420))
+    trusted = lambda origin: serve.Handler.trusted_origin(handler, origin)
+    assert (trusted(serve.EXTENSION_ORIGIN), trusted("chrome-extension://abcdefghijklmnopabcdefghijklmnop"), trusted("https://example.com")) == (True, False, False), \
+        "the extension's posts, a picked element's picture among them, are let in by its fixed ID, and nothing else that is not the viewer"

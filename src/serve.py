@@ -1,5 +1,7 @@
 import faulthandler
 import gc
+import base64
+import hashlib
 import json
 import os
 import re
@@ -44,7 +46,7 @@ from controllers.types import warm  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
 from runner.spool import drain, replay, spooled  # noqa: E402
 from engine.runtime import default_env
-from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry, publish_stamp
+from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, data, entry, publish_stamp
 from engine.version import version
 
 DEFAULT_PORT = 8430
@@ -58,6 +60,15 @@ SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
 
+def extension_origin() -> str:
+    """The origin of the journal's own browser extension, whose posts come from it: its ID is the one Chrome derives from the public key its manifest carries."""
+    der = base64.b64decode(json.loads(data("extension", "manifest.json").read_text())["key"])
+    return "chrome-extension://" + "".join(chr(ord("a") + int(digit, 16)) for digit in hashlib.sha256(der).hexdigest()[:32])
+
+
+EXTENSION_ORIGIN = extension_origin()
+
+
 class Handler(BaseHTTPRequestHandler):
     root: Path = Path(".journal")
 
@@ -65,6 +76,8 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def trusted_origin(self, origin: str) -> bool:
+        if origin == EXTENSION_ORIGIN:
+            return True
         found = LOOPBACK.match(origin)
         ports = {self.server.server_port, *(urlparse(journal.url).port for journal in known())}
         return bool(found) and int(found.group(1) or 80) in ports
