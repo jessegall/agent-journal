@@ -13,7 +13,7 @@ from urllib.parse import quote
 
 import features
 from engine.multipart import uploads
-from features.auto_update.countdown import update_state
+from framework.updating.countdown import update_state
 from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from engine.color import identity, set_color

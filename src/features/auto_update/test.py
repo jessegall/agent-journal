@@ -10,8 +10,8 @@ import time
 import pytest
 from types import SimpleNamespace
 
-import features.auto_update.check as updates
-import features.auto_update.relaunch as relaunching
+import framework.updating.check as updates
+import framework.updating.relaunch as relaunching
 from engine.heal import ledger
 from engine.stored import write_json
 from controllers.types import Features
@@ -19,7 +19,7 @@ from features import load
 from resources.base import SYSTEM
 from tests import isolation
 from tests.conftest import fresh
-from features.journal_laws import managed
+from framework import managed
 
 
 def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
@@ -85,10 +85,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "journal_repository", lambda project: False)
     assert dispatch("POST", "/api/update", record.root, {}, {}).body == {"updating": True}, "the viewer's Update button starts an install"
     from features.auto_update import routes
-    monkeypatch.setattr(routes, "upstream", lambda root: "99.0.0")
+    from framework.updating import status
+    monkeypatch.setattr(status, "upstream", lambda root: "99.0.0")
     release = dispatch("GET", "/api/upstream", record.root, {}, {}).body
     assert (release["latest"], release["newer"], release["changed"]) == ("99.0.0", True, []), "the viewer is told the newest release, that it is newer, and which managed files were changed"
-    whole = routes.data("CHANGELOG.md").read_text()
+    whole = status.data("CHANGELOG.md").read_text()
     first = dispatch("GET", "/api/changelog", record.root, {}, {}).body
     second = dispatch("GET", "/api/changelog", record.root, {"skip": str(first["shown"])}, {}).body
     pages = routes.RELEASES_PER_PAGE
@@ -117,7 +118,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert "cancelled" in invoked(Features(record, actor=USER), "cancel_update", ()), "the command line cancels a counting update as the viewer does"
     announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
     assert (announced.code, isinstance(announced.body, list)) == (200, True), "the viewer asks the server which new features are not yet seen, and an empty list means none"
-    from features.auto_update import new_feature
+    from framework.updating import new_feature
     notes = ('## 2.9.0 — Two\n<!-- new-feature {"id": "owl", "title": "Owl", "text": "Hoot", "button": "Use it"} -->\n\n'
              '## 2.8.0 — One\n<!-- new-feature {"id": "squire", "title": "Squire", "text": "Hail", "button": "Use it"} -->\n')
     assert [one.id for one in new_feature.unseen(record, notes)] == ["squire", "owl"], "the new features of releases an update skipped over queue, oldest first"
@@ -149,7 +150,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "one that was installed before still announces what an update brought"
     from controllers.types import Agents
     from engine import runtime
-    from features.auto_update.waiting import running, wait_for_commands
+    from framework.updating.waiting import running, wait_for_commands
     from tests.kit import report
     started = time.time()
     report(record, "working", "PreToolUse", session="claude-9", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}],
@@ -165,7 +166,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the journal commands in flight, then names the one it gave up on and marks it ended"
     assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
     import threading
-    from features.auto_update import countdown
+    from framework.updating import countdown
     assert (countdown.wait(record.root, "2.9.0", seconds=0.1, every=0.01), countdown.remaining(record.root)) == (True, {"version": "2.9.0", "seconds": 0, "starting": True}), \
         "an automatic update that is not cancelled runs after its countdown, and is reported as starting until its upgrade holds the mark"
     runtime.upgrade_mark(record.root).write_text("Preparing the update")
@@ -186,7 +187,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert dispatch("POST", "/api/update/cancel", record.root, {}, {}).code == 200
     runner.join(2)
     assert (counted, countdown.remaining(record.root)) == ([False], {}), "Not now puts that update off"
-    from features.auto_update.check import claimed, ledger as tries
+    from framework.updating.check import claimed, ledger as tries
     tries(record.root).set("2.9.1", {"at": time.time(), "tries": 1, "ok": False})
     assert claimed(record.root, "2.9.1", "ask") is False, "a put off update is not offered again at once"
     tries(record.root).set("2.9.1", {"at": time.time() - 3600, "tries": 1, "ok": False})
@@ -200,7 +201,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         install.upgrade(record.root.parent, record.root, yes=True)
     assert ([(row.n, row.paused) for row in Agents(record, actor=SYSTEM).rows.every()], list(runtime.inputs(record.root).glob("*.json")), runtime.upgrading(record.root)) == (held, [], False), \
         "an update writes nothing to any agent and queues nothing for one: the agents wait while its mark stands and are free the moment it goes, even when the update fails"
-    from features.auto_update import waiting
+    from framework.updating import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})
     asked = len(steps)
@@ -416,8 +417,8 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
 
 def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from controllers.types import Notifications
-    from features.auto_update.announcing import announce
-    from features.journal_laws.managed import LEGACY_COPY_MARKER
+    from framework.updating.announcing import announce
+    from framework.managed import LEGACY_COPY_MARKER
     record = fresh()
     announce(record.root, "1.0.0")
     copy_note = record.root / "runtime" / LEGACY_COPY_MARKER
@@ -435,7 +436,7 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from engine.runtime import default_env
     from engine.record import Record
     notified = [n for n in Notifications(Record(record.root, default_env(record.root))).rows.every() if n.title == "Journal updated to 1.0.1"]
-    from features.auto_update.new_feature import new_features
+    from framework.updating.new_feature import new_features
     notes = ('# Changelog\n\n## 2.9.0 — A voice\n- It talks.\n<!-- new-feature {"id": "squire", "title": "New chat voice: the Squire", "text": "Hail!", '
              '"button": "Use the Squire voice", "profile": "Squire", "art": "squire.png"} -->\n\n## 2.8.0 — Fixes\n- Fixed.\n\n'
              '## 2.7.0 — Broken\n<!-- new-feature {not json} -->\n')
@@ -443,7 +444,7 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     assert ([(one.id, one.version, one.profile, one.art, one.eyebrow) for one in found]
             == [("squire", "2.9.0", "Squire", "announcements/squire.png", "Hey, new feature")]), \
         "a changelog entry announces a new feature beside its notes, with the artwork file shipped with it; an entry that announces none or announces it wrong adds nothing"
-    from features.auto_update.new_feature import oldest_first
+    from framework.updating.new_feature import oldest_first
     two = ('## 3.0.0 — Two at once\n<!-- new-feature {"id": "first", "title": "First", "text": "One.", "button": "Show me"} -->\n'
            '<!-- new-feature {"id": "second", "title": "Second", "text": "Two.", "button": "Show me"} -->\n\n' + notes.split("\n\n", 1)[1])
     assert [one.id for one in oldest_first(new_features(two))] == ["squire", "first", "second"], \
@@ -487,7 +488,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     ran.clear()
     assert (launch.latest_first(record), ran) == (f"99.0.0 was not installed: {held}", ["upgrade"]), \
         "an upgrade that held back, or did not put the version in place, is said plainly and the launch goes on, never started again to loop on it"
-    from features.journal_laws import managed
+    from framework import managed
     (record.root / "src").mkdir(exist_ok=True)
     (record.root / "src" / "CHANGELOG.md").write_text("rewritten")
     (record.root / managed.MANAGED).write_text(json.dumps({".journal/src/CHANGELOG.md": "an older hash"}))
@@ -498,7 +499,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     assert launch.latest_first(record) == "", "the journal's own repository is never updated over itself"
     import sys
     from types import SimpleNamespace
-    from features.auto_update import check
+    from framework.updating import check
     upgrade = lambda code, script: [sys.executable, "-c", f"import sys, time\n{script}\nsys.exit({code})"]
     monkeypatch.setattr(check, "entry", lambda name: upgrade(3, "print('could not start')\nprint('')"))
     assert check.installed(record.root, True, "") == "could not start", "a failed upgrade reports the last line it printed"
@@ -739,7 +740,7 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
             "a repair that cannot write is said, and the install still configures and packs"
         assert refreshed == [site_root], "a package that is the record itself is refreshed in place"
         (install.code(site_root) / "CHANGELOG.md").write_text('## 2.8.0 — One\n<!-- new-feature {"id": "squire", "title": "Squire", "text": "Hail", "button": "Use it"} -->\n')
-        from features.auto_update import new_feature
+        from framework.updating import new_feature
         assert new_feature.seen(site_root) == [], "nothing is seen before the install ends"
         install.finish(site, site_root)
         assert new_feature.seen(site_root) == ["squire"], "a first install has nothing new to announce: its own changelog's features are seen from the start"

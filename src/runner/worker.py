@@ -24,8 +24,8 @@ from engine.package import CODE, installed_digest, noticed_digest, own_build  # 
 from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
 from framework.switches import watch_change_log  # noqa: E402
-from features.auto_update.check import UpdateCheck  # noqa: E402
-from features.auto_update.relaunch import Relaunch  # noqa: E402
+from framework.updating.check import UpdateCheck  # noqa: E402
+from framework.updating.relaunch import Relaunch  # noqa: E402
 from features.work_tracking.auto import CheckIn  # noqa: E402
 
 TICK = 0.25

@@ -540,7 +540,7 @@ def upgrading(project: Path, root: Path, version: str | None = None) -> list[str
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
         stepping(root, "Fetching the new version")
-        from features.auto_update.branch import followed_branch
+        from framework.updating.branch import followed_branch
         branch = followed_branch(root)
         newest = "" if branch else (version or released())
         if newest and newest == version_in(code(root)) and packed(root):
@@ -857,9 +857,9 @@ def loaded() -> Package:
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
     from engine.runtime import default_env, mark_upgrade, restarting, upgrade_mark
-    from features.journal_laws import managed
-    from features.auto_update.new_feature import mark_all_seen
-    from features.auto_update.waiting import wait_for_commands
+    from framework import managed
+    from framework.updating.new_feature import mark_all_seen
+    from framework.updating.waiting import wait_for_commands
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,

@@ -7,7 +7,7 @@ from engine import runtime
 from engine.heal import refused
 from engine.version import version
 from framework.loaded import running
-from features.auto_update.check import failure_in, journal_repository
+from framework.updating.check import failure_in, journal_repository
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from engine.upgrades import fetched, newer

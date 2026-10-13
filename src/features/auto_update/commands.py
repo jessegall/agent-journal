@@ -1,6 +1,6 @@
-from features.auto_update import routes
-from features.auto_update.countdown import cancel
-from features.auto_update.new_feature import unseen_announced
+from framework.updating.countdown import cancel
+from framework.updating.status import CHANGELOG
+from framework.updating.new_feature import unseen_announced
 from framework.parts import Command, Context
 
 
@@ -17,5 +17,5 @@ class ShowNewFeatures(Command):
     name = "new_features"
 
     def run(self, context: Context, features) -> str:
-        found = unseen_announced(context.record, routes.CHANGELOG)
+        found = unseen_announced(context.record, CHANGELOG)
         return "\n".join(f"{one.version}: {one.title} - {one.text}" for one in found) or "no new feature waits to be seen"

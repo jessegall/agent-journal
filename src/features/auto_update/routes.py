@@ -3,20 +3,16 @@ import re
 import threading
 import time
 from dataclasses import asdict
-from engine import runtime
 from resources.memo import Memo
-from engine.package import data
-from engine.record import Record
-from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
-from features.auto_update.countdown import cancel
-from features.auto_update.new_feature import mark_seen, shown_announced
+from framework.updating.countdown import cancel
+from framework.updating.status import CHANGELOG, standing, upgrading, upstream_standing
+from framework.updating.new_feature import mark_seen, shown_announced
 from framework.routing import Reply, Request, handles
 from resources.base import Refused
-from features.journal_laws.managed import changed_managed, changed_message
+from framework.managed import changed_managed, changed_message
 from install import release_versions
 
-CHANGELOG = data("CHANGELOG.md")
 ENTRY = re.compile(r"^## ", re.M)
 RELEASES_PER_PAGE = 10
 CHANGED = Memo()
@@ -35,14 +31,11 @@ def changelog_page(text: str, skip: int) -> tuple[str, int, bool]:
 
 @handles("GET", "/api/changelog")
 def get_changelog(req: Request) -> Reply:
-    from features.auto_update.check import journal_repository
+    from framework.updating.check import journal_repository
     if not CHANGELOG.is_file():
         return Reply(404, {"error": "this install carries no changelog"})
-    cache = runtime.upstream_cache(req.root)
-    latest = cache.read_text().strip() if cache.is_file() else ""
     changelog, releases_so_far, more = changelog_page(CHANGELOG.read_text(), req.counted("skip", 0))
-    return Reply(200, {"version": version(), "changelog": changelog, "shown": releases_so_far, "more": more, "latest": latest, "newer": newer(latest, version()),
-                       "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
+    return Reply(200, {**standing(req.root), "changelog": changelog, "shown": releases_so_far, "more": more,
                        "repository": journal_repository(req.root.parent),
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed_managed(req.root.parent, req.root)]})
 
@@ -60,14 +53,14 @@ def post_new_feature_seen(req: Request) -> Reply:
 
 @handles("POST", "/api/update")
 def post_update(req: Request) -> Reply:
-    from features.auto_update.check import installed, journal_repository
+    from framework.updating.check import installed, journal_repository
     if journal_repository(req.root.parent):
         raise Refused("this is the journal's own repository: it updates from its own code, not from a release")
     changed = changed_managed(req.root.parent, req.root)
     if changed and not req.body.get("yes"):
         return Reply(409, {"error": changed_message(req.root.parent, changed),
                            "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})
-    if runtime.upgrading(req.root):
+    if upgrading(req.root):
         raise Refused("an update is already running")
     chosen = req.body.get("version", "")
     if chosen and chosen not in release_versions():
@@ -89,9 +82,7 @@ def get_releases(req: Request) -> Reply:
 
 @handles("GET", "/api/upstream")
 def get_upstream(req: Request) -> Reply:
-    installed = version()
-    latest = upstream(req.root)
-    installs = FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in FEATURES else False
+    installs = FEATURES["auto_update"].on(req.record()) if "auto_update" in FEATURES else False
     changed = CHANGED.get(str(req.root), int(time.time() // CHANGED_FOR), lambda: changed_managed(req.root.parent, req.root))
-    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs,
+    return Reply(200, {**upstream_standing(req.root), "installs": installs,
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})

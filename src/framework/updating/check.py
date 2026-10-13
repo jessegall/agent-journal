@@ -11,12 +11,11 @@ from engine.heal import refused
 from engine.state import State
 from engine.package import entry
 from engine.version import version
-from framework.loaded import running
-from features.auto_update.countdown import cancel, wait
-from features.auto_update.feature import AutoUpdate
+from framework.loaded import FEATURES
+from framework.updating.countdown import cancel, wait
 from resources.base import SYSTEM
 from engine.upgrades import newer, shared_parts, stale, upstream
-from features.journal_laws.managed import changed_managed
+from framework.managed import changed_managed
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
@@ -96,7 +95,7 @@ class UpdateCheck:
         self.installing = threading.Lock()
 
     def tick(self) -> str:
-        record, feature = self.agent.record, running(AutoUpdate)
+        record, feature = self.agent.record, FEATURES.get("auto_update")
         every = feature.interval(record) if feature else 0
         if not feature or time.time() - self.checked_at < every:
             return ""

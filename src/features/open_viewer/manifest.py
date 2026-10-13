@@ -65,7 +65,7 @@ def watchable(record: Record) -> list[dict]:
 
 
 def manifest(root: Path) -> Manifest:
-    from features.auto_update.branch import followed_branch
+    from framework.updating.branch import followed_branch
     record = Record(root, runtime.env(root))
     return {
         "project": root.resolve().parent.name,

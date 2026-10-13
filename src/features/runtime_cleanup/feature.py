@@ -2,7 +2,7 @@ from events.agents import ClockTicked
 from events.notifications import NotificationCreated
 from events.runtime_cleanup import UpdateInstalled
 from expects import WHEN, Dispatches, File, Given, Removed, Wrote, answering, at, nothing
-from features.auto_update.announcing import KIND
+from framework.updating.announcing import KIND
 from framework.base import Feature
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.handlers import TidyAfterUpdate, TidyRuntime

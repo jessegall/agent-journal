@@ -18,7 +18,7 @@ from features.phone.desktop import Desktop
 from features.phone.members import rights_of
 from features.phone.surface import CARDS, PhoneSurface
 from engine.color import identity
-from features.auto_update.countdown import update_state
+from framework.updating.countdown import update_state
 from controllers.types import Phones, Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon

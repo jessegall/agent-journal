@@ -21,7 +21,7 @@ from urllib.parse import parse_qsl, urlparse
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features
 from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB, spooled_body
-from features.auto_update.announcing import announce  # noqa: E402
+from framework.updating.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
@@ -503,7 +503,7 @@ def kept_rows_on(root: Path) -> bool:
 def restore_rows(root: Path) -> None:
     try:
         if kept_rows_on(root):
-            from features.auto_update.routes import CHANGELOG
+            from framework.updating.status import CHANGELOG
             from features.kept_rows.snapshot import read
             read(root, CHANGELOG.read_text() if CHANGELOG.is_file() else "")
     except Exception:
@@ -537,8 +537,8 @@ def mend_hooks(root: Path) -> list[str]:
 
 def mark_first_start(root: Path) -> None:
     try:
-        from features.auto_update.new_feature import mark_first_start_seen
-        from features.auto_update.routes import CHANGELOG
+        from framework.updating.new_feature import mark_first_start_seen
+        from framework.updating.status import CHANGELOG
         mark_first_start_seen(root, CHANGELOG.read_text() if CHANGELOG.is_file() else "")
     except Exception:
         traceback.print_exc()
