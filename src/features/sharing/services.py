@@ -11,10 +11,8 @@ from resources.sharing import ADDRESS_TAKEN
 from resources.sharing import ended
 from engine.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
-from resources.extension import Extension
+from declaring.registries import SHARE_KEEP_UP, SHARE_LISTENS
 
-KEEP_UP = Extension()
-LISTENS = Extension()
 LOOPBACK = "127.0.0.1"
 IDLE = "Nothing is shared and no phone is paired, so the tunnel stays off."
 SWITCHED_OFF = "Sharing is switched off, so the tunnel stays off."
@@ -36,7 +34,7 @@ def why_idle(root: Path) -> str:
     record = Record(root, runtime.env(root))
     feature = running(SharingFeature)
     sharing = bool(feature) and feature.enabled(record)
-    if any(keep(root) for keep in KEEP_UP.each(record)):
+    if any(keep(root) for keep in SHARE_KEEP_UP.each(record)):
         return ""
     if sharing and open_shares(root):
         return ""
@@ -58,7 +56,7 @@ class Listen:
 
 def listen_place(root: Path) -> Listen:
     record = Record(root, runtime.env(root))
-    placed = [given(record) for given in LISTENS.each(record)]
+    placed = [given(record) for given in SHARE_LISTENS.each(record)]
     return placed[0] if placed else Listen()
 
 

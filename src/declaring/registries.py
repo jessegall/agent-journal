@@ -50,3 +50,15 @@ SHARE_TICKS = Extension()
 EVERY_OTHER = "*"
 """The key of what answers every path no other route does."""
 
+SHARE_KEEP_UP = Extension()
+"""What each feature says keeps the share server running, by the feature's name."""
+
+SHARE_LISTENS = Extension()
+"""Where each feature says the share server listens, by the feature's name."""
+
+SHARE_ORIGINS = Extension()
+"""How each feature names where a request to the share server came from, by the feature's name."""
+
+RELIED_ON = Extension()
+"""Whether each feature relies on the journal's address staying as it is, by the feature's name."""
+

@@ -16,9 +16,10 @@ from features.phone.desktop import CLOSED
 from features.phone.guard import PHONE_GUARDS
 from features.phone.members import MEMBER_RIGHTS
 from engine.address import ANSWERS_AT
-from features.sharing.origins import ORIGINS
+from declaring.registries import SHARE_ORIGINS
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS
-from features.sharing.services import KEEP_UP, LISTENS, Listen
+from declaring.registries import SHARE_KEEP_UP, SHARE_LISTENS
+from features.sharing.services import Listen
 
 APART = "AGENT_JOURNAL_APART"
 
@@ -49,13 +50,13 @@ class HostedJournalFeature(Feature):
         guarding = None if standing.apart else self
         SHARE_ROUTES.add(guarding, Gateway(standing.settings, PHONE_OWNER_ACTIONS if standing.apart else {}), key=EVERY_OTHER)
         CLOSED.add(guarding, NEVER_FROM_OUTSIDE)
-        ORIGINS.add(guarding, standing.origins)
+        SHARE_ORIGINS.add(guarding, standing.origins)
         ANSWERS_AT.add(guarding, standing.address)
         MEMBER_RIGHTS.add(guarding, people_of)
         if standing.apart:
             PHONE_GUARDS.add(None, phone_vault)
         SHARE_TICKS.add(guarding, DiskWatch())
-        KEEP_UP.add(self, always)
+        SHARE_KEEP_UP.add(self, always)
         STAYS_UP.add(self, always)
-        LISTENS.add(self, listen)
+        SHARE_LISTENS.add(self, listen)
         AT_ONCE.add(self, agents_at_once)

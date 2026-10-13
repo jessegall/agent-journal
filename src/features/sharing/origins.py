@@ -3,12 +3,11 @@ import time
 from collections.abc import Callable
 from ipaddress import IPv4Address, IPv6Address, ip_address, ip_network
 
-from resources.extension import Extension
+from declaring.registries import SHARE_ORIGINS
 from engine.record import Record
 
 LOCAL = ("127.0.0.1", "localhost")
 LOOKUP_EVERY = 60
-ORIGINS = Extension()
 
 Clock = Callable[[], float]
 
@@ -89,5 +88,5 @@ class ProxyOrigins(Origins):
 
 def origins_of(record: Record) -> Origins:
     """How this journal's share server tells where a request came from: as a feature names it, or else by the tunnel's Host."""
-    named = [given(record) for given in ORIGINS.each(record)]
+    named = [given(record) for given in SHARE_ORIGINS.each(record)]
     return named[-1] if named else Origins()

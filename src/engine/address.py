@@ -1,10 +1,10 @@
 from dataclasses import asdict, dataclass
 
+from declaring.registries import RELIED_ON
 from resources.extension import Extension
 from engine.record import Record
 from engine.machines import this_machine
 
-RELIED_ON = Extension()
 ANSWERS_AT = Extension()
 
 

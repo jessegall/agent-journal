@@ -12,7 +12,7 @@ from events.visitors import TrustedVisitorCommented, VisitorCommented, VisitorCo
 from features.sharing.guard import RefuseClaimedUser, RefuseUntilAgreed
 from features.sharing.handlers import HoldUntilAgreed, NameTrustedVisitorComment, NameVisitorComment
 from features.sharing.listeners import SpotVisitorComment, SpotVisitorCommentRead
-from engine.address import RELIED_ON
+from declaring.registries import RELIED_ON
 from features.sharing.services import links_open, share_services
 from declaring.registries import SHARE_TICKS
 from controllers.sharing.visitors import AGREEMENT
