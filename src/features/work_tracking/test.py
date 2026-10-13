@@ -98,7 +98,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
         "a ticket's environment is always in auto mode, with no switch to turn it off"
     work = Works(record, actor=AGENT).create("on it", todo=1)
     idle(record, shells=1, subagents=1, monitors=1)
-    assert nudges(record)[-2:] == ["work 1 is still open, with nothing logged", "auto mode is on and work 1 stands still while todo 2 is ready"], \
+    assert sorted(nudges(record)[-2:]) == ["auto mode is on and work 1 stands still while todo 2 is ready", "work 1 is still open, with nothing logged"], \
         "background tasks are no wait: the open work is named, and under auto the next ready row with it"
     for _ in range(4):
         idle(record)

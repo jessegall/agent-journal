@@ -147,7 +147,7 @@ class SpotStillAwaiting(Listener[ClockTicked]):
 
 class SpotOpenWork(Listener[AgentReported]):
     def listen(self, event: AgentReported, works: ReadRows[Work], marks: ReadMarks) -> list[Fact]:
-        return [OpenWorkRemains(agent=event.agent, work=w.n, updated=w.updated, logged=bool(w.sections)) for w in working(works)[:1]
+        return [OpenWorkRemains(agent=event.agent, work=w.n, updated=w.updated, logged=bool(w.sections)).due() for w in working(works)[:1]
                 if not marks.used_up("open", f"{w.n}:{w.updated}", OPEN_REMINDERS)]
 
 

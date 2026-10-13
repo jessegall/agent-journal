@@ -238,9 +238,9 @@ class WorkFeature(Feature):
             Given(ClockTicked(agent=1), rows=[AGENT_ROW], settings={"work_tracking.ask_awaiting_every": 5}) >> Dispatches(nothing),
         ])
         journal.events.listen(AgentReported, SpotOpenWork(), expects=[
-            Given(AgentReported(agent=1), rows=[OPEN, AGENT_ROW]) >> Dispatches(OpenWorkRemains(agent=1, work=3, updated=5.0, logged=False)),
+            Given(AgentReported(agent=1), rows=[OPEN, AGENT_ROW]) >> Dispatches(OpenWorkRemains(agent=1, work=3, updated=5.0, logged=False).due()),
             Given(AgentReported(agent=1), rows=[Work(n=3, title="Write the report", updated=5.0, sections=[{"title": "1", "body": "started"}]), AGENT_ROW])
-                >> Dispatches(OpenWorkRemains(agent=1, work=3, updated=5.0, logged=True)),
+                >> Dispatches(OpenWorkRemains(agent=1, work=3, updated=5.0, logged=True).due()),
             Given(AgentReported(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(AgentReported(agent=1), rows=[PARKED, AGENT_ROW]) >> Dispatches(nothing),
         ])
