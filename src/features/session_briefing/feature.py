@@ -1,6 +1,6 @@
 from events.agents import SessionStarted
 from events.boards import BoardOrchestrated
-from expects import Answered, Dispatches, Given, Nudged, Unchanged, nothing
+from expects import Answered, Dispatches, Given, Nudged, Ran, Unchanged, answering, nothing
 from events.resources import AnyEvent
 from framework.base import Feature
 from framework.journal import Journal
@@ -11,6 +11,7 @@ from features.session_briefing.answering import BriefTheSession
 from declaring.registries import SETTINGS_APPLIED
 from features.session_briefing.block import COMPACTED, rebuild
 from framework.lanes import TheJournalRoot
+from resources.files import start_name
 from features.session_briefing.details import SessionBriefingDetails
 from payload import HookEvent
 from events.session_briefing import SessionGreeted, StartBlockStale
@@ -24,6 +25,14 @@ CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
 class Written:
     def __eq__(self, answer) -> bool:
         return isinstance(answer, Rewritten) and bool(answer.text) and not answer.text.startswith(COMPACTED)
+
+
+class Starting:
+    def __init__(self, head: str) -> None:
+        self.head = head
+
+    def __eq__(self, text) -> bool:
+        return isinstance(text, str) and text.startswith(self.head)
 
 
 class Opening:
@@ -53,12 +62,18 @@ class SessionBriefing(Feature):
             Given(AnyEvent(n=1, type="nudge", action="created")) >> Dispatches(nothing),
             Given(AnyEvent(n=1, type="fact", action="updated", section="2 · why")) >> Dispatches(nothing),
             Given(AnyEvent(n=1, type="fact", action="updated", by="read")) >> Dispatches(nothing),
+            Given(AnyEvent(n=1, type="plugin", action="updated")) >> Dispatches(stale()),
+            Given(AnyEvent(n=1, type="environment", action="updated")) >> Dispatches(stale()),
+            Given(AnyEvent(n=1, type="not-a-type", action="created")) >> Dispatches(nothing),
         ])
         journal.events.listen(BoardOrchestrated, SpotOrchestrationChange(), expects=[
             Given(BoardOrchestrated(n=0, type="board", action="orchestrated", orchestrating=True)) >> Dispatches(stale()),
+            Given(BoardOrchestrated(n=0, type="board", action="orchestrated", orchestrating=False)) >> Dispatches(stale()),
         ])
         journal.events.handle(StartBlockStale, RebuildTheStartBlock(), expects=[
             Given(StartBlockStale()) >> Unchanged(),
+            Given(StartBlockStale(), journal_root=answering({("is file", start_name("t")): False}))
+                >> Ran(("write", start_name("t"), Starting("THE JOURNAL IS IN FORCE HERE"))) & Ran(("write", start_name("t", True), Starting(COMPACTED[:30]))),
         ])
         journal.events.answer(HookResponding, BriefTheSession(), expects=[
             Given(HookResponding(event="SessionStart", session="claude-1"), rows=[CLAUDE]) >> Answered(Written()),
