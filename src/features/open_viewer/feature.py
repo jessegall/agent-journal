@@ -41,6 +41,8 @@ class OpenViewer(Feature):
             Given(AgentChanged(agent=1, action="updated"), rows=[STARTED]) >> Dispatches(nothing),
             Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title=SESSION, data={"event": "SessionStart", "parent": "claude-0"})], viewer=answering({("running",): URL}))
                 >> Dispatches(nothing),
+            Given(AgentChanged(agent=1, action="reported"), rows=[STARTED], viewer=answering({("running",): URL})) >> Dispatches(ViewerTabToOpen(url=URL).once(f"viewer opened|{SESSION}")),
+            Given(AgentChanged(agent=1, action="deleted"), rows=[STARTED], viewer=answering({("running",): URL})) >> Dispatches(nothing),
         ])
         journal.events.handle(ViewerTabToOpen, ShowViewerTab(), expects=[
             Given(ViewerTabToOpen(url=URL), rows=[AGENT_ROW], viewer=answering({("running",): URL})) >> Ran(("show", URL, "t")),
