@@ -110,7 +110,7 @@ class SpotMessagesAnswered(Listener[ResourceCreated]):
 class SpotRunTogether(Listener[AgentReported]):
     def listen(self, event: AgentReported, agents: ReadRows[AgentRow], providers: Providers, settings: Settings) -> list[Fact]:
         last = providers.last_said(agents.peek(event.agent)).strip() if settings.is_on("paragraphs") else ""
-        return [RunTogether(agent=event.agent)] if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES else []
+        return [RunTogether(agent=event.agent).due("paragraphs")] if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES else []
 
 
 class SpotBareNumbers(Listener[AgentMessageSent]):

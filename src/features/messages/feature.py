@@ -185,7 +185,7 @@ class MessagesFeature(Feature):
                 >> Dispatches(MessageSettled(n=5, how="answered by the agent")) & Dispatches(MessageSettled(n=6, how="answered by the agent")),
         ])
         journal.events.listen(AgentReported, SpotRunTogether(), expects=[
-            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON)) >> Dispatches(RunTogether(agent=1)),
+            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON)) >> Dispatches(RunTogether(agent=1).due("paragraphs")),
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript("This is a sentence.")) >> Dispatches(nothing),
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON.replace(". ", ".\n\n", 1))) >> Dispatches(nothing),
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON), settings={".messages.paragraphs": False}) >> Dispatches(nothing),
