@@ -3,17 +3,17 @@ import shutil
 from resources.arguments import Arguments
 from engine.version import version
 from framework.parts import Command, Context
-from features.plugins.answer import Posting, raised
-from features.plugins.declared import called, declared, named, settings_of, settings_choosing
-from features.plugins.environment import environment, ports_for
-from features.plugins.fitting import InstallMark
-from features.plugins.lifecycle import difference, fetched, install_staged, reread, restarted
-from features.plugins.manifest import read
-from features.plugins.paths import data, folder, log
-from features.plugins.preview import preview
-from features.plugins.setup import prepared
-from features.plugins.staging import alone, followed, token
-from controllers.types import Agents
+from framework.plugins.answer import Posting, raised
+from framework.plugins.declared import called, declared, named, settings_of, settings_choosing
+from framework.plugins.environment import environment, ports_for
+from framework.plugins.fitting import InstallMark
+from framework.plugins.lifecycle import difference, fetched, install_staged, reread, restarted
+from framework.plugins.manifest import read
+from framework.plugins.paths import data, folder, log
+from framework.plugins.preview import preview
+from framework.plugins.setup import prepared
+from framework.plugins.staging import alone, followed, token
+from controllers.agents import Agents
 from resources.base import AGENT, Refused, SYSTEM, USER
 
 VERSION = version()

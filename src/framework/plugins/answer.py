@@ -1,12 +1,14 @@
 import re
 from dataclasses import dataclass
 
-from controllers.types import Agents, Plugins, Todos
+from controllers.agents import Agents
+from controllers.plugins import Plugins
+from controllers.todos import Todos
 from declaring.holds import Hold
 from engine.gates import hold
 from resources.fields import Loaded
-from features.plugins.paths import folder
-from features.plugins.declared import Look, declared, named, settings_of, settings_choosing
+from framework.plugins.paths import folder
+from framework.plugins.declared import Look, declared, named, settings_of, settings_choosing
 from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")

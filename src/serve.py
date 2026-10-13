@@ -327,7 +327,7 @@ def keep_services(root: Path, halting: threading.Event) -> None:
     from engine.record import Record
     from engine.services import Manager, lifeline
     from engine.stop import stays_up
-    from features.plugins.services import plugin_services
+    from framework.plugins.services import plugin_services
     if not stays_up(Record(root, default_env(root))):
         return
     alive, _keeping = lifeline()

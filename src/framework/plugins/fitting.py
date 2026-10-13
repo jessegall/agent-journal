@@ -6,18 +6,20 @@ import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from controllers.types import Agents, Environments, Plugins
+from controllers.agents import Agents
+from controllers.environments import Environments
+from controllers.plugins import Plugins
 from resources.fields import Loaded
 from engine.stored import write_text
 from engine.upgrades import fetch
 from engine.worktree import tracked_files
-from features.plugins.declared import Fits, called
-from features.plugins.lifecycle import fetched
-from features.plugins.paths import home
-from features.plugins.preview import preview_rows
-from features.plugins.staging import Unreached
+from framework.plugins.declared import Fits, called
+from framework.plugins.lifecycle import fetched
+from framework.plugins.paths import home
+from framework.plugins.preview import preview_rows
+from framework.plugins.staging import Unreached
 from resources.suggestions import Decision, OPEN_SUGGESTIONS
-from controllers.types import Suggestions
+from controllers.suggestions import Suggestions
 from resources.base import Refused, SYSTEM, USER
 
 LISTED = "plugins.json"

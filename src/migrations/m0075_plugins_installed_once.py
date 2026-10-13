@@ -3,7 +3,7 @@ from pathlib import Path
 
 from controllers.plugins import Plugins
 from controllers.types import environment_records
-from features.plugins.declared import called
+from framework.plugins.declared import called
 from resources.base import SYSTEM
 
 

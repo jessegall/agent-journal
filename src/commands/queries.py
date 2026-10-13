@@ -254,7 +254,7 @@ def healed(ctx) -> str:
 
 def services(ctx) -> str:
     from engine.services import DOWN, UP, Declared, listed, log_file, specs, want
-    from features.plugins.services import plugin_services
+    from framework.plugins.services import plugin_services
     root = ctx["record"].root
     action, which = ctx["action"], ctx["which"]
     if action == "up":
@@ -273,7 +273,7 @@ def services(ctx) -> str:
 
 def services_up(root: Path) -> str:
     from engine.services import Manager
-    from features.plugins.services import plugin_services
+    from framework.plugins.services import plugin_services
     from engine.services import lifeline
     alive, keeping = lifeline()
     manager = Manager(root, alive, sources=(plugin_services,))

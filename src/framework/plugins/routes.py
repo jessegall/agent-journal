@@ -1,10 +1,10 @@
-from controllers.types import Plugins
+from controllers.plugins import Plugins
 from dataclasses import dataclass
 from resources.fields import Loaded
 from engine.stored import last_lines, read_json
-from features.plugins.dashboard import checked
-from features.plugins.declared import called, declared
-from features.plugins.paths import data
+from framework.plugins.dashboard import checked
+from framework.plugins.declared import called, declared
+from framework.plugins.paths import data
 from framework.routing import Reply, Request, handles
 from resources.base import Missing, Refused, USER
 
@@ -33,8 +33,8 @@ def get_plugin_dashboard(req: Request) -> Reply:
 @handles("GET", "/api/pages")
 def get_pages(req: Request) -> Reply:
     from engine.services import status
-    from features.plugins.declared import called, declared
-    from features.plugins.services import plugin_services, plugins as installed
+    from framework.plugins.declared import called, declared
+    from framework.plugins.services import plugin_services, plugins as installed
     where = {spec.id: spec for spec in plugin_services(req.root, set())}
     out = []
     for row in installed(req.root):
@@ -52,16 +52,16 @@ def get_pages(req: Request) -> Reply:
 @handles("GET", "/api/services")
 def get_services(req: Request) -> Reply:
     from engine.services import listed
-    from features.plugins.services import declared_services
+    from framework.plugins.services import declared_services
     return Reply(200, listed(req.root, declared_services(req.root)))
 
 
 @handles("POST", "/api/{env}/plugins/preview")
 def post_plugins_preview(req: Request) -> Reply:
-    from features.plugins.commands import VERSION
-    from features.plugins.lifecycle import drop
-    from features.plugins.preview import previewed
-    from features.plugins.staging import staged
+    from framework.plugins.commands import VERSION
+    from framework.plugins.lifecycle import drop
+    from framework.plugins.preview import previewed
+    from framework.plugins.staging import staged
     asked = req.body_as(PluginSource)
     source = asked.source
     where, manifest, commit, linked = staged(req.root, source, asked.ref, VERSION)
@@ -73,12 +73,12 @@ def post_plugins_preview(req: Request) -> Reply:
 
 @handles("POST", "/api/{env}/plugins/{n}/upgrade-preview")
 def post_plugin_upgrade_preview(req: Request) -> Reply:
-    from controllers.types import Plugins
-    from features.plugins.commands import VERSION
-    from features.plugins.declared import Manifest
-    from features.plugins.lifecycle import changed, drop
-    from features.plugins.preview import previewed
-    from features.plugins.staging import followed, staged
+    from controllers.plugins import Plugins
+    from framework.plugins.commands import VERSION
+    from framework.plugins.declared import Manifest
+    from framework.plugins.lifecycle import changed, drop
+    from framework.plugins.preview import previewed
+    from framework.plugins.staging import followed, staged
     row = Plugins(req.record(), actor=USER).load(req.params["n"])
     where, manifest, commit, linked = staged(req.root, row.source, followed(row.revision), VERSION)
     try:
@@ -89,5 +89,5 @@ def post_plugin_upgrade_preview(req: Request) -> Reply:
 
 @handles("GET", "/api/plugins/{name}/log")
 def get_plugin_log(req: Request) -> Reply:
-    from features.plugins.paths import log
+    from framework.plugins.paths import log
     return Reply(200, {"name": req.params["name"], "log": last_lines(log(req.root, req.params["name"]), req.asked_lines())})

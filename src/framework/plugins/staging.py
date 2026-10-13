@@ -6,9 +6,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import NamedTuple
 
-from features.plugins.declared import Manifest
-from features.plugins.manifest import read
-from features.plugins.paths import busy_file, home
+from framework.plugins.declared import Manifest
+from framework.plugins.manifest import read
+from framework.plugins.paths import busy_file, home
 from engine.upgrades import fetch
 from resources.base import Refused
 

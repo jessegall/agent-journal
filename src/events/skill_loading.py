@@ -1,8 +1,10 @@
 """What skill loading recognises: a window with no journal skill in it, skills the agent owes a load of, and a skill it loaded."""
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from events import Fact
+from events.typed import AgentEvent
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -70,3 +72,15 @@ class RefusalCounted(Fact):
 
     agent: int
     wanted: bool
+
+
+SKILLS_ASKED = "skills.asked"
+
+
+@dataclass(frozen=True)
+class SkillsAsked(AgentEvent):
+    """A plugin that declared these skills for an event it hears is to have the primary agent load them, once the event is told."""
+
+    on: ClassVar[str] = f"agent.{SKILLS_ASKED}"
+    names: str = ""
+    at: float = 0.0

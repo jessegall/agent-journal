@@ -64,7 +64,7 @@ def test_a_plugins_declared_events_are_entries_of_the_catalogue_and_a_pattern_na
     import json
 
     from events.catalogue import CATALOGUE
-    from features.plugins.manifest import MANIFEST, patterns, read
+    from framework.plugins.manifest import MANIFEST, patterns, read
     from resources.base import Refused
 
     assert "todo.created" in CATALOGUE.named(), "the journal's own events are in the catalogue, read from its modules"

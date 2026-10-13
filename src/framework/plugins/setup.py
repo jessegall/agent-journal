@@ -2,7 +2,7 @@ from pathlib import Path
 
 from engine.proc import ran, streamed
 from engine.wording import fill
-from features.plugins.declared import Manifest, command_text, shell_args
+from framework.plugins.declared import Manifest, command_text, shell_args
 from resources.base import Refused
 
 SETUP_SECONDS = 900

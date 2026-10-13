@@ -1,8 +1,8 @@
 from events import Fact
 from events.agents import ClockTicked
 from events.plugins import PluginCompleted, PluginManifestChanged, PluginRemoved, PluginsWorthOffering
-from features.plugins.declared import called
-from features.plugins.lifecycle import changed_on_disk
+from framework.plugins.declared import called
+from framework.plugins.lifecycle import changed_on_disk
 from receiving import Listener
 from resources.types import Plugin
 from serving import ReadOwnWork, ReadRows

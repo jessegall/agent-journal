@@ -3,14 +3,14 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from controllers.faults import threw
-from controllers.types import Plugins
+from controllers.plugins import Plugins
 from engine import runtime
 from engine.record import Record
 from engine.runtime import default_env
 from engine.stored import write_text
-from features.plugins.lifecycle import fetched
-from features.plugins.declared import called
-from features.plugins.staging import Unreached
+from framework.plugins.lifecycle import fetched
+from framework.plugins.declared import called
+from framework.plugins.staging import Unreached
 from resources.base import SYSTEM
 
 CHECK_EVERY = 24 * 3600

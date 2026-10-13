@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from features.plugins.manifest import unknown_keys
+from framework.plugins.manifest import unknown_keys
 from resources.base import Refused
 
 TONES = ("", "note", "good", "warn", "danger", "muted")

@@ -1,5 +1,6 @@
-from controllers.types import CONTROLLERS, Plugins
-from features.plugins.declared import named
+from controllers.base import CONTROLLERS
+from controllers.plugins import Plugins
+from framework.plugins.declared import named
 from framework.parts import ActionInterceptor, Context
 from resources.base import PLUGIN, SYSTEM
 

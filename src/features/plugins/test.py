@@ -15,11 +15,11 @@ from tests.kit import handle
 from engine.keeper import ServiceState
 from engine.runtime import folder as runtime_folder
 from engine.services import UP, Manager, allocate, status, status_file
-from features.plugins.services import plugin_services
-from features.plugins.commands import ClearLog
-from features.plugins.declared import Manifest
-from features.plugins.manifest import MANIFEST
-from features.plugins.paths import folder, home, log, plugin_socket
+from framework.plugins.services import plugin_services
+from framework.plugins.commands import ClearLog
+from framework.plugins.declared import Manifest
+from framework.plugins.manifest import MANIFEST
+from framework.plugins.paths import folder, home, log, plugin_socket
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
@@ -113,9 +113,9 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
         "the plugin's reason is given to the agent, under its name"
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
     from controllers.types import Nudges
-    from features.plugins.declared import declared
-    from features.plugins.manifest import hooks as declared_hooks
-    from features.plugins.preview import preview_rows
+    from framework.plugins.declared import declared
+    from framework.plugins.manifest import hooks as declared_hooks
+    from framework.plugins.preview import preview_rows
     quiet = alone("quiet")
     watcher = installed(quiet, "watcher", "read x; echo '{\"refuse\": \"too slow a line\"}'\n", hooks={"PreToolUse": "async"})
     assert writing(quiet) == {}, "a plugin that declared its hook async never holds the tool call, whatever it answers"
@@ -180,7 +180,7 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent(monkeypatch):
     finally:
         viewer.identity = real
         viewer.SERVING.clear()
-    from features.plugins import queue as lines, run as running
+    from framework.plugins import queue as lines, run as running
     assert running.call("true", broken.root.parent / "nowhere", {}, {})[0] is False, "a command that cannot be started is a failure, not a crash"
     stubborn_ok, stubborn_why = running.call("trap '' TERM; while :; do sleep 1; done", broken.root.parent, dict(os.environ), {}, 0.2)
     assert (stubborn_ok, "still running" in stubborn_why) == (False, True), "a command that will not stop when asked is killed, and the plugin is told it ran over"
@@ -230,7 +230,7 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     git("commit", "-q", "--allow-empty", "-m", "two", cwd=tmp_path / "upgraded")
     assert "Nothing has changed yet" in plugins.action("upgrade")(row.n), "an upgrade shows what it would change before it does it"
     assert looking() is False, "and when there is something new"
-    from features.plugins import updates
+    from framework.plugins import updates
     updates.check(fine.root)
     assert plugins.load(row.n).update.get("name") == "works" and plugins.load(row.n).update["version"], \
         "the daily check of a plugin's repository keeps its newer version, by name, on the plugin's row"
@@ -262,7 +262,7 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     Plugins(fine, actor=SYSTEM).complete(newer.n, "removed")
     assert (len(fold(fine.root)), [kept.n for kept in Plugins(fine, actor=SYSTEM).rows.every(deleted=True)], fold(fine.root)) == (1, [newer.n], []), \
         "with every copy removed the newest is kept, and a second upgrade finds nothing to fold"
-    from features.plugins import staging
+    from framework.plugins import staging
     assert staging.address("owner/repo") == "https://github.com/owner/repo", "an owner and a repository name is a repository on GitHub"
     assert "neither a repository URL" in refused(lambda: staging.address("no such place")), "a source that is no repository and no folder is refused"
     assert "Could not reach" in refused(lambda: plugins.action("install")((tmp_path / "missing").as_uri(), yes=True)), "a repository that cannot be fetched is refused and leaves nothing behind"
@@ -279,7 +279,7 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     in_place = plugins.action("install")(str(linked), yes=True)
     assert in_place.linked, "a folder on this machine is installed in place, not copied"
     assert plugins.action("upgrade")(in_place.n, again=True).linked, "a plugin installed in place is read again, and its setup run again, on request"
-    from features.plugins.lifecycle import clear, difference
+    from framework.plugins.lifecycle import clear, difference
     link = tmp_path / "a-link"
     link.symlink_to(linked)
     clear(link)
@@ -297,9 +297,9 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
 
 
 def test_a_chosen_setting_reaches_the_plugins_commands():
-    from features.plugins.commands import Configure
-    from features.plugins.declared import settings_of
-    from features.plugins.environment import environment
+    from framework.plugins.commands import Configure
+    from framework.plugins.declared import settings_of
+    from framework.plugins.environment import environment
     record = alone()
     row = configured(record, "linter", {"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
@@ -311,7 +311,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         "the dashboard's plugin rows leave out the manifest's settings, and the plugin's own list keeps them"
     from controllers.types import Environments, Todos
     from engine.record import Record
-    from features.plugins.queue import drain
+    from framework.plugins.queue import drain
     Environments(record, actor=SYSTEM).create("other")
     queued = environment(record.root, "linter", Manifest.of(row.manifest), row.token, env="other")["JOURNAL_QUEUE"]
     Path(queued).parent.mkdir(parents=True, exist_ok=True)
@@ -319,7 +319,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     done, refusals = drain(record.root, "linter", record.env)
     assert (done, [(r.env, "names no --env" in r.why) for r in refusals]) == (2, [("other", True)]), "the drain hands back what it refused, and why"
     from framework.loaded import FEATURES
-    from features.plugins.host import Host
+    from framework.plugins.host import Host
     from controllers.types import Notices
     host = Host(record.root, FEATURES["plugins"].journal)
     for _ in range(2):
@@ -336,7 +336,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     chosen = settings_of(plugins.load(row.n)).chosen
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
     assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
-    from features.plugins.manifest import typed
+    from framework.plugins.manifest import typed
     assert typed({"php": {"type": "flag"}, "strict": {"parent": "php"}})["strict"]["parent"] == "php", "a setting sits under the switch that turns it on"
     assert "no flag setting" in refused(lambda: typed({"php": {"type": "text"}, "strict": {"parent": "php"}})), "only under a switch"
     typed = installed(record, "typed", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
@@ -349,21 +349,21 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     payer = configured(record, "payer", {"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
     given = lambda: environment(record.root, "payer", Manifest.of(payer.manifest), payer.token, chosen=settings_of(plugins.load(payer.n)).chosen)["STRIPE_KEY"]
     assert given() == "", "a plugin gets no secret until it is given one"
-    from features.plugins import manifest
+    from framework.plugins import manifest
     assert manifest.typed({"stripe": {"type": "secret", "env": "STRIPE_KEY"}})["stripe"]["type"] == "secret", "a plugin.json may ask for a secret"
     assert "only you give payer a secret" in refused(lambda: Configure().run(None, plugins, payer.n, "stripe", "STRIPE_TEST_KEY")), "an agent never gives one"
     Configure().run(None, Plugins(record, actor=USER), payer.n, "stripe", "STRIPE_TEST_KEY")
     assert given() == "sk-test-plugin-77", "once you pick the secret for it, its services get the value in their variable"
-    from features.plugins.answer import KEYS, apply
-    from features.plugins.environment import ports_for
-    from features.plugins.declared import Setting
+    from framework.plugins.answer import KEYS, apply
+    from framework.plugins.environment import ports_for
+    from framework.plugins.declared import Setting
     assert [Setting(key="a", env="HOME").summary, Setting(key="a", title="Title").summary, Setting(key="a").summary] == ["reads HOME", "Title", "a"], \
         "a setting is summed up by the variable it reads, else its title, else its key"
     assert "is a number" in refused(lambda: Setting(key="n", kind="number").check("x")) and Setting(key="n", kind="number").check("-3.5") is None, "a number setting takes numbers"
     before = settings_of(plugins.load(typed.n)).chosen
     apply(record, None, "nobody-installed", "", {"settings": {"level": "high"}})
     assert settings_of(plugins.load(typed.n)).chosen == before, "a plugin that is not installed fills in nothing"
-    from features.plugins.payload import resource
+    from framework.plugins.payload import resource
     assert [resource(record, SimpleNamespace(type="nothing", n=1)), resource(record, SimpleNamespace(type="todo", n=99999))] == [None, None], \
         "an event of a type nobody controls, or of a row that is gone, carries no row"
     assert isinstance(ports_for(record.root, Manifest.of({"name": "portly", "services": {"web": {"run": "true", "port": "auto"}}}))["web"], int), "a service that asks for a port is given one"
@@ -390,7 +390,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from framework.format import VIEWER, shaped
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
-    from features.plugins.commands import Raise
+    from framework.plugins.commands import Raise
     Raise().run(None, plugins, "typed", "sin-found", "again at src/B.php:3", open="sins/sin/deep-nesting/src/B.php")
     assert typed_briefs[-1] == "again at src/B.php:3", "journal plugin raise, from the queue, raises the same declared event"
     assert Agents(record, actor=SYSTEM).primary().data["cards"][-1]["page"] == "sins/sin/deep-nesting/src/B.php", \
@@ -398,7 +398,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert "declares no event" in refused(lambda: Raise().run(None, plugins, "typed", "made-up", "")), "and refuses one it does not declare"
     Raise().run(None, plugins, "typed", "sin-found", "keyed one", key="sin:1")
     Raise().run(None, plugins, "typed", "sin-found", "keyed two", key="sin:2")
-    from features.plugins.commands import Settle
+    from framework.plugins.commands import Settle
     Settle().run(None, plugins, "typed", "sin:1", "repented")
     marks = {card["detail"]: card for card in Agents(record, actor=SYSTEM).primary().data["cards"] if card["detail"].startswith("keyed")}
     assert (marks["keyed one"]["tone"], marks["keyed one"]["settled"], marks["keyed two"]["tone"], "settled" in marks["keyed two"]) == ("good", "repented", "warn", False), \
@@ -416,7 +416,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
                   "hold": "wait", "raise": [{"event": "sin-found"}, {"event": "sin-found"}], "settings": "not a dict"}
     assert apply(record, FEATURES["plugins"].journal, "typed", "", everything) == list(KEYS), "a plugin's answer may whisper, say, notify, notice, file a to-do, hold and raise"
     assert "From a plugin" in [t.title for t in Todos(record, actor=SYSTEM).all()], "a to-do a plugin answers with is filed"
-    from features.plugins import answer
+    from framework.plugins import answer
     plain = answer.own_command(record, "typed")
     declared_before = answer.declared
     answer.declared = lambda row: Manifest.of({"name": "typed", "command": "bin/tool"})
@@ -426,13 +426,13 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         answer.declared = declared_before
     assert (plain, "plugins/typed/bin/tool inside the repository that holds the file" in own_command_text, "Install nothing" in own_command_text) == ("", True, True), \
         "a plugin that declares its own command has its nudge say the exact command to run from inside the repository, so the agent installs nothing"
-    from features.plugins.manifest import typed as checked
+    from framework.plugins.manifest import typed as checked
     previewed = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
                      "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
     assert [previewed["sin"]["when"], previewed["either"]["when"]] == [[{"php": True}], [{"php": True}, {"vue": True}]], \
         "a setting may be shown only while another has a value, or while any of several do"
     assert "names settings" in refused(lambda: checked({"sin": {"type": "flag", "when": {"ruby": True}}})), "a condition names a setting that exists"
-    from features.plugins.manifest import read
+    from framework.plugins.manifest import read
     bad = record.root.parent / "bad-plugin"
     assert "not a journal plugin" in refused(lambda: read(bad, "2.0.0")), "a folder without a manifest is no plugin"
     for given, words in [
@@ -525,7 +525,7 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     first.tick()
     assert len(asked) == 3 and Beat.read(record.root).token == first.token, "and manages again when the one that took over has gone quiet in its turn"
     from framework.loaded import FEATURES
-    from features.plugins.services import notice_stopped
+    from framework.plugins.services import notice_stopped
     from controllers.types import Notices
     installed(record, "server", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}},
               pages=[{"name": "home", "title": "Home", "service": "web", "path": "/start"}])
@@ -776,7 +776,7 @@ def test_stopping_a_service_stops_every_process_it_forked():
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
-    from features.plugins.skills import published, withdrawn
+    from framework.plugins.skills import published, withdrawn
     from payload import LIBRARY
     record = alone()
     project = record.root.parent
@@ -792,7 +792,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert (project / ".claude" / "skills" / "teacher-one").is_symlink(), "and every agent reads it"
     assert "/teacher-one" in (project / ".git" / "info" / "exclude").read_text(), "a published skill is kept out of the project's commits"
     assert "plugin:" not in (project / LIBRARY / "teacher-mine" / "SKILL.md").read_text(), "a skill of the user's own with the same name is not overwritten"
-    from features.plugins.skills import owner, stamped
+    from framework.plugins.skills import owner, stamped
     assert (stamped("plain body\n", "teacher").startswith("---\nplugin: teacher\n---\nplain"), owner(project / "no-such-skill")) == (True, ""), \
         "a skill with no heading gets one naming its plugin, and a folder with no skill has no owner"
     shutil.rmtree(shipped / "teacher-two")
@@ -801,7 +801,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
     from tests.kit import dispatch
-    from features.plugins.paths import data
+    from framework.plugins.paths import data
     from controllers.types import Plugins
     row = Plugins(record, actor=SYSTEM).create("teacher", enabled=True, token="t0ken", settings={},
                                                manifest={"name": "teacher", "dashboards": [{"name": "sins", "title": "Sins"}]})
@@ -816,7 +816,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     written["pages"]["overview"]["view"]["children"].append({"type": "chart"})
     (data(record.root, "teacher") / "dashboards" / "sins.json").write_text(json.dumps(written))
     assert "pages.overview.view.children[1]" in ask()["broken"], "a node that does not fit the format is named by its place"
-    from features.plugins.dashboard import checked as dashboard_checked
+    from framework.plugins.dashboard import checked as dashboard_checked
     lone = lambda view, **more: {"pages": {"p": {"title": "P", "view": view}}, **more}
     for document, words in [
         ([], "a dashboard is a JSON object"), ({"pages": {}}, "an object of pages"), (lone({"type": "text", "body": "x"}, start="gone"), "is not one of the pages"),
@@ -829,7 +829,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
         assert words in refused(lambda: dashboard_checked(document)), (document, words)
     import os
     import time
-    from features.plugins.lifecycle import changed_on_disk
+    from framework.plugins.lifecycle import changed_on_disk
     plugins = Plugins(record, actor=SYSTEM)
     plugins.update(row.n, linked=True, read_at=time.time())
     given = folder(record.root, "teacher") / MANIFEST
@@ -860,7 +860,7 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
         "its service is asked to stop and its folder is gone"
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from framework.loaded import FEATURES
-    from features.plugins.host import Host
+    from framework.plugins.host import Host
     from controllers.types import Notices, Todos
 
     class Answering(BaseHTTPRequestHandler):
@@ -906,8 +906,8 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     host.step(now + 61)
     server.shutdown()
     assert Answering.payloads[-1]["event"] == "todo.created" and "Posted the new to-do" in open_notices(), "an event can be posted to a plugin's server, and its reply is applied"
-    import features.plugins.host as hosting
-    from features.plugins.queue import Refusal
+    import framework.plugins.host as hosting
+    from framework.plugins.queue import Refusal
     ok, why = hosting.post(f"http://127.0.0.1:{server.server_port}/event", {}, "t0ken")
     assert (ok, "did not answer" in why) == (False, True), "a plugin server that is gone does not answer, and that is a failure, not a crash"
     Todos(record, actor=SYSTEM).create("Posted after it went away")
@@ -942,8 +942,8 @@ def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_pa
 
 
 def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_showed(tmp_path, monkeypatch):
-    from features.plugins import fitting
-    from features.plugins.manifest import fits, read
+    from framework.plugins import fitting
+    from framework.plugins.manifest import fits, read
     for given in ("PHP", {"languages": "PHP"}, {"language": ["PHP"]}, {"files": []}, {"files": [3]}):
         assert "plugin.json: fits" in refused(lambda: fits(given)), f"a plugin that declares {given!r} as the projects it fits is refused in plain words"
     declaring = tmp_path / "declaring"
@@ -1061,7 +1061,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert sorted(started()) == ["Install the Broken plugin", "Install the Snake plugin"], "a list that cannot be reached adds nothing and breaks nothing"
     from types import SimpleNamespace
     from engine import bus
-    from features.plugins import refusing
+    from framework.plugins import refusing
     own_command_text = []
     with monkeypatch.context() as slow:
         slow.setattr(bus, "BACKGROUND", True)

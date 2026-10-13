@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 from engine.worktree import ignore
-from features.plugins.paths import folder
+from framework.plugins.paths import folder
 from payload import LIBRARY
 from serving import SERVED, Providers
 

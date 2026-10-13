@@ -7,15 +7,15 @@ from pathlib import Path
 from engine.services import UP, want
 from engine.version import version
 from engine.wording import fill
-from features.plugins.answer import apply
-from features.plugins.declared import Manifest, called, removed, settings_with
-from features.plugins.environment import environment
-from features.plugins.manifest import MANIFEST, read
-from features.plugins.paths import data, folder, home, log, logged
-from features.plugins.run import SECONDS, call
-from features.plugins.setup import checked, prepared
-from features.plugins.skills import published
-from features.plugins.staging import Staged, followed, on_disk, said_version, staged
+from framework.plugins.answer import apply
+from framework.plugins.declared import Manifest, called, removed, settings_with
+from framework.plugins.environment import environment
+from framework.plugins.manifest import MANIFEST, read
+from framework.plugins.paths import data, folder, home, log, logged
+from framework.plugins.run import SECONDS, call
+from framework.plugins.setup import checked, prepared
+from framework.plugins.skills import published
+from framework.plugins.staging import Staged, followed, on_disk, said_version, staged
 
 
 def runs(manifest: Manifest) -> list[str]:

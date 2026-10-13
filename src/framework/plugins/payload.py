@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from controllers.types import Agents, CONTROLLERS
-from features.plugins.paths import queue_path
+from controllers.agents import Agents
+from controllers.base import CONTROLLERS
+from framework.plugins.paths import queue_path
 from resources.base import Refused, SYSTEM, as_dict
 
 VERSION = 1

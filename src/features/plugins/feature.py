@@ -11,17 +11,17 @@ from payload import BashCall, Dispatch
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow, Plugin, Todo
 from framework.journal import Journal
-from features.plugins import services, updates
-from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
+from framework.plugins import services, updates
+from framework.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
 from features.plugins.details import PluginsDetails
-from features.plugins.host import watch
+from framework.plugins.host import watch
 from features.plugins.answering import ApplyPluginChatRules, AskPluginsToCancel, AskPluginsToRefuse
 from features.plugins.handlers import ClearRemovedPlugin, ReadLinkedManifests, SuggestFittingPlugins
 from features.plugins.listeners import SpotChangedManifests, SpotFittingPlugins, SpotRemovedPlugin
-from features.plugins.parts import KeepPluginRows
+from framework.plugins.parts import KeepPluginRows
 from features.plugins.working import PluginsWork
 from events.plugins import PluginCompleted, PluginManifestChanged, PluginRemoved, PluginsWorthOffering
-from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_log, get_services, post_plugin_upgrade_preview, post_plugins_preview
+from framework.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_log, get_services, post_plugin_upgrade_preview, post_plugins_preview
 
 
 OFF = Plugin(n=1, title="Pulse", data={"enabled": False})

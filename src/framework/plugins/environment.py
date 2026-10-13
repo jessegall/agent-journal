@@ -7,8 +7,8 @@ from engine.runtime import default_env
 from engine.services import claimed
 from engine.viewer import lately_running
 from engine.wording import fill
-from features.plugins.declared import Manifest, called, declared, settings_of
-from features.plugins.paths import data, folder, plugin_socket, queue_path
+from framework.plugins.declared import Manifest, called, declared, settings_of
+from framework.plugins.paths import data, folder, plugin_socket, queue_path
 from controllers.secrets.values import ValuesFile
 
 

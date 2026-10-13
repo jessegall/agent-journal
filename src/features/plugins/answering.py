@@ -2,7 +2,7 @@ import re
 
 from events.answers import Allowed, Answer, Refused, Rewritten
 from events.asking import AgentDispatching, TextFormatting, ToolCallAsked
-from features.plugins.declared import declared
+from framework.plugins.declared import declared
 from receiving import Answerer
 from resources.types import Plugin
 from serving import ReadOwnWork, ReadRows

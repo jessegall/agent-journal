@@ -5,7 +5,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 
-from features.plugins.paths import logged, queue_path
+from framework.plugins.paths import logged, queue_path
 from resources.base import PLUGIN
 from engine.command_line import command_line
 

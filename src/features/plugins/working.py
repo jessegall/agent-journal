@@ -6,16 +6,16 @@ from pathlib import Path
 from controllers.types import Agents, Plugins
 from engine.services import DOWN, want
 from engine.wording import fill
-from features.plugins.declared import called, declared
-from features.plugins.environment import placed
-from features.plugins.fitting import DECIDED, REFRESHING, WORKED_FIRST, in_use_since, offers_fresh, offers_kept, offers_read, offers_stamp, settle
-from features.plugins.lifecycle import clear, reread
-from features.plugins.parts import forgotten
-from features.plugins.paths import folder, logged, plugin_socket
-from features.plugins.payload import refusal
-from features.plugins.refusing import PluginAsk
-from features.plugins.run import PluginReply, call
-from features.plugins.skills import withdrawn
+from framework.plugins.declared import called, declared
+from framework.plugins.environment import placed
+from framework.plugins.fitting import DECIDED, REFRESHING, WORKED_FIRST, in_use_since, offers_fresh, offers_kept, offers_read, offers_stamp, settle
+from framework.plugins.lifecycle import clear, reread
+from framework.plugins.parts import forgotten
+from framework.plugins.paths import folder, logged, plugin_socket
+from framework.plugins.payload import refusal
+from framework.plugins.refusing import PluginAsk
+from framework.plugins.run import PluginReply, call
+from framework.plugins.skills import withdrawn
 from payload import Dispatch, HookEvent
 from resources.base import SYSTEM
 

@@ -3,15 +3,16 @@ from dataclasses import replace
 from pathlib import Path
 
 from controllers.faults import threw
-from controllers.types import Notices, Plugins
+from controllers.notices import Notices
+from controllers.plugins import Plugins
 from engine.runtime import default_env
 from engine.keeper import ServiceSpec
 from engine.record import Record
 from engine.services import BLOCKED, FAILED, Declared, claimed, local_url, log_file, service_spec, states
 from engine.wording import fill
-from features.plugins.declared import declared, settings_of
-from features.plugins.environment import environment, port_values
-from features.plugins.paths import folder
+from framework.plugins.declared import declared, settings_of
+from framework.plugins.environment import environment, port_values
+from framework.plugins.paths import folder
 from resources.base import SYSTEM
 
 WATCH = 5.0

@@ -7,15 +7,15 @@ from events.agents import AgentReported, SessionStarted, ToolCallAnswered, ToolF
 from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
-from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
-from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Updated, Wrote, answering, nothing
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Unchanged, Updated, Wrote, answering, nothing
 from events.answers import Refused as RefusedCall
 from framework.base import Feature
 from resources.types import AgentRow, Message
 from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
 from features.skill_loading.answering import RefuseUntilLoaded
-from features.skill_loading.handlers import KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, UpgradeWindow
+from features.skill_loading.handlers import AskPrimaryForSkills, KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, UpgradeWindow
 from features.skill_loading.listeners import (CountRefusals, SpotCommandNeedingSkill, SpotReload, SpotSessionStart, SpotSkillLoad, SpotSkillsTheUserNames,
                                               SpotStaleSkills, SpotUnloadedWindow)
 from features.skill_loading.catalogue import handed
@@ -127,6 +127,9 @@ class SkillLoading(Feature):
                 >> Remembered("required.claude-1", {"journal-plans": 5.0}),
             Given(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 3.0),)), rows=[AgentRow(n=1, title="claude-1")],
                   remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}}) >> Remembered("required.claude-1", {"journal-plans": 5.0}),
+        ])
+        journal.events.handle(SkillsAsked, AskPrimaryForSkills(), expects=[
+            Given(SkillsAsked(agent=1, names="journal-plans", at=5.0), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.events.handle(SessionOwesSkills, OweSessionSkills(), expects=[
             Given(SessionOwesSkills(agent=1, session="claude-1", skills=(("journal", 5.0),)), rows=[AgentRow(n=1, title="claude-1")],

@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import TypedDict
 
-from features.plugins.declared import GUARDED, Manifest, command_text
+from framework.plugins.declared import GUARDED, Manifest, command_text
 
 WAITS = "The agent waits for it"
 BESIDE = "Runs beside the agent"

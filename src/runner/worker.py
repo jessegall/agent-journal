@@ -9,7 +9,7 @@ from providers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
 from runner.engines import ENDING, supervise  # noqa: E402
-from features.plugins.services import plugin_services  # noqa: E402
+from framework.plugins.services import plugin_services  # noqa: E402
 from engine import runtime  # noqa: E402
 from controllers.faults import threw  # noqa: E402
 from engine.stop import asked, session_flag  # noqa: E402

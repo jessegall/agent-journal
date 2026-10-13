@@ -3,11 +3,11 @@ import threading
 
 from engine import bus
 from engine.wording import fill
-from features.plugins.answer import apply
-from features.plugins.declared import called, declared
-from features.plugins.environment import placed
-from features.plugins.paths import logged, plugin_socket
-from features.plugins.run import PluginReply, asked, call
+from framework.plugins.answer import apply
+from framework.plugins.declared import called, declared
+from framework.plugins.environment import placed
+from framework.plugins.paths import logged, plugin_socket
+from framework.plugins.run import PluginReply, asked, call
 
 
 class PluginAsk:

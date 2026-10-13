@@ -5,22 +5,24 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from controllers.types import Plugins
+from controllers.plugins import Plugins
+from controllers.agents import Agents
+from engine import bus
 from engine.bus import patterns
 from engine import runtime
 from engine.runtime import default_env
 from engine.record import Record
 from controllers.faults import threw
-from features.plugins.answer import apply
+from framework.plugins.answer import apply
 from engine.wording import fill
-from features.plugins.declared import Handler, Manifest, called, declared, settings_of
-from features.plugins.environment import placed, port_values
-from features.plugins.paths import folder, log, logged
-from features.plugins.payload import of, session_of
-from features.skill_loading.required import require_primary
-from features.plugins.queue import Refusal, drain
-from features.plugins.run import SECONDS, call, read
-from features.plugins.skills import published
+from framework.plugins.declared import Handler, Manifest, called, declared, settings_of
+from framework.plugins.environment import placed, port_values
+from framework.plugins.paths import folder, log, logged
+from framework.plugins.payload import of, session_of
+from events.skill_loading import SKILLS_ASKED
+from framework.plugins.queue import Refusal, drain
+from framework.plugins.run import SECONDS, call, read
+from framework.plugins.skills import published
 from resources.base import PLUGIN, SYSTEM
 
 REPLAY = 600
@@ -131,8 +133,9 @@ class Host:
     def handle(self, record, row, event, now: float = 0.0) -> tuple[bool, int]:
         manifest = declared(row)
         skills = manifest.skills_for(patterns(event))
-        if skills:
-            require_primary(record, skills, event.at)
+        agent = Agents(record, actor=SYSTEM).primary() if skills else None
+        if agent:
+            bus.announce(record, "agent", agent.n, SKILLS_ASKED, SYSTEM, {"names": ",".join(skills), "at": event.at})
         handlers = listening(manifest, event)
         if not handlers:
             return True, 0

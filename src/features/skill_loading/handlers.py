@@ -1,8 +1,8 @@
 from events import Fact
-from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
 from features.skill_loading.answering import REFUSED, next_count
 from features.skill_loading.listeners import NAME
-from features.skill_loading.required import require, require_only
+from features.skill_loading.required import require, require_only, require_primary
 from receiving import Handler
 from resources.types import AgentRow
 from serving import Chat, Elsewhere, Marks, Rows, Settings
@@ -32,6 +32,12 @@ class NameUnloaded(Handler[JournalSkillMissing]):
 class OweSkills(Handler[SkillsOwed]):
     def handle(self, event: SkillsOwed, elsewhere: Elsewhere) -> list[Fact]:
         require(elsewhere.here().record, event.session, dict(event.skills))
+        return []
+
+
+class AskPrimaryForSkills(Handler[SkillsAsked]):
+    def handle(self, event: SkillsAsked, elsewhere: Elsewhere) -> list[Fact]:
+        require_primary(elsewhere.here().record, event.names.split(","), event.at)
         return []
 
 

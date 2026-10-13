@@ -9,7 +9,7 @@ from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 from engine.gates import CANCELABLE
 from events.catalogue import CATALOGUE
-from features.plugins.declared import ASYNC, SYNC, Manifest
+from framework.plugins.declared import ASYNC, SYNC, Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
 KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "command", "load", "installed", "events", "cancels", "fits", "hooks")

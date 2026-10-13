@@ -6,7 +6,7 @@ import socket
 import subprocess
 from pathlib import Path
 
-from features.plugins.declared import command_text
+from framework.plugins.declared import command_text
 
 CAP = 64 * 1024
 SECONDS = 10.0
