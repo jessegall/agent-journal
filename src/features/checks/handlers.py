@@ -1,111 +1,58 @@
-import time
-
-from pathlib import Path
-
-from engine.command_runs import CommandRun, command_runs
+from events import Fact
 from events.agents import ClockTicked
-from events.agents import AgentReported
-from resources.text import digest
-from resources.check_output import summary
-from payload import HookEvent
-from framework.command_effects import background_outcome
-from framework.tested import testing_piece, tested
-from framework.parts import AgentContext, Context, Handler
-from controllers.types import Checks
-from controllers.types import Agents, Notifications
-from resources.base import SYSTEM, USER
-from events.checks import CheckUpdated
-from serving import SERVED, Providers
+from events.checks import CheckDue, CheckFailed, CheckPassedAgain, TestsFinished, TestsRunning
+from receiving import Handler
+from resources.base import USER
+from resources.checks import Check
+from resources.types import AgentRow, Notification
+from serving import Chat, Rows
 
 
-TESTS = "tests"
+def mark(agents: Rows[AgentRow], about: str, label: str, **card) -> None:
+    """Shows the check's state in the chat on your side, addressed to the agent, and opening the check."""
+    row = agents.primary()
+    if row:
+        agents.card(row.n, label=label, icon="check", side=USER, row=about, **card)
 
 
-class RunDueChecks(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        checks = context.journal.get(Checks)
+class ForgetDeadRuns(Handler[ClockTicked]):
+    def handle(self, event: ClockTicked, checks: Rows[Check]) -> list[Fact]:
         checks.forget_dead_runs()
-        for check in checks.due(time.time()):
-            checks.begin(check.n)
+        return []
 
 
-class ReportCheckResult(Handler):
-    def handle(self, context: Context, event: CheckUpdated) -> None:
-        if not event.ran:
-            return
-        check = context.journal.get(Checks).load(event.n)
-        last = check.last_run
-        output = last.output
-        headline = summary(output) or check.title
-        title = check.failure_title(headline)
-        filed = [row for row in context.journal.get(Notifications).linked_to(check.ref) if not row.completed]
-        if last.ok:
-            for stale in filed:
-                context.journal.clear(stale, "the check passes again")
-                self.mark(context, check, f"Check {check.n} passes again", tone="good", key=f"check:{check.n}:cleared:{stale.n}")
-            return
-        reported = digest(output, 12)
-        if any(row.data.get("reported") == reported for row in filed):
-            return
-        for stale in filed:
-            context.journal.clear(stale, "the check reports something else now")
-        context.journal.notify("failing", title=title, output=output if output else "it said nothing", about=check.ref, reported=reported)
-        self.mark(context, check, f"Check {check.n} failed:", name=headline, tone="danger", key=f"check:{check.n}:{reported}")
-        speaking = context.to_primary()
-        if speaking:
-            speaking.agent.say("failed", title=title, n=check.n)
+class StartDueCheck(Handler[CheckDue]):
+    def handle(self, event: CheckDue, checks: Rows[Check]) -> list[Fact]:
+        checks.begin(event.check)
+        return []
 
 
-    def mark(self, context: Context, check, label: str, **card) -> None:
-        """Shows the check's state in the chat on your side, addressed to the agent, and opening the check."""
-        agents = Agents(context.record, actor=SYSTEM)
-        row = agents.primary()
-        if row:
-            agents.card(row.n, label=label, icon="check", side=USER, row=check.ref, **card)
+class SettlePassingCheck(Handler[CheckPassedAgain]):
+    def handle(self, event: CheckPassedAgain, notifications: Rows[Notification], agents: Rows[AgentRow]) -> list[Fact]:
+        notifications.complete(event.notification, how="the check passes again")
+        mark(agents, event.about, f"Check {event.check} passes again", tone="good", key=f"check:{event.check}:cleared:{event.notification}")
+        return []
 
 
-def verdict(result, failed: bool) -> str:
-    if failed:
-        return "Tests failed"
-    return "Tests passed" if result else "Tests ran"
+class FileFailingCheck(Handler[CheckFailed]):
+    def handle(self, event: CheckFailed, notifications: Rows[Notification], agents: Rows[AgentRow], chat: Chat) -> list[Fact]:
+        for stale in event.stale:
+            notifications.complete(stale, how="the check reports something else now")
+        chat.notify("failing", title=event.title, output=event.output, about=event.about, reported=event.reported)
+        mark(agents, event.about, f"Check {event.check} failed:", name=event.headline, tone="danger", key=f"check:{event.check}:{event.reported}")
+        chat.say("failed", title=event.title, n=event.check)
+        return []
 
 
-class MarkTestRuns(Handler):
-    hooks = (HookEvent.PRE_TOOL_USE, HookEvent.POST_TOOL_USE)
+class ShowTestsRunning(Handler[TestsRunning]):
+    def handle(self, event: TestsRunning, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.card(event.agent, key=event.key, label="Running tests", icon="check", name=event.name, command=event.command, title=event.title,
+                    state="running", started=event.started)
+        return []
 
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        self.finish_background(context)
-        row = context.agent.row
-        run = CommandRun.from_json(row.running) if row.running else None
-        if not run or run.effect != TESTS or not testing_piece(run.command) or not context.once("test_run", f"{run.at}|{run.done}"):
-            return
-        ran = tested(run.command)
-        if not run.done or run.background:
-            context.journal.get(Agents).card(row.n, key=f"tests:{run.at}", label="Running tests", icon="check", name=ran.name, command=ran.command, title=run.command,
-                                             state="running", started=run.at)
-            return
-        self.finish(context, run, run.result, run.done)
 
-    def finish_background(self, context: AgentContext) -> None:
-        row = context.agent.row
-        reader = SERVED.given(Providers).reader(row)
-        if reader is None:
-            return
-        tasks = reader.background_tasks(Path(row.transcript))
-        for task, command in tasks.commands.items():
-            piece = " ".join(testing_piece(command))
-            if not piece or task not in tasks.ended:
-                continue
-            run = next((one for one in reversed(command_runs(row)) if one.effect == TESTS and one.command == piece), None)
-            if run is None or not context.once("test_run", f"background|{task}"):
-                continue
-            outcome = background_outcome(command, row.cwd, tasks.outputs.get(task, ""), "failed" if task in tasks.failed else "completed")
-            self.finish(context, run, outcome, tasks.ended[task])
-
-    def finish(self, context: AgentContext, run: CommandRun, result, ended: float) -> None:
-        ran = tested(run.command)
-        counts = ", ".join(part for part in (f"{result.passed} passed" if result and result.passed else "",
-                                             f"{result.failed} failed" if result and result.failed else "") if part)
-        failed = bool(result and (result.ok is False or result.failed))
-        context.journal.get(Agents).card(context.agent.row.n, key=f"tests:{run.at}", label=verdict(result, failed), icon="check", name=ran.name, command=ran.command,
-                                         title=run.command, state="failed" if failed else "done", started=run.at, ended=ended, detail=counts)
+class ShowTestsFinished(Handler[TestsFinished]):
+    def handle(self, event: TestsFinished, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.card(event.agent, key=event.key, label=event.label, icon="check", name=event.name, command=event.command, title=event.title,
+                    state=event.state, started=event.started, ended=event.ended, detail=event.detail)
+        return []
