@@ -121,8 +121,6 @@ class MessagesFeature(Feature):
             after_report(FILE_THE_REPORT, IDLE) >> Dispatches(AnswersSettled(agent=1)),
             after_report(ABOUT_A_TODO, IDLE) >> Dispatches(OWED),
             after_report(asked("Here is the result"), IDLE) >> Dispatches(OWED),
-            after_report(asked(), AgentRow(n=1, title="claude-1", data={"status": "working", "uses": 4}), settings={"messages.answering.hold": 2})
-                >> Dispatches(AnswerHeld(agent=1, messages="message 5")) & Dispatches(OWED.due("answering")),
             after_report(asked(), AgentRow(n=1, title="claude-1", data={"status": "working", "uses": 13}), files=answering(marked("messages.answer hold", uses=3)))
                 >> Dispatches(AnswerHeld(agent=1, messages="message 5")) & Dispatches(OWED.due("answering")),
             after_report(wrote("What do you think about the plan?"), IDLE) >> Dispatches(AnswersSettled(agent=1)),

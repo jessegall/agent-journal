@@ -1,9 +1,11 @@
+from controllers.types import Environments
 from events import Fact
 from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, StopAsked,
                                    SubagentAlive, SubagentReportLinked, TakeOverChosen)
 from features.agent_sessions.ending import stop
 from receiving import Handler
-from resources.types import SUBAGENT, AgentRow, Environment, Todo
+from resources.base import SYSTEM
+from resources.types import SUBAGENT, AgentRow, Todo
 from serving import Chat, Elsewhere, Rows
 
 STOP = "stop"
@@ -24,7 +26,7 @@ class ReleaseEvicted(Handler[EvictionLifted]):
 
 class TakeOverOnAnswer(Handler[TakeOverChosen]):
     def handle(self, event: TakeOverChosen, elsewhere: Elsewhere) -> list[Fact]:
-        elsewhere.named(event.environment).rows(Environment, session=event.session).claim(event.place, "the user chose to take it over")
+        Environments(elsewhere.named(event.environment).record, actor=SYSTEM, session=event.session).claim(event.place, "the user chose to take it over")
         return []
 
 

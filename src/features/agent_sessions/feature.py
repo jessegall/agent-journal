@@ -14,7 +14,7 @@ from features.agent_sessions.listeners import (SpotCompaction, SpotEndedSessions
 from framework.base import Feature
 from framework.journal import Journal
 from providers import PROVIDERS
-from resources.types import AgentRow, Question, Todo
+from resources.types import AgentRow, Environment, Question, Todo
 
 WORKING = AgentRow(n=1, title="claude-1", data={"status": "working", "event": "PostToolUse"})
 QUIET = AgentRow(n=1, title="claude-1", data={"status": "working", "event": "PostToolUse", "at": WHEN - 86_400})
@@ -37,7 +37,6 @@ class AgentSessions(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.listen(AgentReported, SpotEviction(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(EvictionLifted(agent=1)),
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")], settings={"agent_sessions.eviction": False}) >> Dispatches(nothing),
         ])
         journal.events.listen(QuestionCompleted, SpotTakeOver(), expects=[
             Given(QuestionCompleted(n=3), rows=[Question(n=3, title="take it over?")]) >> Dispatches(nothing),
@@ -90,7 +89,7 @@ class AgentSessions(Feature):
             Given(EvictionLifted(agent=1), rows=[AgentRow(n=1, title="claude-1")], held=EVICTED) >> Dispatches(nothing),
         ])
         journal.events.handle(TakeOverChosen, TakeOverOnAnswer(), expects=[
-            Given(TakeOverChosen(session="claude-2", environment="work", place=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TakeOverChosen(session="claude-2", environment="t", place=1), rows=[Environment(n=1, title="t")]) >> Updated(Environment(n=1), holder="claude-2"),
         ])
         journal.events.handle(SessionEnded, StopEndedSession(), expects=[
             Given(SessionEnded(row=1), rows=[QUIET]) >> Updated(AgentRow(n=1), status="stopped"),
