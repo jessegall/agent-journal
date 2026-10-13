@@ -202,6 +202,8 @@ class ToolUse(Loaded):
     name: str = ""
     tool_input: dict = field(default_factory=dict)
     response: dict = field(default_factory=dict)
+    background: bool = False
+    """Whether the call asked to run in the background; only a shell call can."""
 
     @classmethod
     def from_payload(cls, name: str, given: dict, response: dict) -> "ToolUse":

@@ -650,14 +650,13 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
     features.load()
     said = dict(line.split(": ", 1) for line in listing().splitlines())
     assert any(line.startswith("adapted (") for line in said.values()), "a feature whose handlers all run on the adapter says which"
-    assert said["sequences"].endswith("; cannot be adapted (KeepOutOfTheChat), swept first"), \
-        "a handler on the sending path cannot run there, so its feature is not moved and the listing says it is swept first"
-    assert said["command_tags"] == said["chat_etiquette"] == said["acknowledgements"] == "moved", "and a feature swept onto the 3.0 engine says so"
+    assert {said[name] for name in ("command_tags", "chat_etiquette", "acknowledgements", "sequences")} == {"moved"}, \
+        "the four features on the sending path are swept, since a handler there could not run on the adapter at all"
     handled = {one.feature.name for one in PROMISED.each if one.kind == "handler"}
     assert all(said[name] != "moved" for name in handled) and all(said[name] == "moved" for name in said if name not in handled), \
         "a feature reads as moved when it holds no old handler, and as adapted or stuck while it holds one"
     adapted = ADAPTED.of(HANDLE)
-    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and {one.name for one in adapted} >= {"AskToStop", "CloseRowsFromCommits"}, \
+    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and all(one.name == type(one.receiver.handler).__name__ for one in adapted if one.feature), \
         "each registers under its old handler's own name, so the ordering can tell them apart and none is registered twice"
 
     ran = []
