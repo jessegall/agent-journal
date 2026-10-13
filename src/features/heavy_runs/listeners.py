@@ -2,7 +2,7 @@ from events import Fact
 from events.agents import ToolCallAnswered
 from events.heavy_runs import HeavyRunHeld, HeavyRunStarted
 from features.heavy_runs.holding import ahead_of
-from payload import runs_tests
+from engine.journal_calls import runs_tests
 from receiving import Listener
 from serving import Clock, ReadElsewhere
 

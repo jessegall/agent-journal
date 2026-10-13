@@ -578,10 +578,3 @@ def said_by(who: str) -> str:
     return f"{MARK} a message from the agent in {who}, filed in your own environment as well:"
 
 
-HEAVY_RUN = re.compile(r"(?:^|[\s;&|])(?:(?:python3?\s+-m\s+)?pytest|vitest|npm\s+(?:run\s+)?test|node\s+\S*browser/\S+\.mjs|journal\s+(?:--\S+\s+\S+\s+)*check\s+(?:run|touched|gate))\b")
-"""What makes a command heavy: a test run, a browser scenario or a check. It sits with the call it is asked about, because more than one feature asks - the one that queues heavy runs and the one that keeps helpers from starting them - and neither may import the other."""
-
-
-def runs_tests(shell: str) -> bool:
-    """Whether this shell command takes the machine for as long as it lasts."""
-    return bool(HEAVY_RUN.search(shell))

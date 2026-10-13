@@ -192,9 +192,10 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     monkeypatch.setattr(Helpers, "_revive", lambda self, row, words: None)
     Helpers(record, actor=AGENT).say(1, "pick it up again")
     assert marks()[-1] == "Continued helper 1", "starting a helper again after its agent stopped shows it as continued, which is what the chat could not tell before"
-    from payload import runs_tests
-    assert [runs_tests(c) for c in ("pytest -q -n auto", "python -m pytest", "pytest tests/a.py", "cd src/web && npx vitest run", "node src/web/browser/chat.mjs", "journal check touched 1", "ls", "git status")] == [True, True, True, True, True, True, False, False], \
-        "any test run is refused to a helper or subagent, and nothing else is"
+    from engine.journal_calls import runs_tests
+    assert [runs_tests(c) for c in ("pytest -q -n auto", "python -m pytest", "pytest tests/a.py", "cd src/web && npx vitest run", "node src/web/browser/chat.mjs", "journal check touched 1", "ls", "git status", "echo pytest", "grep -rn vitest src", "git commit -m 'run pytest'", "lockf -k /tmp/x .venv/bin/python -m pytest -q")] == \
+        [True, True, True, True, True, True, False, False, False, False, False, True], \
+        "any test run is refused to a helper or subagent, and a command that only names a test runner is not"
     assert not Helpers(record, actor=SYSTEM).load(1).whole_suite and Helpers(record, actor=AGENT).allow_suite(1) and Helpers(record, actor=SYSTEM).load(1).whole_suite, \
         "the dispatcher can allow one helper to run tests"
     assert "only a helper reports" in refused(lambda: Helpers(record, actor=AGENT).report("done")), "the dispatcher cannot report for it"

@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 import shlex
 from dataclasses import dataclass
 
@@ -120,3 +121,14 @@ def calls(shell: str) -> list[JournalCall]:
     found = (JournalCall(("journal", *tokens(ENDS.split(shell[named.end():], maxsplit=1)[0])))
              for named in NAMED.finditer(shell) if not quoted_at(shell, named.start()))
     return [call for call in found if call.noun]
+
+
+HEAVY_RUN = re.compile(r"(?:^|[\s;&|])(?:(?:python3?\s+-m\s+)?pytest|vitest|npm\s+(?:run\s+)?test|node\s+\S*browser/\S+\.mjs|journal\s+(?:--\S+\s+\S+\s+)*check\s+(?:run|touched|gate))\b")
+"""What makes a command heavy: a test run, a browser scenario or a check. It sits with the call it is asked about, because more than one feature asks - the one that queues heavy runs and the one that keeps helpers from starting them - and neither may import the other."""
+# a piece run by one of these only reads or prints text, so a test runner it names is an argument, not a run
+READERS = frozenset({"echo", "printf", "grep", "rg", "cat", "head", "tail", "less", "sed", "awk", "git", "which", "type", "man"})
+
+
+def runs_tests(shell: str) -> bool:
+    """Whether this shell command takes the machine for as long as it lasts: a piece of it starts a test runner, not one that only names one."""
+    return any(HEAVY_RUN.search(" ".join(piece)) and Path(piece[0]).name not in READERS for piece in pieces(shell))

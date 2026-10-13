@@ -2,7 +2,7 @@
 
 from controllers.types import Agents, Environments
 from features.heavy_runs.queue import HeavyRuns
-from payload import runs_tests
+from engine.journal_calls import runs_tests
 from resources.base import SYSTEM
 
 STATE_FILE = "heavy-runs.json"

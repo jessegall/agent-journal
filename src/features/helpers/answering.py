@@ -1,7 +1,7 @@
 from resources.reuse import named_paths, refusal
 from events.answers import Allowed, Answer, Refused
 from events.asking import AgentDispatching, ToolCallAsked
-from payload import runs_tests
+from engine.journal_calls import runs_tests
 from receiving import Answerer
 from resources.types import Helper
 from serving import ReadRows, Settings
