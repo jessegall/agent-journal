@@ -221,7 +221,7 @@ class Agents(Controller):
         moved = [kept for kept in row.data.get("cards") or [] if kept.get("label") == MOVED_TO_BACKGROUND and kept.get("state") == "running"]
         return self.card(row.n, key=moved[-1]["key"], detail=detail) if moved else row
 
-    def _mark_primary(self, label: str, **card):
+    def mark_primary(self, label: str, **card):
         primary = self.primary_to_read()
         return self.card(primary.n, label=label, tone="good", **card) if primary else None
 

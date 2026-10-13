@@ -1,6 +1,6 @@
 from declaring.details import Behaviour, FeatureDetails, Line
 from declaring.groups import Group
-from features.helpers.handlers import helper_waits_on_question, report_waits, still_unreported
+from features.helpers.owed import helper_waits_on_question, report_waits, still_unreported
 from declaring.settings import Setting
 from declaring.trigger import MINUTES, Trigger
 

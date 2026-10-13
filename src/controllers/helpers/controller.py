@@ -14,10 +14,12 @@ from engine import attic, bus
 from engine.outbox import Request
 from engine.record import Record
 from engine.sessions import Sessions
+from serving import SERVED, Providers
 from controllers.helper_worktrees import Worktrees
 from controllers.form_of_address.address import voice_of
 from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
+from agents.terminal import launch_failure, launch_output
 from controllers.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, NewEnvironment, Running, Todo
@@ -104,6 +106,20 @@ class HandedRow:
     row: Todo
 
 
+@dataclass(frozen=True)
+class HelperWatch:
+    """What a helper's dispatcher can see of it: whether its provider refused to run it, whether its environment holds a session and when that was last heard from, whether its agent runs, whether it works on its own, and how long it has been idle."""
+
+    refusal: str | None
+    seated: bool
+    heard: float
+    runs: bool
+    own_work: bool
+    agent_present: bool
+    idle_for: float
+    agent_at: float
+
+
 class Helpers(Controller):
     resource = Helper
 
@@ -167,7 +183,7 @@ class Helpers(Controller):
         except Exception:
             give_back(self.record, handed)
             raise
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Dispatched helper {row.n}", name=row.name, icon="bot", kind="helpers", helper=row.n, detail=f"{provider} {model}")
+        Agents(self.record, actor=SYSTEM).mark_primary(f"Dispatched helper {row.n}", name=row.name, icon="bot", kind="helpers", helper=row.n, detail=f"{provider} {model}")
         return row
 
     def _handable(self, numbers: tuple[int, ...]) -> list[Todo]:
@@ -209,10 +225,10 @@ class Helpers(Controller):
         return f"to-do {row.n}: {row.title}\n{row.abstract}\n{row.brief}".strip()
 
     def _handed_to_me(self, n: int) -> "HandedRow":
-        place = self._helping()
+        place = self.helping()
         if not place:
             raise Refused("only a helper reads or marks a to-do it was handed; the agent that dispatched it works its own with journal todo")
-        helper = self._helper(place)
+        helper = self.helper_for(place)
         listed = Todos(Record(self.record.root, place.launched_from), actor=SYSTEM)
         row = listed.load(n)
         if row.assigned != helper.ref:
@@ -253,7 +269,7 @@ class Helpers(Controller):
 
     @action(network=True)
     def say(self, n: int, text: str, todos: str = "") -> str:
-        place = self._helping()
+        place = self.helping()
         if place:
             return self._said_to_peer(place, n, text, todos)
         row = self._unfinished(n, "finished")
@@ -290,16 +306,16 @@ class Helpers(Controller):
 
     @action
     def peers(self) -> list[str]:
-        place = self._helping()
+        place = self.helping()
         if not place:
             raise Refused("only a helper has peers; journal helper all lists the helpers you dispatched")
-        me = self._helper(place)
+        me = self.helper_for(place)
         return [f"helper {row.n}, {row.name}, on {row.provider}: {row.title}"
                 for row in Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).rows.standing() if row.n != me.n]
 
     @action
     def report(self, text: str) -> str:
-        place = self._helping()
+        place = self.helping()
         if not place:
             raise Refused("only a helper reports, from the environment it was dispatched into")
         self._told(place, text)
@@ -308,7 +324,7 @@ class Helpers(Controller):
     def _said_to_peer(self, place, n: int, text: str, todos: str) -> str:
         if todos:
             raise Refused("only the agent that dispatched you hands out to-dos; send the words alone")
-        me = self._helper(place)
+        me = self.helper_for(place)
         peer = Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM)._unfinished(n, "finished")
         if peer.n == me.n:
             raise Refused("that is you; journal helper peers lists the other helpers")
@@ -319,10 +335,10 @@ class Helpers(Controller):
             Nudges(there, actor=SYSTEM).to_primary(titled(f"helper {me.n}, {me.name}, wrote in message {message.n}"), f"{text}\n\n{answer}")
         return f"sent to {peer.name}"
 
-    def _failed(self, failure: str) -> None:
-        place = self._helping()
+    def failed(self, failure: str) -> None:
+        place = self.helping()
         text = f"My turn ended in an error, so I stopped: {failure}"
-        helper = self._helper(place) if place else None
+        helper = self.helper_for(place) if place else None
         if not helper or helper.report == text:
             return
         home = Record(self.record.root, place.launched_from)
@@ -330,16 +346,57 @@ class Helpers(Controller):
         give_back(home, rows)
         self._told(place, text, given_back(rows))
 
-    def _helping(self):
+    def watch(self, row: Helper) -> HelperWatch:
+        root = self.record.root
+        provider = SERVED.given(Providers).offers(row.provider)
+        sessions = [seat for seat in Sessions(root).all().values() if seat.environment == row.environment]
+        agent = Agents(Record(root, row.environment), actor=SYSTEM).primary_to_read()
+        return HelperWatch(refusal=None if provider is None else provider.refusal_in(launch_output(root, row.environment)), seated=bool(sessions),
+                           heard=max((seat.last_heard for seat in sessions), default=0.0), runs=agent_runs(self.record, row),
+                           own_work=bool(agent) and bool(agent.command_running or agent.background_run),
+                           agent_present=agent is not None, idle_for=agent.idle_for if agent else 0.0, agent_at=float(agent.at) if agent else 0.0)
+
+    def launch_cause(self, row: Helper) -> str:
+        return launch_failure(self.record.root, row.environment)
+
+    def helper_here(self) -> Helper | None:
+        """The helper this environment was made for, when it is a helper's."""
+        place = self.helping()
+        return self.helper_for(place) if place else None
+
+    def relay(self, n: int) -> None:
+        """Passes a message this helper's agent wrote on to the environment that dispatched it, as a message from the helper."""
+        place = self.helping()
+        if place is None:
+            return
+        written = Messages(self.record, actor=SYSTEM).load(n)
+        Messages(Record(self.record.root, place.launched_from), actor=AGENT).create(titled(written.brief), brief=written.brief, peer=self.helper_for(place).name)
+
+    def handed_to(self, todo) -> Ref | None:
+        """The helper a to-do is handed to while that helper is at work, or none."""
+        if not held_by_helper(todo):
+            return None
+        helper = Ref.parse(todo.assigned)
+        return helper if self.rows.exists(helper.n) and not self.load(helper.n).completed else None
+
+    def census(self) -> list:
+        return kept(self.record, self.rows.standing())
+
+    def relative_paths(self, paths: tuple[str, ...]) -> list[str]:
+        """The paths of a call as the project names them, where they lie inside it."""
+        project = self.record.root.resolve().parent
+        return [Path(path).relative_to(project).as_posix() if Path(path).is_relative_to(project) else path for path in paths if path]
+
+    def helping(self):
         place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         return place if place and place.helping else None
 
-    def _helper(self, place) -> Helper:
+    def helper_for(self, place) -> Helper:
         return Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).load(place.owned_by(HELPER))
 
     def _told(self, place, text: str, given_back_text: str = "") -> None:
         home = Record(self.record.root, place.launched_from)
-        row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text, answering=False)
+        row = Helpers(home, actor=SYSTEM).update(self.helper_for(place).n, report=text, answering=False)
         bus.defer(lambda: self._relayed(home, row, text, given_back_text))
 
     @staticmethod
@@ -363,7 +420,7 @@ class Helpers(Controller):
         rows = unmarked(self.record, row)
         stopped = self._stopped(row, places, place)
         give_back(self.record, rows)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Stopped helper {n}", name=row.name, icon="bot", kind="helpers", helper=int(n))
+        Agents(self.record, actor=SYSTEM).mark_primary(f"Stopped helper {n}", name=row.name, icon="bot", kind="helpers", helper=int(n))
         return f"{stopped}{given_back(rows)}"
 
     def _stopped(self, row, places: Environments, place) -> str:
@@ -404,7 +461,7 @@ class Helpers(Controller):
         give_back(self.record, rows)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
         Worktrees(self.record, actor=SYSTEM)._released(row.name)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Retired helper {n}", name=row.name, icon="bot", kind="helpers", helper=int(n))
+        Agents(self.record, actor=SYSTEM).mark_primary(f"Retired helper {n}", name=row.name, icon="bot", kind="helpers", helper=int(n))
         bus.defer(lambda: self._packed(row, place))
         return finished
 

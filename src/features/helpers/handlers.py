@@ -1,178 +1,82 @@
-import time
+from events import Fact
+from events.helpers import (AnswerToRelay, HelperAsks, HelperBriefed, HelperContinued, HelperIdle, HelperQuiet, HelperRefused, HelperStopped, HelperTold, HelperTurnFailed,
+                            SubagentAsks, SubagentTouched, Telling)
+from receiving import Handler
+from resources.types import AgentRow, Helper
+from serving import Chat, Elsewhere, Rows
 
-from agents.terminal import Launched, launch_failure, launch_output
-from controllers.types import Agents, Messages, Questions
-from engine.record import Record
-from engine.seats import terminal_of
-from events.agents import ClockTicked
-from events.agents import AgentChanged
-from events.messages import MessageCreated
-from engine.sessions import Sessions, alive
-from events.questions import QuestionCreated
-from controllers.types import Helpers
-from controllers.helpers.reuse import agent_runs, subagent_rows
-from events.helpers import HelperBriefed, HelperContinued, HelperTold, Telling
-from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
-from declaring.trigger import MINUTE
-from serving import SERVED, Providers
-from controllers.stored import IDEMPOTENCY
-from resources.base import AGENT, SYSTEM, titled
-from resources.types import FAILED
+FILES_KEPT = 50
 
 
-class MarkTheHelperTold(Handler):
+def mark_helper_told(event: HelperTold, agents: Rows[AgentRow], helpers: Rows[Helper]) -> None:
     """The chat mark for a helper given more work, so a helper started again after it went idle reads differently from one already working that was told its next job."""
-
-    def mark(self, context: Context, event: HelperTold) -> None:
-        row = Helpers(context.record, actor=SYSTEM).peek(event.n)
-        Agents(context.record, actor=SYSTEM)._mark_primary(Telling(event.action).mark(event.n), name=row.name, icon="bot", kind="helpers", helper=event.n, detail=row.latest)
+    row = helpers.peek(event.n)
+    agents.mark_primary(Telling(event.action).mark(event.n), name=row.name, icon="bot", kind="helpers", helper=event.n, detail=row.latest)
 
 
-class MarkTheHelperContinued(MarkTheHelperTold):
-    def handle(self, context: Context, event: HelperContinued) -> None:
-        self.mark(context, event)
+class MarkTheHelperContinued(Handler[HelperContinued]):
+    def handle(self, event: HelperContinued, agents: Rows[AgentRow], helpers: Rows[Helper]) -> list[Fact]:
+        mark_helper_told(event, agents, helpers)
+        return []
 
 
-class MarkTheHelperBriefed(MarkTheHelperTold):
-    def handle(self, context: Context, event: HelperBriefed) -> None:
-        self.mark(context, event)
+class MarkTheHelperBriefed(Handler[HelperBriefed]):
+    def handle(self, event: HelperBriefed, agents: Rows[AgentRow], helpers: Rows[Helper]) -> list[Fact]:
+        mark_helper_told(event, agents, helpers)
+        return []
 
 
-class TellAFailedTurn(Handler):
-    def handle(self, context: AgentContext, event: AgentChanged) -> None:
-        row = context.agent.row
-        if row.event == FAILED:
-            Helpers(context.record, actor=SYSTEM)._failed(row.failure)
+class TellAFailedTurn(Handler[HelperTurnFailed]):
+    def handle(self, event: HelperTurnFailed, helpers: Rows[Helper]) -> list[Fact]:
+        helpers.failed(event.failure)
+        return []
 
 
-class TellAFailedTurnOnChange(OnAgentUpdated, TellAFailedTurn):
-    pass
+class NameRefusedHelper(Handler[HelperRefused]):
+    def handle(self, event: HelperRefused, chat: Chat) -> list[Fact]:
+        chat.say("refused", n=event.n, name=event.name, provider=event.provider, reason=event.reason, rows=[event.ref])
+        return []
 
 
-def still_unreported(journal, rows: tuple[str, ...]) -> bool:
-    return any(row.ref in rows and not (row.report or row.stopped_by_user) for row in journal.get(Helpers).rows.standing())
+class NameStoppedHelper(Handler[HelperStopped]):
+    def handle(self, event: HelperStopped, chat: Chat) -> list[Fact]:
+        chat.say("stopped", n=event.n, name=event.name, cause=event.cause, rows=[event.ref])
+        return []
 
 
-def report_waits(journal, rows: tuple[str, ...]) -> bool:
-    """A helper's report is named while it stands: helper say, which gives the helper new work, clears it, and so does finishing the helper."""
-    return any(row.ref in rows and row.report for row in journal.get(Helpers).rows.standing())
+class NameQuietHelper(Handler[HelperQuiet]):
+    def handle(self, event: HelperQuiet, chat: Chat) -> list[Fact]:
+        chat.say("quiet", n=event.n, name=event.name, minutes=event.minutes)
+        return []
 
 
-def open_questions(root, environment: str) -> list:
-    return [question for question in Questions(Record(root, environment), actor=SYSTEM).rows.standing() if not question.hidden]
+class NameIdleHelper(Handler[HelperIdle]):
+    def handle(self, event: HelperIdle, chat: Chat) -> list[Fact]:
+        chat.say("idle", n=event.n, name=event.name, minutes=event.minutes)
+        return []
 
 
-def helper_waits_on_question(journal, rows: tuple[str, ...]) -> bool:
-    helpers = journal.get(Helpers)
-    return any(row.ref in rows and open_questions(helpers.record.root, row.environment) for row in helpers.rows.standing())
+class RelayAnswerToDispatcher(Handler[AnswerToRelay]):
+    def handle(self, event: AnswerToRelay, helpers: Rows[Helper]) -> list[Fact]:
+        helpers.relay(event.message)
+        return []
 
 
-def listed_options(question) -> str:
-    if not question.options:
-        return "It offers no options, so answer it in your own words."
-    titles = [option["title"] if isinstance(option, dict) else str(option) for option in question.options]
-    return "Options: " + "; ".join(f"{at}. {title}{' (its pick)' if question.pick == at else ''}" for at, title in enumerate(titles, 1)) + "."
+class TellAQuestionAskedAway(Handler[HelperAsks]):
+    def handle(self, event: HelperAsks, elsewhere: Elsewhere) -> list[Fact]:
+        elsewhere.named(event.environment).chat().say("helper asking", who=event.who, question=event.question, text=event.text, options=event.options,
+                                                    command=event.command, rows=[event.ref])
+        return []
 
 
-def subagent_name(record, agent: str) -> str:
-    primary = Agents(record, actor=SYSTEM).primary()
-    task = next((sub.task for sub in subagent_rows(primary) if sub.address == agent), "") if primary else ""
-    return task.partition(":")[0].strip() or agent
+class TellASubagentAsking(Handler[SubagentAsks]):
+    def handle(self, event: SubagentAsks, chat: Chat) -> list[Fact]:
+        chat.say("subagent asking", who=event.who, question=event.question, text=event.text, options=event.options, command=event.command, rows=[event.ref])
+        return []
 
 
-class RelayAnswerToDispatcher(Handler):
-    """While a helper works a follow-up, a message it writes to its dispatcher in its own environment reaches the dispatcher's chat as a message from the helper, as its report does; the words of its own turns, kept as messages by the chat, are its working notes and stay in its inspector."""
-
-    def handle(self, context: Context, event: MessageCreated) -> None:
-        helpers = Helpers(context.record, actor=SYSTEM)
-        place = helpers._helping()
-        if not place or event.actor != AGENT:
-            return
-        helper = helpers._helper(place)
-        written = Messages(context.record, actor=SYSTEM).load(event.n)
-        if not helper.answering or written.data.get("from_main") or written.data.get("peer") or written.data.get(IDEMPOTENCY):
-            return
-        Messages(Record(context.record.root, place.launched_from), actor=AGENT).create(titled(written.brief), brief=written.brief, peer=helper.name)
-
-
-class TellAQuestionAskedAway(Handler):
-    def handle(self, context: Context, event: QuestionCreated) -> None:
-        question = Questions(context.record, actor=SYSTEM).load(event.n)
-        helpers = Helpers(context.record, actor=SYSTEM)
-        place = helpers._helping()
-        if question.hidden or not (place or question.agent):
-            return
-        if place:
-            helper = helpers._helper(place)
-            context.feature.to_primary(Record(context.record.root, place.launched_from), "helper asking", who=f"helper {helper.n}, {helper.name}", question=question.n,
-                                       text=question.title, options=listed_options(question),
-                                       command=f'journal --env "{context.record.env}" question answer {question.n} "<answer>" --set reason="<why>"', rows=[helper.ref])
-            return
-        context.feature.to_primary(context.record, "subagent asking", who=f"subagent {subagent_name(context.record, question.agent)}", question=question.n,
-                                   text=question.title, options=listed_options(question), command=f'journal question answer {question.n} "<answer>" --set reason="<why>"',
-                                   rows=[question.ref])
-
-
-def gone(root, name: str, session) -> bool:
-    launched = Launched.read(root, terminal_of(root, name) or name)
-    return bool(session.pid) and not alive(session.pid) and not (launched.pid and alive(launched.pid))
-
-
-def refused_by_provider(root, row) -> str | None:
-    """Why the helper's provider refused to run it, as its launch output says, when it did."""
-    provider = SERVED.given(Providers).offers(row.provider)
-    if provider is None:
-        return None
-    return provider.refusal_in(launch_output(root, row.environment))
-
-
-class NameStoppedOrQuietHelpers(Handler):
-    behaviour = "watch"
-
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        speaking = context.to_primary()
-        if not speaking:
-            return
-        quiet_after = float(context.settings.quiet_after) * MINUTE
-        root = context.record.root
-        sessions = Sessions(root).all()
-        for row in Helpers(context.record, actor=SYSTEM).rows.standing():
-            if row.report or row.stopped_by_user:
-                continue
-            refusal = refused_by_provider(root, row)
-            if refusal is not None:
-                if speaking.once("helper refused", f"{row.n}:{refusal}"):
-                    speaking.agent.say("refused", n=row.n, name=row.name, provider=row.provider, reason=refusal, rows=[row.ref])
-                continue
-            theirs = {name: s for name, s in sessions.items() if s.environment == row.environment}
-            if not theirs:
-                continue
-            last_seen = max(s.last_heard for s in theirs.values())
-            stopped = not agent_runs(context.record, row)
-            if stopped and speaking.once("helper stopped", f"{row.n}:{last_seen}"):
-                speaking.agent.say("stopped", n=row.n, name=row.name, cause=launch_failure(context.record.root, row.environment), rows=[row.ref])
-            elif not stopped and time.time() - last_seen >= quiet_after and not self.working_on_its_own(self.agent_of(context, row)) and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
-                speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - last_seen) // MINUTE))
-            if not stopped:
-                self.name_idle(context, speaking, row)
-
-    @staticmethod
-    def agent_of(context: AgentContext, row):
-        return Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()
-
-    @staticmethod
-    def working_on_its_own(agent) -> bool:
-        """A helper waiting on a long command or a background run says nothing while it works, so it is neither quiet nor idle."""
-        return bool(agent) and (agent.command_running or bool(agent.background_run))
-
-    def name_idle(self, context: AgentContext, speaking: AgentContext, row) -> None:
-        agent = self.agent_of(context, row)
-        if not agent or self.working_on_its_own(agent):
-            return
-        idle = agent.idle_for
-        after, every, repeats = (float(context.settings.idle_after) * MINUTE, float(context.settings.idle_every) * MINUTE, int(context.settings.idle_repeats))
-        if idle < after:
-            return
-        notice = 1 + int((idle - after) // every) if every else 1
-        if (not repeats or notice <= 1 + repeats) and speaking.once("helper idle", f"{row.n}:{agent.at}:{notice}"):
-            speaking.agent.say("idle", n=row.n, name=row.name, minutes=int(idle // MINUTE))
+class KeepSubagentFiles(Handler[SubagentTouched]):
+    def handle(self, event: SubagentTouched, agents: Rows[AgentRow]) -> list[Fact]:
+        row = agents.peek(event.agent)
+        agents.update(row.n, touched_files=[*row.touched_files, *event.files][-FILES_KEPT:])
+        return []

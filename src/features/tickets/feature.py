@@ -8,7 +8,7 @@ from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Un
 from framework.base import Feature
 from resources.boards import Board
 from resources.tickets import Ticket
-from resources.base import AGENT, USER
+from resources.base import AGENT, PLAN_WAITS, USER
 from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
 from framework.journal import Journal
 from features.tickets.commands import ShowTicketTodos
@@ -109,7 +109,7 @@ class TicketsFeature(Feature):
             Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanWaitsForOrchestrator, RaiseWaitingPlan(), expects=[
-            Given(PlanWaitsForOrchestrator(ticket=1, moment="ticket.plan_waits"), rows=[waiting_for(5)]) >> Dispatches(nothing),
+            Given(PlanWaitsForOrchestrator(ticket=1, moment=PLAN_WAITS), rows=[run_here(), waiting_for(5)]) >> Dispatches(nothing),
         ])
         journal.events.listen(ClockTicked, SpotTicketCalls(), expects=[
             Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
@@ -120,7 +120,7 @@ class TicketsFeature(Feature):
                 >> Nudged("ticket_replied", ticket=1, title="Dark mode", text="done"),
         ])
         journal.events.handle(TicketHandedIn, RecordHandedIn(), expects=[
-            Given(TicketHandedIn(ticket=1), rows=[waiting_for(0, handed_in_at=0.0)]) >> Updated(Ticket(n=1), handed_in_at=WHEN),
+            Given(TicketHandedIn(ticket=1), rows=[run_here(), waiting_for(0, handed_in_at=0.0)]) >> Updated(Ticket(n=1), handed_in_at=WHEN),
         ])
         journal.events.listen(ClockTicked, SpotStuckTickets(), expects=[
             Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
@@ -143,7 +143,7 @@ class TicketsFeature(Feature):
                 >> Dispatches(nothing),
         ])
         journal.events.handle(TicketWaitedLong, CommentOnLongWait(), expects=[
-            Given(TicketWaitedLong(ticket=1, minutes=60), rows=[waiting_for(60)]) >> Wrote(Comment(brief=LONG_WAIT)),
+            Given(TicketWaitedLong(ticket=1, minutes=60), rows=[run_here(), waiting_for(60)]) >> Wrote(Comment(brief=LONG_WAIT)),
         ])
         journal.events.listen(QuestionCompleted, SpotAnsweredQuestionOfATicket(), expects=[
             Given(QuestionCompleted(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Dispatches(nothing),

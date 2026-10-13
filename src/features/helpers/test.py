@@ -15,15 +15,19 @@ from engine.record import Record
 from engine.sessions import Sessions
 from providers import PROVIDERS
 from runner.hooks import answer
-from features.helpers.handlers import NameStoppedOrQuietHelpers
+from features.helpers.answering import OfferKeptAgentsFirst
+from features.helpers.handlers import KeepSubagentFiles
+from features.helpers.listeners import SpotSubagentFiles
 from framework.parts import AgentContext
 from controllers.types import Worktrees
 from tests.kit import project_on, run
 from controllers.types import Helpers
 from controllers.types import Plans
-from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
+from events.agents import ToolCallAnswered
+from events.answers import Allowed
+from events.asking import AgentDispatching
+from tests.kit import tick
 from controllers.helpers.reuse import kept
-from payload import Dispatch
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE, Running
 from overview.summary import summarize
@@ -197,7 +201,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     sessions = Sessions(record.root)
     seated = "codex-9"
     sessions.bind(seated, f"{record.env}-rhea", provider="codex")
-    watch = lambda: NameStoppedOrQuietHelpers().handle(AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).primary()), None)
+    watch = lambda: tick(record)
     titles = lambda: [n.title for n in Nudges(record, actor=SYSTEM).all() if "helper 1" in n.title]
     watch()
     assert titles() == [], "a helper at work is left alone"
@@ -575,8 +579,9 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
         "at the limit, with one idle, a dispatch is refused: the ones that touched the same files come first, with the line that sends them the work"
     guard = OfferKeptAgentsFirst()
     context = AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).create("claude-1", provider="claude"))
-    asked = lambda kind: guard.cancel(context, Dispatch(kind=kind, model="sonnet", model_supported=True, description="Ada: map the hooks"))
-    assert (asked("reviewer"), asked("explore")) == ("", ""), "a reviewer always starts fresh, and an idle helper of another type never has to go to make room for an explorer"
+    asked = lambda kind: guard.answer(AgentDispatching(kind=kind, model="sonnet", model_supported=True, description="Ada: map the hooks"), Helpers(record, actor=SYSTEM),
+                                      features.FEATURES["helpers"].values(record))
+    assert (asked("reviewer"), asked("explore")) == (Allowed(), Allowed()), "a reviewer always starts fresh, and an idle helper of another type never has to go to make room for an explorer"
     record.set_setting("helpers", {"kept": 3, "working": 2})
     for row in helpers.rows.standing()[:2]:
         Agents(Record(record.root, row.environment), actor=SYSTEM).create("working", status="working", at=time.time())
@@ -599,7 +604,9 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     assert helpers.complete(2).completed, "so a finish right after a stop succeeds at once"
     Agents(record, actor=SYSTEM).update(context.agent.row.n, subagent_rows=[{"id": "toolu_1", "task": "Ada: map the hooks", "type": "explore", "session": "a1"}])
     child = Agents(record, actor=SYSTEM).create("a1", parent="claude-1")
-    KeepSubagentFiles().intercept(AgentContext.of(features.FEATURES["helpers"], record, child), SimpleNamespace(paths=(str(project / "src" / "hooks.py"),)))
+    touched = SpotSubagentFiles().listen(ToolCallAnswered(agent=child.n, tool="Write", subagent=True, paths=(str(project / "src" / "hooks.py"),)),
+                                         Agents(record, actor=SYSTEM), Helpers(record, actor=SYSTEM))
+    KeepSubagentFiles().handle(touched[0], Agents(record, actor=SYSTEM))
     ada, = [k for k in kept(record, []) if k.kind == "explore"]
     assert (ada.files, ada.message) == (("src/hooks.py",), 'SendMessage({to: "a1", message: "<the new work>"})'), \
         "a subagent keeps the files it touched, and is offered with its provider's line for a follow-up"

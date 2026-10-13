@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import ClassVar
 
+from events import Fact
 from events.resources import ResourceEvent
 
 
@@ -45,3 +46,89 @@ class HelperContinued(HelperTold):
 @dataclass(frozen=True)
 class HelperBriefed(HelperTold):
     on: ClassVar[str] = f"helper.{Telling.BRIEFED}"
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelperTurnFailed(Fact):
+    """The helper's own turn ended in an error, which its dispatcher is told once."""
+
+    failure: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelperRefused(Fact):
+    """The helper's provider refused to run it."""
+
+    n: int
+    name: str
+    provider: str
+    reason: str
+    ref: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelperStopped(Fact):
+    """The helper's agent is no longer running, with the last words of its launch."""
+
+    n: int
+    name: str
+    cause: str
+    ref: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelperQuiet(Fact):
+    """The helper's agent has said nothing for this many minutes."""
+
+    n: int
+    name: str
+    minutes: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelperIdle(Fact):
+    """The helper's agent has stood idle for this many minutes."""
+
+    n: int
+    name: str
+    minutes: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class AnswerToRelay(Fact):
+    """A message a helper's agent wrote while it works a follow-up, which reaches the dispatcher."""
+
+    message: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelperAsks(Fact):
+    """A helper's agent put a question, which its dispatcher answers in its own environment."""
+
+    environment: str
+    who: str
+    question: int
+    text: str
+    options: str
+    command: str
+    ref: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class SubagentAsks(Fact):
+    """A subagent put a question to the agent that dispatched it."""
+
+    who: str
+    question: int
+    text: str
+    options: str
+    command: str
+    ref: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class SubagentTouched(Fact):
+    """A subagent's call touched files of the project that its row does not list yet."""
+
+    agent: int
+    files: tuple[str, ...]
