@@ -55,8 +55,13 @@ DIFFS: dict[tuple[str, str], Diff] = {}
 
 
 def diffed(project: Path, pairs: list[tuple[str, str]]) -> None:
+    warmed(lambda shas: blob_texts(project, shas), pairs)
+
+
+def warmed(texts_of, pairs: list[tuple[str, str]]) -> None:
+    """Keeps the diff of each pair of stored files not kept yet, the texts of them read by whoever is asked, and drops the oldest past the most kept."""
     missing = list(dict.fromkeys(pair for pair in pairs if pair not in DIFFS))
-    texts = blob_texts(project, [sha for pair in missing for sha in pair])
+    texts = texts_of([sha for pair in missing for sha in pair]) if missing else {}
     for before, after in (pair for pair in missing if pair[0] in texts and pair[1] in texts):
         DIFFS[(before, after)] = Diff.between(texts[before].splitlines(), texts[after].splitlines())
     for pair in list(DIFFS)[:max(0, len(DIFFS) - MOST_DIFFS)]:

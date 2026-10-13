@@ -15,6 +15,7 @@ from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
 from engine import triggering
 from engine import project_files, runtime, seats, worktree
+from engine.files import blob_texts
 from engine.git import Checkout, checkout_of
 from engine.locks import project_sweep
 from engine.proc import git as run_git
@@ -72,6 +73,10 @@ class TheGit:
 
     def run(self, top: Path, *args: str) -> str:
         return run_git(list(args), Path(top))
+
+    def blobs(self, shas: list[str]) -> dict[str, str]:
+        """The text of each stored file named by its hash, in whichever repository of the project holds it."""
+        return blob_texts(self.record.root.parent, shas)
 
     def stamp(self, path: Path) -> int:
         """When a git log last moved, in nanoseconds; none when the file is not there."""

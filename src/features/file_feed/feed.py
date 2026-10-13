@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import StrEnum
 
 from events.files import FileEdited
@@ -65,13 +65,6 @@ class Side(StrEnum):
 
 class NoSuchEdit(LookupError):
     pass
-
-
-def noted(record, edit: FileEdited) -> None:
-    with record.state(NOTES).changing() as held:
-        held["notes"] = [*held.get("notes", []), asdict(edit)][-KEPT:]
-    if not is_image(edit.path):
-        diffed(record.root.parent, [(edit.before, edit.after)])
 
 
 def notes(record) -> list[FileEdited]:

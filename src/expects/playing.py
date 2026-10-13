@@ -176,6 +176,9 @@ class Git(Asked):
     def run(self, top, *args: str) -> str:
         return self.answer(("git", *args))
 
+    def blobs(self, shas: list[str]) -> dict[str, str]:
+        return self.answer(("blobs", tuple(shas)))
+
     def stamp(self, path) -> int:
         return self.answer(("stamp", Path(path).name))
 

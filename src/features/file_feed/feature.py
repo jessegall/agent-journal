@@ -1,13 +1,18 @@
 from controllers.types import Agents
+from dataclasses import replace
+
+from events.file_feed import EditToDiff
 from events.files import FileEdited
-from expects import Answered, Given, Refused, Remembered
+from expects import Answered, Dispatches, Given, Refused, Remembered, Unchanged, answering, nothing
 from framework.base import Feature
 from features.file_feed.details import FileFeedDetails
-from features.file_feed.handlers import KeepEdits
+from features.file_feed.handlers import KeepEdits, WarmTheDiff
+from features.file_feed.listeners import SpotEditToDiff
 from framework.journal import Journal
 from resources.types import AgentRow
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
+EDITED = FileEdited(agent=1, path="src/app.py", kind="edited", before="a\n", after="a\nb\n", added=1, removed=0)
 from features.file_feed.commands import ShowChanges, ShowEditedFile, ShowEditedImage, ShowEdits, ShowOlderEdits
 from features.file_feed.routes import get_changes, get_edited_file, get_edited_image, get_edits, get_older_edits
 
@@ -32,6 +37,14 @@ class FileFeed(Feature):
         journal.commands.add("agent", ShowEditedImage(), expects=[
             Given((Agents, 1, "missing"), rows=[AGENT_ROW]) >> Refused("no picture missing"),
         ])
-        journal.events.handler(KeepEdits(), expects=[
-            Given(FileEdited(agent=1, path="src/app.py", kind="edited", before="a\n", after="a\nb\n", added=1, removed=0), rows=[AGENT_ROW]) >> Remembered("notes"),
+        journal.events.handle(FileEdited, KeepEdits(), expects=[
+            Given(EDITED, rows=[AGENT_ROW]) >> Remembered("notes"),
+            Given(replace(EDITED, path="shot.png"), rows=[AGENT_ROW]) >> Remembered("notes"),
+        ])
+        journal.events.listen(FileEdited, SpotEditToDiff(), expects=[
+            Given(EDITED, rows=[AGENT_ROW]) >> Dispatches(EditToDiff(before="a\n", after="a\nb\n")),
+            Given(replace(EDITED, path="shot.png"), rows=[AGENT_ROW]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(EditToDiff, WarmTheDiff(), expects=[
+            Given(EditToDiff(before="a\n", after="a\nb\n"), rows=[AGENT_ROW], git=answering({("blobs", ("a\n", "a\nb\n")): {"a\n": "a\n", "a\nb\n": "a\nb\n"}})) >> Unchanged(),
         ])

@@ -394,7 +394,7 @@ class Given:
     """The programs on the machine, by name to where they live. A Given that names none leaves the machine's own; one that names any says every other program is absent."""
     providers: Answering = Answering({})
     git: Answering = Answering({})
-    """What the project's git says, and a Given that names none leaves the project's own, by what is asked of it: ("checkout",) to the checkout the folder is in (or none), ("worktree",) to the linked checkout, ("git", *arguments) to what the command printed, ("stamp", file name) to when that log last moved. The play's project is no git repository, so nothing is read from one."""
+    """What the project's git says, and a Given that names none leaves the project's own, by what is asked of it: ("checkout",) to the checkout the folder is in (or none), ("worktree",) to the linked checkout, ("git", *arguments) to what the command printed, ("stamp", file name) to when that log last moved, ("blobs", the hashes asked for) to their texts. The play's project is no git repository, so nothing is read from one."""
     journal_root: Answering = Answering({})
     """What the journal's own folder holds, and a Given that names none leaves the scratch journal's own, by path or pattern: ("glob", pattern) to the paths it lists, ("modified", path) to when one changed, ("exists", path), ("sweep", name) to whether this process took the sweep, ("environments",) to the environments there are; every write to it is remembered as a run."""
 
