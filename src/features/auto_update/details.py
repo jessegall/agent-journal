@@ -58,7 +58,9 @@ class AutoUpdateDetails(FeatureDetails):
             default="",
             scope=PROJECT,
             title="Upgrade from this branch instead of the releases",
-            abstract="For working on the journal itself: journal upgrade takes that branch's head, and no release is installed or announced while it is set",
+            abstract="For working on the journal itself: journal upgrade takes that branch's head, and no release is installed or announced while it is set. "
+                     "A journal older than the branch does not know this setting yet: install the branch once by hand, with python3 src/install.py "
+                     "upgrade . from a checkout of it, and every upgrade after that follows the branch",
         ),
         Setting(
             name="installs",
