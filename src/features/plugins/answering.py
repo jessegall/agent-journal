@@ -1,7 +1,8 @@
 import re
 
+from engine.gates import DISPATCHING, LONG_COMMAND
 from events.answers import Allowed, Answer, Refused, Rewritten
-from events.asking import AgentDispatching, TextFormatting, ToolCallAsked
+from events.asking import AgentDispatching, LongCommandMoving, TextFormatting, ToolCallAsked
 from framework.plugins.declared import declared
 from receiving import Answerer
 from resources.types import Plugin
@@ -43,5 +44,11 @@ class AskPluginsToCancel(Answerer[AgentDispatching]):
     def answer(self, request: AgentDispatching, work: ReadOwnWork) -> Answer:
         if request.subagent:
             return Allowed()
-        why = work.cancel_call("agent.dispatching", request)
+        why = work.cancel_call(DISPATCHING, request)
+        return Refused(why) if why else Allowed()
+
+
+class AskPluginsToKeepLongCommand(Answerer[LongCommandMoving]):
+    def answer(self, request: LongCommandMoving, work: ReadOwnWork) -> Answer:
+        why = work.cancel_call(LONG_COMMAND, request)
         return Refused(why) if why else Allowed()

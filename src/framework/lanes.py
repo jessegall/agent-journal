@@ -14,7 +14,7 @@ from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
-from engine import triggering
+from engine import bus, triggering
 from engine.stored import write_text
 from framework.diagnostics import logged
 from engine import project_files, runtime, seats, viewer, worktree
@@ -40,7 +40,7 @@ from receiving.asking import answered
 from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
-from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
+from serving import (SERVED, Adapted as TheRecord, Providers, Asking, SessionMemory, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
                      Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, CommandWords, ReadOwnWork)
 
 
@@ -177,6 +177,26 @@ class TheOwnWork:
             raise AttributeError(name)
         work = getattr(self.feature, name)
         return lambda *args, **more: work(self.record, *args, **more)
+
+
+class TheSessionMemory:
+    """A feature's state for one session, kept in the session's runtime folder."""
+
+    def __init__(self, record, feature: str):
+        self.record, self.feature = record, feature
+
+    def of(self, session: str) -> State:
+        return self.record.state(self.feature, session)
+
+
+class TheAsking:
+    """The engine's questions, answered by every feature switched on, over this record."""
+
+    def __init__(self, record):
+        self.record = record
+
+    def ask(self, request) -> Answer:
+        return bus.asked(request, self.record)
 
 
 class TheJournalRoot:
@@ -487,6 +507,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Files: ProjectFiles(record),
             ReadFiles: ProjectFiles(record),
             ReadProcesses: PerAsk(lambda feature, asked: SERVED.given(Processes)),
+            SessionMemory: PerAsk(lambda feature, asked: TheSessionMemory(record, feature)),
+            Asking: PerAsk(lambda feature, asked: TheAsking(record)),
             Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, speaking())),
             Settings: PerAsk(lambda feature, asked: FeatureSettings(FEATURES[feature], record)),
             Rows: PerAsk(controlling),

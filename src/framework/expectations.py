@@ -6,8 +6,8 @@ from receiving import REGISTERED
 
 AGENT_FACING = ("Nudged", "Whispered", "Held")
 """The outcomes that are about the agent: what it is told, and when its writes wait."""
-ASKS_ABOUT_THE_AGENT = ("ToolCallAsked", "AgentDispatching", "AgentMessageSending", "HookResponding")
-"""The requests whose answer reaches the agent: a call refused, a dispatch refused, a turn kept out of the chat, a text handed over."""
+ASKS_ABOUT_THE_AGENT = ("ToolCallAsked", "AgentDispatching", "LongCommandMoving", "AgentMessageSending", "HookResponding")
+"""The requests whose answer reaches the agent: a call refused, a dispatch refused, a long command kept in the foreground, a turn kept out of the chat, a text handed over."""
 
 
 def promises_of(feature: str) -> list[Promise]:

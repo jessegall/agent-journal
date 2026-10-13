@@ -45,7 +45,8 @@ def scratch(given: Given, inside: Path) -> Record:
         record.change_setting(part or "features", {key or part: value})
     for name, value in dict(given.remembered).items():
         owner, _, key = name.partition(".")
-        record.state(owner or name).set(key or name, value)
+        owner, _, session = owner.partition("@")
+        record.state(owner or name, session or None).set(key or name, value)
     for row in given.rows:
         written(record, row)
     for path, text in given.files.answers.items():

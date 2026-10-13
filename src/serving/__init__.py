@@ -62,6 +62,12 @@ class ReadSessions(Sessions):
     writes = False
 
 
+class SessionMemory(Service):
+    """What the asking feature keeps for one agent session, in that session's own runtime folder, so it goes when the session's folder does."""
+
+    writes = True
+
+
 class Terminal(Service):
     """The terminal of the agent the event is about, which the journal presses keys in, such as moving its running command to the background."""
 
@@ -157,6 +163,10 @@ class ReadOwnWork(OwnWork):
     """The same, asked for to read only, as a listener or an answerer asks what its feature knows of the world outside the journal."""
 
     writes = False
+
+
+class Asking(Service):
+    """The questions the engine answers through the features, such as whether a long command may be moved to the background: asked for to put one and read the answer, which changes nothing."""
 
 
 class Chat(Service):

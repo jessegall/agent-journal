@@ -53,6 +53,16 @@ class AgentDispatching(Asked):
 
 
 @dataclass(frozen=True, kw_only=True)
+class LongCommandMoving(Asked):
+    """May this command, held in the foreground past its wait, be moved to the background. One refusal keeps it where it is."""
+
+    reduces = FirstRefusalWins
+    session: str = ""
+    command: str = ""
+    seconds: int = 0
+
+
+@dataclass(frozen=True, kw_only=True)
 class AgentMessageSending(Asked):
     """What of this turn reaches the chat, or none of it. One answerer keeping it out wins, since the turn's words belong to the row its tag writes."""
 

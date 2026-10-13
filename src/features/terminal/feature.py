@@ -25,17 +25,17 @@ class Terminal(Feature):
         journal.routes.add(get_terminal)
         journal.events.handle(CommandRan, KeepCommands(), expects=[
             Given(CommandRan(agent=1, tool="Bash", command="ls", output="a.txt", at=5.0), rows=[AgentRow(n=1, title="claude-1")])
-                >> Remembered("commands|claude-1", [{"agent": 1, "at": 5.0, "tool": "Bash", "command": "ls", "output": "a.txt", "stepped": False, "level": "commands"}]),
+                >> Remembered("commands", [{"agent": 1, "at": 5.0, "tool": "Bash", "command": "ls", "output": "a.txt", "stepped": False, "level": "commands"}]),
             Given(CommandRan(agent=1, tool="Read", command="src/a.py", output="", at=5.0), rows=[AGENT])
-                >> Remembered("everything|claude-1", [logged("everything", "Read", "src/a.py")]),
+                >> Remembered("everything", [logged("everything", "Read", "src/a.py")]),
             Given(CommandRan(agent=1, tool="Bash", command="journal todo all", output="", at=5.0), rows=[AGENT])
-                >> Remembered("journal|claude-1", [logged("journal", "Bash", "journal todo all")]),
+                >> Remembered("journal", [logged("journal", "Bash", "journal todo all")]),
             Given(CommandRan(agent=1, tool="Bash", command="ls", output="  a.txt\n\n", at=5.0), rows=[AGENT])
-                >> Remembered("commands|claude-1", [logged("commands", "Bash", "ls", "a.txt")]),
+                >> Remembered("commands", [logged("commands", "Bash", "ls", "a.txt")]),
             Given(CommandRan(agent=1, tool="Bash", command="seq 100", output="\n".join(map(str, range(1, 101))), at=5.0), rows=[AGENT])
-                >> Remembered("commands|claude-1", [logged("commands", "Bash", "seq 100", "\n".join([*map(str, range(1, 61)), "… 40 more lines were not kept"]))]),
-            Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal.commands|claude-1": [logged("commands", "Bash", "ls", "a")]})
-                >> Remembered("commands|claude-1", [logged("commands", "Bash", "ls", "a"), logged("commands", "Bash", "pwd", "", 300.0)]),
-            Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal.commands|claude-1": EARLIER})
-                >> Remembered("commands|claude-1", [*EARLIER[1:], logged("commands", "Bash", "pwd", "", 300.0)]),
+                >> Remembered("commands", [logged("commands", "Bash", "seq 100", "\n".join([*map(str, range(1, 61)), "… 40 more lines were not kept"]))]),
+            Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal@claude-1.commands": [logged("commands", "Bash", "ls", "a")]})
+                >> Remembered("commands", [logged("commands", "Bash", "ls", "a"), logged("commands", "Bash", "pwd", "", 300.0)]),
+            Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal.commands": EARLIER})
+                >> Remembered("commands", [*EARLIER[1:], logged("commands", "Bash", "pwd", "", 300.0)]),
         ])

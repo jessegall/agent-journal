@@ -1,11 +1,13 @@
 from resources.command_runs import command_runs
 from events import Fact
+from events.answers import Refused
+from events.asking import LongCommandMoving
 from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
-from features.long_commands.details import MOVED
+from features.long_commands.details import KEPT, MOVED
 from features.long_commands.listeners import memory
 from receiving import Handler
 from resources.types import AgentRow
-from serving import Chat, Clock, Providers, Remembered, Rows, Terminal
+from serving import Asking, Chat, Clock, Providers, Remembered, Rows, Terminal
 
 
 class CloseLostCalls(Handler[CallsLost]):
@@ -19,7 +21,12 @@ class CloseLostCalls(Handler[CallsLost]):
 
 
 class MoveToTheBackground(Handler[LongCommandHeld]):
-    def handle(self, event: LongCommandHeld, chat: Chat, terminal: Terminal, remembered: Remembered, agents: Rows[AgentRow], providers: Providers, clock: Clock) -> list[Fact]:
+    def handle(self, event: LongCommandHeld, asking: Asking, chat: Chat, terminal: Terminal, remembered: Remembered, agents: Rows[AgentRow], providers: Providers, clock: Clock) -> list[Fact]:
+        row = agents.load(event.agent)
+        answer = asking.ask(LongCommandMoving(session=row.title, command=event.command, seconds=int(clock.now() - float(event.started))))
+        if isinstance(answer, Refused):
+            chat.say(KEPT, reason=answer.why)
+            return []
         remembered.set(memory("moved", event.agent), event.started)
         remembered.set(memory("task", event.agent), "")
         remembered.set(memory("pressed", event.agent), clock.now())

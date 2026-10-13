@@ -16,7 +16,7 @@ from framework.plugins.payload import refusal
 from framework.plugins.refusing import PluginAsk
 from framework.plugins.run import PluginReply, call
 from framework.plugins.skills import withdrawn
-from payload import Dispatch, HookEvent
+from payload import HookEvent
 from resources.base import SYSTEM
 
 ALTOGETHER = 5.0
@@ -77,7 +77,7 @@ class PluginsWork:
 
     def cancel_call(self, record, event: str, request) -> str:
         """Why a plugin cancels the moment, asked of each enabled plugin that declared it would; nothing when none does."""
-        data = {one.name: getattr(request, one.name) for one in fields(Dispatch)}
+        data = {one.name: getattr(request, one.name) for one in fields(request)}
         for row in Plugins(record, actor=SYSTEM).rows.standing():
             manifest = declared(row)
             asking = manifest.cancels.get(event)

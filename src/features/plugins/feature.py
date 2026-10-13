@@ -3,8 +3,8 @@ from pathlib import Path
 
 from controllers.types import Plugins as PluginRows, Todos
 from events.agents import ClockTicked
-from events.answers import Allowed, Rewritten
-from events.asking import AgentDispatching, TextFormatting, ToolCallAsked
+from events.answers import Allowed, Refused as Refusing, Rewritten
+from events.asking import AgentDispatching, LongCommandMoving, TextFormatting, ToolCallAsked
 from expects import WHEN, Answered, Dispatches, Given, Kept, Ran, Refused, Updated, answering, nothing
 from framework.base import Feature
 from payload import BashCall, Dispatch
@@ -15,7 +15,7 @@ from framework.plugins import services, updates
 from framework.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
 from features.plugins.details import PluginsDetails
 from framework.plugins.host import watch
-from features.plugins.answering import ApplyPluginChatRules, AskPluginsToCancel, AskPluginsToRefuse
+from features.plugins.answering import ApplyPluginChatRules, AskPluginsToCancel, AskPluginsToKeepLongCommand, AskPluginsToRefuse
 from features.plugins.handlers import ClearRemovedPlugin, ReadLinkedManifests, SuggestFittingPlugins
 from features.plugins.listeners import SpotChangedManifests, SpotFittingPlugins, SpotRemovedPlugin
 from framework.plugins.parts import KeepPluginRows
@@ -30,6 +30,7 @@ NAMED_ON = Plugin(n=1, title="Pulse named", data={"enabled": True, "manifest": {
 NAMED = Plugin(n=7, title="Pulse beat", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
 NOT_A_SOURCE = "'nonsense' is neither a repository URL, an owner/repo, nor a folder on this machine"
 OWNED = Todo(n=5, title="Check the pulse", data={"plugin": "pulse", "locked": True})
+MOVING = LongCommandMoving(session="claude-1", command="npm test", seconds=40)
 
 
 class Plugins(PluginsWork, Feature):
@@ -79,6 +80,11 @@ class Plugins(PluginsWork, Feature):
         journal.events.answer(AgentDispatching, AskPluginsToCancel(), expects=[
             Given(AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True), rows=[ON]) >> Answered(Allowed()),
             Given(AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True)) >> Answered(Allowed()),
+        ])
+        journal.events.answer(LongCommandMoving, AskPluginsToKeepLongCommand(), expects=[
+            Given(MOVING, rows=[ON]) >> Answered(Allowed()),
+            Given(MOVING, rows=[ON], own_work=answering({("cancel_call", "agent.command.long", MOVING): "pulse: a build is running"}))
+                >> Answered(Refusing("pulse: a build is running")),
         ])
         journal.events.listen(PluginCompleted, SpotRemovedPlugin(), expects=[
             Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[NAMED_ON]) >> Dispatches(PluginRemoved(plugin=1)),
