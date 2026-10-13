@@ -36,6 +36,7 @@ def plugins_answer_in_their_own_time(monkeypatch):
 
 
 def suggest(record, row) -> None:
+    import features
     plugins = features.FEATURES["plugins"]
     if plugins.fitting_wanted(record, row.n):
         plugins.look_for_fitting(record)
