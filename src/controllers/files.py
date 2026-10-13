@@ -129,5 +129,3 @@ class Files:
                 known[f.name] = ""
         return self.save(r, "updated", indexed=sorted(known))
 
-    def _attached(self) -> list[Resource]:
-        return [self.peek(row.n) for row in self.rows.summaries() if row.files and not row.deleted]

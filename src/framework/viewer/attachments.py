@@ -36,7 +36,7 @@ def attached_file(record, type_: str, r, name: str, f: Path) -> AttachedFile:
 
 def listed_attachments(record, type_: str, controller) -> list[AttachedFile]:
     files = []
-    for row in controller._attached():
+    for row in controller.rows.attached():
         folder = controller.folder(row.n)
         for name in row.files:
             file = contained(folder, name)

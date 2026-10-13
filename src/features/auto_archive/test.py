@@ -58,6 +58,14 @@ def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_re
     assert todos.rows.pack(time.time() + 1) == 2, "only the closed rows are packed"
     assert (todos.path(rows[0].n).exists(), any((folder / "packed").glob("????-??-??.zip"))) == (False, True), "their files are gone into the day's zip"
     assert [r.title for r in (todos.load(rows[0].n), todos.load(rows[1].n))] == ["row 0", "row 1"], "a packed row reads straight from the zip"
+    from controllers.stored import KEEP_OPEN, opened
+    import zipfile
+    held = opened(next((folder / "packed").glob("*.zip")))
+    for i in range(KEEP_OPEN):
+        with zipfile.ZipFile(folder / f"other-{i}.zip", "w") as other:
+            other.writestr("1.md", "")
+        opened(folder / f"other-{i}.zip")
+    assert held.namelist(), "an archive the cache lets go of while a reader still holds it stays open for that reader, never reported damaged"
     assert [row.n for row in todos.rows.summaries()] == [r.n for r in rows], "and is still listed"
     from tests.kit import dispatch
     completed_rows = dispatch("GET", f"/api/{record.env}/todo", record.root, {"completed": "1"}, {}).body["rows"]

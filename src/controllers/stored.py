@@ -87,9 +87,7 @@ def forget_folder(home: Path) -> None:
         return key == prefix or key.startswith(prefix + os.sep)
     for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WATCHED.marks, WATCHED.asked, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, OPEN):
         for key in [key for key in table if under(key)]:
-            opened_archive = table.pop(key)
-            if table is OPEN:
-                opened_archive[1].close()
+            del table[key]
     for table in (COUNTED, DERIVED):
         for key in [key for key in table if under(key[0])]:
             del table[key]
@@ -219,12 +217,11 @@ def is_part(row: Summary) -> bool:
 
 
 def opened(archive: Path) -> zipfile.ZipFile:
+    """An archive held open for reading. One the cache lets go of is never closed here: a reader on another thread may still hold it, and it closes once the last one is done."""
     stamp = mtime(archive)
     held = OPEN.get(str(archive))
     if not held or held[0] != stamp:
-        if held:
-            held[1].close()
-        else:
+        if not held:
             evict_oldest()
         held = OPEN[str(archive)] = (stamp, zipfile.ZipFile(archive))
     return held[1]
@@ -232,7 +229,7 @@ def opened(archive: Path) -> zipfile.ZipFile:
 
 def evict_oldest() -> None:
     if len(OPEN) >= KEEP_OPEN:
-        OPEN.pop(next(iter(OPEN)))[1].close()
+        del OPEN[next(iter(OPEN))]
 
 
 def close_all() -> None:
