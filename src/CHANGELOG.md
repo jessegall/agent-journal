@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.16 — Version 3.0 is offered on the About page, and installs only when you choose it
+
+- The About page and the update band say when version 3.0 is out, and their Install button installs exactly the version they show, so you can move to 3.0 with one press when you want to.
+- Automatic updates still stay on 2.x: an update at start or on the auto-update check installs a newer major version only when the auto-update setting is Major versions or Always. `journal upgrade` without a version also stays on 2.x.
+
 ## 2.272.8 — The tag confirmation is for the agent alone
 
 - The line saying a tag ran now rides back on the agent's next tool call instead of going out over the session channel. A whisper is private in the record, but the channel is what the user's own terminal prints, so the quiet confirmation was arriving at them. Nothing about it was a whisper.

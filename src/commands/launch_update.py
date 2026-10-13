@@ -7,7 +7,7 @@ from engine import runtime
 from engine.heal import refused
 from engine.version import version
 from framework.loaded import running
-from features.auto_update.check import failure_in, journal_repository
+from features.auto_update.check import failure_in, journal_repository, within
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from engine.upgrades import fetched, newer
@@ -63,7 +63,7 @@ def latest_first(record) -> str:
         cache = runtime.upstream_cache(root)
         fetched(cache)
         latest = cache.read_text().strip() if cache.is_file() else ""
-        if not newer(latest, version()) or refused(root, latest):
+        if not newer(latest, version()) or not within(version(), latest, feature.values(record).installs) or refused(root, latest):
             return notice
         if os.environ.get(TRIED) == latest:
             return f"{latest} was installed but this start still runs {version()}, so it starts on {version()} and does not try again"

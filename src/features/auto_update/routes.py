@@ -69,7 +69,7 @@ def post_update(req: Request) -> Reply:
                            "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})
     if runtime.upgrading(req.root):
         raise Refused("an update is already running")
-    chosen = req.body.get("version", "")
+    chosen = req.body.get("version", "") or upstream(req.root)
     if chosen and chosen not in release_versions():
         raise Refused(f"{chosen} is not a released version")
     threading.Thread(target=installed, args=(req.root, bool(req.body.get("yes")), chosen), daemon=True).start()
