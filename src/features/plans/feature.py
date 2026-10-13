@@ -128,6 +128,7 @@ class PlansFeature(Feature):
             Given(changed("created", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["normal"])),
             Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("created", USER), rows=[plan("building")]) >> Dispatches(nothing),
+            Given(changed("updated", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanBuildBegun, StartBuilding(), expects=[
             Given(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["normal"]), rows=[plan("building"), AGENT_ROW]) >> Nudged("started"),
@@ -138,6 +139,8 @@ class PlansFeature(Feature):
             Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))]) >> Dispatches(nothing),
             Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"assigned": "helper:3"}), plan("active", phases=phases(5))])
                 >> Dispatches(nothing),
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", data={"assigned": "helper:3"}), plan("parked", phases=phases(5))]) >> Dispatches(nothing),
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", data={"assigned": "helper:3"}), plan("active", phases=phases(4, 5), current=1)]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanHandedToHelper, DelegatePlansOfHandedRows(), expects=[
             Given(PlanHandedToHelper(plan=1), rows=[plan("active", phases=phases(5))]) >> Updated(Plan(n=1), delegated=True),
@@ -148,6 +151,7 @@ class PlansFeature(Feature):
             Given(changed("updated", AGENT), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("updated", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("updated", USER), rows=[plan("approved")]) >> Dispatches(nothing),
+            Given(changed("created", USER), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanApproved, StartApproved(), expects=[
             Given(PlanApproved(plan=1, title="Ship it"), rows=[plan("approved"), AGENT_ROW]) >> Nudged("approved"),
@@ -171,6 +175,8 @@ class PlansFeature(Feature):
             Given(changed("updated", USER, "parked", parked_for=2), rows=[plan("parked"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("updated", AGENT, "parked"), rows=[plan("parked"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("updated", USER, "approved"), rows=[plan("approved"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(changed("updated", USER, "active"), rows=[plan("active")]) >> Dispatches(nothing),
+            Given(changed("created", USER, "active"), rows=[plan("active"), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanMovedByUser, TellParkedAndPickedUp(), expects=[
             Given(PlanMovedByUser(line="picked up", plan=1, title="Ship it", phase=1), rows=[plan("active"), AGENT_ROW]) >> Nudged("picked up"),
@@ -182,6 +188,9 @@ class PlansFeature(Feature):
             Given(changed("linked", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("linked", AGENT), rows=[plan("active"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("updated", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="phases").once("planned|1:phases")),
+            Given(changed("linked", AGENT), rows=[plan("building", stage="todos", phases=phases(5, 6)), AGENT_ROW]) >> Dispatches(PlanBuildingGuided(plan=1, line="ready").once("planned|1:ready")),
+            Given(changed("linked", AGENT), rows=[plan("building")]) >> Dispatches(nothing),
+            Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanBuildingGuided, GuideBuilding(), expects=[
             Given(PlanBuildingGuided(plan=1, line="phases"), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
@@ -204,6 +213,9 @@ class PlansFeature(Feature):
             Given(AnyEvent(n=5, type="todo", action="completed", actor=USER), rows=[done(5), plan("active", phases=phases(5))], settings={"features.work_tracking.auto": True})
                 >> Dispatches(PlansToAdvance(passing=True)),
             Given(AnyEvent(n=5, type="todo", action="created", actor=USER), rows=[done(5), plan("active", phases=phases(5))]) >> Dispatches(nothing),
+            Given(AnyEvent(n=5, type="ticket", action="completed", actor=USER), rows=[plan("active", phases=phases(5))], settings={"features.work_tracking.auto": False}) >> Dispatches(PlansToAdvance(passing=False)),
+            Given(AnyEvent(n=1, type="plan", action="updated", actor=USER), rows=[plan("active", phases=phases(5))], settings={"features.work_tracking.auto": False}) >> Dispatches(PlansToAdvance(passing=False)),
+            Given(AnyEvent(n=1, type="agent", action="reported", actor=AGENT), rows=[plan("active", phases=phases(5))], settings={"features.work_tracking.auto": False}) >> Dispatches(PlansToAdvance(passing=False)),
         ])
         journal.events.handle(PlansToAdvance, AdvancePlans(), expects=[
             Given(PlansToAdvance(passing=True), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Updated(Plan(n=1), current=2),
@@ -217,6 +229,9 @@ class PlansFeature(Feature):
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=1)]) >> Dispatches(nothing),
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("abandoned", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
             Given(reopened(9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), Plan(n=1, title="Ship it", completed=1.0, data={"status": "done", "phases": phases(5, 6), "current": 2})])
+                >> Dispatches(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=True)),
+            Given(RowReopened(n=5, type="report", action="reopened", actor=USER), rows=[plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanRowReopened, ReopenPlansWithTheirRows(), expects=[
             Given(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)])
@@ -227,6 +242,7 @@ class PlansFeature(Feature):
                 >> Dispatches(StruckRowInUnapprovedPlan(plan=1, phase=1, todo=5)),
             Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Dispatches(nothing),
             Given(TodoCompleted.of(5), rows=[done(5), plan("building", phases=phases(5))]) >> Dispatches(nothing),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(9))]) >> Dispatches(nothing),
         ])
         journal.events.handle(StruckRowInUnapprovedPlan, TakeStruckRowsOutOfUnapprovedPlans(), expects=[
             Given(StruckRowInUnapprovedPlan(plan=1, phase=1, todo=5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))])
@@ -235,6 +251,7 @@ class PlansFeature(Feature):
         journal.events.answer(ToolCallAsked, RefusePlanMode(), expects=[
             Given(ToolCallAsked(tool="EnterPlanMode", session="claude-1")) >> Answered(Refusal(PLAN_MODE_REFUSED)),
             Given(ToolCallAsked(tool="Read", session="claude-1")) >> Answered(Allowed()),
+            Given(ToolCallAsked(tool="EnterPlanMode", session="claude-1", subagent=True)) >> Answered(Allowed()),
         ])
         journal.commands.refuse(RowWriting, HoldWhilePlanned(), expects=[
             Given(writing(todo=6), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(6)),
@@ -245,4 +262,6 @@ class PlansFeature(Feature):
             Given(writing(todo=9), rows=[Todo(n=9, title="Row 9"), plan("parked", phases=phases(5, 6))]) >> Kept(),
             Given(writing(), rows=[plan("active", phases=phases(5, 6))]) >> Refused(A_PLAN_IS_ACTIVE),
             Given(writing(), rows=[plan("parked", phases=phases(5, 6))]) >> Kept(),
+            Given(RowWriting(type="todo", action="create", actor=AGENT), rows=[plan("active", phases=phases(5, 6))]) >> Kept(),
+            Given(writing(todo=5), rows=[Todo(n=5, title="Row 5"), plan("done", phases=phases(5))]) >> Kept(),
         ])
