@@ -3,7 +3,7 @@ from dataclasses import asdict
 from functools import cached_property
 from typing import ClassVar
 
-from declaring.registries import SETTING_KEYS, SETTINGS_CHANGED
+from declaring.registries import SETTING_KEYS, SETTINGS_CHANGED, QUIET_IN_HELPERS
 from controllers.types import Agents
 from engine import triggering
 from framework.switches import switches
@@ -93,6 +93,8 @@ class Feature(ABC):
         if self.settings:
             SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
         SETTINGS_CHANGED.add(None, self.settings_changed, key=self.name)
+        if self.details.quiet_in_helpers:
+            QUIET_IN_HELPERS.add(None, self.name, key=self.name)
         if self.nudges:
             promised = [expectation for nudge in self.nudges for expectation in nudge.expects]
             self.journal.events.handle(ClockTicked, SendOnTheClock(self, self.nudges), [one for one in promised if isinstance(one.given.on, ClockTicked)])

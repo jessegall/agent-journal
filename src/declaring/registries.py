@@ -29,3 +29,6 @@ SECRET_CHECKS = Extension()
 
 MOVED = Extension()
 """What each feature says to an agent about what it moved, one listing per feature."""
+
+QUIET_IN_HELPERS = Extension()
+"""The features that declare themselves quiet in a helper's or a ticket's environment, by name."""
