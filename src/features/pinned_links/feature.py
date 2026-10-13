@@ -11,6 +11,7 @@ from features.pinned_links.listeners import SpotUnpinnedLinks
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 DESIGN = "https://example.com/design"
+OTHER = "https://example.com/page"
 
 
 def said(text: str) -> AgentMessageSent:
@@ -27,6 +28,11 @@ class PinnedLinks(Feature):
             Given(said("Open http://localhost:8421/ to see it."), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(said("The pull request is https://github.com/acme/app/pull/12"), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(said("Nothing to link here."), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(said("Open http://127.0.0.1:8421/ to see it."), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(said(f"The design is at {DESIGN}."), rows=[AGENT_ROW, Notice(n=2, title="Design", completed=1.0, data={"link": DESIGN})])
+                >> Dispatches(LinkUnpinned(agent=1, url=DESIGN).once(f"unpinned|{DESIGN}")),
+            Given(said(f"See {DESIGN} and {OTHER}"), rows=[AGENT_ROW])
+                >> Dispatches(LinkUnpinned(agent=1, url=DESIGN).once(f"unpinned|{DESIGN}")) & Dispatches(LinkUnpinned(agent=1, url=OTHER).once(f"unpinned|{OTHER}")),
         ])
         journal.events.handle(LinkUnpinned, RemindToPinTheLink(), expects=[
             Given(LinkUnpinned(agent=1, url=DESIGN), rows=[AGENT_ROW]) >> Nudged(UNPINNED, url=DESIGN),
