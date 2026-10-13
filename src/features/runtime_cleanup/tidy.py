@@ -2,7 +2,6 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from controllers.types import CONTROLLERS
-from engine.sessions import Sessions
 from resources.base import Refused
 from resources.files import RUNTIME
 from resources.text import plural
@@ -56,8 +55,8 @@ class Tidy:
     @classmethod
     def over(cls, record) -> "Tidy":
         """The journal's own services over a record, for whoever runs the housekeeping outside the engine's lanes."""
-        from framework.lanes import TheClock, TheEnvironments, TheJournalRoot
-        return cls(TheJournalRoot(record), TheEnvironments(None, record), Sessions(record.root), SERVED.given(Providers), TheClock())
+        from framework.lanes import TheClock, TheEnvironments, TheJournalRoot, TheSessions
+        return cls(TheJournalRoot(record), TheEnvironments(None, record), TheSessions(record.root), SERVED.given(Providers), TheClock())
 
     def everything(self, days: float) -> Tidied:
         events = self.root.trim_logs(EVENTS_KEPT, self.clock.now() - READERS_WITHIN)
