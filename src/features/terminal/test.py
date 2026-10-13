@@ -594,6 +594,15 @@ def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_re
     assert supervisor.stop(ignoring.pid, grace=0.3) != 0, "an agent that ignores hangup and terminate is killed in the end"
     assert supervisor.stop(ignoring.pid, grace=0.1) == 0, "an agent that is already gone is not an error"
 
+    import resource
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (max(soft, min(hard, 2048)), hard))
+    inward, outward = os.pipe()
+    high = os.dup2(outward, 1500)
+    assert supervisor.ready([], [high])[1] == {high}, "a descriptor past 1024, which select() refuses and a long-lived process reaches, is watched like any other"
+    for one in (inward, outward, high):
+        os.close(one)
+
     seat = object.__new__(Supervisor)
     reader, writer = socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)
     reader.setblocking(False)
@@ -666,7 +675,7 @@ def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_re
     seat.output = printed.append
     from types import SimpleNamespace
     patched = lambda **changes: monkeypatch.setattr(supervisor, "os", SimpleNamespace(**{**vars(os), **changes}))
-    chosen = lambda ready, writable: monkeypatch.setattr(supervisor, "select", SimpleNamespace(select=lambda sources, writing, other, wait=None: (ready, writable, [])))
+    chosen = lambda readable, writable: monkeypatch.setattr(supervisor, "ready", lambda reads, writes=(), timeout=0.0: (set(readable), set(writable)))
     patched(read=lambda fd, size: (_ for _ in ()).throw(OSError("terminal gone")))
     chosen([seat.fd], [])
     seat.drain()

@@ -280,7 +280,7 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
         "it runs headless in a session of its own and logs to a file of its own"
     monkeypatch.undo()
     import pty
-    import select
+    import supervisor
     import threading
     import commands.launch as launching
     handed = []
@@ -310,7 +310,7 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     def press_enter():
         until = time.time() + 20
         while not answering.is_set() and time.time() < until:
-            if not select.select([master], [], [], 0.1)[0]:
+            if master not in supervisor.ready([master], timeout=0.1)[0]:
                 continue
             try:
                 wrote = os.read(master, 4096)
@@ -356,7 +356,7 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
                     time.sleep(0.005)
 
         def drain():
-            while select.select([master], [], [], 0.1)[0] or not done.is_set():
+            while master in supervisor.ready([master], timeout=0.1)[0] or not done.is_set():
                 try:
                     os.read(master, 4096)
                 except OSError:

@@ -4,7 +4,7 @@ import json
 import os
 import pty
 import re
-import select
+import selectors
 import signal
 import socket
 import struct
@@ -45,6 +45,21 @@ def waited(pid: int, seconds: float, drain) -> int | None:
             return status
         time.sleep(STEP)
     return None
+
+
+def ready(reads, writes=(), timeout: float = 0.0) -> tuple[set, set]:
+    """The sources ready to be read and those ready to be written within the timeout. A selector takes a descriptor of any number, where
+    select() refuses one past 1024, which a long-lived process reaches."""
+    wanted: dict = {}
+    for one in reads:
+        wanted[one] = wanted.get(one, 0) | selectors.EVENT_READ
+    for one in writes:
+        wanted[one] = wanted.get(one, 0) | selectors.EVENT_WRITE
+    with selectors.DefaultSelector() as watching:
+        for one, events in wanted.items():
+            watching.register(one, events)
+        found = watching.select(timeout)
+    return {key.fileobj for key, events in found if events & selectors.EVENT_READ}, {key.fileobj for key, events in found if events & selectors.EVENT_WRITE}
 
 
 def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
@@ -211,7 +226,7 @@ class Supervisor:
         return waited(self.pid, EXITING, self.drain)
 
     def drain(self) -> None:
-        while select.select([self.fd], [], [], 0)[0]:
+        while self.fd in ready([self.fd])[0]:
             try:
                 data = os.read(self.fd, LONGEST)
             except OSError:
@@ -237,13 +252,13 @@ class Supervisor:
             self.worker.wait()
 
     def relay(self) -> int | None:
-        ready, writable, _ = select.select(self.sources, [self.fd] if self.pending else [], [], 0.5)
+        readable, writable = ready(self.sources, [self.fd] if self.pending else [], 0.5)
         if self.fd in writable:
             self.feed()
-        if self.inbox in ready:
+        if self.inbox in readable:
             self.pending.extend(self.received())
             (self.folder / KEYED).touch()
-        if self.fd in ready:
+        if self.fd in readable:
             try:
                 data = os.read(self.fd, LONGEST)
             except OSError:
@@ -251,7 +266,7 @@ class Supervisor:
             if not data:
                 return os.waitpid(self.pid, 0)[1]
             self.output(data)
-        if self.stdin in ready:
+        if self.stdin in readable:
             data = os.read(self.stdin, LONGEST)
             if not data:
                 return self.stop_agent()
