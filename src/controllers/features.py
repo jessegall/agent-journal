@@ -92,8 +92,8 @@ def refuse_unmet_needs(record, name: str, values: dict) -> None:
     held = {**record.setting(name, {}), **values}
     for setting in SETTING_KEYS.keyed().get(name, ()):
         if setting.needs and values.get(setting.name) and not held.get(setting.needs):
-            needed = next(other.title for other in SETTING_KEYS.keyed()[name] if other.name == setting.needs)
-            raise Refused(f"{setting.title} needs {needed.lower()} first")
+            needed = next(other for other in SETTING_KEYS.keyed()[name] if other.name == setting.needs)
+            raise Refused(f"{setting.title} can be turned on once {needed.title.lower()} are set: {needed.abstract[:1].lower()}{needed.abstract[1:]}")
 
 
 def secrets_in(name: str, keys) -> list[str]:

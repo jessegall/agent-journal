@@ -43,7 +43,11 @@ const stageStates = computed(() => stageStatesOf(store.settings, NAME));
 const hasMapping = computed(() => mapped(store.settings, NAME));
 const sending = computed(() => Boolean(store.settings?.[NAME]?.send_status));
 const pickState = (stage, state) => saveSettings(settingsWith(store.settings, NAME, {stage_states: withStageState(store.settings, NAME, stage, state)}));
-const sendStatus = (on) => saveSettings(settingsWith(store.settings, NAME, {send_status: on}));
+const refused = ref("");
+const sendStatus = (on) => {
+    refused.value = "";
+    return saveSettings(settingsWith(store.settings, NAME, {send_status: on})).catch((error) => (refused.value = error.message));
+};
 const words = webhookWords("Linear");
 const signing = computed(() => signingOf(store.settings, NAME));
 const address = ref("");
@@ -115,7 +119,10 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
             <span>Send status changes to Linear</span>
             <Switch :on="sending" title="Send status changes to Linear" @change="sendStatus" />
         </div>
-        <template v-if="!hasMapping">
+        <template v-if="refused">
+            <p class="line refused">{{ refused }}</p>
+        </template>
+        <template v-else-if="!hasMapping">
             <p class="line">Map a stage first.</p>
         </template>
     </div>
@@ -137,6 +144,10 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
 .line {
     margin: 0;
     color: var(--text-2);
+}
+
+.refused {
+    color: var(--danger);
 }
 
 .address {

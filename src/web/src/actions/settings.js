@@ -13,6 +13,17 @@ function merged(settings, changes) {
     return next;
 }
 
+// the settings with what a refused save changed put back as it was before it, leaving whatever saved since
+function undone(settings, before, changes) {
+    const next = {...settings};
+    for (const [key, value] of Object.entries(changes)) {
+        const plain = value && typeof value === "object" && !Array.isArray(value);
+        const changed = plain ? Object.keys(value).filter((name) => value[name] !== before[key]?.[name]) : [];
+        next[key] = plain ? {...(settings[key] || {}), ...Object.fromEntries(changed.map((name) => [name, before[key]?.[name]]))} : before[key];
+    }
+    return next;
+}
+
 export async function saveSettings(changes, client = api) {
     if (client !== api || !store.settings) return client.saveSettings(changes);
     const before = store.settings;
@@ -23,7 +34,7 @@ export async function saveSettings(changes, client = api) {
         if (saved && mine === latest) store.settings = saved;
         return saved;
     } catch (error) {
-        if (mine === latest) store.settings = before;
+        store.settings = undone(store.settings, before, changes);
         throw error;
     }
 }
