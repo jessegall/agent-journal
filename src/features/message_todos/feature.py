@@ -20,6 +20,9 @@ LINKED = Message(n=12, title="can you look at this", created=WHEN - 600, refs=["
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 FILED = Todo(n=7, title="The thing to do", created=WHEN - 60)
 MINUTES = {"message_todos.minutes": 30}
+NO_REF = Comment(n=1, title="Filed it", brief="Filed as to-do 7.")
+OTHER = Todo(n=8, title="Another thing", created=WHEN - 60)
+WRITTEN_AFTER = Message(n=12, title="can you look at this", created=WHEN)
 
 
 def filed(actor: str) -> TodoCreated:
@@ -45,6 +48,9 @@ class MessageTodos(Feature):
             Given(replied(), rows=[REPLY, FRESH, LINKED], settings=MINUTES) >> Dispatches(nothing),
             Given(replied(kind="todo"), rows=[REPLY, FRESH, ASKED], settings=MINUTES) >> Dispatches(nothing),
             Given(replied(actor=USER), rows=[REPLY, FRESH, ASKED], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[NO_REF, FRESH, ASKED], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[REPLY, ASKED], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[REPLY, FRESH, OTHER, ASKED], settings=MINUTES) >> Dispatches(TodoNamedInReply(message=12, todo=7)),
         ])
         journal.events.listen(ResourceCreated, SpotTodosLeftOutOfReply(), expects=[
             Given(replied(), rows=[REPLY_NOT_NAMING, FRESH, ASKED, AGENT_ROW], settings=MINUTES) >> Dispatches(unlinked_fact()),
@@ -52,6 +58,10 @@ class MessageTodos(Feature):
             Given(replied(), rows=[REPLY_NOT_NAMING, STALE, ASKED, AGENT_ROW], settings=MINUTES) >> Dispatches(nothing),
             Given(replied(), rows=[REPLY_NOT_NAMING, FRESH, ASKED], settings=MINUTES) >> Dispatches(nothing),
             Given(replied(actor=USER), rows=[REPLY_NOT_NAMING, FRESH, ASKED, AGENT_ROW], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[REPLY_NOT_NAMING, FRESH, WRITTEN_AFTER, AGENT_ROW], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[NO_REF, FRESH, ASKED, AGENT_ROW], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[REPLY_NOT_NAMING, FRESH, LINKED, AGENT_ROW], settings=MINUTES) >> Dispatches(nothing),
+            Given(replied(), rows=[REPLY, FRESH, OTHER, ASKED, AGENT_ROW], settings=MINUTES) >> Dispatches(TodoLeftUnlinked(message=12, todo=8).once(f"{UNLINKED}|todo:8")),
         ])
         journal.events.listen(TodoCreated, SpotTodoForWaitingMessage(), expects=[
             Given(filed(AGENT), rows=[ASKED, FILED, AGENT_ROW]) >> Dispatches(unlinked_fact()),
@@ -64,7 +74,9 @@ class MessageTodos(Feature):
         ])
         journal.events.handle(TodoNamedInReply, LinkTodoToItsMessage(), expects=[
             Given(TodoNamedInReply(message=12, todo=7), rows=[ASKED, FRESH]) >> Updated(Message(n=12), refs=["todo:7"]),
+            Given(TodoNamedInReply(message=12, todo=7), rows=[Message(n=12), Todo(n=7)]) >> Updated(Message(n=12), refs=["todo:7"]),
         ])
         journal.events.handle(TodoLeftUnlinked, AskWhetherATodoCameFromAMessage(), expects=[
             Given(TodoLeftUnlinked(message=12, todo=7), rows=[ASKED, FRESH, AGENT_ROW]) >> Nudged(UNLINKED, todo=7, message=12),
+            Given(TodoLeftUnlinked(message=12, todo=7), rows=[Message(n=12), Todo(n=7), AgentRow(n=1)]) >> Nudged(UNLINKED, todo=7, message=12),
         ])
