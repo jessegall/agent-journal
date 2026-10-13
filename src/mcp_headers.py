@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from features.integrations.login import RENEWAL_SUFFIX, Renewal, renewed  # noqa: E402
+from framework.integrations.login import RENEWAL_SUFFIX, Renewal, renewed  # noqa: E402
 from controllers.secrets.values import ValuesFile  # noqa: E402
 from resources.base import Refused  # noqa: E402
 

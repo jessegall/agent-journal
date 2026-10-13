@@ -4,10 +4,6 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 
 from controllers.base import SENDER
-from events.answers import Allowed, Answer, Rewritten
-from events.asking import TextFormatting
-from framework.format import DOWNLOAD, SHARED, VIEWER
-from receiving import Answerer
 
 from resources.base import OWNER_ID, USER, WRITER, Resource
 
@@ -57,16 +53,6 @@ def without_images(text: str) -> str:
 
 def unmarked(text: str) -> str:
     return MEMBER_MARKED.sub(r"\1", SOURCE_MARKED.sub(lambda found: without_images(found[1]), text))
-
-
-class ReadMarkedWordsPlainly(Answerer[TextFormatting]):
-    """People read a member's words plainly, even with the feature off; agents read them marked."""
-
-    always = True
-    surfaces = (VIEWER, SHARED, DOWNLOAD)
-
-    def answer(self, request: TextFormatting) -> Answer:
-        return Rewritten(unmarked(request.text)) if request.surface in self.surfaces else Allowed()
 
 
 class MemberWords:

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from resources.fields import Loaded
 from engine.stored import read_promised_json, write_json
-from controllers.secrets.running import Masker
+from resources.masking import Masker
 from controllers.secrets.values import ValuesFile
 
 FOLDER = "integration-data"

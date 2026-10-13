@@ -17,7 +17,7 @@ from features.phone.guard import PHONE_GUARDS
 from features.phone.members import MEMBER_RIGHTS
 from engine.address import ANSWERS_AT
 from features.sharing.origins import ORIGINS
-from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS
+from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS
 from features.sharing.services import KEEP_UP, LISTENS, Listen
 
 APART = "AGENT_JOURNAL_APART"
@@ -47,14 +47,14 @@ class HostedJournalFeature(Feature):
         standing = Standing(os.environ.get(APART) == "1")
         # In the login page's own process, started apart, nothing in the record can switch off or change what guards it.
         guarding = None if standing.apart else self
-        ROUTES.add(guarding, Gateway(standing.settings, PHONE_OWNER_ACTIONS if standing.apart else {}), key=EVERY_OTHER)
+        SHARE_ROUTES.add(guarding, Gateway(standing.settings, PHONE_OWNER_ACTIONS if standing.apart else {}), key=EVERY_OTHER)
         CLOSED.add(guarding, NEVER_FROM_OUTSIDE)
         ORIGINS.add(guarding, standing.origins)
         ANSWERS_AT.add(guarding, standing.address)
         MEMBER_RIGHTS.add(guarding, people_of)
         if standing.apart:
             PHONE_GUARDS.add(None, phone_vault)
-        TICKS.add(guarding, DiskWatch())
+        SHARE_TICKS.add(guarding, DiskWatch())
         KEEP_UP.add(self, always)
         STAYS_UP.add(self, always)
         LISTENS.add(self, listen)

@@ -40,3 +40,13 @@ SAVE_CHECKS = Extension()
 
 CARD_EXTRAS = Extension()
 """What each feature adds to a ticket's card, by the feature's name."""
+
+SHARE_ROUTES = Extension()
+"""What each feature serves on the share server, by the first part of the path it answers."""
+
+SHARE_TICKS = Extension()
+"""What each feature runs on the share server's own clock."""
+
+EVERY_OTHER = "*"
+"""The key of what answers every path no other route does."""
+

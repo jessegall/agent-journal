@@ -1,10 +1,10 @@
 import time
 from dataclasses import dataclass, replace
 
-from features.integrations.state import IntegrationState
-from features.integrations.words import BODY, TITLE, cleaned
+from framework.integrations.state import IntegrationState
+from framework.integrations.words import BODY, TITLE, cleaned
 from features.gmail.mail import Mail, Mailbox
-from features.members.words import words_from
+from framework.words import words_from
 from controllers.types import Tickets
 from resources.base import Refused, SYSTEM
 

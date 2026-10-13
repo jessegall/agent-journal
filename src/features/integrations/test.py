@@ -8,8 +8,8 @@ from types import SimpleNamespace
 import features
 import mcp_headers
 from controllers.features import Features, SettingsWrite
-from features.integrations.client import IntegrationClient
-from features.integrations.state import IntegrationState, read_state, state_file, write_state
+from framework.integrations.client import IntegrationClient
+from framework.integrations.state import IntegrationState, read_state, state_file, write_state
 from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, USER
 from features.open_viewer.settings import apply
@@ -84,7 +84,7 @@ def test_the_integration_client_refuses_a_redirect_so_the_key_never_follows_one(
     import threading
     import urllib.error
     import urllib.request
-    from features.integrations.client import OPENER
+    from framework.integrations.client import OPENER
 
     class Redirecting(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
@@ -147,7 +147,7 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
     import threading
     import urllib.parse
     import urllib.request
-    from features.integrations.login import encoded, signed_in
+    from framework.integrations.login import encoded, signed_in
 
     class Oauth(http.server.BaseHTTPRequestHandler):
         challenge = ""
@@ -203,9 +203,9 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
             closed.bind(("127.0.0.1", 0))
             gone = closed.getsockname()[1]
         assert "could not reach" in refused(lambda: signed_in(f"http://127.0.0.1:{gone}", "test", browser())), "an address nobody answers at is said so"
-        monkeypatch.setattr("features.integrations.login.WAIT", 0.2)
+        monkeypatch.setattr("framework.integrations.login.WAIT", 0.2)
         assert "no sign-in came back" in refused(lambda: signed_in(origin, "test", lambda url: None)), "a sign-in that never comes back is given up on"
-        monkeypatch.setattr("features.integrations.login.WAIT", 180.0)
+        monkeypatch.setattr("framework.integrations.login.WAIT", 180.0)
         from controllers.types import Agents
         from resources.base import SYSTEM
         from tests.kit import report
@@ -222,7 +222,7 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         with contextlib.redirect_stdout(output_buffer):
             assert mcp_headers.main([str(record.root), variable]) == 0
         assert json.loads(output_buffer.getvalue()) == {"Authorization": "Bearer tok-xyz"}, "and that command answers the sign-in header"
-        from features.integrations.login import RENEWAL_SUFFIX, Renewal
+        from framework.integrations.login import RENEWAL_SUFFIX, Renewal
         running_out = Renewal.read(ValuesFile(record.root).values()[variable + RENEWAL_SUFFIX])
         ValuesFile(record.root).put(variable + RENEWAL_SUFFIX, Renewal(running_out.refresh_token, running_out.client_id, running_out.token_url, time.time() + 10).text())
         renewed_shown = io.StringIO()
@@ -286,8 +286,8 @@ def linear_world(monkeypatch, tmp_path, **given) -> World:
 def test_words_from_an_outside_source_are_wrapped_for_agents_and_plain_for_people_and_cleaned_and_cut():
     from controllers.types import Todos
     from framework.format import VIEWER, formatted
-    from features.integrations.words import BODY, cleaned
-    from features.members.words import words_from
+    from framework.integrations.words import BODY, cleaned
+    from framework.words import words_from
     from resources.base import SYSTEM
     features.load()
     record = fresh()

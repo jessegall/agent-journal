@@ -196,6 +196,10 @@ class Secrets(Controller):
         here = Path(cwd) if cwd else Path.cwd()
         return any((here / path).resolve().is_relative_to(folder) for path in paths) or any(word in command for word in (*NAMED_FOLDER, str(folder)))
 
+    def value_of(self, variable: str) -> str:
+        """The value this project keeps under a variable, empty when it keeps none; never a command, since a command's answer reaches an agent."""
+        return ValuesFile(self.record.root).values().get(variable, "")
+
     def values_stamp(self) -> tuple[str, float]:
         """Where this project's secret values are kept and when that file last changed; zero when it is not there."""
         path = ValuesFile(self.record.root).path

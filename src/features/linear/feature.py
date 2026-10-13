@@ -1,7 +1,7 @@
 from events.integrations import LinearReplyApproved, LinearStageMoved
 from expects import Answered, Dispatches, Given, Ran, Refused, Wrote, nothing
-from features.integrations.base import IntegrationFeature
-from features.integrations.details import SEND
+from framework.integrations.base import IntegrationFeature
+from framework.integrations.details import SEND
 from framework.journal import Journal
 from features.linear.commands import ProposeComment
 from features.linear.details import LinearDetails
@@ -11,7 +11,7 @@ from events.tickets import TicketUpdated
 from features.linear.routes import LinearWebhook
 from features.linear.webhook import Deliveries
 from features.linear.working import LinearWork
-from features.sharing.routes import ROUTES
+from declaring.registries import SHARE_ROUTES
 from controllers.types import Tickets
 from resources.tickets import Ticket
 from resources.base import USER
@@ -33,7 +33,7 @@ class Linear(LinearWork, IntegrationFeature):
     def register(self, journal: Journal) -> None:
         super().register(journal)
         self.deliveries = Deliveries()
-        ROUTES.add(self, LinearWebhook(self), key="linear")
+        SHARE_ROUTES.add(self, LinearWebhook(self), key="linear")
         journal.events.listen(TicketUpdated, SpotMovedIssue(), expects=[
             Given(MOVED, rows=[issue()]) >> Dispatches(LinearStageMoved(ticket=1)),
             Given(MOVED, rows=[issue(linear_stage="Doing")]) >> Dispatches(nothing),

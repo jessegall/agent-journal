@@ -11,7 +11,8 @@ from features.hosted_journal.people import PEOPLE
 from framework.journal import Journal
 from features.members.details import MembersDetails
 from features.members.gate import MemberLogins
-from features.members.words import MemberWords, ReadMarkedWordsPlainly, WrittenBy
+from features.members.answering import ReadMarkedWordsPlainly
+from framework.words import MemberWords, WrittenBy
 
 MARKED = '<untrusted member="ada">Ship it on Friday</untrusted>'
 PLAIN = "Ship it on Friday"

@@ -22,7 +22,7 @@ from controllers.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
 from framework.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
-from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS  # noqa: E402
+from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS  # noqa: E402
 from controllers.faults import threw  # noqa: E402
 from engine.color import identity  # noqa: E402
 from resources.base import Refused  # noqa: E402
@@ -54,7 +54,7 @@ HEADERS = {
 
 def routed(parts: list[str], record):
     """The feature route a path's first part names, or else the one that takes every path the share server does not answer itself."""
-    keyed = ROUTES.keyed(record)
+    keyed = SHARE_ROUTES.keyed(record)
     first = parts[0] if parts else ""
     return keyed.get(first) or (None if first in OWN_PATHS else keyed.get(EVERY_OTHER))
 
@@ -285,7 +285,7 @@ class ShareHandler(BaseHTTPRequestHandler):
 
 def ticking(shares, stopped: threading.Event) -> None:
     while not stopped.wait(TICK_EVERY):
-        for tick in TICKS.each(shares.record):
+        for tick in SHARE_TICKS.each(shares.record):
             try:
                 tick(shares)
             except Exception:

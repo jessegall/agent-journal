@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from email.message import EmailMessage
 from email.utils import parseaddr
 
-from controllers.secrets.running import Masker
+from resources.masking import Masker
 from resources.base import Refused
 
 IMAP_HOST, SMTP_HOST = "imap.gmail.com", "smtp.gmail.com"

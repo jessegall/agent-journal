@@ -363,7 +363,7 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel(monkeypatch):
             finished.set()
 
     monkeypatch.setattr(module, "ThreadingHTTPServer", Listening)
-    monkeypatch.setattr(module, "TICKS", SimpleNamespace(each=lambda found: [lambda given: ticked.append(given), lambda given: 1 / 0]))
+    monkeypatch.setattr(module, "SHARE_TICKS", SimpleNamespace(each=lambda found: [lambda given: ticked.append(given), lambda given: 1 / 0]))
     monkeypatch.setattr(module, "TICK_EVERY", 0.01)
     monkeypatch.setattr(module, "threw", lambda root, env, where: ticked.append(where))
     module.serve(watched, 8123)
@@ -981,12 +981,12 @@ def repairs_within_seconds(monkeypatch):
     import features.sharing.watchdog as watchdog
     from engine.keeper import ServiceState
     from engine.services import log_file
-    from features.sharing.routes import TICKS
+    from declaring.registries import SHARE_TICKS
     record = fresh()
     report(record, "working", "PreToolUse")
     approved_share(record)
     machine = machine_on(monkeypatch, record)
-    assert any(isinstance(each, watchdog.TunnelWatch) for each in TICKS.each(record)), "the share server's own clock runs the watch"
+    assert any(isinstance(each, watchdog.TunnelWatch) for each in SHARE_TICKS.each(record)), "the share server's own clock runs the watch"
     tick(record)
     assert machine.asked == [] and machine.waited == [], "the agent engine's clock no longer checks the tunnel"
     machine.tick()

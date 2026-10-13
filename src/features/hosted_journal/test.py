@@ -38,7 +38,7 @@ from features.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
 from declaring.trigger import DAY
 from features.phone.controller import Phones
 from controllers.types import Shares
-from features.sharing.routes import EVERY_OTHER, ROUTES
+from declaring.registries import EVERY_OTHER, SHARE_ROUTES
 from features.sharing.server import ShareHandler
 from features.sharing.services import share_services
 from engine.tunnel import SERVER
@@ -175,7 +175,7 @@ def test_with_hosting_off_the_share_server_answers_no_login_and_no_viewer():
     assert off.call("GET", "/").status == 404
     assert off.call("GET", "/login").status == 404
     assert off.call("POST", "/login", {"password": PASSWORD}).status == 405
-    assert EVERY_OTHER not in ROUTES.keyed(record)
+    assert EVERY_OTHER not in SHARE_ROUTES.keyed(record)
     assert not Vault(record.root).folder.exists()
 
 
@@ -379,7 +379,7 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     assert (sent.status, "send it from the machine" in sent.text) == (413, True), \
         "an upload from outside is held to what the gateway can read whole, which is far less than the journal's own door takes"
     assert FORWARDED_LIMIT < UPLOAD_LIMIT, "the journal's own door spools an upload to disk, so it takes much more than a door that forwards one"
-    gateway = ROUTES.keyed(hosted.record)[EVERY_OTHER]
+    gateway = SHARE_ROUTES.keyed(hosted.record)[EVERY_OTHER]
     gateway.streams[hashed(token)] = MOST_STREAMS
     assert hosted.call("GET", "/api/main/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429
     gateway.streams.clear()

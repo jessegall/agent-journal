@@ -234,6 +234,13 @@ class Shares(ShareVisits, SharePages, Controller):
             return [TUNNEL_STOPPED]
         return []
 
+    def public_origin(self) -> str:
+        """The address the outside reaches this journal at, such as https://name.example, or nothing while it has none."""
+        own = own_address(self.record)
+        kept = kept_address(self.record.root)
+        host = own[0] if own else ".".join(kept[part] for part in ("subdomain", "host") if kept.get(part))
+        return f"https://{host}" if host and (own or kept.get("subdomain")) else ""
+
     def _address(self) -> str:
         if own := own_address(self.record):
             return own[0]

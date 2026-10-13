@@ -1,15 +1,11 @@
 import time
 from dataclasses import asdict, replace
 
-from engine import bus
-from features.integrations.state import IntegrationState, read_state, write_state
+from framework.integrations.state import IntegrationState, read_state, write_state
 from features.linear.sync import Choices, StageState, TicketsFromLinear, issue_of, send_comment, send_status, synced, teams_of
 from features.linear.webhook import event_of
 from framework.routing import Reply, Request, handles
-from controllers.secrets.values import ValuesFile
-from engine.address import own_address
-from engine.tunnel import kept_address
-from controllers.types import Tickets
+from controllers.types import Secrets, Shares, Tickets
 from resources.base import Refused, SYSTEM
 
 CATCH_UP = 30 * 60.0
@@ -39,17 +35,15 @@ class LinearWork:
             agreed["linear_state"] = state
         tickets.update(ticket.n, **agreed)
         if sending:
-            bus.defer(lambda: self.push(record, lambda client: send_status(client, ticket.source_id, state)))
+            self.push_later(record, lambda client: send_status(client, ticket.source_id, state))
 
     def webhook_address(self, record) -> str:
         """Where Linear is told to deliver events: the journal's tunnel address, or nothing while it has none."""
-        own = own_address(record)
-        kept = kept_address(record.root)
-        host = own[0] if own else ".".join(kept[part] for part in ("subdomain", "host") if kept.get(part))
-        return f"https://{host}/linear/webhook" if host and (own or kept.get("subdomain")) else ""
+        origin = Shares(record, actor=SYSTEM).public_origin()
+        return f"{origin}/linear/webhook" if origin else ""
 
     def signing_secret(self, record) -> str:
-        return ValuesFile(record.root).values().get(str(self.values(record).signing_key), "")
+        return Secrets(record, actor=SYSTEM).value_of(str(self.values(record).signing_key))
 
     def waits_for_webhook(self, record) -> bool:
         return bool(self.webhook_address(record)) and bool(self.signing_secret(record))

@@ -1,4 +1,4 @@
-from features.integrations.commands import proposed
+from framework.integrations.commands import proposed
 from framework.parts import Command, Context
 from resources.base import Refused
 

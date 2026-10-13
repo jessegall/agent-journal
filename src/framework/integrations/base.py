@@ -9,23 +9,24 @@ from controllers.features import Features
 from events.agents import ClockTicked
 from events.integrations import ReplyApproved
 from expects import Answered, Dispatches, Given, Ran, nothing
-from controllers.types import Agents, Notices
+from controllers.agents import Agents
+from controllers.notices import Notices
 from engine import bus
 from framework.base import Feature
-from features.integrations.commands import SyncIntegration
-from features.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
-from features.integrations.handlers import CheckOnClock, sending_approved
-from features.integrations.listeners import SpotApprovedReply
+from framework.integrations.commands import SyncIntegration
+from framework.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
+from framework.integrations.handlers import CheckOnClock, sending_approved
+from framework.integrations.listeners import SpotApprovedReply
 from events.questions import QuestionCompleted
-from features.integrations.client import IntegrationClient
-from features.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
-from features.integrations.state import IntegrationState, read_state, write_state
+from framework.integrations.client import IntegrationClient
+from framework.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
+from framework.integrations.state import IntegrationState, read_state, write_state
 from framework.journal import Journal
 from framework.routing import Reply, Request, handles
 from controllers.secrets.controller import Secrets
 from resources.secrets import Kind
 from controllers.secrets.values import ValuesFile
-from controllers.types import Tickets
+from controllers.tickets.controller import Tickets
 from serving import SERVED, Providers
 from resources.base import AGENT, Refused, SYSTEM, USER
 from resources.types import AgentRow, Question
@@ -132,7 +133,11 @@ class IntegrationFeature(Feature):
 
     def send_reply(self, record, n: int, text: str) -> None:
         ticket = Tickets(record, actor=SYSTEM).load(n)
-        bus.defer(lambda: self.push(record, lambda service: self.deliver(service, ticket, text)))
+        self.push_later(record, lambda service: self.deliver(service, ticket, text))
+
+    def push_later(self, record, sending) -> None:
+        """Sends one write once the answer that asked for it has gone out."""
+        bus.defer(lambda: self.push(record, sending))
 
     def push(self, record, sending) -> None:
         """Sends one write from the journal's own process; a failure is kept in the integration's state, never raised into the move or the answer."""

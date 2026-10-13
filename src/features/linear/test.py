@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 from controllers.types import Questions
 from features.integrations.test import issue, linear_world
-from features.integrations.commands import SyncIntegration
+from framework.integrations.commands import SyncIntegration
 from features.linear.commands import ProposeComment
 from features.linear.reading import reply_of
 from features.linear.routes import WEBHOOK_BODY, LinearWebhook
@@ -72,7 +72,7 @@ def test_a_comment_is_proposed_only_on_a_ticket_from_linear_its_sync_word_checks
 
 
 def test_linear_is_told_the_tunnel_or_server_address_and_a_write_it_refuses_is_kept_not_raised(monkeypatch, tmp_path):
-    from features.integrations.state import read_state
+    from framework.integrations.state import read_state
     world = linear_world(monkeypatch, tmp_path, teams=[{"id": "t1", "key": "ENG", "name": "Engineering"}])
     record, linear = world.record, world.linear
     addresses = {"own": [], "kept": {}}

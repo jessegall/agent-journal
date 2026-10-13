@@ -3,7 +3,7 @@ from email.message import EmailMessage
 
 import features
 from pytest import fixture
-from features.integrations.state import read_state
+from framework.integrations.state import read_state
 from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER, Refused
 from features.open_viewer.settings import apply

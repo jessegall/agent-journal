@@ -3,8 +3,8 @@ from expects import Answered, Given, Refused, Wrote
 from features.gmail.commands import ProposeReply
 from features.gmail.details import GmailDetails
 from features.gmail.working import GmailWork
-from features.integrations.base import IntegrationFeature
-from features.integrations.details import SEND
+from framework.integrations.base import IntegrationFeature
+from framework.integrations.details import SEND
 from framework.journal import Journal
 from controllers.types import Tickets
 from resources.tickets import Ticket

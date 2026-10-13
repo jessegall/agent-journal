@@ -4,7 +4,7 @@ import urllib.request
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-from controllers.secrets.running import Masker
+from resources.masking import Masker
 from controllers.secrets.values import ValuesFile
 from resources.base import Refused
 

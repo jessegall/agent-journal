@@ -1,7 +1,8 @@
 from features.gmail.mail import Mailbox
 from features.gmail.sync import Choices, synced
-from features.integrations.state import IntegrationState, read_state, write_state
-from controllers.secrets.values import ValuesFile
+from framework.integrations.state import IntegrationState, read_state, write_state
+from controllers.types import Secrets
+from resources.base import SYSTEM
 
 
 class GmailWork:
@@ -12,7 +13,7 @@ class GmailWork:
         return Choices(str(values.account).strip(), str(values.search).strip(), int(values.board))
 
     def service(self, record) -> Mailbox:
-        password = ValuesFile(record.root).values().get(str(self.values(record).key), "")
+        password = Secrets(record, actor=SYSTEM).value_of(str(self.values(record).key))
         return Mailbox(self.choices(record).account, password)
 
     def deliver(self, mailbox: Mailbox, ticket, text: str) -> None:

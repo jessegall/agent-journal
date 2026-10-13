@@ -5,7 +5,7 @@ from features.phone.notifying import told
 from features.phone.details import PhoneDetails
 from features.phone.routes import PhoneRoutes
 from engine.address import RELIED_ON
-from features.sharing.routes import ROUTES, TICKS
+from declaring.registries import SHARE_ROUTES, SHARE_TICKS
 from features.sharing.services import KEEP_UP
 
 ROUTE = "p"
@@ -15,7 +15,7 @@ class PhoneFeature(Feature):
     details = PhoneDetails
 
     def register(self, journal: Journal) -> None:
-        ROUTES.add(self, PhoneRoutes(), key=ROUTE)
+        SHARE_ROUTES.add(self, PhoneRoutes(), key=ROUTE)
         KEEP_UP.add(self, phones_live)
         RELIED_ON.add(self, phones_paired)
-        TICKS.add(self, lambda shares: told(shares.record))
+        SHARE_TICKS.add(self, lambda shares: told(shares.record))

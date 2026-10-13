@@ -14,7 +14,7 @@ from features.sharing.handlers import HoldUntilAgreed, NameTrustedVisitorComment
 from features.sharing.listeners import SpotVisitorComment, SpotVisitorCommentRead
 from engine.address import RELIED_ON
 from features.sharing.services import links_open, share_services
-from features.sharing.routes import TICKS
+from declaring.registries import SHARE_TICKS
 from controllers.sharing.visitors import AGREEMENT
 from features.sharing.watchdog import TunnelWatch
 from resources.base import USER
@@ -78,7 +78,7 @@ class SharingFeature(Feature):
         journal.events.handle(TrustedVisitorCommented, NameTrustedVisitorComment(), expects=[
             Given(TrustedVisitorCommented(agent=1, comment=3, name="Ana", about="document 2"), rows=[AGENT_ROW]) >> Nudged("trusted", name="Ana", about="document 2", n=3),
         ])
-        TICKS.add(self, TunnelWatch(self))
+        SHARE_TICKS.add(self, TunnelWatch(self))
         journal.events.answer(ToolCallAsked, RefuseUntilAgreed(), expects=[
             Given(shell("git status"), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
             Given(shell(f'journal share agree 4 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Allowed()),
