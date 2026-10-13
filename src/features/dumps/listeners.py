@@ -8,7 +8,7 @@ from resources.base import COMPLETED
 from resources.dumps import OWN_WORDS
 from resources.text import plural
 from resources.types import IDLE, AgentRow, Dump, Message
-from serving import ReadRows
+from serving import ReadRemembered, ReadRows
 
 
 def chosen_fact(dump: Dump) -> list[Fact]:
@@ -17,7 +17,8 @@ def chosen_fact(dump: Dump) -> list[Fact]:
     claim = f"dump choice|{dump.n}:{chosen.get('at')}"
     if pick == OWN_WORDS:
         return []
-    return [(DumpChoiceOpen(n=dump.n) if pick < 0 else DumpChoiceMade(n=dump.n, label=chosen["label"])).once(claim)]
+    at = str(chosen.get("at"))
+    return [(DumpChoiceOpen(n=dump.n, at=at) if pick < 0 else DumpChoiceMade(n=dump.n, label=chosen["label"], at=at)).once(claim)]
 
 
 def answered_fact(dump: Dump) -> list[Fact]:
@@ -27,6 +28,16 @@ def answered_fact(dump: Dump) -> list[Fact]:
     return [DumpQuestionAnswered(n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"]).once(f"dump answer|{dump.n}:{len(answers)}")]
 
 
+def announced(dump: Dump) -> str:
+    return f"announced|{dump.n}"
+
+
+def unannounced(dump: Dump, remembered: ReadRemembered) -> bool:
+    """A choice the agent has not been told yet: that write is the choice's own, and the filing nudges wait for the next."""
+    chosen = dump.data.get("chosen") or {}
+    return bool(chosen) and int(chosen.get("pick", -1)) != OWN_WORDS and remembered.get(announced(dump)) != str(chosen.get("at"))
+
+
 class SpotDumpChoosing(Listener[DumpWritten]):
     def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
         dump = dumps.peek(event.n)
@@ -34,9 +45,9 @@ class SpotDumpChoosing(Listener[DumpWritten]):
 
 
 class SpotDumpFiling(Listener[DumpWritten]):
-    def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
+    def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow], remembered: ReadRemembered) -> list[Fact]:
         dump, in_hand = dumps.peek(event.n), dumps.in_hand()
-        if dump.data.get("chosen") or not agents.has_primary():
+        if unannounced(dump, remembered) or not agents.has_primary():
             return []
         facts = []
         if event.action == COMPLETED:

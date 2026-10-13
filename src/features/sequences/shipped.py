@@ -161,7 +161,7 @@ WRITING_A_REPORT = ShippedSequence(
 )
 CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
     title="Checking the instruction files",
-    brief="AGENTS.md and CLAUDE.md changed, or the user asked for a check. Find where they and the journal's block at "
+    brief="The user asked for a check of AGENTS.md and CLAUDE.md. Find where they and the journal's block at "
              "their head tell an agent opposite things, report it, and propose each fix as a suggestion. Never edit the files.",
     words=("check the instruction files", "check agents.md", "check claude.md", "contradictions in the instructions",
               "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies"),

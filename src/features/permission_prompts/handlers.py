@@ -28,7 +28,7 @@ class ShowTheAsk(Handler[PermissionAsked]):
         here = elsewhere.here()
         launcher = orchestrator_of(here.record)
         chat.notice("waiting", tool=event.tool, call=event.call, tone="warn", session=event.session, action=PERMISSION, to=ORCHESTRATOR if launcher else "")
-        if launcher:
+        if launcher and elsewhere.named(launcher.env).has_chat():
             elsewhere.named(launcher.env).chat().say("routed", environment=here.record.env, tool=event.tool, call=event.call)
         return []
 

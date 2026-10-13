@@ -1,6 +1,6 @@
 from events import Fact
-from events.acknowledgements import FirstNodWithheld, NodWithheld
-from events.agents import AgentTurnWritten
+from events.acknowledgements import FirstNodWithheld, NodWithheld, TurnReachedChat
+from events.agents import AgentMessageSent, AgentTurnWritten
 from events.answers import Allowed, Answer, Kept
 from events.asking import AgentMessageSending
 from resources.tags import CARRIED
@@ -8,7 +8,7 @@ from payload import JOURNAL
 from receiving import Answerer, Listener
 from resources.base import USER, Ref, Refused
 from resources.types import AgentRow, Message, Nudge
-from serving import ReadRows
+from serving import ReadRemembered, ReadRows
 
 ALWAYS_KEPT = ("message", "question", "comment")
 A_NOD = 120
@@ -42,9 +42,20 @@ def awaiting_person(ref: Ref, messages) -> bool:
     return (USER in message.seen[:1] or bool(message.data.get("from_session"))) and not messages.is_answered(message)
 
 
+def sent_turn(agent: int) -> str:
+    return f"sent|{agent}"
+
+
 class KeepNodsOutOfTheChat(Answerer[AgentMessageSending]):
-    def answer(self, event: AgentMessageSending, agents: ReadRows[AgentRow], messages: ReadRows[Message], nudges: ReadRows[Nudge]) -> Answer:
-        return Kept() if a_nod(agents.peek_session(event.session), event.text.strip(), messages, nudges) else Allowed()
+    def answer(self, event: AgentMessageSending, agents: ReadRows[AgentRow], messages: ReadRows[Message], nudges: ReadRows[Nudge], remembered: ReadRemembered) -> Answer:
+        row = agents.peek_session(event.session)
+        sent_before = row.prompted == JOURNAL and remembered.get(sent_turn(row.n)) == event.turn
+        return Kept() if sent_before or a_nod(row, event.text.strip(), messages, nudges) else Allowed()
+
+
+class SpotTurnSent(Listener[AgentMessageSent]):
+    def listen(self, event: AgentMessageSent) -> list[Fact]:
+        return [TurnReachedChat(agent=event.agent, turn=event.turn)]
 
 
 class SpotNods(Listener[AgentTurnWritten]):

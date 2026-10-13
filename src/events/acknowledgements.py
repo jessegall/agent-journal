@@ -19,3 +19,11 @@ class FirstNodWithheld(Fact):
     """The first such turn of an agent, which is told why it went nowhere."""
 
     agent: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class TurnReachedChat(Fact):
+    """A turn that reached the chat, so the same turn is not sent a second time."""
+
+    agent: int
+    turn: str

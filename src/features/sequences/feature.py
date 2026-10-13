@@ -180,6 +180,8 @@ class SequencesFeature(Feature):
         ])
         journal.events.listen(AnyEvent, SpotSequenceChange(), expects=[
             Given(AnyEvent(n=4, type="sequence", action="updated", actor=USER), rows=[AGENT_ROW]) >> Dispatches(StepCountRestarted(agent=1)),
+            Given(AnyEvent(n=4, type="sequence", action="updated", actor=USER), rows=[AGENT_ROW, AgentRow(n=2, title="claude-2")])
+                >> Dispatches(StepCountRestarted(agent=1)) & Dispatches(StepCountRestarted(agent=2)),
             Given(todo("created"), rows=[AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(StepCountRestarted, CountTheEditsAfresh(), expects=[

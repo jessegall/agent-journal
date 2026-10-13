@@ -28,7 +28,7 @@ class RulesDetails(FeatureDetails):
         environment. journal rule inject <n> keeps a rule in the managed block of both AGENTS.md and CLAUDE.md.
 
         Give it keywords with --set keywords="<word>,<word>": when one appears as a whole word, you are shown the
-        row once, with its reasoning, and the tool call still goes through. --set keywords_in says where they match: text
+        row's title once, and the tool call still goes through. --set keywords_in says where they match: text
         (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
         file paths, searches and URLs included).
     """

@@ -29,8 +29,7 @@ class DecideAtMarksOnChange(Listener[AgentChanged]):
 
 class SpotDecision(Listener[ResourceCreated]):
     def listen(self, event: ResourceCreated, agents: ReadRows[AgentRow]) -> list[Fact]:
-        agent = agents.primary_to_read()
-        return [ContextDecided(agent=agent.n)] if agent and event.type in DECISIONS else []
+        return [ContextDecided(agent=agent.n) for agent in agents.running()] if event.type in DECISIONS else []
 
 
 class SpotWhatWasKept(Listener[ResourceCreated]):

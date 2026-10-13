@@ -62,9 +62,8 @@ class SpotRunOfADeletedRow(Listener[AnyEvent]):
 
 
 class SpotSequenceChange(Listener[AnyEvent]):
-    def listen(self, event: AnyEvent, sessions: ReadSessions, agents: ReadRows[AgentRow], elsewhere: ReadElsewhere) -> list[Fact]:
-        agent = working_agent(sessions, agents, elsewhere.here().record.env) if event.type == "sequence" else None
-        return [StepCountRestarted(agent=agent.n)] if agent else []
+    def listen(self, event: AnyEvent, agents: ReadRows[AgentRow]) -> list[Fact]:
+        return [StepCountRestarted(agent=agent.n) for agent in agents.running()] if event.type == "sequence" else []
 
 
 def due_to_dispatch(agent, sequence, key: str, why: str, messages: ReadRows[Message], elsewhere: ReadElsewhere, providers: Providers) -> list[Fact]:

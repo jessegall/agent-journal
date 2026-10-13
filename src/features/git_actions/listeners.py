@@ -2,6 +2,7 @@ from events import Fact
 from events.agents import AgentReported, CommandRan
 from events.git_actions import BranchNoted, BranchSwitched, GitActionDone
 from features.git_actions.actions import calls
+from payload import HookEvent
 from receiving import Listener
 from resources.runs import SHELL, STEP
 from resources.types import AgentRow
@@ -19,6 +20,8 @@ def branch_label(checkout, before: str | None) -> str:
 
 class SpotBranchSwitch(Listener[AgentReported]):
     def listen(self, event: AgentReported, agents: ReadRows[AgentRow], git: ReadGit, elsewhere: ReadElsewhere, remembered: ReadRemembered) -> list[Fact]:
+        if event.hook == HookEvent.PRE_TOOL_USE:
+            return []
         checkout = git.checkout(elsewhere.here().working_folder(agents.peek(event.agent)))
         if not checkout or not checkout.branch:
             return []

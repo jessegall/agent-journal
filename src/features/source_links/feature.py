@@ -35,6 +35,8 @@ class SourceLinks(Feature):
             Given(ResourceCreated.of("doc"), rows=[Doc(n=1, title="New"), READ_JUST_NOW, AGENT_ROW]) >> Dispatches(SourceUncited(type="doc", n=1, read="report:2")),
             Given(ResourceCreated.of("report"), rows=[Report(n=1, title="New"), DOC_READ_JUST_NOW, AGENT_ROW]) >> Dispatches(SourceUncited(type="report", n=1, read="doc:3")),
             Given(ResourceCreated.of("doc"), rows=[Doc(n=1, title="What stays true", seen=[AGENT], updated=WHEN - 60), AGENT_ROW]) >> Dispatches(nothing),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), AGENT_ROW, *[Report(n=n, title=f"Audit {n}", seen=[AGENT], updated=WHEN - 600 + n * 100) for n in range(2, 6)]])
+                >> Dispatches(SourceUncited(type="plan", n=1, read="report:3, report:4, report:5")),
             Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), READ_LONG_AGO, AGENT_ROW], settings={"source_links.within": 120}) >> Dispatches(SourceUncited(type="plan", n=1, read="report:2")),
         ])
         journal.events.handle(SourceUncited, NameUncitedSource(), expects=[

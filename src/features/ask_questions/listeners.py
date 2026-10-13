@@ -19,8 +19,7 @@ GONE = {"completed": "closed", "deleted": "deleted"}
 
 
 def settled(agents: ReadRows[AgentRow]) -> list[Fact]:
-    agent = agents.primary_to_read()
-    return [AskingSettled(agent=agent.n)] if agent else []
+    return [AskingSettled(agent=agent.n) for agent in agents.running()]
 
 
 class SpotProse(Listener[AgentReported]):

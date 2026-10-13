@@ -45,6 +45,7 @@ class DumpChoiceMade(Fact):
 
     n: int
     label: str
+    at: str
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -52,6 +53,7 @@ class DumpChoiceOpen(Fact):
     """The user left the choice of how to file a dump to the agent."""
 
     n: int
+    at: str
 
 
 @dataclass(frozen=True, kw_only=True)

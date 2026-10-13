@@ -39,6 +39,8 @@ class MemoryCheckpoints(Feature):
         journal.events.listen(ResourceCreated, SpotDecision(), expects=[
             Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[AgentRow(n=1), Fact(n=4, title="a claim")]) >> Dispatches(ContextDecided(agent=1)),
             Given(ResourceCreated(n=4, type="rule", actor="agent"), rows=[AgentRow(n=1), Rule(n=4, title="a ruling")]) >> Dispatches(ContextDecided(agent=1)),
+            Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[AgentRow(n=1), AgentRow(n=2, title="claude-2"), Fact(n=4, title="a claim")])
+                >> Dispatches(ContextDecided(agent=1)) & Dispatches(ContextDecided(agent=2)),
             Given(ResourceCreated(n=4, type="todo", actor="agent"), rows=[AgentRow(n=1)]) >> Dispatches(nothing),
             Given(ResourceCreated(n=4, type="fact", actor="user"), rows=[AgentRow(n=1), Fact(n=4, title="a claim")]) >> Dispatches(ContextDecided(agent=1)),
             Given(ResourceCreated(n=4, type="fact", actor="agent"), rows=[Fact(n=4, title="a claim")]) >> Dispatches(nothing),

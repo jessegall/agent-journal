@@ -72,6 +72,8 @@ class AskQuestions(Feature):
         ])
         journal.events.listen(MessageCreated, SpotUserWrote(), expects=[
             Given(MessageCreated(n=3, type="message", actor="user"), rows=[CLAUDE]) >> Dispatches(AskingSettled(agent=1)),
+            Given(MessageCreated(n=3, type="message", actor="user"), rows=[CLAUDE, AgentRow(n=2, title="claude-2", data={"provider": "claude"}), AgentRow(n=3, title="claude-3", data={"status": "stopped"})])
+                >> Dispatches(AskingSettled(agent=1)) & Dispatches(AskingSettled(agent=2)),
             Given(MessageCreated(n=3, type="message", actor="agent"), rows=[CLAUDE]) >> Dispatches(nothing),
         ])
         journal.events.listen(QuestionCompleted, SpotAnswer(), expects=[

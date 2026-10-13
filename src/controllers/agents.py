@@ -259,6 +259,10 @@ class Agents(Controller):
         n = self._primary_n()
         return self.peek(n) if n is not None else None
 
+    def running(self) -> list:
+        """Every agent row of the environment that has not stopped, subagents included."""
+        return [row for row in self.rows.standing() if row.status != types.STOPPED]
+
     def has_primary(self) -> bool:
         return self._primary_n() is not None
 

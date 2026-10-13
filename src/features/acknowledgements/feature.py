@@ -1,13 +1,13 @@
 from features.acknowledgements.details import KEPT_OUT, AcknowledgementsDetails
-from features.acknowledgements.handlers import ExplainTheWithholding, FileTheAcknowledgement
-from features.acknowledgements.listeners import KeepNodsOutOfTheChat, SpotNods
+from features.acknowledgements.handlers import ExplainTheWithholding, FileTheAcknowledgement, KeepTheSentTurn
+from features.acknowledgements.listeners import KeepNodsOutOfTheChat, SpotNods, SpotTurnSent
 from framework.base import Feature
 from framework.journal import Journal
-from events.acknowledgements import FirstNodWithheld, NodWithheld
-from events.agents import AgentTurnWritten
+from events.acknowledgements import FirstNodWithheld, NodWithheld, TurnReachedChat
+from events.agents import AgentMessageSent, AgentTurnWritten
 from events.answers import Allowed, Kept
 from events.asking import AgentMessageSending
-from expects import Answered, Dispatches, Given, Nudged, Wrote, nothing
+from expects import Answered, Dispatches, Given, Nudged, Remembered, Wrote, nothing
 from payload import JOURNAL
 from resources.types import AgentRow, Message, Nudge
 
@@ -38,6 +38,14 @@ class Acknowledgements(Feature):
             Given(sending("On it: a hotfix is under way."), rows=[prompted(delivered="message:7"),
                                                                    Message(n=7, title="a broken command here", seen=["agent"], data={"from_session": "uds:/tmp/b.sock"})])
                 >> Answered(Allowed()),
+            Given(sending("Looking at it now."), rows=[prompted(), REMINDER], remembered={"acknowledgements.sent|1": "t1"}) >> Answered(Kept()),
+            Given(sending("Looking at it now."), rows=[prompted(), REMINDER], remembered={"acknowledgements.sent|1": "t0"}) >> Answered(Allowed()),
+        ])
+        journal.events.listen(AgentMessageSent, SpotTurnSent(), expects=[
+            Given(AgentMessageSent(agent=1, turn="t1", text="Looking at it now."), rows=[prompted()]) >> Dispatches(TurnReachedChat(agent=1, turn="t1")),
+        ])
+        journal.events.handle(TurnReachedChat, KeepTheSentTurn(), expects=[
+            Given(TurnReachedChat(agent=1, turn="t1"), rows=[prompted()]) >> Remembered("sent|1", "t1"),
         ])
         journal.events.listen(AgentTurnWritten, SpotNods(), expects=[
             Given(AgentTurnWritten(agent=1, turn="t1", text="Noted."), rows=[prompted(), REMINDER])

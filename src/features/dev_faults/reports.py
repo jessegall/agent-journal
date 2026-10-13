@@ -109,8 +109,7 @@ class FaultReports:
         here = self.here(env)
         fault = here.rows(Notification).rows.by_title(title, standing=True)
         if fault is not None and int(fault.data["times"]) == 1 and not self.opened(title):
-            here.rows(Todo).create(title, brief=f"{brief} The budget is {BUDGET.get(fault.data.get('kind'), 50)}ms: profile it, fix it, and verify the new tim"
-                                                  + "e is under it before closing this.")
+            here.rows(Todo).create(title, brief=f"{brief} The budget is {BUDGET.get(fault.data.get('kind'), 50)}ms: profile it, fix it, and verify the new time before the release.")
         self.settle(env, title)
 
     def opened(self, title: str) -> bool:

@@ -17,7 +17,7 @@ class SpotUncitedSource(Listener[ResourceCreated]):
             return []
         made = {"plan": plans, "doc": docs, "report": reports}[event.type].peek(event.n)
         since = clock.now() - settings.within * 60
-        uncited = [row for source in (reports, docs) for row in source.lately(since) if AGENT in row.seen and row.ref != made.ref and row.ref not in made.refs]
+        uncited = [row for source in (reports, docs) for row in reversed(source.lately(since)) if AGENT in row.seen and row.ref != made.ref and row.ref not in made.refs]
         if not uncited:
             return []
         return [SourceUncited(type=event.type, n=event.n, read=", ".join(row.ref for row in uncited[-NAMED:]))]

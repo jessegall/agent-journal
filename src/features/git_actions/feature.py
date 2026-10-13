@@ -38,6 +38,7 @@ class GitActions(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.listen(AgentReported, SpotBranchSwitch(), expects=[
             Given(AgentReported(agent=1), rows=[AGENT_ROW], git=answering({("checkout",): None})) >> Dispatches(nothing),
+            Given(AgentReported(agent=1, hook="PreToolUse"), rows=[AGENT_ROW], git=answering({("checkout",): MAIN})) >> Dispatches(nothing),
             Given(AgentReported(agent=1), rows=[AGENT_ROW], git=answering({("checkout",): MAIN})) >> Dispatches(BranchNoted(agent=1, checkout=MAIN.name, branch="main")),
             Given(AgentReported(agent=1), rows=[AGENT_ROW], git=answering({("checkout",): MAIN}), remembered={f"git_actions.{MAIN.name}|1": "main"}) >> Dispatches(nothing),
             Given(AgentReported(agent=1), rows=[AGENT_ROW], git=answering({("checkout",): checked_out("custom-rule-checks")}), remembered={f"git_actions.{MAIN.name}|1": "main"})

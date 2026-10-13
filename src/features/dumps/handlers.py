@@ -3,7 +3,7 @@ from events.dumps import (DumpArrived, DumpChoiceMade, DumpChoiceOpen, DumpFilin
                           TranscriptPasted)
 from receiving import Handler
 from resources.types import Dump, Message
-from serving import Chat, Rows
+from serving import Chat, Remembered, Rows
 
 
 class TellDumpArrived(Handler[DumpArrived]):
@@ -13,13 +13,15 @@ class TellDumpArrived(Handler[DumpArrived]):
 
 
 class TellChoiceMade(Handler[DumpChoiceMade]):
-    def handle(self, event: DumpChoiceMade, chat: Chat) -> list[Fact]:
+    def handle(self, event: DumpChoiceMade, chat: Chat, remembered: Remembered) -> list[Fact]:
+        remembered.set(f"announced|{event.n}", event.at)
         chat.say("chose", n=event.n, label=event.label)
         return []
 
 
 class TellChoiceOpen(Handler[DumpChoiceOpen]):
-    def handle(self, event: DumpChoiceOpen, chat: Chat) -> list[Fact]:
+    def handle(self, event: DumpChoiceOpen, chat: Chat, remembered: Remembered) -> list[Fact]:
+        remembered.set(f"announced|{event.n}", event.at)
         chat.say("decide", n=event.n)
         return []
 

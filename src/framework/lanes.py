@@ -371,6 +371,9 @@ class Environment:
     def is_on(self, feature: str, behaviour: str) -> bool:
         return FEATURES[feature].on(self.record, behaviour)
 
+    def has_chat(self) -> bool:
+        return Agents(self.record, actor=SYSTEM).has_primary()
+
     def chat(self) -> Speaker:
         agent = Agents(self.record, actor=SYSTEM).primary_to_read()
         if agent is None:

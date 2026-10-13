@@ -1,6 +1,6 @@
 from events.agents import ClockTicked
 from events.messages import MessageUpdated
-from expects import WHEN, Dispatches, Given, Nudged, Updated, Wrote, nothing
+from expects import WHEN, Dispatches, Given, Nudged, Remembered, Updated, Wrote, nothing
 from framework.base import Feature
 from resources.dumps import Dump
 from features.dumps.details import DumpsDetails
@@ -46,8 +46,8 @@ class DumpsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.listen(DumpWritten, SpotDumpChoosing(), expects=[
-            on_arrival(choosing(1, "Keep it"), IDLE) >> Dispatches(DumpChoiceMade(n=1, label="Keep it").once("dump choice|1:5.0")),
-            on_arrival(choosing(-1, ""), IDLE) >> Dispatches(DumpChoiceOpen(n=1).once("dump choice|1:5.0")),
+            on_arrival(choosing(1, "Keep it"), IDLE) >> Dispatches(DumpChoiceMade(n=1, label="Keep it", at="5.0").once("dump choice|1:5.0")),
+            on_arrival(choosing(-1, ""), IDLE) >> Dispatches(DumpChoiceOpen(n=1, at="5.0").once("dump choice|1:5.0")),
             on_arrival(choosing(OWN_WORDS, "my own words"), IDLE) >> Dispatches(nothing),
             on_arrival(dump(), IDLE) >> Dispatches(nothing),
             on_arrival(choosing(1, "Keep it")) >> Dispatches(nothing),
@@ -58,6 +58,7 @@ class DumpsFeature(Feature):
             on_arrival(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Dispatches(nothing),
             on_arrival(dump(), dump(n=2), IDLE) >> Dispatches(nothing),
             on_arrival(choosing(1, "Keep it"), IDLE) >> Dispatches(nothing),
+            Given.of(arrived(), choosing(1, "Keep it"), IDLE, remembered={"dumps.announced|1": "5.0"}) >> Dispatches(DumpArrived(n=1, items="2 items")),
             on_arrival(dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE)
                 >> Dispatches(DumpQuestionAnswered(n=1, answer="Tomorrow", question="When should it be done?").once("dump answer|1:1")),
             on_completion(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE)
@@ -66,8 +67,8 @@ class DumpsFeature(Feature):
             on_arrival(dump()) >> Dispatches(nothing),
         ])
         journal.events.handle(DumpArrived, TellDumpArrived(), expects=[Given(DumpArrived(n=1, items="2 items"), rows=[IDLE]) >> Nudged("arrived", n=1, count="2 items")])
-        journal.events.handle(DumpChoiceMade, TellChoiceMade(), expects=[Given(DumpChoiceMade(n=1, label="Keep it"), rows=[IDLE]) >> Nudged("chose", label="Keep it")])
-        journal.events.handle(DumpChoiceOpen, TellChoiceOpen(), expects=[Given(DumpChoiceOpen(n=1), rows=[IDLE]) >> Nudged("decide", n=1)])
+        journal.events.handle(DumpChoiceMade, TellChoiceMade(), expects=[Given(DumpChoiceMade(n=1, label="Keep it", at="5.0"), rows=[IDLE]) >> Nudged("chose", label="Keep it") & Remembered("announced|1", "5.0")])
+        journal.events.handle(DumpChoiceOpen, TellChoiceOpen(), expects=[Given(DumpChoiceOpen(n=1, at="5.0"), rows=[IDLE]) >> Nudged("decide", n=1) & Remembered("announced|1", "5.0")])
         journal.events.handle(DumpQuestionAnswered, TellQuestionAnswered(), expects=[
             Given(DumpQuestionAnswered(n=1, answer="Tomorrow", question="When should it be done?"), rows=[IDLE]) >> Nudged("answered", answer="Tomorrow")])
         journal.events.handle(DumpFiledAway, TellDumpFiled(), expects=[Given(DumpFiledAway(n=1, outcome="2 filed"), rows=[IDLE]) >> Nudged("filed", outcome="2 filed")])
