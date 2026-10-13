@@ -1,4 +1,4 @@
-import {onMounted, onUnmounted} from "vue";
+import {onMounted, onUnmounted, watch} from "vue";
 import {transport} from "../api/transport.js";
 import {covered, STATUS_POLL} from "../state/updating.js";
 
@@ -140,5 +140,7 @@ export function usePoll(key, ask, every, take = () => {}, active = () => true) {
     let stop = () => {};
     onMounted(() => (stop = startPoll(key, ask, every, take, active)));
     onUnmounted(() => stop());
+    // a poll that had nothing to ask for asks the moment it has, not a whole interval later
+    watch(active, (now) => now && pollNow(key));
     return () => pollNow(key);
 }
