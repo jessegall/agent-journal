@@ -1,4 +1,5 @@
 from events.agents import ToolCallAnswered
+from expects.calls import shell_asked
 from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.heavy_runs import HeavyRunHeld, HeavyRunStarted
@@ -16,9 +17,6 @@ A_TEST_RUN = "pytest tests/test_the_gate.py -q"
 NOT_A_TEST_RUN = "git status"
 
 
-def asked(command: str) -> ToolCallAsked:
-    return ToolCallAsked(tool="Bash", input=command, command=command, session="claude-1")
-
 
 def answered(command: str) -> ToolCallAnswered:
     return ToolCallAnswered(agent=1, tool="Bash", command=command)
@@ -29,8 +27,8 @@ class HeavyRuns(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.answer(ToolCallAsked, HoldHeavyRunsToOneAtATime(), expects=[
-            Given(asked(NOT_A_TEST_RUN), rows=[AGENT_ROW]) >> Answered(Allowed()),
-            Given(asked(A_TEST_RUN), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell_asked(NOT_A_TEST_RUN), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell_asked(A_TEST_RUN), rows=[AGENT_ROW]) >> Answered(Allowed()),
         ])
         journal.events.listen(ToolCallAnswered, SpotHeavyRun(), expects=[
             Given(answered(NOT_A_TEST_RUN), rows=[AGENT_ROW]) >> Dispatches(nothing),

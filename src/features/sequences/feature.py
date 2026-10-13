@@ -1,4 +1,5 @@
 import json
+from expects.calls import shell_answered, shell_asked
 from dataclasses import asdict, replace
 
 from events.agents import AgentTurnWritten, ClockTicked, ToolCallAnswered, ToolFinished
@@ -86,12 +87,6 @@ def written(text: str) -> AgentTurnWritten:
     return AgentTurnWritten(agent=1, turn="turn-1", text=text)
 
 
-def shell(command: str) -> ToolCallAsked:
-    return ToolCallAsked(tool="Bash", input=command, command=command, session="claude-1")
-
-
-def ran(command: str, why: str = "") -> ToolCallAnswered:
-    return ToolCallAnswered(agent=1, tool="Bash", input=command, command=command, why=why)
 
 
 HELD_TEXT = step_held_text(release(), RELEASE_KEY, {"step": 1})
@@ -210,20 +205,20 @@ class SequencesFeature(Feature):
                 >> Dispatches(replace(DISPATCHED, why="question 1 answered: main").once("1|4|t|board:2|1.0|question 1 answered: main")),
         ])
         journal.events.answer(ToolCallAsked, HoldJournalWritesForTheStep(), expects=[
-            Given(shell('journal todo create "Later"'), rows=[release()]) >> Answered(Declined(HELD_TEXT)),
-            Given(shell('journal todo create "Later"'), rows=[release(followed=1)]) >> Answered(Allowed()),
-            Given(shell('journal todo create "Later"')) >> Answered(Allowed()),
-            Given(shell("journal version tag"), rows=[release()]) >> Answered(Allowed()),
-            Given(shell("journal todo show 3"), rows=[release()]) >> Answered(Allowed()),
-            Given(shell("journal sequence next 4"), rows=[release()]) >> Answered(Allowed()),
-            Given(shell("git status"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked('journal todo create "Later"'), rows=[release()]) >> Answered(Declined(HELD_TEXT)),
+            Given(shell_asked('journal todo create "Later"'), rows=[release(followed=1)]) >> Answered(Allowed()),
+            Given(shell_asked('journal todo create "Later"')) >> Answered(Allowed()),
+            Given(shell_asked("journal version tag"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("journal todo show 3"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("journal sequence next 4"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("git status"), rows=[release()]) >> Answered(Allowed()),
         ])
         journal.events.listen(ToolCallAnswered, SpotStepFollowed(), expects=[
-            Given(ran('journal todo create "Later"'), rows=[FILING]) >> Dispatches(StepFollowed(sequence=4, about=None)),
-            Given(ran('journal todo create "Later"'), rows=[release()]) >> Dispatches(nothing),
-            Given(ran("journal version tag"), rows=[release()]) >> Dispatches(nothing),
-            Given(ran('journal todo create "Later"', why="held"), rows=[FILING]) >> Dispatches(nothing),
-            Given(ran('journal todo create "Later"'), rows=[Sequence(n=4, title="Filing a to-do", sections=FILING.sections, data={"runs": {RELEASE_KEY: {"step": 1, "at": 1.0, "followed": 1}}})]) >> Dispatches(nothing),
+            Given(shell_answered('journal todo create "Later"'), rows=[FILING]) >> Dispatches(StepFollowed(sequence=4, about=None)),
+            Given(shell_answered('journal todo create "Later"'), rows=[release()]) >> Dispatches(nothing),
+            Given(shell_answered("journal version tag"), rows=[release()]) >> Dispatches(nothing),
+            Given(shell_answered('journal todo create "Later"', why="held"), rows=[FILING]) >> Dispatches(nothing),
+            Given(shell_answered('journal todo create "Later"'), rows=[Sequence(n=4, title="Filing a to-do", sections=FILING.sections, data={"runs": {RELEASE_KEY: {"step": 1, "at": 1.0, "followed": 1}}})]) >> Dispatches(nothing),
         ])
         journal.events.handle(StepFollowed, FollowTheStep(), expects=[
             Given(StepFollowed(sequence=4, about=None), rows=[FILING]) >> Updated(Sequence(n=4), runs=AtFollowed()),

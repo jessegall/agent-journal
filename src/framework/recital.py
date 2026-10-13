@@ -63,7 +63,8 @@ def searched(call, scope: str) -> str:
 
 
 def mentioned(words, text: str) -> bool:
-    return any(re.search(rf"(?<![\w-]){re.escape(str(word))}(?![\w-])", text, re.IGNORECASE) for word in words if word)
+    """Whether a word stands in the text as a whole word, a flag's leading hyphens included, so force catches --force but not enforce or --force-with-lease."""
+    return any(re.search(rf"(?<!\w){re.escape(str(word))}(?![\w-])", text, re.IGNORECASE) for word in words if word)
 
 
 KEPT_WHISPERS = 50

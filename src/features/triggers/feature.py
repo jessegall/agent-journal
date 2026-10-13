@@ -1,4 +1,5 @@
 from declaring.registries import STILL_HELD
+from expects.calls import shell_answered, shell_asked
 from events.agents import AgentMessageSent, AgentReported, ClockTicked, ToolCallAnswered
 from events.answers import Allowed, Refused
 from events.asking import ToolCallAsked
@@ -48,12 +49,6 @@ BUMP_VERSION = Trigger(n=8, title="Bump the version", data={"words": ["tag"], "d
 THE_WORD_FORCE = Trigger(n=7, title="No force", data={"words": ["force"], "does": "deny", "text": "Never force."})
 
 
-def asked(command: str) -> ToolCallAsked:
-    return ToolCallAsked(tool="Bash", input=command, command=command, session="claude-1")
-
-
-def answered(command: str, why: str = "") -> ToolCallAnswered:
-    return ToolCallAnswered(agent=1, tool="Bash", input=command, command=command, why=why)
 
 
 def seen_idle(*found: Sent):
@@ -102,11 +97,11 @@ class TriggersFeature(TriggersWork, Feature):
                 >> Dispatches(TriggerMet(agent=1, row=1, done=CHAT_DENIED)) & Dispatches(ChatWordDenied(agent=1, row=1)),
         ])
         journal.events.listen(ToolCallAnswered, SpotWhatTheAgentDoes(), expects=[
-            Given(answered("make deploy"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=2)),
-            Given(answered("make deploy"), rows=[DEPLOY_NOTE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=3)),
-            Given(answered("make build"), rows=[DEPLOY_NUDGE, DEPLOY_NOTE, AGENT_ROW]) >> Dispatches(nothing),
-            Given(answered("git push --force", why="No force push - Never force push."), rows=[NO_FORCE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=1)),
-            Given(answered("git push --force", why="Something else"), rows=[NO_FORCE, AGENT_ROW]) >> Dispatches(nothing),
+            Given(shell_answered("make deploy"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=2)),
+            Given(shell_answered("make deploy"), rows=[DEPLOY_NOTE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=3)),
+            Given(shell_answered("make build"), rows=[DEPLOY_NUDGE, DEPLOY_NOTE, AGENT_ROW]) >> Dispatches(nothing),
+            Given(shell_answered("git push --force", why="No force push - Never force push."), rows=[NO_FORCE, AGENT_ROW]) >> Dispatches(TriggerMet(agent=1, row=1)),
+            Given(shell_answered("git push --force", why="Something else"), rows=[NO_FORCE, AGENT_ROW]) >> Dispatches(nothing),
             Given(ToolCallAnswered(agent=1, tool="Bash", input="make deploy", command="make deploy", subagent=True), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(TriggerMet, FireTrigger(), expects=[
@@ -150,11 +145,13 @@ class TriggersFeature(TriggersWork, Feature):
             Given(TriggerReleased(agent=1, row=6), rows=[HOLD_WHEN_IDLE, JUST_NOW]) >> Unchanged(),
         ])
         journal.events.answer(ToolCallAsked, DenyWhatTheAgentDoes(), expects=[
-            Given(asked("git push --force"), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Refused("No force push - Never force push.")),
-            Given(asked("git push"), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Allowed()),
-            Given(asked("git push --force"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Answered(Allowed()),
-            Given(asked("git push --force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Allowed()),
-            Given(asked("git push force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Refused("No force - Never force.")),
+            Given(shell_asked("git push --force"), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Refused("No force push - Never force push.")),
+            Given(shell_asked("git push"), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell_asked("git push --force"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell_asked("git push --force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Refused("No force - Never force.")),
+            Given(shell_asked("git push --force-with-lease"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell_asked("git config enforce.on true"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Allowed()),
+            Given(shell_asked("git push force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Answered(Refused("No force - Never force.")),
             Given(ToolCallAsked(tool="Bash", input="git push --force", command="git push --force", session="claude-1", subagent=True), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Allowed()),
         ])
         STILL_HELD["triggers.hold"] = reminding
