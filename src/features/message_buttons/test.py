@@ -39,7 +39,7 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
     rows.update(later.n, buttons=[{"label": "Go", "type": "plan", "n": 1, "action": "detonate"}, start])
     assert rows.load(later.n).data["buttons"] == [start], "buttons added after the message was written are cleaned the same way"
     from controllers.types import Todos
-    from features.message_buttons.pressing import press
+    from framework.pressing import press
     from resources.base import USER, Stale
     new = {"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "from a button"}}
     offered = rows.create("Want a to-do?", buttons=[new])
@@ -86,7 +86,7 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
 def test_a_button_can_run_a_command_the_agent_asks_for_and_it_runs_only_on_the_press():
     from engine import bus
     from resources.buttons import unspent
-    from features.message_buttons.pressing import press, said
+    from framework.pressing import press, said
     from resources.buttons import Button
 
     record = fresh()

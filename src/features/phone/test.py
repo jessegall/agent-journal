@@ -21,12 +21,12 @@ from controllers.features import Features
 from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
 from engine.record import Record
 from controllers.phone import push
-from features.phone import allow_list
-from features.phone.notifying import told
+from framework.phone import allow_list
+from framework.phone.notifying import told
 from controllers.phone import controller as phone_controller
 from controllers.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
 from controllers.types import Phones
-from features.phone.feed import POSTED
+from framework.phone.feed import POSTED
 from controllers.types import Helpers
 from controllers.types import Tickets
 from controllers.types import Shares
@@ -424,8 +424,8 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypa
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
     from commands.dispatch import reached_by_phone
-    from features.phone.allow_list import PhoneVisit, Reach
-    from features.phone.members import MEMBER_RIGHTS, MemberRights
+    from framework.phone.allow_list import PhoneVisit, Reach
+    from framework.phone.members import MEMBER_RIGHTS, MemberRights
     sam = Phones(record, actor=USER).connect(7, "sam")["n"]
     assert (Phones(record, actor=SYSTEM)._phone(sam).member, Phones(record, actor=SYSTEM)._phone(n).member) == ("sam", OWNER_ID), \
         "a phone connected for a member is that member's, and the owner's stays the owner's"
@@ -444,7 +444,7 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypa
         assert (asked("sam"), asked("kim")) == (Reach.OPEN, Reach.CLOSED), "and then reaches exactly what its member is granted"
         mine, theirs = Todos(record, actor=SYSTEM).create("Sam's"), Todos(record, actor=SYSTEM).create("Kim's")
         phone = Phones(record, actor=SYSTEM)._phone(sam)
-        from features.phone.feed import reaches
+        from framework.phone.feed import reaches
         assert (reaches(record, phone, mine), reaches(record, phone, theirs)) == (True, False), "a member's phone is shown, and pushed, only what its member may see"
     finally:
         MEMBER_RIGHTS.remove(MEMBER_RIGHTS.entries[-1].value)
@@ -516,7 +516,7 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
 
 def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, monkeypatch):
     from controllers.phone import controller, push
-    from features.phone import feed
+    from framework.phone import feed
     record, base = served
     _, key = paired(record, base)
     assert call(base, "/p/push", {"endpoint": "https://example.com/steal"}, key).status == 422, "only a real push service is ever called"
@@ -738,7 +738,7 @@ def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served, m
         [400, 400, 400, 404, 404, 404], "a read that asks wrongly is told so, and one for a row or file the phone cannot reach finds nothing"
     assert [call(base, "/p/", key=key).status, call(base, "/p/nowhere/page", key=key).status] == [200, 404], "the page opens at its own address and nowhere else"
     assert (call(base, "/p", key=key).status, read("/p/a/b/c/d")) == (200, 404), "the page is also found without its closing slash, and a read that names too much finds nothing"
-    from features.phone import routes as phone_routes
+    from framework.phone import routes as phone_routes
     monkeypatch.setattr(phone_routes, "APP_DIR", Path("/nonexistent/app"))
     assert (read("/p/feed"), call(base, "/p/", key=key).status, phone_routes.built()) == (200, 404, ""), "without the built page the phone still reads its feed and the page is not found"
     assert [call(base, path, {}, key=key).status for path in ("/p/", "/p/nothing/here")] == [404, 404], "a write to no action finds none"

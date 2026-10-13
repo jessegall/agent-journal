@@ -24,9 +24,9 @@ from features.members.roles import NOT_A_WRITER, Role
 from features.members.roster import INVITE_DAYS, Roster
 from commands.dispatch import reached_by_phone
 from engine.record import Record
-from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, PhoneVisit, Reach, get
+from framework.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, PhoneVisit, Reach, get
 from controllers.types import Phones
-from features.phone.members import rights_of
+from framework.phone.members import rights_of
 from framework.routing import MEMBER, ROLE, SHARED, sender_of
 from declaring.trigger import DAY
 from resources.base import AGENT, OWNER_ID, SYSTEM, USER, WRITER

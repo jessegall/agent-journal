@@ -9,7 +9,7 @@ from framework.journal import Journal
 from features.permission_prompts.commands import AnswerPermission
 from features.permission_prompts.details import PermissionsDetails
 from features.permission_prompts.handlers import ClearTheAsk, ShowTheAsk, SpotPermissionAsk
-from features.permission_prompts.skipping import Skipping, launch_args, skipped, skipping_now
+from framework.skipping import Skipping, launch_args, skipped, skipping_now
 from resources.base import SYSTEM
 from resources.types import AgentRow, Notice
 

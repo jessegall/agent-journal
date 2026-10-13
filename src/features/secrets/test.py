@@ -165,7 +165,7 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
                                         "choice": "login", "ask": "Log in to Staging for the agent"}, \
         "the agent's request puts a Log in button in the chat"
     assert "only you log in" in refused(lambda: agent.login(row.n)) and opened == [], "the agent never opens the login itself"
-    from features.message_buttons.pressing import press
+    from framework.pressing import press
     spawned = []
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: spawned.append(list(command)))
     press(record, asked, "Log in", secrets.actor, "viewer")

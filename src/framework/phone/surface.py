@@ -10,16 +10,16 @@ from engine.sessions import Sessions
 from framework.loaded import FEATURES
 from framework.format import VIEWER, shaped
 from controllers.types import Helpers
-from features.message_buttons.pressing import press
-from features.phone.export import Export, export
-from features.phone.feed import Feed, feed, helper, reaches
+from framework.pressing import press
+from framework.phone.export import Export, export
+from framework.phone.feed import Feed, feed, helper, reaches
 from controllers.types import Plans
 from resources.plans import READY, WAITING
 from controllers.types import Shares
 from resources.status_bar import current
 from controllers.types import Suggestions
-from features.work_modes.modes import pick
-from features.work_tracking.auto import automatic
+from framework.work_mode import pick
+from framework.auto_mode import automatic
 from resources.base import AGENT, SYSTEM, USER, Refused, Stale, titled
 from resources.shapes import level_named
 

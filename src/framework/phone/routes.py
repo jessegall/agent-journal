@@ -12,11 +12,11 @@ from engine.record import Record
 from resources.base import DEFAULT_PROVIDER
 from resources.phones import WAITING_CARD
 from resources.fields import Loaded
-from features.phone.notifying import owed_to
-from features.phone.allow_list import PhoneVisit
-from features.phone.desktop import Desktop
-from features.phone.members import rights_of
-from features.phone.surface import CARDS, PhoneSurface
+from framework.phone.notifying import owed_to
+from framework.phone.allow_list import PhoneVisit
+from framework.phone.desktop import Desktop
+from framework.phone.members import rights_of
+from framework.phone.surface import CARDS, PhoneSurface
 from engine.color import identity
 from framework.updating.countdown import update_state
 from controllers.types import Phones, Shares

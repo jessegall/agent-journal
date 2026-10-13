@@ -9,20 +9,19 @@ from controllers.types import CONTROLLERS, Agents, Comments, Environments, Messa
 from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
-from features.ask_questions.details import AskQuestionsDetails
+from framework.loaded import FEATURES
 from framework.format import VIEWER, formatted, shaped
 from controllers.types import Helpers
 from controllers.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
-from features.phone.chat_view import TURNS, hidden
-from features.phone.members import rights_of
+from framework.phone.chat_view import TURNS, hidden
+from framework.phone.members import rights_of
 from resources.phones import WAITED, owed
 from controllers.types import Suggestions
-from features.suggestions.details import SuggestionsDetails
 from controllers.types import Plans
 from resources.plans import PHASE
 from resources.marks import Marks
-from features.work_modes.modes import mode_of
-from features.work_tracking.auto import automatic
+from framework.work_mode import mode_of
+from framework.auto_mode import automatic
 from resources.base import SYSTEM, Refused
 from overview.summary import JournalSummary, lately_summarized, subagents
 
@@ -165,7 +164,7 @@ def in_feed(kind: str, row, away: list[str]) -> bool:
 
 
 def hold(home: Record) -> int:
-    return AskQuestionsDetails.values(home).hold
+    return FEATURES["ask_questions"].values(home).hold
 
 
 def reaches(home: Record, phone, row) -> bool:
@@ -249,7 +248,7 @@ def entry(home: Record, kind: str, row) -> dict:
 
 
 EXTRAS = {"question": lambda home: {"hold": hold(home)},
-          "suggestion": lambda home: {"window_after": SuggestionsDetails.values(home).window_after, "start_grace": SuggestionsDetails.values(home).start_grace,
+          "suggestion": lambda home: {"window_after": FEATURES["suggestions"].values(home).window_after, "start_grace": FEATURES["suggestions"].values(home).start_grace,
                                       "started": runtime.STARTED[0]}}
 
 

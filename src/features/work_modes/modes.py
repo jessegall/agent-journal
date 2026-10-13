@@ -1,22 +1,7 @@
 from features.work_modes.details import WorkModesDetails
-from framework.work_mode import CARRIED_IN, mode_of, taking  # noqa: F401
+from framework.work_mode import CARRIED_IN, mode_of, pick, taking  # noqa: F401
 from resources.base import Refused
 from resources.work_modes import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, board_in, filing_on, kept_mode  # noqa: F401
-
-
-def pick(record, mode: str, actor: str) -> str:
-    if mode not in MODES:
-        raise Refused(f"the work mode is one of {', '.join(MODES)}, not {mode!r}")
-    if mode_of(record) == mode:
-        return mode
-    record.change_setting(NAME, {"mode": mode})
-    record.emit("feature", 0, "updated", actor, setting=NAME)
-    from framework.loaded import running
-    from features.work_modes.feature import WorkModes
-    for write in CARRIED_IN.each():
-        write(record.root.parent, record)
-    running(WorkModes).to_running(record, MODE_SET, actor=actor, mode=mode, written=MODES[mode].written)
-    return mode
 
 
 def board_of(record):

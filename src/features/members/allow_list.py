@@ -1,4 +1,4 @@
-from features.phone.allow_list import Action, Page, actions, get
+from framework.phone.allow_list import Action, Page, actions, get
 
 SHARED = ("message", "comment", "todo", "doc", "question", "reaction", "report", "plan")
 

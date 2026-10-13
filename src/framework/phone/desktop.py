@@ -5,7 +5,7 @@ from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 from framework.routing import resolve
 from resources.extension import Extension
 from engine.viewer import lately_running
-from features.phone.allow_list import Page
+from framework.phone.allow_list import Page
 from framework.routing import JSON
 from controllers.sharing.page import disposition
 from controllers.sharing.server import APP_HEADERS

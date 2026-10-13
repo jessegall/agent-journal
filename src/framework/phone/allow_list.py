@@ -8,8 +8,8 @@ from controllers.types import CONTROLLERS
 from resources.fields import Loaded
 from engine.paths import known_environment
 from engine.record import Record
-from features.permission_prompts.skipping import Relaunch
-from features.phone.members import rights_of
+from framework.skipping import Relaunch
+from framework.phone.members import rights_of
 from framework.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Named, Reply, Route
 from resources.base import SYSTEM
 

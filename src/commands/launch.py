@@ -121,7 +121,7 @@ def lines_of(heading: str, files: list[Path]) -> list[str]:
 
 
 def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:
-    from features.permission_prompts.skipping import set_skipped, skipped
+    from framework.skipping import set_skipped, skipped
     answering = someone_can_answer() if answering is None else answering
     driver = DRIVERS.get(agent)
     if not answering or not driver or not driver.SKIP_ARGS or set(driver.SKIP_ARGS) <= set(args):

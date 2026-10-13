@@ -1,5 +1,5 @@
 from controllers.types import Phones, Shares
-from features.phone.feed import waiting
+from framework.phone.feed import waiting
 from resources.base import SYSTEM
 
 

@@ -26,8 +26,8 @@ from features.hosted_journal.hosting import Ask, Hosting
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
 from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.vault import RefusalLog, Vault
-from features.phone.allow_list import Action, GenericPath, Page, post, reach
-from features.phone.desktop import Desktop, closed, encoded
+from framework.phone.allow_list import Action, GenericPath, Page, post, reach
+from framework.phone.desktop import Desktop, closed, encoded
 from controllers.sharing.origins import origins_of
 from declaring.trigger import DAY
 from resources.base import OWNER_ID, USER, Refused

@@ -23,7 +23,7 @@ from engine.after_answer import answering_for
 from resources.memo import Memo
 from engine.upgrades import check_now
 from agents.control import permit
-from features.permission_prompts.skipping import Relaunch
+from framework.skipping import Relaunch
 from engine.files import found_files
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features

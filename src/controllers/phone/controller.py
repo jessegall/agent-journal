@@ -11,7 +11,6 @@ from controllers.marks import action
 from controllers.notices import Notices
 from controllers.requests import request
 from engine.outbox import Request
-from engine import runtime
 from engine.record import Record
 from resources.phones import WAITING_CARD, RecordGuard, guard_of
 from controllers.phone.passkey import CREATE, GET, Assertion, Challenge, Creating, Enrolment, Getting, Passkey, PendingPasskey, Relying, Unlock, Unverified, creating, requested
@@ -312,14 +311,6 @@ class Phones(Controller):
         guard = self._guard()
         return [row for row in ({**row.to_disk(), **guard.read(row.n)} for row in self.rows.standing_summaries())
                 if ((row.get("key") and row.get("expires", 0) > now) or row.get("code_until", 0) > now)]
-
-
-def phones_live(root) -> bool:
-    return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM)._live())
-
-
-def phones_paired(record) -> bool:
-    return bool(Phones(record, actor=SYSTEM).actives())
 
 
 resources_module.register(Phone)

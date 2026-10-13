@@ -1,9 +1,9 @@
 from framework.base import Feature
 from framework.journal import Journal
-from controllers.phone.controller import phones_live, phones_paired
-from features.phone.notifying import told
+from framework.phone.live import phones_live, phones_paired
+from framework.phone.notifying import told
 from features.phone.details import PhoneDetails
-from features.phone.routes import PhoneRoutes
+from framework.phone.routes import PhoneRoutes
 from declaring.registries import RELIED_ON
 from declaring.registries import SHARE_ROUTES, SHARE_TICKS
 from declaring.registries import SHARE_KEEP_UP

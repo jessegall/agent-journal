@@ -156,7 +156,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     tickets.move(ticket.n, "Building")
     assert not Boards(record, actor=SYSTEM).load(board.n).finished, "a ticket started on a closed board opens that board again"
     from engine.record import Record
-    from features.permission_prompts.skipping import skipped
+    from framework.skipping import skipped
     env, agent, args = launched[0]
     assert (env, agent, args[:2], skipped(Record(record.root, f"ticket-{ticket.n}"))) == \
         (f"ticket-{ticket.n}", "claude", ["--worktree", f"ticket-{ticket.n}"], True), \

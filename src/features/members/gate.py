@@ -18,7 +18,7 @@ from features.members.roles import OWNER_ABILITIES, Abilities, Role
 from features.members.roster import Departure, Member, Roster
 from controllers.types import Phones
 from framework.routing import MEMBER, ROLE, SHARED
-from features.phone.allow_list import Action, Page
+from framework.phone.allow_list import Action, Page
 from resources.base import OWNER_ID, USER, Resource, as_dict
 
 OWNER_NAME = "Owner"

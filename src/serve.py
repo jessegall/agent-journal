@@ -28,7 +28,7 @@ from commands.http import dispatch, unanswered  # noqa: E402
 from controllers.stored import DEFER, flush_indexes, renew_stamps, watch_marks  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
 from framework.routing import resolve  # noqa: E402
-from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
+from framework.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from framework.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402

@@ -12,7 +12,7 @@ from features.open_viewer.manifest import manifest
 from features.open_viewer.settings import apply, settings
 from framework.parts import Command, Context
 from controllers.shared import shared
-from features.permission_prompts.skipping import set_skipped
+from framework.skipping import set_skipped
 from overview.summary import lately_summarized
 from serving import SERVED, Providers
 from resources.base import Missing, Refused

@@ -12,9 +12,9 @@ from features.hosted_journal.standing import Standing
 from features.hosted_journal.vault import Vault
 from features.hosted_journal.watch import DiskWatch
 from framework.journal import Journal
-from features.phone.desktop import CLOSED
+from framework.phone.desktop import CLOSED
 from resources.phones import PHONE_GUARDS
-from features.phone.members import MEMBER_RIGHTS
+from framework.phone.members import MEMBER_RIGHTS
 from engine.address import ANSWERS_AT
 from declaring.registries import SHARE_ORIGINS
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS

@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import assert_never
 
 from features.members.allow_list import read, written
-from features.phone.allow_list import Action, Page
+from framework.phone.allow_list import Action, Page
 from resources.base import Refused
 
 READ = "Read every page of this journal"
