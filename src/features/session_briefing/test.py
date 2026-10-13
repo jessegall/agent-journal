@@ -133,8 +133,8 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     sent = []
     engine.agent.driver.send = lambda text="", **rest: sent.extend([text, rest.get("yielding", "")]) or True
     engine.deliver()
-    assert any(f"the journal is ready on {record.env} — say hello in the chat in plain words, so the journal's messages reach you" in text for text in sent), \
-        "the greeting goes out through the one send, never marked read as history"
+    assert any(f"the journal is ready on {record.env} — say hello in the chat in plain words, so the journal's messages reach you" in text for text in [*sent, *engine.agent.driver.held]), \
+        "the greeting is a whisper, which the driver holds for the one send and never marks read as history"
     from controllers.types import Environments
     from engine.record import Record
     Environments(record, actor="system").create("ticket-5", owner="ticket:5")
@@ -146,7 +146,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     quiet = []
     engine.agent.driver.send = lambda text="", **rest: quiet.append(text) or True
     engine.deliver()
-    assert not [text for text in quiet if "say hello" in text], "an agent working in the background, such as a ticket's, is never asked to say hello"
+    assert not [text for text in [*quiet, *engine.agent.driver.held] if "say hello" in text], "an agent working in the background, such as a ticket's, is never asked to say hello"
 
 
 def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
