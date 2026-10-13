@@ -13,7 +13,7 @@ from tests.conftest import fresh
 def test_a_message_wakes_the_environments_last_conversation_when_no_agent_runs(monkeypatch):
     features.load()
     started = []
-    monkeypatch.setattr("features.starting_agents.launch.detached",
+    monkeypatch.setattr("agents.terminal.detached",
                         lambda root, cwd, env, agent, args, conversation="": started.append((env, agent, conversation)) or 1)
     record = fresh()
     Environments(record, actor=SYSTEM).create(record.env)

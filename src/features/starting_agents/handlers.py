@@ -1,34 +1,13 @@
-import time
-
-from controllers.types import Agents, Environments, Messages
-from events.messages import MessageCreated
-from engine.sessions import Sessions, live
-from framework.parts import Context, Handler
-from features.starting_agents.launch import launch
-from serving import SERVED, Providers
-from resources.base import SYSTEM, USER
-
-LAUNCHING_FOR = 60.0
+from events import Fact
+from events.starting_agents import WakeRequested
+from receiving import Handler
+from resources.types import Environment
+from serving import Clock, Elsewhere, Processes, Providers, Rows
 
 
-def last_conversation(record):
-    rows = [row for row in Agents(record, actor=SYSTEM).rows.every()
-            if row.data.get("event") and SERVED.given(Providers).knows(row.provider) and not row.subagent and not row.title.startswith(f"{row.provider}-")]
-    return max(rows, key=lambda row: float(row.at), default=None)
-
-
-class WakeOnMessage(Handler):
-    def handle(self, context: Context, event: MessageCreated) -> None:
-        if not context.settings.wake_on_message or Messages(context.record, actor=SYSTEM).load(event.n).seen[:1] != [USER]:
-            return
-        record = context.record
-        if Sessions(record.root).holder(record.env):
-            return
-        environments = Environments(record, actor=SYSTEM)
-        place = environments.rows.by_title(record.env)
-        if place is None or time.time() - float(place.launched) < LAUNCHING_FOR:
-            return
-        last = last_conversation(record)
-        if last is None or live(Sessions(record.root).read(last.title)):
-            return
-        launch(environments, place, last.provider, last.title)
+class CarryOnTheConversation(Handler[WakeRequested]):
+    def handle(self, event: WakeRequested, processes: Processes, providers: Providers, environments: Rows[Environment], elsewhere: Elsewhere, clock: Clock) -> list[Fact]:
+        root = elsewhere.here().record.root
+        processes.start_detached(root, root.parent, event.environment, event.provider, [*providers.driver(event.provider).AUTO_ARGS], event.conversation)
+        environments.update(event.n, launched=clock.now(), launched_agent=event.provider)
+        return []
