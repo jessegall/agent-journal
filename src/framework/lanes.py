@@ -11,6 +11,7 @@ from controllers.agents import Agents
 from controllers.base import CONTROLLERS
 from engine import triggering
 from engine.command_line import command_line
+from engine.record import Record
 from engine.sessions import Sessions as TheSessions
 from events import Fact
 from framework.loaded import FEATURES
@@ -23,7 +24,7 @@ from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere)
 
 
 class NobodyToSpeakTo(LookupError):
@@ -67,6 +68,32 @@ class AgentHolds:
     def why(self, subagent: bool, writing: bool) -> str:
         """Why the agent's next call of this kind is refused, by every standing hold that reaches it; empty when nothing holds it."""
         return gates.held(self.record, self.agent.title, subagent, writing)
+
+
+class Environment:
+    """One environment of the journal, reached from another: the controller of a row type over it, and the chat of its primary agent as the asking feature speaks there."""
+
+    def __init__(self, feature, record):
+        self.feature, self.record = feature, record
+
+    def rows(self, kind: type):
+        return CONTROLLERS[kind.type](self.record, actor=SYSTEM)
+
+    def chat(self) -> Speaker:
+        agent = Agents(self.record, actor=SYSTEM).primary_to_read()
+        if agent is None:
+            raise NobodyToSpeakTo.of(f"environment {self.record.env}")
+        return Speaker(self.feature, self.record, agent)
+
+
+class TheEnvironments:
+    """The other environments of a journal, each reached by its name."""
+
+    def __init__(self, feature, record):
+        self.feature, self.record = feature, record
+
+    def named(self, env: str) -> Environment:
+        return Environment(self.feature, Record(self.record.root, env))
 
 
 class TheClock:
@@ -127,6 +154,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
             ReadMarks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
             Holds: PerAsk(lambda feature, asked: AgentHolds(record, agent())),
+            Elsewhere: PerAsk(lambda feature, asked: TheEnvironments(FEATURES[feature], record)),
+            ReadElsewhere: PerAsk(lambda feature, asked: TheEnvironments(FEATURES[feature], record)),
             ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
 
 

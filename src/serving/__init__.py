@@ -84,6 +84,18 @@ class Holds(Service):
     """Why the writes of the agent the event is about are held, by every hold that stands against it."""
 
 
+class Elsewhere(Service):
+    """Another environment of this journal, by its name: its rows, and the chat of its agent, as the asking feature speaks there."""
+
+    writes = True
+
+
+class ReadElsewhere(Elsewhere):
+    """The same, asked for to read only."""
+
+    writes = False
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 
