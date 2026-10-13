@@ -11,7 +11,7 @@ from tests.kit import Tickets
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from features.work_tracking.auto import passes_checkpoints
-from features.work_tracking.next import ready
+from framework.readiness import ready
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import idle, tick
@@ -195,7 +195,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     assert gated.load(held.n).data["status"] == "waiting", \
         "a ticket's environment is always in auto, yet its plan's checkpoint waits for the orchestrator or the user"
     from features.work_tracking.auto import passes_checkpoints
-    from features.work_tracking.next import ready
+    from framework.readiness import ready
     stuck, soon, later = (auto_todos.create(title).n for title in ("waits on the production rollout", "next phase work", "independent work two phases on"))
     blocked_first = quick.create("Blocked first", goal="keeps moving")
     quick.phase(blocked_first.n, "Fix first")

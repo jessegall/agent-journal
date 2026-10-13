@@ -2,7 +2,7 @@ from declaring.registries import ADDRESS, LAW, MODE, ORCHESTRATION, SKILLS, STAR
 import time
 
 from controllers.types import CONTROLLERS, Environments, Works
-from features.work_tracking.next import ready
+from framework.readiness import ready
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
 

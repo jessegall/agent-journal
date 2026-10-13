@@ -41,7 +41,7 @@ from events.answers import Allowed, Refused as Refusal
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
                           ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
 from framework.sending import Nudge
-from features.work_tracking.next import ROW_HOLDS
+from declaring.registries import ROW_HOLDS
 from events.plans import PlanChanged
 from events.reports import ReportLinked
 from events.todos import TodoUpdated

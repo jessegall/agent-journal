@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Plans, Works
 from declaring.trigger import MINUTE
-from features.work_tracking.next import carried_on, free, named_rows, ready, waiting_rows
+from framework.readiness import carried_on, free, named_rows, ready, waiting_rows
 from framework.sending import Nudge, Sent
 from resources.base import SYSTEM
 from resources.plans import PHASE

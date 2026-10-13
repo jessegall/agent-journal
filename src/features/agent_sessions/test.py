@@ -15,7 +15,7 @@ from tests.conftest import fresh, refused
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from engine.sessions import Sessions
-from features.work_tracking.next import ready
+from framework.readiness import ready
 from resources.base import AGENT, SYSTEM
 from tests.conftest import refused
 from typing import NamedTuple

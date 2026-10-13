@@ -84,6 +84,10 @@ OUTPUT_LINES: list = []
 """Each a function of the record giving the most lines a command's output keeps for the agent, the largest of them wins."""
 
 
+ROW_HOLDS = Extension()
+"""Whether a feature holds a to-do back from being taken, by the feature: each a function of the record and the row."""
+
+
 SUMMARY_PARTS = Extension()
 """What each feature adds to the summary of an environment, by the name it is shown under."""
 
