@@ -7,12 +7,13 @@ from events.agents import AgentMessageSent, ToolCallAnswered, ToolFinished
 from events.answers import Allowed, Refused
 from events.asking import AgentDispatching, ToolCallAsked
 from events.journal_laws import LargerResult, LawMentioned, LongReadRefused
-from expects import Answered, Dispatches, Given, Nudged, Refused as Failed, Remembered, Updated, answering, nothing
+from events.rules import RuleChanged
+from expects import Answered, Dispatches, File, Given, Nudged, Refused as Failed, Remembered, Updated, Wrote, answering, nothing
 from features.journal_laws.answering import EnforceDispatchLaw, RefuseWholeLongReads
 from features.journal_laws.briefing import brief, long_briefings
 from features.journal_laws.commands import Keep
 from features.journal_laws.details import LARGEST_RESULT, TOO_LONG, LawDetails
-from features.journal_laws.handlers import MarkTheRefusedRead, NameTheLargestResult, RepeatTheLaw
+from features.journal_laws.handlers import InjectRules, MarkTheRefusedRead, NameTheLargestResult, RepeatTheLaw
 from features.journal_laws.laws import carry, laws_for
 from features.journal_laws.listeners import SpotLargerResult, SpotLawInCall, SpotLawInChat, SpotLongReadRefused
 from declaring.registries import LAW, START_PARTS
@@ -21,7 +22,8 @@ from framework.base import Feature
 from framework.journal import Journal
 from framework.recital import WHISPERED_LAW
 from framework.sending import Nudge
-from resources.types import AgentRow
+from resources.base import USER
+from resources.types import AgentRow, Rule
 from resources.voices import BUTLER
 
 __all__ = ["Outputs"]
@@ -69,6 +71,12 @@ class JournalLaws(Feature):
             Given((Outputs, "output.txt", "", "nobody")) >> Failed("no such provider: nobody"),
         ])
         START_PARTS.add(self, carry, key=LAW)
+        journal.events.handle(RuleChanged, InjectRules(), expects=[
+            Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate", data={"injected": True})])
+                >> Wrote(File("AGENTS.md", "- Never skip the gate")) & Wrote(File("CLAUDE.md", "@AGENTS.md")),
+            Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate")])
+                >> Wrote(File("AGENTS.md", "agent-journal, form")) & Wrote(File("CLAUDE.md", "@AGENTS.md")),
+        ])
         if brief not in CARRIED_IN.each():
             CARRIED_IN.add(self, brief)
         if output_lines not in OUTPUT_LINES:
