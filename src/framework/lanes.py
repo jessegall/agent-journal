@@ -16,6 +16,7 @@ from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
 from engine import triggering
 from engine.stored import write_text
+from framework.diagnostics import logged
 from engine import project_files, runtime, seats, viewer, worktree
 from engine.developing import developing
 from engine.disk import last_lines
@@ -118,7 +119,6 @@ class TheFaults:
         FEATURES["dev_faults"].reports.file(self.record, title, brief, **data)
 
     def log(self, line: str) -> None:
-        from features.dev_faults.diagnostics import logged
         logged(TheJournalRoot(self.record), line)
 
 

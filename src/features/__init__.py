@@ -8,7 +8,7 @@ from engine import bus
 from engine.package import modules
 from framework.lanes import TheJournalRoot
 from engine.stored import write_text
-from framework.loaded import FEATURES, SEATED, SWITCHED, running  # noqa: F401 - the loader fills them; the rest of the journal reads them from there
+from framework.loaded import FEATURES, LOADER, SEATED, SWITCHED, running  # noqa: F401 - the loader fills them; the rest of the journal reads them from there
 
 CHANGE_SWITCHES = ("feature", "plugin")
 SEATED_STAMP = "features-seated"
@@ -217,3 +217,6 @@ def passed(event, record) -> None:
         record.reread_settings()
     if event.type in CHANGE_SWITCHES and setting in (None, Record.features):
         rebooted(event, record)
+
+
+LOADER.update(discover=discover, load=load)

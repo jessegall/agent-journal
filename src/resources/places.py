@@ -3,6 +3,8 @@
 from pathlib import Path
 
 RUNTIME = "runtime"
+LAUNCHED = "launched.json"
+"""What the supervisor leaves in a session's folder about the agent it started; the supervisor keeps the same name beside its own code."""
 
 
 def folder(root: Path) -> Path:

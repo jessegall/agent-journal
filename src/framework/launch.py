@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 from agents.terminal import Launched, prompted as prompted_by_file
-from supervisor import LAUNCHED
+from resources.places import LAUNCHED
 from controllers.types import Environments, Features
 from engine import bus, runtime
 from engine.record import Record

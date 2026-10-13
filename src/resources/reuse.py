@@ -3,7 +3,6 @@
 import re
 from dataclasses import dataclass
 
-from declaring.settings import Settings
 from resources.types import SubagentRow
 
 PATH = re.compile(r"[\w.-]+(?:/[\w.-]+)+\.\w+|\b[\w-]+\.(?:py|js|ts|vue|md|json|toml|css|sh)\b")
@@ -58,7 +57,7 @@ def subagent_rows(primary) -> list:
 
 
 
-def refusal(census: list[Kept], limits: Settings, kind: str, paths: tuple[str, ...]) -> str:
+def refusal(census: list[Kept], limits, kind: str, paths: tuple[str, ...]) -> str:
     """Why a new agent of this kind starts later: the project allows only so many agents working at once, and only so many of one kind kept for reuse; an idle agent of another kind never has to go."""
     if is_fresh_kind(kind):
         return ""
