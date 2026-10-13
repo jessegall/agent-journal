@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.2 — The figure searches with a magnifying glass
+
+- When the agent searches, the figure holds up a comically large magnifying glass in front of its eyes and sweeps it as it looks. The butler keeps his tablet for writing.
+
 ## 3.0.1 — The figure is on, and its laptop sits on its lap
 
 - The avatar is on by default, and this update switches it on in every project, including those where 3.0.0 left it off. Switch it off under Settings, Chat, Show a figure in the chat.
