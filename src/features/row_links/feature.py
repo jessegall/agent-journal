@@ -1,4 +1,4 @@
-from engine.markers import marked
+from resources.markers import marked
 from events.agents import AgentMessageSent
 from events.answers import Allowed, Rewritten
 from events.asking import TextFormatting

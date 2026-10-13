@@ -416,6 +416,10 @@ class ProjectFiles:
         found = self.record.root.parent / folder
         return sorted(one.name for one in found.iterdir()) if found.is_dir() else []
 
+    def is_file(self, path: str) -> bool:
+        """Whether a path names a file, under the project folder or as an absolute path."""
+        return (self.record.root.parent / path).is_file() or Path(path).is_file()
+
     def matching(self, name: str) -> list[str]:
         """The project files a bare name or a path's tail names, from the project's file index."""
         return project_files.matching(self.record.root.parent, name)

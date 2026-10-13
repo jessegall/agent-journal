@@ -14,7 +14,7 @@ from events.asking import RowWriting
 from declaring.registries import SAVE_CHECKS, SAVE_MARKS, SAVE_REWRITES
 from resources.pressed import PRESSED, UNCHANGED_SINCE, Pressed  # noqa: F401
 from resources.fields import Loaded
-from engine.markers import plain
+from resources.markers import plain
 from engine.offline import queue
 from engine.outbox import Request
 from engine.paths import known_environment

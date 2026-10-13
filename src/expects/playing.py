@@ -131,6 +131,9 @@ class Files(Asked):
     def exists(self, path: str) -> bool:
         return path in self.answers.answers
 
+    def is_file(self, path: str) -> bool:
+        return path in self.answers.answers
+
     def listing(self, folder: str) -> list[str]:
         prefix = folder.rstrip("/") + "/"
         return sorted({path[len(prefix):].split("/")[0] for path in self.answers.answers if path.startswith(prefix)})

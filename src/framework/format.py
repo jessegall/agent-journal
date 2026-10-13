@@ -4,7 +4,7 @@ from controllers.faults import threw
 from engine import bus
 from events.answers import Rewritten
 from events.asking import TextFormatting
-from engine.markers import plain
+from resources.markers import plain
 from resources.marks import Marks
 from engine.generation import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict

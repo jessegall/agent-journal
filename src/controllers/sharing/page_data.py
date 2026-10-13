@@ -10,7 +10,7 @@ from controllers.docs import Docs
 from controllers.collections import Collections
 from engine import bus
 from controllers.described import described_types
-from engine.markers import MARKER
+from resources.markers import MARKER
 from engine.record import Record
 from framework.format import SHARED, formatted, shape
 from controllers.plans import Plans

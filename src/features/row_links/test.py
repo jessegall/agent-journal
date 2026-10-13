@@ -49,11 +49,13 @@ def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone
 
 def test_a_path_in_text_names_a_file_only_when_it_is_in_the_project():
     from features.row_links.paths import existing
+    from framework.lanes import ProjectFiles
     record = fresh()
     project = record.root.parent
     (project / "web").mkdir()
     (project / "web" / "Turn.vue").write_text("")
-    assert (existing(project, "web/Turn.vue"), existing(project, "web/Missing.vue")) == ("web/Turn.vue", ""), "a path is kept when the file is there and dropped when it is not"
+    files = ProjectFiles(record)
+    assert (existing(files, "web/Turn.vue"), existing(files, "web/Missing.vue")) == ("web/Turn.vue", ""), "a path is kept when the file is there and dropped when it is not"
 
 
 def test_a_file_chip_into_another_project_cannot_read_its_files():

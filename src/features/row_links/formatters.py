@@ -1,6 +1,6 @@
 import re
 
-from engine.markers import MARKER, marked
+from resources.markers import MARKER, marked
 from resources.memo import Memo
 from events.answers import Allowed, Answer, Rewritten
 from events.asking import TextFormatting
@@ -26,9 +26,9 @@ def environments(record) -> tuple:
 
 def exists(record, env: str | None, name: str, n: int) -> bool:
     from controllers.types import CONTROLLERS
-    from engine.record import Record
     from resources.base import SYSTEM
-    return CONTROLLERS[name](record if env is None else Record(record.root, env), actor=SYSTEM).rows.exists(n)
+    controller = CONTROLLERS[name](record, actor=SYSTEM)
+    return (controller if env is None else controller.in_env(env)).rows.exists(n)
 
 
 def chipped(text: str, record=None) -> str:
