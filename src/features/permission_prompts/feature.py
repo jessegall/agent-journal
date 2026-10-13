@@ -1,7 +1,6 @@
-from agents.terminal import LAUNCH_ARGS
+from declaring.registries import LAUNCH_ARGS
 from controllers.types import Agents
-from engine.seats import live_session
-from engine.sessions import Sessions
+from framework.seating import live_seat, sessions_of
 from events.agents import AgentReported
 from events.permission_prompts import PermissionAnswered, PermissionAsked
 from expects import Dispatches, Given, Refused, Updated, Wrote, nothing
@@ -46,9 +45,9 @@ class PermissionPrompts(Feature):
 
     def settings_view(self, record) -> dict:
         primary = Agents(record, actor=SYSTEM).primary_to_read()
-        pair = live_session(record.root, primary.title) if primary else None
+        pair = live_seat(record, primary.title) if primary else None
         seat = pair[1] if pair else None
-        args = list(Sessions(record.root).read(seat.terminal).args) if seat else []
+        args = list(sessions_of(record).read(seat.terminal).args) if seat else []
         skipping = skipping_now(seat.provider, args) if seat else Skipping()
         return {"skip": skipped(record), "session": seat.session if seat else "",
                 "running": skipping.running, "possible": skipping.possible}

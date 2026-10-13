@@ -93,3 +93,7 @@ SUMMARY_COUNTS = Extension()
 
 APP_HERE = Extension()
 """How an environment finds the address of the app it hosts, by the feature that hosts apps: each a function of the record, empty where the environment hosts none."""
+
+
+LAUNCH_ARGS: list = []
+"""What each provider adds to the arguments an agent is launched with: each a function of the record, the provider and the arguments."""

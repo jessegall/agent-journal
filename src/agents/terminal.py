@@ -26,7 +26,7 @@ AT_ONCE = Extension()
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
 BRIEFED = "Your instructions are in {path}. Read that file first, then carry them out."
-LAUNCH_ARGS: list = []
+from declaring.registries import LAUNCH_ARGS  # noqa: F401
 from declaring.registries import OUTPUT_LINES  # noqa: F401
 
 

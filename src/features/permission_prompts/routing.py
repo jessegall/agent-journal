@@ -1,5 +1,4 @@
 from controllers.types import Environments
-from engine.record import Record
 from framework.work_mode import mode_of
 from resources.work_modes import ORCHESTRATOR
 from framework.auto_mode import automatic
@@ -11,10 +10,10 @@ def orchestrating(record) -> bool:
     return automatic(record) and mode_of(record) == ORCHESTRATOR
 
 
-def orchestrator_of(record) -> Record | None:
+def orchestrator_of(record):
     """The environment whose orchestrating agent answers this environment's permission requests: the one that launched it, when it runs on auto in orchestrator mode."""
     place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
     if not place or not place.owner or not place.launched_from:
         return None
-    launcher = Record(record.root, place.launched_from)
+    launcher = record.sibling(place.launched_from)
     return launcher if orchestrating(launcher) else None

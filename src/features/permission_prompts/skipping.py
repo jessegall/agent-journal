@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from resources.fields import Loaded
-from controllers.features import automatic
+from framework.auto_mode import automatic
 from serving import SERVED, Providers
 
 SETTING = "permission_prompts"
