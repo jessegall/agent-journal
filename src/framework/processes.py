@@ -11,6 +11,7 @@ from pathlib import Path
 
 from engine import bus, proc
 from framework import launch
+from resources.agent_starts import AgentToStart, DetachedStart
 from resources.types import NewEnvironment, Running
 from serving import SERVED, Processes
 
@@ -60,9 +61,9 @@ class TheProcesses:
         """Starts an agent in that environment, detached from this process."""
         return launch.launched(record, name, provider, args, cwd)
 
-    def start_detached(self, root: Path, cwd: Path, environment: str, provider: str, args: list[str], conversation: str = "") -> int:
+    def start_detached(self, root: Path, start: DetachedStart) -> int:
         from agents.terminal import detached
-        return detached(root, cwd, environment, provider, args, conversation)
+        return detached(root, start)
 
     def with_words(self, root: Path, environment: str, args: list[str], words: str) -> list[str]:
         """The command that starts an agent with those words already typed to it."""
@@ -93,9 +94,9 @@ class TheProcesses:
         """The session of the agent running in that environment, empty where none does."""
         return launch.running_in(record, environment)
 
-    def start_agent(self, record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind) -> str:
-        """Makes the environment an agent is to work in and starts it there with those words, and says where it runs."""
-        return launch.start_agent_in(record, name, worktree, abstract, owner, prompt, kind)
+    def start_agent(self, record, start: AgentToStart) -> str:
+        """Makes the environment an agent is to work in and starts it there with its words, and says where it runs."""
+        return launch.start_agent_in(record, start)
 
     def stop(self, record, environment: str) -> None:
         """Asks the agent running in that environment to end, when one does."""

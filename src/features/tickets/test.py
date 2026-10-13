@@ -134,7 +134,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     import agents.terminal
     from engine.sessions import Sessions
     launched = []
-    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent, args)) or 1)
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, start: launched.append((start.environment, start.provider, list(start.args))) or 1)
     record = fresh()
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     tickets = Tickets(record, actor=USER)
@@ -511,7 +511,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     launched_with = []
     with monkeypatch.context() as exited:
         exited.setattr(terminals, "launch_output", lambda root, env: "Resume this session with: claude --resume 7d698bae-1111-2222-3333-444455556666")
-        exited.setattr(terminals, "detached", lambda root, cwd, env, agent, args, conversation="": launched_with.append(args) or 1)
+        exited.setattr(terminals, "detached", lambda root, start: launched_with.append(list(start.args)) or 1)
         exited.setattr("providers.claude.Claude.conversation_file", lambda self, conversation: __import__("pathlib").Path("/tmp") if conversation.startswith("7d698bae") else None)
         tickets._launch(tickets.load(ticket.n), tickets._into(tickets.load(ticket.n)))
     from agents.terminal import launch_brief
@@ -565,7 +565,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     from resources.base import AGENT
     from tests.conftest import refused
     launched = []
-    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append(env) or 1)
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, start: launched.append(start.environment) or 1)
     record = fresh()
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     user, agent = Tickets(record, actor=USER), Tickets(record, actor=AGENT)
@@ -811,7 +811,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
 def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     import agents.terminal
     from tests.conftest import refused
-    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args, conversation="": 1)
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, start: 1)
     record = fresh()
     board = Boards(record, actor=USER).create("Queue", stages=["Ideas", "Building"], meanings={"Building": "start"})
     record.set_setting("tickets", {"running": 1})

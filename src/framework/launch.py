@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 
 from agents.terminal import Launched, prompted as prompted_by_file
+from resources.agent_starts import AgentToStart, DetachedStart
 from resources.places import LAUNCHED
 from controllers.types import Environments, Features
 from engine import bus, runtime
@@ -14,12 +15,12 @@ from resources.base import DEFAULT_PROVIDER
 from framework.auto_mode import automatic
 from resources.permission_prompts import set_skipped
 from resources.base import SYSTEM
-from resources.types import EnvironmentKind, NewEnvironment, Running
+from resources.types import NewEnvironment, Running
 from serving import SERVED, Providers
 
-def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
-    prepared(record, NewEnvironment(name, abstract, owner, record.root.parent, kind))
-    return launched(record, name, DEFAULT_PROVIDER, prompted_by_file(record.root, name, SERVED.given(Providers).driver(DEFAULT_PROVIDER).within([], worktree), prompt), record.root.parent)
+def start_agent_in(record, start: AgentToStart) -> str:
+    prepared(record, NewEnvironment(start.name, start.abstract, start.owner, record.root.parent, start.kind))
+    return launched(record, start.name, DEFAULT_PROVIDER, prompted_by_file(record.root, start.name, SERVED.given(Providers).driver(DEFAULT_PROVIDER).within([], start.worktree), start.prompt), record.root.parent)
 
 
 def prepared(record, wanted: NewEnvironment) -> Record:
@@ -34,7 +35,7 @@ def prepared(record, wanted: NewEnvironment) -> Record:
 
 def launched(record, name: str, provider: str, args: list[str], cwd: Path) -> str:
     from agents.terminal import detached
-    detached(record.root, cwd, name, provider, args)
+    detached(record.root, DetachedStart(cwd, name, provider, tuple(args)))
     return name
 
 

@@ -38,6 +38,7 @@ from receiving import REFUSE
 from controllers.faults import threw
 from receiving.asking import answered
 from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
+from resources.commit_logs import CommitsAsked
 from resources.base import AGENT, SYSTEM, Refused
 from resources.prompt_answers import PromptAnswer
 from resources.runs import Exited
@@ -95,9 +96,9 @@ class TheGit:
         """The bytes of one stored file, or nothing when no repository of the project holds it."""
         return blob_bytes(self.record.root.parent, sha)
 
-    def commits_since(self, since: float, most: int = 0, timeout: float = 5) -> list[tuple[str, str]]:
+    def commits_since(self, asked: CommitsAsked) -> list[tuple[str, str]]:
         """The commits of the project made since a moment, newest first, each as its hash and its subject."""
-        return commits_since(self.record.root.parent, since, most, timeout)
+        return commits_since(self.record.root.parent, asked)
 
     def line_counts(self, pairs: list[tuple[str, str]]) -> dict:
         """How many lines each pair of stored files differs by."""

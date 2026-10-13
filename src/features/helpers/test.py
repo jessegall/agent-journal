@@ -46,7 +46,7 @@ def agent_leaves(root):
 
 def started(monkeypatch) -> list:
     calls = []
-    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args, conversation="": calls.append((cwd, env, agent, args, launch_brief(root, env).read_text())) or 1)
+    monkeypatch.setattr("agents.terminal.detached", lambda root, start: calls.append((start.cwd, start.environment, start.provider, list(start.args), launch_brief(root, start.environment).read_text())) or 1)
     monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.5", "gpt-6-sol"))
     return calls
 

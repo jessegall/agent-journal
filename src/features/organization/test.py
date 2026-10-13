@@ -138,7 +138,7 @@ def test_a_global_role_takes_one_task_at_a_time_across_every_environment(monkeyp
         "the deployer runs once per journal: a second ticket's task waits for the first, wherever it is"
     write(home / "roles" / "deployer" / "role.toml", 'title = "Deployer"\ncardinality = "global"\nruns = "agent"\n')
     launched = []
-    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, place, agent, args: launched.append(place))
+    monkeypatch.setattr("agents.terminal.detached", lambda root, start: launched.append(start.environment))
     Todos(first_env, actor=AGENT).complete(first["todo"], "deployed")
     assert not Todos(second_env, actor=AGENT).load(second["todo"]).blocked, "and starts once the first is done"
     assert (len(launched), bool(Todos(second_env, actor=AGENT).load(second["todo"]).data.get("role_environment"))) == (1, True), \
@@ -157,7 +157,7 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
     write(home / "domain.toml", 'title = "Engineering"\nlead = "developer"\n')
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plural"\nruns = "agent"\n')
     launched = []
-    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, place, agent, args: launched.append((place, args)))
+    monkeypatch.setattr("agents.terminal.detached", lambda root, start: launched.append((start.environment, list(start.args))))
     ticket = Record(record.root, "ticket-5")
     given = COMMANDS["todo"]["delegate"](Todos(ticket, actor=AGENT), "Build search", "engineering")
     place, args = launched[0]

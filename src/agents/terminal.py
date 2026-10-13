@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 import sys
+from resources.agent_starts import DetachedStart
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -210,13 +211,13 @@ def prompted(root: Path, env: str, args: list[str], prompt: str) -> list[str]:
     return [*args, BRIEFED.format(path=brief)]
 
 
-def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> int:
+def detached(root: Path, start: DetachedStart) -> int:
     refuse_past_cap(root)
     started = entry_in(root, "supervisor")
-    log = launch_log(root, env)
+    log = launch_log(root, start.environment)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("ab") as kept:
-        child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args, conversation=conversation), "headless": True})],
+        child = subprocess.Popen([*started, json.dumps({**launch_spec(root, start.cwd, start.environment, start.provider, list(start.args), conversation=start.conversation), "headless": True})],
                                  stdin=subprocess.DEVNULL, stdout=kept, stderr=kept, start_new_session=True)
     hold_build(root, CODE, child.pid)
     return child.pid

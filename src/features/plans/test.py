@@ -425,7 +425,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     record = fresh()
     started = []
     monkeypatch.setattr(Tickets, "start", lambda self, n, agent=None: started.append(n))
-    monkeypatch.setattr("framework.launch.start_agent_in", lambda record, name, worktree, abstract, owner, prompt, kind: started.append(name))
+    monkeypatch.setattr("framework.launch.start_agent_in", lambda record, start: started.append(start.name))
     board = Boards(record, actor=USER).create("Product")
     tickets = Tickets(record, actor=USER)
     first, second = (tickets.create(title, board=board.n) for title in ("Search", "Share"))
@@ -461,9 +461,9 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
     record = fresh()
     handed, launched = [], []
 
-    def start_agent_in(record, name, worktree, abstract, owner, prompt, kind):
-        Environments(record, actor=SYSTEM).create(name, owner=owner)
-        launched.append(prompt)
+    def start_agent_in(record, start):
+        Environments(record, actor=SYSTEM).create(start.name, owner=start.owner)
+        launched.append(start.prompt)
 
     monkeypatch.setattr("framework.launch.start_agent_in", start_agent_in)
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: handed.append(n))

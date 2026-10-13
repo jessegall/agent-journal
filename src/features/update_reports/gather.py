@@ -2,6 +2,7 @@ import time
 
 from controllers.types import Docs, Questions, Reports, Todos, Works
 from controllers.types import Plans
+from resources.commit_logs import CommitsAsked
 from resources.plans import READY, WAITING
 from resources.base import SYSTEM, USER, Summary
 from serving import Git
@@ -68,7 +69,7 @@ def moved(record, start: float, waiting_on: set) -> list[dict]:
 
 
 def commits(git: Git, start: float) -> list[dict]:
-    return [item(COMMITS, f"commit:{sha[:SHORT_SHA]}", subject) for sha, subject in git.commits_since(start, MOST_COMMITS, GIT_WAIT)]
+    return [item(COMMITS, f"commit:{sha[:SHORT_SHA]}", subject) for sha, subject in git.commits_since(CommitsAsked(start, MOST_COMMITS, GIT_WAIT))]
 
 
 def written(record, start: float) -> list[dict]:

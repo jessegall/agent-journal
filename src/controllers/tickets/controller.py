@@ -22,6 +22,7 @@ from controllers.requests import request
 from engine.outbox import Request
 from engine.given import given
 from controllers.boards.controller import Boards
+from resources.agent_starts import DetachedStart
 from resources.boards import DONE, REVIEW, START
 from resources.check_output import tail
 from engine.proc import streamed
@@ -680,9 +681,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 self._refuse(stuck)
         if fresh and into != "HEAD":
             ticket = self._based(ticket, {name: tip(repo, f"refs/heads/{self._branch(ticket)}") for name, repo, _ in self._repositories(ticket)})
-        self.processes.start_detached(self.record.root, project, place, ticket.provider,
-                                      self.processes.with_words(self.record.root, place, driver.resumed(args, earlier), f"{CARRY_ON.format(ref=ticket.ref)} {self._kickoff(ticket)}") if earlier
-                                      else self.processes.with_words(self.record.root, place, args, self._kickoff(ticket)))
+        words = self.processes.with_words(self.record.root, place, driver.resumed(args, earlier), f"{CARRY_ON.format(ref=ticket.ref)} {self._kickoff(ticket)}") if earlier \
+            else self.processes.with_words(self.record.root, place, args, self._kickoff(ticket))
+        self.processes.start_detached(self.record.root, DetachedStart(project, place, ticket.provider, tuple(words)))
 
     def _kickoff(self, ticket) -> str:
         into = self._into(ticket)

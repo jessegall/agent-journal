@@ -1,4 +1,5 @@
 from controllers.types import Plans
+from resources.agent_starts import AgentToStart
 from resources.plans import PHASE
 from resources.base import DEFAULT_PROVIDER
 from resources.base import SYSTEM
@@ -33,5 +34,5 @@ def start_worker(record, plan) -> str:
     Plans(record, actor=SYSTEM).delegate(plan.n)
     if plan.worktree == SHARED:
         Plans(record, actor=SYSTEM).update(plan.n, branch=SERVED.given(Providers).driver(DEFAULT_PROVIDER).branch(name))
-    return SERVED.given(Processes).start_agent(record, name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan), EnvironmentKind.TICKET)
+    return SERVED.given(Processes).start_agent(record, AgentToStart(name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan), EnvironmentKind.TICKET))
 

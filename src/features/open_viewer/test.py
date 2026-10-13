@@ -675,7 +675,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     from controllers.types import Environments
     Environments(record, actor=SYSTEM).create("main")
     launched = []
-    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
+    monkeypatch.setattr("agents.terminal.detached", lambda root, start: launched.append((start.environment, start.provider)))
     assert ask("POST", "/api/journals/start", None, {"root": str(record.root.resolve()), "agent": "codex"}).code == 200
     assert launched == [("main", "codex")], "the hub starts a stopped journal's agent in its main environment, as the phone does"
     assert ask("POST", "/api/journals/start", None, {"root": str(tmp_path / "nowhere")}).code == 400, "a journal this machine does not hold is refused"

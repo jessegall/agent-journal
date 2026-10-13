@@ -13,6 +13,8 @@ from engine.git import MAIN
 from engine.record import Record
 from engine.stored import read_json
 from expects import At, Answering, Counting, Expectation, Given
+from resources.agent_starts import AgentToStart, DetachedStart
+from resources.commit_logs import CommitsAsked
 from resources.base import SYSTEM
 from resources.prompt_answers import PromptAnswer
 
@@ -99,9 +101,9 @@ class Processes(Asked):
     def launched_pid(self, root, name: str) -> int:
         return self.answers.answers.get(("launched", name), 0)
 
-    def start_agent(self, record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind) -> str:
+    def start_agent(self, record, start: AgentToStart) -> str:
         """An agent started in a new environment, remembered by its name and what it was started with, and answered by it."""
-        started = ("start agent", name, owner, prompt)
+        started = ("start agent", start.name, start.owner, start.prompt)
         self.seen.ran.append(started)
         return self.answer(started)
 
@@ -113,9 +115,9 @@ class Processes(Asked):
     def stop(self, record, environment: str) -> None:
         self.seen.ran.append(("stop", environment))
 
-    def start_detached(self, root, cwd, environment: str, provider: str, args: list[str], conversation: str = "") -> int:
+    def start_detached(self, root, start: DetachedStart) -> int:
         """An agent started detached from the journal, remembered and answered by what started it: the environment, the provider, its arguments and the conversation it carries on, never the folders."""
-        started = ("start detached", environment, provider, tuple(args), conversation)
+        started = ("start detached", start.environment, start.provider, start.args, start.conversation)
         self.seen.ran.append(started)
         return self.answer(started)
 
@@ -206,7 +208,7 @@ class Git(Asked):
     def blob_bytes(self, sha) -> bytes | None:
         return self.answer(("blob", sha))
 
-    def commits_since(self, since: float, most: int = 0, timeout: float = 5) -> list[tuple[str, str]]:
+    def commits_since(self, asked: CommitsAsked) -> list[tuple[str, str]]:
         return self.answers.answers.get(("commits",), [])
 
     def line_counts(self, pairs: list[tuple[str, str]]) -> dict:

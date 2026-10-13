@@ -1,6 +1,6 @@
-from pathlib import Path
 
 from controllers.types import Agents, Works
+from resources.commit_logs import CommitsAsked
 from resources.command_runs import Delta, counted_runs, current_run
 from resources.base import SYSTEM
 from resources.files import KIND
@@ -13,7 +13,7 @@ def files_of(record, n: int):
 
 
 def committed(git, since: float) -> list[dict]:
-    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, subject in git.commits_since(since)]
+    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, subject in git.commits_since(CommitsAsked(since))]
 
 
 def forget(record, n: int) -> None:

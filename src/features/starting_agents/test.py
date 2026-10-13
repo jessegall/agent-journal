@@ -1,5 +1,6 @@
 import os
 import time
+from resources.agent_starts import DetachedStart
 from resources.types import NewEnvironment
 from pathlib import Path
 
@@ -14,7 +15,7 @@ def test_a_message_wakes_the_environments_last_conversation_when_no_agent_runs(m
     features.load()
     started = []
     monkeypatch.setattr("agents.terminal.detached",
-                        lambda root, cwd, env, agent, args, conversation="": started.append((env, agent, conversation)) or 1)
+                        lambda root, start: started.append((start.environment, start.provider, start.conversation)) or 1)
     record = fresh()
     Environments(record, actor=SYSTEM).create(record.env)
     Agents(record, actor=SYSTEM).create("4d863ccb-old", event="SessionEnd", provider="claude", at=100.0)
@@ -273,7 +274,7 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     class Child:
         pid = 4242
     monkeypatch.setattr(terminal.subprocess, "Popen", lambda command, **options: popped.append((command, options)) or Child())
-    assert terminal.detached(record.root, record.root.parent, "t", "claude", ["--model", "x"]) == 4242, "a detached agent answers with its supervisor's process"
+    assert terminal.detached(record.root, DetachedStart(record.root.parent, "t", "claude", ("--model", "x"))) == 4242, "a detached agent answers with its supervisor's process"
     (command, options), = popped
     assert (json.loads(command[-1])["headless"], options["start_new_session"], terminal.launch_log(record.root, "t").parent.is_dir()) == (True, True, True), \
         "it runs headless in a session of its own and logs to a file of its own"

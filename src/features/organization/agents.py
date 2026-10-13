@@ -1,4 +1,5 @@
 from framework.organization import AGENT, PLAN, Role
+from resources.agent_starts import AgentToStart
 from resources.base import DEFAULT_PROVIDER
 from resources.types import EnvironmentKind, Running
 
@@ -20,5 +21,5 @@ def start_role_agent(record, role: Role, n: int, brief: str, processes) -> str:
     name = role_environment(record.env, role, n)
     if role.cardinality == PLAN and processes.tell(Running(record, name, DEFAULT_PROVIDER), kickoff(record.env, role, n, brief)):
         return name
-    return processes.start_agent(record, name, record.env, f"Where {role.label} works on to-do {n} of {record.env}",
-                                 f"todo:{n}", kickoff(record.env, role, n, brief), EnvironmentKind.SUBAGENT)
+    return processes.start_agent(record, AgentToStart(name, record.env, f"Where {role.label} works on to-do {n} of {record.env}",
+                                                      f"todo:{n}", kickoff(record.env, role, n, brief), EnvironmentKind.SUBAGENT))

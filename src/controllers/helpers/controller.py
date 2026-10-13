@@ -18,6 +18,7 @@ from engine.sessions import Sessions
 from serving import SERVED, Providers
 from controllers.helper_worktrees import Worktrees
 from controllers.form_of_address.address import voice_of
+from resources.agent_starts import DetachedStart
 from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
 from controllers.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
@@ -296,8 +297,8 @@ class Helpers(Controller):
         if not earlier:
             raise Refused(f"helper {row.n}, {row.name}, has no session left to go on in; dispatch the job again")
         args = driver.within(["--model", row.model], row.environment)
-        self.processes.start_detached(self.record.root, self._folder(row), row.environment, row.provider,
-                                      self.processes.with_words(self.record.root, row.environment, driver.resumed(args, earlier), words))
+        started = self.processes.with_words(self.record.root, row.environment, driver.resumed(args, earlier), words)
+        self.processes.start_detached(self.record.root, DetachedStart(self._folder(row), row.environment, row.provider, tuple(started)))
 
     def _folder(self, row: Helper) -> Path:
         if row.worktree:
