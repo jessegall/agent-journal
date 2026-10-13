@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.6 — The butler's wrist and the squire's shield
+
+- The butler's hand with the cloth sits straight at the end of its forearm instead of bending sharply at the wrist.
+- The squire carries its shield turned to its side instead of flat toward you.
+
 ## 3.0.5 — The channel is gone
 
 - The journal no longer starts Claude Code with its development channel or asks it to trust the journal's MCP server, so a session no longer starts with a message that the journal's server failed to connect. Every line reaches the agent typed into its terminal, as it already did; the Deliver messages while the agent works switch is gone from Settings.
