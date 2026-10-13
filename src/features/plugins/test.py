@@ -639,8 +639,9 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert (status(record.root, "quick.web").state, status(record.root, "quick.web").why) == ("stopped", "the agent session that started it ended"), \
         "a keeper that ends before the manager has returned from starting it keeps its own state and reason, never overwritten by the manager"
     from engine.keeper import state as kept_as
-    kept_as(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")), "running")
-    assert (status(record.root, "quick.web").state, status(record.root, "quick.web").why) == ("running", ""), "a service running again carries no reason for having stopped"
+    ServiceState(state="stopped", why="the agent session that started it ended").write(status_file(record.root, "again.web"))
+    kept_as(ServiceSpec(id="again.web", plugin="again", service="web", run=["true"], **files_for(record.root, "again.web")), "running")
+    assert (status(record.root, "again.web").state, status(record.root, "again.web").why) == ("running", ""), "a service running again carries no reason for having stopped"
     stuck = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
     status_file(record.root, "stuck.web").write_text(json.dumps({"state": "starting", "keeper": stuck.pid, "pgid": stuck.pid}))
     manager.one(ServiceSpec(id="stuck.web", plugin="stuck", service="web", run=["true"], when="exit 1", **files_for(record.root, "stuck.web")))
