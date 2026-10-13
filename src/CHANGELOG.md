@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.5 — The channel is gone
+
+- The journal no longer starts Claude Code with its development channel or asks it to trust the journal's MCP server, so a session no longer starts with a message that the journal's server failed to connect. Every line reaches the agent typed into its terminal, as it already did; the Deliver messages while the agent works switch is gone from Settings.
+
 ## 3.0.4 — A parked plan names the phase it stands at
 
 - A plan parked while another ran no longer keeps naming a phase that finished long ago: its phase moves past every phase whose to-dos all closed while it waited, stopping at a checkpoint, and nothing starts until you run it again.
