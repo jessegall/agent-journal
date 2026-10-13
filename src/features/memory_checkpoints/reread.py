@@ -1,6 +1,7 @@
 import time
 
 from controllers.types import Facts, Rules
+from framework.sending import Sent
 from resources.base import SYSTEM
 from declaring.trigger import DAY
 
@@ -14,3 +15,7 @@ def standing(record) -> list:
 def owed(record, days: int = 7) -> bool:
     since = float(record.state(STATE).get(READ_AT, 0)) or record.event_log.started_at()
     return time.time() - since > days * DAY
+
+
+def owed_reading(context, agent) -> list[Sent]:
+    return [Sent("reread", {})] if owed(context.record) else []

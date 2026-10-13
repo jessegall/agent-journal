@@ -1,45 +1,24 @@
-from controllers.types import CONTROLLERS, Agents
-from events.agents import AgentReported
-from events.resources import ResourceCreated
-from features.memory_checkpoints.reread import owed
-from framework.sending import Sent
-from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
-from resources.base import AGENT, SYSTEM
-from resources.types import TYPES
-
-DECISIONS = ("fact", "rule")
-MARKED = {"fact": "Wrote a fact", "rule": "Wrote a rule", "reminder": "Set a reminder"}
+from events import Fact
+from events.memory_checkpoints import AgentKeptSomething, ContextDecided, ContextMarkReached
+from receiving import Handler
+from resources.types import AgentRow
+from serving import Chat, Rows
 
 
-class DecideAtMarks(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if context.agent.row.decided:
-            context.release()
-        elif context.due():
-            percent = int(context.agent.row.context)
-            context.hold("decide held", percent=percent)
-            context.agent.say("decide", percent=percent)
+class HoldUntilDecided(Handler[ContextMarkReached]):
+    def handle(self, event: ContextMarkReached, chat: Chat) -> list[Fact]:
+        chat.hold("decide held", percent=event.percent)
+        chat.say("decide", percent=event.percent)
+        return []
 
 
-class ReleaseOnceDecided(Handler):
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        if event.type in DECISIONS:
-            context.release()
+class ReleaseOnceDecided(Handler[ContextDecided]):
+    def handle(self, event: ContextDecided, chat: Chat) -> list[Fact]:
+        chat.release()
+        return []
 
 
-class MarkWhatWasKept(Handler):
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        if event.type not in MARKED or event.actor != AGENT:
-            return
-        agents = context.journal.acting(SYSTEM).get(Agents)
-        row, kept = agents.primary(), CONTROLLERS[event.type](context.record, actor=SYSTEM).load(event.n)
-        if row:
-            agents.card(row.n, label=MARKED[event.type], icon=TYPES[event.type].icon, detail=kept.title, ref=kept.ref)
-
-
-def owed_reading(context, agent) -> list[Sent]:
-    return [Sent("reread", {})] if owed(context.record) else []
-
-
-class DecideAtMarksOnChange(OnAgentUpdated, DecideAtMarks):
-    pass
+class MarkWhatWasKept(Handler[AgentKeptSomething]):
+    def handle(self, event: AgentKeptSomething, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.card(event.agent, label=event.label, icon=event.icon, detail=event.detail, ref=event.ref)
+        return []
