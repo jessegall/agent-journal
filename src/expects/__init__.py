@@ -55,6 +55,12 @@ def named(row) -> str:
     return f"{type(row).__name__}({stated(row)})"
 
 
+def against(row, wanted: dict) -> str:
+    """A played row by its number and the fields an expectation asked about, since a live row's whole text can run to megabytes."""
+    found = held(row)
+    return f"{type(row).__name__}({ {name: found[name] for name in ('n', *wanted) if name in found} })"
+
+
 class Outcome:
     """One thing a registration must produce. Outcomes join with & and all of them must hold."""
 
@@ -132,7 +138,7 @@ class Wrote(Outcome):
         wanted = stated(self.row)
         if any(isinstance(row, type(self.row)) and matches(row, wanted) for row in seen.wrote):
             return ""
-        return f"it wrote no {type(self.row).__name__} holding {wanted}; it wrote {[named(one) for one in seen.wrote]}"
+        return f"it wrote no {type(self.row).__name__} holding {wanted}; it wrote {[against(one, wanted) for one in seen.wrote]}"
 
     def file_holds(self, found: Left | None) -> str:
         if found is None:
@@ -170,7 +176,7 @@ class Updated(Outcome):
         for row in seen.updated:
             if isinstance(row, type(self.row)) and matches(row, wanted):
                 return ""
-        return f"it changed no {type(self.row).__name__} to hold {wanted}; it changed {[named(one) for one in seen.updated]}"
+        return f"it changed no {type(self.row).__name__} to hold {wanted}; it changed {[against(one, wanted) for one in seen.updated]}"
 
 
 @dataclass(frozen=True)
