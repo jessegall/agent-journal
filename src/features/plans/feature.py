@@ -1,6 +1,8 @@
 from events.agents import ClockTicked
 from events.todos import TodoCompleted
-from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Updated, nothing
+from dataclasses import replace
+
+from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
 from framework.base import Feature
 from features.plans.summary import plans_shown
 from overview.parts import SUMMARY_PARTS
@@ -92,13 +94,28 @@ def changed(action: str, actor: str, status: str = "", **fields) -> PlanChanged:
     return PlanChanged(n=1, type="plan", action=action, actor=actor, status=status, **fields)
 
 
+STILL_CASES = (
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), AGENT_ROW])
+        >> Nudged("standing still", phase="Every nudge is visible", rows="4366, 4367"),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), Question(n=1, title="Which branch?", refs=["todo:4367"]), AGENT_ROW])
+        >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), AGENT_ROW]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, after=["todo:9000"]), row(4367), row(9000), AGENT_ROW]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), Todo(n=4366, title="Row 4366", updated=WHEN - 60), row(4367), AGENT_ROW]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), Work(n=3, title="Build it", data={"todo": 4367}), AGENT_ROW]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), done(4366), done(4367), AGENT_ROW]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("parked", phases=VISIBLE), row(4366), row(4367), AGENT_ROW]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367)]) >> Unchanged(),
+)
+
+
 class PlansFeature(Feature):
     details = PlansDetails
     nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES,
                     guarantee="When a running plan has not moved for a while, the agent is told, a few times."),
               Nudge("blocked", behaviour="blocked", about=blocked_plans,
                     guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."),
-              STANDING_STILL)
+              replace(STANDING_STILL, expects=STILL_CASES))
 
     def register(self, journal: Journal) -> None:
         SUMMARY_PARTS.add(None, plans_shown, key="plans")
