@@ -1,10 +1,13 @@
 import re
 
-from engine.journal_calls import parsed, tokens
-from framework.parts import AgentContext, ToolInterceptor
-from declaring.holds import Runs
 from controllers.sharing.visitors import AGREEMENT, UNAGREED
-from declaring.reach import Reach
+from engine.journal_calls import parsed, tokens
+from events.answers import Allowed, Answer, Refused
+from events.asking import ToolCallAsked
+from framework.loaded import FEATURES
+from receiving import Answerer
+from resources.types import AgentRow
+from serving import ReadRows
 
 PLAIN = re.compile(r"[\w .:@/+-]+")
 AGREE_OPTIONS = {"--env", "--agent", "--root"}
@@ -35,14 +38,11 @@ def claims(word: str, following: str) -> bool:
     return bool(ASSIGNMENT.fullmatch(word)) or (option == "--as" and (given or following).lower() == "user") or (option == "--set" and bool(SET_ACTOR.fullmatch(given or following)))
 
 
-class RefuseClaimedUser(ToolInterceptor):
-    reach = Reach.BOTH
-    runs = Runs.SYNC
-
-    def intercept(self, context: AgentContext, call) -> str:
-        if any(tells_the_journal(command) and claims_the_user(command) for command in call.commands):
-            return "An agent cannot claim to be the user. Ask the user to make this change in the viewer."
-        return ""
+class RefuseClaimedUser(Answerer[ToolCallAsked]):
+    def answer(self, event: ToolCallAsked) -> Answer:
+        if event.command and tells_the_journal(event.command) and claims_the_user(event.command):
+            return Refused("An agent cannot claim to be the user. Ask the user to make this change in the viewer.")
+        return Allowed()
 
 
 def only_agree(command: str) -> bool:
@@ -51,11 +51,9 @@ def only_agree(command: str) -> bool:
             and call.matches("share", "agree") and len(call.arguments) == 2 and call.arguments[0].isdigit() and call.arguments[1] == AGREEMENT)
 
 
-class RefuseUntilAgreed(ToolInterceptor):
-    reach = Reach.BOTH
-    runs = Runs.SYNC
-    def intercept(self, context: AgentContext, call) -> str:
-        held = context.agent.row.data.get(UNAGREED, [])
-        if not held or len(call.commands) == 1 and only_agree(call.commands[0]):
-            return ""
-        return context.feature.line_text("agree", comments=", ".join(map(str, held)), words=AGREEMENT)
+class RefuseUntilAgreed(Answerer[ToolCallAsked]):
+    def answer(self, event: ToolCallAsked, agents: ReadRows[AgentRow]) -> Answer:
+        held = agents.peek_session(event.session).data.get(UNAGREED, [])
+        if not held or only_agree(event.command):
+            return Allowed()
+        return Refused(FEATURES["sharing"].line_text("agree", comments=", ".join(map(str, held)), words=AGREEMENT))
