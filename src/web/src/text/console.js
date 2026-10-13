@@ -1,9 +1,12 @@
 import {withoutChips} from "./words.js";
 import {register} from "./index.js";
 
+// an error, bare or named (Error:, TypeError:), or the browser's line for a request that failed
 const HEAD =
-    /(?:(?<![\w/])[\w.\/-]+\.[a-z]{1,4}:\d+\s+)?(?:Uncaught(?: \(in promise\))?\s+)?\b[A-Z][\w$]*(?:Error|Exception|Warning)\b:?\s/g;
-const FRAME = /\s+at\s+(?:(?:async\s+)?[\w.$&;<>\[\] ]+?\s+)?\(?(?:[\w.\/-]+|https?:\/\/\S+?):\d+(?::\d+)?\)?(?=\s|$)/g;
+    /(?:(?<![\w/])[\w.\/-]+\.[a-z]{1,4}:\d+\s+)?(?:Uncaught(?: \(in promise\))?\s+)?\b(?:[A-Z][\w$]*)?(?:Error|Exception|Warning)\b:?\s|(?<!\S)\S*:\d+\s+Failed to load resource:/g;
+// a frame as Firefox and Node write it (at name (file:line)) or as Chrome's console writes it (name @ file:line)
+const FRAME =
+    /\s+at\s+(?:(?:async\s+)?[\w.$&;<>\[\] ]+?\s+)?\(?(?:[\w.\/-]+|https?:\/\/\S+?):\d+(?::\d+)?\)?(?=\s|$)|\s*[\w.$]+\s+@\s+[\w.\/-]+:\d+(?::\d+)?(?=\s|$)/g;
 const TRACEBACK = /^Traceback \(most recent call last\):/m;
 const FOLD = 8;
 
