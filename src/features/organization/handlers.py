@@ -1,4 +1,4 @@
-from engine.organization import Role
+from framework.organization import Role
 from events import Fact
 from events.organization import RoleAgentToStop, RoleTodoToStart
 from features.organization.agents import start_role_agent

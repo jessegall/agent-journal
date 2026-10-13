@@ -889,7 +889,7 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
         assert not tickets.load(first.n).completed, "a ticket that cannot be closed stays open"
     assert len(asked_to_start) == len(tickets._queue()) + 1, "the queue is walked until one ticket stays queued, and a ticket that cannot start is passed over"
     with monkeypatch.context() as scoped:
-        scoped.setattr("engine.organization.organization", refusing)
+        scoped.setattr("framework.organization.organization", refusing)
         assert dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body["owner"] == [], "a project with no organization offers no owners"
     choices = dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body
     assert ([found["label"] for found in choices["board"]], [found["key"] for found in choices["stage"]]) == (["Queue"], ["Ideas", "Building"]), \

@@ -779,7 +779,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             self._refuse(f"{self.type} {ticket.n} is a draft and does not start until it is confirmed, by {by}")
 
     def _field_choices(self, r: Resource) -> dict:
-        from engine.organization import organization
+        from framework.organization import organization
         boards = [FieldChoice(str(board.n), board.title, (board.stages or [""])[0]) for board in Boards(self.record, actor=SYSTEM).rows.standing()]
         try:
             domains = [FieldChoice(domain.name, domain.title or domain.name) for domain in organization(self.record.root.parent).domains]

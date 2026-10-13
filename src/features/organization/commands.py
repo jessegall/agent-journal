@@ -1,7 +1,7 @@
-from features.hosting.apps import app_here
+from declaring.registries import APP_HERE
 from features.organization.agents import start_role_agent
 from features.organization.delegation import WAITS_FOR, brief, global_ahead, missing, queued_behind
-from engine.organization import organization
+from framework.organization import organization
 from framework.parts import Command, Context
 from serving import SERVED, Processes
 
@@ -36,7 +36,7 @@ class Delegate(Command):
             env, first = queued
             todos.update(row.n, **{WAITS_FOR: f"{env}:{first}"})
             todos.block(row.n, f"{chosen.label} runs once per journal: to-do {first} in {env} goes first")
-        text = brief(found, chosen, row.n, task, given, app_here(context.record))
+        text = brief(found, chosen, row.n, task, given, next((url for url in (found(context.record) for found in APP_HERE.each(context.record)) if url), ""))
         started = "" if ahead or queued else start_role_agent(context.record, chosen, row.n, text, SERVED.given(Processes))
         if started:
             todos.update(row.n, role_environment=started)

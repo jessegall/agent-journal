@@ -89,3 +89,7 @@ SUMMARY_PARTS = Extension()
 
 SUMMARY_COUNTS = Extension()
 """What each feature adds to the counts of the summary, by the name it is counted under."""
+
+
+APP_HERE = Extension()
+"""How an environment finds the address of the app it hosts, by the feature that hosts apps: each a function of the record, empty where the environment hosts none."""

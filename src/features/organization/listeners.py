@@ -1,4 +1,4 @@
-from engine.organization import PLAN
+from framework.organization import PLAN
 from events import Fact
 from events.organization import RoleAgentToStop, RoleTodoToStart
 from events.todos import TodoCompleted

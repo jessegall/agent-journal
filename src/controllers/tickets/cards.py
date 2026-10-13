@@ -105,7 +105,7 @@ class TicketCards:
         return asdict(TicketStatus(state.kind, state.text, plan.title if plan else "", stands.settled, stands.total, doing))
 
     def _roles(self) -> list:
-        from engine.organization import organization
+        from framework.organization import organization
         try:
             found = organization(self.record.root.parent)
         except Refused:

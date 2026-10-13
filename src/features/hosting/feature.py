@@ -12,7 +12,8 @@ from features.hosting.handlers import ClearIdleTime, StartIdleTime, StopAbandone
 from features.hosting.listeners import SpotIdleApps
 from features.hosting.services import ticket_apps
 from framework.journal import Journal
-from declaring.registries import CARD_EXTRAS
+from declaring.registries import APP_HERE, CARD_EXTRAS
+from features.hosting.apps import app_here
 
 
 HOSTED = Ticket(n=1, title="Card", data={"hosted": True})
@@ -27,6 +28,7 @@ class HostingFeature(Feature):
     details = HostingDetails
 
     def register(self, journal: Journal) -> None:
+        APP_HERE.add(self, app_here)
         journal.commands.add("ticket", HostApp(), expects=[
             Given((Tickets, 1), rows=[Ticket(n=1, title="Card")]) >> Refused("the project names no app to host: add agentic-organization/hosting.toml with run, ready and idle_minutes"),
         ])

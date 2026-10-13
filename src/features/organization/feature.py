@@ -1,6 +1,6 @@
 from controllers.types import Todos
 from events.todos import TodoCompleted
-from engine.organization import AGENT as RUNS_AS_AGENT, Role
+from framework.organization import AGENT as RUNS_AS_AGENT, Role
 from events.asking import RowWriting
 from events.organization import RoleAgentToStop, RoleTodoToStart
 from expects import Answered, Dispatches, Given, Kept, Ran, Refused, Updated, answering, nothing

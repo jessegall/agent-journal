@@ -1,4 +1,4 @@
-from engine.organization import AGENT, PLAN, Role
+from framework.organization import AGENT, PLAN, Role
 from resources.base import DEFAULT_PROVIDER
 from resources.types import EnvironmentKind, Running
 

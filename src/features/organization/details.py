@@ -1,5 +1,5 @@
 from declaring.details import FeatureDetails
-from engine.organization import CARDINALITIES, FOLDER
+from framework.organization import CARDINALITIES, FOLDER
 from declaring.groups import Group
 
 

@@ -1,6 +1,6 @@
-from controllers.todos import WAITS_FOR  # noqa: F401  the commands name it here
+from resources.keys import WAITS_FOR  # noqa: F401  the commands name it here
 from controllers.types import Todos
-from engine.organization import GLOBAL, WORKTREE, Domain, Role, organization
+from framework.organization import GLOBAL, WORKTREE, Domain, Role, organization
 from resources.base import SYSTEM
 
 

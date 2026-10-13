@@ -2,7 +2,7 @@ import time
 from typing import TypedDict
 
 from controllers.base import Controller, CONTROLLERS
-from engine.organization import organization
+from framework.organization import organization
 from engine.record import Record
 from controllers.prioritised import Prioritised
 from resources import types
@@ -30,7 +30,7 @@ def column_order(todo) -> tuple:
     return (-int(todo.priority), todo.position, todo.n)
 
 
-WAITS_FOR = "waits_for"
+from resources.keys import WAITS_FOR  # noqa: F401
 
 
 class Todos(Prioritised, Controller):
