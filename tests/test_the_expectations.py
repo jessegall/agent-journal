@@ -21,8 +21,8 @@ from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given,
                      exited, nothing)
 
 OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered, Set, Whispered)
-GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "viewer")
-SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "viewer")
+GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "viewer", "own_work")
+SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "viewer", "own work")
 
 
 def promised():

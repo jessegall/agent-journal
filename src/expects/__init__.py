@@ -23,7 +23,7 @@ __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
-SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "viewer")
+SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "viewer", "own work")
 """Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
 
 def stated(row) -> dict:
@@ -399,6 +399,8 @@ class Given:
     """What the journal's own folder holds, and a Given that names none leaves the scratch journal's own, by path or pattern: ("glob", pattern) to the paths it lists, ("modified", path) to when one changed, ("exists", path), ("sweep", name) to whether this process took the sweep, ("environments",) to the environments there are; every write to it is remembered as a run."""
     viewer: Answering = Answering({})
     """Whether a viewer runs, and a Given that names none leaves the machine's own: ("running",) to the address it runs at. Every tab shown is remembered as a run."""
+    own_work: Answering = Answering({})
+    """What the asking feature's own work answers, by the method it was asked to do and its arguments: ("ticked",) to what that returned; every call is remembered as a run, as ("own work", method, *arguments), and an ask the Given does not name returns nothing."""
 
     @classmethod
     def of(cls, on, *rows, **more) -> "Given":

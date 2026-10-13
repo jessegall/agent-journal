@@ -33,7 +33,7 @@ from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, OwnWork)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -103,6 +103,19 @@ class TheViewer:
     def show(self, url: str, env: str) -> str:
         """Brings the viewer's tab for an environment to the front, opening one when there is none."""
         return viewer.show(url, env)
+
+
+class TheOwnWork:
+    """A feature's own work over this record: each method the feature declares, called with the record first."""
+
+    def __init__(self, feature, record):
+        self.feature, self.record = feature, record
+
+    def __getattr__(self, name: str):
+        if name.startswith("_"):
+            raise AttributeError(name)
+        work = getattr(self.feature, name)
+        return lambda *args, **more: work(self.record, *args, **more)
 
 
 class TheJournalRoot:
@@ -397,6 +410,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
             Viewer: PerAsk(lambda feature, asked: TheViewer(record)),
             ReadViewer: PerAsk(lambda feature, asked: TheViewer(record)),
+            OwnWork: PerAsk(lambda feature, asked: TheOwnWork(FEATURES[feature], record)),
             JournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             ReadJournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, speaking())),

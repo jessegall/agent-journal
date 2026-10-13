@@ -132,6 +132,12 @@ class ReadJournalRoot(JournalRoot):
     writes = False
 
 
+class OwnWork(Service):
+    """What the asking feature does that is no row, file, process or chat of the journal's, such as speaking to the outside service it is for: the methods the feature declares, over this record."""
+
+    writes = True
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

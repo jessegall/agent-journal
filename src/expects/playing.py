@@ -277,6 +277,22 @@ class JournalRoot(Asked):
 
 
 @dataclass
+class OwnWork(Asked):
+    """The feature's own work: every method it is asked to do is remembered as a run, and answers what the Given said, else nothing."""
+
+    service: ClassVar[str] = "own work"
+
+    def __getattr__(self, name: str):
+        if name.startswith("_"):
+            raise AttributeError(name)
+
+        def done(*args, **more):
+            self.seen.ran.append(("own work", name, *args))
+            return self.answers.answers.get((name, *args))
+        return done
+
+
+@dataclass
 class Terminal:
     """Keys pressed in the agent's terminal, which the play has none of: each press is remembered as a run."""
 
@@ -324,6 +340,7 @@ class World:
     git: Git
     journal_root: JournalRoot
     viewer: Viewer
+    own_work: OwnWork
     terminal: Terminal
     clock: Clock
     ids: Ids
@@ -332,7 +349,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Viewer(seen, given.viewer), Terminal(seen), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Viewer(seen, given.viewer), OwnWork(seen, given.own_work), Terminal(seen), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:
