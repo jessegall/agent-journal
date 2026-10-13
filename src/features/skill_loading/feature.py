@@ -110,6 +110,8 @@ class SkillLoading(Feature):
         ])
         journal.events.listen(ToolCallAnswered, CountRefusals(), expects=[
             Given(answered("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(RefusalCounted(agent=1, wanted=False)),
+            Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
+                >> Dispatches(RefusalCounted(agent=1, wanted=True)),
             Given(answered("Skill"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
             Given(answered("Bash", "ls", subagent=True), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
