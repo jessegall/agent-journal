@@ -152,13 +152,13 @@ def handled(promise, given: Given, record: Record, world: World) -> None:
     """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the record. The Context carries an agent when the Given names one, since most handlers read it."""
     event, was = given.on, text_of(given.on)
     promise.part.handle(contexted(promise, given, record), event)
-    world.seen.changed = text_of(event) if text_of(event) != was else None
-    world.seen.kept = not stopped(event)
+    world.recording.changed = text_of(event) if text_of(event) != was else None
+    world.recording.kept = not stopped(event)
 
 
 def formatted(promise, given: Given, record: Record, world: World) -> None:
     """A formatter, through its own format. It is a pure function of its text, so what it answers IS the outcome."""
-    world.seen.changed = promise.part.format(Context.of(promise.feature, record), given.on)
+    world.recording.changed = promise.part.format(Context.of(promise.feature, record), given.on)
 
 
 def provider_of(agent):
@@ -169,12 +169,12 @@ def provider_of(agent):
 def intercepted(promise, given: Given, record: Record, world: World) -> None:
     """An interceptor, through its own intercept. It answers a refusal, or nothing when it lets the call through."""
     why = promise.part.intercept(contexted(promise, given, record), given.on)
-    world.seen.refused = why or None
+    world.recording.refused = why or None
 
 
 def cancelled(promise, given: Given, record: Record, world: World) -> None:
     """A canceler, through its own cancel. It answers why the thing must not happen, or nothing to let it."""
-    world.seen.refused = promise.part.cancel(contexted(promise, given, record), given.on) or None
+    world.recording.refused = promise.part.cancel(contexted(promise, given, record), given.on) or None
 
 
 def refused_before_the_write(promise, given: Given, record: Record, world: World) -> None:
@@ -183,16 +183,16 @@ def refused_before_the_write(promise, given: Given, record: Record, world: World
     try:
         promise.part.intercept(Context.of(promise.feature, record), controller(record, **acting), **arguments)
     except Refused as refusal:
-        world.seen.refused = str(refusal)
+        world.recording.refused = str(refusal)
 
 
 def commanded(promise, given: Given, record: Record, world: World) -> None:
     """A command, through its own run: the controller it is on, then the arguments the Given states."""
     controller, *arguments = given.on
     try:
-        world.seen.answered = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
+        world.recording.answered = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
     except Refused as refusal:
-        world.seen.refused = str(refusal)
+        world.recording.refused = str(refusal)
 
 
 def spoken_to(record: Record, given: Given):
@@ -206,7 +206,7 @@ def spoken_to(record: Record, given: Given):
 def answered_a_hook(promise, given: Given, record: Record, world: World) -> None:
     """A responder, which answers the call the engine builds for a hook event: the provider and the agent the Given names, the record, and the hook the Given declares."""
     row = speaking(record, given)
-    world.seen.answered = promise.part(HookCall(provider_of(row), record, hooked(given, record), row))
+    world.recording.answered = promise.part(HookCall(provider_of(row), record, hooked(given, record), row))
 
 
 def play_services(promise, given: Given, record: Record, world: World) -> dict:
@@ -221,7 +221,7 @@ def play_services(promise, given: Given, record: Record, world: World) -> dict:
 
 def listened(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 listener, through its own listen. It writes nothing, so the facts it dispatches are the whole of what it did."""
-    world.seen.facts += promise.part.listen(given.on, **play_services(promise, given, record, world))
+    world.recording.facts += promise.part.listen(given.on, **play_services(promise, given, record, world))
 
 
 def acted_on_a_fact(promise, given: Given, record: Record, world: World) -> None:
@@ -230,21 +230,21 @@ def acted_on_a_fact(promise, given: Given, record: Record, world: World) -> None
         services = play_services(promise, given, record, world)
     except Unserved:
         return
-    world.seen.facts += promise.part.handle(given.on, **services) or []
+    world.recording.facts += promise.part.handle(given.on, **services) or []
 
 
 def answered_a_request(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 answerer, through its own answer. It is read-only, so what it answers is the whole of what it did."""
-    world.seen.answered = promise.part.answer(given.on, **play_services(promise, given, record, world))
+    world.recording.answered = promise.part.answer(given.on, **play_services(promise, given, record, world))
 
 
 def refused_the_write(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 refuser, through its own refuse. It either raises with its reason or lets the write through."""
     try:
         promise.part.refuse(given.on, **play_services(promise, given, record, world))
-        world.seen.kept = True
+        world.recording.kept = True
     except Refused as why:
-        world.seen.refused = str(why)
+        world.recording.refused = str(why)
 
 
 ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,
@@ -389,18 +389,18 @@ def played(promise, expectation, inside: Path) -> Seen:
     with at_the_givens_hour(given), with_the_givens_programs(given), with_the_scratch_secrets(record):
         for earlier in given.earlier:
             ENTRIES[promise.kind](promise, replace(given, on=earlier, earlier=()), record, world)
-        world.seen.forget()
+        world.recording.forget()
         already_said, already_nudged = what_was_said(record) if given.earlier else ([], [])
-        world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
+        world.recording.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
         ENTRIES[promise.kind](promise, given, record, world)
-    world.seen.after = rows_now(record)
+    world.recording.after = rows_now(record)
     said, nudged = what_was_said(record)
-    world.seen.said, world.seen.nudged = said[len(already_said):], nudged[len(already_nudged):]
-    world.seen.remembered = remembered_by(record, promise.feature.name)
-    world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
-    world.seen.held = held_against_the_agents(record)
-    world.seen.files = files_left(record)
-    world.seen.settings = settings_now(record)
+    world.recording.said, world.recording.nudged = said[len(already_said):], nudged[len(already_nudged):]
+    world.recording.remembered = remembered_by(record, promise.feature.name)
+    world.recording.wrote, world.recording.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
+    world.recording.held = held_against_the_agents(record)
+    world.recording.files = files_left(record)
+    world.recording.settings = settings_now(record)
     got = reached_the_agent(record)
-    world.seen.whispered, world.seen.typed = got.whispered, got.sent
-    return world.seen
+    world.recording.whispered, world.recording.typed = got.whispered, got.sent
+    return world.recording.seen()

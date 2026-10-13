@@ -153,7 +153,7 @@ def renumbered(outcome, binding: Binding):
 
 def gained(record: Record, began: float) -> Seen:
     """What the record gained from the mark on, read from the events the writes left: the rows created, the rows changed and the nudges sent."""
-    seen = Seen()
+    wrote, updated, nudged = [], [], []
     nudges = Nudges(record, actor=SYSTEM).type
     for event in record.event_log.events(where=lambda one: one.at >= began):
         if event.type not in CONTROLLERS:
@@ -165,12 +165,12 @@ def gained(record: Record, began: float) -> Seen:
         if row is None:
             continue
         if event.action != "created":
-            seen.updated.append(row)
+            updated.append(row)
             continue
-        seen.wrote.append(row)
+        wrote.append(row)
         if event.type == nudges:
-            seen.nudged.append((row.line, row.title, row.brief))
-    return seen
+            nudged.append((row.line, row.title, row.brief))
+    return Seen(wrote=tuple(wrote), updated=tuple(updated), nudged=tuple(nudged))
 
 
 @dataclass

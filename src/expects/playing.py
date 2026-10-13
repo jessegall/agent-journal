@@ -25,16 +25,16 @@ class NotAnswered(LookupError):
         return cls(f"the expectation does not say what {service} answers for {asked!r}; name it in the Given, as {service}=answering({{{asked!r}: ...}})")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Seen:
-    """What one play recorded. Every outcome word reads this and nothing else, so a play and its judgement cannot disagree."""
+    """What one play did, read once it ended. Every outcome word reads this and nothing else, so a play and its judgement cannot disagree."""
 
-    facts: list = field(default_factory=list)
-    said: list = field(default_factory=list)
-    nudged: list = field(default_factory=list)
-    ran: list = field(default_factory=list)
-    wrote: list = field(default_factory=list)
-    updated: list = field(default_factory=list)
+    facts: tuple = ()
+    said: tuple = ()
+    nudged: tuple = ()
+    ran: tuple = ()
+    wrote: tuple = ()
+    updated: tuple = ()
     refused: str | None = None
     changed: str | None = None
     kept: bool = False
@@ -45,8 +45,30 @@ class Seen:
     remembered: dict = field(default_factory=dict)
     files: dict = field(default_factory=dict)
     settings: dict = field(default_factory=dict)
-    whispered: list = field(default_factory=list)
-    typed: list = field(default_factory=list)
+    whispered: tuple = ()
+    typed: tuple = ()
+
+    @property
+    def is_unchanged(self) -> bool:
+        return self.before == self.after and not self.wrote and not self.updated
+
+
+class Recording:
+    """What a play does, written down as it runs by the play and by every Fake it hands a receiver; read once at the end as one Seen."""
+
+    def __init__(self):
+        self.facts, self.said, self.nudged, self.ran, self.wrote, self.updated = [], [], [], [], [], []
+        self.refused: str | None = None
+        self.changed: str | None = None
+        self.kept = False
+        self.answered: object = None
+        self.held: str | None = None
+        self.before: tuple = ()
+        self.after: tuple = ()
+        self.remembered: dict = {}
+        self.files: dict = {}
+        self.settings: dict = {}
+        self.whispered, self.typed = [], []
 
     def forget(self) -> None:
         """Forgets what the earlier events of a Given did, so the outcomes judge what the last one did. What they left in the record stands."""
@@ -54,9 +76,9 @@ class Seen:
         self.refused = self.changed = None
         self.kept, self.answered = False, None
 
-    @property
-    def is_unchanged(self) -> bool:
-        return self.before == self.after and not self.wrote and not self.updated
+    def seen(self) -> Seen:
+        return Seen(tuple(self.facts), tuple(self.said), tuple(self.nudged), tuple(self.ran), tuple(self.wrote), tuple(self.updated), self.refused, self.changed,
+                    self.kept, self.answered, self.held, self.before, self.after, self.remembered, self.files, self.settings, tuple(self.whispered), tuple(self.typed))
 
 
 @dataclass
@@ -65,7 +87,7 @@ class Asked:
 
     service: ClassVar[str] = ""
 
-    seen: Seen
+    recording: Recording
     answers: Answering
 
     def answer(self, asked):
@@ -81,7 +103,7 @@ class Commands(Asked):
     service: ClassVar[str] = "commands"
 
     def run(self, command: str):
-        self.seen.ran.append(command)
+        self.recording.ran.append(command)
         return self.answer(command)
 
 
@@ -92,7 +114,7 @@ class Processes(Asked):
     service: ClassVar[str] = "processes"
 
     def start(self, argv: tuple):
-        self.seen.ran.append(argv)
+        self.recording.ran.append(argv)
         return self.answer(argv)
 
     def alive(self, pid) -> bool:
@@ -104,21 +126,21 @@ class Processes(Asked):
     def start_agent(self, record, start: AgentToStart) -> str:
         """An agent started in a new environment, remembered by its name and what it was started with, and answered by it."""
         started = ("start agent", start.name, start.owner, start.prompt)
-        self.seen.ran.append(started)
+        self.recording.ran.append(started)
         return self.answer(started)
 
     def tell(self, running, text: str) -> bool:
         told = ("tell", running.environment, text)
-        self.seen.ran.append(told)
+        self.recording.ran.append(told)
         return self.answer(told)
 
     def stop(self, record, environment: str) -> None:
-        self.seen.ran.append(("stop", environment))
+        self.recording.ran.append(("stop", environment))
 
     def start_detached(self, root, start: DetachedStart) -> int:
         """An agent started detached from the journal, remembered and answered by what started it: the environment, the provider, its arguments and the conversation it carries on, never the folders."""
         started = ("start detached", start.environment, start.provider, start.args, start.conversation)
-        self.seen.ran.append(started)
+        self.recording.ran.append(started)
         return self.answer(started)
 
 
@@ -148,7 +170,7 @@ class Files(Asked):
         return True
 
     def write(self, path: str, text: str) -> None:
-        self.seen.wrote.append((path, text))
+        self.recording.wrote.append((path, text))
 
 
 @dataclass
@@ -218,7 +240,7 @@ class Git(Asked):
         return self.answer(("stamp", Path(path).name))
 
     def link(self, top, workspaces) -> None:
-        self.seen.ran.append(("link", Path(top).name))
+        self.recording.ran.append(("link", Path(top).name))
 
 
 @dataclass
@@ -247,7 +269,7 @@ class Viewer(Asked):
         return self.answers.answers.get(("running",), "")
 
     def show(self, url: str, env: str) -> str:
-        self.seen.ran.append(("show", url, env))
+        self.recording.ran.append(("show", url, env))
         return url
 
 
@@ -272,10 +294,10 @@ class Faults(Asked):
     service: ClassVar[str] = "faults"
 
     def file(self, title: str, brief: str, **data) -> None:
-        self.seen.ran.append(("fault", title))
+        self.recording.ran.append(("fault", title))
 
     def log(self, line: str) -> None:
-        self.seen.ran.append(("fault log", line))
+        self.recording.ran.append(("fault log", line))
 
 
 @dataclass
@@ -309,7 +331,7 @@ class JournalRoot(Asked):
         return self.named(("read json", path), default)
 
     def write_json(self, path: str, data, indent: int | None = None) -> None:
-        self.seen.ran.append(("write json", path, data))
+        self.recording.ran.append(("write json", path, data))
 
     def shared_state(self, name: str):
         return Held(self.named(("state", name), {}))
@@ -319,11 +341,11 @@ class JournalRoot(Asked):
 
     @contextmanager
     def swept(self, name: str, every: float):
-        self.seen.ran.append(("sweep", name))
+        self.recording.ran.append(("sweep", name))
         yield self.named(("sweep", name), True)
 
     def trim_logs(self, keep: int, readers_since: float) -> int:
-        self.seen.ran.append(("trim logs", keep))
+        self.recording.ran.append(("trim logs", keep))
         return self.named(("trim logs",), 0)
 
     def exists(self, path: str) -> bool:
@@ -342,19 +364,19 @@ class JournalRoot(Asked):
         return self.named(("modified", path), 0.0)
 
     def write(self, path: str, text: str) -> None:
-        self.seen.ran.append(("write", path, text))
+        self.recording.ran.append(("write", path, text))
 
     def append(self, path: str, line: str) -> None:
-        self.seen.ran.append(("append", path, line))
+        self.recording.ran.append(("append", path, line))
 
     def halve(self, path: str, keep: int) -> None:
-        self.seen.ran.append(("halve", path, keep))
+        self.recording.ran.append(("halve", path, keep))
 
     def remove(self, path: str) -> None:
-        self.seen.ran.append(("remove", path))
+        self.recording.ran.append(("remove", path))
 
     def trim_tail(self, path: str, keep: int) -> bool:
-        self.seen.ran.append(("trim", path, keep))
+        self.recording.ran.append(("trim", path, keep))
         return self.named(("trim", path), True)
 
 
@@ -369,7 +391,7 @@ class OwnWork(Asked):
             raise AttributeError(name)
 
         def done(*args, **more):
-            self.seen.ran.append(("own work", name, *args))
+            self.recording.ran.append(("own work", name, *args))
             return self.answers.answers.get((name, *args))
         return done
 
@@ -378,14 +400,14 @@ class OwnWork(Asked):
 class Terminal:
     """Keys pressed in the agent's terminal, which the play has none of: each press is remembered as a run."""
 
-    seen: Seen
+    recording: Recording
 
     def move_to_background(self, running: str = "") -> dict:
-        self.seen.ran.append(("move to background", running))
+        self.recording.ran.append(("move to background", running))
         return {}
 
     def answer_prompt(self, answer: PromptAnswer) -> None:
-        self.seen.ran.append(("answer prompt", answer.option, answer.text))
+        self.recording.ran.append(("answer prompt", answer.option, answer.text))
 
 
 @dataclass
@@ -414,7 +436,7 @@ class Ids:
 class World:
     """Everything one play is given: the Fakes, and what the rows looked like before it ran."""
 
-    seen: Seen
+    recording: Recording
     commands: Commands
     files: Files
     processes: Processes
@@ -431,9 +453,9 @@ class World:
 
     @classmethod
     def of(cls, given: Given) -> "World":
-        seen = Seen()
-        return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Faults(seen, given.faults), CommandWords(seen, given.command_words), Viewer(seen, given.viewer), OwnWork(seen, given.own_work), Terminal(seen), Clock(given.clock), Ids(given.ids))
+        recording = Recording()
+        return cls(recording, Commands(recording, given.commands), Files(recording, given.files),
+                   Processes(recording, given.processes), Providers(recording, given.providers), Git(recording, given.git), JournalRoot(recording, given.journal_root), Faults(recording, given.faults), CommandWords(recording, given.command_words), Viewer(recording, given.viewer), OwnWork(recording, given.own_work), Terminal(recording), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:
