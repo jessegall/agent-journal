@@ -1,9 +1,8 @@
 from contextlib import suppress
 
 from events import Fact
-from events.agents import ClockTicked
 from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOrchestrator, TicketAgentToWake, TicketCalled, TicketHandedIn, TicketNeedsLook,
-                            TicketRestarted, TicketToRevive, TicketWaitedLong)
+                            TicketRestarted, TicketsDue, TicketToRevive, TicketWaitedLong)
 from receiving import Handler
 from resources.base import FINISHED, STUCK, Refused
 from resources.types import Board, Ticket
@@ -29,8 +28,8 @@ class FinishTheBoardWithItsLastTicket(Handler[BoardOutOfTickets]):
         return []
 
 
-class LookAfterTickets(Handler[ClockTicked]):
-    def handle(self, event: ClockTicked, tickets: Rows[Ticket]) -> list[Fact]:
+class LookAfterTickets(Handler[TicketsDue]):
+    def handle(self, event: TicketsDue, tickets: Rows[Ticket]) -> list[Fact]:
         tickets.look_after()
         return []
 

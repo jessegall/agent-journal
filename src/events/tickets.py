@@ -127,3 +127,10 @@ class TicketWaitedLong(Fact):
 
     ticket: int
     minutes: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketsDue(Fact):
+    """The tickets trigger says it is time to look after the tickets."""
+
+    agent: int

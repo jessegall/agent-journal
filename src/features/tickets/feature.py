@@ -3,9 +3,10 @@ from events.asking import RowWriting
 from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOrchestrator, TicketAgentToWake, TicketCalled, TicketCompleted, TicketHandedIn,
-                            TicketNeedsLook, TicketRestarted, TicketToRevive, TicketWaitedLong)
+                            TicketNeedsLook, TicketRestarted, TicketsDue, TicketToRevive, TicketWaitedLong)
 from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, nothing
 from framework.base import Feature
+from framework.due import DueOnClock
 from resources.boards import Board
 from resources.tickets import Ticket
 from resources.base import AGENT, PLAN_WAITS, USER
@@ -102,18 +103,21 @@ class TicketsFeature(Feature):
             Given((Tickets,), rows=[card(1)]) >> Answered([]),
             Given((Tickets,), rows=[card(1, work_environment="ticket-1")]) >> Answered([]),
         ])
-        journal.events.handle(ClockTicked, LookAfterTickets(), expects=[
-            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        journal.events.listen(ClockTicked, DueOnClock(TicketsDue), expects=[
+            Given(ClockTicked(agent=1)) >> Dispatches(TicketsDue(agent=1).due()),
         ])
-        journal.events.listen(ClockTicked, SpotWaitingPlans(), expects=[
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        journal.events.handle(TicketsDue, LookAfterTickets(), expects=[
+            Given(TicketsDue(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        ])
+        journal.events.listen(TicketsDue, SpotWaitingPlans(), expects=[
+            Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanWaitsForOrchestrator, RaiseWaitingPlan(), expects=[
             Given(PlanWaitsForOrchestrator(ticket=1, moment=PLAN_WAITS), rows=[run_here(), waiting_for(5)]) >> Dispatches(nothing),
         ])
-        journal.events.listen(ClockTicked, SpotTicketCalls(), expects=[
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        journal.events.listen(TicketsDue, SpotTicketCalls(), expects=[
+            Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TicketsDue(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(TicketCalled, PassOnCall(), expects=[
             Given(TicketCalled(kind="ticket_replied", ticket=1, title="Dark mode", values={"text": "done"}), rows=[AgentRow(n=1, title="claude-1")])
@@ -122,8 +126,8 @@ class TicketsFeature(Feature):
         journal.events.handle(TicketHandedIn, RecordHandedIn(), expects=[
             Given(TicketHandedIn(ticket=1), rows=[run_here(), waiting_for(0, handed_in_at=0.0)]) >> Updated(Ticket(n=1), handed_in_at=WHEN),
         ])
-        journal.events.listen(ClockTicked, SpotStuckTickets(), expects=[
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        journal.events.listen(TicketsDue, SpotStuckTickets(), expects=[
+            Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(TicketToRevive, ReviveTicket(), expects=[
             Given(TicketToRevive(ticket=1, title="Dark mode", text="stopped"), rows=[waiting_for(5, restarts=1)]) >> Dispatches(TicketNeedsLook(ticket=1, text="stopped")),
@@ -134,12 +138,12 @@ class TicketsFeature(Feature):
         journal.events.handle(TicketNeedsLook, RaiseStuckTicket(), expects=[
             Given(TicketNeedsLook(ticket=1, text="stopped"), rows=[waiting_for(5)]) >> Dispatches(nothing),
         ])
-        journal.events.listen(ClockTicked, SpotLongWaits(), expects=[
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")])
+        journal.events.listen(TicketsDue, SpotLongWaits(), expects=[
+            Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")])
                 >> Dispatches(TicketWaitedLong(ticket=1, minutes=60).once(f"ticket_long_wait|ticket:1|{WHEN - 3600}")),
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(5), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment", "stages": ["Doing"]}), waiting_for(60), AgentRow(n=1, title="claude-1")])
+            Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(5), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TicketsDue(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TicketsDue(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment", "stages": ["Doing"]}), waiting_for(60), AgentRow(n=1, title="claude-1")])
                 >> Dispatches(nothing),
         ])
         journal.events.handle(TicketWaitedLong, CommentOnLongWait(), expects=[

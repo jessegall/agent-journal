@@ -1,10 +1,9 @@
 from declaring.trigger import MINUTE
 from events import Fact
-from events.agents import ClockTicked
 from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOrchestrator, TicketAgentToWake, TicketCalled, TicketCompleted,
-                            TicketHandedIn, TicketNeedsLook, TicketToRevive, TicketWaitedLong)
+                            TicketHandedIn, TicketNeedsLook, TicketsDue, TicketToRevive, TicketWaitedLong)
 from features.tickets.calls import PLAN_DONE_CALL, calls
 from features.tickets.watching import NUDGED, waited, watched
 from receiving import Listener
@@ -41,8 +40,8 @@ class SpotBoardOutOfTickets(Listener[TicketCompleted]):
         return [BoardOutOfTickets(board=board.n)]
 
 
-class SpotWaitingPlans(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, tickets: ReadRows[Ticket], boards: ReadRows[Board]) -> list[Fact]:
+class SpotWaitingPlans(Listener[TicketsDue]):
+    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket], boards: ReadRows[Board]) -> list[Fact]:
         paused = boards.paused()
         waiting = [t for t in tickets.awaiting_orchestrator() if not (t.board and int(t.board) in paused) and not tickets.reviewing(t)]
         found = []
@@ -53,8 +52,8 @@ class SpotWaitingPlans(Listener[ClockTicked]):
         return found
 
 
-class SpotTicketCalls(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, tickets: ReadRows[Ticket]) -> list[Fact]:
+class SpotTicketCalls(Listener[TicketsDue]):
+    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket]) -> list[Fact]:
         found = []
         for ticket in watched(tickets):
             for kind, key, values, every in calls(tickets, ticket):
@@ -66,8 +65,8 @@ class SpotTicketCalls(Listener[ClockTicked]):
         return found
 
 
-class SpotStuckTickets(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, tickets: ReadRows[Ticket]) -> list[Fact]:
+class SpotStuckTickets(Listener[TicketsDue]):
+    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket]) -> list[Fact]:
         found = []
         for ticket, state in tickets.needing_a_look(tickets.orchestrating()):
             if state.kind == "stopped" and tickets.revivable(ticket):
@@ -77,8 +76,8 @@ class SpotStuckTickets(Listener[ClockTicked]):
         return found
 
 
-class SpotLongWaits(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, tickets: ReadRows[Ticket], settings: Settings, clock: Clock) -> list[Fact]:
+class SpotLongWaits(Listener[TicketsDue]):
+    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket], settings: Settings, clock: Clock) -> list[Fact]:
         now, limit = clock.now(), int(settings.tell_the_user_after)
         return [TicketWaitedLong(ticket=ticket.n, minutes=waited(ticket, now)).once(f"ticket_long_wait|{ticket.ref}|{ticket.handed_in_at}")
                 for ticket in watched(tickets) if ticket.handed_in_at and waited(ticket, now) >= limit]
