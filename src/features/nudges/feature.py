@@ -35,10 +35,14 @@ class NudgesFeature(Feature):
             Given(RowChanged(n=8, type="todo", action="completed"), rows=[Todo(n=8, title="the footer"), STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7})
                 >> Dispatches(nothing),
             Given(RowChanged(n=1, type="nudge", action="completed"), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7}) >> Dispatches(StandingNudgeGone(nudge=1)),
+            Given(RowChanged(n=1, type="nudge", action="updated"), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7}) >> Dispatches(nothing),
         ])
         journal.events.handle(StandingNudgeAnswered, ClearWhenAnswered(), expects=[
             Given(StandingNudgeAnswered(type="todo", n=7, action="completed"), rows=[Todo(n=7, title="the header"), STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7})
                 >> Updated(Nudge(n=1), outcome="answered by todo 7, completed") & Remembered("standing", {}),
+            Given(StandingNudgeAnswered(type="todo", n=7, action="completed"), rows=[Todo(n=7, title="the header"), STANDING_ON_TODO_7],
+                  remembered={"nudges.standing": {"1": {**ON_TODO_7["1"], "rows": ["todo:7", "todo:8"]}}})
+                >> Remembered("standing", {"1": {**ON_TODO_7["1"], "rows": ["todo:8"]}}),
         ])
         journal.events.handle(StandingNudgeGone, ForgetNudge(), expects=[
             Given(StandingNudgeGone(nudge=1), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7}) >> Remembered("standing", {}),
@@ -57,6 +61,7 @@ class NudgesFeature(Feature):
                 >> Updated(Nudge(n=1), outcome="said to a session that is no longer the agent's") & Remembered("standing", {}),
             Given(StandingNudgesLost(elsewhere=(), gone=(1,), kept=()), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": {"1": {**ON_TODO_7["1"], "session": "claude-1"}}})
                 >> Updated(Nudge(n=1), outcome="what it asked about is gone") & Remembered("standing", {}),
+            Given(StandingNudgesLost(elsewhere=(), gone=(), kept=(1,)), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7}) >> Remembered("standing", ON_TODO_7),
         ])
         journal.events.handle(NudgeDueAgain, AskAgain(), expects=[
             Given(NudgeDueAgain(nudge=1), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": ON_TODO_7}) >> Wrote(Nudge(title="todo 7 is unfinished")),
