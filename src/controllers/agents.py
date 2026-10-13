@@ -77,9 +77,14 @@ class PendingRows:
             held = self.rows.get(self.key(record, n))
             return copy.deepcopy(held.delta) if held else {}
 
-    def opened(self, record, row) -> Pending:
+    def held(self, record, row, change: dict, action: str) -> Pending:
+        """Holds what a hook changed on a row, added to what it already holds under the one guard that the copy of it is read under, so a
+        reader never copies a delta while a hook adds to it."""
         with self.guard:
-            return self.rows.setdefault(self.key(record, row.n), Pending.of(row))
+            pending = self.rows.setdefault(self.key(record, row.n), Pending.of(row))
+            pending.delta.update(change)
+            pending.action = action
+            return pending
 
     def pop(self, record, n: int) -> "Pending | None":
         """Takes the held row away and gives it back, or nothing when another thread took it first."""
@@ -175,9 +180,7 @@ class Agents(Controller):
     def _seen(self, n: int, action: str, fact: dict, data: dict):
         shaped = self._shaped(data)
         with self.record.locked(self.resource.scope):
-            pending = PENDING.opened(self.record, self.rows.peek(int(n)))
-            pending.delta.update(shaped)
-            pending.action = action
+            pending = PENDING.held(self.record, self.rows.peek(int(n)), shaped, action)
             if pending.is_due(time.time()):
                 self._flush(int(n))
             self._emit(int(n), action, **fact)
