@@ -191,10 +191,14 @@ def register_recital(journal, controller: type, mentioned_fact: type, standing_f
         Given(answered("make deploy"), rows=(WORKING,)) >> Dispatches(nothing),
         Given(edited("notes.md", "deploy after the gate"), rows=(WORKING, keyed)) >> Dispatches(whispered),
         Given(edited("deploy.md", "the gate first"), rows=(WORKING, keyed)) >> Dispatches(nothing),
+        Given(answered("make deploy"), rows=(WORKING, keyed_row(controller, COMMANDS))) >> Dispatches(whispered),
+        Given(edited("deploy.md", "the gate first"), rows=(WORKING, keyed_row(controller, EVERYTHING))) >> Dispatches(whispered),
     ])
     journal.events.listen(AgentMessageSent, SpotKeywordInChat(resource, mentioned_fact), expects=[
         Given(sent("I will deploy now"), rows=(WORKING, keyed)) >> Dispatches(whispered),
         Given(sent("I will deploy now"), rows=(WORKING, keyed_row(controller, COMMANDS))) >> Dispatches(nothing),
+        Given(sent("I will deploy now"), rows=(WORKING, keyed_row(controller, TEXT))) >> Dispatches(whispered),
+        Given(sent("I will deploy now"), rows=(WORKING, keyed_row(controller, EVERYTHING))) >> Dispatches(whispered),
         Given(sent("I will build now"), rows=(WORKING, keyed)) >> Dispatches(nothing),
         Given(sent("I will deploy now"), rows=(WORKING,)) >> Dispatches(nothing),
     ])
@@ -205,6 +209,9 @@ def register_recital(journal, controller: type, mentioned_fact: type, standing_f
     journal.events.listen(AgentReported, SpotStanding(resource, standing_fact), expects=[
         Given(AgentReported(agent=1), rows=(WORKING, standing)) >> Dispatches(standing_fact(agent=1, count=plural(1, kind), rows=f"4. {standing.title}").due()),
         Given(AgentReported(agent=1), rows=(WORKING,)) >> Dispatches(nothing),
+        Given(AgentReported(agent=1), rows=(WORKING, controller.resource(n=5, title="For another session", data={WHOM: "claude-2"}))) >> Dispatches(nothing),
+        Given(AgentReported(agent=1), rows=(WORKING, standing, controller.resource(n=5, title="For another session", data={WHOM: "claude-2"})))
+            >> Dispatches(standing_fact(agent=1, count=plural(1, kind), rows=f"4. {standing.title}").due()),
     ])
     journal.events.handle(standing_fact, bound(SayTheStanding, standing_fact)(), expects=[
         Given(standing_fact(agent=1, count=plural(1, kind), rows=f"4. {standing.title}"), rows=(WORKING,)) >> Nudged("standing", rows=f"4. {standing.title}"),
