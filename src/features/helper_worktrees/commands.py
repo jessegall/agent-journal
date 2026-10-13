@@ -1,4 +1,4 @@
-from engine.worktree import WorkspaceFolders
+from resources.workspace import WorkspaceFolders
 from framework.parts import Command, Context
 from serving import SERVED, Providers
 

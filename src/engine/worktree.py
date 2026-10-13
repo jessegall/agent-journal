@@ -13,29 +13,13 @@ from engine.paths import ENVIRONMENTS
 from engine.proc import git_ran
 from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
+from resources.workspace import WorkspaceFolders  # noqa: F401  its home is resources
 
 INCLUDED = ".worktreeinclude"
 LINKED = ".worktreelinks"
 BRANCHED = "worktree-"
 KEPT = "refs/journal/worktrees"
 GIT_WAIT = 60
-
-
-@dataclass(frozen=True)
-class WorkspaceFolders:
-    homes: tuple[str, ...] = ()
-    shared: tuple[str, ...] = ()
-    shared_if_ignored: tuple[str, ...] = ()
-    shared_in: tuple[str, ...] = ()
-    worktrees: tuple[tuple[str, ...], ...] = ()
-
-    @property
-    def managed(self) -> tuple[str, ...]:
-        return tuple(f"/{folder}/" for folder in self.shared_in)
-
-    @property
-    def worktree_home(self) -> tuple[str, ...]:
-        return self.worktrees[0]
 
 
 def checkout(start: Path, folders: WorkspaceFolders) -> Path | None:

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.worktree import WorkspaceFolders
+from resources.workspace import WorkspaceFolders
 from providers.claude import Claude
 from providers.codex import Codex
 
