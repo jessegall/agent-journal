@@ -487,9 +487,8 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
         "only a running journal on this machine can be switched to"
     assert call(base, "/p/switch", {"journal": journal, "environment": "elsewhere"}, key).status == 201
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 200, "after switching, the other environment's rows open"
-    from features.starting_agents import launch
     launched = []
-    monkeypatch.setattr(launch, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
+    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
     assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
     assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
     from engine.sessions import Sessions
