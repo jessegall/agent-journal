@@ -129,6 +129,10 @@ class Environments(Controller):
     def _sessions(self) -> Sessions:
         return Sessions(self.record.root)
 
+    def retired_in(self, env: str):
+        """The last session this environment moved past, so a new one can be told whose the chat above it is."""
+        return self._sessions.retired_in(env)
+
     def _record_of(self, env) -> Record:
         return Record(self.record.root, env.title)
 

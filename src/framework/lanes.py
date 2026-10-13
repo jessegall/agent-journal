@@ -31,6 +31,7 @@ from framework.loaded import FEATURES
 from framework.parts import Marks as AgentMarks, Speaker
 from engine import gates
 from engine.state import State
+from engine.stored import write_text
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
 from receiving.asking import answered
@@ -233,10 +234,11 @@ class TheJournalRoot:
         except OSError:
             return 0.0
 
+    def read(self, path: str) -> str:
+        return (self.root / path).read_text()
+
     def write(self, path: str, text: str) -> None:
-        written = self.root / path
-        written.parent.mkdir(parents=True, exist_ok=True)
-        written.write_text(text)
+        write_text(self.root / path, text)
 
     def append(self, path: str, line: str) -> None:
         """Adds a line to a file; a file that cannot be written is left alone."""

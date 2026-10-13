@@ -1,11 +1,10 @@
 from declaring.registries import ADDRESS, LAW, MODE, ORCHESTRATION, SKILLS, START_PARTS  # noqa: F401
 import time
 
-from controllers.types import CONTROLLERS, Works
+from controllers.types import CONTROLLERS, Environments, Works
 from features.work_tracking.next import ready
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
-from resources.extension import Extension
 
 WAITING = (None, "active", "waiting")
 
@@ -61,8 +60,7 @@ QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's wo
 
 def inherited(record) -> str:
     """What a session takes over when it is not the first in its environment: another agent worked here, and the chat above belongs to it."""
-    from engine.sessions import Sessions
-    before = Sessions(record.root).retired_in(record.env)
+    before = Environments(record, actor=SYSTEM).retired_in(record.env)
     if not before.retired:
         return ""
     when = time.strftime("%Y-%m-%d %H:%M", time.localtime(before.retired["at"]))

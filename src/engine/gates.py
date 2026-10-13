@@ -27,7 +27,7 @@ class HookCall:
 
 
 def start_file(root: Path, env: str, compacted: bool = False) -> Path:
-    return runtime.folder(root) / f"{'compact' if compacted else 'start'}-{env}.md"
+    return Path(root) / start_name(env, compacted)
 
 
 def gate_file(root: Path, env: str, session: str) -> Path:

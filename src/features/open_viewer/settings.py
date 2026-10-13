@@ -6,6 +6,7 @@ from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from features.boards.agent_types import written
 from features.session_briefing.block import rebuild
+from framework.lanes import TheJournalRoot
 
 
 def renamed() -> dict:
@@ -54,7 +55,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
     features.settings_changed(record, [*body, *switched], actor)
     if "boards" in body:
         written(record.root.parent, record)
-    rebuild(record)
+    rebuild(record, TheJournalRoot(record))
     after = switches(record)
     features.switched(record, before, after, actor)
     aliases = renamed()

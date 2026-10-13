@@ -6,7 +6,7 @@ from events.work_modes import BuilderHandedAway, DriftChecked, EditCounted, Orch
 from expects import Answered, Dispatches, Given, Nudged, Remembered, Set, Unchanged, nothing
 from framework.base import Feature
 from framework.journal import Journal
-from features.session_briefing.start import MODE, START_PARTS
+from declaring.registries import MODE, START_PARTS
 from features.work_modes.answering import REFUSED, RefuseDispatchInSolo, RefuseHelperInSolo
 from features.work_modes.details import WorkModesDetails
 from features.work_modes.handlers import ClearTheCount, CountTheEdit, NameTheBuildersHandingAway, NameTheOrchestratorsDrift, OrchestrateWhenABoardStarts

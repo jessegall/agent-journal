@@ -2,7 +2,7 @@ from events import Fact
 from events.session_briefing import SessionGreeted, StartBlockStale
 from features.session_briefing.block import rebuild
 from receiving import Handler
-from serving import Chat, Elsewhere
+from serving import Chat, Elsewhere, JournalRoot
 
 
 class GreetTheSession(Handler[SessionGreeted]):
@@ -12,6 +12,6 @@ class GreetTheSession(Handler[SessionGreeted]):
 
 
 class RebuildTheStartBlock(Handler[StartBlockStale]):
-    def handle(self, event: StartBlockStale, elsewhere: Elsewhere) -> list[Fact]:
-        rebuild(elsewhere.here().record)
+    def handle(self, event: StartBlockStale, elsewhere: Elsewhere, journal_root: JournalRoot) -> list[Fact]:
+        rebuild(elsewhere.here().record, journal_root)
         return []

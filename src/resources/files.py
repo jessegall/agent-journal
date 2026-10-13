@@ -26,3 +26,8 @@ def older(paths, age: float) -> list[Path]:
 
 def is_image(path: str) -> bool:
     return path.lower().endswith(IMAGE_SUFFIXES)
+
+
+def start_name(env: str, compacted: bool = False) -> str:
+    """Where the start block of an environment is kept, under the journal's folder."""
+    return f"{RUNTIME}/{'compact' if compacted else 'start'}-{env}.md"

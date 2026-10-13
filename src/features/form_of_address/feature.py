@@ -5,7 +5,7 @@ from features.form_of_address.details import FormOfAddressDetails
 from framework.journal import Journal
 from controllers.form_of_address.address import address, voice_of
 from features.form_of_address.details import VOICE_SET
-from features.session_briefing.start import ADDRESS, START_PARTS
+from declaring.registries import ADDRESS, START_PARTS
 
 
 __all__ = ["Profiles"]

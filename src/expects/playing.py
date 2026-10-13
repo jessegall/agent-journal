@@ -299,6 +299,9 @@ class JournalRoot(Asked):
     def is_warming(self) -> bool:
         return self.named(("warming",), False)
 
+    def read(self, path: str) -> str:
+        return self.named(("read", path), "")
+
     def shared_state(self, name: str):
         return Held(self.named(("state", name), {}))
 
