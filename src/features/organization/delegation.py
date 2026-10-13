@@ -1,9 +1,7 @@
+from controllers.todos import WAITS_FOR  # noqa: F401  the commands name it here
 from controllers.types import Todos
-from engine.record import Record
 from engine.organization import GLOBAL, WORKTREE, Domain, Role, organization
 from resources.base import SYSTEM
-
-WAITS_FOR = "waits_for"
 
 
 def missing(names: list, text: str) -> list:
@@ -16,30 +14,14 @@ def queued_behind(todos, domain: Domain, role: Role):
     return max((r for r in todos.rows.standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.creation_order(), default=None)
 
 
-def role_of(record, todo) -> Role | None:
-    return organization(record.root.parent).domain(todo.data["domain"]).role(todo.data["role"]) if todo.data.get("role") else None
-
-
-def everywhere(root, domain: str, role: str) -> list[tuple[str, object]]:
-    found = []
-    for record in Record.every(root):
-        todos = Todos(record, actor=SYSTEM)
-        found += [(record.env, todos.peek(row["n"])) for row in todos.rows.standing_summaries()]
-    return [(env, r) for env, r in found if r.data.get("domain") == domain and r.data.get("role") == role]
-
-
 def global_ahead(record, domain: Domain, role: Role) -> tuple[str, int] | None:
     if role.cardinality != GLOBAL:
         return None
-    open_rows = everywhere(record.root, domain.name, role.name)
+    open_rows = Todos(record, actor=SYSTEM).everywhere(domain.name, role.name)
     if not open_rows:
         return None
     env, row = max(open_rows, key=lambda found: found[1].created)
     return env, row.n
-
-
-def next_in_line(record, domain: str, role: str, env: str, n: int) -> list[tuple[str, object]]:
-    return [(e, r) for e, r in everywhere(record.root, domain, role) if r.data.get(WAITS_FOR) == f"{env}:{n}"]
 
 
 BROWSER = "browser"

@@ -1,24 +1,22 @@
-from controllers.types import Todos
-from events.todos import TodoCompleted
-from engine.record import Record
-from features.agent_sessions.launch import stop_in
+from events import Fact
+from events.organization import RoleAgentToStop, RoleTodoToStart
 from features.organization.agents import start_role_agent
-from features.organization.delegation import next_in_line, role_of
-from engine.organization import PLAN
-from framework.parts import Context, Handler
-from resources.base import SYSTEM
+from receiving import Handler
+from resources.types import Todo
+from serving import Elsewhere, Processes
 
 
-class StartNextForGlobalRole(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        todo = context.journal.get(Todos).load(event.n)
-        role = role_of(context.record, todo)
-        if role:
-            for env, waiting in next_in_line(context.record, todo.data["domain"], todo.data["role"], context.record.env, todo.n):
-                place = Record(context.record.root, env)
-                Todos(place, actor=SYSTEM).unblock(waiting.n)
-                started = start_role_agent(place, role, waiting.n, f"{waiting.title}\n{waiting.brief}")
-                if started:
-                    Todos(place, actor=SYSTEM).update(waiting.n, role_environment=started)
-        if todo.data.get("role_environment") and not (role and role.cardinality == PLAN):
-            stop_in(context.record, todo.data["role_environment"])
+class StartNextForGlobalRole(Handler[RoleTodoToStart]):
+    def handle(self, event: RoleTodoToStart, elsewhere: Elsewhere, processes: Processes) -> list[Fact]:
+        place = elsewhere.named(event.environment)
+        todos = place.rows(Todo)
+        todos.unblock(event.n)
+        if started := start_role_agent(place.record, event.role, event.n, event.task, processes):
+            todos.update(event.n, role_environment=started)
+        return []
+
+
+class StopRoleAgent(Handler[RoleAgentToStop]):
+    def handle(self, event: RoleAgentToStop, elsewhere: Elsewhere, processes: Processes) -> list[Fact]:
+        processes.stop(elsewhere.here().record, event.environment)
+        return []

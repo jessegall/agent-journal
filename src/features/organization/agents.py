@@ -1,5 +1,4 @@
 from engine.organization import AGENT, PLAN, Role
-from features.agent_sessions.launch import start_agent_in, tell_in
 from resources.base import DEFAULT_PROVIDER
 from resources.types import EnvironmentKind, Running
 
@@ -15,12 +14,11 @@ def kickoff(env: str, role: Role, n: int, brief: str) -> str:
             + (" You stay for the whole plan: the next task for your role comes to you here." if role.cardinality == PLAN else ""))
 
 
-def start_role_agent(record, role: Role, n: int, brief: str) -> str:
+def start_role_agent(record, role: Role, n: int, brief: str, processes) -> str:
     if role.runs != AGENT:
         return ""
     name = role_environment(record.env, role, n)
-    if role.cardinality == PLAN and tell_in(Running(record, name, DEFAULT_PROVIDER), kickoff(record.env, role, n, brief)):
+    if role.cardinality == PLAN and processes.tell(Running(record, name, DEFAULT_PROVIDER), kickoff(record.env, role, n, brief)):
         return name
-    return start_agent_in(record, name, record.env, f"Where {role.label} works on to-do {n} of {record.env}",
-                          f"todo:{n}", kickoff(record.env, role, n, brief), EnvironmentKind.SUBAGENT)
-
+    return processes.start_agent(record, name, record.env, f"Where {role.label} works on to-do {n} of {record.env}",
+                                 f"todo:{n}", kickoff(record.env, role, n, brief), EnvironmentKind.SUBAGENT)

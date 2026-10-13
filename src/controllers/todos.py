@@ -2,6 +2,8 @@ import time
 from typing import TypedDict
 
 from controllers.base import Controller, CONTROLLERS
+from engine.organization import organization
+from engine.record import Record
 from controllers.prioritised import Prioritised
 from resources import types
 from resources.base import SYSTEM, Missing, Refused
@@ -28,10 +30,29 @@ def column_order(todo) -> tuple:
     return (-int(todo.priority), todo.position, todo.n)
 
 
+WAITS_FOR = "waits_for"
+
+
 class Todos(Prioritised, Controller):
     resource = types.Todo
 
     @action
+    def role_of(self, todo):
+        """The role of the organization a to-do was delegated to, or none."""
+        return organization(self.record.root.parent).domain(todo.data["domain"]).role(todo.data["role"]) if todo.data.get("role") else None
+
+    def everywhere(self, domain: str, role: str) -> list[tuple[str, "types.Todo"]]:
+        """The open to-dos of a domain's role in every environment, each with its environment."""
+        found = []
+        for record in Record.every(self.record.root):
+            todos = type(self)(record, actor=SYSTEM)
+            found += [(record.env, todos.peek(row["n"])) for row in todos.rows.standing_summaries()]
+        return [(env, r) for env, r in found if r.data.get("domain") == domain and r.data.get("role") == role]
+
+    def next_in_line(self, domain: str, role: str, n: int) -> list[tuple[str, "types.Todo"]]:
+        """The to-dos of the role that wait for this one, in whichever environment they are."""
+        return [(env, r) for env, r in self.everywhere(domain, role) if r.data.get(WAITS_FOR) == f"{self.record.env}:{n}"]
+
     def assign(self, n: int, to: str):
         return self.update(n, assigned=to, pending={})
 

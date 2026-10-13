@@ -1,8 +1,9 @@
 from features.hosting.apps import app_here
 from features.organization.agents import start_role_agent
-from features.organization.delegation import WAITS_FOR, brief, global_ahead, missing, queued_behind, role_of
+from features.organization.delegation import WAITS_FOR, brief, global_ahead, missing, queued_behind
 from engine.organization import organization
-from framework.parts import ActionInterceptor, Command, Context
+from framework.parts import Command, Context
+from serving import SERVED, Processes
 
 
 class ShowOrganization(Command):
@@ -36,22 +37,8 @@ class Delegate(Command):
             todos.update(row.n, **{WAITS_FOR: f"{env}:{first}"})
             todos.block(row.n, f"{chosen.label} runs once per journal: to-do {first} in {env} goes first")
         text = brief(found, chosen, row.n, task, given, app_here(context.record))
-        started = "" if ahead or queued else start_role_agent(context.record, chosen, row.n, text)
+        started = "" if ahead or queued else start_role_agent(context.record, chosen, row.n, text, SERVED.given(Processes))
         if started:
             todos.update(row.n, role_environment=started)
             text = f"{chosen.label} runs as a full agent: it was started in environment {started}, in this worktree. Nothing to dispatch."
         return {"todo": row.n, "waits": ahead.n if ahead else 0, "brief": text, "out": text, "agent": started}
-
-
-class ReportCoversOutputs(ActionInterceptor):
-    def intercept(self, feature_context: Context, controller, **args):
-        reported = args.get("reported")
-        if not isinstance(reported, dict):
-            return None
-        role = role_of(feature_context.record, controller.load(args["n"]))
-        if role is None:
-            return None
-        lacking = missing(role.outputs, str(reported.get("how", "")))
-        if lacking:
-            controller._refuse(f"{role.name}'s report covers {', '.join(role.outputs)}; it does not mention {', '.join(lacking)}")
-        return None
