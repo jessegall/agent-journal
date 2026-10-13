@@ -7,11 +7,16 @@ import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
 import {computed} from "vue";
-import {planProgress} from "../domain/plans.js";
+import {planProgress, standingOf} from "../domain/plans.js";
+import {usePlanRows} from "../composables/planRows.js";
+import {rows} from "../sync/rows.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 
 const props = defineProps({resource: Object});
 const plan = computed(() => planProgress(props.resource));
+// a plan's progress is its to-dos, counted as its own page counts them, with the phase it is in beside it
+usePlanRows(() => (plan.value ? [props.resource] : []));
+const standing = computed(() => (plan.value ? standingOf(props.resource, rows("todo")) : null));
 const update = computed(() =>
     isUpdate(props.resource)
         ? {
@@ -42,8 +47,8 @@ const holds = computed(() => {
         </span>
         <span class="title">{{ resource.title }}</span>
         <template v-if="plan">
-            <span class="plan-steps">{{ plan.finished }} of {{ plan.total }} phases · {{ plan.status }}</span>
-            <ProgressBar :value="plan.finished" :max="plan.total" :tone="plan.status === 'done' ? 'good' : ''" />
+            <span class="plan-steps">{{ standing.title }} · phase {{ plan.phase }} of {{ plan.total }} · {{ plan.status }}</span>
+            <ProgressBar :value="standing.done" :max="Math.max(1, standing.rows)" :tone="plan.status === 'done' ? 'good' : ''" />
         </template>
         <template v-else>
             <TextDisplay inline class="abstract" :text="resource.abstract || resource.brief" />
