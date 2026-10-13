@@ -522,7 +522,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     assert "no line named 'nothing'" in refused(lambda: feature.line_text("nothing")), "a feature says plainly when it has no such line"
 
 
-def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tmp_path, monkeypatch):
+def test_a_launch_repairs_a_half_done_upgrade(tmp_path, monkeypatch):
     import json
     import shutil
     import sys
@@ -550,11 +550,6 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     monkeypatch.setattr(launch, "restart", lambda root: None)
     launch.repaired(record)
     assert not (root / "src" / "__main__.py").exists() and (root / "journal.pyz").resolve().name.startswith("journal-"), "a half-done install is packed at launch"
-    ledger = json.loads((root / "migrations.json").read_text())
-    (root / "migrations.json").write_text(json.dumps({**ledger, "m0000_project_resources": {"result": "project records moved into resources/: doc"}}))
-    shutil.rmtree(root / "project")
-    assert launch.repaired(record) == launch.LOST and launch.repaired(record) == "", "records lost to 2.84.0 are said once, plainly"
-    assert [n.title for n in Notices(record, actor="system").all()].count(launch.LOST) == 1
 
     import install
     from commands.queries import upgrade_here

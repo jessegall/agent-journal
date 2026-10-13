@@ -6,7 +6,7 @@ from engine.stored import read_json, write_json
 from resources.base import Refused, SYSTEM
 
 LAST_OF_VERSION_2 = "m0085_developer_error_reports_off"
-BEFORE_THE_LEDGER = ("pins.json", "reminders.json", "inbox.json", "questions.json", "todo")
+BEFORE_THE_LEDGER = ("pins.json", "reminders.json", "inbox.json", "questions.json", "todo/[0-9][0-9][0-9]-*.md")
 FORM, MASCOT, AVATAR = "form_of_address", "mascot", "avatar"
 
 
@@ -22,7 +22,7 @@ def came_before_version_2(root: Path) -> bool:
     done = applied(root)
     if done:
         return LAST_OF_VERSION_2 not in done
-    return any((home / name).exists() for home in (root / "environments").glob("*") for name in BEFORE_THE_LEDGER)
+    return any(next(home.glob(name), None) for home in (root / "environments").glob("*") for name in BEFORE_THE_LEDGER)
 
 
 def avatar_switch_moved(root: Path) -> str:
