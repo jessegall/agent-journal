@@ -1,6 +1,8 @@
 import re
 
-from framework.parts import Context, TextFormatter
+from events.answers import Answer, Rewritten
+from events.asking import TextFormatting
+from receiving import Answerer
 from resources.types import TYPES
 from engine.command_line import command_line
 
@@ -17,9 +19,9 @@ def after_path(text: str, at: int) -> bool:
     return "." in word or "/" in word
 
 
-class CommandsAsCode(TextFormatter):
-    def format(self, context: Context, text: str) -> str:
-        return "`".join(part if at % 2 else CODE.sub(self.command, part) for at, part in enumerate(text.split("`")))
+class CommandsAsCode(Answerer[TextFormatting]):
+    def answer(self, request: TextFormatting) -> Answer:
+        return Rewritten("`".join(part if at % 2 else CODE.sub(self.command, part) for at, part in enumerate(request.text.split("`"))))
 
     def command(self, found) -> str:
         line = command_line()

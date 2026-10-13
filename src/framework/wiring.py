@@ -5,6 +5,7 @@ from typing import get_type_hints
 from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
+from events.asking import TextFormatting
 from events.typed import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall, policies
 from declaring.reach import Guard
@@ -74,7 +75,9 @@ class Events:
         self.register(HANDLE, fact, handler, expects, after)
 
     def answer(self, request: type, answerer: Answerer, expects) -> None:
-        """Answers the request synchronously and read-only, before anything about it writes."""
+        """Answers the request synchronously and read-only, before anything about it writes. A formatter's feature is one whose settings the formatted texts are cached by."""
+        if request is TextFormatting and self.feature not in FORMATTING_FEATURES:
+            FORMATTING_FEATURES.append(self.feature)
         self.register(ANSWER, request, answerer, expects)
 
     def register(self, kind: str, event: type, receiver, expects, after: tuple[str, ...] = ()) -> None:

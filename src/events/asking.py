@@ -6,7 +6,7 @@ let through before it is written. All four are answered by read-only answerers, 
 nothing about them writes until the fact that follows them ticks.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from events.answers import Asked, FirstRefusalWins, KeepingWins, TextsCompose
 
@@ -59,6 +59,9 @@ class AgentMessageSending(Asked):
     turn: str = ""
     session: str = ""
 
+    def rewritten(self, text: str) -> "Asked":
+        return replace(self, text=text)
+
 
 @dataclass(frozen=True, kw_only=True)
 class TextFormatting(Asked):
@@ -67,6 +70,9 @@ class TextFormatting(Asked):
     reduces = TextsCompose
     text: str = ""
     surface: str = ""
+
+    def rewritten(self, text: str) -> "Asked":
+        return replace(self, text=text)
 
 
 @dataclass(frozen=True, kw_only=True)

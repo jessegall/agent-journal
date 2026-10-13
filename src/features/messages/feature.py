@@ -2,12 +2,14 @@ from controllers.types import Messages
 from events.agents import AgentReported
 from events.agents import AgentMessageSent
 from events.resources import ResourceCreated
+from events.answers import Rewritten
+from events.asking import TextFormatting
 from events.messages import (AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread,
                              MessageCreated, MessageSettled, MessageUpdated, RunTogether, TurnToPost)
 import json
 from dataclasses import asdict, replace
 
-from expects import Dispatches, Formats, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
+from expects import Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
 from declaring.trigger import Mark
 from framework.base import Feature
 from framework.journal import Journal
@@ -222,12 +224,12 @@ class MessagesFeature(Feature):
         journal.events.handle(BareNumbersNamed, NameBareNumbers(), expects=[
             Given.of(BareNumbersNamed(agent=1, n=5, numbers="482"), IDLE) >> Nudged("numbers", n=5, numbers="482"),
         ])
-        journal.client.formatter(CommandsAsCode(), expects=[
-            Formats("Run journal todo create to file it", to="Run `journal todo create` to file it"),
-            Formats("Pass --force to push", to="Pass `--force` to push"),
-            Formats("Run `journal todo create` to file it", to="Run `journal todo create` to file it"),
-            Formats("Edit src/--force.py now", to="Edit src/--force.py now"),
-            Formats("Nothing to quote here", to="Nothing to quote here"),
+        journal.events.answer(TextFormatting, CommandsAsCode(), expects=[
+            Given(TextFormatting(text="Run journal todo create to file it")) >> Answered(Rewritten("Run `journal todo create` to file it")),
+            Given(TextFormatting(text="Pass --force to push")) >> Answered(Rewritten("Pass `--force` to push")),
+            Given(TextFormatting(text="Run `journal todo create` to file it")) >> Answered(Rewritten("Run `journal todo create` to file it")),
+            Given(TextFormatting(text="Edit src/--force.py now")) >> Answered(Rewritten("Edit src/--force.py now")),
+            Given(TextFormatting(text="Nothing to quote here")) >> Answered(Rewritten("Nothing to quote here")),
         ])
         FACTS.register(self, *state_facts("message", "unread", lambda context: context.journal.get(Messages).unread(AGENT)),
                        *state_facts("message", "unanswered", lambda context: unanswered_in(context.journal)))

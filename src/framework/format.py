@@ -1,6 +1,9 @@
 import json
 
 from controllers.faults import threw
+from engine import bus
+from events.answers import Rewritten
+from events.asking import TextFormatting
 from engine.markers import plain
 from resources.marks import Marks
 from framework.switches import generation
@@ -49,7 +52,10 @@ def formatted(text: str, record=None, surface: str = "") -> str:
             if record is None:
                 raise
             threw(record.root, record.env, f"the formatter {fn.__name__}")
-    return text
+    if record is None:
+        return text
+    answer = bus.asked(TextFormatting(text=text, surface=surface), record)
+    return answer.text if isinstance(answer, Rewritten) else text
 
 
 def formatting(record) -> str:

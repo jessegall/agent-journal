@@ -91,6 +91,10 @@ class Asked(Request):
 
     reduces: ClassVar[type[Reduced]] = Reduced
 
+    def rewritten(self, text: str) -> "Asked":
+        """The request the next answerer reads once one rewrote it; a request with no text of its own reads the same."""
+        return self
+
     @classmethod
     def answered(cls, given: list[Answer]) -> Answer:
         return cls.reduces.of(cls, given)

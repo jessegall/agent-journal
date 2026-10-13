@@ -10,9 +10,9 @@ from features.command_tags.lines_held import lines_held
 from payload import HookEvent
 from events.agents import AgentTurnWritten, CommandRan
 from events.answers import Allowed, Kept, Rewritten
-from events.asking import AgentMessageSending
+from events.asking import AgentMessageSending, TextFormatting
 from events.command_tags import MessageTagged, TagCommandRan, TagHintDue, TagRefused, TurnKeptBack
-from expects import Answered, Dispatches, File, Formats, Given, Hooked, Nudged, Printed, Ran, Whispered, Wrote, answering, exited, nothing
+from expects import Answered, Dispatches, File, Given, Hooked, Nudged, Printed, Ran, Whispered, Wrote, answering, exited, nothing
 from resources.types import AgentRow
 
 
@@ -80,9 +80,9 @@ class CommandTags(Feature):
         journal.events.handle(TagHintDue, TeachTheTag(), expects=[
             Given(TagHintDue(agent=1, tag=REPLY, hint=HINT), rows=[AGENT]) >> Nudged("hint", tag=REPLY) & Whispered("the reply tag does this in one step"),
         ])
-        journal.client.formatter(StripTags(), expects=[
-            Formats('[!reply:12] the answer', to='the answer'),
-            Formats('plain words', to='plain words'),
+        journal.events.answer(TextFormatting, StripTags(), expects=[
+            Given(TextFormatting(text='[!reply:12] the answer')) >> Answered(Rewritten('the answer')),
+            Given(TextFormatting(text='plain words')) >> Answered(Rewritten('plain words')),
         ])
         journal.agent.responder(HookEvent.PRE_TOOL_USE, lines_held, expects=[
             Given("a tag ran while the agent was writing", rows=[AGENT], hook=Hooked(event="PreToolUse"), files=RAN)

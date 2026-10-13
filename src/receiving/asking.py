@@ -8,7 +8,7 @@ waits on work that was never its to do.
 from collections.abc import Callable
 
 from events import Request
-from events.answers import Allowed, Answer
+from events.answers import Allowed, Answer, Rewritten
 from receiving import ANSWER, Registrations
 from receiving.ticks import Services
 
@@ -24,6 +24,12 @@ def answered(request: Request, registered: Registrations, services: Services, sw
     reduce = getattr(type(request), "answered", None)
     if reduce is None:
         raise AnswersNothing.of(type(request))
-    said = [one.receiver.answer(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
-            for one in registered.of(ANSWER) if one.event is type(request) and switched_on(one.feature)]
+    said = []
+    for one in registered.of(ANSWER):
+        if one.event is not type(request) or not switched_on(one.feature):
+            continue
+        answer = one.receiver.answer(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
+        if isinstance(answer, Rewritten):
+            request = request.rewritten(answer.text)
+        said.append(answer)
     return reduce([one for one in said if one is not None]) if said else Allowed()
