@@ -83,6 +83,10 @@ class Environment:
     def __init__(self, feature, record):
         self.feature, self.record = feature, record
 
+    @property
+    def name(self) -> str:
+        return self.record.env
+
     def rows(self, kind: type):
         return CONTROLLERS[kind.type](self.record, actor=SYSTEM)
 
@@ -198,16 +202,22 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
 def agent_of(logged, record):
     """The agent a tick's chat is about: the agent the event is about, else the one the environment's chat is with."""
     agents = Agents(record, actor=SYSTEM)
-    row = agents.peek(logged.n) if logged.type == "agent" else agents.primary_to_read()
+    row = agents.peek(logged.n) if logged.type == "agent" else working_agent(record, agents)
     if row is None:
         raise NobodyToSpeakTo.of(f"{logged.type} {logged.n}")
     return row
 
 
+def working_agent(record, agents):
+    """The agent working the environment: the one whose session holds it, else the one the environment's chat is with."""
+    holder = TheSessions(record.root).holder(record.env)
+    return (agents.rows.by_title(holder) if holder else None) or agents.primary_to_read()
+
+
 def agent_of_fact(fact, record):
     """The agent a fact run on a lane of its own is about: the one it names, else the one the environment's chat is with."""
     agents = Agents(record, actor=SYSTEM)
-    row = agents.peek(fact.agent) if getattr(fact, "agent", 0) else agents.primary_to_read()
+    row = agents.peek(fact.agent) if getattr(fact, "agent", 0) else working_agent(record, agents)
     if row is None:
         raise NobodyToSpeakTo.of(type(fact).__name__)
     return row
