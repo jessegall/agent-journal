@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from events.files import FileEdited
 from engine.files import KIND, line_counts
 from engine.git import commits_since
 from engine.command_runs import Delta, counted_runs, current_run
@@ -18,15 +17,11 @@ def committed(project: Path, since: float) -> list[dict]:
     return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, subject in commits_since(project, since)]
 
 
-def begin(event, record) -> None:
-    files_of(record, event.n).clear()
+def forget(record, n: int) -> None:
+    files_of(record, n).clear()
 
 
-def end(event, record) -> None:
-    files_of(record, event.n).clear()
-
-
-def record_edit(agent: AgentRow, record, work: Work, edit: FileEdited) -> None:
+def record_edit(agent: AgentRow, record, work: Work, edit) -> None:
     project = record.root.parent
     with files_of(record, work.n).changing() as held:
         base = held.setdefault("base", {}).setdefault(edit.path, edit.before)

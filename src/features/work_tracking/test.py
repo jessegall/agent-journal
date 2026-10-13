@@ -62,7 +62,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     from framework.loaded import FEATURES
     from framework.parts import AgentContext
     from features.work_tracking.details import CHECK_IN_MINUTES
-    from features.work_tracking.handlers import nothing_happening
+    from features.work_tracking.nudges import nothing_happening
     record = fresh()
     idle(record)
     context = AgentContext.of(FEATURES["work_tracking"], record, Agents(record, actor=SYSTEM).by_session("claude-1"))
@@ -217,7 +217,7 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     assert not Claude().interrupted_by_user(transcript), "any other last word is not a stop"
 
     from controllers.types import Todos as Rows
-    from features.work_tracking.handlers import nothing_left
+    from features.work_tracking.nudges import nothing_left
     from framework.parts import AgentContext
     from framework.loaded import FEATURES
     done = fresh()

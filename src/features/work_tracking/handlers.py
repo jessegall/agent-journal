@@ -1,293 +1,144 @@
-import time
-from pathlib import Path
-
-from engine import bus
-from events.agents import AgentReported, ToolFinished
-from events.agents import ClockTicked
-from events.files import FileEdited
-from events.resources import AnyEvent
-from events.todos import TodoCompleted
-from events.works import WorkCompleted, WorkCreated, WorkUpdated
-from engine import triggering
-from framework.sending import Sent
-from declaring.trigger import MINUTE
-from payload import HookEvent
-from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
+from events import Fact
+from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
+                                  StillAwaiting, StillBlocked, TodoDoneWithWork, TodoLeftByWork, WaitCleared, WorkBegan, WorkDeclared, WorkEnded, WorkEndedByTodo,
+                                  WorkNamedInHand, WorkTookTodo, WorkUndeclared)
 from features.work_tracking import tracker
-from features.work_tracking.details import CHECK_IN
-from engine.transcript import IDLE
-from features.work_tracking.next import carried_on, helping, in_sight, named_rows, questioned, ready, waiting_rows
-from serving import SERVED, Providers
-from resources.types import Work
-from engine.command_runs import command_runs
-from controllers.types import Agents, Messages, Todos, Works
-from features.work_modes.modes import taking
-from features.work_tracking.auto import automatic
-from resources.base import SYSTEM, USER
-from events.plans import PlanCompleted
+from features.work_tracking.listeners import NAME, NAMED_PARKED, OPEN_REMINDERS
+from receiving import Handler
+from resources.types import AgentRow, Todo, Work
+from serving import Chat, Elsewhere, Marks, Remembered, Rows
 
-ASKED_AGAIN_AFTER = 60
-NAMED_PARKED = "named_parked"
-
-
-def working(context: Context) -> list:
-    return [w for w in context.journal.get(Works).rows.standing() if not w.parked]
-
-
-class HoldUntilDeclared(Handler):
-    def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type != "work" and (event.type, event.action) != ("agent", "created"):
-            return
-        bus.defer_once(f"undeclared {context.record.root} {context.record.env}", lambda: self.settle(context))
-
-    def settle(self, context: Context) -> None:
-        if working(context):
-            context.release()
-        else:
-            context.hold("undeclared held")
-
-
-class OpenWork(Handler):
-    def handle(self, context: Context, event: WorkCreated) -> None:
-        tracker.begin(event, context.record)
-        works = context.journal.get(Works)
-        n = works.load(event.n).todo
-        if not n:
-            return
-        todo = context.journal.get(Todos).load(n)
-        works.link(event.n, todo.ref)
-        context.journal.get(Todos).update(todo.n, status="started", work=event.n)
-
-
-class CloseWork(Handler):
-    def handle(self, context: Context, event: WorkCompleted) -> None:
-        tracker.end(event, context.record)
-        name_parked(context)
-        n = context.journal.get(Works).load(event.n).todo
-        if not n:
-            return
-        todos = context.journal.get(Todos)
-        if todos.load(n).completed:
-            return
-        if event.todo:
-            todos.complete(int(n), how=f"work {event.n} ended")
-        else:
-            todos.update(int(n), status="")
-
-
-def name_parked(context: Context) -> None:
-    """Names parked work once for each time it was parked, and only while nothing else is ready: parking it was the agent's own choice."""
-    parked = {parking(w): w for w in context.journal.get(Works).rows.standing() if w.parked}
-    state = context.record.state(context.feature.name)
-    named = set(state.get(NAMED_PARKED, [])) & set(parked)
-    unnamed = [w for key, w in parked.items() if key not in named]
-    agent = context.journal.get(Agents).primary()
-    if not unnamed or not agent or ready(context.record):
-        return
-    context.speaking_to(agent).agent.say("parked", n=unnamed[0].n, title=unnamed[0].title, why=unnamed[0].parked,
-                                         more=f" and {len(unnamed) - 1} more" if len(unnamed) > 1 else "")
-    state.set(NAMED_PARKED, sorted(set(parked)))
-
-
-def parking(work) -> str:
-    return f"{work.n}:{work.parked}"
-
-
-class NameParkedOnTodoDone(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not any(int(w.todo) == event.n for w in context.journal.get(Works).rows.standing()):
-            name_parked(context)
-
-
-def name_unblocked(context: Context, ref: str) -> None:
-    todos, agent = context.journal.get(Todos), context.journal.get(Agents).primary()
-    if not agent:
-        return
-    for row in [r for r in todos.rows.standing() if ref in r.after and not r.blocked and not todos.waits(r)]:
-        context.speaking_to(agent).agent.say("unblocked", n=row.n, title=row.title, closed=ref.replace(":", " "))
-
-
-class UnblockWaitingRows(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not context.journal.get(Todos).load(event.n).struck:
-            name_unblocked(context, f"todo:{event.n}")
-
-
-class UnblockWhenPlanFinishes(Handler):
-    def handle(self, context: Context, event: PlanCompleted) -> None:
-        name_unblocked(context, f"plan:{event.n}")
-
-
-class AskStillBlocked(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        state = context.record.state(context.feature.name)
-        closed = int(state.get("closed", 0)) + 1
-        state.set("closed", closed)
-        agent = context.journal.get(Agents).primary()
-        if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
-            return
-        asked_at, now = dict(state.get("asked", {})), time.time()
-        due = [r for r in context.journal.get(Todos).rows.standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
-        asked = questioned(context.record)
-        for row in [r for r in due if r.ref not in asked]:
-            context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked.rstrip("."))
-            asked_at[str(row.n)] = now
-        state.set("asked", asked_at)
-
-
-class EndWorkWithTodo(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        works = context.journal.get(Works)
-        for work in works.rows.standing():
-            if int(work.todo) == event.n:
-                works.complete(work.n, how=context.journal.get(Todos).load(event.n).outcome or f"todo {event.n} done")
-
-
-class TrackFiles(Handler):
-    def handle(self, context: AgentContext, event: FileEdited) -> None:
-        for work in working(context)[:1]:
-            tracker.record_edit(context.agent.row, context.record, work, event)
-
-
-POLLED = 3
-OPEN_REMINDERS = 3
-FIRST_AFTER = 5
-CARRY_ON_TIMES = 3
 POLLING = "polling"
 POLLING_NO_WAKE = "polling, no wake"
 
 
-class NameRepeatedChecks(Handler):
-    def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        shell = [c["command"] for c in context.agent.row.data.get("commands") or [] if c.get("tool") == "Bash" and c.get("command")][-POLLED:]
-        if len(shell) < POLLED or len(set(shell)) > 1 or any(w.awaiting for w in working(context)):
-            return
-        if context.once("polled", shell[-1]):
-            provider = SERVED.given(Providers).offers(context.agent.row.provider)
-            context.agent.nudge(POLLING if provider and provider.background_wakes else POLLING_NO_WAKE, times=POLLED, command=shell[-1][:80])
-
-
-class ClearWaitOnActivity(Handler):
-    def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        runs = command_runs(context.agent.row)
-        started = runs[-1].at if runs else 0.0
-        for w in working(context)[:1]:
-            if not w.is_self_clearing or started <= float(w.awaiting_since):
-                continue
-            context.journal.get(Works).update(w.n, awaiting="")
-            context.agent.nudge("wait cleared", awaiting=w.awaiting)
-
-
-class AskStillAwaiting(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        every = context.settings.ask_awaiting_every
-        for w in working(context)[:1]:
-            if not w.is_self_clearing or not every:
-                continue
-            minutes = int((time.time() - (w.awaiting_since or time.time())) // 60)
-            if minutes >= every and context.once("awaiting asked", f"{w.n}:{minutes // every}"):
-                context.agent.say("still awaiting", awaiting=w.awaiting, minutes=minutes)
-
-
-class RemindOpenWork(Handler):
-    behaviour = WHOLE_FEATURE
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        for w in [w for w in working(context)[:1] if context.at_most("open", f"{w.n}:{w.updated}", OPEN_REMINDERS)]:
-            context.agent.say("open" if w.sections else "unlogged", n=w.n)
-
-
-class CountEdits(Handler):
-    hooks = (HookEvent.POST_TOOL_USE,)
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        work = working(context)[:1]
-        if not context.agent.row.wrote or not work:
-            return
-        row, name = context.agent.row, context.feature.name
-        edits = triggering.last(context.record, row.title, name).edits + 1
-        triggering.write(context.record, row, name, edits=edits)
-        every = context.settings.name_work_every
-        if every and edits % every == 0:
-            context.agent.nudge("in hand", n=work[0].n, title=work[0].title)
-        if edits >= context.settings.log_after:
-            context.hold("log held", edits=edits, n=work[0].n)
-
-
-class ResetEditsOnLog(Handler):
-    def handle(self, context: Context, event: WorkUpdated) -> None:
-        if not event.section:
-            return
-        for row in context.feature.reached(context.record, context.feature.lines["log held"].reach):
-            triggering.write(context.record, row, context.feature.name, edits=0)
-        context.release()
-
-
-def next_row(standing: bool):
-    def about(context, agent) -> list[Sent]:
-        open_work = working(context)
-        if bool(open_work) != standing or (open_work and open_work[0].awaiting):
-            return []
-        return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n, "rows": [row.ref, open_work[0].ref]} if standing else
-                     {"n": row.n, "taking": taking(context.record), "rows": [row.ref]}) for row in ready(context.record)[:1]]
-    return about
-
-
-def next_while_helping(context, agent) -> list[Sent]:
-    """A main agent whose work waits on a helper or subagent is offered the next ready row at once, to work while it waits."""
-    open_work = working(context)
-    if not open_work or not open_work[0].awaiting:
+class HoldUntilDeclared(Handler[WorkUndeclared]):
+    def handle(self, event: WorkUndeclared, chat: Chat) -> list[Fact]:
+        chat.hold("undeclared held")
         return []
-    rows = ready(context.record)
-    busy = helping(context.record) if rows else []
-    if not busy:
+
+
+class ReleaseOnceDeclared(Handler[WorkDeclared]):
+    def handle(self, event: WorkDeclared, chat: Chat) -> list[Fact]:
+        chat.release()
         return []
-    row, work = rows[0], open_work[0]
-    return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": work.n, "who": busy[0].name, "rows": [row.ref, work.ref]})]
 
 
-def stopped_with_work(context, agent) -> list[Sent]:
-    if agent.idle_for < FIRST_AFTER * MINUTE:
+class BeginWork(Handler[WorkBegan]):
+    def handle(self, event: WorkBegan, elsewhere: Elsewhere) -> list[Fact]:
+        tracker.forget(elsewhere.here().record, event.work)
         return []
-    return [Sent(f"{work.n}:{work.updated}", {"n": work.n, "title": work.title, "rows": [work.ref]}) for work in carried_on(context.record)[:1]]
 
 
-def last_heard_from_the_user(context, agent) -> float:
-    """When the person last spoke to this agent: a message they wrote in the viewer or a prompt they typed themselves, never a line the journal typed."""
-    written = [row["created"] for row in Messages(context.record, actor=SYSTEM).rows.summaries() if row["seen"][:1] == [USER] and not row["deleted"]]
-    return max([float(agent.person_at), *written])
-
-
-def nothing_left(context) -> bool:
-    """Whether this environment holds nothing to carry on with: no work open, no ready row and no row waiting on anything."""
-    return not working(context) and not ready(context.record) and not waiting_rows(context.record)
-
-
-def stopped_in_auto(context, agent) -> list[Sent]:
-    """With auto mode on, an agent that stopped long after the person last spoke is told to carry on, unless the person stopped it themselves or the environment holds nothing to carry on with."""
-    after = context.settings.carry_on_after * MINUTE
-    if not automatic(context.record) or agent.subagent or agent.paused or agent.idle_for < FIRST_AFTER * MINUTE or time.time() - last_heard_from_the_user(context, agent) < after:
+class EndWork(Handler[WorkEnded]):
+    def handle(self, event: WorkEnded, elsewhere: Elsewhere) -> list[Fact]:
+        tracker.forget(elsewhere.here().record, event.work)
         return []
-    if nothing_left(context):
+
+
+class LinkTodoToWork(Handler[WorkTookTodo]):
+    def handle(self, event: WorkTookTodo, works: Rows[Work], todos: Rows[Todo]) -> list[Fact]:
+        works.link(event.work, todos.load(event.todo).ref)
+        todos.update(event.todo, status="started", work=event.work)
         return []
-    provider = SERVED.given(Providers).offers(agent.provider)
-    if provider is not None and agent.transcript and provider.interrupted_by_user(Path(agent.transcript)):
+
+
+class CompleteTodoWithWork(Handler[TodoDoneWithWork]):
+    def handle(self, event: TodoDoneWithWork, todos: Rows[Todo]) -> list[Fact]:
+        todos.complete(event.todo, how=f"work {event.work} ended")
         return []
-    return [Sent(f"{agent.at}", {"minutes": int(after // MINUTE)})]
 
 
-def check_in_pace(context) -> int:
-    return context.settings.check_in_every
-
-
-def nothing_happening(context, agent) -> list[Sent]:
-    """The fallback: nothing has happened for the check-in interval, so the agent is asked whether anything is left, whatever this environment holds. Every other nudge here returns early on some state - no work open, no ready row, nothing blocked - which together leave a stuck agent told nothing at all."""
-    if agent.subagent or agent.paused or agent.idle_for < check_in_pace(context) * MINUTE:
+class LeaveTodoByWork(Handler[TodoLeftByWork]):
+    def handle(self, event: TodoLeftByWork, todos: Rows[Todo]) -> list[Fact]:
+        todos.update(event.todo, status="")
         return []
-    return [Sent(CHECK_IN, {"minutes": int(agent.idle_for // MINUTE), "seen": in_sight(context.record)})]
 
 
-def nothing_ready(context, agent) -> list[Sent]:
-    if agent.idle_for < FIRST_AFTER * MINUTE or working(context) or ready(context.record):
+class EndWorkOfTodo(Handler[WorkEndedByTodo]):
+    def handle(self, event: WorkEndedByTodo, works: Rows[Work]) -> list[Fact]:
+        works.complete(event.work, how=event.how)
         return []
-    held = waiting_rows(context.record)
-    return [Sent(",".join(str(t.n) for t in held), {"rows": named_rows(held)})] if held else []
+
+
+class NameParkedWork(Handler[ParkedWorkStands]):
+    def handle(self, event: ParkedWorkStands, chat: Chat, memory: Remembered) -> list[Fact]:
+        chat.say("parked", n=event.work, title=event.title, why=event.why, more=event.more)
+        memory.set(NAMED_PARKED, list(event.parkings))
+        return []
+
+
+class NameUnblockedRow(Handler[RowUnblocked]):
+    def handle(self, event: RowUnblocked, chat: Chat) -> list[Fact]:
+        chat.say("unblocked", n=event.n, title=event.title, closed=event.closed)
+        return []
+
+
+class KeepClosedCount(Handler[ClosedCounted]):
+    def handle(self, event: ClosedCounted, memory: Remembered) -> list[Fact]:
+        memory.set("closed", event.closed)
+        return []
+
+
+class AskStillBlockedRow(Handler[StillBlocked]):
+    def handle(self, event: StillBlocked, chat: Chat, memory: Remembered) -> list[Fact]:
+        chat.say("still blocked", n=event.n, title=event.title, why=event.why)
+        memory.set("asked", {**dict(memory.get("asked", {})), str(event.n): event.at})
+        return []
+
+
+class RecordEdit(Handler[EditedInWork]):
+    def handle(self, event: EditedInWork, agents: Rows[AgentRow], works: Rows[Work], elsewhere: Elsewhere) -> list[Fact]:
+        tracker.record_edit(agents.load(event.agent), elsewhere.here().record, works.load(event.work), event)
+        return []
+
+
+class NameRepeatedChecks(Handler[PollingNamed]):
+    def handle(self, event: PollingNamed, chat: Chat) -> list[Fact]:
+        chat.nudge(POLLING if event.wakes else POLLING_NO_WAKE, times=event.times, command=event.command)
+        return []
+
+
+class ClearWait(Handler[WaitCleared]):
+    def handle(self, event: WaitCleared, chat: Chat, works: Rows[Work]) -> list[Fact]:
+        works.update(event.work, awaiting="")
+        chat.nudge("wait cleared", awaiting=event.awaiting)
+        return []
+
+
+class AskStillAwaiting(Handler[StillAwaiting]):
+    def handle(self, event: StillAwaiting, chat: Chat) -> list[Fact]:
+        chat.say("still awaiting", awaiting=event.awaiting, minutes=event.minutes)
+        return []
+
+
+class RemindOpenWork(Handler[OpenWorkRemains]):
+    def handle(self, event: OpenWorkRemains, chat: Chat, marks: Marks) -> list[Fact]:
+        marks.at_most("open", f"{event.work}:{event.updated}", OPEN_REMINDERS)
+        chat.say("open" if event.logged else "unlogged", n=event.work)
+        return []
+
+
+class KeepEditCount(Handler[EditsCounted]):
+    def handle(self, event: EditsCounted, marks: Marks) -> list[Fact]:
+        marks.write(NAME, edits=event.edits)
+        return []
+
+
+class NameWorkInHand(Handler[WorkNamedInHand]):
+    def handle(self, event: WorkNamedInHand, chat: Chat) -> list[Fact]:
+        chat.nudge("in hand", n=event.work, title=event.title)
+        return []
+
+
+class HoldUntilLogged(Handler[LogOverdue]):
+    def handle(self, event: LogOverdue, chat: Chat) -> list[Fact]:
+        chat.hold("log held", edits=event.edits, n=event.work)
+        return []
+
+
+class ResetEdits(Handler[LogWritten]):
+    def handle(self, event: LogWritten, chat: Chat, marks: Marks) -> list[Fact]:
+        marks.write(NAME, edits=0)
+        chat.release()
+        return []
