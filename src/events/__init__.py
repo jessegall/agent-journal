@@ -44,6 +44,10 @@ class Fact(Event):
         """Dispatched at most once every so many seconds for this key: one dispatched sooner is held, the newest replacing the rest, and runs when the time is up, so the last state always lands."""
         return replace(self, spacing=(key, seconds))
 
+    def every(self, key: str, seconds: float, now: float) -> "Fact":
+        """Dispatched at most once in each span of so many seconds for this key while what raises it holds; one raised again within the span is dropped, never sent late."""
+        return self.once(f"{key}|{int(now // seconds)}")
+
     def due(self, behaviour: str = "") -> "Fact":
         """Dispatched only when the dispatching feature's trigger for this behaviour says it is due: the engine counts the moment and drops the fact until then."""
         return replace(self, trigger=(behaviour,))

@@ -13,7 +13,7 @@ from receiving import Listener
 from resources.base import USER
 from resources.triggers import DENY, HOLD, INSTRUCT, NUDGE, Trigger
 from resources.types import AgentRow, Message
-from serving import ReadOwnWork, ReadRemembered, ReadRows, Settings
+from serving import Clock, ReadOwnWork, ReadRemembered, ReadRows, Settings
 
 CHAT_DENIED = "caught a denied word in the agent's message"
 
@@ -22,7 +22,7 @@ def sent_key(trigger: int, key: str) -> str:
     return f"sent|{trigger}:{key}"
 
 
-def showing(triggers: ReadRows[Trigger], agents: ReadRows[AgentRow], work: ReadOwnWork, remembered: ReadRemembered, settings: Settings) -> list[Fact]:
+def showing(triggers: ReadRows[Trigger], agents: ReadRows[AgentRow], work: ReadOwnWork, remembered: ReadRemembered, settings: Settings, now: float) -> list[Fact]:
     """What the state triggers that nudge or instruct see now, for the agent the chat is with: once each unless a trigger times them, and at most as often as it says."""
     agent = agents.primary_to_read()
     if agent is None or not settings.is_on(REMINDING):
@@ -36,21 +36,22 @@ def showing(triggers: ReadRows[Trigger], agents: ReadRows[AgentRow], work: ReadO
                 continue
             fact = TriggerShowing(agent=agent.n, row=row.n, does=str(row.does), key=found.key,
                                   values=tuple(sorted({**found.values, "title": row.title, "text": filled(row.wording, found.values)}.items())))
-            facts.append(fact.spaced(f"{row.n}:{found.key}", float(row.timing) * MINUTE) if row.timing else fact.once(f"{row.n}:{found.key}"))
+            facts.append(fact.every(f"{row.n}:{found.key}", float(row.timing) * MINUTE, now) if row.timing else fact.once(f"{row.n}:{found.key}"))
     return facts
 
 
 class SpotWhatTheJournalShowsOnTheClock(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, triggers: ReadRows[Trigger], agents: ReadRows[AgentRow], work: ReadOwnWork, remembered: ReadRemembered, settings: Settings) -> list[Fact]:
-        return showing(triggers, agents, work, remembered, settings)
+    def listen(self, event: ClockTicked, triggers: ReadRows[Trigger], agents: ReadRows[AgentRow], work: ReadOwnWork, remembered: ReadRemembered, settings: Settings,
+               clock: Clock) -> list[Fact]:
+        return showing(triggers, agents, work, remembered, settings, clock.now())
 
 
 class SpotWhatTheJournalShowsOnToolUse(Listener[AgentReported]):
     def listen(self, event: AgentReported, triggers: ReadRows[Trigger], agents: ReadRows[AgentRow], work: ReadOwnWork, remembered: ReadRemembered,
-               settings: Settings) -> list[Fact]:
+               settings: Settings, clock: Clock) -> list[Fact]:
         if event.hook == HookEvent.POST_TOOL_USE:
             return []
-        return showing(triggers, agents, work, remembered, settings)
+        return showing(triggers, agents, work, remembered, settings, clock.now())
 
 
 class SpotWhatHoldsTheAgent(Listener[AgentReported]):

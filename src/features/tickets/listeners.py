@@ -53,7 +53,7 @@ class SpotWaitingPlans(Listener[TicketsDue]):
 
 
 class SpotTicketCalls(Listener[TicketsDue]):
-    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket]) -> list[Fact]:
+    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket], clock: Clock) -> list[Fact]:
         found = []
         for ticket in watched(tickets):
             for kind, key, values, every in calls(tickets, ticket):
@@ -61,18 +61,18 @@ class SpotTicketCalls(Listener[TicketsDue]):
                     continue
                 fact = TicketHandedIn(ticket=ticket.n) if kind == PLAN_DONE_CALL else TicketCalled(kind=kind, ticket=ticket.n, title=ticket.title, values=values)
                 claim = f"{kind}|{ticket.ref}|{key}"
-                found.append(fact.spaced(claim, every * MINUTE) if every else fact.once(claim))
+                found.append(fact.every(claim, every * MINUTE, clock.now()) if every else fact.once(claim))
         return found
 
 
 class SpotStuckTickets(Listener[TicketsDue]):
-    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket]) -> list[Fact]:
+    def listen(self, event: TicketsDue, tickets: ReadRows[Ticket], clock: Clock) -> list[Fact]:
         found = []
         for ticket, state in tickets.needing_a_look(tickets.orchestrating()):
             if state.kind == "stopped" and tickets.revivable(ticket):
                 found.append(TicketToRevive(ticket=ticket.n, title=ticket.title, text=state.text))
             else:
-                found.append(TicketNeedsLook(ticket=ticket.n, text=state.text).spaced(f"ticket_attention|{ticket.ref}|{state.kind}", LOOK_AGAIN * MINUTE))
+                found.append(TicketNeedsLook(ticket=ticket.n, text=state.text).every(f"ticket_attention|{ticket.ref}|{state.kind}", LOOK_AGAIN * MINUTE, clock.now()))
         return found
 
 
