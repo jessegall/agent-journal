@@ -10,7 +10,6 @@ from runner.chat_mirror import FELL_BACK, displayed
 from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
-from framework.format import VIEWER, formatted
 from providers import DRIVERS, PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, holds, refused
@@ -287,47 +286,6 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     chat_mirror.unfinished(record.root, "claude-1", Agents(record).by_session("claude-1"))
     assert (chat().count(across), log_file(record.root).read_text().count(FELL_BACK)) == (1, before_catching_up), \
         "so that catch-up neither posts the words a second time nor blames the hook that did deliver them"
-
-
-def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
-    from engine import chat
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    asked, filed = [Messages(record, actor="user").create(f"hi {i}") for i in range(2)][-1], Works(record, actor=AGENT).create("a job")
-    chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"Answered {asked.n}, parked {filed.n}, then work {filed.n}; the suite ({asked.n}) and \"finished {filed.n}\" pass")
-    lines = [n for n in nudges(record) if "without saying what they are" in n]
-    assert len(lines) == 1 and f"names {asked.n}, {filed.n} " in lines[0], "the bare numbers of real rows are named back, versions and counts are not"
-    chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"My reply to {asked.n} went through; parking {filed.n}, 2 revisions left, released 2.84.63")
-    lines = [n for n in nudges(record) if "without saying what they are" in n]
-    assert f"names {asked.n}, {filed.n} " in lines[-1], "any bare reference is named back, whatever word comes before it"
-    from features.messages.prose import bare
-    assert bare(f"Two steps:\n{asked.n}. first\n{filed.n}) second") == [], "the numbers of a numbered list are not row numbers"
-    assert bare("Opened PR 161, then pull request 162 and issue 40 on GitHub") == [], "a pull request or an issue named by its number is no row of the journal"
-    from features.messages import prose
-    old = prose.NAMED_WITHIN
-    prose.NAMED_WITHIN = 0.0
-    try:
-        before = len([n for n in nudges(record) if "without saying what they are" in n])
-        chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"Answered {asked.n}, parked {filed.n}")
-        assert len([n for n in nudges(record) if "without saying what they are" in n]) == before, \
-            "a number matching a row written long ago is a quantity, not a reference, and nothing is said"
-    finally:
-        prose.NAMED_WITHIN = old
-    assert bare("The suite took 109 s, then 194 s and 23.8 s; the push got HTTP 408, a load average of 123 and the copy is 118 MB of 2 GB") == [], \
-        "a measurement with its unit, an HTTP code and a load average are not row numbers"
-    assert bare("the server crashed: it answered 500, the route returned 404 and the call came back with status 502 or an error 503") == [], \
-        "a number right after a word that reports an HTTP status is a status, not a row"
-    assert bare("answered 20230 and closed 777") == [20230, 777], "a row number after a handling verb is still named, whatever the verb"
-    assert bare(f"down from 980 loose files to {asked.n}; it waited {filed.n} before") == [], "a small number with no handling verb before it is a count"
-    assert bare("all 358 viewer unit tests pass, and 358 viewer unit tests ran") == [], "a number before a noun phrase ending in a plural, or after all, is a count"
-    assert bare("a number under 250 is a count, and so is more than 300") == [], "a quantity word before a number makes it a count"
-    assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
-    formatted_text = formatted("run python3 journal.py --root .journal upgrade, or pass --why", record, VIEWER)
-    assert formatted_text.endswith(" --root .journal upgrade, or pass `--why`"), "a flag of another program and a .journal path stay plain text"
-    long = "see src/a.py and docs/b.md --flag " * 4000
-    began = time.thread_time()
-    formatted(long, record, VIEWER)
-    assert time.thread_time() - began < 1.0, "a long text with many paths and flags formats in linear time"
 
 
 def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():

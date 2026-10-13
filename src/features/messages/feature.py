@@ -9,7 +9,7 @@ from events.messages import (AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettl
 import json
 from dataclasses import asdict, replace
 
-from expects import Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
+from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
 from declaring.trigger import Mark
 from framework.base import Feature
 from framework.journal import Journal
@@ -89,6 +89,7 @@ CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
 RAN_ON = "This is a sentence. " * 25
 
 SENT = wrote("Closed it earlier", seen=(AGENT,))
+NAMED_ROWS = (SENT, Todo(n=3, title="Row"), Todo(n=4, title="Row"), IDLE)
 
 OWED = AnswerOwed(agent=1, messages="message 5", numbers=(5,), rows=("message:5",))
 
@@ -171,6 +172,20 @@ class MessagesFeature(Feature):
             Given.of(said("I closed 482 for you."), SENT, IDLE) >> Dispatches(nothing),
             Given.of(said("I closed 482 for you."), Todo(n=482, title="Row"), IDLE) >> Dispatches(nothing),
             Given.of(said("I have nothing to add."), SENT, Todo(n=482, title="Row"), IDLE) >> Dispatches(nothing),
+            Given.of(said('Answered 3, parked 4, then work 4; the suite (3) and "finished 4" pass'), *NAMED_ROWS) >> Dispatches(BareNumbersNamed(agent=1, n=5, numbers="3, 4")),
+            Given.of(said("My reply to 3 went through; parking 4, 2 revisions left, released 2.84.63"), *NAMED_ROWS) >> Dispatches(BareNumbersNamed(agent=1, n=5, numbers="3, 4")),
+            Given.of(said("Two steps:\n3. first\n4) second"), *NAMED_ROWS) >> Dispatches(nothing),
+            Given.of(said("Opened PR 161, then pull request 162 and issue 40 on GitHub"), *NAMED_ROWS, Todo(n=161, title="Row"), Todo(n=162, title="Row"), Todo(n=40, title="Row"))
+                >> Dispatches(nothing),
+            Given.of(said("Answered 3, parked 4"), replace(SENT, updated=WHEN), Todo(n=3, title="Row", updated=1.0), Todo(n=4, title="Row", updated=1.0), IDLE) >> Dispatches(nothing),
+            Given.of(said("The suite took 109 s, then 194 s and 23.8 s; the push got HTTP 408, a load average of 123 and the copy is 118 MB of 2 GB"), *NAMED_ROWS,
+                     Todo(n=109, title="Row"), Todo(n=194, title="Row"), Todo(n=408, title="Row"), Todo(n=123, title="Row"), Todo(n=118, title="Row")) >> Dispatches(nothing),
+            Given.of(said("the server crashed: it answered 500, the route returned 404 and the call came back with status 502 or an error 503"), *NAMED_ROWS,
+                     Todo(n=500, title="Row"), Todo(n=404, title="Row"), Todo(n=502, title="Row"), Todo(n=503, title="Row")) >> Dispatches(nothing),
+            Given.of(said("answered 20230 and closed 777"), *NAMED_ROWS, Todo(n=20230, title="Row"), Todo(n=777, title="Row")) >> Dispatches(BareNumbersNamed(agent=1, n=5, numbers="20230, 777")),
+            Given.of(said("down from 980 loose files to 3; it waited 4 before"), *NAMED_ROWS, Todo(n=980, title="Row")) >> Dispatches(nothing),
+            Given.of(said("all 358 viewer unit tests pass, and 358 viewer unit tests ran"), *NAMED_ROWS, Todo(n=358, title="Row")) >> Dispatches(nothing),
+            Given.of(said("a number under 250 is a count, and so is more than 300"), *NAMED_ROWS, Todo(n=250, title="Row"), Todo(n=300, title="Row")) >> Dispatches(nothing),
         ])
         journal.events.handle(TurnToPost, PostTurn(), expects=[
             Given.of(TurnToPost(agent=1, text="Done, it is filed.", turn="turn-1"), IDLE) >> Wrote(Message(title="Done, it is filed.", brief="Done, it is filed.")),
@@ -230,6 +245,9 @@ class MessagesFeature(Feature):
             Given(TextFormatting(text="Run `journal todo create` to file it")) >> Answered(Rewritten("Run `journal todo create` to file it")),
             Given(TextFormatting(text="Edit src/--force.py now")) >> Answered(Rewritten("Edit src/--force.py now")),
             Given(TextFormatting(text="Nothing to quote here")) >> Answered(Rewritten("Nothing to quote here")),
+            Given(TextFormatting(text="a journal question with options; journal question ask")) >> Answered(Rewritten("a journal question with options; `journal question ask`")),
+            Given(TextFormatting(text="run python3 journal.py --root .journal upgrade, or pass --why"))
+                >> Answered(Rewritten("run python3 journal.py --root .journal upgrade, or pass `--why`")),
         ])
         FACTS.register(self, *state_facts("message", "unread", lambda context: context.journal.get(Messages).unread(AGENT)),
                        *state_facts("message", "unanswered", lambda context: unanswered_in(context.journal)))
