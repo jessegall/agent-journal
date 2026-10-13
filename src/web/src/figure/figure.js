@@ -93,6 +93,7 @@ class Posing {
         this.hearts = 0;
         this.laptop = false;
         this.tablet = false;
+        this.glass = "";
         this.posture = posture;
         this.sway = 0;
         this.stride = stride;
@@ -212,6 +213,11 @@ class Posing {
     // the tablet in the hand at the end of the forearm held across the waist, for the free hand to write on or swipe
     holdTablet() {
         this.tablet = true;
+    }
+
+    // a magnifying glass, comically large, in the hand on `side`
+    holdGlass(side) {
+        this.glass = side;
     }
 
     // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
@@ -921,8 +927,8 @@ function search(pose, stance, t) {
     breathe(pose, 0);
     trunk(pose, {lean: 26, nod: 20, turn: -SIDES[side] * 28 * sweep, twist: -SIDES[side] * 10 * sweep});
     armsAtRest(pose, stance, [side]);
-    armTo(pose, side, 1, {y: 55, z: -55 + 30 * sweep, bend: 35});
-    onTablet(pose, stance, side, [0.06 * sweep, 0, 0]);
+    armTo(pose, side, 1, {y: 30, z: -60 + 25 * sweep, bend: 80});
+    pose.holdGlass(side);
     eyesAs(pose, "reading");
 }
 
@@ -1363,8 +1369,9 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         tablet: handsHolding(tablet, new Set([TABLET])),
     };
     const laptop = laptopOf();
-    scene.add(laptop);
-    return {scene, rig: rigOf(scene), stance, eyes, laptop, tablet: tablet.flatMap((mesh) => [mesh, mesh.userData.hull])};
+    const glass = glassOf();
+    scene.add(laptop, glass);
+    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, tablet: tablet.flatMap((mesh) => [mesh, mesh.userData.hull])};
 }
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
@@ -1401,6 +1408,45 @@ function laptopOf() {
     laptop.visible = false;
     laptop.add(base, hinge);
     return laptop;
+}
+
+// A magnifying glass in the same flat colours, comically large as the figure is drawn small: its handle from the origin up its y axis, its
+// lens in the plane of x and y above the handle
+const GLASS = {radius: 0.52, rim: 0.08, handle: 0.5, grip: 0.07};
+const GLASS_COLOURS = {rim: 0x2b2e38, lens: 0xcfe6ff, handle: 0x474a52, edge: 0xa9adb8};
+// how far the handle leans forward of upright, held out in front of the body
+const GLASS_LEAN = 40;
+
+function glassOf() {
+    const {radius, rim, handle, grip} = GLASS;
+    const flat = (geometry, colour, more = {}) => {
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide, ...more}));
+        mesh.frustumCulled = false;
+        return mesh;
+    };
+    const ring = flat(new THREE.TorusGeometry(radius, rim, 12, 48), GLASS_COLOURS.rim);
+    ring.position.y = handle + radius;
+    ring.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CircleGeometry(radius + rim, 48)), new THREE.LineBasicMaterial({color: GLASS_COLOURS.edge})));
+    const lens = flat(new THREE.CircleGeometry(radius, 48), GLASS_COLOURS.lens, {transparent: true, opacity: 0.35, depthWrite: false});
+    lens.position.y = handle + radius;
+    const shaft = flat(new THREE.CylinderGeometry(grip, grip * 1.2, handle, 16), GLASS_COLOURS.handle);
+    shaft.position.y = handle / 2;
+    const glass = new THREE.Group();
+    glass.matrixAutoUpdate = false;
+    glass.visible = false;
+    glass.add(shaft, ring, lens);
+    return glass;
+}
+
+// Where the glass is held: its handle in the hand on `side`, leaning forward of upright the way the body faces, its lens square to the body
+function heldGlassOf(world, side) {
+    const at = (name) => new THREE.Vector3().setFromMatrixPosition(world.get(name));
+    const up = new THREE.Vector3(0, 1, 0);
+    const across = at("thigh_r").sub(at("thigh_l")).setY(0).normalize();
+    const forward = up.clone().cross(across);
+    const handle = up.clone().multiplyScalar(Math.cos(radians(GLASS_LEAN))).addScaledVector(forward, Math.sin(radians(GLASS_LEAN)));
+    const facing = across.clone().cross(handle).normalize();
+    return new THREE.Matrix4().makeBasis(across, handle, facing).setPosition(at(`hand_${side}`));
 }
 
 // Where the laptop sits: level on the thighs with its hinge at the knees, its keyboard back over the thighs, turned the way the thighs
@@ -1482,6 +1528,11 @@ function place(figure, pose, facing, blend) {
         if (material.uniforms.light) material.uniforms.colour.value.set(...(pose.eyeTint ?? material.userData.colour));
     }
     figure.laptop.visible = pose.laptop;
+    figure.glass.visible = Boolean(pose.glass);
+    if (pose.glass) {
+        figure.glass.matrix.copy(heldGlassOf(world, pose.glass));
+        figure.glass.matrixWorldNeedsUpdate = true;
+    }
     for (const part of figure.tablet) part.visible = pose.tablet;
     if (pose.laptop) {
         figure.laptop.matrix.copy(lapOf(world));
