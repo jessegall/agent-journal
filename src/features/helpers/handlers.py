@@ -40,7 +40,7 @@ class NameRefusedHelper(Handler[HelperRefused]):
 
 class NameStoppedHelper(Handler[HelperStopped]):
     def handle(self, event: HelperStopped, chat: Chat) -> list[Fact]:
-        chat.say("stopped", n=event.n, name=event.name, cause=event.cause, rows=[event.ref])
+        chat.say("stopped", n=event.n, name=event.name, cause=event.why_it_stopped, rows=[event.ref])
         return []
 
 

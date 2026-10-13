@@ -72,7 +72,7 @@ class HelperStopped(Fact):
 
     n: int
     name: str
-    cause: str
+    why_it_stopped: str
     ref: str
 
 

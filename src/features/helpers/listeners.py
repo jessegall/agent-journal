@@ -37,7 +37,7 @@ class SpotWatchedHelpers(Listener[ClockTicked]):
             if not seen.seated:
                 continue
             if not seen.runs:
-                found.append(HelperStopped(n=row.n, name=row.name, cause=helpers.launch_cause(row), ref=row.ref).once(f"helper stopped|{row.n}:{seen.heard}"))
+                found.append(HelperStopped(n=row.n, name=row.name, why_it_stopped=helpers.launch_cause(row), ref=row.ref).once(f"helper stopped|{row.n}:{seen.heard}"))
                 continue
             if now - seen.heard >= float(settings.quiet_after) * MINUTE and not seen.own_work:
                 found.append(HelperQuiet(n=row.n, name=row.name, minutes=int((now - seen.heard) // MINUTE)).once(f"helper quiet|{row.n}:{seen.heard}"))

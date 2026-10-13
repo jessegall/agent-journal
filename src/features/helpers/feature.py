@@ -74,7 +74,7 @@ class HelpersFeature(Feature):
                 >> Nudged("refused", n=3, name="Rhea", provider="codex", reason="no such model"),
         ])
         journal.events.handle(HelperStopped, NameStoppedHelper(), expects=[
-            Given(HelperStopped(n=3, name="Rhea", cause="exited", ref="helper:3"), rows=[AGENT_ROW]) >> Nudged("stopped", n=3, name="Rhea", cause="exited"),
+            Given(HelperStopped(n=3, name="Rhea", why_it_stopped="exited", ref="helper:3"), rows=[AGENT_ROW]) >> Nudged("stopped", n=3, name="Rhea", cause="exited"),
         ])
         journal.events.handle(HelperQuiet, NameQuietHelper(), expects=[
             Given(HelperQuiet(n=3, name="Rhea", minutes=25), rows=[AGENT_ROW]) >> Nudged("quiet", n=3, name="Rhea", minutes=25),
