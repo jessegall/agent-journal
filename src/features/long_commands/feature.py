@@ -2,7 +2,7 @@ import json
 
 from events.agents import AgentBeat, ClockTicked
 from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
-from expects import Dispatches, Given, Remembered, Updated, at, nothing
+from expects import Dispatches, Given, Ran, Remembered, Updated, at, nothing
 from features.long_commands.details import RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED, LongCommandsDetails
 from features.long_commands.handlers import CloseLostCalls, CloseTheMovedCommand, MoveToTheBackground, PressMoveAgain, ShowThePartRunning, KeepTheTask
 from features.long_commands.listeners import SpotLongCommand, SpotMovedCommand
@@ -73,7 +73,7 @@ class LongCommands(Feature):
         ])
         journal.events.handle(LongCommandHeld, MoveToTheBackground(), expects=[
             Given(LongCommandHeld(agent=1, command="npm test", started="955.0", provider="claude"), rows=[agent()], clock=NOW)
-                >> Remembered("moved|1", "955.0") & Remembered("task|1", "") & Remembered("pressed|1", 1_000.0)
+                >> Ran(("move to background", "955.0")) & Remembered("moved|1", "955.0") & Remembered("task|1", "") & Remembered("pressed|1", 1_000.0)
                 & Updated(AgentRow(n=1), cards=[{"key": "command:955.0", "label": "Moved a long command to the background", "state": "running", "command": "npm test"}]),
         ])
         journal.events.listen(ClockTicked, SpotMovedCommand(), expects=[
@@ -99,7 +99,7 @@ class LongCommands(Feature):
             Given(ClockTicked(agent=1), rows=[agent()], clock=NOW, remembered={**TASKED, "long_commands.part|1": "sleep 25"}) >> Dispatches(nothing),
         ])
         journal.events.handle(MoveNotTaken, PressMoveAgain(), expects=[
-            Given(MoveNotTaken(agent=1, started="955.0"), rows=[agent()], clock=NOW) >> Remembered("retried|1", "955.0") & Remembered("pressed|1", 1_000.0),
+            Given(MoveNotTaken(agent=1, started="955.0"), rows=[agent()], clock=NOW) >> Ran(("move to background", "955.0")) & Remembered("retried|1", "955.0") & Remembered("pressed|1", 1_000.0),
         ])
         journal.events.handle(TaskFound, KeepTheTask(), expects=[
             Given(TaskFound(agent=1, task="b1"), rows=[agent()]) >> Remembered("task|1", "b1"),

@@ -5,7 +5,7 @@ from features.long_commands.details import MOVED
 from features.long_commands.listeners import memory
 from receiving import Handler
 from resources.types import AgentRow
-from serving import Chat, Clock, Providers, Remembered, Rows
+from serving import Chat, Clock, Providers, Remembered, Rows, Terminal
 
 
 class CloseLostCalls(Handler[CallsLost]):
@@ -19,11 +19,11 @@ class CloseLostCalls(Handler[CallsLost]):
 
 
 class MoveToTheBackground(Handler[LongCommandHeld]):
-    def handle(self, event: LongCommandHeld, chat: Chat, remembered: Remembered, agents: Rows[AgentRow], providers: Providers, clock: Clock) -> list[Fact]:
+    def handle(self, event: LongCommandHeld, chat: Chat, terminal: Terminal, remembered: Remembered, agents: Rows[AgentRow], providers: Providers, clock: Clock) -> list[Fact]:
         remembered.set(memory("moved", event.agent), event.started)
         remembered.set(memory("task", event.agent), "")
         remembered.set(memory("pressed", event.agent), clock.now())
-        chat.move_to_background(event.started)
+        terminal.move_to_background(event.started)
         if not providers.of(event.provider).result_names_move:
             chat.say(MOVED, seconds=int(clock.now() - float(event.started)))
         agents.moved_to_background(event.agent, float(event.started), event.command, state="running", started=float(event.started))
@@ -31,10 +31,10 @@ class MoveToTheBackground(Handler[LongCommandHeld]):
 
 
 class PressMoveAgain(Handler[MoveNotTaken]):
-    def handle(self, event: MoveNotTaken, chat: Chat, remembered: Remembered, clock: Clock) -> list[Fact]:
+    def handle(self, event: MoveNotTaken, terminal: Terminal, remembered: Remembered, clock: Clock) -> list[Fact]:
         remembered.set(memory("retried", event.agent), event.started)
         remembered.set(memory("pressed", event.agent), clock.now())
-        chat.move_to_background(event.started)
+        terminal.move_to_background(event.started)
         return []
 
 
