@@ -98,8 +98,8 @@ STILL_CASES = (
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), AGENT_ROW])
         >> Nudged("standing still", phase="Every nudge is visible", rows="4366, 4367"),
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), Question(n=1, title="Which branch?", refs=["todo:4367"]), AGENT_ROW])
-        >> Unchanged(),
-    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), AGENT_ROW]) >> Unchanged(),
+        >> Nudged("blocked", rows="Row 4366"),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), AGENT_ROW]) >> Nudged("blocked", rows="Row 4366"),
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, after=["todo:9000"]), row(4367), row(9000), AGENT_ROW]) >> Unchanged(),
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), Todo(n=4366, title="Row 4366", updated=WHEN - 60), row(4367), AGENT_ROW]) >> Unchanged(),
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), Work(n=3, title="Build it", data={"todo": 4367}), AGENT_ROW]) >> Unchanged(),
