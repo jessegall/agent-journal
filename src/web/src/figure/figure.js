@@ -35,6 +35,9 @@ const HOLD_LIFT = 12;
 // how far a forearm held level turns in from pointing out to the side, past forward, so it lies across the waist as a waiter's does
 const HOLD_SWING = 125;
 const HOLD_TWIST = 25;
+// how far the hand holding something level turns back from the forearm's line at the wrist, kept as it was before the forearm was laid
+// across the waist
+const HOLD_WRIST = 30;
 const HOLD_ROLL = 20;
 const RAISED_ROLL = 85;
 const WAVE_BACK = 40;
@@ -261,7 +264,7 @@ function hold(pose, side, lift = HOLD_LIFT, forward = 0, tip = 0) {
     pose.turn(`upper_arm_${side}`, {x: -forward});
     pose.turn(`upper_arm_${side}`, {z: sign * HOLD_ROLL});
     pose.face(`forearm_${side}`, {y: -sign * lift, z: -sign * HOLD_SWING});
-    pose.face(`hand_${side}`, {x: tip, z: -sign * HOLD_TWIST});
+    pose.face(`hand_${side}`, {x: tip, z: -sign * (HOLD_SWING - HOLD_WRIST)});
 }
 
 function armsAtRest(pose, stance, apart = [], swing = {}) {
@@ -274,6 +277,7 @@ function armsAtRest(pose, stance, apart = [], swing = {}) {
             continue;
         }
         hang(pose, side, swing[side] ?? 0);
+        if (stance.shield?.has(side)) pose.turn(`hand_${side}`, {z: SIDES[side] * SHIELD_TURN});
     }
 }
 
@@ -682,6 +686,8 @@ const SIP_LIFT = 70;
 const SIP_FORWARD = 45;
 const SIP_TIP = -25;
 const SQUIRE_SHIELD = {y: 30, z: -55, bend: 70};
+// how far a shield hanging at the side is turned from facing forward, so it is carried edge on, its face to the side
+const SHIELD_TURN = 60;
 const SQUIRE_QUILL = {y: -35, z: -80, bend: 10};
 const COACH_POINT = {y: 0, z: -15, bend: 0};
 
@@ -1368,6 +1374,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
         free: new Set(Object.keys(SIDES).filter((side) => !busy.has(side))),
         tablet: handsHolding(tablet, new Set([TABLET])),
+        shield: handsHolding(carried, new Set(["squire_shield"])),
     };
     const laptop = laptopOf();
     const glass = glassOf();
