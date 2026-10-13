@@ -14,13 +14,11 @@ from controllers.requests import request
 from engine.outbox import Request
 from engine import runtime
 from engine.record import Record
-from features.phone.feed import waiting
 from features.phone.guard import RecordGuard, guard_of
 from features.phone.passkey import CREATE, GET, Assertion, Challenge, Creating, Enrolment, Getting, Passkey, PendingPasskey, Relying, Unlock, Unverified, creating
 from features.phone.places import Place, place_at, places
-from features.phone.push import Keys, allowed, send, unpadded
+from features.phone.push import Keys, allowed, unpadded
 from features.phone.resource import Phone
-from features.phone.surface import CARDS
 from controllers.types import Shares
 from declaring.trigger import DAY
 from resources.base import OWNER_ID, PROJECT, SYSTEM, USER, Refused, titled
@@ -149,13 +147,13 @@ class Phones(Controller):
             if tries >= MOST_TRIES:
                 self.complete(row["n"], how=f"{MOST_TRIES} wrong codes were tried, so this code no longer works")
 
-    def _actives(self) -> list[Phone]:
+    def actives(self) -> list[Phone]:
         now = time.time()
         return [self._phone(row["n"]) for row in self._summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]]
 
     def _active(self, member: str) -> Phone | None:
         """The phone this person has connected, one at a time each, the owner's included."""
-        return next((phone for phone in self._actives() if phone.member == member), None)
+        return next((phone for phone in self.actives() if phone.member == member), None)
 
     def _by_key(self, key: str) -> Phone | None:
         found = next((row["n"] for row in self._summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
@@ -166,7 +164,7 @@ class Phones(Controller):
             return self._kept(phone.n, last_seen=time.time())
         return phone
 
-    def _home(self, phone: Phone) -> Record:
+    def home(self, phone: Phone) -> Record:
         return Record(self.record.root if phone.journal is None else Path(phone.journal), phone.environment, memo=True)
 
     def _places(self) -> list[Place]:
@@ -187,33 +185,20 @@ class Phones(Controller):
         return sorted(self._places(), key=lambda place: -phone.picked.get(place.root, 0.0))
 
     def _arrange(self, phone: Phone, cards: list[str]) -> Phone:
-        unknown = [card for card in cards if card not in (*CARDS, WAITING_CARD)]
-        if unknown:
-            raise Refused(f"no home screen card called {', '.join(unknown)}")
         return self._kept(phone.n, home=list(dict.fromkeys(cards)))
 
     def _push_key(self) -> str:
         return unpadded(Keys.kept(self.record.root).public)
 
-    def _subscribe(self, phone: Phone, endpoint: str) -> Phone:
+    def _subscribe(self, phone: Phone, endpoint: str, pushed: list[str]) -> Phone:
+        """Subscribes the phone to pushes, counting what already waits as pushed, so it is told only of what comes after."""
         if not allowed(endpoint):
             raise Refused("a phone's notifications come only through Apple's, Google's, Mozilla's or Microsoft's push service")
-        return self._kept(phone.n, push=endpoint, pushed=[item["ref"] for item in waiting(self._home(phone), phone)])
+        return self._kept(phone.n, push=endpoint, pushed=pushed)
 
-    def _notify(self) -> None:
-        address = Shares(self.record, actor=SYSTEM)._address()
-        if not address:
-            return
-        for phone in self._actives():
-            if phone.push is not None:
-                self._tell(phone, address)
-
-    def _tell(self, phone: Phone, address: str) -> None:
-        owed = [item["ref"] for item in waiting(self._home(phone), phone)]
-        if set(owed) - set(phone.pushed):
-            send(Keys.kept(self.record.root), phone.push, f"https://{address}")
-        if owed != phone.pushed:
-            self._kept(phone.n, pushed=owed)
+    def keep_pushed(self, n: int, refs: list[str]) -> Phone:
+        """What this phone was last pushed about, so the next push names only what is new."""
+        return self._kept(n, pushed=refs)
 
     def _enrolling(self, phone: Phone, relying: Relying) -> Creating:
         if phone.passkey:
@@ -333,11 +318,7 @@ def phones_live(root) -> bool:
 
 
 def phones_paired(root) -> bool:
-    return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM)._actives())
-
-
-def phones_told(shares) -> None:
-    Phones(shares.record, actor=SYSTEM)._notify()
+    return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM).actives())
 
 
 resources_module.register(Phone)

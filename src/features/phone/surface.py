@@ -60,7 +60,7 @@ def readable(kind: str) -> bool:
 class PhoneSurface:
     def __init__(self, phones, phone) -> None:
         self.phone = phone
-        self.home = phones._home(phone)
+        self.home = phones.home(phone)
 
     @property
     def via(self) -> str:

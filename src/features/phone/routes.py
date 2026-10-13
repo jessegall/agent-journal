@@ -11,12 +11,13 @@ from engine.multipart import FORWARDED_LIMIT, FORWARDED_LIMIT_MB
 from engine.record import Record
 from resources.base import DEFAULT_PROVIDER
 from resources.fields import Loaded
-from features.phone.controller import Phones
+from features.phone.controller import WAITING_CARD, Phones
+from features.phone.notifying import owed_to
 from features.phone.allow_list import PhoneVisit
 from features.phone.desktop import Desktop
 from features.phone.members import rights_of
 from features.phone.passkey import Assertion, Enrolment, Relying, requested
-from features.phone.surface import PhoneSurface
+from features.phone.surface import CARDS, PhoneSurface
 from engine.color import identity
 from features.auto_update.countdown import update_state
 from controllers.types import Shares
@@ -337,8 +338,8 @@ class PhoneRoutes:
                 "press": lambda: made(surface.press(Pressing.from_json(body))),
                 "switch": lambda: made(phones._switch(phone, Moving.from_json(body))),
                 "start": lambda: made(phones._start(phone, Starting.from_json(body))),
-                "arrange": lambda: made(phones._arrange(phone, list(Arranging.from_json(body).cards))),
-                "push": lambda: made(phones._subscribe(phone, Subscribing.from_json(body).endpoint))}
+                "arrange": lambda: made(phones._arrange(phone, known_cards(list(Arranging.from_json(body).cards)))),
+                "push": lambda: made(phones._subscribe(phone, Subscribing.from_json(body).endpoint, owed_to(phones, phone)))}
 
     def desktop(self, handler) -> None:
         if handler.command == "POST" and not self.trusted(handler, ""):
@@ -389,7 +390,7 @@ class PhoneRoutes:
         if not phone.connected:
             handler.answer(410, "this phone was disconnected" if phone.completed else "this phone's connection has run out")
             return None
-        home = self.phones(handler)._home(phone)
+        home = self.phones(handler).home(phone)
         if not rights_of(home).enters(home, phone.member):
             handler.answer(403, "the environment this phone shows is no longer shared with the person who connected it")
             return None
@@ -428,3 +429,11 @@ class PhoneRoutes:
         if handler.command == "GET" and code == 200 and handler.headers.get("If-None-Match") == tag:
             return handler.send(304, b"", kept)
         handler.packed(code, raw, {"Content-Type": "application/json", **kept, **(headers or {})})
+
+
+def known_cards(cards: list[str]) -> list[str]:
+    """The cards asked for, refused by name when one is no card the home screen has."""
+    unknown = [card for card in cards if card not in (*CARDS, WAITING_CARD)]
+    if unknown:
+        raise Refused(f"no home screen card called {', '.join(unknown)}")
+    return cards

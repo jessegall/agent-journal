@@ -21,6 +21,8 @@ from controllers.features import Features
 from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
 from engine.record import Record
 from features.phone import allow_list, push
+from features.phone import notifying
+from features.phone.notifying import told
 from features.phone import controller as phone_controller
 from features.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
 from features.phone.controller import Phones
@@ -519,10 +521,10 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert call(base, "/p/push", {"endpoint": "https://example.com/steal"}, key).status == 422, "only a real push service is ever called"
     assert call(base, "/p/push", {"endpoint": "https://web.push.apple.com/abc"}, key).status == 201
     pushed = []
-    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
+    monkeypatch.setattr(notifying, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     question = Questions(record, actor=AGENT).create("Go ahead?")
-    Phones(record, actor=SYSTEM)._notify()
-    Phones(record, actor=SYSTEM)._notify()
+    told(record)
+    told(record)
     head, claims, signature = pushed[0].split(".")
     public = push.Keys.kept(record.root).public
     assert len(pushed) == 1 and push.verified(public, f"{head}.{claims}".encode(), push.base64.urlsafe_b64decode(signature + "==")), \
@@ -553,10 +555,10 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
         ["working", "refused", "stopped", "finished"], "a subagent is working while it runs and otherwise refused, stopped or finished"
     monkeypatch.setattr(Shares, "_address", lambda self: "")
     Questions(record, actor=AGENT).create("Another one?")
-    Phones(record, actor=SYSTEM)._notify()
+    told(record)
     assert len(pushed) == 1, "with no tunnel address a push has nowhere to point, so none is sent"
     monkeypatch.undo()
-    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
+    monkeypatch.setattr(notifying, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
     asked = next(item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"question:{question.n}")
     assert asked["hold"] == 3, "the phone holds a picked answer as long as the desktop does, from the same setting"
@@ -716,7 +718,7 @@ def test_a_connected_phone_keeps_the_tunnel_wanted(served):
 
 def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served, monkeypatch):
     record, base = served
-    assert Phones(record, actor=SYSTEM)._notify() is None, "with no phone connected there is nobody to push to"
+    assert told(record) is None, "with no phone connected there is nobody to push to"
     made = Phones(record, actor=USER).connect(7)
     assert len(made["short"]) == 9 and made["short"][4] == "-", "a short code reads as two groups of four"
     pairing = call(base, "/p/pair", {"code": made["short"].lower().replace("-", " "), "device": "iPhone"})
