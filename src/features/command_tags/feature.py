@@ -2,17 +2,17 @@ from framework.base import Feature
 from framework.journal import Journal
 from features.command_tags.details import CommandTagsDetails
 from features.command_tags.formatters import StripTags
-from features.command_tags.handlers import KeepWhatTheTagRan, NameTheRefusal, RestoreTheWords, RunTagCommand, TeachTheTag
-from features.command_tags.listeners import KeepTaggedTurnsOutOfTheChat, SpotTagCommand, TagsInText
+from features.command_tags.handlers import ForgetHeldLines, KeepWhatTheTagRan, NameTheRefusal, RestoreTheWords, RunTagCommand, TeachTheTag
+from features.command_tags.listeners import KeepTaggedTurnsOutOfTheChat, SpotHeldLinesHanded, SpotTagCommand, TagsInText
 from features.command_tags.answering import answered, still_to_answer
 from features.command_tags.reading import REPLY, TAGS
-from features.command_tags.lines_held import lines_held
+from features.command_tags.lines_held import HandOverHeldLines
 from payload import HookEvent
-from events.agents import AgentTurnWritten, CommandRan
+from events.agents import AgentTurnWritten, CommandRan, ToolCallAnswered
 from events.answers import Allowed, Kept, Rewritten
-from events.asking import AgentMessageSending, TextFormatting
-from events.command_tags import MessageTagged, TagCommandRan, TagHintDue, TagRefused, TurnKeptBack
-from expects import Answered, Dispatches, File, Given, Hooked, Nudged, Printed, Ran, Whispered, Wrote, answering, exited, nothing
+from events.asking import AgentMessageSending, HookResponding, TextFormatting
+from events.command_tags import HeldLinesHanded, MessageTagged, TagCommandRan, TagHintDue, TagRefused, TurnKeptBack
+from expects import Answered, Dispatches, File, Given, Nudged, Printed, Ran, Removed, Whispered, Wrote, answering, exited, nothing
 from resources.types import AgentRow
 
 
@@ -84,10 +84,18 @@ class CommandTags(Feature):
             Given(TextFormatting(text='[!reply:12] the answer')) >> Answered(Rewritten('the answer')),
             Given(TextFormatting(text='plain words')) >> Answered(Rewritten('plain words')),
         ])
-        journal.agent.responder(HookEvent.PRE_TOOL_USE, lines_held, expects=[
-            Given("a tag ran while the agent was writing", rows=[AGENT], hook=Hooked(event="PreToolUse"), files=RAN)
-                >> Answered("[journal] the reply tag on 12 ran\n"),
-            Given("no tag has run", rows=[AGENT], hook=Hooked(event="PreToolUse")) >> Answered(""),
+        journal.events.answer(HookResponding, HandOverHeldLines(), expects=[
+            Given(HookResponding(event="PreToolUse", session="claude-1"), rows=[AGENT], files=RAN) >> Answered(Rewritten("[journal] the reply tag on 12 ran\n")),
+            Given(HookResponding(event="PreToolUse", session="claude-1"), rows=[AGENT]) >> Answered(Allowed()),
+            Given(HookResponding(event="SessionStart", session="claude-1"), rows=[AGENT], files=RAN) >> Answered(Allowed()),
+        ])
+        journal.events.listen(ToolCallAnswered, SpotHeldLinesHanded(), expects=[
+            Given(ToolCallAnswered(agent=1, tool="Bash"), rows=[AGENT], files=RAN) >> Dispatches(HeldLinesHanded(agent=1)),
+            Given(ToolCallAnswered(agent=1, tool="Bash", why="held"), rows=[AGENT], files=RAN) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Bash"), rows=[AGENT]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(HeldLinesHanded, ForgetHeldLines(), expects=[
+            Given(HeldLinesHanded(agent=1), rows=[AGENT], files=RAN) >> Removed(File(".journal/runtime/sessions/claude-1/held-lines.txt")),
         ])
         journal.agent.append_to_line("message.created", answered, instead=True)
         journal.agent.append_to_line("messages.answer", still_to_answer)

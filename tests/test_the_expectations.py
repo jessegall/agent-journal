@@ -336,7 +336,7 @@ def test_the_boot_walk_resolves_every_service_and_refuses_a_synchronous_receiver
 
 def test_each_request_reduces_as_specified_and_answering_one_writes_nothing_and_ticks_nothing():
     from events.answers import Allowed, Kept, Refused, Rewritten
-    from events.asking import AgentMessageSending, RowWriting, TextFormatting, ToolCallAsked
+    from events.asking import AgentMessageSending, HookResponding, RowWriting, TextFormatting, ToolCallAsked
     from receiving import Answerer, Registration, Registrations
     from receiving.asking import AnswersNothing, answered
     from receiving.ticks import Lane, Services
@@ -348,6 +348,8 @@ def test_each_request_reduces_as_specified_and_answering_one_writes_nothing_and_
         "a turn kept out of the chat wins over a change to its text"
     assert TextFormatting(text="[!reply:12] x").answered([Rewritten(text="x")]) == Rewritten(text="x"), \
         "formatting composes and nothing wins"
+    assert HookResponding(event="PreToolUse").answered([Rewritten(text="a"), Allowed(), Rewritten(text="b")]) == Rewritten(text="ab"), \
+        "what is handed over on a hook's answer is every text, joined in the order the answerers gave it"
     assert RowWriting(type="todo", action="create").answered([Refused(why="a to-do called x already stands")]) == Refused(why="a to-do called x already stands"), \
         "a row about to be written stops on a refusal, before the write and not after it"
 
@@ -996,6 +998,35 @@ def test_a_tool_call_a_swept_feature_refuses_is_refused_at_the_gate():
         assert refused_by_a_feature(replace(call, hook=SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "ls"}, {}), cwd="/work/app"))) is None, "and an allowed one refuses nothing"
         assert (asked[0].tool, asked[0].input, asked[0].session, asked[0].cwd, asked[0].subagent) == ("Bash", "rm -rf build", "claude-1", "/work/app", False), \
             "a shell call is asked by its command, for the session that made it, in the folder it runs in"
+    finally:
+        bus.answered_by(was)
+
+
+def test_a_hook_answer_carries_what_an_answerer_of_the_hook_responding_request_hands_over():
+    """The hook path asks the 3.0 request: the text an answerer of HookResponding gives is appended to the hook's own answer, for the session the hook is about."""
+    from dataclasses import replace
+    from events.answers import Allowed, Answer, Rewritten
+    from events.asking import HookResponding
+    from engine import bus
+    from engine.gates import HookCall
+    from runner.hooks import handed_over
+    from types import SimpleNamespace
+
+    asked: list[HookResponding] = []
+
+    def answering(request, record) -> Answer:
+        asked.append(request)
+        return Rewritten(text="[journal] one line\n") if request.event == "PreToolUse" else Allowed()
+
+    was = bus._dispatch.asks
+    bus.answered_by(answering)
+    try:
+        provider = SimpleNamespace(compacted=lambda hook: True)
+        call = HookCall(provider, SimpleNamespace(), SimpleNamespace(event="PreToolUse"), SimpleNamespace(title="claude-1"))
+        assert handed_over(call) == "[journal] one line\n", "an answerer's text is the text handed over"
+        assert handed_over(replace(call, hook=SimpleNamespace(event="SessionStart"))) == "", "and an answer nobody rewrote hands over nothing"
+        assert (asked[0].event, asked[0].session, asked[0].compacted) == ("PreToolUse", "claude-1", True), \
+            "the request names the hook's event, the session it is about and whether the conversation was compacted"
     finally:
         bus.answered_by(was)
 

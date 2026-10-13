@@ -1,8 +1,10 @@
 from events import Fact
-from events.command_tags import MessageTagged, TagCommandRan, TagHintDue, TagRefused, TurnKeptBack
+from events.command_tags import HeldLinesHanded, MessageTagged, TagCommandRan, TagHintDue, TagRefused, TurnKeptBack
+from framework.held_lines import taken
 from features.command_tags.reading import tag_spelling
 from receiving import Handler
-from serving import Chat, Commands
+from resources.types import AgentRow
+from serving import Chat, Commands, Elsewhere, ReadRows
 
 
 class RunTagCommand(Handler[MessageTagged]):
@@ -35,4 +37,10 @@ class RestoreTheWords(Handler[TurnKeptBack]):
 class TeachTheTag(Handler[TagHintDue]):
     def handle(self, event: TagHintDue, chat: Chat) -> list[Fact]:
         chat.nudge("hint", tag=event.tag, hint=event.hint)
+        return []
+
+
+class ForgetHeldLines(Handler[HeldLinesHanded]):
+    def handle(self, event: HeldLinesHanded, agents: ReadRows[AgentRow], elsewhere: Elsewhere) -> list[Fact]:
+        taken(elsewhere.here().record, agents.peek(event.agent).title)
         return []

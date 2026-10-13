@@ -1,32 +1,35 @@
 from events.agents import SessionStarted
 from events.boards import BoardOrchestrated
-from expects import Answered, Dispatches, Given, Hooked, Nudged, Unchanged, nothing
+from expects import Answered, Dispatches, Given, Nudged, Unchanged, nothing
 from events.resources import AnyEvent
 from framework.base import Feature
 from framework.journal import Journal
 from resources.types import AgentRow, Environment
-from features.session_briefing.block import COMPACTED, briefing
+from events.answers import Allowed, Rewritten
+from events.asking import HookResponding
+from features.session_briefing.answering import BriefTheSession
+from features.session_briefing.block import COMPACTED
 from features.session_briefing.details import SessionBriefingDetails
 from payload import HookEvent
 from events.session_briefing import SessionGreeted, StartBlockStale
 from features.session_briefing.handlers import GreetTheSession, RebuildTheStartBlock
-from features.session_briefing.listeners import SpotChangeToTheStartBlock, SpotOrchestrationChange, SpotSessionToGreet, stale
+from features.session_briefing.listeners import SpotChangeToTheStartBlock, SpotOrchestrationChange, SpotOutdatedStartBlock, SpotSessionToGreet, stale
 
 
 CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
 
 
 class Written:
-    def __eq__(self, text: str) -> bool:
-        return bool(text) and not text.startswith(COMPACTED)
+    def __eq__(self, answer) -> bool:
+        return isinstance(answer, Rewritten) and bool(answer.text) and not answer.text.startswith(COMPACTED)
 
 
 class Opening:
     def __init__(self, text: str) -> None:
         self.text = text
 
-    def __eq__(self, text: str) -> bool:
-        return text.startswith(self.text)
+    def __eq__(self, answer) -> bool:
+        return isinstance(answer, Rewritten) and answer.text.startswith(self.text)
 
 
 class SessionBriefing(Feature):
@@ -54,7 +57,11 @@ class SessionBriefing(Feature):
         journal.events.handle(StartBlockStale, RebuildTheStartBlock(), expects=[
             Given(StartBlockStale()) >> Unchanged(),
         ])
-        journal.agent.responder(HookEvent.SESSION_START, briefing, expects=[
-            Given("a session starts", rows=[CLAUDE], hook=Hooked(event="SessionStart", source="startup")) >> Answered(Written()),
-            Given("a session starts", rows=[CLAUDE], hook=Hooked(event="SessionStart", source="compact")) >> Answered(Opening(COMPACTED)),
+        journal.events.listen(SessionStarted, SpotOutdatedStartBlock(), expects=[
+            Given(SessionStarted(agent=1), rows=[CLAUDE]) >> Dispatches(stale()),
+        ])
+        journal.events.answer(HookResponding, BriefTheSession(), expects=[
+            Given(HookResponding(event="SessionStart", session="claude-1"), rows=[CLAUDE]) >> Answered(Written()),
+            Given(HookResponding(event="SessionStart", session="claude-1", compacted=True), rows=[CLAUDE]) >> Answered(Opening(COMPACTED)),
+            Given(HookResponding(event="PreToolUse", session="claude-1"), rows=[CLAUDE]) >> Answered(Allowed()),
         ])

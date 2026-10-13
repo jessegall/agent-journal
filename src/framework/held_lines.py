@@ -12,11 +12,14 @@ def keep(record, session: str, line: str) -> None:
         held.write(f"{line}\n")
 
 
+def held(record, session: str) -> list[str]:
+    """The lines held for the session, left where they are."""
+    path = runtime.session_file(record.root, session, HELD)
+    return [line for line in path.read_text().splitlines() if line.strip()] if path.is_file() else []
+
+
 def taken(record, session: str) -> list[str]:
     """The lines held for the session, forgotten as they are taken."""
-    path = runtime.session_file(record.root, session, HELD)
-    if not path.is_file():
-        return []
-    lines = [line for line in path.read_text().splitlines() if line.strip()]
-    path.unlink(missing_ok=True)
+    lines = held(record, session)
+    runtime.session_file(record.root, session, HELD).unlink(missing_ok=True)
     return lines

@@ -13,11 +13,20 @@ Load the journal skill again (Skill: journal); the compaction emptied it. Then c
 """
 
 
-def briefing(call) -> str:
-    path = start_file(call.record.root, call.record.env, call.provider.compacted(call.hook))
-    if not path.is_file() or written_before(path, retirement(call.record)):
-        rebuild(call.record)
-    return path.read_text() if path.is_file() else ""
+def outdated(record, compacted: bool) -> bool:
+    """Whether the start block of this environment is missing or older than the last session it moved past."""
+    path = start_file(record.root, record.env, compacted)
+    return not path.is_file() or written_before(path, retirement(record))
+
+
+def briefing(record, compacted: bool) -> str:
+    """The start block a new session reads: the file when it is up to date, else the block as it would be written."""
+    return block_for(record, compacted) if outdated(record, compacted) else start_file(record.root, record.env, compacted).read_text()
+
+
+def block_for(record, compacted: bool) -> str:
+    block = start_block(record)
+    return COMPACTED + block if compacted else block
 
 
 def retirement(record) -> float:
@@ -34,8 +43,7 @@ def written_before(path, moment: float) -> bool:
 
 
 def rebuild(record) -> None:
-    block = start_block(record)
     for compacted in (False, True):
-        path, text = start_file(record.root, record.env, compacted), COMPACTED + block if compacted else block
+        path, text = start_file(record.root, record.env, compacted), block_for(record, compacted)
         if not path.is_file() or path.read_text() != text:
             write_text(path, text)

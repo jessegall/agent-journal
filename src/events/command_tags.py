@@ -56,3 +56,10 @@ class TagHintDue(Fact):
     agent: int
     tag: str
     hint: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class HeldLinesHanded(Fact):
+    """The lines held for the agent's tool call were handed over beside the hook's answer, so they are forgotten."""
+
+    agent: int
