@@ -6,7 +6,7 @@ from events.answers import Rewritten
 from events.asking import TextFormatting
 from engine.markers import plain
 from resources.marks import Marks
-from framework.switches import generation
+from engine.generation import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
 from resources.extension import Extension
 from resources.memo import Memo

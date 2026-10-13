@@ -5,11 +5,11 @@ from engine import bus
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from controllers.types import Environments, Features
+from engine.generation import turned
 from engine.paths import environment_home
 from resources.base import CREATED, RAISED, SYSTEM
 
 SWITCHES: dict[str, tuple[int, dict[str, bool]]] = {}
-GENERATION = [0]
 CHANGE_LOGS: dict[str, str] = {}
 UNEVENTED = [False]
 ENVIRONMENT_NAMES: dict[str, tuple] = {}
@@ -46,7 +46,7 @@ def switches(record) -> dict[str, bool]:
 
 
 def rebooted(event=None, record=None) -> None:
-    GENERATION[0] += 1
+    turned()
     if record is None:
         SWITCHES.clear()
     else:
@@ -96,7 +96,3 @@ def standing_environments(record) -> tuple[str, ...]:
 
 def seen_environments(record) -> None:
     ENVIRONMENT_NAMES[str(record.root)] = standing_environments(record)
-
-
-def generation() -> int:
-    return GENERATION[0]

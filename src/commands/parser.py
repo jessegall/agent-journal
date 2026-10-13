@@ -6,7 +6,7 @@ import os
 from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
 import features
-from framework.switches import generation
+from engine.generation import generation
 from features.session_briefing import start as briefing
 from providers import DRIVERS
 from engine.transcript import conversation, user

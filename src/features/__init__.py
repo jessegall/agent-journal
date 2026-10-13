@@ -89,7 +89,8 @@ def subscribe() -> None:
 def sync_rows(root: Path) -> None:
     from engine.paths import environment_names
     from engine.record import Record
-    from framework.switches import generation, seen_environments
+    from engine.generation import generation
+    from framework.switches import seen_environments
     if SEATED.get(str(root)) == generation():
         return
     homes = environment_names(root)
