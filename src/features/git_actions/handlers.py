@@ -1,34 +1,25 @@
-from events.agents import AgentReported
-from events.agents import CommandRan
-from resources.runs import SHELL, STEP
-from engine.git import checkout_of
-from framework.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler
-from controllers.types import Agents
-from features.git_actions.actions import calls
+from events import Fact
+from events.git_actions import BranchNoted, BranchSwitched, GitActionDone
+from features.git_actions.listeners import branch_key
+from receiving import Handler
+from resources.types import AgentRow
+from serving import Remembered, Rows
 
 
-class MarkBranchSwitches(Handler):
-    hooks = ANY_BUT_PRE_TOOL_USE
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        checkout = checkout_of(context.working_folder)
-        if not checkout:
-            return
-        branch = checkout.branch
-        before = context.state.get(checkout.name)
-        if not branch or before == branch:
-            return
-        context.state.set(checkout.name, branch)
-        if before is None and not checkout.linked:
-            return
-        label = f"{checkout.name} started on `{branch}`" if before is None else f"{checkout.name} switched from `{before}` to `{branch}`"
-        context.journal.get(Agents).card(context.agent.row.n, label=label[:1].upper() + label[1:], icon="branch", tone="commit")
+class NoteTheBranch(Handler[BranchNoted]):
+    def handle(self, event: BranchNoted, remembered: Remembered) -> list[Fact]:
+        remembered.set(branch_key(event.checkout, event.agent), event.branch)
+        return []
 
 
-class MarkGitActions(Handler):
-    def handle(self, context: AgentContext, event: CommandRan) -> None:
-        if event.tool not in (SHELL, STEP) or event.stepped:
-            return
-        for call in calls(event.command, event.output, context.working_folder):
-            label = call.mark()
-            if label:
-                context.journal.get(Agents).card(context.agent.row.n, label=label, icon="branch", tone="commit")
+class MarkTheBranchSwitch(Handler[BranchSwitched]):
+    def handle(self, event: BranchSwitched, remembered: Remembered, agents: Rows[AgentRow]) -> list[Fact]:
+        remembered.set(branch_key(event.checkout, event.agent), event.branch)
+        agents.card(event.agent, label=event.label, icon="branch", tone="commit")
+        return []
+
+
+class MarkTheGitAction(Handler[GitActionDone]):
+    def handle(self, event: GitActionDone, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.card(event.agent, label=event.label, icon="branch", tone="commit")
+        return []

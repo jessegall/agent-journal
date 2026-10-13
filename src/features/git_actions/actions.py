@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from engine.git import Checkout, checkout_of
+from engine.git import Checkout
 from engine.journal_calls import pieces
-from engine.proc import git
+from serving import ReadGit
 
 VALUED = frozenset({"-m", "--message", "-b", "-B", "-F", "--onto", "-X", "--mainline"})
 MOVES = {"branch": frozenset({"-m"})}
@@ -34,6 +34,7 @@ class GitCall:
     values: dict[str, str]
     output: str
     checkout: Checkout
+    git: ReadGit
 
     @property
     def branch(self) -> str:
@@ -63,11 +64,11 @@ class GitCall:
         return self.verb != "worktree" and any(SHELL_EXPANSION.search(arg) for arg in self.args)
 
 
-def calls(shell: str, output: str, folder: Path) -> list[GitCall]:
-    return [call for words in pieces(shell) if (call := parse(words, output, folder))]
+def calls(shell: str, output: str, folder: Path, git: ReadGit) -> list[GitCall]:
+    return [call for words in pieces(shell) if (call := parse(words, output, folder, git))]
 
 
-def parse(words: tuple[str, ...], output: str, folder: Path) -> GitCall | None:
+def parse(words: tuple[str, ...], output: str, folder: Path, git: ReadGit) -> GitCall | None:
     if words[0] != "git":
         return None
     rest, where = list(words[1:]), folder
@@ -77,7 +78,7 @@ def parse(words: tuple[str, ...], output: str, folder: Path) -> GitCall | None:
             where = folder / rest.pop(0)
         elif option == "-c" and rest:
             rest.pop(0)
-    checkout = checkout_of(where)
+    checkout = git.checkout(where)
     if not rest or not checkout:
         return None
     verb, args, flags, values = rest.pop(0), [], set(), {}
@@ -90,7 +91,7 @@ def parse(words: tuple[str, ...], output: str, folder: Path) -> GitCall | None:
             flags.add(word)
         else:
             args.append(word)
-    return GitCall(verb, tuple(args), frozenset(flags), values, output, checkout)
+    return GitCall(verb, tuple(args), frozenset(flags), values, output, checkout, git)
 
 
 @marks("stash")
@@ -101,7 +102,7 @@ def stash(call: GitCall) -> str:
         return f"{STASH_PAST[verb]} {which}"
     if verb not in ("push", "save") or "No local changes" in call.output:
         return ""
-    files = len(git(["stash", "show", "--name-only", "stash@{0}"], call.checkout.top).split())
+    files = len(call.git.run(call.checkout.top, "stash", "show", "--name-only", "stash@{0}").split())
     return f"Stashed {files} changed file{'' if files == 1 else 's'}"
 
 
@@ -130,7 +131,7 @@ def revert(call: GitCall) -> str:
 def reset(call: GitCall) -> str:
     mode = next((flag[2:] + " " for flag in ("--hard", "--soft", "--mixed", "--keep") if flag in call.flags), "")
     target = call.args[0] if call.args else "HEAD"
-    if not mode and call.args and not git(["rev-parse", "--verify", "-q", f"{target}^{{commit}}"], call.checkout.top):
+    if not mode and call.args and not call.git.run(call.checkout.top, "rev-parse", "--verify", "-q", f"{target}^{{commit}}"):
         return ""
     return f"Reset `{call.branch}` {mode}to `{target}`"
 
