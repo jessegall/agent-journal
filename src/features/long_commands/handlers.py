@@ -1,4 +1,4 @@
-from engine.command_runs import command_runs
+from resources.command_runs import command_runs
 from events import Fact
 from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
 from features.long_commands.details import MOVED

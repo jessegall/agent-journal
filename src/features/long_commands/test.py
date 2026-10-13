@@ -44,7 +44,7 @@ def test_a_moved_command_is_matched_to_its_task_and_a_part_that_ended_before_it_
     from providers.base import Provider
     from framework.command_effects import shell as hooked
     from payload import Hook
-    from engine.command_runs import waiting_run
+    from resources.command_runs import waiting_run
     call = lambda event, name, text, at: replace(Hook.read({"hook_event_name": event, "session_id": "x", "tool_name": "Bash", "tool_use_id": name, "tool_input": {"command": text}}, Provider.tool_kinds), at=at)
     parallel, now = SimpleNamespace(running={}, commands=[]), time.time()
     for event, name, text, at in (("PreToolUse", "t1", "journal message read 5", now - 150), ("PreToolUse", "t2", "npm run slow", now - 149), ("PostToolUse", "t1", "journal message read 5", now - 148)):

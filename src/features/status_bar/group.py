@@ -1,5 +1,5 @@
 from features.status_bar.dissect import Dissected, dissect
-from engine.command_runs import CommandRun
+from resources.command_runs import CommandRun
 
 
 def ran(commands: list[dict] | None) -> list[Dissected]:

@@ -3,7 +3,7 @@ from pathlib import Path
 from controllers.types import Agents, Works
 from engine.files import KIND, line_counts
 from engine.git import commits_since
-from engine.command_runs import Delta, counted_runs, current_run
+from resources.command_runs import Delta, counted_runs, current_run
 from resources.base import SYSTEM
 from resources.shapes import CHANGE, COMMIT
 from resources.types import AgentRow, Work

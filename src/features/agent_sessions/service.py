@@ -19,6 +19,11 @@ PS_TIMEOUT = 2
 class TheProcesses:
     """The agents this journal starts, tells and reads: one object for every process a controller used to start itself."""
 
+    def alive(self, pid) -> bool:
+        """Whether the process is running."""
+        from engine.sessions import alive
+        return alive(pid)
+
     def leaves(self, pid: int) -> list[str]:
         """The commands still running at the ends of the process tree under pid, the newest last; none when the tree cannot be read."""
         if not pid:

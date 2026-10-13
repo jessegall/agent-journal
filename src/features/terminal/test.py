@@ -426,7 +426,7 @@ def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_
 
     engine.moved_on()
     assert not Agents(engine.record).by_session("claude-1").data.get("cards"), "a message typed while a command runs makes no card of its own: only a command that was moved has one"
-    from engine.command_runs import CommandRun
+    from resources.command_runs import CommandRun
     running = Agents(engine.record, actor=SYSTEM).by_session("codex-9")
     Agents(engine.record, actor=SYSTEM).update(running.n, provider="codex", commands=[{"command": "npm run build", "tool": "Bash", "at": 5.0}])
     moved = Agents(engine.record, actor=SYSTEM).load(running.n)

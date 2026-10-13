@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.command_runs import command_runs, open_shell_runs, waiting_run
+from resources.command_runs import command_runs, open_shell_runs, waiting_run
 from events import Fact
 from events.agents import AgentBeat, ClockTicked
 from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound

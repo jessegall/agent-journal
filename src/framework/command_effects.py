@@ -6,7 +6,7 @@ from engine.shell import without_scripts
 from payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, ReadCall, SearchCall, SkillCall, WriteCall
 from dataclasses import replace
 
-from engine.command_runs import CommandRun, Outcome, command_runs, current_run
+from resources.command_runs import CommandRun, Outcome, command_runs, current_run
 from framework.tested import testing_piece
 from resources.types import AgentRow
 

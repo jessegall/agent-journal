@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.command_runs import CommandRun, command_runs
+from resources.command_runs import CommandRun, command_runs
 from events import Fact
 from events.agents import AgentReported, ClockTicked
 from events.checks import CheckDue, CheckFailed, CheckPassedAgain, CheckUpdated, TestsFinished, TestsRunning

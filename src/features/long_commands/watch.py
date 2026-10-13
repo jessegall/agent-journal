@@ -1,7 +1,6 @@
 import time
 from pathlib import Path
 
-from engine.sessions import alive
 from resources.text import clipped
 from framework.sending import Sent
 from declaring.trigger import MINUTE
@@ -22,7 +21,7 @@ def runs_of(agent) -> BackgroundTasks:
     """Every background run the agent has, with the ones whose process is gone marked ended."""
     tasks = background_tasks_of(SERVED.given(Providers), agent)
     for key, pid in tasks.detached.items():
-        if key not in tasks.ended and not alive(pid):
+        if key not in tasks.ended and not SERVED.given(Processes).alive(pid):
             tasks.ended[key] = time.time()
     return tasks
 

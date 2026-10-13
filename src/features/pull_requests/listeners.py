@@ -1,4 +1,4 @@
-from engine.command_runs import command_runs
+from resources.command_runs import command_runs
 from events import Fact
 from events.agents import ToolFinished
 from events.pull_requests import PullRequestEnded, PullRequestOpened
