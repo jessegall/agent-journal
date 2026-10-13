@@ -48,7 +48,7 @@ class Receiver(Generic[E]):
     owes: ClassVar[bool] = True
     """False only for the engine's own receivers registered for a feature, such as the senders of its declared nudges, whose expectations are its declarations' own and may be none."""
 
-    adapted: ClassVar[bool] = False
+    carrier: ClassVar[bool] = False
     """True only of the engine's own carriers of a logged event (its bus listeners): they name their event in the registration rather than in their class, and owe no expectations."""
 
     always: ClassVar[bool] = False
@@ -131,7 +131,7 @@ class Registration:
     @property
     def writes(self) -> set[str]:
         """The kinds of row it writes, none for the adapter: an unswept handler names no order, so it runs in the order its feature registered, as on the 2.x bus, and is never held to commute with another."""
-        return set() if type(self.receiver).adapted else writing(type(self.receiver).wants())
+        return set() if type(self.receiver).carrier else writing(type(self.receiver).wants())
 
     @classmethod
     def read(cls, kind: str, event: type, receiver: Receiver, expects, feature: str = "", after: tuple[str, ...] = ()) -> "Registration":
@@ -139,7 +139,7 @@ class Registration:
         wanted, _ = KINDS[kind]
         if not isinstance(receiver, wanted):
             raise NotAReceiver.of(type(receiver), wanted)
-        if type(receiver).adapted:
+        if type(receiver).carrier:
             return cls(kind, event, receiver, tuple(expects), feature, tuple(after))
         if (receives := type(receiver).receives()) is not event:
             raise ReceivesAnother.of(type(receiver), receives, event)

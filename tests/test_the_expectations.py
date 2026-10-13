@@ -606,7 +606,7 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
     from contextlib import contextmanager
     from engine import bus
     from expects.watching import BROKEN
-    from framework.adapter import BusListener, OldEvent, Ticking
+    from framework.ticking import BusListener, LoggedEvent, Ticking
     from receiving import HANDLE, Registration, Registrations
     from resources.base import SYSTEM, Event
 
@@ -623,7 +623,7 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
     for name, pattern in (("OnTheAction", "created"), ("OnTheType", "todo"), ("OnEverything", "*"), ("OnBoth", "todo.created")):
         listener = lambda logged, record, name=name: ran.append(name)  # noqa: E731  one listener per name, as the bus holds them
         listener.__qualname__ = name
-        registered.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, lambda record: True), ()))
+        registered.add(Registration.read(HANDLE, LoggedEvent, BusListener(listener, pattern, lambda record: True), ()))
     ticking = Ticking(registered, Registrations())
     ticking.resolve()
 
@@ -642,16 +642,16 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
     try:
         raises = lambda logged, record: 1 / 0  # noqa: E731
         raises.__qualname__ = "Raises"
-        registered.add(Registration.read(HANDLE, OldEvent, BusListener(raises, "*", lambda record: True), ()))
+        registered.add(Registration.read(HANDLE, LoggedEvent, BusListener(raises, "*", lambda record: True), ()))
         ticking.resolve()
         ran.clear()
         ticking.reaches(logged, Held())
-        assert told and told[0][0] == "A tick on OldEvent failed", f"a handler that raises is told as a broken tick, not left to break the write: {told}"
+        assert told and told[0][0] == "A tick on LoggedEvent failed", f"a handler that raises is told as a broken tick, not left to break the write: {told}"
     finally:
         BROKEN.entries = listening
 
     import features
-    assert bus._dispatch.reaches.__self__ is __import__("framework.adapter", fromlist=["TICKING"]).TICKING, \
+    assert bus._dispatch.reaches.__self__ is __import__("framework.ticking", fromlist=["TICKING"]).TICKING, \
         "seating the features puts every told event on the lane; features.load is what wires it"
     assert features.FEATURES, "the features are seated in this run, so the assertion above is about the real wiring"
 
@@ -660,7 +660,7 @@ def test_a_write_made_inside_a_tick_is_caused_by_the_event_the_tick_is_handling(
     """The activity list shows a chain as a tree, which it can only do when the cause names an event rather than the actor who set it off."""
     from engine import bus
     from engine.record import Record
-    from framework.adapter import BusListener, OldEvent, Ticking
+    from framework.ticking import BusListener, LoggedEvent, Ticking
     from receiving import HANDLE, Registration, Registrations
     from controllers.types import Todos
     from resources.base import SYSTEM, Event
@@ -671,7 +671,7 @@ def test_a_write_made_inside_a_tick_is_caused_by_the_event_the_tick_is_handling(
     registered = Registrations()
     writes = lambda logged, record: Todos(record, actor=SYSTEM).create("written by the handler")  # noqa: E731
     writes.__qualname__ = "WritesOnce"
-    registered.add(Registration.read(HANDLE, OldEvent, BusListener(writes, "*", lambda record: True), ()))
+    registered.add(Registration.read(HANDLE, LoggedEvent, BusListener(writes, "*", lambda record: True), ()))
     ticking = Ticking(registered, Registrations())
     ticking.resolve()
 
@@ -679,7 +679,7 @@ def test_a_write_made_inside_a_tick_is_caused_by_the_event_the_tick_is_handling(
     ticking.reaches(logged, record)
     assert len(Todos(record, actor=SYSTEM).rows.standing()) == 1, "the handler ran and wrote its row"
     written = [e for e in record.event_log.events() if e.type == "todo" and e.action == "created"][-1]
-    assert written.data.get("caused_by") == "project:71:0:OldEvent", \
+    assert written.data.get("caused_by") == "project:71:0:LoggedEvent", \
         f"a write made by a handler is caused by the engine's name for the event being handled, which names the lane and the run: {written.data.get('cause')}"
     assert bus.caused_by() == "", "and the name is the tick's alone: it is given back when the tick ends"
 
@@ -753,7 +753,7 @@ def test_a_moved_feature_runs_on_the_lane_beside_an_adapted_one_and_each_runs_on
     called - and the suite stayed green because nothing ran. The two registries stay apart, because the adapted ones
     are exempt by name from the boot walk's rules and the moved ones are not; the LANE reads both.
     """
-    from framework.adapter import ADAPTED, TICKING, ordered_once_the_features_have_registered
+    from framework.ticking import ADAPTED, TICKING, ordered_once_the_features_have_registered
     from receiving import REGISTERED
 
     import features
@@ -770,7 +770,7 @@ def test_a_moved_handler_hears_a_logged_event_as_its_catalogue_fact_and_not_whil
     from engine.record import Record
     from events import Fact
     from events.agents import SENT, AgentMessageSent
-    from framework.adapter import Ticking
+    from framework.ticking import Ticking
     from receiving import HANDLE, Handler, Registration, Registrations
     from receiving.ticks import Lane, Services
     from resources.base import AGENT, SYSTEM, Event
@@ -969,7 +969,7 @@ def test_an_answered_tool_call_is_told_on_the_lane_after_its_answer():
     """What writes about a tool call runs after the gate answered it: the hook path tells ToolCallAnswered, and a swept feature's handler of it hears what was asked and why it was refused."""
     from events import Fact
     from events.agents import ToolCallAnswered
-    from framework.adapter import TICKING
+    from framework.ticking import TICKING
     from providers import PROVIDERS
     from receiving import HANDLE, Handler, Registration
     from runner.hooks import handle

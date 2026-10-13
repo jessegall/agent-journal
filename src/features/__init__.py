@@ -34,9 +34,9 @@ def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
         rename_aliases(root)
     dispatch_on_a_lane()
     wire()
-    from framework.adapter import requests_answered
+    from framework.ticking import requests_answered
     requests_answered()
-    from framework.adapter import ordered_once_the_features_have_registered
+    from framework.ticking import ordered_once_the_features_have_registered
     ordered_once_the_features_have_registered()
     subscribe()
     if root:
@@ -76,7 +76,7 @@ def dispatch_on_a_lane() -> None:
     """From here a told event is a tick on a lane, running the same receivers inside a transaction. Before the wiring, so every listener the bus takes from here on joins the lane with it; a process wired for its commands alone keeps the walk, since it has no receivers at all."""
     if COMMANDS_ONLY:
         return
-    from framework.adapter import dispatched_on_a_lane
+    from framework.ticking import dispatched_on_a_lane
     dispatched_on_a_lane()
 
 

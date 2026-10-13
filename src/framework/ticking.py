@@ -22,7 +22,7 @@ from serving import Adapted as TheRecord
 ADAPTED = Registrations()
 """The engine's own receivers of a logged event, the bus listeners and the catalogue facts, kept apart from the features' registry so the boot walk's rules for a feature do not bind them."""
 
-def ran_on_the_bus(receiver, event: "OldEvent", record) -> list[Fact]:
+def ran_on_the_bus(receiver, event: "LoggedEvent", record) -> list[Fact]:
     """What a receiver of the lane does in place of the bus: hands the logged event to what the bus would have run, if this one would have heard it. It dispatches nothing: whatever the listener wrote reaches the engine as the funnel's own resource facts."""
     if receiver.hears(event.logged, record):
         receiver.listener(event.logged, record)
@@ -30,7 +30,7 @@ def ran_on_the_bus(receiver, event: "OldEvent", record) -> list[Fact]:
 
 
 @dataclass(frozen=True, kw_only=True)
-class OldEvent(Fact):
+class LoggedEvent(Fact):
     """A bridge: a logged event wrapped so the lane can carry it to the old handlers. The row that removes the adapter removes this class."""
 
     logged: object
@@ -60,7 +60,7 @@ def slot_of(pattern: str) -> int:
 class BusListener(Handler[Fact]):
     """A listener registered straight on the bus, rather than by a feature's wiring: the engine's own, such as the switch cache. It runs on the lane like an old handler, so the lane carries everything the bus carried."""
 
-    adapted = True
+    carrier = True
 
     def __init__(self, listener, pattern: str, enabled):
         self.listener, self.pattern, self.enabled = listener, pattern, enabled
@@ -78,14 +78,14 @@ class BusListener(Handler[Fact]):
     def hears(self, logged, record) -> bool:
         return self.pattern in bus.patterns(logged) and self.enabled(record)
 
-    def handle(self, event: "OldEvent", record) -> list[Fact]:
+    def handle(self, event: "LoggedEvent", record) -> list[Fact]:
         return ran_on_the_bus(self, event, record)
 
 
 class CatalogueFacts(Listener[Fact]):
     """A logged event as the catalogue names it, once for each typed event a swept feature registered on: what carries the bus's string patterns over to the 3.0 engine's types."""
 
-    adapted = True
+    carrier = True
 
     def __init__(self, moved: Registrations):
         self.moved = moved
@@ -101,7 +101,7 @@ class CatalogueFacts(Listener[Fact]):
     def wants(cls) -> dict[str, type]:
         return {}
 
-    def listen(self, event: "OldEvent") -> list[Fact]:
+    def listen(self, event: "LoggedEvent") -> list[Fact]:
         patterns = set(bus.patterns(event.logged))
         kinds = dict.fromkeys(one.event for one in self.moved.each if issubclass(one.event, TypedEvent) and patterns & set(one.event.patterns(())))
         return [typed for kind in kinds if (typed := kind.read(event.logged)).wanted() and not (isinstance(typed, AgentEvent) and not typed.agent)]
@@ -110,7 +110,7 @@ class CatalogueFacts(Listener[Fact]):
 class FailedTick(Handler[Fact]):
     """A tick that raised: the handlers' writes are rolled back and this says so, where the 2.x bus let the raise out into the write that told the event."""
 
-    adapted = True
+    carrier = True
 
     def called(self) -> str:
         return "FailedTick"
@@ -139,14 +139,14 @@ class Ticking:
     def __init__(self, registered: Registrations, moved: Registrations):
         self.registered = registered
         self.moved = moved
-        """The registrations the features wrote for the 3.0 engine. They stay a registry of their own, because the adapted ones are exempt by name from the boot walk's rules and these are not."""
+        """The registrations the features wrote. They stay a registry of their own, because the engine's carriers are exempt from the boot walk's rules and these are not."""
         self.running = Registrations()
         self.order = InOrder({})
 
     def resolve(self) -> None:
         """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them, and the moved features' own receivers after them."""
         self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
-        self.registered.add(Registration.read(LISTEN, OldEvent, CatalogueFacts(self.moved), ()))
+        self.registered.add(Registration.read(LISTEN, LoggedEvent, CatalogueFacts(self.moved), ()))
         self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in patterns_of(one.receiver)), default=4))
         self.running = Registrations()
         for one in (*self.registered.each, *self.moved.each):
@@ -159,7 +159,7 @@ class Ticking:
 
     def join(self, pattern: str, listener, enabled) -> None:
         """A listener the bus has taken runs on the lane too."""
-        self.registered.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, enabled), ()))
+        self.registered.add(Registration.read(HANDLE, LoggedEvent, BusListener(listener, pattern, enabled), ()))
         self.resolve()
 
     def leave(self, pattern: str, listener) -> None:
@@ -172,7 +172,7 @@ class Ticking:
         if record is None:
             bus.over_the_listeners(logged, record)
             return
-        self.lane(f"project:{logged.id}", record, lambda: agent_of(logged, record)).run(OldEvent(logged=logged))
+        self.lane(f"project:{logged.id}", record, lambda: agent_of(logged, record)).run(LoggedEvent(logged=logged))
 
     def lane(self, name: str, record, agent) -> Lane:
         """A lane over this record, about this agent, with every receiver the features registered."""
@@ -180,7 +180,7 @@ class Ticking:
                     switched_on=lambda feature: not feature or FEATURES[feature].enabled(record),
                     is_due=lambda feature, fact: due_now(FEATURES[feature], record, fact),
                     held_back=lambda fact: self.held_back(fact, record),
-                    watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).adapted else None)
+                    watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).carrier else None)
 
     def held_back(self, fact: Fact, record) -> bool:
         """Holds a spaced fact until its span is up, then runs the newest held on a lane of its own over a fresh read of the record."""
@@ -200,7 +200,7 @@ def watched(promise, event, record, began: float) -> None:
 
 
 TICKING = Ticking(ADAPTED, REGISTERED)
-"""The one lane every receiver runs on, adapted or moved."""
+"""The one lane every receiver runs on, the engine's own and the features'."""
 
 
 def ordered_once_the_features_have_registered() -> None:

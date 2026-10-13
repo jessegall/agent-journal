@@ -58,7 +58,7 @@ ENGINES_OWN = frozenset(field.name for field in fields(Fact))
 def walked(registered: Registrations, served: set[type]) -> None:
     """Checks every registration against the services this journal has. Raises on the first thing that could not work."""
     for one in registered.each:
-        if type(one.receiver).adapted:
+        if type(one.receiver).carrier:
             continue
         if shadowed := ENGINES_OWN & set(inspect.get_annotations(one.event)):
             raise ShadowsTheEngine.of(one.event, shadowed)
