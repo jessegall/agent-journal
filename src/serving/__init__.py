@@ -143,6 +143,12 @@ class OwnWork(Service):
         return ""
 
 
+class ReadOwnWork(OwnWork):
+    """The same, asked for to read only, as a listener or an answerer asks what its feature knows of the world outside the journal."""
+
+    writes = False
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

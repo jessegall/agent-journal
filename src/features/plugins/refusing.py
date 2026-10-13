@@ -3,7 +3,6 @@ import threading
 
 from engine import bus
 from engine.wording import fill
-from framework.parts import Context
 from features.plugins.answer import apply
 from features.plugins.declared import called, declared
 from features.plugins.environment import placed
@@ -14,9 +13,8 @@ from features.plugins.run import PluginReply, asked, call
 class PluginAsk:
     """Asks a plugin whether to refuse a tool call: within the time the hook may wait, or beside the call."""
 
-    def within(self, context: Context, row, tool: str, payload: dict, wait: float) -> str:
+    def within(self, record, journal, session: str, row, tool: str, payload: dict, wait: float) -> str:
         """A plugin's refusal is waited for as long as the hook may wait; past that the call goes ahead, and what the plugin answers then reaches the agent as a message."""
-        record, journal, session = context.record, context.feature.journal, context.hook.session
         name, seconds = called(row), declared(row).refuse_budget
         answered, late, found = threading.Event(), threading.Event(), []
 
@@ -32,9 +30,8 @@ class PluginAsk:
         late.set()
         return found[0] if answered.is_set() else ""
 
-    def beside(self, context: Context, row, payload: dict) -> None:
+    def beside(self, record, journal, session: str, tool: str, row, payload: dict) -> None:
         """A plugin that declared its hook async never holds the tool call: it is asked on a thread of its own, and what it answers reaches the agent as a message, never as a refusal."""
-        record, journal, session, tool = context.record, context.feature.journal, context.hook.session, context.hook.tool.name
         name, seconds = called(row), declared(row).refuse_budget
 
         def ask() -> None:

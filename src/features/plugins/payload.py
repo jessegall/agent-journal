@@ -41,8 +41,7 @@ def of(record, event, plugin: str, where: Path) -> dict:
             "plugin": {"name": plugin, "dir": str(where), "queue": str(queue_path(record.root, plugin, record.env))}}
 
 
-def refusal(record, hook, plugin: str, where: Path, writes: bool) -> dict:
-    return {"v": VERSION, "event": f"{HOOK}.{hook.event}", "env": record.env, "project": str(record.root.parent),
-            "agent": agent(record, hook.session),
-            "tool": {"name": hook.tool.name, "file": hook.tool.path or None, "command": hook.tool.shell_command, "writes": writes},
+def refusal(record, session: str, event: str, tool: dict, plugin: str, where: Path) -> dict:
+    return {"v": VERSION, "event": f"{HOOK}.{event}", "env": record.env, "project": str(record.root.parent),
+            "agent": agent(record, session), "tool": tool,
             "plugin": {"name": plugin, "dir": str(where), "queue": str(queue_path(record.root, plugin, record.env))}}

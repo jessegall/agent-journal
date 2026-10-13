@@ -33,7 +33,7 @@ from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, OwnWork)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, OwnWork, ReadOwnWork)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -411,6 +411,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Viewer: PerAsk(lambda feature, asked: TheViewer(record)),
             ReadViewer: PerAsk(lambda feature, asked: TheViewer(record)),
             OwnWork: PerAsk(lambda feature, asked: TheOwnWork(FEATURES[feature], record)),
+            ReadOwnWork: PerAsk(lambda feature, asked: TheOwnWork(FEATURES[feature], record)),
             JournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             ReadJournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, speaking())),

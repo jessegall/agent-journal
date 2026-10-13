@@ -3,7 +3,9 @@ from pathlib import Path
 
 from controllers.types import Plugins as PluginRows, Todos
 from events.agents import ClockTicked
-from expects import WHEN, Answered, Formats, Given, Kept, Refused, Unchanged, Updated
+from events.answers import Allowed, Rewritten
+from events.asking import AgentDispatching, TextFormatting, ToolCallAsked
+from expects import WHEN, Answered, Dispatches, Given, Kept, Ran, Refused, Updated, answering, nothing
 from framework.base import Feature
 from payload import BashCall, Dispatch
 from resources.base import SYSTEM, USER
@@ -13,21 +15,24 @@ from features.plugins import services, updates
 from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
 from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
-from features.plugins.fitting import SuggestFittingPlugins
-from engine.gates import CANCELABLE
-from features.plugins.parts import AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, ReadLinkedManifests, PluginChatRules
-from events.plugins import PluginCompleted
+from features.plugins.answering import ApplyPluginChatRules, AskPluginsToCancel, AskPluginsToRefuse
+from features.plugins.handlers import ClearRemovedPlugin, ReadLinkedManifests, SuggestFittingPlugins
+from features.plugins.listeners import SpotChangedManifests, SpotFittingPlugins, SpotRemovedPlugin
+from features.plugins.parts import KeepPluginRows
+from features.plugins.working import PluginsWork
+from events.plugins import PluginCompleted, PluginManifestChanged, PluginRemoved, PluginsWorthOffering
 from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_log, get_services, post_plugin_upgrade_preview, post_plugins_preview
 
 
 OFF = Plugin(n=1, title="Pulse", data={"enabled": False})
 ON = Plugin(n=1, title="Pulse", data={"enabled": True})
+NAMED_ON = Plugin(n=1, title="Pulse", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
 NAMED = Plugin(n=7, title="Pulse beat", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
 NOT_A_SOURCE = "'nonsense' is neither a repository URL, an owner/repo, nor a folder on this machine"
 OWNED = Todo(n=5, title="Check the pulse", data={"plugin": "pulse", "locked": True})
 
 
-class Plugins(Feature):
+class Plugins(PluginsWork, Feature):
     details = PluginsDetails
 
     def register(self, journal: Journal) -> None:
@@ -65,25 +70,38 @@ class Plugins(Feature):
         journal.commands.add("plugin", Purge(), expects=[
             Given((PluginRows, 1), rows=[ON]) >> Refused("plugin 1 is installed: remove it first"),
         ])
-        journal.client.formatter(PluginChatRules(), expects=[
-            Formats("plain words", to="plain words"),
+        journal.events.answer(TextFormatting, ApplyPluginChatRules(), expects=[
+            Given(TextFormatting(text="plain words"), rows=[ON]) >> Answered(Rewritten("plain words")),
         ])
-        journal.agent.interceptor(AskPluginsToRefuse(), expects=[
-            Given(BashCall.from_payload("Bash", {"command": "ls"}, {}), rows=[ON]) >> Kept(),
+        journal.events.answer(ToolCallAsked, AskPluginsToRefuse(), expects=[
+            Given(ToolCallAsked(tool="Bash", input="ls", command="ls", session="claude-1"), rows=[ON]) >> Answered(Allowed()),
         ])
-        for event in CANCELABLE:
-            journal.agent.canceler(AskPluginsToCancel(event), expects=[
-            Given(Dispatch("general-purpose", "sonnet", True), rows=[ON]) >> Kept(),
-            Given(Dispatch("general-purpose", "sonnet", True)) >> Kept(),
+        journal.events.answer(AgentDispatching, AskPluginsToCancel(), expects=[
+            Given(AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True), rows=[ON]) >> Answered(Allowed()),
+            Given(AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True)) >> Answered(Allowed()),
         ])
-        journal.events.handler(ClearRemovedPlugin(), expects=[
-            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[ON]) >> Unchanged(),
+        journal.events.listen(PluginCompleted, SpotRemovedPlugin(), expects=[
+            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[NAMED_ON]) >> Dispatches(PluginRemoved(plugin=1)),
+            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[NAMED_ON, Plugin(n=2, title="Pulse beat", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})])
+                >> Dispatches(nothing),
+            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[ON]) >> Dispatches(nothing),
         ])
-        journal.events.handler(ReadLinkedManifests(), expects=[
-            Given(ClockTicked(agent=1), rows=[ON]) >> Unchanged(),
+        journal.events.handle(PluginRemoved, ClearRemovedPlugin(), expects=[
+            Given(PluginRemoved(plugin=1), rows=[NAMED_ON]) >> Ran(("own work", "retire_plugin", 1)),
         ])
-        journal.events.handler(SuggestFittingPlugins(), expects=[
-            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"started": WHEN}), ON]) >> Unchanged(),
+        journal.events.listen(ClockTicked, SpotChangedManifests(), expects=[
+            Given(ClockTicked(agent=1), rows=[ON]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(PluginManifestChanged, ReadLinkedManifests(), expects=[
+            Given(PluginManifestChanged(plugin=1), rows=[ON]) >> Ran(("own work", "reread_manifest", 1)),
+        ])
+        journal.events.listen(ClockTicked, SpotFittingPlugins(), expects=[
+            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"started": WHEN}), ON], own_work=answering({("fitting_wanted", 1): True}))
+                >> Dispatches(PluginsWorthOffering(agent=1)),
+            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"started": WHEN}), ON], own_work=answering({("fitting_wanted", 1): False})) >> Dispatches(nothing),
+        ])
+        journal.events.handle(PluginsWorthOffering, SuggestFittingPlugins(), expects=[
+            Given(PluginsWorthOffering(agent=1), rows=[AgentRow(n=1, title="claude-1"), ON]) >> Ran(("own work", "look_for_fitting")),
         ])
         for action in ("delete", "complete"):
             journal.commands.intercept(action, KeepPluginRows(), expects=[

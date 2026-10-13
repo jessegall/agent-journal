@@ -206,7 +206,7 @@ def answered_a_hook(promise, given: Given, record: Record, world: World) -> None
 
 def play_services(promise, given: Given, record: Record, world: World) -> dict:
     """What a 3.0 receiver asked for, by type: the journal's own services over the scratch record, as the lane hands them, and the Fakes for what reaches outside it."""
-    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.ReadFiles: world.files, serving.Clock: world.clock, serving.Ids: world.ids, serving.Terminal: world.terminal, serving.OwnWork: world.own_work,
+    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.ReadFiles: world.files, serving.Clock: world.clock, serving.Ids: world.ids, serving.Terminal: world.terminal, serving.OwnWork: world.own_work, serving.ReadOwnWork: world.own_work,
              **({serving.Processes: world.processes, serving.ReadProcesses: world.processes} if given.processes.answers else {}),
              **({serving.Providers: world.providers} if given.providers.answers else {}),
              **({serving.Git: world.git, serving.ReadGit: world.git} if given.git.answers else {}),

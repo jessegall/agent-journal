@@ -7,12 +7,10 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from controllers.types import Agents, Environments, Plugins
-from events.agents import ClockTicked
 from resources.fields import Loaded
 from engine.stored import write_text
 from engine.upgrades import fetch
 from engine.worktree import tracked_files
-from framework.parts import AgentContext, Handler
 from features.plugins.declared import Fits, called
 from features.plugins.lifecycle import fetched
 from features.plugins.paths import home
@@ -177,17 +175,3 @@ class InstallMark:
 def in_use_since(record, agent) -> float:
     place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
     return min(float(agent.started or time.time()), float(place.created) if place else time.time())
-
-
-class SuggestFittingPlugins(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        record = context.record
-        if time.time() - in_use_since(record, context.agent.row) < WORKED_FIRST:
-            return
-        fresh = offers_fresh(record.root)
-        if fresh and DECIDED.get(Path(record.root)) == offers_stamp(record.root):
-            return
-        refreshing = REFRESHING.setdefault(Path(record.root), threading.Lock())
-        if not refreshing.acquire(blocking=False):
-            return
-        threading.Thread(target=settle, args=(record, refreshing, offers_kept if fresh else offers_read), name="plugin-fit", daemon=True).start()
