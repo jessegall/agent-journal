@@ -1,3 +1,4 @@
+import tomllib
 from dataclasses import dataclass
 
 from resources.fields import Loaded
@@ -11,6 +12,10 @@ class Hosting(Loaded):
     run: str = ""
     ready: str = "/"
     idle_minutes: int = 30
+
+
+def hosting_in(text: str) -> Hosting:
+    return Hosting.from_json(tomllib.loads(text))
 
 
 def hosting_of(project) -> Hosting | None:

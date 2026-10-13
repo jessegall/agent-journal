@@ -10,9 +10,9 @@ from tests.conftest import fresh, refused
 
 
 def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_idle(monkeypatch):
-    from framework.loaded import FEATURES
-    from features.hosting.handlers import StopIdleApps
-    from framework.parts import AgentContext
+    from events.agents import ClockTicked
+    from features.hosting.handlers import ClearIdleTime, StartIdleTime, StopAbandonedApp
+    from features.hosting.listeners import SpotIdleApps
     features.load()
     record = fresh()
     tickets = Tickets(record, actor=USER)
@@ -37,7 +37,17 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
     [app] = ticket_apps(record.root, set())
     assert (app.id, app.cwd.endswith(f".claude/worktrees/ticket-{ticket.n}"), app.run, app.path) == \
         (f"ticket-{ticket.n}.app", True, f"npm run dev -- --port {app.port}", "/health"), "the app runs from the ticket's worktree on a port of its own"
-    sweep = lambda: StopIdleApps().handle(AgentContext.of(FEATURES["hosting"], record, None), None)
+    class Project:
+        exists = staticmethod(lambda path: True)
+        read = staticmethod(lambda path: (folder / "hosting.toml").read_text())
+
+    class Now:
+        now = staticmethod(time.time)
+
+    def sweep():
+        for fact in SpotIdleApps().listen(ClockTicked(agent=1), Project, tickets, Now):
+            {"HostedAppAttended": lambda: ClearIdleTime().handle(fact, tickets), "HostedAppUnattended": lambda: StartIdleTime().handle(fact, tickets, Now),
+             "HostedAppAbandoned": lambda: StopAbandonedApp().handle(fact, tickets)}[type(fact).__name__]()
     sweep()
     tickets.update(ticket.n, idle_since=time.time() - 6 * 60)
     sweep()

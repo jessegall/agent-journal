@@ -1,26 +1,23 @@
-import time
-
-from events.agents import ClockTicked
-from features.hosting.apps import idle_past
-from features.hosting.files import hosting_of
-from framework.parts import WHOLE_FEATURE, AgentContext, Handler
-from controllers.types import Tickets
-from resources.base import SYSTEM
+from events import Fact
+from events.hosting import HostedAppAbandoned, HostedAppAttended, HostedAppUnattended
+from receiving import Handler
+from resources.tickets import Ticket
+from serving import Clock, Rows
 
 
-class StopIdleApps(Handler):
-    behaviour = WHOLE_FEATURE
+class ClearIdleTime(Handler[HostedAppAttended]):
+    def handle(self, event: HostedAppAttended, tickets: Rows[Ticket]) -> list[Fact]:
+        tickets.update(event.ticket, idle_since=0.0)
+        return []
 
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        hosting = hosting_of(context.record.root.parent)
-        if not hosting:
-            return
-        tickets = Tickets(context.record, actor=SYSTEM)
-        now = time.time()
-        for ticket in (r for r in tickets.rows.standing() if r.hosted):
-            if tickets.agent_session(ticket.n):
-                tickets.update(ticket.n, idle_since=0.0)
-            elif not ticket.idle_since:
-                tickets.update(ticket.n, idle_since=now)
-            elif idle_past(ticket, hosting.idle_minutes, now):
-                tickets.update(ticket.n, hosted=False, idle_since=0.0)
+
+class StartIdleTime(Handler[HostedAppUnattended]):
+    def handle(self, event: HostedAppUnattended, tickets: Rows[Ticket], clock: Clock) -> list[Fact]:
+        tickets.update(event.ticket, idle_since=clock.now())
+        return []
+
+
+class StopAbandonedApp(Handler[HostedAppAbandoned]):
+    def handle(self, event: HostedAppAbandoned, tickets: Rows[Ticket]) -> list[Fact]:
+        tickets.update(event.ticket, hosted=False, idle_since=0.0)
+        return []
