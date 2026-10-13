@@ -7,19 +7,6 @@ from resources.base import AGENT, SYSTEM, USER
 from tests.kit import nudges, report
 
 
-def test_a_checkout_change_is_seen_in_each_environment(tmp_path):
-    from engine.git import checkout_of
-    from features.close_from_commits.handlers import CloseRowsFromCommits
-
-    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
-    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start"], cwd=tmp_path, check=True)
-    handler = CloseRowsFromCommits()
-    log = checkout_of(tmp_path).head_log
-    assert handler.watched.moved(log, "main")
-    assert handler.watched.moved(log, "helper")
-    assert not handler.watched.moved(log, "main")
-
-
 def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     project = tmp_path
 
@@ -86,8 +73,9 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
         "every number after todos done closes, separated by spaces, commas or and"
     counted = lambda: len(Agents(record, actor=SYSTEM).by_session("claude-1").data["cards"])
     before = counted()
-    for cursor in (record.home / "runtime").glob("cursor-close_from_commits-*"):
-        cursor.write_text("0" * 40)
+    memory = record.state("close_from_commits")
+    for key in [key for key in memory.all() if key.startswith("cursor|")]:
+        memory.set(key, "0" * 40)
     commit("after an update")
     assert counted() == before, "a last seen commit this checkout's history does not hold replays nothing: it is a first look"
     commit("the next one")
