@@ -50,6 +50,7 @@ You are the builder here: you do the work yourself. A helper or a subagent is fo
 
 - Every viewer heading and label says plainly what it is about
 - The voice profile shapes only the agent's chat speech, never code or text
+- Never name projects, people or anything personal in this public repository
 
 <!-- END: agent-journal, form 2 -->
 
