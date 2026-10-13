@@ -17,18 +17,16 @@ STARTED = 955.0
 ORCHESTRATING = {"work_modes.mode": "orchestrator"}
 MOVED = {"long_commands.moved|1": "955.0"}
 PRESSED = {**MOVED, "long_commands.pressed|1": 975.0}
-TMARKED = {"key": "command:955.0", "label": "Moved a long command to the background", "state": "running", "command": "npm test"}
-
-
-def marked() -> AgentRow:
-    return AgentRow(n=1, title="claude-1", data={"status": "working", "provider": "claude", "cards": [MARKED]})
-
-
-ASKED = {**MOVED, "long_commands.task|1": "b1"}
+TASKED = {**MOVED, "long_commands.task|1": "b1"}
+MARKED = {"key": "command:955.0", "label": "Moved a long command to the background", "state": "running", "command": "npm test"}
 
 
 def agent(command: str = "npm test", started: float = STARTED, status: str = "working", provider: str = "claude", **more) -> AgentRow:
     return AgentRow(n=1, title="claude-1", data={"status": status, "provider": provider, "commands": [{"command": command, "tool": "Bash", "at": started, **more}]})
+
+
+def marked() -> AgentRow:
+    return AgentRow(n=1, title="claude-1", data={"status": "working", "provider": "claude", "cards": [MARKED]})
 
 
 def lost_in(transcript: list[dict]) -> str:
