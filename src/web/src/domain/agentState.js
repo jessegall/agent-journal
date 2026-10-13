@@ -90,7 +90,7 @@ export function queued(todos, auto, questions = []) {
     return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
 }
 
-const WORDS = {working: "Working", waiting: "Waiting", running: "Running", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
+const WORDS = {working: "Working", waiting: "Waiting", running: "Waiting", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
 
 export function wordOf(state) {
     return WORDS[state] || "Idle";
