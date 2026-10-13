@@ -4,13 +4,15 @@ import {home, PAIR, PHONE, pairedState} from "./paired.mjs";
 const state = await pairedState();
 const KEYBOARD_LEFT = 480;
 
-const atBottom = (page, scrollTo) =>
-    page.evaluate((top) => {
-        let el = document.querySelector("[data-hold]");
-        while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) el = el.parentElement;
-        if (top) el.scrollTop = 0;
-        return el ? el.scrollHeight - el.clientHeight - el.scrollTop < 4 : false;
-    }, scrollTo);
+// runs in the page: whether the chat's scroller is at its foot, after sending it to its top when asked
+const chatAtBottom = (top) => {
+    let el = document.querySelector("[data-hold]");
+    while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) el = el.parentElement;
+    if (top) el.scrollTop = 0;
+    return el ? el.scrollHeight - el.clientHeight - el.scrollTop < 4 : false;
+};
+
+const atBottom = (page, scrollTo) => page.evaluate(chatAtBottom, scrollTo);
 
 await runScenarios(
     PAIR,
@@ -32,7 +34,8 @@ await runScenarios(
                 .catch(() => null);
             const at = await box.boundingBox();
             if (at.y < 0 || at.y + at.height > KEYBOARD_LEFT) throw new Error(`the message box is at ${at.y}, outside the ${KEYBOARD_LEFT}px left above the keyboard`);
-            if (!(await atBottom(page))) throw new Error("the chat is not at the bottom after focusing the message box");
+            const settled = await page.waitForFunction(chatAtBottom, false, {timeout: 3000}).then(() => true, () => false);
+            if (!settled) throw new Error("the chat is not at the bottom after focusing the message box");
         },
         async "the chat opens at the newest message, however much is new since the last look"(page) {
             await home(page);
