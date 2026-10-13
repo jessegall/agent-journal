@@ -32,7 +32,8 @@ const OUTLINE_WIDTH = 0.036;
 export const SIDES = {l: 1, r: -1};
 const HANG = 82;
 const HOLD_LIFT = 12;
-const HOLD_SWING = 55;
+// how far a forearm held level turns in from pointing out to the side, past forward, so it lies across the waist as a waiter's does
+const HOLD_SWING = 125;
 const HOLD_TWIST = 25;
 const HOLD_ROLL = 20;
 const RAISED_ROLL = 85;
