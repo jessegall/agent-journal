@@ -1,6 +1,6 @@
 from events import Fact
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
-                          ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
+                          ReviewEndedWithReport, ReviewReportLinked, DeletedRowOnPlan, StruckRowInUnapprovedPlan)
 from receiving import Handler
 from resources.plans import ACTIVE
 from resources.types import Plan
@@ -54,6 +54,12 @@ class ReopenPlansWithTheirRows(Handler[PlanRowReopened]):
         plan = plans.reopen(event.plan, why=f"{event.type} {event.n} of phase {event.phase} was reopened") if event.was_done else plans.load(event.plan)
         plan.status, plan.current = ACTIVE, event.phase
         plans.save(plan, "updated", phase=event.phase, status=ACTIVE)
+        return []
+
+
+class TakeDeletedRowsOffTheirPlans(Handler[DeletedRowOnPlan]):
+    def handle(self, event: DeletedRowOnPlan, plans: Rows[Plan]) -> list[Fact]:
+        plans.place(event.plan, event.phase, [event.todo], off=True)
         return []
 
 

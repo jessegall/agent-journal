@@ -1,7 +1,7 @@
 from events import Fact
 from events.agents import ClockTicked
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanChanged, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened,
-                          PlansToAdvance, ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
+                          PlansToAdvance, ReviewEndedWithReport, ReviewReportLinked, DeletedRowOnPlan, StruckRowInUnapprovedPlan)
 from events.reports import ReportLinked
 from events.resources import AnyEvent, RowReopened
 from events.todos import TodoCompleted, TodoUpdated
@@ -101,3 +101,10 @@ class SpotReviewReport(Listener[ReportLinked]):
             return []
         found = [ReviewReportLinked(plan=plan.n)]
         return found + [ReviewEndedWithReport(plan=plan.n, title=plan.title, report=event.n)] if agents.has_primary() else found
+
+
+class SpotDeletedRowOnAPlan(Listener[AnyEvent]):
+    def listen(self, event: AnyEvent, plans: ReadRows[Plan]) -> list[Fact]:
+        if (event.type, event.action) != ("todo", "deleted"):
+            return []
+        return [DeletedRowOnPlan(plan=plan.n, phase=phase, todo=event.n) for plan in plans.rows.every() if (phase := plan.phase_of("todo", event.n))]

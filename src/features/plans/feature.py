@@ -17,7 +17,7 @@ from features.plans.handlers import (
     ReopenPlansWithTheirRows,
     StartApproved,
     StartBuilding,
-    TakeStruckRowsOutOfUnapprovedPlans,
+    TakeDeletedRowsOffTheirPlans, TakeStruckRowsOutOfUnapprovedPlans,
     TellParkedAndPickedUp,
     TellReviewEnded,
 )
@@ -32,6 +32,7 @@ from features.plans.listeners import (
     SpotReopenedRowOfAPlan,
     SpotReviewReport,
     SpotStruckRowOfAnUnapprovedPlan,
+    SpotDeletedRowOnAPlan,
 )
 from features.plans.answering import RefusePlanMode
 from features.plans.refusing import HoldWhilePlanned
@@ -39,7 +40,7 @@ from features.plans.watching import STANDING_STILL, STILL_TIMES, blocked_plans, 
 from events.asking import RowWriting, ToolCallAsked
 from events.answers import Allowed, Refused as Refusal
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
-                          ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
+                          ReviewEndedWithReport, ReviewReportLinked, DeletedRowOnPlan, StruckRowInUnapprovedPlan)
 from framework.sending import Nudge
 from declaring.registries import ROW_HOLDS
 from events.plans import PlanChanged
@@ -245,6 +246,15 @@ class PlansFeature(Feature):
         ])
         journal.events.handle(StruckRowInUnapprovedPlan, TakeStruckRowsOutOfUnapprovedPlans(), expects=[
             Given(StruckRowInUnapprovedPlan(plan=1, phase=1, todo=5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))])
+                >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
+        ])
+        journal.events.listen(AnyEvent, SpotDeletedRowOnAPlan(), expects=[
+            Given(AnyEvent(n=5, type="todo", action="deleted", actor=USER), rows=[plan("active", phases=phases(5, 6))]) >> Dispatches(DeletedRowOnPlan(plan=1, phase=1, todo=5)),
+            Given(AnyEvent(n=7, type="todo", action="deleted", actor=USER), rows=[plan("active", phases=phases(5, 6))]) >> Dispatches(nothing),
+            Given(AnyEvent(n=5, type="todo", action="updated", actor=USER), rows=[plan("active", phases=phases(5, 6))]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(DeletedRowOnPlan, TakeDeletedRowsOffTheirPlans(), expects=[
+            Given(DeletedRowOnPlan(plan=1, phase=1, todo=5), rows=[plan("active", phases=phases(5))])
                 >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
         ])
         journal.events.answer(ToolCallAsked, RefusePlanMode(), expects=[
