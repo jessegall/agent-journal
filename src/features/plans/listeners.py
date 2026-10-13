@@ -1,7 +1,7 @@
 from events import Fact
 from events.agents import ClockTicked
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanChanged, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened,
-                          PlansToAdvance, ReviewEndedWithReport, ReviewReportLinked, DeletedRowOnPlan, StruckRowInUnapprovedPlan)
+                          PlansToAdvance, ReviewEndedWithReport, ReviewReportLinked, RowLeavesPhase)
 from events.reports import ReportLinked
 from events.resources import AnyEvent, RowReopened
 from events.todos import TodoCompleted, TodoUpdated
@@ -90,7 +90,7 @@ class SpotStruckRowOfAnUnapprovedPlan(Listener[TodoCompleted]):
         for plan in plans.rows.every():
             phase = plan.phase_of("todo", event.n)
             if phase and plan.status in (BUILDING, DRAFT, READY, REVIEWING):
-                found.append(StruckRowInUnapprovedPlan(plan=plan.n, phase=phase, todo=event.n))
+                found.append(RowLeavesPhase(plan=plan.n, phase=phase, todo=event.n))
         return found
 
 
@@ -107,4 +107,4 @@ class SpotDeletedRowOnAPlan(Listener[AnyEvent]):
     def listen(self, event: AnyEvent, plans: ReadRows[Plan]) -> list[Fact]:
         if (event.type, event.action) != ("todo", "deleted"):
             return []
-        return [DeletedRowOnPlan(plan=plan.n, phase=phase, todo=event.n) for plan in plans.rows.every() if (phase := plan.phase_of("todo", event.n))]
+        return [RowLeavesPhase(plan=plan.n, phase=phase, todo=event.n) for plan in plans.rows.every() if (phase := plan.phase_of("todo", event.n))]

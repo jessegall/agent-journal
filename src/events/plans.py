@@ -97,17 +97,8 @@ class PlanRowReopened(Fact):
 
 
 @dataclass(frozen=True, kw_only=True)
-class DeletedRowOnPlan(Fact):
-    """A to-do that was deleted still sits on a plan's phase, so it leaves it and the plan no longer counts it."""
-
-    plan: int
-    phase: int
-    todo: int
-
-
-@dataclass(frozen=True, kw_only=True)
-class StruckRowInUnapprovedPlan(Fact):
-    """A to-do struck off sits in a plan nobody approved, so it leaves the phase."""
+class RowLeavesPhase(Fact):
+    """A to-do leaves the plan phase that holds it: it was struck off a plan nobody approved, or deleted."""
 
     plan: int
     phase: int
