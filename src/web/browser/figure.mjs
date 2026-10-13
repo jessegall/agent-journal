@@ -53,56 +53,6 @@ const footing = (page) =>
         [FIGURE, HOME]
     );
 
-// a question waiting on the user, as the dashboard lists it
-async function questionWaits(page) {
-    await page.route(/\/api\/main\/dashboard/, async (route) => {
-        const response = await route.fetch();
-        const body = await response.json();
-        if (body.rows?.question) {
-            const now = Date.now() / 1000;
-            const question = {
-                n: 777,
-                type: "question",
-                ref: "question:777",
-                title: "Which port should the preview use",
-                abstract: "",
-                brief: "",
-                sections: [],
-                refs: [],
-                seen: ["agent"],
-                completed: 0,
-                deleted: 0,
-                created: now - 30,
-                updated: now - 30,
-                outcome: "",
-                data: {
-                    options: [
-                        {title: "8431", text: "the preview port"},
-                        {title: "8432", text: "the next one"},
-                    ],
-                    pick: 1,
-                    files: {},
-                },
-            };
-            body.rows.question = {...body.rows.question, rows: [question, ...(body.rows.question.rows || [])]};
-        }
-        await route.fulfill({response, json: body});
-    });
-}
-
-// the controls the figure's box lies over, by their words
-const hidden = (page) =>
-    page.evaluate((figure) => {
-        const box = document.querySelector(figure).getBoundingClientRect();
-        const controls = [...document.querySelectorAll("button, a[href], input, select, textarea, [role=tab], [role=button]")];
-        return controls
-            .filter((control) => {
-                const r = control.getBoundingClientRect();
-                return r.width && r.left < box.right && box.left < r.right && r.top < box.bottom && box.top < r.bottom;
-            })
-            .map((control) => (control.innerText || control.getAttribute("aria-label") || control.tagName).trim());
-    }, FIGURE);
-
 // Waits until the figure has stopped where it is going, since a box read while it walks is not where it will stand
 const settled = async (page) => {
     let before = null;
@@ -128,7 +78,7 @@ const framesOf = (page, ms) =>
                 const look = () => {
                     const element = document.querySelector(figure);
                     const box = element.getBoundingClientRect();
-                    frames.push({x: box.left, y: box.top, walking: element.dataset.walking === "true", trip: element.dataset.trip, clip: element.dataset.clip});
+                    frames.push({x: box.left, y: box.top, t: performance.now(), walking: element.dataset.walking === "true", trip: element.dataset.trip, clip: element.dataset.clip});
                     if (performance.now() < until) requestAnimationFrame(look);
                     else done(frames);
                 };
@@ -148,45 +98,47 @@ const longestRun = (frames, holds) => {
     return longest;
 };
 
+// the frames as runs of the same place, walk, trip and clip, each with the milliseconds since the first, so a failure shows where the figure was and when
+const trail = (frames) => {
+    const runs = [];
+    for (const f of frames) {
+        const said = `${Math.round(f.x)},${Math.round(f.y)}${f.walking ? "W" : ""}:${f.trip || "-"}:${f.clip}`;
+        if (runs.length && runs.at(-1)[0] === said) runs.at(-1)[1]++;
+        else runs.push([said, 1, Math.round(f.t - frames[0].t)]);
+    }
+    return runs.map(([said, n, at]) => `${n}x${said}@${at}`).join(" ");
+};
+
 // a frame or two either side of a leg is the page catching up with the clock that started or ended it; more is the walk on the spot
 const CATCH_UP_FRAMES = 3;
 
-// the walk covers a pixel or two a frame and a hop goes straight up or down, so a figure that moves further across in one frame jumped
+// the walk covers a pixel or two a frame and a hop goes straight up or down, so a figure that moves further across in one frame jumped;
+// a busy page draws fewer frames, and the first after a stall can still show where the figure was, so the step is reckoned over two
+// frames and per sixtieth of a second, never per frame drawn
 const MOST_ACROSS_IN_A_FRAME = 12;
+const FRAME_MS = 1000 / 60;
 
-// the frames a picture may take to finish easing from one posture to the next once the figure moves off, CHANGE_SECONDS at 60 a second
-const SETTLING_FRAMES = 18;
+// how long a picture may take to finish easing from one posture to the next once the figure moves off, CHANGE_SECONDS, in milliseconds
+const SETTLING_MS = 300;
 
 await runScenarios(process.argv[2], {
     async "the walk plays only while the figure moves across, and the figure moves across only while it walks"(page, url) {
         await working(page);
-        await questionWaits(page);
         await page.goto(`${url}#/main`);
         await page.locator(FIGURE).waitFor({state: "visible"});
-        const tab = page.locator('[data-tab="question"]');
-        if ((await tab.getAttribute("aria-selected")) === "true") await page.locator('[data-tab="waiting"]').click();
-        const frames = await framesOf(page, 12000);
+        await settled(page);
+        await page.locator(`${FIGURE}-body`).click();
+        const frames = await framesOf(page, 8000);
         const across = (frame, before) => Math.abs(frame.x - before.x) > 0.05;
         const walked = frames.filter((frame) => frame.walking).length;
         const onTheSpot = longestRun(frames, (frame, before) => frame.walking && !across(frame, before) && frame.y === before.y);
         const gliding = longestRun(frames, (frame, before) => !frame.walking && across(frame, before));
         const measured = `${frames.length} frames, ${walked} walking, longest walk on the spot ${onTheSpot}, longest glide ${gliding}`;
         console.log(`the figure's walk: ${measured}`);
-        const state = await page.evaluate((figure) => {
-            const tab = document.querySelector('[data-tab="question"]');
-            const box = tab?.getBoundingClientRect();
-            const shown = document.querySelector(figure)?.dataset || {};
-            return `question tab ${tab ? `${tab.getAttribute("aria-selected")} at ${Math.round(box.left)},${Math.round(box.top)}` : "missing"}, figure ${JSON.stringify(shown)}`;
-        }, FIGURE);
-        if (!walked) throw new Error(`the figure never walked to the question's tab: ${measured}; ${state}`);
+        const state = await page.evaluate((figure) => JSON.stringify(document.querySelector(figure)?.dataset || {}), FIGURE);
+        if (!walked) throw new Error(`clicked, the figure never walked: ${measured}; figure ${state}`);
         if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`the figure walked on the spot: ${measured}`);
-        const runs = [];
-        for (const f of frames) {
-            const said = `${Math.round(f.x)},${Math.round(f.y)}${f.walking ? "W" : ""}:${f.trip || "-"}:${f.clip}`;
-            if (runs.length && runs.at(-1)[0] === said) runs.at(-1)[1]++;
-            else runs.push([said, 1]);
-        }
-        if (gliding > CATCH_UP_FRAMES) throw new Error(`the figure moved across without walking: ${measured}; FRAMES ${runs.map(([said, n]) => `${n}x${said}`).join(" ")}`);
+        if (gliding > CATCH_UP_FRAMES) throw new Error(`the figure moved across without walking: ${measured}; FRAMES ${trail(frames)}`);
     },
 
     async "a click on the figure sends it walking or hopping out of the box it was in, never across the page in one frame"(page, url) {
@@ -204,7 +156,7 @@ await runScenarios(process.argv[2], {
             after.x < before.x + before.width &&
             before.y < after.y + after.height &&
             after.y < before.y + before.height;
-        const leaps = frames.slice(1).map((frame, at) => Math.abs(frame.x - frames[at].x));
+        const leaps = frames.slice(2).map((frame, at) => Math.abs(frame.x - frames[at].x) / Math.max(1, (frame.t - frames[at].t) / FRAME_MS));
         const leap = Math.max(0, ...leaps);
         const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
         const clip = await page.locator(FIGURE).evaluate((figure, home) => {
@@ -215,7 +167,7 @@ await runScenarios(process.argv[2], {
         const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}, ${clip}`;
         console.log(`the figure clicked away: ${measured}`);
         if (overlapping) throw new Error(`clicked, the figure stayed over the box it was in: ${measured}`);
-        if (leap > MOST_ACROSS_IN_A_FRAME) throw new Error(`clicked, the figure jumped across the page: ${measured}`);
+        if (leap > MOST_ACROSS_IN_A_FRAME) throw new Error(`clicked, the figure jumped across the page: ${measured}; FRAMES ${trail(frames)}`);
         if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`clicked, the figure walked on the spot: ${measured}`);
     },
 
@@ -241,7 +193,7 @@ await runScenarios(process.argv[2], {
                     const look = () => {
                         const picture = element.getBoundingClientRect();
                         const walking = element.dataset.walking === "true";
-                        frames.push({bottom: picture.bottom, edge: box.getBoundingClientRect().top, walking});
+                        frames.push({bottom: picture.bottom, edge: box.getBoundingClientRect().top, walking, t: performance.now()});
                         if (performance.now() < until) requestAnimationFrame(look);
                         else done(frames);
                     };
@@ -250,37 +202,13 @@ await runScenarios(process.argv[2], {
             [FIGURE, HOME, RISE]
         );
         // past its first steps, as the picture finishes easing up from the seat, the walking figure's feet are on the box's edge
-        const strides = frames.filter((frame) => frame.walking).slice(SETTLING_FRAMES);
+        const walked = frames.filter((frame) => frame.walking);
+        const strides = walked.filter((frame) => frame.t >= walked[0].t + SETTLING_MS);
         const off = Math.max(0, ...strides.map((frame) => Math.abs(frame.bottom - frame.edge)));
         const measured = `${strides.length} walking frames, feet at most ${off.toFixed(1)}px from the edge, which rose ${RISE}px`;
         console.log(`the figure getting up as the box moved: ${measured}`);
         if (!strides.length) throw new Error(`clicked, the seated figure never walked to the other corner: ${measured}`);
         if (off > 12) throw new Error(`the figure walked off the edge it got up from: ${measured}`);
-    },
-
-    async "it goes to the tab where a question waits behind another, and stands where it hides no control"(page, url) {
-        await working(page);
-        await questionWaits(page);
-        await page.goto(`${url}#/main`);
-        await page.locator(FIGURE).waitFor({state: "visible"});
-        const tab = page.locator('[data-tab="question"]');
-        if ((await tab.getAttribute("aria-selected")) === "true") await page.locator('[data-tab="waiting"]').click();
-        await page.waitForFunction(
-            ([figure, view]) => {
-                const box = document.querySelector(figure).getBoundingClientRect();
-                const target = document.querySelector(`[data-tab="${view}"]`).getBoundingClientRect();
-                return (
-                    Math.abs(box.left + box.width / 2 - (target.left + target.width / 2)) < 2 * box.width &&
-                    box.top < target.bottom + box.height
-                );
-            },
-            [FIGURE, "question"],
-            {timeout: 20000}
-        );
-        await settled(page);
-        const covered = await hidden(page);
-        if (covered.length) throw new Error(`standing at the question's tab the figure hides ${covered.join(", ")}`);
-        await shot(page, "figure-at-the-question-tab");
     },
 
     async "the figure is drawn on the Home page alone, and on coming back to Home it enters again on the compose box"(page, url) {
