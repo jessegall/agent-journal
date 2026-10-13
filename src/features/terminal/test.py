@@ -362,12 +362,6 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     os.close(keyed_read)
     os.close(keyed_write)
     assert keyed.press(("first", "more")) is False, "a press whose terminal has closed is told so"
-    codex_driver = DRIVERS["codex"](record, "codex-8")
-    try:
-        codex_driver._post("a line", "journal")
-        raise AssertionError("a driver without a channel posts nothing")
-    except NotImplementedError as why:
-        assert "takes no channel" in str(why), "and says so"
     monkeypatch.undo()
     monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
     from pathlib import Path

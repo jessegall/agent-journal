@@ -42,7 +42,6 @@ NAMES = {
     "commands": {"agents", "controllers", "engine", "features", "framework", "install", "migrations", "payload", "providers", "resources", "runner", "serve", "surfaces"},
     "features": {"agents", "commands", "controllers", "declaring", "engine", "events", "expects", "framework", "install", "mcp_headers", "migrations",
                  "overview", "payload", "providers", "receiving", "resources", "runner", "serve", "serving", "skills", "supervisor", "surfaces"},
-    "channel": {"providers"},
     "keeper": {"engine"},
     "worker": {"commands"},
     "journal": {"commands", "features"},

@@ -161,14 +161,6 @@ def update_steps(root: Path) -> Update:
     return Update(sum(step.seconds for step in ran), max(marks, default=0.0), tuple(slowest))
 
 
-def channel_queue(root: Path, pid: int) -> Path:
-    return folder(root) / "channels" / f"{pid}.jsonl"
-
-
-def channel_alive(root: Path, pid: int) -> Path:
-    return folder(root) / "channels" / f"{pid}.on"
-
-
 def builds(root: Path) -> Path:
     return folder(root) / "builds"
 

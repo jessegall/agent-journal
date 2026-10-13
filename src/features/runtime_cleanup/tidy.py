@@ -8,8 +8,7 @@ from resources.text import plural
 from declaring.trigger import DAY
 from serving import SERVED, Clock, Elsewhere, JournalRoot, Providers, ReadSessions
 
-TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024,
-         "channels/*.jsonl": 1024 * 1024}
+TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024}
 GONE_FOR = 6 * 3600
 EVENTS_KEPT = 100
 READERS_WITHIN = DAY
@@ -19,7 +18,6 @@ ARCHIVES_FOR = 90 * DAY
 PROFILES_KEPT = 50
 FOLDS_FOR = 7 * DAY
 OTHER_MARKS_FOR = DAY
-LISTENING_FOR = 60
 
 
 @dataclass(frozen=True)
@@ -87,7 +85,7 @@ class Tidy:
         for f in spent:
             self.root.remove(f)
         trimmed = [f for pattern, keep in TAILS.items() for f in self.root.glob(f"{RUNTIME}/{pattern}")
-                   if self.root.is_file(f) and not self.listened_to(f) and self.root.trim_tail(f, keep)]
+                   if self.root.is_file(f) and self.root.trim_tail(f, keep)]
         return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left + len(spent))
 
     def leftovers(self) -> int:
@@ -109,10 +107,6 @@ class Tidy:
 
     def newest(self, folder_: str) -> float:
         return max((self.root.modified(each) for each in self.root.glob(f"{folder_}/*")), default=0.0)
-
-    def listened_to(self, queue: str) -> bool:
-        """A queue a channel is reading is never cut: the channel keeps its place by byte offset, and a cut would send it back to the start."""
-        return Path(queue).suffix == ".jsonl" and Path(queue).parent.name == "channels" and self.clock.now() - self.root.modified(str(Path(queue).with_suffix(".on"))) < LISTENING_FOR
 
 
 def tidy(record, days: float) -> Tidied:

@@ -30,7 +30,7 @@ PACKED_DIRS = ("agents", "commands", "controllers", "declaring", "engine", "even
 PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"
 GIT_HOOKS = ".githooks"
-PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "keeper.py", "serve.py", "supervisor.py", "skills.py", "worker.py")
+PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "keeper.py", "serve.py", "supervisor.py", "skills.py", "worker.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
@@ -49,7 +49,7 @@ KEPT_COPIES = 1
 DETACHED = "AGENT_JOURNAL_UPDATE_DETACHED"
 FRESH_FOR = 3600
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
-STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "keeper", "keeper.py": "keeper"}
+STUBS = {"journal.py": "journal", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "keeper", "keeper.py": "keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
 

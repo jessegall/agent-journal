@@ -342,7 +342,6 @@ function reminderRows(features, settings, context) {
 }
 
 function looseRows(settings, context) {
-    const delivery = settings.delivery || {};
     const viewer = settings.viewer || {};
     const permissions = settings.permission_prompts || {};
     const identity = context.identity || {};
@@ -382,16 +381,6 @@ function looseRows(settings, context) {
                     shipped: null,
                     changed: Boolean(identity.custom_color),
                     target: {action: "color"},
-                }),
-                row({
-                    key: "channel",
-                    kind: "switch",
-                    label: "Deliver messages while the agent works",
-                    hint: "Off: messages are typed into the agent's terminal instead",
-                    words: "channel delivery",
-                    value: delivery.channel ?? true,
-                    shipped: true,
-                    target: {path: ["delivery", "channel"], sparse: true, shipped: true},
                 }),
                 row({
                     key: "extension",

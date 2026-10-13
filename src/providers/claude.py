@@ -32,7 +32,6 @@ SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
 INTERRUPTED = "[Request interrupted by user"
-CHANNEL_MARK = '<channel source="journal"'
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
 FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
 BASH_INPUT = re.compile(r"^<bash-input>(.*)</bash-input>$", re.S)
@@ -300,9 +299,6 @@ class Claude(Provider):
             words = [found.text or "", *(block.text for block in found.blocks if block.type == "text")]
             return any(word.startswith(INTERRUPTED) for word in words)
         return False
-
-    def journal_typed(self, prompt: str) -> bool:
-        return CHANNEL_MARK in prompt or super().journal_typed(prompt)
 
     def finish_wiring(self, project: Path, hook: HookCommand) -> None:
         self.shared(project)

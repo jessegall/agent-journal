@@ -141,7 +141,6 @@ class Engine:
     def tick(self) -> str:
         self.beat()
         self.pump()
-        self.agent.driver.recheck_channel()
         deliver(self.record.root)
         self.relay()
         self.relay_peers()

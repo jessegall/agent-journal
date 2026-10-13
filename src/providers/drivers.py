@@ -61,7 +61,6 @@ class Driver(ABC):
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
-    TAKES_CHANNEL = False
     ASKS_ON_SCREEN = False
     ASKING: tuple = ()
     ASKED_COMMAND: re.Pattern | None = None
@@ -284,7 +283,7 @@ class Driver(ABC):
             self.yielding = []
         if not (self.held or self.yielding or self.groups) or time.time() - self.sent_at < BETWEEN:
             return ""
-        if self.is_compacting() or (not self.TAKES_CHANNEL and self.awaits_answer()):
+        if self.is_compacting() or self.awaits_answer():
             return ""
         self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
@@ -298,11 +297,8 @@ class Driver(ABC):
         return line
 
     def _deliver(self, line: str, by: str) -> bool:
-        """Hands a line to the agent by the channel when it takes it, and types it when it does not; a line that may have reached the agent by one is never handed over by the other, since an unconfirmed typed line is as likely taken as not."""
+        """Types a line into the agent's terminal; a line typed a moment ago is not typed again, since an unconfirmed typed line is as likely taken as not."""
         if time.time() - self.reached.get(line, 0.0) < DELIVERED_FOR:
-            return True
-        if self.TAKES_CHANNEL and by == JOURNAL and self._post(line, by):
-            self.reached[line] = time.time()
             return True
         if self.awaits_answer():
             return False
@@ -316,23 +312,8 @@ class Driver(ABC):
         return typed
 
     def whisper(self, text: str) -> None:
-        """A whisper goes through the channel once; a provider with no channel takes it as a line, and a lost one is dropped, never typed."""
-        line = joined(text)
-        if not self.TAKES_CHANNEL:
-            self.held.append(line)
-            return
-        self._post(line, JOURNAL, tracked=False)
-
-    def _post(self, line: str, by: str, tracked: bool = True) -> bool:
-        raise NotImplementedError(f"{self.PRODUCT} takes no channel")
-
-    def recheck_channel(self) -> None:
-        """While lines are typed because the channel failed, asks now and then whether it is up again; a provider with no channel has nothing to check."""
-        if self.TAKES_CHANNEL:
-            self._reopen_channel()
-
-    def _reopen_channel(self) -> None:
-        raise NotImplementedError(f"{self.PRODUCT} takes no channel")
+        """A whisper is typed with the next line the agent is sent."""
+        self.held.append(joined(text))
 
     def run_shell(self, command: str) -> bool:
         return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)

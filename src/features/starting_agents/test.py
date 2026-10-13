@@ -128,8 +128,8 @@ def test_the_command_line_answers_what_is_wired_what_is_set_and_what_a_command_d
     assert "which service" in read("services", "restart") and "knows list" in read("services", "juggle"), "a restart without a name and an unknown action are refused with the way to ask"
     record = fresh()
     read = lambda *words: (run(["--root", str(record.root), "--env", record.env, *words]), (lambda seen: seen.out + seen.err)(capsys.readouterr()))[1]
-    record.set_setting("delivery", {"mode": "one"})
-    assert "delivery: {'mode': 'one'}" in read("settings"), "a setting that is not a feature is listed with its value"
+    record.set_setting("said", {"mode": "one"})
+    assert "said: {'mode': 'one'}" in read("settings"), "a setting that is not a feature is listed with its value"
     agents = Agents(record, actor=SYSTEM)
     agents.create("claude-1", provider="claude", transcript=str(tmp_path / "gone.jsonl"))
     agents.create("claude-2", provider="nobody", transcript=str(tmp_path))

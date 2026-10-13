@@ -178,10 +178,6 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     for f in (gone, snapshot):
         os.utime(f, (old, old))
     (root / "runtime").mkdir(exist_ok=True)
-    (root / "runtime" / "channels").mkdir(parents=True, exist_ok=True)
-    (root / "runtime" / "channels" / "4242.jsonl").write_text("x" * (2 * 1024 * 1024))
-    (root / "runtime" / "channels" / "4243.jsonl").write_text("x" * (2 * 1024 * 1024))
-    (root / "runtime" / "channels" / "4243.on").touch()
     (root / "runtime" / "outputs").mkdir()
     unkept = root / "runtime" / "outputs" / "output-abc"
     unkept.write_text("a command's whole output that never became a row")
@@ -196,8 +192,6 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     assert sorted(f.name[:3] for f in (root / "runtime" / "slow").iterdir())[:1] == ["002"], "only the newest fifty slow-request profiles are kept"
     assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
     assert (gone.exists(), snapshot.exists(), recent.exists()) == (False, True, True), "an old environment archive goes; upgrade snapshots are kept by their own count"
-    assert (root / "runtime" / "channels" / "4242.jsonl").stat().st_size == 1024 * 1024, "an agent's channel log is cut to its tail"
-    assert (root / "runtime" / "channels" / "4243.jsonl").stat().st_size == 2 * 1024 * 1024, "a channel log an agent's channel is still reading is left whole, so the channel keeps its place"
     import shutil
     from engine import attic
     packed = root / "environments" / "late-writer"

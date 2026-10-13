@@ -16,8 +16,7 @@ from engine import runtime
 from engine.gates import gate_file, held
 from engine.sessions import ACTIVE_ENV, Sessions
 from engine.wording import APPENDS
-from providers import PROVIDERS, claude_channel as channel
-from providers.claude_channel import Asked
+from providers import PROVIDERS
 from payload import Hook
 from resources.base import AGENT, SYSTEM
 from resources.types import SUBAGENT
@@ -303,69 +302,6 @@ def test_a_codex_child_thread_is_handled_by_its_hooks_as_a_subagent_like_claudes
     assert claude.is_subagent(Hook.read({**raw, "agent_id": "sub1"}, claude.tool_kinds)) is True, "claude: a hook with an agent id is a subagent's"
     asked = {"hook_event_name": "PreToolUse", "session_id": "sub1", "agent_id": "sub1", "tool_name": "Edit", "tool_input": {"file_path": "web/x.py"}, "cwd": str(record.root.parent)}
     assert handle(claude, record.root, record.env, asked) == {}, "claude: a subagent's write is held by neither the open-work gate nor the skill hold, which reach main agents only"
-
-
-def test_the_claude_channel_answers_its_handshake_and_delivers_each_queued_line_once(tmp_path, monkeypatch):
-    monkeypatch.delenv(ACTIVE_ENV, raising=False)
-    assert channel.answer(Asked("initialize", 1))["capabilities"] == {}, "a channel the journal did not launch offers no channel capability"
-    monkeypatch.setenv(ACTIVE_ENV, "1")
-    initialized = channel.answer(Asked("initialize", 1))
-    assert (initialized["capabilities"], initialized["serverInfo"]["name"]) == ({"experimental": {"claude/channel": {}}}, "journal"), \
-        "a launched channel answers initialize with the channel capability"
-    assert (channel.answer(Asked("tools/list", 2)), channel.answer(Asked("notifications/initialized")), channel.answer(Asked("ping", 3))) == ({"tools": []}, None, {}), \
-        "a list is empty, a notification is not answered and any other call gets an empty result"
-
-    queued = tmp_path / "queue.jsonl"
-    queued.write_text(json.dumps({"content": "queued before the channel started"}) + "\n")
-    at = channel.start(queued)
-    queued.write_text(queued.read_text() + json.dumps({"content": "one"}) + "\n" + json.dumps({"content": "two"}) + "\n")
-    lines, at = channel.fresh_lines(queued, at)
-    assert (channel.contents(lines), channel.fresh_lines(queued, at)) == (["one", "two"], ([], at)), "a line appended after the start arrives once, and not again"
-    queued.write_text(json.dumps({"content": "after a truncation"}) + "\n")
-    lines, at = channel.fresh_lines(queued, at + 100)
-    assert (channel.contents(lines), channel.fresh_lines(queued, at)) == (["after a truncation"], ([], at)), \
-        "a queue truncated and written again is read from its start: the new line is neither lost nor sent twice"
-    queued.write_text("")
-    assert channel.fresh_lines(queued, at) == ([], 0), "a queue truncated to nothing is read from its start"
-    assert channel.contents(["not json", json.dumps({"content": ""}), json.dumps({"content": "kept"})]) == ["kept"], "a line that is no message or says nothing is dropped"
-
-    sent, stopped = [], threading.Event()
-
-    class Stop(Exception):
-        pass
-
-    def pushing(*given):
-        try:
-            channel.push(*given)
-        except Stop:
-            pass
-
-    class Clock:
-        @staticmethod
-        def sleep(seconds: float) -> None:
-            if stopped.is_set():
-                raise Stop
-            time.sleep(0.01)
-    monkeypatch.setattr(channel, "time", Clock)
-    monkeypatch.setattr(channel, "say", sent.append)
-    root = tmp_path / ".journal"
-    queue = runtime.channel_queue(root, 4242)
-    queue.parent.mkdir(parents=True)
-    thread = threading.Thread(target=pushing, args=(root, 4242), daemon=True)
-    thread.start()
-    queue.write_text(json.dumps({"content": "first"}) + "\n")
-    waited = time.monotonic()
-    while len(sent) < 1 and time.monotonic() - waited < 10:
-        time.sleep(0.02)
-    with queue.open("a") as appended:
-        appended.write(json.dumps({"content": "second"}) + "\n")
-    while len(sent) < 2 and time.monotonic() - waited < 10:
-        time.sleep(0.02)
-    stopped.set()
-    thread.join(timeout=10)
-    assert [message["params"]["content"] for message in sent] == ["first", "second"], "a line appended to the queue arrives as one notification, each once"
-    assert (sent[0]["method"], sent[0]["params"]["meta"], runtime.channel_alive(root, 4242).is_file()) == ("notifications/claude/channel", {"from": "journal"}, True), \
-        "the notification is the channel one, from the journal, and the channel marks itself alive"
 
 
 def test_the_hook_route_refuses_in_the_providers_shape_and_a_stranger_with_409():

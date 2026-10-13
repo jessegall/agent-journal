@@ -614,25 +614,25 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     from engine.stored import write_json
     from tests.kit import counted
     record = fresh()
-    record.set_setting("delivery", {"mode": "one"})
+    record.set_setting("said", {"mode": "one"})
     stats = []
     original = Path.stat
     monkeypatch.setattr(Path, "stat", lambda self, *a, **k: (stats.append(str(self)), original(self, *a, **k))[1])
     with counted() as work:
         for _ in range(20):
-            assert record.setting("delivery") == {"mode": "one"}
+            assert record.setting("said") == {"mode": "one"}
     assert (work.opened, [s for s in stats if s.endswith("settings.json")]) == ([], []), "a held setting costs no open and no stat"
-    write_json(record.home / "settings.json", {"delivery": {"mode": "two"}})
-    assert record.setting("delivery") == {"mode": "one"}, "the file changing under a process is not noticed without the event"
+    write_json(record.home / "settings.json", {"said": {"mode": "two"}})
+    assert record.setting("said") == {"mode": "one"}, "the file changing under a process is not noticed without the event"
     SETTINGS.clear()
     seen = Record(record.root, record.env)
-    seen.setting("delivery")
-    write_json(record.home / "settings.json", {"delivery": {"mode": "three"}})
+    seen.setting("said")
+    write_json(record.home / "settings.json", {"said": {"mode": "three"}})
     other = Record(record.root, record.env)
-    event = other.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting="delivery")
-    assert seen.setting("delivery") == {"mode": "two"}, "the view of another process holds until the event reaches it"
+    event = other.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting="said")
+    assert seen.setting("said") == {"mode": "two"}, "the view of another process holds until the event reaches it"
     features.passed(event, seen)
-    assert seen.setting("delivery") == {"mode": "three"}, "the event makes it read the file again"
+    assert seen.setting("said") == {"mode": "three"}, "the event makes it read the file again"
     from engine.generation import generation
     from framework import switches
     monkeypatch.setattr(switches, "UNEVENTED", [False])

@@ -24,7 +24,7 @@ def switches(record: Record) -> dict:
 
 def settings(record: Record) -> dict:
     return {Record.features: switches(record),
-            Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery, Record.viewer: record.viewer,
+            Record.triggers: record.triggers, Record.keep: record.keep, Record.viewer: record.viewer,
             Record.said: record.said,
             **{name: view for name, f in FEATURES.items() if (view := f.settings_view(record)) is not None}}
 

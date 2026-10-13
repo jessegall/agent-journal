@@ -20,8 +20,7 @@ class SessionBriefingDetails(FeatureDetails):
         The hook hands the file over at SessionStart; nothing is computed inside the hook.
 
         The first time a session starts, the journal types a line into your terminal,
-        never the channel, asking it to say something in the chat so the journal's messages
-        reach it.
+        asking it to say something in the chat so the journal's messages reach it.
     """
 
     lines = [

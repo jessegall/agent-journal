@@ -341,9 +341,7 @@ def files_left(record: Record) -> dict:
 
 
 class WhatTheAgentGot:
-    """A driver that only remembers what it was given, by the channel it came through: whispered beside the turn, or sent as a line the agent must answer."""
-
-    TAKES_CHANNEL = True
+    """A driver that only remembers what it was given, and how: whispered beside the turn, or sent as a line the agent must answer."""
 
     def __init__(self):
         self.whispered: list[str] = []
