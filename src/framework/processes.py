@@ -9,6 +9,7 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
+from engine import bus, proc
 from framework import launch
 from resources.types import NewEnvironment, Running
 from serving import SERVED, Processes
@@ -79,6 +80,10 @@ class TheProcesses:
     def apart(self, command: list[str], cwd: Path) -> None:
         """Starts a command in a session of its own, with nothing attached to it: the journal asks for this rather than reaching for subprocess itself, so there is one place that says what a detached run looks like and one place a test can stand in for."""
         launch.apart(command, cwd)
+
+    def ran_behind(self, key: str, command: list[str], cwd: Path, timeout: float, then) -> None:
+        """Runs a command beside the work that asked for it, so nobody waits, and hands what it said to `then`."""
+        bus.background(key, lambda: then(proc.ran(command, cwd=cwd, timeout=timeout)))
 
     def apart_into(self, command: list[str], log: Path) -> int:
         """Starts a command in a session of its own writing into a log, and says which process it is."""
