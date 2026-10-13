@@ -1,18 +1,39 @@
+from dataclasses import asdict
+
 from controllers.types import Agents
-from events.agents import AgentReported, SessionStarted, ToolFinished
+from declaring.trigger import Mark
+from events.agents import AgentReported, SessionStarted, ToolCallAnswered, ToolFinished
+from events.answers import Allowed
+from events.asking import ToolCallAsked
 from events.messages import MessageCreated
-from expects import Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Updated, Wrote, answering, nothing
+from events.answers import Refused as RefusedCall
 from framework.base import Feature
-from payload import BashCall
 from resources.types import AgentRow, Message
 from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
-from features.skill_loading.handlers import HoldUntilReloaded, NameStaleSkills, RemindUnloaded, RequireAlwaysSkills, RequireSkillsTheUserNames, ShowLoadsInChat
-from features.skill_loading.interceptors import RefuseUntilLoaded, RequireCommandSkill
+from features.skill_loading.answering import RefuseUntilLoaded
+from features.skill_loading.handlers import KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, UpgradeWindow
+from features.skill_loading.listeners import (CountRefusals, SpotCommandNeedingSkill, SpotReload, SpotSessionStart, SpotSkillLoad, SpotSkillsTheUserNames,
+                                              SpotStaleSkills, SpotUnloadedWindow)
 from features.skill_loading.catalogue import handed
 from features.session_briefing.start import SKILLS, START_PARTS
 from features.skill_loading.commands import LoadSkill, SetKeywords, ShowSkill, ShowSkills
 from features.skill_loading.routes import get_skill, get_skills, post_skill_always, post_skill_keywords, post_skill_load
+
+CLAUDE = AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": ["journal"]})
+LIBRARY = ".agents/skills"
+PLANS = {f"{LIBRARY}/journal-plans/SKILL.md": "---\nname: journal-plans\nkeywords: roadmap\ncommands: plan\n---\n"}
+JOURNAL = {f"{LIBRARY}/journal/SKILL.md": "---\nname: journal\n---\n"}
+
+
+def asked(tool: str, input: str) -> ToolCallAsked:
+    return ToolCallAsked(tool=tool, input=input, command=input if tool == "Bash" else "", session="claude-1")
+
+
+def answered(tool: str, command: str = "", subagent: bool = False) -> ToolCallAnswered:
+    return ToolCallAnswered(agent=1, tool=tool, command=command, subagent=subagent)
 
 
 class SkillLoading(Feature):
@@ -30,28 +51,85 @@ class SkillLoading(Feature):
             Given((Agents, "journal", [" notes ", "plans", " "])) >> Answered({"keywords": ["notes", "plans"]}),
         ])
         START_PARTS.add(self, handed, key=SKILLS)
-        journal.events.handler(RemindUnloaded(), expects=[
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": ["journal"]})]) >> Unchanged(),
+        journal.events.listen(AgentReported, SpotUnloadedWindow(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})]) >> Dispatches(JournalSkillMissing(agent=1).due()),
+            Given(AgentReported(agent=1), rows=[CLAUDE]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PreCompact", "skills": []})])
+                >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)) & Dispatches(JournalSkillMissing(agent=1).due()),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "SessionStart", "skills": ["journal-todos"]})])
+                >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)),
         ])
-        journal.events.handler(HoldUntilReloaded(), expects=[
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude"})]) >> Unchanged(),
+        journal.events.listen(AgentReported, SpotReload(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude"})]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[CLAUDE], settings={"skill_loading.reload": False}) >> Dispatches(nothing),
         ])
-        journal.events.handler(NameStaleSkills(), expects=[
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.listen(AgentReported, SpotStaleSkills(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
-        journal.events.handler(RequireAlwaysSkills(), expects=[
-            Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.listen(SessionStarted, SpotSessionStart(), expects=[
+            Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SessionOwesSkills(agent=1, session="claude-1", skills=())),
+            Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")], files=answering(JOURNAL))
+                >> Dispatches(SessionOwesSkills(agent=1, session="claude-1", skills=(("journal", WHEN),))),
         ])
-        journal.events.handler(ShowLoadsInChat(), expects=[
-            Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")]) >> Updated(AgentRow(n=1), skill_loads=[{"skill": "journal"}]),
-            Given(ToolFinished(agent=1, tool="Bash"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.listen(MessageCreated, SpotSkillsTheUserNames(), expects=[
+            Given(MessageCreated(n=3, type="message", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Message(n=3, title="plan it", brief="here is the roadmap", seen=["user"])],
+                  files=answering(PLANS)) >> Dispatches(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", WHEN),))),
+            Given(MessageCreated(n=3, type="message", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Message(n=3, title="plan it", brief="nothing to see", seen=["user"])],
+                  files=answering(PLANS)) >> Dispatches(nothing),
+            Given(MessageCreated(n=3, type="message", actor="agent"), rows=[AgentRow(n=1, title="claude-1"), Message(n=3, title="the roadmap", brief="the roadmap")],
+                  files=answering(PLANS)) >> Dispatches(nothing),
         ])
-        journal.events.handler(RequireSkillsTheUserNames(), expects=[
-            Given(MessageCreated(n=3, type="message", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Message(n=3, title="plan it", seen=["user"])]) >> Unchanged(),
+        journal.events.listen(ToolFinished, SpotSkillLoad(), expects=[
+            Given(ToolFinished(agent=1, tool="Skill", skill="journal"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SkillLoaded(agent=1, skill="journal", at=WHEN)),
+            Given(ToolFinished(agent=1, tool="Bash"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
-        journal.agent.interceptor(RequireCommandSkill(), expects=[
-            Given(BashCall.from_payload("Bash", {"command": "ls"}, {}), rows=[AgentRow(n=1, title="claude-1")]) >> Kept(),
+        journal.events.listen(ToolCallAnswered, SpotCommandNeedingSkill(), expects=[
+            Given(answered("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
+                >> Dispatches(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 0.0),))),
+            Given(answered("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Dispatches(nothing),
+            Given(answered("Bash", "journal plan phase 1 build --when done", subagent=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Dispatches(nothing),
         ])
-        journal.agent.interceptor(RefuseUntilLoaded(), expects=[
-            Given(BashCall.from_payload("Bash", {"command": "ls"}, {}), rows=[AgentRow(n=1, title="claude-1")]) >> Kept(),
+        journal.events.listen(ToolCallAnswered, CountRefusals(), expects=[
+            Given(answered("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(RefusalCounted(agent=1, wanted=False)),
+            Given(answered("Skill"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(answered("Bash", "ls", subagent=True), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(WindowOpened, OpenWindow(), expects=[
+            Given(WindowOpened(agent=1, uses=4, context=30.0, at=WHEN), rows=[AgentRow(n=1, title="claude-1")])
+                >> Remembered("trigger-skill_loading", asdict(Mark(notified=False, uses=4, context=30.0, since=WHEN))),
+        ])
+        journal.events.handle(WindowUpgraded, UpgradeWindow(), expects=[
+            Given(WindowUpgraded(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading", asdict(Mark(notified=True))),
+        ])
+        journal.events.handle(JournalSkillMissing, NameUnloaded(), expects=[
+            Given(JournalSkillMissing(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("unloaded") & Remembered("trigger-skill_loading", asdict(Mark(notified=True))),
+        ])
+        journal.events.handle(SkillsOwed, OweSkills(), expects=[
+            Given(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 5.0),)), rows=[AgentRow(n=1, title="claude-1")])
+                >> Remembered("required.claude-1", {"journal-plans": 5.0}),
+            Given(SkillsOwed(agent=1, session="claude-1", skills=(("journal-plans", 3.0),)), rows=[AgentRow(n=1, title="claude-1")],
+                  remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}}) >> Remembered("required.claude-1", {"journal-plans": 5.0}),
+        ])
+        journal.events.handle(SessionOwesSkills, OweSessionSkills(), expects=[
+            Given(SessionOwesSkills(agent=1, session="claude-1", skills=(("journal", 5.0),)), rows=[AgentRow(n=1, title="claude-1")],
+                  remembered={"skill_loading.required.claude-1": {"journal-obsolete": 1.0}}) >> Remembered("required.claude-1", {"journal": 5.0}),
+        ])
+        journal.events.handle(StaleSkillsNamed, NameStaleSkills(), expects=[
+            Given(StaleSkillsNamed(agent=1, skills="journal-plans"), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("stale", skills="journal-plans"),
+        ])
+        journal.events.handle(SkillLoaded, ShowSkillLoad(), expects=[
+            Given(SkillLoaded(agent=1, skill="journal", at=WHEN), rows=[AgentRow(n=1, title="claude-1")]) >> Updated(AgentRow(n=1), skill_loads=[{"skill": "journal"}]),
+        ])
+        journal.events.handle(RefusalCounted, KeepRefusalCount(), expects=[
+            Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=1))),
+            Given(RefusalCounted(agent=1, wanted=False), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=0))),
+        ])
+        journal.events.answer(ToolCallAsked, RefuseUntilLoaded(), expects=[
+            Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Answered(Allowed()),
+            Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}})
+                >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
+            Given(asked("Skill", '{"skill": "journal-plans"}'), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}})
+                >> Answered(Allowed()),
+            Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
+                  settings={"skill_loading.most_refusals": 0}) >> Answered(Allowed()),
         ])

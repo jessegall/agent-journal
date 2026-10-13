@@ -217,10 +217,10 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     switched = dispatch("POST", f"/api/{record.env}/skills/journal-work-tracking/always", record.root, {}, {"on": True})
     assert (switched.code, switched.body["skills"]) == (200, ["journal-work-tracking"]), "the Skills page switches a skill to load at every start"
     codex, hook = PROVIDERS["codex"](), {"session_id": "codex-1"}
-    from features.skill_loading.required import require, required
+    from features.skill_loading.required import pending, require
     require(record, "codex-1", {"journal-obsolete": 1.0})
     handle(codex, record.root, record.env, {**hook, "hook_event_name": "SessionStart"})
-    assert list(required(record, "codex-1").get("required")) == ["journal-work-tracking"], \
+    assert list(pending(record, "codex-1")) == ["journal-work-tracking"], \
         "a new window owes exactly the every-start skills; one switched off is no longer owed"
     refused = handle(codex, record.root, record.env, {**hook, "hook_event_name": "PreToolUse", "tool_name": "exec", "tool_input": {"input": "ls"}})
     assert "read .agents/skills/journal-work-tracking/SKILL.md" in str(refused), "Codex is told to read the skill's SKILL.md"
@@ -251,7 +251,7 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
     handle(PROVIDERS["claude"](), record.root, record.env, {"session_id": "claude-1", "hook_event_name": "SessionStart", "source": "compact",
                                                               "transcript_path": str(transcript)})
-    assert sorted(required(record, "claude-1").get("required")) == sorted([*later[1:], "journal-work-tracking"]), \
+    assert sorted(pending(record, "claude-1")) == sorted([*later[1:], "journal-work-tracking"]), \
         "after a compaction the every-start skills and the last five loaded before it are owed again, and earlier ones are not"
 
 

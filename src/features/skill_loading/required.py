@@ -6,31 +6,36 @@ from features.skill_loading.catalogue import available, keywords, loaded_at, loa
 from resources.base import SYSTEM, USER
 
 
-def required(record, session: str):
-    return record.state("skill_loading", session)
+STATE = "skill_loading"
+
+
+def pending(record, session: str) -> dict:
+    return record.state(STATE).get(f"required.{session}", {})
+
+
+def keep(record, session: str, skills: dict[str, float]) -> None:
+    record.state(STATE).set(f"required.{session}", skills)
 
 
 def require(record, session: str, skills: dict[str, float]) -> None:
-    state = required(record, session)
-    held = state.get("required", {})
+    held = pending(record, session)
     added = {name: at for name, at in skills.items() if name not in held or float(held[name]) < at}
     if added:
-        state.set("required", {**held, **added})
+        keep(record, session, {**held, **added})
 
 
 def require_only(record, session: str, skills: dict[str, float]) -> None:
-    required(record, session).set("required", skills)
+    keep(record, session, skills)
 
 
 def outstanding(record, row) -> list[str]:
-    state = required(record, row.title)
-    held = state.get("required", {})
+    held = pending(record, row.title)
     if not held:
         return []
     loaded = loaded_at(row)
     left = {name: at for name, at in held.items() if not loaded.get(name) or float(loaded[name]) < float(at)}
     if left != held:
-        state.set("required", left)
+        keep(record, row.title, left)
     return sorted(left)
 
 
@@ -47,8 +52,13 @@ def load_now(record, name: str) -> str:
     return "the agent is asked, and its tool calls wait until the skill is loaded"
 
 
-def require_named(record, row, text: str) -> None:
+def named_skills(record, row, text: str, at: float) -> dict[str, float]:
+    """The skills the text names by their words that the agent has not loaded."""
     loaded = {**loaded_before_compaction(row), **loaded_at(row)}
-    named = {name: time.time() for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}
+    return {name: at for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}
+
+
+def require_named(record, row, text: str) -> None:
+    named = named_skills(record, row, text, time.time())
     if named:
         require(record, row.title, named)

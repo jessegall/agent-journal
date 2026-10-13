@@ -1,97 +1,62 @@
-import time
-
-from events.agents import AgentReported, SessionStarted, ToolFinished
-from events.messages import MessageCreated
-from engine import triggering
-from framework.parts import AgentContext, Context, Handler
-from framework.wiring import refusals
-from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, recent_before_compaction, skills
-from features.skill_loading.interceptors import RefuseUntilLoaded
-from features.skill_loading.required import require_named
+from events import Fact
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from features.skill_loading.answering import REFUSED, next_count
+from features.skill_loading.listeners import NAME
 from features.skill_loading.required import require, require_only
-from serving import SERVED, Providers
-from payload import HookEvent
-from resources.base import SYSTEM, USER
+from receiving import Handler
 from resources.types import AgentRow
-from controllers.types import Agents, Messages
+from serving import Chat, Elsewhere, Marks, Rows, Settings
 
-WINDOWS = (HookEvent.SESSION_START, HookEvent.PRE_COMPACT)
 KEPT_LOADS = 50
 
 
-def journal_skill(name: str) -> bool:
-    return name == "journal" or name.startswith("journal-")
+class OpenWindow(Handler[WindowOpened]):
+    def handle(self, event: WindowOpened, marks: Marks) -> list[Fact]:
+        marks.write(NAME, notified=False, uses=event.uses, context=event.context, since=event.at)
+        return []
 
 
-class RemindUnloaded(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        row, name = context.agent.row, context.feature.name
-        state = triggering.last(context.record, row.title, name)
-        if row.event in WINDOWS and state.event != row.event:
-            triggering.write(context.record, row, name, notified=False, uses=row.uses, context=row.context, since=time.time())
-            state = triggering.last(context.record, row.title, name)
-        if state.notified is None and state.at:
-            triggering.write(context.record, row, name, notified=True)
-            state = triggering.last(context.record, row.title, name)
-        if state.notified or not context.due() or any(journal_skill(s) for s in row.skills):
-            return
-        context.agent.nudge("unloaded")
-        triggering.write(context.record, row, name, notified=True)
+class UpgradeWindow(Handler[WindowUpgraded]):
+    def handle(self, event: WindowUpgraded, marks: Marks) -> list[Fact]:
+        marks.write(NAME, notified=True)
+        return []
 
 
-class HoldUntilReloaded(Handler):
-    behaviour = "reload"
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        row = context.agent.row
-        since = triggering.last(context.record, row.title, context.feature.name).since
-        provider = SERVED.given(Providers).offers(row.provider)
-        if not since or not provider or not row.transcript:
-            return
-        require(context.record, row.title, {"journal": since})
+class NameUnloaded(Handler[JournalSkillMissing]):
+    def handle(self, event: JournalSkillMissing, chat: Chat, marks: Marks) -> list[Fact]:
+        chat.nudge("unloaded")
+        marks.write(NAME, notified=True)
+        return []
 
 
-class NameStaleSkills(Handler):
-    behaviour = "stale"
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        always = set(chosen(context.record))
-        changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]}
-        held = {name: at for name, at in changed.items() if name in always}
-        if held:
-            require(context.record, context.agent.session, held)
-        rest = sorted(set(changed) - always)
-        if rest and context.once("stale", ", ".join(rest)):
-            context.agent.nudge("stale", skills=", ".join(rest))
+class OweSkills(Handler[SkillsOwed]):
+    def handle(self, event: SkillsOwed, elsewhere: Elsewhere) -> list[Fact]:
+        require(elsewhere.here().record, event.session, dict(event.skills))
+        return []
 
 
-class RequireAlwaysSkills(Handler):
-    behaviour = "always"
-
-    def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        now = time.time()
-        present = {skill[SKILL.name] for skill in catalogue(context.record.root.parent)}
-        current = set(loaded_at(context.agent.row))
-        recent = set() if current else present & recent_before_compaction(context.agent.row, int(context.settings.recent))
-        require_only(context.record, context.agent.session, {name: now for name in {*chosen(context.record), *recent} - current})
-        context.state.set(refusals(RefuseUntilLoaded), 0)
+class OweSessionSkills(Handler[SessionOwesSkills]):
+    def handle(self, event: SessionOwesSkills, elsewhere: Elsewhere, marks: Marks) -> list[Fact]:
+        require_only(elsewhere.here().record, event.session, dict(event.skills))
+        marks.write(REFUSED, count=0)
+        return []
 
 
-class RequireSkillsTheUserNames(Handler):
-    behaviour = "keywords"
-
-    def handle(self, context: Context, event: MessageCreated) -> None:
-        if event.actor != USER:
-            return
-        row = context.journal.acting(SYSTEM).get(Agents).primary()
-        if row:
-            require_named(context.record, row, context.journal.get(Messages).load(event.n).brief)
+class NameStaleSkills(Handler[StaleSkillsNamed]):
+    def handle(self, event: StaleSkillsNamed, chat: Chat) -> list[Fact]:
+        chat.nudge("stale", skills=event.skills)
+        return []
 
 
-class ShowLoadsInChat(Handler):
-    behaviour = "chat"
+class ShowSkillLoad(Handler[SkillLoaded]):
+    def handle(self, event: SkillLoaded, agents: Rows[AgentRow]) -> list[Fact]:
+        loads = [*(agents.load(event.agent).data.get(AgentRow.skill_loads) or []), {"skill": event.skill, "at": event.at}]
+        agents.update(event.agent, **{AgentRow.skill_loads: loads[-KEPT_LOADS:]})
+        return []
 
-    def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        if event.skill:
-            loads = [*(context.agent.row.data.get(AgentRow.skill_loads) or []), {"skill": event.skill, "at": time.time()}]
-            context.journal.get(Agents).update(context.agent.row.n, **{AgentRow.skill_loads: loads[-KEPT_LOADS:]})
+
+class KeepRefusalCount(Handler[RefusalCounted]):
+    def handle(self, event: RefusalCounted, marks: Marks, settings: Settings) -> list[Fact]:
+        count = next_count(marks.last(REFUSED).count, event.wanted, max(0, int(settings.most_refusals)), max(0, int(settings.steps_aside)))
+        marks.write(REFUSED, count=count)
+        return []
