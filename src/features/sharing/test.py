@@ -744,7 +744,7 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
 
 def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     from controllers.sharing.page import Page
-    from framework.format import FORMATTERS, SHARED
+    from framework.format import SHARED
     import features
     page = Page("/s/key", {"doc:1", "todo:12"})
     linked = page.refs("See docs 1 and doc 16, to-do 12, 13 and to-do 12 in elsewhere.")
@@ -843,9 +843,19 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     features.load()
     record = fresh()
     doc = Docs(record, actor=USER).create("Draft", brief="Words")
-    marker = (lambda text, _: text.replace("Heading", Docs(record, actor=USER).load(doc.n).title), (SHARED,))
-    FORMATTERS.add(None, marker)
-    try:
+    from unittest.mock import patch
+    from engine import bus
+    from events.answers import Rewritten
+    from events.asking import TextFormatting
+    asked = bus.asked
+
+    def marker(request, at):
+        if not isinstance(request, TextFormatting) or request.surface != SHARED:
+            return asked(request, at)
+        answer = asked(request, at)
+        text = answer.text if isinstance(answer, Rewritten) else request.text
+        return Rewritten(text.replace("Heading", Docs(record, actor=USER).load(doc.n).title))
+    with patch("engine.bus.asked", marker):
         page = Page("/s/key", {doc.ref}, record)
         assert "Draft" in page.title("Heading")
         Docs(record, actor=USER).update(doc.n, title="Final")
@@ -856,8 +866,6 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
         share = Shares(record, actor=USER).create(doc.ref)
         shared = Shares(record, actor=USER)._shared_data(share)["rows"][doc.ref]
         assert shared["title"] == "Final" and shared["sections"][0]["title"] == "Final"
-    finally:
-        FORMATTERS.remove(marker)
 
 
 STANDING = {"installed": True, "command": "tunler", "logged_in": True, "rejected": False, "outdated": False, "account": "me", "host": "t.example", "unreadable": False}
