@@ -34,6 +34,10 @@ class PullRequests(Feature):
             Given(FINISHED, rows=[after("gh pr merge", pull="merge"), pinned("42", 2), pinned("7", 3)])
                 >> Dispatches(PullRequestEnded(agent=1, notice=2, how="pull request merged").once("1|pull 100.0|2")) & Dispatches(PullRequestEnded(agent=1, notice=3, how="pull request merged").once("1|pull 100.0|3")),
             Given(FINISHED, rows=[after("gh pr merge 42", pull="merge", number="42"), Notice(n=2, title="Waiting for permission", data={"action": "permission"})]) >> Dispatches(nothing),
+            Given(FINISHED, rows=[after("gh pr create", pull="create"), pinned()]) >> Dispatches(nothing),
+            Given(FINISHED, rows=[after("gh pr merge 9", pull="merge", number="9"), pinned("42", 2)]) >> Dispatches(nothing),
+            Given(FINISHED, rows=[after("gh pr merge 42", pull="merge", number="42"), Notice(n=2, title="Pull request 42 is open", completed=1.0, data={"pull": "42", "link": LINK})]) >> Dispatches(nothing),
+            Given(FINISHED, rows=[AgentRow(n=1, title="claude-1", data={"commands": [{"command": "gh pr merge 42", "tool": "Bash", "at": 100.0, "done": 0.0, "result": {"pull": "merge", "number": "42"}}]}), pinned()]) >> Dispatches(nothing),
             Given(FINISHED, rows=[after("npm test", ok=True)]) >> Dispatches(nothing),
             Given(FINISHED, rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])

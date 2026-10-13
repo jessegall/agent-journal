@@ -16,7 +16,7 @@ class SpotPullRequest(Listener[ToolFinished]):
         if not pull or not pull.pull:
             return []
         claim = f"{event.agent}|pull {ran.at}"
-        if pull.pull == OPENED and pull.url:
-            return [PullRequestOpened(agent=event.agent, number=pull.number, url=pull.url).once(claim)]
+        if pull.pull == OPENED:
+            return [PullRequestOpened(agent=event.agent, number=pull.number, url=pull.url).once(claim)] if pull.url else []
         return [PullRequestEnded(agent=event.agent, notice=notice.n, how=f"pull request {pull.pull}d").once(f"{claim}|{notice.n}")
                 for notice in notices.rows.standing() if notice.data.get("pull") and (not pull.number or notice.data.get("pull") == pull.number)]
