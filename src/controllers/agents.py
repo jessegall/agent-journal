@@ -265,7 +265,7 @@ class Agents(Controller):
     def _primary_n(self) -> int | None:
         standing = [row for row in self.rows.standing_summaries() if not row.extras.get("parent")]
         latest = max(standing, key=lambda row: 0.0 if row.extras["at"] is None else float(row.extras["at"]), default=None)
-        return latest["n"] if latest is not None else None
+        return latest.n if latest is not None else None
 
     def state(self, environment: str) -> str:
         sessions = Sessions(self.record.root)

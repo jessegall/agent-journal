@@ -20,7 +20,7 @@ from engine.outbox import Request
 from engine.paths import known_environment
 from engine.record import Record
 from serving import SERVED, Processes, Providers
-from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
+from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, Summary, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.buttons import Buttons
@@ -234,7 +234,7 @@ class Controller(Files, Links, Discussed, Buttons):
         if isinstance(asked, Refusal):
             self._refuse(asked.why)
 
-    def _plugin_twin(self, title: str, data: dict) -> dict | None:
+    def _plugin_twin(self, title: str, data: dict) -> Summary | None:
         name = data.get(OWNER)
         if not name:
             return None
@@ -285,7 +285,7 @@ class Controller(Files, Links, Discussed, Buttons):
             return twin
         found = self._plugin_twin(title, data)
         if found is not None:
-            return self.update(found["n"], abstract=abstract or None, brief=brief or None, **data)
+            return self.update(found.n, abstract=abstract or None, brief=brief or None, **data)
         self._handled("create", title=title, abstract=abstract, brief=brief, **data)
         for name in self.resource.unfilled(data):
             self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
