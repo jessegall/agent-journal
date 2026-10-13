@@ -64,6 +64,7 @@ class TestsRunning(Fact):
     command: str
     title: str
     started: float
+    runs: int = 1
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -82,3 +83,4 @@ class TestsFinished(Fact):
     started: float
     ended: float
     detail: str
+    runs: int = 1

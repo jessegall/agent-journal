@@ -35,7 +35,9 @@ class Card:
     go: str = ""
     found: str = ""
     reads: tuple = ()
+    started: float = 0.0
     ended: float = 0.0
+    runs: int = 0
     kind: str = ""
     plugin: str = ""
     settle: str = ""

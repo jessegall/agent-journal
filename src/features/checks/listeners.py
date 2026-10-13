@@ -24,13 +24,30 @@ def verdict(result, failed: bool) -> str:
     return "Tests passed" if result else "Tests ran"
 
 
-def finished(agent: int, run: CommandRun, result, ended: float) -> TestsFinished:
+def repeated(row: AgentRow, name: str) -> dict:
+    """The newest card of the chat when it is a run of the same tests, which a run of them again folds into rather than stacking."""
+    last = row.cards[-1] if row.cards else {}
+    return last if str(last.get("key", "")).startswith("tests:") and last.get("name") == name else {}
+
+
+def folded(row: AgentRow, run: CommandRun, name: str) -> tuple[str, int]:
+    """The key of the card this run shows on and how many runs that card has counted with it."""
+    last = repeated(row, name)
+    if not last:
+        return f"tests:{run.at}", 1
+    runs = int(last.get("runs") or 1)
+    return last["key"], runs if last.get("started") == run.at else runs + 1
+
+
+def finished(row: AgentRow, run: CommandRun, result, ended: float) -> TestsFinished:
     ran = tested(run.command)
+    key, runs = folded(row, run, ran.name)
     counts = ", ".join(part for part in (f"{result.passed} passed" if result and result.passed else "",
-                                         f"{result.failed} failed" if result and result.failed else "") if part)
+                                         f"{result.failed} failed" if result and result.failed else "",
+                                         f"run {runs} times" if runs > 1 else "") if part)
     failed = bool(result and (result.ok is False or result.failed))
-    return TestsFinished(agent=agent, key=f"tests:{run.at}", label=verdict(result, failed), name=ran.name, command=ran.command, title=run.command,
-                         state="failed" if failed else "done", started=run.at, ended=ended, detail=counts)
+    return TestsFinished(agent=row.n, key=key, label=verdict(result, failed), name=ran.name, command=ran.command, title=run.command,
+                         state="failed" if failed else "done", started=run.at, ended=ended, detail=counts, runs=runs)
 
 
 class SpotDueChecks(Listener[ClockTicked]):
@@ -68,9 +85,10 @@ class SpotTestRuns(Listener[AgentReported]):
             return []
         claim = f"{run.at}|{run.done}"
         if run.done and not run.background:
-            return [finished(row.n, run, run.result, run.done).once(claim)]
+            return [finished(row, run, run.result, run.done).once(claim)]
         ran = tested(run.command)
-        return [TestsRunning(agent=row.n, key=f"tests:{run.at}", name=ran.name, command=ran.command, title=run.command, started=run.at).once(claim)]
+        key, runs = folded(row, run, ran.name)
+        return [TestsRunning(agent=row.n, key=key, name=ran.name, command=ran.command, title=run.command, started=run.at, runs=runs).once(claim)]
 
     def ended_in_background(self, row: AgentRow, providers: Providers) -> list[Fact]:
         reader = providers.reader(row)
@@ -86,5 +104,5 @@ class SpotTestRuns(Listener[AgentReported]):
             if run is None:
                 continue
             outcome = background_outcome(command, row.cwd, tasks.outputs.get(task, ""), "failed" if task in tasks.failed else "completed")
-            facts.append(finished(row.n, run, outcome, tasks.ended[task]).once(f"background|{task}"))
+            facts.append(finished(row, run, outcome, tasks.ended[task]).once(f"background|{task}"))
         return facts

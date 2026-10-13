@@ -59,12 +59,12 @@ class TellAgentOfFailingCheck(Handler[CheckFailed]):
 class ShowTestsRunning(Handler[TestsRunning]):
     def handle(self, event: TestsRunning, agents: Rows[AgentRow]) -> list[Fact]:
         agents.card(event.agent, key=event.key, label="Running tests", icon="check", name=event.name, command=event.command, title=event.title,
-                    state="running", started=event.started)
+                    state="running", started=event.started, runs=event.runs)
         return []
 
 
 class ShowTestsFinished(Handler[TestsFinished]):
     def handle(self, event: TestsFinished, agents: Rows[AgentRow]) -> list[Fact]:
         agents.card(event.agent, key=event.key, label=event.label, icon="check", name=event.name, command=event.command, title=event.title,
-                    state=event.state, started=event.started, ended=event.ended, detail=event.detail)
+                    state=event.state, started=event.started, ended=event.ended, detail=event.detail, runs=event.runs)
         return []
