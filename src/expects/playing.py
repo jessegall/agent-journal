@@ -89,6 +89,12 @@ class Processes(Asked):
         self.seen.ran.append(argv)
         return self.answer(argv)
 
+    def start_detached(self, root, cwd, environment: str, provider: str, args: list[str], conversation: str = "") -> int:
+        """An agent started detached from the journal, remembered and answered by what started it: the environment, the provider, its arguments and the conversation it carries on, never the folders."""
+        started = ("start detached", environment, provider, tuple(args), conversation)
+        self.seen.ran.append(started)
+        return self.answer(started)
+
 
 @dataclass
 class Files(Asked):
