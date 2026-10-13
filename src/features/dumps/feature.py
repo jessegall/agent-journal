@@ -10,7 +10,7 @@ from features.dumps.listeners import SpotDumpChoosing, SpotDumpFiling, SpotStall
 from events.dumps import (DumpArrived, DumpChoiceMade, DumpChoiceOpen, DumpFilingStalled, DumpFiledAway, DumpQuestionAnswered, DumpWritten,
                           TranscriptPasted)
 from framework.journal import Journal
-from resources.base import USER
+from resources.base import SYSTEM, USER
 from resources.types import AgentRow, Message
 
 TOUCHED = MessageUpdated(n=5, type="message", action="updated", actor=USER, numbers=(5,))
@@ -80,11 +80,11 @@ class DumpsFeature(Feature):
         ])
         journal.events.handle(DumpFilingStalled, CarryOnFiling(), expects=[Given(DumpFilingStalled(n=1, items="1 item"), rows=[IDLE]) >> Nudged("carry on", n=1, count="1 item")])
         journal.events.listen(MessageUpdated, SpotTranscript(), expects=[
-            Given.of(TOUCHED, Message(n=5, title="A pasted conversation", brief="User: hello\nAgent: hi", data={"kind": "transcript"})) >> Dispatches(TranscriptPasted(message=5)),
+            Given.of(TOUCHED, Message(n=5, title="A pasted conversation", brief="User: hello\nAgent: hi", data={"kind": "transcript"})) >> Dispatches(TranscriptPasted(message=5, actor=USER)),
             Given.of(TOUCHED, Message(n=5, title="A question", brief="Can you look?")) >> Dispatches(nothing),
             Given.of(TOUCHED, Message(n=5, title="A pasted conversation", brief="User: hello", refs=["dump:3"], data={"kind": "transcript"})) >> Dispatches(nothing),
         ])
         journal.events.handle(TranscriptPasted, TranscriptToDump(), expects=[
-            Given(TranscriptPasted(message=5), rows=[Message(n=5, title="A pasted conversation", brief="User: hello\nAgent: hi", data={"kind": "transcript"})])
-                >> Wrote(Dump(brief="User: hello\nAgent: hi")) & Updated(Message(n=5), refs=["dump:1"]),
+            Given(TranscriptPasted(message=5, actor=USER), rows=[Message(n=5, title="A pasted conversation", brief="User: hello\nAgent: hi", data={"kind": "transcript"})])
+                >> Wrote(Dump(brief="User: hello\nAgent: hi", seen=[USER, SYSTEM])) & Updated(Message(n=5), refs=["dump:1"]),
         ])

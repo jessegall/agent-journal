@@ -70,4 +70,4 @@ class SpotTranscript(Listener[MessageUpdated]):
         message = messages.peek(event.n)
         if message.data.get("kind") != "transcript" or any(ref.startswith("dump:") for ref in message.refs):
             return []
-        return [TranscriptPasted(message=message.n)]
+        return [TranscriptPasted(message=message.n, actor=event.actor)]

@@ -81,6 +81,7 @@ class DumpFilingStalled(Fact):
 
 @dataclass(frozen=True, kw_only=True)
 class TranscriptPasted(Fact):
-    """A message declared a transcript and has no dump yet."""
+    """A message declared a transcript and has no dump yet, by whoever declared it."""
 
     message: int
+    actor: str

@@ -195,6 +195,10 @@ class Controller(Files, Links, Discussed, Buttons):
         if actor:
             self.actor = actor
 
+    def acting(self, actor: str) -> "Controller":
+        """This controller over the same record, writing as the actor whose doing the write is, such as the user whose message a handler acts on."""
+        return type(self)(self.record, actor=actor, session=self.session, agent=self.agent, force=self.force)
+
     @property
     def providers(self):
         """The providers this journal runs agents on. A controller asks the service what a provider offers; it never reaches into the package."""
@@ -290,7 +294,7 @@ class Controller(Files, Links, Discussed, Buttons):
     def _handled(self, action: str, /, **args) -> None:
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             fn(self, **args)
-        asked = bus.asked(RowWriting(type=self.type, action=action, actor=self.actor, agent=self.agent or "", forced=bool(self.force),
+        asked = bus.asked(RowWriting(type=self.type, action=action, actor=self.actor, agent=self.agent, forced=bool(self.force),
                                      fields=tuple(args.items())), self.record)
         if isinstance(asked, Refusal):
             self._refuse(asked.why)

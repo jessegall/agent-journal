@@ -45,7 +45,7 @@ class CarryOnFiling(Handler[DumpFilingStalled]):
 class TranscriptToDump(Handler[TranscriptPasted]):
     def handle(self, event: TranscriptPasted, messages: Rows[Message], dumps: Rows[Dump]) -> list[Fact]:
         message = messages.load(event.message)
-        dump = dumps.create(brief=message.brief)
+        dump = dumps.acting(event.actor).create(brief=message.brief)
         for path in messages.paths(message.n):
             dumps.attach(dump.n, path)
         dumps.link(dump.n, message.ref)
