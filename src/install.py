@@ -385,8 +385,10 @@ def release_versions(repository: str | None = None) -> list[str]:
     return sorted(versions, key=version_key, reverse=True)
 
 
-def released(repository: str | None = None) -> str:
-    return next(iter(release_versions(repository)), "")
+def released(repository: str | None = None, staying: str = "") -> str:
+    """The newest release; given the installed version, the newest of its own major version."""
+    major = staying.split(".")[0]
+    return next((found for found in release_versions(repository) if not major or found.split(".")[0] == major), "")
 
 
 def fetch(into: Path, repository: str | None = None, ref: str = "") -> tuple[str, str]:
@@ -515,7 +517,7 @@ def upgrading(project: Path, root: Path, version: str | None = None) -> list[str
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
         stepping(root, "Fetching the new version")
-        newest = version or released()
+        newest = version or released(staying=version_in(code(root)))
         if newest and newest == version_in(code(root)) and packed(root):
             return done + [f"package already at {newest}"] + finish(project, root)
         temporary = Path(tempfile.mkdtemp())

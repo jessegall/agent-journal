@@ -4,6 +4,7 @@ from pathlib import Path
 
 from engine import runtime
 from engine.stored import write_text
+from engine.version import version
 from install import fetch, released, version_key
 
 __all__ = ["fetch"]
@@ -37,7 +38,7 @@ def fetched(cache: Path) -> None:
 
 def kept_newest(cache: Path) -> None:
     cache.parent.mkdir(parents=True, exist_ok=True)
-    newest = released()
+    newest = released(staying=version())
     if not newest:
         cache.touch(exist_ok=True)
         return
