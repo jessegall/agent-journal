@@ -38,8 +38,8 @@ class Acknowledgements(Feature):
             Given(sending("On it: a hotfix is under way."), rows=[prompted(delivered="message:7"),
                                                                    Message(n=7, title="a broken command here", seen=["agent"], data={"from_session": "uds:/tmp/b.sock"})])
                 >> Answered(Allowed()),
-            Given(sending("Looking at it now."), rows=[prompted(), REMINDER], remembered={"acknowledgements.sent|1": "t1"}) >> Answered(Kept()),
-            Given(sending("Looking at it now."), rows=[prompted(), REMINDER], remembered={"acknowledgements.sent|1": "t0"}) >> Answered(Allowed()),
+            Given(sending("Looking at it now."), rows=[prompted(turn_wrote=True), REMINDER], remembered={"acknowledgements.sent|1": "t1"}) >> Answered(Kept()),
+            Given(sending("Looking at it now."), rows=[prompted(turn_wrote=True), REMINDER], remembered={"acknowledgements.sent|1": "t0"}) >> Answered(Allowed()),
         ])
         journal.events.listen(AgentMessageSent, SpotTurnSent(), expects=[
             Given(AgentMessageSent(agent=1, turn="t1", text="Looking at it now."), rows=[prompted()]) >> Dispatches(TurnReachedChat(agent=1, turn="t1")),

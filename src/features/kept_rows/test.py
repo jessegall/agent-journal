@@ -5,6 +5,7 @@ from controllers.types import Reminders, Todos
 from engine.version import version
 from features.kept_rows.snapshot import read, snapshot_file, write
 from resources.base import SYSTEM
+from resources.memo import HELD
 from resources.types import Todo
 from tests.conftest import fresh
 from tests.kit import counted
@@ -34,6 +35,7 @@ def test_rows_held_when_the_server_stops_are_held_again_when_the_next_one_starts
     assert read(record.root, "") >= 2, "the rows come back from the snapshot"
     assert parsed_after_restart(record, todo, reminder) == [], "a kept row whose file did not change is not parsed again"
     assert not snapshot_file(record.root).exists(), "a snapshot is read once, so a server that dies without writing one never starts from an old one"
+    assert read(record.root, "") == 0, "and the next start, with no snapshot, holds nothing"
 
 
 def test_a_type_whose_version_changed_is_read_again_and_the_others_are_kept(monkeypatch):
@@ -77,8 +79,10 @@ def test_a_release_asks_for_a_full_restart_in_its_changelog_entry():
 def test_a_kept_row_that_will_not_read_back_is_dropped_and_read_from_its_file():
     record = fresh()
     todo, reminder = held(record)
+    HELD[next(folder for folder in HELD if folder.endswith("/todo"))].held["no pickle"] = (0, lambda: None)
     write(record.root)
     kept = pickle.loads(snapshot_file(record.root).read_bytes())
+    assert "no pickle" not in {key for _, rows in kept["folders"].values() for key, _, _ in rows}, "a row that will not pickle is left out, and the rest are kept"
     for folder, (was, rows) in kept["folders"].items():
         if folder.endswith("/todo"):
             kept["folders"][folder] = (was, [(key, stamp, b"not a pickle") for key, stamp, _ in rows])
