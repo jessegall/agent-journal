@@ -23,6 +23,8 @@ HELD = Todo(n=4, title="the build", data={"assigned": "sub-1"})
 STOPPING = AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "working", "stopping": {"task": "t1", "at": 5, "description": "the build"}})
 REPORTED = Todo(n=4, title="the build", data={"reported": {"agent": "sub-1", "dispatcher": "claude-1", "how": "fixed"}})
 ENDED_SUBAGENT = AgentRow(n=1, data={"subagent_rows": [{"id": "a1", "ended": WHEN - 10}]})
+SEVERAL_SUBAGENTS = AgentRow(n=1, data={"subagent_rows": [{"id": "use-old", "ended": WHEN - 7200}, {"id": "use-1", "ended": WHEN - 60},
+                                                          {"id": "use-0", "ended": WHEN - 120}, {"id": "use-2", "ended": 0.0}]})
 EVICTED = "environment 'work' was claimed by session claude-2 (it asked): switch to another, or claim it back"
 LAPSED = [
     Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1"), SUBAGENT, HELD]) >> Dispatches(AssignmentLapsed(agent=1, todo=4, who="sub-1", minutes=20)),
@@ -70,6 +72,7 @@ class AgentSessions(Feature):
             Given(ResourceCreated(n=5, type="report", actor="agent"), rows=[ENDED_SUBAGENT]) >> Dispatches(SubagentReportLinked(agent=1, reports=(("a1", 5),))),
             Given(ResourceCreated(n=5, type="report", actor="user"), rows=[ENDED_SUBAGENT]) >> Dispatches(nothing),
             Given(ResourceCreated(n=5, type="report", actor="agent"), rows=[AgentRow(n=1)]) >> Dispatches(nothing),
+            Given(ResourceCreated(n=5, type="report", actor="agent"), rows=[SEVERAL_SUBAGENTS]) >> Dispatches(SubagentReportLinked(agent=1, reports=(("use-1", 5),))),
         ])
         journal.events.listen(TodoUpdated, SpotReportedTodo(), expects=[
             Given(TodoUpdated(n=4), rows=[AgentRow(n=1, title="claude-1"), REPORTED]) >> Dispatches(ReportNoticed(todo=4)) & Dispatches(ReportHandedBack(agent=1, todo=4, who="sub-1", how="fixed")),

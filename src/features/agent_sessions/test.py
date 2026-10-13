@@ -508,21 +508,44 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
         "a subagent Codex spawns directly is found by its path, so the viewer's agent list can show it"
 
 
-def test_a_report_filed_after_a_subagent_ended_is_linked_to_it():
-    from controllers.types import Reports
-    from features import load
-    load()
+def test_the_agent_row_store_holds_back_an_unchanged_status_drops_a_removed_environments_row_and_hands_its_own_row(monkeypatch):
+    import shutil
+    from controllers import agents as held
+    from controllers.agents import PENDING, write_pending_rows
+    from framework.wiring import agent_row
+    from resources.base import Resource
+    monkeypatch.setattr(held, "KEEP_FOR", 3600.0)
     record = fresh()
-    agents = Agents(record)
-    row = agents.by_session("claude-main")
-    now = time.time()
-    agents.update(row.n, at=now, status="working", subagent_rows=[
-        {"id": "use-old", "task": "an old audit", "ended": now - 7200},
-        {"id": "use-1", "task": "audit the disk", "ended": now - 60},
-        {"id": "use-2", "task": "still running", "ended": 0.0},
-    ])
-    made = Reports(record, actor=AGENT).create("what the audit found")
-    assert agents.load(row.n).data.get("subagent_reports") == {"use-1": made.n}, "the report goes with the subagent that ended last, not one still running or long gone"
+    agents = Agents(record, actor=SYSTEM)
+    report(record, "working", "PreToolUse")
+    n = agents.by_session("claude-1").n
+    path = agents.rows.path(n)
+    written = path.stat().st_mtime_ns
+    report(record, "working", "PostToolUse")
+    assert path.stat().st_mtime_ns == written, "a second hook with the same status writes nothing"
+    assert agents.load(n).data["event"] == "PostToolUse", "and what it reported is read at once"
+    report(record, "idle", "Stop")
+    assert (path.stat().st_mtime_ns > written, agents.rows.peek(n).data["status"]) == (True, "idle"), "a status change is written at once"
+    report(record, "idle", "Notification")
+    monkeypatch.setattr(held, "KEEP_FOR", 0.0)
+    write_pending_rows()
+    assert (PENDING.holds(record, n), agents.rows.peek(n).data["event"]) == (False, "Notification"), "the server's loop writes what a second held back"
+
+    copies = []
+    real = Resource.fork
+    monkeypatch.setattr(Resource, "fork", lambda self: copies.append(self.n) or real(self))
+    first = agent_row(record, n)
+    assert (copies, agent_row(record, n) is first) == ([], True), \
+        "an event reaches every handler with the agent's row, and none of them copies it, since a row that has grown large costs a deep copy each time"
+    monkeypatch.setattr(Resource, "fork", real)
+
+    monkeypatch.setattr(held, "KEEP_FOR", 3600.0)
+    report(record, "working", "PreToolUse")
+    report(record, "working", "PostToolUse")
+    shutil.rmtree(record.root)
+    monkeypatch.setattr(held, "KEEP_FOR", 0.0)
+    write_pending_rows()
+    assert (PENDING.holds(record, n), record.root.exists()) == (False, False), "a held row of a removed environment is dropped, and nothing writes its folders back"
 
 
 def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcript(tmp_path, monkeypatch):
