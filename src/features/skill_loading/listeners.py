@@ -2,7 +2,7 @@ from engine.journal_calls import calls
 from events import Fact
 from events.agents import AgentReported, SessionStarted, ToolCallAnswered, ToolFinished
 from events.messages import MessageCreated
-from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
 from features.skill_loading.answering import asks_for_a_load, refusal_wanted
 from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, loaded_before_compaction, recent_before_compaction, skills, teaching_command
 from features.skill_loading.required import named_skills
@@ -30,11 +30,13 @@ class SpotUnloadedWindow(Listener[AgentReported]):
         if row.event in WINDOWS and state.event != row.event:
             opened, notified = [WindowOpened(agent=row.n, uses=row.uses, context=row.context, at=clock.now())], False
         elif state.notified is None and state.at:
-            opened, notified = [WindowUpgraded(agent=row.n)], True
+            opened, notified = [WindowSpent(agent=row.n)], True
         else:
             opened, notified = [], state.notified
-        missing = not notified and not any(journal_skill(skill) for skill in row.skills)
-        return [*opened, *([JournalSkillMissing(agent=row.n).due()] if missing else [])]
+        if notified:
+            return opened
+        loaded = any(journal_skill(skill) for skill in row.skills)
+        return [*opened, (WindowSpent if loaded else JournalSkillMissing)(agent=row.n).due()]
 
 
 class SpotReload(Listener[AgentReported]):

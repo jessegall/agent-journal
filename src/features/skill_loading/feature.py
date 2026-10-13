@@ -7,7 +7,7 @@ from events.agents import AgentReported, SessionStarted, ToolCallAnswered, ToolF
 from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
-from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
 from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Unchanged, Updated, Wrote, answering, nothing
 from events.answers import Refused as RefusedCall
 from framework.base import Feature
@@ -15,7 +15,7 @@ from resources.types import AgentRow, Message
 from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
 from features.skill_loading.answering import RefuseUntilLoaded
-from features.skill_loading.handlers import AskPrimaryForSkills, KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, UpgradeWindow
+from features.skill_loading.handlers import AskPrimaryForSkills, KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, SpendWindow
 from features.skill_loading.listeners import (CountRefusals, SpotCommandNeedingSkill, SpotReload, SpotSessionStart, SpotSkillLoad, SpotSkillsTheUserNames,
                                               SpotStaleSkills, SpotUnloadedWindow)
 from features.skill_loading.catalogue import handed
@@ -60,16 +60,16 @@ class SkillLoading(Feature):
         START_PARTS.add(self, handed, key=SKILLS)
         journal.events.listen(AgentReported, SpotUnloadedWindow(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})]) >> Dispatches(JournalSkillMissing(agent=1).due()),
-            Given(AgentReported(agent=1), rows=[CLAUDE]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[CLAUDE]) >> Dispatches(WindowSpent(agent=1).due()),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PreCompact", "skills": []})])
                 >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)) & Dispatches(JournalSkillMissing(agent=1).due()),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "SessionStart", "skills": ["journal-todos"]})])
-                >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)),
+                >> Dispatches(WindowOpened(agent=1, uses=0, context=0.0, at=WHEN)) & Dispatches(WindowSpent(agent=1).due()),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(marked(notified=True))) >> Dispatches(nothing),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(marked(notified=False)))
                 >> Dispatches(JournalSkillMissing(agent=1).due()),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})], files=answering(marked(at=5.0)))
-                >> Dispatches(WindowUpgraded(agent=1)),
+                >> Dispatches(WindowSpent(agent=1)),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "SessionStart", "skills": []})], files=answering(marked(notified=False, event="SessionStart")))
                 >> Dispatches(JournalSkillMissing(agent=1).due()),
         ])
@@ -116,8 +116,8 @@ class SkillLoading(Feature):
             Given(WindowOpened(agent=1, uses=4, context=30.0, at=WHEN), rows=[AgentRow(n=1, title="claude-1")])
                 >> Remembered("trigger-skill_loading", asdict(Mark(notified=False, uses=4, context=30.0, since=WHEN))),
         ])
-        journal.events.handle(WindowUpgraded, UpgradeWindow(), expects=[
-            Given(WindowUpgraded(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading", asdict(Mark(notified=True))),
+        journal.events.handle(WindowSpent, SpendWindow(), expects=[
+            Given(WindowSpent(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("trigger-skill_loading", asdict(Mark(notified=True))),
         ])
         journal.events.handle(JournalSkillMissing, NameUnloaded(), expects=[
             Given(JournalSkillMissing(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("unloaded") & Remembered("trigger-skill_loading", asdict(Mark(notified=True))),

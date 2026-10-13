@@ -1,5 +1,5 @@
 from events import Fact
-from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowUpgraded
+from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
 from features.skill_loading.answering import REFUSED, next_count
 from features.skill_loading.listeners import NAME
 from features.skill_loading.required import require, require_only, require_primary
@@ -16,8 +16,8 @@ class OpenWindow(Handler[WindowOpened]):
         return []
 
 
-class UpgradeWindow(Handler[WindowUpgraded]):
-    def handle(self, event: WindowUpgraded, marks: Marks) -> list[Fact]:
+class SpendWindow(Handler[WindowSpent]):
+    def handle(self, event: WindowSpent, marks: Marks) -> list[Fact]:
         marks.write(NAME, notified=True)
         return []
 

@@ -18,8 +18,8 @@ class WindowOpened(Fact):
 
 
 @dataclass(frozen=True, kw_only=True)
-class WindowUpgraded(Fact):
-    """A window that was opened before windows were counted is taken as already told."""
+class WindowSpent(Fact):
+    """A window whose one reminder is spent: told already, opened before windows were counted, or its trigger came with a journal skill loaded."""
 
     agent: int
 
