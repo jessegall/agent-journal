@@ -92,6 +92,20 @@ class Processes(Asked):
         self.seen.ran.append(argv)
         return self.answer(argv)
 
+    def start_agent(self, record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind) -> str:
+        """An agent started in a new environment, remembered by its name and what it was started with, and answered by it."""
+        started = ("start agent", name, owner, prompt)
+        self.seen.ran.append(started)
+        return self.answer(started)
+
+    def tell(self, running, text: str) -> bool:
+        told = ("tell", running.environment, text)
+        self.seen.ran.append(told)
+        return self.answer(told)
+
+    def stop(self, record, environment: str) -> None:
+        self.seen.ran.append(("stop", environment))
+
     def start_detached(self, root, cwd, environment: str, provider: str, args: list[str], conversation: str = "") -> int:
         """An agent started detached from the journal, remembered and answered by what started it: the environment, the provider, its arguments and the conversation it carries on, never the folders."""
         started = ("start detached", environment, provider, tuple(args), conversation)

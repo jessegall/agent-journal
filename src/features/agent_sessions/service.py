@@ -77,6 +77,14 @@ class TheProcesses:
         """The session of the agent running in that environment, empty where none does."""
         return launch.running_in(record, environment)
 
+    def start_agent(self, record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind) -> str:
+        """Makes the environment an agent is to work in and starts it there with those words, and says where it runs."""
+        return launch.start_agent_in(record, name, worktree, abstract, owner, prompt, kind)
+
+    def stop(self, record, environment: str) -> None:
+        """Asks the agent running in that environment to end, when one does."""
+        launch.stop_in(record, environment)
+
     def tell(self, running: Running, text: str) -> bool:
         """Types the words to the agent running there now, and says whether one was."""
         return launch.tell_in(running, text)
