@@ -12,7 +12,7 @@ import SkillPanel from "./layout/SkillPanel.vue";
 import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {dismissNewFeature, loadNewFeatures, newFeature, turnOffNewFeature, useNewFeature} from "./composables/newFeature.js";
-import {firstChoice, loadProfilesUntilLoaded, mascotOf, profilesLoaded} from "./composables/profiles.js";
+import {firstChoice, loadProfilesUntilLoaded, figureVoice, profilesLoaded} from "./composables/profiles.js";
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
 
@@ -27,8 +27,8 @@ if (!profilesLoaded.value) loadProfilesUntilLoaded();
 <template>
     <Lightbox />
     <Tooltip />
-    <template v-if="mascotOf && home">
-        <VoiceFigure :voice="mascotOf.voice" />
+    <template v-if="figureVoice && home">
+        <VoiceFigure :voice="figureVoice" />
     </template>
     <template v-if="ui.away.open">
         <AwayCard />

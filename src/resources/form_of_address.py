@@ -16,7 +16,6 @@ class Profile(Shape, Resource):
         Field(default="", name="voice"),
         Field(default="", name="emoji"),
         Field(FLAG, False, name="system"),
-        Field(default=dict, name="animation_schedule"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Profile",

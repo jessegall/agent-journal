@@ -48,7 +48,7 @@ from commands import http  # noqa: F401
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
 RECORDER = Path(__file__).with_name("viewer_calls.mjs")
 UNBOUND = ("unexpected keyword argument", "missing a required argument", "positional argument")
-BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "publicUrl", "voiceRig", "voiceMoves", "voiceFigures", "voiceFigureUrl",
+BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "publicUrl", "voiceFigures", "voiceFigureUrl",
          "figureDecoderUrl", "markdownUrl", "fileUrl",
          "extensionZip", "stream", "layoutFrom", "editedImageUrl"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
@@ -81,7 +81,7 @@ CALLS = {
     "runCheck": [1], "setCheck": [1, "every", 5], "closeNotice": [1], "pinNotice": ["Pinned from a message", "message:1"], "editMessage": [1, "reworded"],
     "deleteTurn": ["message", 1], "touched": [1], "triggerMatching": ["agent.idle", 10, "idle for {{minutes}} minutes"],
     "stopTask": [AGENT_N, "task-1", "a background run"], "updateComment": [1, "reworded"], "deleteComment": [1], "addToCollection": [1, ["todo:1"]],
-    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "profileNamings": [], "profileAnimations": [], "profileSchedules": [], "scheduleVoice": [1, {}], "anchorAnimation": [1, "idle_wave.png", {"line": 0}], "tuneAnimation": [1, "idle_wave.png", {}], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
+    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "profileNamings": [], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
     "duplicateProfile": [1], "deleteProfile": [1], "configurePlugin": [1, "key", "value"],
     "clearPluginLog": [1], "removeEnvironment": [1, False], "sweepEnvironment": [1, False], "readAll": ["todo", [1]],
     "upload": ["todo", 1, {"file": "walked.txt"}], "events": [], "recentEvents": [10], "settings": [], "saveSettings": [{}],

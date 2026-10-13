@@ -65,14 +65,6 @@ export class ApiClient {
         return `/${path}`;
     }
 
-    voiceRig(voice) {
-        return transport.request("GET", this.publicUrl(`voices/rigs/${voice}/${voice}_rig.json`));
-    }
-
-    voiceMoves(voice) {
-        return transport.request("GET", this.publicUrl(`voices/rigs/${voice}/${voice}_moves.json`));
-    }
-
     // each voice's 3D figure file, by voice; a file is named by a hash of its content
     voiceFigures() {
         return transport.request("GET", this.publicUrl("voices/figures/figures.json"));
@@ -653,26 +645,6 @@ export class ApiClient {
 
     profileSamples() {
         return this.command("profile", "samples");
-    }
-
-    anchorAnimation(n, path, place) {
-        return this.act("profile", n, "anchor", {path, sits: Boolean(place.sits), seat: place.seat || 0, line: place.line});
-    }
-
-    tuneAnimation(n, path, edit) {
-        return this.act("profile", n, "tune", {path, edit});
-    }
-
-    profileSchedules() {
-        return this.command("profile", "schedules");
-    }
-
-    scheduleVoice(n, plan) {
-        return this.act("profile", n, "schedule", {plan});
-    }
-
-    profileAnimations() {
-        return this.command("profile", "animations");
     }
 
     profileNamings() {

@@ -1,5 +1,5 @@
 <script setup>
-import VoicePose from "../../kit/VoicePose.vue";
+import FigureStill from "../../kit/FigureStill.vue";
 import MoreButton from "./MoreButton.vue";
 import SwipeRow from "./SwipeRow.vue";
 
@@ -19,7 +19,7 @@ const emit = defineEmits(["open", "more"]);
     <SwipeRow :label="title" :lead="lead" :trail="trail" @open="emit('open')" @hold="emit('more')">
         <div :class="['item-row', {pictured: voice}]">
             <template v-if="voice">
-                <VoicePose class="item-art" :voice="voice" :size="150" />
+                <FigureStill class="item-art" :voice="voice" :size="150" />
             </template>
             <template v-else>
                 <span :class="['item-dot', state]" aria-hidden="true" />

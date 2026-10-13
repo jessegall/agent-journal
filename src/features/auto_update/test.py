@@ -19,7 +19,7 @@ from features import load
 from resources.base import SYSTEM
 from tests import isolation
 from tests.conftest import fresh
-from engine import managed
+from framework import managed
 
 
 def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
@@ -418,7 +418,7 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
 def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from controllers.types import Notifications
     from framework.updating.announcing import announce
-    from engine.managed import LEGACY_COPY_MARKER
+    from framework.managed import LEGACY_COPY_MARKER
     record = fresh()
     announce(record.root, "1.0.0")
     copy_note = record.root / "runtime" / LEGACY_COPY_MARKER
@@ -488,7 +488,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     ran.clear()
     assert (launch.latest_first(record), ran) == (f"99.0.0 was not installed: {held}", ["upgrade"]), \
         "an upgrade that held back, or did not put the version in place, is said plainly and the launch goes on, never started again to loop on it"
-    from engine import managed
+    from framework import managed
     (record.root / "src").mkdir(exist_ok=True)
     (record.root / "src" / "CHANGELOG.md").write_text("rewritten")
     (record.root / managed.MANAGED).write_text(json.dumps({".journal/src/CHANGELOG.md": "an older hash"}))

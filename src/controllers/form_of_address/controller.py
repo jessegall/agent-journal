@@ -1,5 +1,3 @@
-import json
-import tempfile
 from pathlib import Path
 
 from controllers.base import Controller
@@ -7,13 +5,9 @@ from controllers.features import settings_of
 from declaring.registries import SETTINGS_CHANGED
 from controllers.marks import action
 from engine import runtime
-from controllers.form_of_address.anchoring import Region, anchored, silhouettes
-from resources.code import WEB
-from controllers.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked
 from resources.form_of_address import Profile
 from resources.voices import PLAIN_WORDS, BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
-from resources.pictures import dimensions
 
 COPY = " (my copy)"
 SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "address", "voice", "emoji")
@@ -80,86 +74,6 @@ class Profiles(Controller):
         row = self.load(n)
         return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), introduction=row.introduction, humour=row.humour, naming=row.naming,
                            agent_name=row.agent_name, address=row.address, voice=row.voice, emoji=row.emoji)
-
-    @action
-    def animations(self) -> dict:
-        """Every voice's animations by profile number, found by file name: the sheets it ships with and the ones dropped on it."""
-        return {row.n: self._animations_of(row) for row in (self.peek(row.n) for row in self.rows.summaries() if not row.deleted)}
-
-    @action
-    def schedules(self) -> dict:
-        """When each voice's mascot plays what, by profile number, with the defaults filled in."""
-        return {row.n: Schedule.from_payload(row.animation_schedule, {a["path"] for a in self._animations_of(row)}).view()
-                for row in (self.peek(row.n) for row in self.rows.summaries() if not row.deleted)}
-
-    @action
-    def schedule(self, n: int, plan: dict | None = None):
-        """Saves how long a voice's mascot waits between blinks and between its other idle animations, and the weight of each idle animation; with no plan it goes back to the defaults."""
-        row = self.load(n)
-        known = {animation["path"] for animation in self._animations_of(row)}
-        return self.update(n, animation_schedule=Schedule.from_payload(plan, known).view() if plan else {})
-
-    def _animations_of(self, row) -> list[dict]:
-        shipped = shipped_animations(WEB / "voices", row.voice)
-        dropped = [a for a in (Animation.of(name, row.voice) for name in row.files) if a]
-        return [{**animation.view(), "edit": tuning_of(self._offsets_of(row, animation) or {}), "edited": offsets_name(animation.file) in row.files}
-                for animation in [*shipped, *dropped]]
-
-    def _offsets_of(self, row, animation: Animation) -> dict | None:
-        """The offsets file of an animation: the one saved with the voice, else the one it was delivered with."""
-        name = offsets_name(animation.file)
-        kept = self.folder(row.n) / name if name in row.files else None
-        delivered = WEB / "voices" / Path(animation.file).parent / name if animation.shipped else None
-        found = next((path for path in (kept, delivered) if path and path.is_file()), None)
-        return json.loads(found.read_text()) if found else None
-
-    def _animation_at(self, row, path: str) -> Animation:
-        found = next((a for a in (Animation.of(item["file"], row.voice, item["shipped"]) for item in self._animations_of(row)) if a and a.file == path), None)
-        if found is None:
-            raise Refused(f"{row.title} has no animation {path}")
-        return found
-
-    def _sheet_of(self, row, animation: Animation) -> Path:
-        return WEB / "voices" / animation.file if animation.shipped else self.folder(row.n) / animation.file
-
-    @action
-    def anchor(self, n: int, path: str, sits: bool = False, seat: int = 0, line: int = 0):
-        """The offsets that keep the feet of a voice that stands, or the seat of one that sits, where the first frame of an animation has them, from the pixels of its sheet; nothing is saved until the frames are."""
-        row = self.load(n)
-        shapes = silhouettes(self._sheet_of(row, self._animation_at(row, path)))
-        shifts, firm = anchored(shapes, Region.of(shapes[0], bool(sits), int(seat), int(line)))
-        return {"frames": [{"x": x, "y": y} for x, y in shifts], "firm": firm}
-
-    @action
-    def tune(self, n: int, path: str, edit: dict | None = None):
-        """Saves how one animation of a voice is shown as its offsets file, offset_x and offset_y per frame and the optional frame_ms and duration_ms, beside the voice; with no edit it goes back to the delivered file."""
-        row = self.load(n)
-        animation = self._animation_at(row, path)
-        name = offsets_name(animation.file)
-        if not edit:
-            return self.detach(n, name, "back to the delivered offsets") if name in row.files else row
-        size = dimensions(self._sheet_of(row, animation)) or (FRAME, FRAME)
-        document = offsets_document(animation, Tuning.from_payload(edit), self._offsets_of(row, animation), size, row.voice)
-        with tempfile.TemporaryDirectory() as folder:
-            written = Path(folder) / name
-            written.write_text(json.dumps(document, indent=2) + "\n")
-            return self.attach(n, str(written))
-
-    @action
-    def attach(self, n: int, path: str, description: str = ""):
-        source = Path(path)
-        if source.suffix.lower() == ".zip":
-            with tempfile.TemporaryDirectory() as folder:
-                for sheet in unpacked(source, Path(folder)):
-                    super().attach(n, str(sheet), description)
-            return self.load(n)
-        if source.name.endswith(OFFSETS):
-            if not isinstance(json.loads(source.read_text()).get("frames"), list):
-                raise Refused(f"{source.name} is not an offsets file: it lists its frames with offset_x and offset_y")
-            return super().attach(n, path, description)
-        if not Animation.of(source.name, self.load(n).voice):
-            raise Refused(f"{source.name} is not an animation: name it <kind>_<name>.png, such as idle_wave.png, or drop a ZIP of them")
-        return super().attach(n, path, description)
 
     @action
     def callings(self) -> dict:

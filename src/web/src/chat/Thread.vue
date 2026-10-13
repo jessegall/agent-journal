@@ -166,30 +166,6 @@ const unseen = computed(() =>
 watch([unseen, ready], ([numbers, isReady]) => here && isReady && markSeen("message", numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
-const PERCH_CHECK_MS = 250;
-const docks = ref(null);
-const write = ref(null);
-const perch = ref(0);
-let docksSeen = null;
-
-function measurePerch() {
-    const stack = docks.value;
-    const box = write.value;
-    if (!stack?.offsetHeight || !box) return (perch.value = 0);
-    perch.value = box.getBoundingClientRect().top + parseFloat(getComputedStyle(box).paddingTop) - stack.getBoundingClientRect().top;
-}
-
-watch(docks, (stack) => {
-    docksSeen?.disconnect();
-    if (!stack) return (perch.value = 0);
-    docksSeen = new ResizeObserver(measurePerch);
-    docksSeen.observe(stack);
-});
-const perchCheck = setInterval(measurePerch, PERCH_CHECK_MS);
-onUnmounted(() => {
-    docksSeen?.disconnect();
-    clearInterval(perchCheck);
-});
 const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
@@ -447,7 +423,7 @@ watch(
             <UpdateOverlay :key="updateView.n" />
         </template>
         <template v-if="chatOpen">
-            <div ref="write" :class="['thread-write', {hidden: feeding}]">
+            <div :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
                         v-if="showNewest"
@@ -482,8 +458,7 @@ watch(
                     :tools="composeTools"
                     :many="here ? dumpOffer : null"
                     :idle="here ? dumpIdle : null"
-                    :mascot="here"
-                    :perch="perch"
+                    :figure-home="here"
                 />
                 <template v-if="waitingOpen && waitingNow">
                     <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
@@ -520,7 +495,7 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
-                        <div ref="docks" :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
+                        <div :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
                             <Transition name="dock">
                                 <DumpDock v-if="dumpDock" :key="dumpDock.n" :dump="dumpDock" :folded="short || !planOpen" />
                             </Transition>

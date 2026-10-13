@@ -91,7 +91,7 @@ def test_the_hooks_of_every_provider_are_checked_at_a_start_and_written_again_wh
     first = repaired(record.root)
     assert len(first) == len(PROVIDERS) and all("no current hook" in line or "no journal hook" in line for line in first), "an agent whose hooks were never wired gets them at the start"
     assert repaired(record.root) == [], "and nothing is said when all is well"
-    from engine.managed import changed_managed, remember_managed
+    from framework.managed import changed_managed, remember_managed
     remember_managed(project, record.root)
     for name, cls in PROVIDERS.items():
         provider = cls()

@@ -1,1 +1,0 @@
-../../../src/web/src/figure/figure.js

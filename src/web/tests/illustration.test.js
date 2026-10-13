@@ -6,6 +6,12 @@ import {shown as drawn} from "./shown.js";
 
 const shown = (component, props) => drawn(component, props, () => "a sample line");
 
+// the page draws a figure once it is in view, which a test page never scrolls to
+globalThis.IntersectionObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
+
 describe("the picture of a voice", () => {
     test("is the flat artwork of the voice named by the profile, and a profile without one names none", async () => {
         expect([voiceOf({data: {voice: "squire"}}), voiceOf({data: {voice: ""}})]).toEqual(["squire", ""]);
@@ -17,7 +23,7 @@ describe("the picture of a voice", () => {
     test("shows on the card where the voice is first chosen, and the card has no picture without one", async () => {
         const card = await shown(PickCard, {title: "Squire", voice: "squire"});
         const plain = await shown(PickCard, {title: "Custom"});
-        expect([!!card.querySelector(".voice-pose"), plain.querySelector(".voice-pose")]).toEqual([true, null]);
+        expect([!!card.querySelector(".figure-still"), plain.querySelector(".figure-still")]).toEqual([true, null]);
     });
 });
 
@@ -27,7 +33,7 @@ describe("a large picture on top of a card", () => {
         const image = large.querySelector("img");
         expect([image.classList.contains("fill"), image.getAttribute("width"), image.getAttribute("height")]).toEqual([true, null, "150"]);
         const card = await shown(PickCard, {title: "Squire", voice: "squire"});
-        expect(card.querySelector(".voice-pose").style.height).toBe("130px");
+        expect(card.querySelector(".figure-still").style.height).toBe("130px");
     });
 });
 
@@ -37,6 +43,6 @@ describe("the phone's list of voices", () => {
         const withArt = await shown(ItemRow, {title: "Squire", about: "Profile 5", voice: "squire"});
         const without = await shown(ItemRow, {title: "Custom", about: "Profile 6"});
         expect(withArt.querySelector(".item-row").classList.contains("pictured")).toBe(true);
-        expect([!!withArt.querySelector(".voice-pose"), withArt.querySelector(".item-dot"), without.querySelector(".voice-pose"), !!without.querySelector(".item-dot")]).toEqual([true, null, null, true]);
+        expect([!!withArt.querySelector(".figure-still"), withArt.querySelector(".item-dot"), without.querySelector(".figure-still"), !!without.querySelector(".item-dot")]).toEqual([true, null, null, true]);
     });
 });

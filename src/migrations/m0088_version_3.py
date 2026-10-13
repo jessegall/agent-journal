@@ -42,15 +42,17 @@ def avatar_switch_moved(root: Path) -> str:
 
 
 def profiles_name_their_voice(root: Path) -> str:
-    """A profile kept its voice as the file of a picture since removed, such as butler.webp; it keeps the voice's name now, which is all that file name was ever read for."""
+    """A profile kept its voice as the file of a picture since removed, such as butler.webp, and the schedule of its flat drawing's animations; it keeps the voice's name now, which is all that file name was ever read for, and the schedule goes with the flat drawing."""
     moved = 0
     for record in environment_records(root):
         profiles = Profiles(record, actor=SYSTEM)
         for row in profiles.rows.summaries():
             profile = profiles.load(row.n)
-            if "art" not in profile.data:
+            if "art" not in profile.data and "animation_schedule" not in profile.data:
                 continue
-            profile.data["voice"] = Path(profile.data.pop("art")).stem.lower()
+            if "art" in profile.data:
+                profile.data["voice"] = Path(profile.data.pop("art")).stem.lower()
+            profile.data.pop("animation_schedule", None)
             profiles.save(profile, "updated", fields=["voice"])
             moved += 1
     return f"{plural(moved, 'profile')} now named by voice" if moved else ""

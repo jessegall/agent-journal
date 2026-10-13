@@ -15,7 +15,7 @@ from framework.loaded import FEATURES
 from framework.updating.countdown import cancel, wait
 from resources.base import SYSTEM
 from engine.upgrades import newer, shared_parts, stale, upstream
-from engine.managed import changed_managed
+from framework.managed import changed_managed
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10

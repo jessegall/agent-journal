@@ -1,26 +1,17 @@
 <script setup>
-import {ref} from "vue";
 import {calls, introductionOf, voiceOf} from "../composables/profiles.js";
-import {dropAnimations} from "../composables/voiceAnimations.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
-import VoicePose from "../kit/VoicePose.vue";
+import FigureStill from "../kit/FigureStill.vue";
 import ProfileMenu from "./ProfileMenu.vue";
 
-const props = defineProps({row: {type: Object, required: true}, inUse: Boolean, standing: Boolean});
-const emit = defineEmits(["open", "use", "duplicate", "remove", "animations"]);
-const over = ref(false);
-
-async function dropped(event) {
-    over.value = false;
-    await dropAnimations(props.row, [...event.dataTransfer.files]).catch(console.error);
-    emit("animations", props.row);
-}
+defineProps({row: {type: Object, required: true}, inUse: Boolean, standing: Boolean});
+defineEmits(["open", "use", "duplicate", "remove"]);
 </script>
 
 <template>
-    <div :class="['profile-row', {current: inUse || standing, over}]" @dragover.prevent="over = true" @dragleave="over = false" @drop.prevent="dropped">
-        <VoicePose :voice="voiceOf(row)" :size="150" />
+    <div :class="['profile-row', {current: inUse || standing}]">
+        <FigureStill :voice="voiceOf(row)" :size="150" />
         <button type="button" class="profile-row-main" @click="$emit('open', row)">
             <span class="profile-row-name">
                 {{ row.title }}
@@ -39,7 +30,6 @@ async function dropped(event) {
                 <Btn small @click="$emit('use', row)">Use this profile</Btn>
             </template>
             <Btn small @click="$emit('open', row)">{{ row.data.system ? "View" : "Edit" }}</Btn>
-            <Btn small @click="$emit('animations', row)">Play animations</Btn>
             <ProfileMenu :row="row" @duplicate="$emit('duplicate', $event)" @remove="$emit('remove', $event)" />
         </span>
     </div>
@@ -53,10 +43,6 @@ async function dropped(event) {
     padding: 12px;
     border: 1px solid var(--border);
     border-radius: 10px;
-}
-
-.profile-row.over {
-    border-color: var(--accent);
 }
 
 .profile-row.current {

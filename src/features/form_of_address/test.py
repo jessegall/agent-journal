@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import features
@@ -38,7 +39,6 @@ def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_
 
 
 def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
-    from controllers.form_of_address.animations import shipped_animations
     record = shipped_record()
     profiles = Profiles(record, actor=USER)
     assert [row.title for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the five ship as rows"
@@ -51,8 +51,8 @@ def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
     shipped_voices = {row.title: Profiles(record, actor=SYSTEM).load(row.n).voice for row in profiles.rows.summaries()}
     assert shipped_voices == {"Butler": "butler", "Homie": "homie", "Colleague": "colleague", "Coach": "coach", "Squire": "squire"}, \
         "each shipped profile carries its illustration"
-    folder = Path(__file__).resolve().parents[2] / "web" / "public" / "voices"
-    assert all(shipped_animations(folder, voice) for voice in shipped_voices.values()), "and the pictures of the voice it names ship with the viewer"
+    figures = json.loads((Path(__file__).resolve().parents[2] / "web" / "public" / "voices" / "figures" / "figures.json").read_text())
+    assert set(shipped_voices.values()) <= set(figures), "and the 3D figure of the voice it names ships with the viewer"
     held = {row.title: Profiles(record, actor=SYSTEM).load(row.n).introduction for row in profiles.rows.summaries()}
     assert held == {voice.title: voice.introduction for voice in SHIPPED} and all(held.values()), "each shipped profile introduces itself in its own voice, kept on its row"
     assert profiles.load(profiles.duplicate(n).n).introduction == held["Homie"], "a copy keeps the introduction, which its owner can then rewrite"
@@ -155,48 +155,3 @@ def test_the_voice_and_every_project_wide_setting_and_switch_are_set_once_for_ev
     assert record.setting("boards") == {"filler_model": "opus", "orchestrating": True}, "the environment reads its own parts and the project's together"
     assert not features.FEATURES["boards"].enabled(other), "a project-wide switch is turned once for every environment"
     assert "\"form_of_address\"" in (record.root / "settings.json").read_text(), "the voice is written in the project's settings"
-
-
-def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dropped_sheets(tmp_path):
-    import zipfile
-    from controllers.form_of_address.animations import Animation, shipped_animations
-    named = ["squire_blink_sheet.png", "squire_idle_1_sheet.png", "working_left.png", "idle_wave_atlas.png"]
-    assert {(a.kind, a.name) for a in (Animation.of(file, "squire") for file in named)} == {("blink", ""), ("idle", "1"), ("working", "left"), ("idle", "wave")}, \
-        "a kind and a name come from the file name, with or without the voice, the sheet or the atlas ending"
-    assert Animation.of("notes.txt", "squire") is None, "only PNG sheets are animations"
-    voices = tmp_path / "voices"
-    (voices / "flat").mkdir(parents=True)
-    for file in ("squire_idle_1_sheet.png", "squire_blink_sheet.png", "flat/squire_idle_1_atlas.png"):
-        (voices / file).write_bytes(b"x")
-    assert [a.file for a in shipped_animations(voices, "squire")] == ["flat/squire_idle_1_atlas.png"], "the newest folder holding a voice's animations is the one it plays; older sheets stay aside"
-    record = shipped_record()
-    profiles = Profiles(record, actor=USER)
-    squire = profiles.rows.by_title("Squire")
-    sheet = tmp_path / "idle_wave.png"
-    sheet.write_bytes(b"x")
-    profiles.attach(squire.n, str(sheet))
-    archive = tmp_path / "more.zip"
-    with zipfile.ZipFile(archive, "w") as zipped:
-        zipped.writestr("pack/working_left.png", b"x")
-        zipped.writestr("pack/readme.txt", "hi")
-    profiles.attach(squire.n, str(archive))
-    dropped = {(a["kind"], a["name"]) for a in profiles.animations()[squire.n] if not a["shipped"]}
-    assert dropped == {("idle", "wave"), ("working", "left")}, "a dropped sheet and the sheets of a dropped ZIP are stored with the voice and listed beside the shipped ones"
-    notes = tmp_path / "notes.txt"
-    notes.write_text("no")
-    assert "not an animation" in refused(lambda: profiles.attach(squire.n, str(notes))), "a file that is no sheet is refused with how to name one"
-    sheet_path = "idle_wave.png"
-    profiles.tune(squire.n, sheet_path, {"ms": 120, "frames": [{"x": 99999, "y": -2, "ms": 400}]})
-    tuned = next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"]
-    assert (tuned["ms"], tuned["frames"][0]) == (120, {"x": 256, "y": -2, "ms": 400}), "the offsets and times are kept beside the sheet in its offsets file, within the cell"
-    assert "idle_wave_offsets.json" in profiles.load(squire.n).files, "as the offsets file the animations are delivered with"
-    assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edited"], "and the animation is marked as edited"
-    assert "has no animation" in refused(lambda: profiles.tune(squire.n, "nope.png", {"ms": 1})), "only an animation the voice has can be tuned"
-    profiles.tune(squire.n, sheet_path)
-    assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"] is None, "with no tuning it goes back to the sheet as it is"
-    assert profiles.schedules()[squire.n] == {"blink": {"min": 5, "max": 10}, "idle": {"min": 20, "max": 30}, "weights": {}, "place": {"x": 0, "y": 0}}, "a voice with no schedule blinks every 5 to 10 seconds and plays an idle animation every 20 to 30"
-    profiles.schedule(squire.n, {"blink": {"min": 3, "max": 4}, "idle": {"min": 10, "max": 40}, "weights": {sheet_path: 3}, "place": {"x": 6, "y": 999}})
-    assert (profiles.schedules()[squire.n]["weights"], profiles.schedules()[squire.n]["place"]) == ({sheet_path: 3}, {"x": 6, "y": 128}), \
-        "a schedule, the weight of an idle animation and where the mascot is placed on the chat box are saved with the voice, the place within the cell"
-    assert "least cannot be above" in refused(lambda: profiles.schedule(squire.n, {"blink": {"min": 9, "max": 2}})), "a range runs from the least to the most"
-    assert "no animation" in refused(lambda: profiles.schedule(squire.n, {"weights": {"nope.png": 1}})), "only an animation the voice has gets a weight"

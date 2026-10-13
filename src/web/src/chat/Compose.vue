@@ -8,9 +8,6 @@ import {store} from "../state/store.js";
 
 import Icon from "../kit/Icon.vue";
 import WaitEdge from "../kit/WaitEdge.vue";
-import VoiceMascot from "./VoiceMascot.vue";
-import {figureStatus} from "../composables/voiceFigure.js";
-import {agentWorking} from "../composables/leadAgent.js";
 import {attach, overLimit, refusal} from "./attachments.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 
@@ -28,8 +25,7 @@ const props = defineProps({
     many: {type: Object, default: null},
     idle: {type: Object, default: null},
     waiting: {type: Object, default: null},
-    mascot: {type: Boolean, default: false},
-    perch: {type: Number, default: 0},
+    figureHome: {type: Boolean, default: false},
 });
 const emit = defineEmits(["unquote", "typing", "waiting-list"]);
 const draft = reactive({text: "", files: [], error: "", over: false});
@@ -215,10 +211,7 @@ async function use(tool) {
             </div>
         </Transition>
         <WaitEdge :waiting="waiting" @list="emit('waiting-list', $event)">
-            <template v-if="mascot && figureStatus === 'failed'">
-                <VoiceMascot :present="!agentWorking" :perch="perch" />
-            </template>
-            <div class="compose-box floating" :data-figure-home="mascot ? '' : null">
+            <div class="compose-box floating" :data-figure-home="figureHome ? '' : null">
                 <template v-if="draft.files.length">
                     <div class="compose-files">
                         <template v-for="(f, i) in draft.files" :key="i">

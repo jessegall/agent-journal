@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {fallOf} from "../domain/mascots.js";
+import {fallOf} from "../domain/falls.js";
 import {beatsAfter, canSwitch, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
@@ -290,7 +290,7 @@ function watchFooting() {
 }
 
 // The bars under the figure shrank, went, grew or came, and it falls with them or is lifted by them as the flat figure did, for twice the
-// voice's fall after the last change (domain/mascots.js FALLS)
+// voice's fall after the last change (domain/falls.js FALLS)
 const moved = ref("");
 let movedTimer = 0;
 const fall = computed(() => fallOf(voice.value));
@@ -555,11 +555,11 @@ const style = computed(() => ({
 }
 
 .voice-figure-actor.dropping {
-    animation: mascot-land calc(var(--fall-ms) * 0.9) ease-out var(--fall-ms) both;
+    animation: figure-land calc(var(--fall-ms) * 0.9) ease-out var(--fall-ms) both;
 }
 
 .voice-figure-actor.launched {
-    animation: mascot-launch calc(var(--fall-ms) * 2) both;
+    animation: figure-launch calc(var(--fall-ms) * 2) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
