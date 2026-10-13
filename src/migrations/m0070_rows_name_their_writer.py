@@ -11,7 +11,7 @@ def run(root: Path) -> str:
 
 
 def named_in(rows) -> int:
-    unnamed = [row for row in (rows.peek(summary["n"]) for summary in rows.summaries()) if row.author == USER and WRITER not in row.data]
+    unnamed = [row for row in (rows.peek(summary.n) for summary in rows.summaries()) if row.author == USER and WRITER not in row.data]
     for row in unnamed:
         row.data[WRITER] = OWNER_ID
         rows.persist(row)

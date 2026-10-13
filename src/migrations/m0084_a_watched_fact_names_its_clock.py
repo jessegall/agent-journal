@@ -15,7 +15,7 @@ def run(root: Path) -> list[str]:
         return []
     triggers = Triggers(records[0], actor=SYSTEM)
     moved = []
-    for trigger in [triggers.load(found["n"]) for found in triggers.rows.summaries()]:
+    for trigger in [triggers.load(found.n) for found in triggers.rows.summaries()]:
         if trigger.fact not in RENAMED:
             continue
         triggers.update(trigger.n, fact=RENAMED[trigger.fact])
