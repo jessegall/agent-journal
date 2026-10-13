@@ -1,4 +1,3 @@
-from resources.runs import SHELL
 from events.answers import Allowed, Answer, Refused
 from events.asking import ToolCallAsked
 from receiving import Answerer
@@ -11,5 +10,4 @@ NEVER_READ = ("The secrets file is never read by an agent: use journal secret ru
 
 class RefuseSecretsFile(Answerer[ToolCallAsked]):
     def answer(self, event: ToolCallAsked, secrets: ReadRows[Secret]) -> Answer:
-        command = event.input if event.tool == SHELL else ""
-        return Refused(NEVER_READ) if secrets.keeps_out(event.cwd, event.paths, command) else Allowed()
+        return Refused(NEVER_READ) if secrets.keeps_out(event.cwd, event.paths, event.command) else Allowed()

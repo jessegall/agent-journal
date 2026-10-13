@@ -79,6 +79,7 @@ def test_a_failure_part_way_puts_everything_back(tmp_path, monkeypatch):
     project = record.root.parent
 
     settings = project / ".claude" / "settings.local.json"
+    settings.parent.mkdir(parents=True, exist_ok=True)
     settings.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
     before = settings.read_text()
     monkeypatch.setattr(slate, "others", lambda record, project, agent: [settings])

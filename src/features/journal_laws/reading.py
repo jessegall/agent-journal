@@ -3,7 +3,6 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from resources.runs import SHELL
 from events.asking import ToolCallAsked
 from controllers.types import Dumps
 from serving import ReadFiles, Settings
@@ -46,8 +45,8 @@ def lines_in(files: ReadFiles, path: Path) -> int:
 
 def printed_whole(event: ToolCallAsked) -> tuple[str, bool]:
     """The file a call prints in full, as the call names it, and whether the call is a whole read rather than a cat."""
-    if event.tool == SHELL:
-        cat = CAT.search(event.input)
+    if event.command:
+        cat = CAT.search(event.command)
         return (cat.group(1) if cat else ""), False
     given = json.loads(event.input) if event.tool == READ else {}
     whole = "offset" not in given and "limit" not in given

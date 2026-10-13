@@ -50,6 +50,9 @@ class Reduced:
     """How one request turns its answerers' answers into the one answer that leaves."""
 
     stops: ClassVar[tuple[type, ...]] = ()
+
+    isolates: ClassVar[bool] = False
+    """True where an answerer that fails is passed over and the others still answer, because each only adds to the text and none decides."""
     """The answers that end the question on their own, whatever the others said."""
 
     @classmethod
@@ -84,6 +87,8 @@ class KeepingWins(Reduced):
 class TextsJoin(Reduced):
     """A text handed over beside a hook's own answer: what every answerer wrote, in the order they answered."""
 
+    isolates = True
+
     @classmethod
     def reduce(cls, given: list[Answer]) -> Answer:
         written = [answer.text for answer in given if isinstance(answer, Rewritten)]
@@ -92,6 +97,8 @@ class TextsJoin(Reduced):
 
 class TextsCompose(Reduced):
     """A text to format: no answer wins, because every formatter reads what the one before it wrote."""
+
+    isolates = True
 
 
 @dataclass(frozen=True, kw_only=True)

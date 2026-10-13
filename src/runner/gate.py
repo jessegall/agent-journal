@@ -60,8 +60,10 @@ def gated(call: HookCall) -> str | None:
 
 
 def refused_by_a_feature(call: HookCall) -> str | None:
-    """Why a swept feature's answerer refused the call, asked as the engine's request."""
+    """Why a swept feature's answerer refused the call, asked as the engine's request; loading a skill is never refused, since it is how an agent learns what a refusal asks of it."""
     tool = call.hook.tool
+    if tool.loads_skill:
+        return None
     asked = bus.asked(ToolCallAsked(tool=tool.name, input=input_of(tool), command=tool.shell_command or "", session=call.session, cwd=call.hook.cwd, paths=tuple(tool.paths), writings=tuple(one for one in tool.writings if one), subagent=call.subagent,
                                     writes=command_effects.writes(call.hook), background=tool.background),
                       call.record)

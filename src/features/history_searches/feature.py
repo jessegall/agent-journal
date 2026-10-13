@@ -18,7 +18,7 @@ WAITING = {"history_searches.waiting|1": [{"labels": [LABEL], "keys": ["search-1
 
 
 def answered(command: str, tool: str = "Bash", why: str = "", subagent: bool = False) -> ToolCallAnswered:
-    return ToolCallAnswered(agent=1, tool=tool, input=command, why=why, subagent=subagent)
+    return ToolCallAnswered(agent=1, tool=tool, input=command, command=command if tool == "Bash" else "", why=why, subagent=subagent)
 
 
 def ran(command: str, output: str = "", tool: str = "Bash") -> CommandRan:

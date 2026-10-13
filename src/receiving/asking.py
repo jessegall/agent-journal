@@ -19,8 +19,9 @@ class AnswersNothing(TypeError):
         return cls(f"{request.__name__} does not say how it is answered; a request names the rule it reduces its answerers' answers by")
 
 
-def answered(request: Request, registered: Registrations, services: Services, switched_on: Callable[[str], bool] = lambda feature: True) -> Answer:
-    """The one answer that leaves. The answerers of the features switched on run in declared order, read-only, and the request reduces what they said once."""
+def answered(request: Request, registered: Registrations, services: Services, switched_on: Callable[[str], bool] = lambda feature: True,
+             failed: Callable[[str, Exception], None] = lambda name, error: None) -> Answer:
+    """The one answer that leaves. The answerers of the features switched on run in declared order, read-only, and the request reduces what they said once; where the request isolates its answerers, one that fails is told to failed and passed over."""
     reduce = getattr(type(request), "answered", None)
     if reduce is None:
         raise AnswersNothing.of(type(request))
@@ -28,7 +29,13 @@ def answered(request: Request, registered: Registrations, services: Services, sw
     for one in registered.of(ANSWER):
         if one.event is not type(request) or not (type(one.receiver).always or switched_on(one.feature)):
             continue
-        answer = one.receiver.answer(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
+        try:
+            answer = one.receiver.answer(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
+        except Exception as error:
+            if not type(request).reduces.isolates:
+                raise
+            failed(one.name, error)
+            continue
         if isinstance(answer, Rewritten):
             request = request.rewritten(answer.text)
         said.append(answer)

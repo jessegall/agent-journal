@@ -35,6 +35,7 @@ from engine.state import State
 from engine.stored import read_json, write_json, write_text
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
+from controllers.faults import threw
 from receiving.asking import answered
 from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
@@ -558,7 +559,8 @@ def answering(registered, request, record) -> Answer:
             one.receiver.refuse(request, **services.given(one.name, one.feature, type(one.receiver).wants()))
         except Refused as why:
             return Refusal(why=str(why))
-    return answered(request, registered, services, switched_on=switched_on)
+    return answered(request, registered, services, switched_on=switched_on,
+                    failed=lambda name, error: record is not None and threw(record.root, record.env, f"the answerer {name}"))
 
 
 def session_agent(record, session: str):

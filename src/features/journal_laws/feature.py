@@ -49,7 +49,7 @@ def called(tool: str, input: str, why: str = "", subagent: bool = False) -> Tool
 
 
 def reading(tool: str, **given) -> ToolCallAsked:
-    return ToolCallAsked(tool=tool, input=given["command"] if tool == "Bash" else json.dumps(given, sort_keys=True), session="claude-1")
+    return ToolCallAsked(tool=tool, input=given["command"] if tool == "Bash" else json.dumps(given, sort_keys=True), command=given.get("command", ""), session="claude-1")
 
 
 def whole_refusal(named: str, count: int, instead: str) -> str:

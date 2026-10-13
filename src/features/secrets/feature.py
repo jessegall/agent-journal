@@ -21,7 +21,7 @@ __all__ = ["Secrets"]
 
 
 def asked(tool: str, input: str) -> ToolCallAsked:
-    return ToolCallAsked(tool=tool, input=input, paths=() if tool == "Bash" else (input,), session="claude-1")
+    return ToolCallAsked(tool=tool, input=input, command=input if tool == "Bash" else "", paths=() if tool == "Bash" else (input,), session="claude-1")
 
 
 VALUES = answering({".journal/project-id": "pid", ".secrets/pid.env": 'API_KEY="abc"\n'})

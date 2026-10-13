@@ -9,9 +9,9 @@ from serving import ReadRemembered, ReadRows
 
 class SpotSearch(Listener[ToolCallAnswered]):
     def listen(self, event: ToolCallAnswered) -> list[Fact]:
-        if event.tool != SHELL or event.why or event.subagent or not searches(event.input):
+        if not event.command or event.why or event.subagent or not searches(event.command):
             return []
-        return [SearchMade(agent=event.agent, command=event.input)]
+        return [SearchMade(agent=event.agent, command=event.command)]
 
 
 class SpotSearchOutcome(Listener[CommandRan]):
