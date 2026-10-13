@@ -132,3 +132,10 @@ class SubagentTouched(Fact):
 
     agent: int
     files: tuple[str, ...]
+
+
+@dataclass(frozen=True, kw_only=True)
+class HelpersWatchDue(Fact):
+    """The helper watch trigger says it is time to look for helpers that stopped or went quiet."""
+
+    agent: int

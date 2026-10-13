@@ -2,12 +2,13 @@ from controllers.types import Agents, Todos
 from events.agents import AgentChanged, ClockTicked, ToolCallAnswered
 from events.answers import Allowed, Refused as Refusal
 from events.asking import AgentDispatching, RowWriting, ToolCallAsked
-from events.helpers import (AnswerToRelay, HelperAsks, HelperBriefed, HelperContinued, HelperIdle, HelperQuiet, HelperRefused, HelperStopped, HelperTurnFailed,
+from events.helpers import (AnswerToRelay, HelperAsks, HelpersWatchDue, HelperBriefed, HelperContinued, HelperIdle, HelperQuiet, HelperRefused, HelperStopped, HelperTurnFailed,
                             SubagentAsks, SubagentTouched)
 from events.messages import MessageCreated
 from events.questions import QuestionCreated
 from expects import Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, nothing
 from framework.base import Feature
+from framework.due import DueOnClock
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Environment, Message, Question, Todo
 from resources.helpers import Helper
@@ -72,9 +73,12 @@ class HelpersFeature(Feature):
             Given(HelperBriefed(n=4, type="helper", action="briefed"), rows=[AGENT_ROW, Helper(n=4, title="Zed", data={"name": "Zed", "latest": "reading the log"})])
                 >> Updated(AgentRow(n=1), cards=[{"label": "Briefed helper 4", "name": "Zed", "detail": "reading the log"}]),
         ])
-        journal.events.listen(ClockTicked, SpotWatchedHelpers(), expects=[
-            Given(ClockTicked(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=2), rows=[AGENT_ROW, Helper(n=1, title="Rhea", data={"name": "Rhea"})]) >> Dispatches(nothing),
+        journal.events.listen(ClockTicked, DueOnClock(HelpersWatchDue, "watch"), expects=[
+            Given(ClockTicked(agent=1)) >> Dispatches(HelpersWatchDue(agent=1).due("watch")),
+        ])
+        journal.events.listen(HelpersWatchDue, SpotWatchedHelpers(), expects=[
+            Given(HelpersWatchDue(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(HelpersWatchDue(agent=2), rows=[AGENT_ROW, Helper(n=1, title="Rhea", data={"name": "Rhea"})]) >> Dispatches(nothing),
         ])
         journal.events.handle(HelperRefused, NameRefusedHelper(), expects=[
             Given(HelperRefused(n=3, name="Rhea", provider="codex", reason="no such model", ref="helper:3"), rows=[AGENT_ROW])

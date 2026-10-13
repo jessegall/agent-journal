@@ -1,6 +1,6 @@
 from events import Fact
-from events.agents import AgentChanged, ClockTicked, ToolCallAnswered
-from events.helpers import (AnswerToRelay, HelperAsks, HelperIdle, HelperQuiet, HelperRefused, HelperStopped, HelperTurnFailed, SubagentAsks,
+from events.agents import AgentChanged, ToolCallAnswered
+from events.helpers import (AnswerToRelay, HelperAsks, HelperIdle, HelpersWatchDue, HelperQuiet, HelperRefused, HelperStopped, HelperTurnFailed, SubagentAsks,
                             SubagentTouched)
 from events.messages import MessageCreated
 from events.questions import QuestionCreated
@@ -21,8 +21,8 @@ class SpotFailedTurn(Listener[AgentChanged]):
         return [HelperTurnFailed(failure=row.failure)]
 
 
-class SpotWatchedHelpers(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, helpers: ReadRows[Helper], agents: ReadRows[AgentRow], settings: Settings, clock: Clock) -> list[Fact]:
+class SpotWatchedHelpers(Listener[HelpersWatchDue]):
+    def listen(self, event: HelpersWatchDue, helpers: ReadRows[Helper], agents: ReadRows[AgentRow], settings: Settings, clock: Clock) -> list[Fact]:
         primary = agents.primary_to_read()
         if not settings.is_on("watch") or primary is None or primary.n != event.agent:
             return []
