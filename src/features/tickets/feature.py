@@ -1,11 +1,12 @@
 from events.agents import ClockTicked
-from events.resources import ResourceCreated
+from events.asking import RowWriting
 from events.questions import QuestionCompleted
-from controllers.types import Todos
-from expects import WHEN, Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
+from events.resources import ResourceCreated
+from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOrchestrator, TicketAgentToWake, TicketCalled, TicketCompleted, TicketHandedIn,
+                            TicketNeedsLook, TicketRestarted, TicketToRevive, TicketWaitedLong)
+from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, nothing
 from framework.base import Feature
 from resources.boards import Board
-from events.tickets import TicketCompleted
 from resources.tickets import Ticket
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
@@ -15,17 +16,12 @@ from controllers.types import Tickets
 from features.tickets.details import TicketsDetails
 from framework.sending import Nudge
 from controllers.tickets.orchestration import DRAFTS, WAITS
-from features.tickets.handlers import (
-    FinishTheBoardWithItsLastTicket,
-    HoldTicketKnowledge,
-    LookAfterTickets,
-    WakeTheTicketAgent,
-    boards_to_check,
-    decisions,
-    handed_in,
-    ticket_calls,
-)
-from features.tickets.limits import DraftsCarryOneLine
+from features.tickets.handlers import (CommentOnLongWait, FinishTheBoardWithItsLastTicket, HoldTicketKnowledge, LookAfterTickets, PassOnCall, RaiseStuckTicket,
+                                       RaiseWaitingPlan, RecordHandedIn, ReviveTicket, TellTicketRestarted, WakeTheTicketAgent)
+from features.tickets.listeners import (SpotAnsweredQuestionOfATicket, SpotBoardOutOfTickets, SpotKnowledgeInATicket, SpotLongWaits, SpotStuckTickets,
+                                        SpotTicketCalls, SpotWaitingPlans)
+from features.tickets.refusing import DraftsCarryOneLine
+from features.tickets.watching import boards_to_check, decisions, handed_in, ticket_calls
 from declaring.registries import CARD_STORE, PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from resources.plans import PHASE
 from features.tickets.phases import start_tickets_of_phase
@@ -50,17 +46,20 @@ def card(n: int, **data) -> Ticket:
 ONE_LINE = ('a draft ticket carries --abstract "<one line>" of at most 140 characters, shown whole on its card; '
             "the deeper explanation goes in --brief and shows under More info")
 SHORT_TITLE = "a draft ticket's title names it in at most 60 characters, so its card shows it whole"
-DRAFTING = {"actor": AGENT}
+def writing(action: str, type_: str = "ticket", actor: str = AGENT, **fields) -> RowWriting:
+    return RowWriting(type=type_, action=action, actor=actor, fields=tuple(fields.items()))
+
+
 DRAFT_CARDS = [
-    Given((Tickets, DRAFTING, {"title": "Add a login", "abstract": "Let people sign in.", "draft": True})) >> Kept(),
-    Given((Tickets, DRAFTING, {"title": "Add a login", "draft": True})) >> Refused(ONE_LINE),
-    Given((Tickets, DRAFTING, {"title": "Add a login", "abstract": "x" * 141, "draft": True})) >> Refused(ONE_LINE),
-    Given((Tickets, DRAFTING, {"title": "t" * 61, "abstract": "Let people sign in.", "draft": True})) >> Refused(SHORT_TITLE),
-    Given((Tickets, DRAFTING, {"title": "Add a login"})) >> Kept(),
-    Given((Todos, DRAFTING, {"title": "Add a login"})) >> Kept(),
-    Given((Tickets, DRAFTING, {"n": 1, "title": "t" * 61}), rows=[card(1, draft=True)]) >> Refused(SHORT_TITLE),
-    Given((Tickets, DRAFTING, {"n": 1, "title": "Sign in"}), rows=[card(1, draft=True)]) >> Kept(),
-    Given((Tickets, DRAFTING, {"n": 1, "abstract": ""}), rows=[card(1, draft=True)]) >> Refused(ONE_LINE),
+    Given(writing("create", title="Add a login", abstract="Let people sign in.", draft=True)) >> Kept(),
+    Given(writing("create", title="Add a login", draft=True)) >> Refused(ONE_LINE),
+    Given(writing("create", title="Add a login", abstract="x" * 141, draft=True)) >> Refused(ONE_LINE),
+    Given(writing("create", title="t" * 61, abstract="Let people sign in.", draft=True)) >> Refused(SHORT_TITLE),
+    Given(writing("create", title="Add a login")) >> Kept(),
+    Given(writing("create", "todo", title="Add a login")) >> Kept(),
+    Given(writing("update", n=1, title="t" * 61), rows=[card(1, draft=True)]) >> Refused(SHORT_TITLE),
+    Given(writing("update", n=1, title="Sign in"), rows=[card(1, draft=True)]) >> Kept(),
+    Given(writing("update", n=1, abstract=""), rows=[card(1, draft=True)]) >> Refused(ONE_LINE),
 ]
 
 
@@ -103,25 +102,73 @@ class TicketsFeature(Feature):
             Given((Tickets,), rows=[card(1)]) >> Answered([]),
             Given((Tickets,), rows=[card(1, work_environment="ticket-1")]) >> Answered([]),
         ])
-        # One side of the sweep only: it also closes merged tickets, starts queued ones, stops orphaned agents and raises waiting plans, none of which is staged here; what is stated is the long wait of a handed-in ticket and the boards it leaves alone.
-        journal.events.handler(LookAfterTickets(), expects=[
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Wrote(Comment(brief=LONG_WAIT)),
-            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(5), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment", "stages": ["Doing"]}), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.handle(ClockTicked, LookAfterTickets(), expects=[
+            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
-        journal.events.handler(WakeTheTicketAgent(), expects=[
-            Given(QuestionCompleted(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),
+        journal.events.listen(ClockTicked, SpotWaitingPlans(), expects=[
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
-        journal.events.handler(FinishTheBoardWithItsLastTicket(), expects=[
-            Given(CLOSED, rows=[card(1), Board(n=1, title="Launch")]) >> Unchanged(),
-            Given(CLOSED, rows=[card(1), card(2), Board(n=1, title="Launch", data={"started": 5.0})]) >> Unchanged(),
-            Given(CLOSED, rows=[card(1), Board(n=1, title="Launch", data={"started": 5.0, "finished": 9.0})]) >> Unchanged(),
+        journal.events.handle(PlanWaitsForOrchestrator, RaiseWaitingPlan(), expects=[
+            Given(PlanWaitsForOrchestrator(ticket=1, moment="ticket.plan_waits"), rows=[waiting_for(5)]) >> Dispatches(nothing),
         ])
-        journal.events.handler(HoldTicketKnowledge(), expects=[
-            Given(created("rule"), rows=[made(), Rule(n=1, title="Never skip the gate")]) >> Updated(Rule(n=1), proposed_for="ticket:3"),
-            Given(created("rule"), rows=[made(owner=""), Rule(n=1, title="Never skip the gate")]) >> Unchanged(),
-            Given(created("todo"), rows=[made(), Todo(n=1, title="Fix the crash")]) >> Unchanged(),
+        journal.events.listen(ClockTicked, SpotTicketCalls(), expects=[
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
-        journal.commands.intercept("create", DraftsCarryOneLine(), expects=DRAFT_CARDS)
-        journal.commands.intercept("update", DraftsCarryOneLine(), expects=DRAFT_CARDS)
+        journal.events.handle(TicketCalled, PassOnCall(), expects=[
+            Given(TicketCalled(kind="ticket_replied", ticket=1, title="Dark mode", values={"text": "done"}), rows=[AgentRow(n=1, title="claude-1")])
+                >> Nudged("ticket_replied", ticket=1, title="Dark mode", text="done"),
+        ])
+        journal.events.handle(TicketHandedIn, RecordHandedIn(), expects=[
+            Given(TicketHandedIn(ticket=1), rows=[waiting_for(0, handed_in_at=0.0)]) >> Updated(Ticket(n=1), handed_in_at=WHEN),
+        ])
+        journal.events.listen(ClockTicked, SpotStuckTickets(), expects=[
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(TicketToRevive, ReviveTicket(), expects=[
+            Given(TicketToRevive(ticket=1, title="Dark mode", text="stopped"), rows=[waiting_for(5, restarts=1)]) >> Dispatches(TicketNeedsLook(ticket=1, text="stopped")),
+        ])
+        journal.events.handle(TicketRestarted, TellTicketRestarted(), expects=[
+            Given(TicketRestarted(ticket=1, title="Dark mode"), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("ticket_restarted", ticket=1, title="Dark mode"),
+        ])
+        journal.events.handle(TicketNeedsLook, RaiseStuckTicket(), expects=[
+            Given(TicketNeedsLook(ticket=1, text="stopped"), rows=[waiting_for(5)]) >> Dispatches(nothing),
+        ])
+        journal.events.listen(ClockTicked, SpotLongWaits(), expects=[
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")])
+                >> Dispatches(TicketWaitedLong(ticket=1, minutes=60).once(f"ticket_long_wait|ticket:1|{WHEN - 3600}")),
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(5), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment", "stages": ["Doing"]}), waiting_for(60), AgentRow(n=1, title="claude-1")])
+                >> Dispatches(nothing),
+        ])
+        journal.events.handle(TicketWaitedLong, CommentOnLongWait(), expects=[
+            Given(TicketWaitedLong(ticket=1, minutes=60), rows=[waiting_for(60)]) >> Wrote(Comment(brief=LONG_WAIT)),
+        ])
+        journal.events.listen(QuestionCompleted, SpotAnsweredQuestionOfATicket(), expects=[
+            Given(QuestionCompleted(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Dispatches(nothing),
+            Given(QuestionCompleted(n=1, type="question", action="answered", actor=USER), rows=[made(), Question(n=1, title="Which branch?", outcome="Use main", completed=1.0)])
+                >> Dispatches(TicketAgentToWake(ticket=3, note="Your question 1, Which branch?, is answered: Use main. That is the answer of the one who runs your board: "
+                                                              "act on it, and never file the question again.")),
+        ])
+        journal.events.handle(TicketAgentToWake, WakeTheTicketAgent(), expects=[
+            Given(TicketAgentToWake(ticket=1, note="Your question is answered."), rows=[waiting_for(5)]) >> Unchanged(),
+        ])
+        journal.events.listen(TicketCompleted, SpotBoardOutOfTickets(), expects=[
+            Given(CLOSED, rows=[Ticket(n=1, title="Card 1", completed=9.0, data={"board": 1}), Board(n=1, title="Launch", data={"started": 5.0})]) >> Dispatches(BoardOutOfTickets(board=1)),
+            Given(CLOSED, rows=[card(1), Board(n=1, title="Launch")]) >> Dispatches(nothing),
+            Given(CLOSED, rows=[card(1), card(2), Board(n=1, title="Launch", data={"started": 5.0})]) >> Dispatches(nothing),
+            Given(CLOSED, rows=[card(1), Board(n=1, title="Launch", data={"started": 5.0, "finished": 9.0})]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(BoardOutOfTickets, FinishTheBoardWithItsLastTicket(), expects=[
+            Given(BoardOutOfTickets(board=1), rows=[Board(n=1, title="Launch", data={"started": 5.0})]) >> Updated(Board(n=1)),
+        ])
+        journal.events.listen(ResourceCreated, SpotKnowledgeInATicket(), expects=[
+            Given(created("rule"), rows=[made(), Rule(n=1, title="Never skip the gate")]) >> Dispatches(KnowledgeProposed(type="rule", n=1, owner="ticket:3")),
+            Given(created("rule"), rows=[made(owner=""), Rule(n=1, title="Never skip the gate")]) >> Dispatches(nothing),
+            Given(created("todo"), rows=[made(), Todo(n=1, title="Fix the crash")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(KnowledgeProposed, HoldTicketKnowledge(), expects=[
+            Given(KnowledgeProposed(type="rule", n=1, owner="ticket:3"), rows=[made(), Rule(n=1, title="Never skip the gate")]) >> Updated(Rule(n=1), proposed_for="ticket:3"),
+        ])
+        journal.commands.refuse(RowWriting, DraftsCarryOneLine(), expects=DRAFT_CARDS)

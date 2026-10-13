@@ -613,7 +613,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         from controllers.types import Agents
         from framework.loaded import FEATURES
         from framework.parts import AgentContext
-        from features.tickets.handlers import boards_to_check
+        from features.tickets.watching import boards_to_check
         from types import SimpleNamespace
         looking = SimpleNamespace(idle_for=3600.0)
         with monkeypatch.context() as orchestrating:
@@ -764,7 +764,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
     from resources.boards import PANEL_REPLY
-    from features.tickets.limits import CARD_LINE, CARD_TITLE
+    from features.tickets.refusing import CARD_LINE, CARD_TITLE
     from controllers.types import Messages
     from tests.conftest import refused
     record = fresh()

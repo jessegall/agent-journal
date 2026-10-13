@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
+from events import Fact
 from events.resources import ResourceEvent
 
 
@@ -44,3 +45,85 @@ class TicketStuck(ResourceEvent):
 @dataclass(frozen=True)
 class TicketEscalated(ResourceEvent):
     on: ClassVar[str] = "ticket.escalated"
+
+
+@dataclass(frozen=True, kw_only=True)
+class KnowledgeProposed(Fact):
+    """A rule, doc or tool written in a ticket's environment, which counts once the ticket's branch is merged."""
+
+    type: str
+    n: int
+    owner: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketAgentToWake(Fact):
+    """A question a ticket's agent asked was answered, so the agent is told the answer."""
+
+    ticket: int
+    note: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class BoardOutOfTickets(Fact):
+    """The last ticket of a started board was closed."""
+
+    board: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class PlanWaitsForOrchestrator(Fact):
+    """A ticket's plan waits for the agent orchestrating the ticket's board, at this moment of the plan."""
+
+    ticket: int
+    moment: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketCalled(Fact):
+    """Something a ticket's agent did or says that the agent orchestrating its board is told, under this line."""
+
+    kind: str
+    ticket: int
+    title: str
+    values: dict
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketHandedIn(Fact):
+    """A ticket's plan is done and its work waits for the orchestrator."""
+
+    ticket: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketToRevive(Fact):
+    """A ticket's agent stopped and the ticket may start it again."""
+
+    ticket: int
+    title: str
+    text: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketRestarted(Fact):
+    """A ticket's stopped agent was started again."""
+
+    ticket: int
+    title: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketNeedsLook(Fact):
+    """A ticket's agent is stuck in a way the orchestrator should look at."""
+
+    ticket: int
+    text: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class TicketWaitedLong(Fact):
+    """A ticket's finished work has waited this many minutes for the orchestrator."""
+
+    ticket: int
+    minutes: int

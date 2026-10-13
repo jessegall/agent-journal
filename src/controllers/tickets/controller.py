@@ -8,7 +8,8 @@ from controllers.environments import Environments
 from controllers.features import Features, settings_of, settle_prompts
 from controllers.messages import Messages
 from controllers.notices import Notices
-from engine import bus
+from engine import bus, runtime
+from engine.locks import own_sweep, project_sweep
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.state import State
@@ -41,6 +42,8 @@ from controllers.marks import action
 from resources.types import EnvironmentKind
 
 LAUNCHING_FOR = 60.0
+SWEEPING, SWEEP_EVERY = "tickets-sweeping.lock", 5.0
+LANDING, LAND_EVERY = "tickets-landing.lock", 60.0
 STOP_WAIT, STOP_POLL = 20.0, 0.25
 TELL_GRACE = 60.0
 RETURNS_BEFORE_ESCALATING = 2
@@ -260,8 +263,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._idle_by_design(ticket)] + \
                [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
 
+    def revivable(self, ticket) -> bool:
+        return ticket.restarts < MOST_RESTARTS and not ticket.queued
+
     def revive(self, ticket) -> bool:
-        if ticket.restarts >= MOST_RESTARTS or ticket.queued:
+        if not self.revivable(ticket):
             return False
         self.update(ticket.n, restarts=ticket.restarts + 1)
         return not self.start(ticket.n).queued
@@ -376,11 +382,37 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def raise_moment(self, n: int, moment: str, **data) -> None:
         self.record.emit(self.type, n, moment, SYSTEM, scope=self.resource.scope, **data)
 
-    def hold(self, type_: str, n: int) -> None:
+    def proposing_owner(self) -> str:
+        """The ticket this environment works for, when it does, so the knowledge it writes is proposed for that ticket's branch."""
         owner = Environments(self.record, actor=self.actor).rows.by_title(self.record.env)
-        if owner and owner.owned_by(self.type):
-            CONTROLLERS[type_](self.record, actor=self.actor).complete(n, how=f"proposed for {owner.owner.replace(':', ' ')}; it counts once that branch is merged",
-                                                                      proposed_for=owner.owner)
+        return owner.owner if owner and owner.owned_by(self.type) else ""
+
+    def hold(self, type_: str, n: int, owner: str) -> None:
+        CONTROLLERS[type_](self.record, actor=self.actor).complete(n, how=f"proposed for {owner.replace(':', ' ')}; it counts once that branch is merged", proposed_for=owner)
+
+    def here(self) -> int:
+        """The ticket this environment is the work environment of, or none."""
+        return self.owner_of(self.record.env, self.type)
+
+    def would_be_draft(self, args: dict) -> bool:
+        """Whether a ticket about to be created from these arguments, or the one they update, is a draft."""
+        if "n" in args:
+            return self.peek(args["n"]).draft
+        return self.resource(data=self._shaped(args)).draft
+
+    def look_after(self) -> None:
+        """One sweep over the tickets: what was launched is seen, merged work is closed, queued tickets start, orphaned agents stop and approved plans are built. One environment sweeps at a time, and one in a minute lands the branches."""
+        with own_sweep(runtime.folder(self.record.root) / SWEEPING, SWEEP_EVERY, self.record.env) as mine:
+            if mine:
+                self.mark_seen()
+                with project_sweep(runtime.folder(self.record.root) / LANDING, LAND_EVERY) as landing:
+                    if landing:
+                        self.keep_branches()
+                        self.close_merged()
+                        self.clear_worktrees()
+                self.start_queued()
+                self.stop_orphaned()
+                self.build_approved_plans()
 
     def _proposals(self, ticket) -> list:
         return [(rows, rows.peek(row["n"])) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD)
