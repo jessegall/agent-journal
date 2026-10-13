@@ -29,6 +29,7 @@ PACKED_DIRS = ("agents", "commands", "controllers", "declaring", "engine", "even
                 "receiving", "resources", "runner", "serving", "surfaces")
 PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"
+GIT_HOOKS = ".githooks"
 PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "keeper.py", "serve.py", "supervisor.py", "skills.py", "worker.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
@@ -301,9 +302,20 @@ def old_git_hook(project: Path) -> list[str]:
     return []
 
 
+def git_hooks(project: Path) -> list[str]:
+    """Points git at the hooks the repository keeps in .githooks, so the guards on a commit and a push travel with every checkout rather than living in one machine's .git."""
+    if not (project / GIT_HOOKS).is_dir():
+        return []
+    named = subprocess.run(["git", "-C", str(project), "config", "core.hooksPath"], capture_output=True, text=True, timeout=30).stdout.strip()
+    if named == GIT_HOOKS:
+        return []
+    subprocess.run(["git", "-C", str(project), "config", "core.hooksPath", GIT_HOOKS], check=True, capture_output=True, timeout=30)
+    return [f"git hooks: {GIT_HOOKS}"]
+
+
 def configure(project: Path, root: Path) -> list[str]:
     package = loaded()
-    done = old_git_hook(project)
+    done = old_git_hook(project) + (git_hooks(project) if package.developing(project) else [])
     present = []
     for name, cls in package.providers.items():
         provider = cls()
@@ -832,6 +844,7 @@ class Package:
     migrations_pending: Callable
     restarting: Callable
     managed: ModuleType
+    developing: Callable
 
 
 def light() -> tuple:
@@ -868,11 +881,13 @@ def loaded() -> Package:
     from framework import managed
     from framework.updating.new_feature import mark_all_seen
     from framework.updating.waiting import wait_for_commands
+    from engine.developing import developing
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
                    publish=publish, upgrade_mark=upgrade_mark, mark_upgrade=mark_upgrade, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen,
-                   migrations_pending=lambda root: bool(pending(applied(root))), restarting=restarting, managed=managed)
+                   migrations_pending=lambda root: bool(pending(applied(root))), restarting=restarting, managed=managed,
+                   developing=developing)
 
 
 def finishing_an_unpacked_install() -> bool:

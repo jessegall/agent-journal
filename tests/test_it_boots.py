@@ -29,7 +29,7 @@ from engine.record import Record
 from engine.sessions import Sessions, alive, hold_build
 from engine.stop import ask
 from engine.stored import append_text, write_text
-from install import STUBS, fetch, version_in
+from install import GIT_HOOKS, STUBS, fetch, git_hooks, version_in
 from providers import DRIVERS, PROVIDERS
 from runner.relay import Relay
 from resources.base import SYSTEM
@@ -2176,3 +2176,13 @@ def test_a_commands_only_load_wires_the_commands_and_no_listener_or_handler():
     assert not {"listen", "handle"} & set(only["kinds"]) and only["listening"] is False, \
         "a process that only runs commands puts no listener or handler on the bus, since the server relays what it wrote; it keeps what answers before a write"
     assert only["commands"] == full["commands"] > 0 and full["listening"] is True, "the commands are the same in both, and the full load still listens"
+
+
+def test_a_fresh_checkout_of_the_journal_is_guarded_by_the_hooks_the_repository_keeps(tmp_path):
+    clone = tmp_path / "clone"
+    subprocess.run(["git", "init", "-q", str(clone)], check=True, timeout=60)
+    shutil.copytree(Path(__file__).resolve().parents[1] / GIT_HOOKS, clone / GIT_HOOKS)
+    assert git_hooks(clone) == [f"git hooks: {GIT_HOOKS}"] and git_hooks(clone) == [], "installing points git at the tracked hooks once"
+    named = subprocess.run(["git", "-C", str(clone), "config", "core.hooksPath"], capture_output=True, text=True).stdout.strip()
+    pushed = subprocess.run(["sh", str(clone / GIT_HOOKS / "pre-push")], cwd=clone, input="refs/tags/3.0.0 1a2b refs/tags/3.0.0 0000\n", capture_output=True, text=True, timeout=60)
+    assert (named, pushed.returncode, "named v<version>" in pushed.stderr) == (GIT_HOOKS, 1, True), "and the pre-push it keeps refuses a release tag not named v<version>"

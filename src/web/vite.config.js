@@ -1,6 +1,6 @@
 import vue from "@vitejs/plugin-vue";
 import {execFileSync} from "node:child_process";
-import {readFileSync} from "node:fs";
+import {readFileSync, writeFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {defineConfig} from "vite";
 import {LESSONS} from "./demo/lessons.js";
@@ -39,10 +39,19 @@ const lessonLengths = () => ({
     },
 });
 
+const builtFrom = () => ({
+    name: "built-from",
+    apply: "build",
+    closeBundle() {
+        const digest = execFileSync("python3", ["scripts/checks/viewer_built.py", "--digest"], {cwd: fileURLToPath(new URL("../..", import.meta.url)), timeout: 30000});
+        writeFileSync(new URL("./dist/built-from", import.meta.url), digest.toString());
+    },
+});
+
 export default defineConfig(({mode}) => {
     const demo = mode === "demo";
     return {
-        plugins: [vue(), builtInManifest(), lessonLengths()],
+        plugins: [vue(), builtInManifest(), lessonLengths(), ...(demo ? [] : [builtFrom()])],
         base: "./",
         define: {__DEMO__: demo, __DEMO_BUILD__: JSON.stringify(String(Date.now()))},
         build: demo
