@@ -64,7 +64,7 @@ Every dispatch prompt says the subagent never runs tests: it writes the test tha
 
 ## Controllers by reference
 
-A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only. A base controller comes from `controllers.types`; a controller a feature owns, such as `Tickets` or `Helpers`, comes from that feature until the sweep moves it down, which is when `controllers.types` will hold it too.
+A receiver asks for a row type's controller by type in its signature — `Rows[Todo]` to write, `ReadRows[Todo]` to read — and engine code reaches a controller by its class — `Todos(record, actor=SYSTEM)` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only. A base controller comes from `controllers.types`; a controller a feature owns, such as `Tickets` or `Helpers`, comes from that feature until the sweep moves it down, which is when `controllers.types` will hold it too.
 
 ## Skills
 
