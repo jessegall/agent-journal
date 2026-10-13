@@ -7,6 +7,7 @@ from framework.sending import Sent
 from declaring.trigger import MINUTE
 from serving import SERVED, Processes, Providers
 from resources.runs import BackgroundTasks
+from controllers.types import Works
 
 # what splits a chain into commands run one after another, and a command into the parts a pipe joins
 SEQUENCE = re.compile(r"&&|\|\||;|\n")
@@ -53,11 +54,16 @@ def ended_runs(context, agent) -> list[Sent]:
             for session, at in tasks.ended.items() if now - at < RECENT]
 
 
+def awaited(context) -> set[str]:
+    """The runs an open work already says it waits on, which need no telling."""
+    return {ref for work in context.journal.get(Works).rows.standing() for ref in work.awaiting_on.split(",") if ref}
+
+
 def open_runs(context, agent) -> list[Sent]:
     if not agent.idle_for:
         return []
     tasks = runs_of(agent)
-    return [Sent(session, described(tasks, session)) for session in open_since(tasks)]
+    return [Sent(session, described(tasks, session)) for session in open_since(tasks).keys() - awaited(context)]
 
 
 def stalled_runs(context, agent) -> list[Sent]:

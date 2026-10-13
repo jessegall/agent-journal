@@ -1,4 +1,4 @@
-from declaring.trigger import PERCENT, Trigger
+from declaring.trigger import START, Trigger
 from declaring.details import FeatureDetails
 from framework.recital import LINES, whispering
 from declaring.groups import Group
@@ -19,8 +19,8 @@ class FactsDetails(FeatureDetails):
     help = """
         A fact belongs to this environment. When you learn something about it that a later session would get wrong without,
         write it as a fact:
-        journal fact create "<the claim>" --brief "<why it is true, where it shows>". It is handed back at every quarter of the
-        context. When it stops being true, strike it with journal fact strike <n> --how "<what changed>".
+        journal fact create "<the claim>" --brief "<why it is true, where it shows>". It is handed back when a session starts and
+        after each compaction. When it stops being true, strike it with journal fact strike <n> --how "<what changed>".
 
         Give it keywords with --set keywords="<word>,<word>": when one appears as a whole word, you are shown the
         row's title once, and the tool call still goes through. --set keywords_in says where they match: text
@@ -30,7 +30,7 @@ class FactsDetails(FeatureDetails):
 
     aliases = ("pins",)
 
-    trigger = Trigger(every=25, unit=PERCENT)
+    trigger = Trigger(unit=START)
 
     lines = LINES
 

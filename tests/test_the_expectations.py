@@ -875,11 +875,11 @@ def test_a_moved_feature_runs_live_from_a_sent_turn_to_its_nudge_and_its_reminde
         "the turn about the journal's workings is named back, as the feature's own line, and the plain one is not"
 
     reminded = lambda: [n for n in nudges(record) if n.startswith("chat etiquette")]  # noqa: E731
-    for _ in range(19):
+    for _ in range(49):
         ran.announce(record, agent.n, ran.DELIVERED, "2 new messages 314, 315")
-    assert not reminded(), "nineteen journal lines are counted against the trigger and pass without a reminder"
+    assert not reminded(), "forty-nine journal lines are counted against the trigger and pass without a reminder"
     ran.announce(record, agent.n, ran.DELIVERED, "todo 5 next")
-    assert len(reminded()) == 1, "the twentieth is due, so the fact goes on and the agent is reminded once"
+    assert len(reminded()) == 1, "the fiftieth is due, so the fact goes on and the agent is reminded once"
 
 
 def test_a_tagged_turn_runs_its_command_live_and_a_refused_one_keeps_its_words():

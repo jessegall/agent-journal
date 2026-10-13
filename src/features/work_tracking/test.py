@@ -165,6 +165,11 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     checking.asked_at -= auto.ASK_AGAIN + 1
     assert (checking.tick(), len(typed)) == ("asked whether it is still working", 1), "after the wait it asks the agent whether it is still working"
     assert (checking.tick(), len(typed)) == ("", 1), "and does not ask again at once"
+    Works(quiet_record, actor=AGENT).update(work.n, parked="the machine was swapping")
+    checking.asked_at -= auto.ASK_AGAIN + 1
+    assert (checking.tick(), len(typed)) == ("asked whether it is still working", 2), "parked work is named once"
+    checking.asked_at -= auto.ASK_AGAIN + 1
+    assert (checking.tick(), len(typed)) == ("", 2), "and then only every fifteen minutes, not every five"
 
     from tests.kit import tick
     stopped = fresh()
@@ -196,6 +201,9 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     auto_stop_nudges = lambda: [n for n in nudges(asking) if n.startswith("auto mode is on and you stopped")]
     count = len(auto_stop_nudges())
     assert set(auto_stop_nudges()) == {"auto mode is on and you stopped - the user last wrote more than 15 minutes ago"}, "with auto mode on, an agent that stopped long after the user last spoke is told to carry on"
+    idle_for(20)
+    idle_for(40)
+    assert len(auto_stop_nudges()) == count, "while every row waits on the user it is said once, not at every stop"
     Messages(asking, actor=USER).create("carry on please")
     idle_for(8)
     assert len(auto_stop_nudges()) == count, "the user wrote a moment ago: nothing new is said"

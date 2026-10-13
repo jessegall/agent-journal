@@ -51,7 +51,7 @@ class ChatEtiquetteDetails(FeatureDetails):
         matters is hidden.
 
         If you describe the journal's workings in the chat anyway, the journal tells you once,
-        quoting the words that did it; and every 20 journal lines you are reminded of this
+        quoting the words that did it; and every 50 journal lines you are reminded of this
         (Settings can change the count).
 
         The voice of your profile changes only the tone of the chat and how you address the user,
@@ -66,7 +66,7 @@ class ChatEtiquetteDetails(FeatureDetails):
         Behaviour(
             name=REMIND,
             title="Remind the agent to keep journal talk out of the chat",
-            trigger=Trigger(every=20, unit=NOTICES),
+            trigger=Trigger(every=50, unit=NOTICES),
         ),
         Behaviour(
             name=PROSE,

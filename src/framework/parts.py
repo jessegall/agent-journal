@@ -8,7 +8,6 @@ from controllers.agents import Agents
 from controllers.environments import Environments
 from controllers.messages import Messages
 from engine.state import State
-from framework import held_lines
 from framework.marks import mark_of
 from framework.displayed import send_row_to_chat
 from resources.allowances import Allowance
@@ -68,9 +67,6 @@ class Speaker:
         """A message in the chat in the user's own name, which a trigger the user wrote sends for them."""
         Messages(self.record, actor=USER).create(title, brief=brief, **data)
 
-    def keep(self, line: str) -> None:
-        """Holds the line for the agent's next tool call, where it is told beside the hook's answer."""
-        held_lines.keep(self.record, self.session, line)
 
 
 

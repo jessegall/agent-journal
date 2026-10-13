@@ -57,7 +57,7 @@ class EndWorkOfTodo(Handler[WorkEndedByTodo]):
 
 class NameParkedWork(Handler[ParkedWorkStands]):
     def handle(self, event: ParkedWorkStands, chat: Chat, memory: Remembered) -> list[Fact]:
-        chat.say("parked", n=event.work, title=event.title, why=event.why, more=event.more)
+        chat.say("parked", n=event.work, title=event.title, why=event.why, more=f" and {event.others} more" if event.others else "")
         memory.set(NAMED_PARKED, list(event.parkings))
         return []
 

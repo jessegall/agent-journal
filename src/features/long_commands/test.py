@@ -235,6 +235,13 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
         "a run going too long, and one still open when the agent stops, are named whatever the provider: one that never ends wakes nobody"
     assert not any("npm ci" in n and "finished" in n for n in nudges(record)), \
         "an end is still left to a provider that wakes its own agent about it"
+    from controllers.types import Works
+    Works(record, actor="agent").create("the build", awaiting="the build", awaiting_on="s10")
+    monkeypatch.setattr(watch, "background_tasks_of",
+                        lambda providers, agent: BackgroundTasks(started={"s10": time.time() - 60}, commands={"s10": "npm run build"}))
+    report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
+    tick(record)
+    assert not any("npm run build" in n and "still runs" in n for n in nudges(record)), "a run an open work awaits by name is not named again"
 
 
 def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_are_read_from_where_they_stopped(tmp_path):

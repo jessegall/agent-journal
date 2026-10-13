@@ -15,7 +15,7 @@ from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
 from features.skill_loading.answering import RefuseCommandNeedingSkill, RefuseUntilLoaded
 from features.skill_loading.handlers import AskPrimaryForSkills, KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, SpendWindow
-from features.skill_loading.listeners import (CountRefusals, SpotCommandNeedingSkill, SpotReload, SpotSessionStart, SpotSkillLoad, SpotSkillsTheUserNames,
+from features.skill_loading.listeners import (IN_THIS_WINDOW, CountRefusals, SpotCommandNeedingSkill, SpotReload, SpotSessionStart, SpotSkillLoad, SpotSkillsTheUserNames,
                                               SpotStaleSkills, SpotUnloadedWindow)
 from features.skill_loading.catalogue import handed
 from declaring.registries import SKILLS, START_PARTS
@@ -81,7 +81,7 @@ class SkillLoading(Feature):
         journal.events.listen(SessionStarted, SpotSessionStart(), expects=[
             Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SessionOwesSkills(agent=1, session="claude-1", skills=())),
             Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")], files=answering(JOURNAL))
-                >> Dispatches(SessionOwesSkills(agent=1, session="claude-1", skills=(("journal", WHEN),))),
+                >> Dispatches(SessionOwesSkills(agent=1, session="claude-1", skills=(("journal", IN_THIS_WINDOW),))),
         ])
         journal.events.listen(MessageCreated, SpotSkillsTheUserNames(), expects=[
             Given(MessageCreated(n=3, type="message", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Message(n=3, title="plan it", brief="here is the roadmap", seen=["user"])],

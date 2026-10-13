@@ -13,7 +13,6 @@ from resources.base import SYSTEM, USER
 from serving import SERVED, Providers
 
 FIRST_AFTER = 5
-CARRY_ON_TIMES = 3
 
 
 def working(context: Context) -> list:
@@ -61,7 +60,7 @@ def nothing_left(context) -> bool:
 
 
 def stopped_in_auto(context, agent) -> list[Sent]:
-    """With auto mode on, an agent that stopped long after the person last spoke is told to carry on, unless the person stopped it themselves or the environment holds nothing to carry on with."""
+    """With auto mode on, an agent that stopped long after the person last spoke is told to carry on at each stop, or once per word from the person while no row is ready, unless the person stopped it themselves or the environment holds nothing to carry on with."""
     after = context.settings.carry_on_after * MINUTE
     if not automatic(context.record) or agent.subagent or agent.paused or agent.idle_for < FIRST_AFTER * MINUTE or time.time() - last_heard_from_the_user(context, agent) < after:
         return []
@@ -70,7 +69,8 @@ def stopped_in_auto(context, agent) -> list[Sent]:
     provider = SERVED.given(Providers).offers(agent.provider)
     if provider is not None and agent.transcript and provider.interrupted_by_user(Path(agent.transcript)):
         return []
-    return [Sent(f"{agent.at}", {"minutes": int(after // MINUTE)})]
+    stop = f"{agent.at}" if ready(context.record) else f"held|{last_heard_from_the_user(context, agent)}"
+    return [Sent(stop, {"minutes": int(after // MINUTE)})]
 
 
 def check_in_pace(context) -> int:

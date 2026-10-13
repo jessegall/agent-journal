@@ -13,6 +13,7 @@ from resources.types import AgentRow, Message
 from serving import Clock, Providers, ReadElsewhere, ReadMarks, ReadRows, Settings
 
 WINDOWS = (HookEvent.SESSION_START, HookEvent.PRE_COMPACT)
+IN_THIS_WINDOW = 0.0
 
 
 def journal_skill(name: str) -> bool:
@@ -54,19 +55,22 @@ class SpotStaleSkills(Listener[AgentReported]):
         always = set(chosen(record))
         changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(record, row.n) if s[SKILL.stale]}
         rest = ", ".join(sorted(set(changed) - always))
-        return [*owed(row, {name: at for name, at in changed.items() if name in always}),
-                *([StaleSkillsNamed(agent=row.n, skills=rest).once(f"{row.n}:{rest}")] if rest else [])]
+        facts = owed(row, {name: at for name, at in changed.items() if name in always})
+        if not rest:
+            return facts
+        return [*facts, StaleSkillsNamed(agent=row.n, skills=rest).once(f"{row.n}:{rest}")]
 
 
 class SpotSessionStart(Listener[SessionStarted]):
-    def listen(self, event: SessionStarted, agents: ReadRows[AgentRow], settings: Settings, elsewhere: ReadElsewhere, clock: Clock) -> list[Fact]:
+    def listen(self, event: SessionStarted, agents: ReadRows[AgentRow], settings: Settings, elsewhere: ReadElsewhere) -> list[Fact]:
+        """A start owes each skill one load anywhere in this window, never one after the start."""
         if not settings.is_on("always"):
             return []
         record, row = elsewhere.here().record, agents.peek(event.agent)
         present = {skill[SKILL.name] for skill in catalogue(record.root.parent)}
         current = set(loaded_at(row))
         recent = set() if current else present & recent_before_compaction(row, int(settings.recent))
-        missing = {name: clock.now() for name in {*chosen(record), *recent} - current}
+        missing = dict.fromkeys({*chosen(record), *recent} - current, IN_THIS_WINDOW)
         return [SessionOwesSkills(agent=row.n, session=row.title, skills=tuple(missing.items()))]
 
 
@@ -92,7 +96,7 @@ class SpotCommandNeedingSkill(Listener[ToolCallAnswered]):
 
 class CountRefusals(Listener[ToolCallAnswered]):
     def listen(self, event: ToolCallAnswered, agents: ReadRows[AgentRow], marks: ReadMarks, elsewhere: ReadElsewhere) -> list[Fact]:
-        if event.subagent or asks_for_a_load(event.tool, event.input, event.command):
+        if event.subagent or asks_for_a_load(event):
             return []
         record, row = elsewhere.here().record, agents.peek(event.agent)
         wanted = refusal_wanted(record, row) or bool(skill_not_loaded(event.command, event.subagent, row, marks.last(NAME).since, record))

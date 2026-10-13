@@ -45,5 +45,5 @@ class Awaited(Feature):
         ])
         journal.events.handle(WaitEnded, HandBackTheResults(), expects=[
             Given(WaitEnded(work=3, awaiting="the build", results="Zed: built clean", count=0), rows=[AgentRow(n=1), Work(n=3, data={"awaiting": "the build", "awaiting_on": "helper:2"})])
-                >> Updated(Work(n=3), awaiting="", awaiting_on="") & Nudged("returned", awaiting="the build", results="Zed: built clean", n=3),
+                >> Updated(Work(n=3), awaiting="", awaiting_on="") & Nudged("returned", results="Zed: built clean", n=3),
         ])

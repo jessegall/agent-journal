@@ -19,14 +19,6 @@ class MessageTagged(Fact):
     """Whether the turn's words were kept out of the chat, so a refusal brings them back."""
 
 
-@dataclass(frozen=True, kw_only=True)
-class TagCommandRan(Fact):
-    """The command a tag stands for ran."""
-
-    agent: int
-    turn: str
-    tag: str
-    about: str
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -56,10 +48,3 @@ class TagHintDue(Fact):
     agent: int
     tag: str
     hint: str
-
-
-@dataclass(frozen=True, kw_only=True)
-class HeldLinesHanded(Fact):
-    """The lines held for the agent's tool call were handed over beside the hook's answer, so they are forgotten."""
-
-    agent: int

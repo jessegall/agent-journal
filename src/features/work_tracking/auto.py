@@ -26,6 +26,7 @@ def passes_checkpoints(record) -> bool:
 
 QUIET_FOR = 60.0
 ASK_AGAIN = 300.0
+ASK_AGAIN_PARKED = 900.0
 STILL_THERE = ("journal: work {n}, {title}, is still open{parked} and nothing has happened for {minutes} minutes. "
                "Carry on with it, end it, or say plainly what it waits on.")
 PARKED = ", parked because {why},"
@@ -34,6 +35,12 @@ PARKED = ", parked because {why},"
 def still_open(record) -> list:
     """Every work the agent has not finished, parked or not: a parked one is named too, because what it was parked for has usually passed."""
     return [w for w in Works(record, actor=SYSTEM).rows.standing() if not w.awaiting]
+
+
+def ask_again_after(record) -> float:
+    """Parked work was set aside on purpose, so it is named back less often than work left open."""
+    open_work = still_open(record)
+    return ASK_AGAIN_PARKED if open_work and open_work[0].parked else ASK_AGAIN
 
 
 def still_there(record, quiet: float, state: str) -> str:
@@ -51,13 +58,14 @@ class CheckIn:
     def __init__(self, agent):
         self.agent = agent
         self.asked_at = time.time()
+        self.wait = ASK_AGAIN
 
     def tick(self) -> str:
-        if time.time() - self.asked_at < ASK_AGAIN:
+        if time.time() - self.asked_at < self.wait:
             return ""
         line = still_there(self.agent.record, self.agent.driver.quiet_for(), self.agent.state())
         if not line:
             return ""
-        self.asked_at = time.time()
+        self.asked_at, self.wait = time.time(), ask_again_after(self.agent.record)
         self.agent.driver.send(line)
         return "asked whether it is still working"

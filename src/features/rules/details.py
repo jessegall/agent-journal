@@ -1,4 +1,4 @@
-from declaring.trigger import PERCENT, Trigger
+from declaring.trigger import START, Trigger
 from declaring.details import FeatureDetails, Line
 from framework.recital import LINES, WHISPER, whispering
 from declaring.groups import Group
@@ -15,7 +15,7 @@ class RulesDetails(FeatureDetails):
     title = "Rules"
 
     abstract = """
-        Rules are repeated to the agent at every quarter of its context. Rules marked for it are
+        Rules are handed to the agent when a session starts and after each compaction. Rules marked for it are
         written into the journal's block in AGENTS.md, which CLAUDE.md imports.
     """
 
@@ -33,7 +33,7 @@ class RulesDetails(FeatureDetails):
         file paths, searches and URLs included).
     """
 
-    trigger = Trigger(every=25, unit=PERCENT)
+    trigger = Trigger(unit=START)
 
     lines = [
         *(line for line in LINES if line.name == WHISPER),

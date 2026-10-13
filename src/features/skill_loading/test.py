@@ -253,6 +253,12 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
                                                               "transcript_path": str(transcript)})
     assert sorted(pending(record, "claude-1")) == sorted([*later[1:], "journal-work-tracking"]), \
         "after a compaction the every-start skills and the last five loaded before it are owed again, and earlier ones are not"
+    from features.skill_loading.required import outstanding
+    with transcript.open("a") as rows:
+        rows.write(json.dumps({"type": "assistant", "timestamp": "2026-01-01T00:00:00Z", "message": {"content": [
+            {"type": "tool_use", "name": "Skill", "input": {"skill": "journal-work-tracking"}}]}}) + "\n")
+    assert "journal-work-tracking" not in outstanding(record, Agents(record, actor="system").by_session("claude-1")), \
+        "a load the window holds settles the start, however long before the start the fold read it"
 
 
 def test_a_skills_keyword_makes_the_agent_load_it():

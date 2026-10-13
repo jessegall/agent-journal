@@ -61,7 +61,7 @@ class ParkedWorkStands(Fact):
     work: int
     title: str
     why: str
-    more: str
+    others: int
     parkings: tuple[str, ...]
 
 

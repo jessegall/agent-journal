@@ -32,7 +32,7 @@ from features.work_tracking.auto import chosen_or_steered, steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import CHECK_IN, WorkDetails
 from framework.sending import Cap, Nudge
-from features.work_tracking.nudges import CARRY_ON_TIMES, check_in_pace, next_row, nothing_happening, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, working
+from features.work_tracking.nudges import check_in_pace, next_row, nothing_happening, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, working
 from features.work_tracking.answering import RefuseHeldCalls, RefuseWaitingInTheShell
 from features.work_tracking.waiting import WAIT_WAY
 from features.work_tracking.handlers import (AskStillAwaiting, AskStillBlockedRow, ClearWait, CompleteTodoWithWork, EndWorkOfTodo, HoldUntilDeclared,
@@ -111,9 +111,9 @@ class WorkFeature(Feature):
                     guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
                     guarantee="When the agent stops with work still in hand, it is asked once to carry on with it."),
-              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(CARRY_ON_TIMES),
-                    guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, a few times."),
-              Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(CARRY_ON_TIMES),
+              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(1),
+                    guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, and only once while every row waits."),
+              Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(1),
                     guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."),
               Nudge(CHECK_IN, behaviour=CHECK_IN, about=nothing_happening, pace=check_in_pace,
                     guarantee="When nothing has happened for the check-in interval, the agent is asked whether anything is left to do and told what this environment holds, whether or not it has work in hand."))
@@ -169,12 +169,12 @@ class WorkFeature(Feature):
             Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, Todo(n=5, title="Fix the crash", completed=1.0)]) >> Dispatches(WorkFilesLetGo(work=3)),
             Given(ENDED_WITH_TODO, rows=[Work(n=3, title="Look around", completed=2.0)]) >> Dispatches(WorkFilesLetGo(work=3)),
             Given(ENDED_ALONE, rows=[Work(n=3, title="Look around", completed=2.0), Work(n=4, title="Write the report", data={"parked": "the user asked for something first"}), AGENT_ROW])
-                >> Dispatches(WorkFilesLetGo(work=3)) & Dispatches(ParkedWorkStands(agent=1, work=4, title="Write the report", why="the user asked for something first", more="",
+                >> Dispatches(WorkFilesLetGo(work=3)) & Dispatches(ParkedWorkStands(agent=1, work=4, title="Write the report", why="the user asked for something first", others=0,
                                                                                     parkings=("4:the user asked for something first",))),
         ])
         journal.events.listen(TodoCompleted, SpotParkedWork(), expects=[
             Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED, AGENT_ROW])
-                >> Dispatches(ParkedWorkStands(agent=1, work=3, title="Write the report", why="the user asked for something first", more="",
+                >> Dispatches(ParkedWorkStands(agent=1, work=3, title="Write the report", why="the user asked for something first", others=0,
                                                parkings=("3:the user asked for something first",))),
             Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), Todo(n=4, title="Next"), PARKED, AGENT_ROW]) >> Dispatches(nothing),
             Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED]) >> Dispatches(nothing),
@@ -280,7 +280,7 @@ class WorkFeature(Feature):
             Given(WorkEndedByTodo(work=3, how="todo 5 done"), rows=[Todo(n=5, title="Fix the crash", completed=1.0), ON_TODO]) >> Updated(Work(n=3), outcome="todo 5 done"),
         ])
         journal.events.handle(ParkedWorkStands, NameParkedWork(), expects=[
-            Given(ParkedWorkStands(agent=1, work=3, title="Write the report", why="the user asked for something first", more="", parkings=("3:the user asked for something first",)),
+            Given(ParkedWorkStands(agent=1, work=3, title="Write the report", why="the user asked for something first", others=0, parkings=("3:the user asked for something first",)),
                   rows=[PARKED, AGENT_ROW]) >> Nudged("parked") & Remembered("named_parked", ["3:the user asked for something first"]),
         ])
         journal.events.handle(RowUnblocked, NameUnblockedRow(), expects=[

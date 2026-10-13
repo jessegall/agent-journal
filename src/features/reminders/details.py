@@ -1,4 +1,4 @@
-from declaring.trigger import PERCENT, Trigger
+from declaring.trigger import START, Trigger
 from declaring.details import FeatureDetails
 from framework.recital import LINES, whispering
 from declaring.groups import Group
@@ -14,12 +14,12 @@ class RemindersDetails(FeatureDetails):
 
     title = "Reminders"
 
-    abstract = "Your standing reminders are repeated to the agent when it stops after working."
+    abstract = "Your standing reminders are handed to the agent when a session starts and after each compaction."
 
     help = """
         A reminder belongs to this environment. When you keep forgetting to do something you already know, write a
         reminder: journal reminder create "<what to do>".
-        It is said again every quarter of the context window, so a long session hears it about four times; Settings can change
+        It is said when a session starts and after each compaction; Settings can change
         the cadence to every n percent, uses or minutes, or to idle, worked or start.
 
         To remind only one session, add --set whom=<session>: it is said to that session alone and stays out of the start
@@ -27,7 +27,7 @@ class RemindersDetails(FeatureDetails):
         no longer needed with journal reminder retire <n>.
     """
 
-    trigger = Trigger(every=25, unit=PERCENT)
+    trigger = Trigger(unit=START)
 
     lines = LINES
 

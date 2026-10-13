@@ -1,5 +1,6 @@
 from engine.journal_calls import calls
 from events.answers import Allowed, Answer, Refused
+from events.agents import ToolCallAnswered
 from events.asking import ToolCallAsked
 from features.skill_loading.catalogue import has_read_every_load, loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding
@@ -13,9 +14,9 @@ REFUSED = "skill_loading.refused"
 NAME = "skill_loading"
 
 
-def asks_for_a_load(tool: str, input: str, command: str) -> bool:
+def asks_for_a_load(call: ToolCallAsked | ToolCallAnswered) -> bool:
     """Whether the call loads a skill, which is never held back: it is how the skill gets loaded."""
-    return tool == "Skill" or bool(SKILL_READ.search(input or command))
+    return call.tool == "Skill" or bool(SKILL_READ.search(call.input or call.command))
 
 
 def refusal_wanted(record, row: AgentRow) -> bool:
@@ -38,7 +39,7 @@ def stepping_aside(marks: ReadMarks, settings: Settings) -> bool:
 class RefuseUntilLoaded(Answerer[ToolCallAsked]):
     def answer(self, event: ToolCallAsked, agents: ReadRows[AgentRow], marks: ReadMarks, settings: Settings, elsewhere: ReadElsewhere) -> Answer:
         record, row = elsewhere.here().record, agents.peek_session(event.session)
-        if event.subagent or asks_for_a_load(event.tool, event.input, event.command) or not refusal_wanted(record, row):
+        if event.subagent or asks_for_a_load(event) or not refusal_wanted(record, row):
             return Allowed()
         if stepping_aside(marks, settings):
             return Allowed()

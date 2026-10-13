@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.11 — The journal repeats itself less
+
+- Standing facts, rules and reminders are handed to the agent when a session starts and after each compaction, where they came at every quarter of the context. Their keywords still bring each one back when it comes up. Settings can set the old cadence again.
+- Skills the agent already loaded are no longer asked for again after an upgrade or a resumed session; only a new context window owes them.
+- With auto mode on and every row waiting on you, the "you stopped" line is said once per word from you instead of at every stop.
+- Parked work is named back every fifteen minutes instead of every five.
+- A background command the open work already waits on by name is no longer named again when the agent stops.
+- The confirmation after a tag ran is gone, and the line when awaited work comes back no longer repeats the agent's own words.
+- The chat etiquette reminder comes every 50 journal lines instead of 20.
+
 ## 3.0.10 — The check-in waits thirty minutes
 
 - When nothing has happened for a while, the agent is checked in with after thirty minutes by default instead of fifteen. Settings still sets it per project.

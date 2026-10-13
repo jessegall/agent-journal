@@ -49,7 +49,7 @@ def parked_to_name(works: ReadRows[Work], agents: ReadRows[AgentRow], memory: Re
     if not unnamed or not agent or ready(elsewhere.here().record):
         return []
     first = unnamed[0]
-    return [ParkedWorkStands(agent=agent.n, work=first.n, title=first.title, why=first.parked, more=f" and {len(unnamed) - 1} more" if len(unnamed) > 1 else "",
+    return [ParkedWorkStands(agent=agent.n, work=first.n, title=first.title, why=first.parked, others=len(unnamed) - 1,
                              parkings=tuple(sorted(parked)))]
 
 
