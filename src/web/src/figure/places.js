@@ -273,7 +273,7 @@ export function footingOn(spot) {
     if (!element?.isConnected) return null;
     const home = element === groundEdge().element;
     const edge = home ? groundEdge().edge : element.getBoundingClientRect();
-    return {element, dx: spot.x - edge.left, dy: spot.y - edge.top, posture: spot.posture, home};
+    return {element, dx: spot.x - edge.left, dy: spot.y - edge.top, posture: spot.posture, home, bars: home && isBars(element)};
 }
 
 // Where a footing's spot is now, carried along as what it rests on moves, or null when the ground went from under the figure: the element
@@ -299,9 +299,10 @@ export function groundUnder(footing, spot, figure) {
     if (!footing.home) return {spot: {...spot, ...now}, footing, motion: "carried"};
     const {element, edge} = groundEdge();
     const there = {...spot, y: now.y};
-    const bars = isBars(element) || isBars(footing.element);
+    // the bars the figure stood on lose their mark the moment the last of them goes, so whether it stood on bars is what the footing kept
+    const bars = isBars(element) || footing.bars;
     const motion = !bars || Math.abs(there.y - spot.y) <= 0.3 ? "carried" : there.y > spot.y ? "dropping" : "launched";
-    return {spot: there, footing: {...footing, element, dx: spot.x - edge.left}, motion};
+    return {spot: there, footing: {...footing, element, dx: spot.x - edge.left, bars: isBars(element)}, motion};
 }
 
 // The trip of a figure resting at `place` to `spot` (tripBetween), from its picture in the posture it travels in where it is to its picture

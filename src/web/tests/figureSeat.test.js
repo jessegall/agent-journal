@@ -194,7 +194,7 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     page(box);
     const home = groundEdge().element;
     const seat = seatOf(FIGURE, {x: 700, y: 600});
-    expect(footingOn(seat)).toEqual({element: home, dx: seat.x - 300, dy: 0, posture: "sit", home: true});
+    expect(footingOn(seat)).toEqual({element: home, dx: seat.x - 300, dy: 0, posture: "sit", home: true, bars: false});
     expect(footingOn({...seat, on: null})).toBe(null);
     const moved = {isConnected: true, getBoundingClientRect: () => ({...box, left: 320, top: 580})};
     const kept = {element: moved, dx: 10, dy: 0, posture: "stand", home: false};
@@ -222,7 +222,8 @@ test("at home the figure falls as the bars under it shrink or go and is lifted a
     page(box, {left: 300, top: 560, width: 400, height: 20});
     const fell = groundUnder(lifted.footing, lifted.spot, FIGURE);
     expect(fell).toMatchObject({spot: {x: spot.x, y: 560}, motion: "dropping"});
-    // the bar goes, and it falls to the compose box
+    // the bar goes, and it falls to the compose box: the bars it stood on lose their mark in that same moment, as the last one goes
+    fell.footing.element.hasAttribute = () => false;
     page(box);
     expect(groundUnder(fell.footing, fell.spot, FIGURE)).toMatchObject({spot: {x: spot.x, y: 580}, motion: "dropping"});
     // carried out of its world, its ground is gone
