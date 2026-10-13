@@ -12,6 +12,7 @@ from features.checks.handlers import FileFailingCheck, ForgetDeadRuns, MarkPassi
 from features.checks.listeners import SpotCheckResult, SpotDueChecks, SpotTestRuns
 from events.checks import CheckDue, CheckFailed, CheckPassedAgain, CheckUpdated, TestsFinished, TestsRunning
 from framework.journal import Journal
+from payload import HookEvent
 
 __all__ = ["Checks"]
 
@@ -82,6 +83,12 @@ class ChecksFeature(Feature):
         ])
         journal.events.listen(AgentReported, SpotTestRuns(), expects=[
             Given(AgentReported(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1, hook=HookEvent.PRE_TOOL_USE), rows=[AgentRow(n=1, title="claude-1", data={"running": {"command": "pytest", "effect": "tests", "at": 1.0}})])
+                >> Dispatches(TestsRunning(agent=1, key="tests:1.0", name="The whole suite", command="pytest", title="pytest", started=1.0)),
+            Given(AgentReported(agent=1, hook=HookEvent.STOP), rows=[AgentRow(n=1, title="claude-1", data={"running": {"command": "pytest", "effect": "tests", "at": 1.0}})])
+                >> Dispatches(nothing),
+            Given(AgentReported(agent=1, hook=HookEvent.PRE_TOOL_USE), rows=[AgentRow(n=1, title="claude-1", data={"running": {"command": "ls", "effect": "reads", "at": 1.0}})])
+                >> Dispatches(nothing),
         ])
         journal.events.handle(TestsRunning, ShowTestsRunning(), expects=[
             Given(TestsRunning(agent=1, key="tests:1.0", name="The whole suite", command="pytest", title="pytest", started=1.0), rows=[AGENT_ROW])
