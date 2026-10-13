@@ -32,12 +32,14 @@ class Notices(Controller):
                 RAISING.discard((title, which))
         return True
 
+    def stands(self, title: str, which: str = "") -> bool:
+        """Whether a notice of this title and place is standing."""
+        return any(n.title == title and n.data.get(WHICH, "") == which for n in self.rows.standing())
+
     def _claimed(self, title: str, which: str) -> bool:
         """Whether this call is the one that writes the notice: it is not standing and nobody else is writing it."""
         with ONCE:
-            if (title, which) in RAISING:
-                return False
-            if any(n.title == title and n.data.get(WHICH, "") == which for n in self.rows.standing()):
+            if (title, which) in RAISING or self.stands(title, which):
                 return False
             RAISING.add((title, which))
             return True

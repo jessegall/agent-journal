@@ -121,6 +121,13 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
             f"{name}: the same error again is not told twice"
         for notice in Notices(record, actor=SYSTEM).rows.standing():
             Notices(record, actor=SYSTEM).complete(notice.n, "fixed")
+    from controllers.faults import broke
+    elsewhere = fresh()
+    report(elsewhere, "working", "PreToolUse")
+    monkeypatch.setattr(Notices, "raise_once", lambda self, *args, **kwargs: False)
+    broke(elsewhere, "Traceback (most recent call last):\nValueError: written by another call")
+    assert any("written by another call" in n.brief for n in Nudges(elsewhere, actor=SYSTEM).rows.every()), \
+        "the agent is told of a fault whose notice was not standing, whichever call wrote the notice"
     monkeypatch.undo()
     runtime.hook_failures(record.root).write_text(f"1790000000 000 claude {record.env}\n" + "".join(f"{1790000001 + i} 500 claude {record.env}\n" for i in range(4)))
     commands.http.unanswered(record.root)

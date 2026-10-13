@@ -60,7 +60,10 @@ def place_of(trouble: str) -> str:
 
 def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
     fault = fault_of(trouble)
-    if not Notices(record, actor=SYSTEM).raise_once(FAULT, trouble, place_of(trouble)):
+    notices = Notices(record, actor=SYSTEM)
+    told = notices.stands(FAULT, place_of(trouble))
+    notices.raise_once(FAULT, trouble, place_of(trouble))
+    if told:
         return
     line = SAYS.format(where=where)
     if driver and driver.alive():
