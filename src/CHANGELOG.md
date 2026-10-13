@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.0 — Every feature declares what it expects, and the figure is drawn in 3D
+
+- Every feature now registers its handlers together with the behaviour it promises of them, and the test suite is generated from those promises: every action on every type, every provider, every expectation and every moment of every resource is played on each run. While the journal runs, a handler that did something its expectation does not say is reported to the agent. Nothing to do; it makes a feature that breaks its own promise visible at once.
+- Features talk to each other only through events, ask for what they need by type, and are wired once when the server starts, so a slow or broken feature no longer slows or breaks another.
+- The voice's figure is drawn in 3D and lives on Home: it walks, sits on the chat's ledges, hangs from a bubble by one hand and swings there, holds a laptop on its lap while typing, and the butler holds his tablet while he writes or searches. The flat animated mascot is gone, and with it the per-voice animation tools in Settings and dropping your own sprite sheets on a profile. The figure's switch moved to the Avatar feature in the Chat group; your earlier choice is carried over.
+- Journal law L9: a subagent only reads. A dispatch whose agent type can change files is refused in every work mode and pointed at a read-only type, a helper, or doing the work yourself.
+- The journal holds its lines while the agent compacts its conversation and sends them once it reports again, instead of typing into the compaction.
+- A failed live check names the rows it saw by number and the fields it asked about; it used to print every row whole, which once came to 20 MB in a single line.
+- Your messages, to-dos, notifications and settings are carried over as they are. A record that never reached 2.272.7 is refused: take the last 2.x release first, then 3.0.0. A 2.x install keeps receiving 2.x patches and moves to 3.0 only when you upgrade it.
+
 ## 2.272.8 — The tag confirmation is for the agent alone
 
 - The line saying a tag ran now rides back on the agent's next tool call instead of going out over the session channel. A whisper is private in the record, but the channel is what the user's own terminal prints, so the quiet confirmation was arriving at them. Nothing about it was a whisper.
@@ -167,7 +177,7 @@ newer version than the last one it saw is handed the same.
 
 ## 2.269.12 — Every project reports what is slow
 
-- Developer error reports and budget notices are on in every project the journal is installed in, and an upgrade switches them on where the old default had left them off. A project could run for weeks filing none, which is how a project's slowness went unreported.
+- Developer error reports and budget notices are on in every project the journal is installed in, and an upgrade switches them on where the old default had left them off. A project could run for weeks filing none, which is how one project's slowness went unreported.
 - An agent that meets one outside the journal's own project is told to send its numbers to the agent-journal session, so a slow hook or command in any project reaches whoever builds the journal.
 
 ## 2.269.11 — A field decides its own absence, and an engine does less per tick
@@ -380,7 +390,7 @@ newer version than the last one it saw is handed the same.
 - Every agent an update paused is resumed after it, in every environment, and a resume that was not submitted is asked again.
 
 ## 2.268.1 — The Kanban board and the polled routes answer at once
-- The Kanban board works out each card's waits and lane once and formats its texts through the cached formatter: on a project's board of 49 cards it answers in a third of a second after a start and in 8 ms after that, where it took up to 3 s.
+- The Kanban board works out each card's waits and lane once and formats its texts through the cached formatter: on a board of 49 cards it answers in a third of a second after a start and in 8 ms after that, where it took up to 3 s.
 - Formatting a text that names a command builds only the list of query names, never the parser of every command.
 - The services, identity and agents routes answer from state kept in memory, and a GET never claims or probes a port; the seat listing reads the session folders only when one is added or removed.
 - The server raises its open-file limit to 65,536, never lowers the one it started with, and keeps 16 packed archives open instead of 64.
@@ -412,7 +422,7 @@ newer version than the last one it saw is handed the same.
 
 ## 2.267.82 — Commands stop waiting on screens, git and stale timers
 - journal helper say returns at once: the words are typed to the helper's agent behind the answer, so the dispatcher never waits on its screen.
-- journal ticket board answers from what each card already holds and refreshes the git look behind the answer: on a project's board of 37 tickets it went from over 40 s to under a second.
+- journal ticket board answers from what each card already holds and refreshes the git look behind the answer: on a board of 37 tickets it went from over 40 s to under a second.
 - A long command is moved by the call that is actually running, with a press sent at once and dropped when that call has ended; its card names that call and its real time, and one place makes the card.
 - A conversation started again in a new process is no longer marked stopped before its first report, so its environment no longer shows Idle.
 - The status line says Working while a command runs, even under a standing wait, and opens with its chevron again.
