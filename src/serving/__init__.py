@@ -108,6 +108,18 @@ class ReadGit(Git):
     writes = False
 
 
+class Viewer(Service):
+    """The viewer in the browser: whether one is running for this journal, and showing its tab for an environment."""
+
+    writes = True
+
+
+class ReadViewer(Viewer):
+    """The viewer, asked for to read only."""
+
+    writes = False
+
+
 class JournalRoot(Service):
     """The journal's own folder, outside the record: its runtime files and logs, the sweeps the whole project shares, and every environment by name."""
 

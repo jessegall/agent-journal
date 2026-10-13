@@ -187,6 +187,20 @@ class Git(Asked):
 
 
 @dataclass
+class Viewer(Asked):
+    """The viewer: where it runs is what the Given says, and every tab shown is remembered as a run."""
+
+    service: ClassVar[str] = "viewer"
+
+    def lately_running(self) -> str:
+        return self.answers.answers.get(("running",), "")
+
+    def show(self, url: str, env: str) -> str:
+        self.seen.ran.append(("show", url, env))
+        return url
+
+
+@dataclass
 class JournalRoot(Asked):
     """The journal's folder: what is in it is what the Given says, every change to it is remembered as a run, and a sweep is taken unless the Given says another process holds it."""
 
@@ -295,6 +309,7 @@ class World:
     providers: Providers
     git: Git
     journal_root: JournalRoot
+    viewer: Viewer
     terminal: Terminal
     clock: Clock
     ids: Ids
@@ -303,7 +318,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Terminal(seen), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Viewer(seen, given.viewer), Terminal(seen), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

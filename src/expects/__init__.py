@@ -23,7 +23,7 @@ __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
-SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root")
+SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "viewer")
 """Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
 
 def stated(row) -> dict:
@@ -397,6 +397,8 @@ class Given:
     """What the project's git says, and a Given that names none leaves the project's own, by what is asked of it: ("checkout",) to the checkout the folder is in (or none), ("worktree",) to the linked checkout, ("git", *arguments) to what the command printed, ("stamp", file name) to when that log last moved, ("blobs", the hashes asked for) to their texts. The play's project is no git repository, so nothing is read from one."""
     journal_root: Answering = Answering({})
     """What the journal's own folder holds, and a Given that names none leaves the scratch journal's own, by path or pattern: ("glob", pattern) to the paths it lists, ("modified", path) to when one changed, ("exists", path), ("sweep", name) to whether this process took the sweep, ("environments",) to the environments there are; every write to it is remembered as a run."""
+    viewer: Answering = Answering({})
+    """Whether a viewer runs, and a Given that names none leaves the machine's own: ("running",) to the address it runs at. Every tab shown is remembered as a run."""
 
     @classmethod
     def of(cls, on, *rows, **more) -> "Given":

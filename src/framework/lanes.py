@@ -14,7 +14,7 @@ from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
 from engine import triggering
-from engine import project_files, runtime, seats, worktree
+from engine import project_files, runtime, seats, viewer, worktree
 from engine.files import blob_texts
 from engine.git import Checkout, checkout_of
 from engine.locks import project_sweep
@@ -33,7 +33,7 @@ from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -88,6 +88,21 @@ class TheGit:
     def link(self, top: Path, workspaces) -> None:
         """Shares the project's journal, skills and hooks with a linked checkout, without git seeing them."""
         worktree.share_journal(Path(top), self.record.root, workspaces)
+
+
+class TheViewer:
+    """The viewer the journal serves, read and shown through the one place that knows where it runs."""
+
+    def __init__(self, record):
+        self.record = record
+
+    def lately_running(self) -> str:
+        """The address the viewer runs at, or nothing when none does."""
+        return viewer.lately_running(self.record.root)
+
+    def show(self, url: str, env: str) -> str:
+        """Brings the viewer's tab for an environment to the front, opening one when there is none."""
+        return viewer.show(url, env)
 
 
 class TheJournalRoot:
@@ -380,6 +395,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, speaking())),
             Git: PerAsk(lambda feature, asked: TheGit(record)),
             ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
+            Viewer: PerAsk(lambda feature, asked: TheViewer(record)),
+            ReadViewer: PerAsk(lambda feature, asked: TheViewer(record)),
             JournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             ReadJournalRoot: PerAsk(lambda feature, asked: TheJournalRoot(record)),
             Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, speaking())),
