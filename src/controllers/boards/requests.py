@@ -45,7 +45,7 @@ class DraftingBoards:
         for about in board.asked:
             sequences.give_up(about, why="The request on the board was cancelled")
         tickets = self._cards(self.actor)
-        for left in self._drafts(board) if board.drafting_since else []:
+        for left in self.drafts(board) if board.drafting_since else []:
             tickets.delete(left.n, why="The request on the board was cancelled")
 
     @action
@@ -103,12 +103,12 @@ class DraftingBoards:
     def say(self, n: int, line: str):
         board = self._drafting(n)
         asked = board.asked
-        drafted = len(self._drafts(board))
+        drafted = len(self.drafts(board))
         if board.phase == DRAFTING_PHASE and drafted < board.expected:
             raise Refused(f"you guessed {board.expected} cards and drafted {drafted}: draft the rest before you say you are done")
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).comment(Ref.parse(asked[-1]).n, line.strip())
 
-    def _drafts(self, board) -> list:
+    def drafts(self, board) -> list:
         since = board.drafting_since
         return [t for t in self._cards(SYSTEM).rows.standing() if t.draft and int(t.board) == board.n and t.created >= since]
 

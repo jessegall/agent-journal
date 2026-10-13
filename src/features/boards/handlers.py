@@ -27,7 +27,7 @@ class OfferToPlaceAddedCards(Handler):
 
 
 def uncovered(boards: Boards, board) -> str:
-    missing = boards._uncovered(board) if board.done_when else []
+    missing = boards.uncovered(board) if board.done_when else []
     return (" Name in the same line what the goal will miss without a card for it: " + "; ".join(missing) + ".") if missing else ""
 
 
@@ -40,7 +40,7 @@ class MarkQuietFillingStalled(Handler):
         for board in boards.rows.standing():
             if board.phase != DRAFTING_PHASE:
                 continue
-            quiet = time.time() - max([float(board.updated)] + [float(t.updated) for t in boards._drafts(board)])
+            quiet = time.time() - max([float(board.updated)] + [float(t.updated) for t in boards.drafts(board)])
             if quiet > QUIET_FILL:
                 boards.stall(board.n, f"nothing was written to the board for {int(quiet)} seconds")
 

@@ -88,7 +88,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
     def _merged(self, board, field: str, **changes):
         return self.update(board.n, **{field: {**getattr(board, field), **changes}})
 
-    def _uncovered(self, board) -> list[str]:
+    def uncovered(self, board) -> list[str]:
         tickets = self._cards(SYSTEM)
         present = {row["n"] for row in tickets.rows.summaries() if not row["deleted"]}
         kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers if str(number).isdigit()}
