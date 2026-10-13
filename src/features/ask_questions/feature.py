@@ -63,7 +63,7 @@ class AskQuestions(Feature):
     def register(self, journal: Journal) -> None:
         FACTS.register(self, *state_facts("question", "open", lambda context: [q for q in Questions(context.record, actor=SYSTEM).rows.standing() if not q.hidden]))
         journal.events.listen(AgentReported, SpotProse(), expects=[
-            Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript("Should I use files or SQLite?\n\n1. Files\n2. SQLite")) >> Dispatches(ProseOffersChoices(agent=1)),
+            Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript("Should I use files or SQLite?\n\n1. Files\n2. SQLite")) >> Dispatches(ProseOffersChoices(agent=1).due("asking")),
             Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript("The build is green.")) >> Dispatches(nothing),
         ])
         journal.events.listen(QuestionCreated, SpotQuestionAsked(), expects=[

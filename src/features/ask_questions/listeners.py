@@ -26,7 +26,7 @@ def settled(agents: ReadRows[AgentRow]) -> list[Fact]:
 class SpotProse(Listener[AgentReported]):
     def listen(self, event: AgentReported, agents: ReadRows[AgentRow], providers: Providers, settings: Settings) -> list[Fact]:
         offered = settings.is_on(ASKING) and offers_choices(providers.last_said(agents.peek(event.agent)))
-        return [ProseOffersChoices(agent=event.agent)] if offered else []
+        return [ProseOffersChoices(agent=event.agent).due(ASKING)] if offered else []
 
 
 class SpotQuestionAsked(Listener[QuestionCreated]):
