@@ -1599,88 +1599,25 @@ def test_the_engine_reads_what_it_should_hold_back_what_it_cannot_decide_and_say
     assert engine.nudge() == "nothing owed", "an idle agent with nothing owed is left alone"
 
 
-def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_turn_once(tmp_path, monkeypatch):
-    from types import SimpleNamespace
-    from engine.stored import write_json
-    from engine.sessions import Sessions
-    from features.dev_faults.diagnostics import log_file
-    from runner import chat_mirror, spool
+def test_the_chat_mirror_replays_what_was_left_unsent(tmp_path, monkeypatch):
+    from framework import displayed
+    from runner import spool
     from tests.kit import report
     record = fresh()
     report(record, "working", "PreToolUse")
     root = record.root
-    folder = chat_mirror.unsent(root)
+    folder = displayed.unsent(root)
     folder.mkdir(parents=True)
     (folder / "1.json").write_text(json.dumps({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "replayed words"}))
     (folder / "2.json").write_text("not json")
     (folder / "3.tmp").write_text(json.dumps({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "b", "index": 0, "final": True, "delta": "left behind"}))
     (folder / "4.tmp").write_text('{"half writ')
     seen = []
-    monkeypatch.setattr(chat_mirror, "shown", lambda root, chunk: seen.append(chunk.delta))
+    monkeypatch.setattr(displayed, "announce_chunk", lambda root, chunk: seen.append(chunk.delta))
     spool.replay(root)
     assert seen == ["replayed words", "left behind"] and not list(folder.glob("*.json")), \
-        "what was displayed while the journal was down is shown once it is up, a file that is not readable is dropped, and an event the hook wrote but never moved to its final name is recovered"
+        "what was displayed while the journal was down is told once it is up, a file that is not readable is dropped, and an event the hook wrote but never moved to its final name is recovered"
     assert [kept.name for kept in folder.glob("*.tmp")] == ["4.tmp"], "a file still being written stays for the next listing"
-    monkeypatch.undo()
-
-    now = time.time()
-    turn = lambda key, text, at: SimpleNamespace(key=key, text=text, at=at, has_agent_text=True)
-    turns = []
-
-    class Provider:
-        @classmethod
-        def shows_what_is_said(cls):
-            return True
-
-        def turns(self, path):
-            return turns
-
-        def interrupted_by_user(self, path):
-            return False
-    monkeypatch.setattr(chat_mirror, "PROVIDERS", {"fake": Provider})
-    row = SimpleNamespace(provider="fake", transcript=str(tmp_path / "transcript.jsonl"))
-    sent = []
-    monkeypatch.setattr(chat_mirror, "send_to_chat", lambda root, session, text, key: sent.append(text))
-    ledger = chat_mirror.DisplayedLedger(root, "claude-1")
-    write_json(ledger.file, {chat_mirror.SENT: [chat_mirror.fingerprint("shown in pieces"), "transcript-key"], chat_mirror.MATCHED: [chat_mirror.fingerprint("streamed")]})
-    turns += [turn("transcript-key", "kept", now), turn("k1", "shown in pieces", now), turn("k2", "streamed", now), turn("k3", "never shown", now)]
-    chat_mirror.unfinished(root, "claude-1", row)
-    held = json.loads(ledger.file.read_text())
-    assert (sent, "k1" in held[chat_mirror.SENT], "k2" in held[chat_mirror.SENT]) == (["never shown"], True, True), \
-        "a turn that was shown in pieces or streamed is not sent again, and one that never was is sent"
-
-    sent.clear()
-    write_json(ledger.file, {chat_mirror.SENT: []})
-    turns[:] = [turn("transcript:1", "only in the transcript", now)]
-    chat_mirror.unfinished(root, "claude-1", row)
-    assert (sent, chat_mirror.FELL_BACK in log_file(root).read_text()) == (["only in the transcript"], False), \
-        "a turn the display hook never delivered is sent from the transcript at once, and the fault is only held while the hook may still be late"
-    with ledger.changing() as kept:
-        kept[chat_mirror.FAULTS] = {one: 0.0 for one in kept[chat_mirror.FAULTS]}
-    chat_mirror.raise_held(root, "claude-1")
-    assert chat_mirror.FELL_BACK in log_file(root).read_text(), "and once its window has run out with nothing arriving, the engine says in its log that it had to"
-    monkeypatch.undo()
-
-    Sessions(root).bind("claude-1", record.env, provider="claude")
-    assert chat_mirror.send_to_chat(root, "claude-1", "   ") is False, "a blank message is not sent"
-    assert chat_mirror.send_to_chat(root, "nobody-1", "who is this") is False, "a message for a session with no agent row is not sent"
-    assert chat_mirror.send_to_chat(root, "claude-1", "once only") and chat_mirror.send_to_chat(root, "claude-1", "once only"), "a message already sent counts as sent and is not sent twice"
-
-
-def test_the_turn_end_catch_up_queues_behind_a_display_event_already_on_the_session_lane():
-    from engine.after_answer import AfterAnswer, after_answered, answering_for
-    pool = AfterAnswer(0)
-    ran = []
-    pool.add(lambda: ran.append("displayed"), "claude-1")
-    with pool.answering_hook():
-        answering_for("claude-1")
-        after_answered(lambda: ran.append("turn ended"))
-    for _ in range(2):
-        job, lane = pool.jobs.get_nowait()
-        job()
-        pool.next_in(lane)
-    assert ran == ["displayed", "turn ended"], \
-        "the stop hook's catch-up runs on the session's lane after a display event that arrived before it, so the hook's text is in the ledger before the transcript is read"
 
 
 def test_a_server_that_stops_answering_is_stopped_with_its_threads_kept(tmp_path, monkeypatch):

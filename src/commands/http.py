@@ -32,7 +32,7 @@ from engine import attic, bus, runtime, timing, viewer
 from engine.package import CODE
 from engine.version import version
 from controllers.faults import broke, logged as entered
-from runner.chat_mirror import displayed
+from framework.displayed import announce_chunk
 from runner.hooks import answer
 from engine.stepped import call_of
 from runner.spool import drain, replay
@@ -219,7 +219,7 @@ def post_hook(req: Request) -> Reply:
     provider = PROVIDERS[req.params["provider"]]()
     chunk = provider.display_chunk(req.body)
     if chunk is not None:
-        return Reply(200, {}, after=lambda: (replay(req.root), displayed(req.root, chunk)), after_lane=chunk.session)
+        return Reply(200, {}, after=lambda: (replay(req.root), announce_chunk(req.root, chunk)), after_lane=chunk.session)
     hook = Hook.read({**req.body, "inbox": asked.inbox}, provider.tool_kinds)
     answering_for(hook.session)
     out = answer(provider, req.root, hook, asked.pid, asked.env)

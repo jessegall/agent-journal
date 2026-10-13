@@ -62,7 +62,7 @@ def test_notes_items_and_drops_change_only_an_update():
 
 def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_not():
     from payload import Chunk
-    from runner.chat_mirror import displayed
+    from framework.displayed import announce_chunk as displayed
     from engine.sessions import Sessions
     from controllers.types import Sequences
     from features.sequences.shipped import ship

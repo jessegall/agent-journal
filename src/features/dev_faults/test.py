@@ -554,8 +554,9 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
     with counted() as work:
         replay(record.root)
     assert not work.scanned, f"a hook that finds nothing spooled scans no folder once warm; it scanned {work.scanned}"
-    from runner import chat_mirror, spool
-    kept = chat_mirror.unsent(record.root)
+    from framework import displayed
+    from runner import spool
+    kept = displayed.unsent(record.root)
     kept.mkdir(parents=True, exist_ok=True)
     for name in ("1", "2", "3"):
         (kept / f"{name}.json").write_text("{}")

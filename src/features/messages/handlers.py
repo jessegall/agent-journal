@@ -1,10 +1,16 @@
+from pathlib import Path
+
 from events import Fact
-from events.messages import (AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageSettled,
+from events.agents import ChunkDisplayed
+from events.messages import (FallbackHeld, FaultWindowOver, MessageDisplayed, PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageSettled,
                              RunTogether, TurnToPost)
 from features.messages.listeners import ANSWER_HOLD, UNREAD_EVERY
+from features.messages.mirroring import cut_off, collect, fault_brief, finish, hold_fault, next_turn, over, undelivered, withdraw
+from framework.displayed import CATCH_UP, FELL_BACK, HELD_FOR, DisplayedLedger, fingerprint
 from receiving import Handler
 from resources.types import Message
-from serving import Chat, Marks, Rows, Settings
+from resources.types import AgentRow
+from serving import Chat, Clock, Elsewhere, Faults, Marks, Providers, ReadRows, Rows, Settings
 
 UNREAD, ANSWERING = "messages.unread", "messages.answering"
 
@@ -94,4 +100,95 @@ class NameRunTogether(Handler[RunTogether]):
 class NameBareNumbers(Handler[BareNumbersNamed]):
     def handle(self, event: BareNumbersNamed, chat: Chat) -> list[Fact]:
         chat.nudge("numbers", n=event.n, numbers=event.numbers)
+        return []
+
+
+def ledger_of(elsewhere: Elsewhere, row) -> DisplayedLedger:
+    return DisplayedLedger(elsewhere.here().record.root, row.title)
+
+
+def raise_due(ledger: DisplayedLedger, row, faults: Faults, now: float) -> None:
+    """Files the fault of every fallback whose window has run out with nothing arriving."""
+    count = over(ledger, now)
+    if count:
+        line, brief = fault_brief(count, row.title)
+        faults.log(line)
+        faults.file(FELL_BACK, brief)
+
+
+def catch_up(row, ledger: DisplayedLedger, providers: Providers, chat: Chat, faults: Faults, now: float) -> list[Fact]:
+    """The turns of the transcript the display hook did not bring go to the chat, and the fault of a hook that did not arrive is held."""
+    provider = providers.offers(row.provider)
+    if provider is None or not row.transcript:
+        return []
+    pending, found = undelivered(ledger, [turn for turn in provider.turns(Path(row.transcript)) if turn.has_agent_text and turn.at >= now - CATCH_UP])
+    if not pending:
+        return []
+    faults.log(f"display fallback session {row.title} pending {[(turn.key, fingerprint(turn.text), len(turn.text)) for turn in pending]} {found}")
+    held = provider.shows_what_is_said() and not provider.interrupted_by_user(Path(row.transcript))
+    for turn in pending:
+        chat.send(turn.text, turn.key)
+    return [FallbackHeld(agent=row.n, prints=tuple(fingerprint(turn.text) for turn in pending))] if held else []
+
+
+class KeepChunk(Handler[ChunkDisplayed]):
+    def handle(self, event: ChunkDisplayed, agents: ReadRows[AgentRow], elsewhere: Elsewhere) -> list[Fact]:
+        row = agents.peek(event.agent)
+        text = collect(ledger_of(elsewhere, row), event.message, event.index, event.delta, event.final)
+        return [MessageDisplayed(agent=row.n, message=event.message, text=text)] if text else []
+
+
+class PostDisplayed(Handler[MessageDisplayed]):
+    def handle(self, event: MessageDisplayed, agents: ReadRows[AgentRow], elsewhere: Elsewhere, chat: Chat) -> list[Fact]:
+        if chat.send(event.text, event.message or None):
+            finish(ledger_of(elsewhere, agents.peek(event.agent)), event.message, event.text)
+        return []
+
+
+class SendCutOffWords(Handler[TurnEnded]):
+    def handle(self, event: TurnEnded, agents: ReadRows[AgentRow], elsewhere: Elsewhere, chat: Chat, faults: Faults, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        ledger = ledger_of(elsewhere, row)
+        raise_due(ledger, row, faults, clock.now())
+        cut = cut_off(ledger, event.words) if event.words else []
+        if cut:
+            chat.send(event.words, cut[0] or None)
+            withdraw(ledger, event.words)
+        return []
+
+
+class CatchUpAfterTurn(Handler[TurnEnded]):
+    def handle(self, event: TurnEnded, agents: ReadRows[AgentRow], elsewhere: Elsewhere, providers: Providers, chat: Chat, faults: Faults, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        return catch_up(row, ledger_of(elsewhere, row), providers, chat, faults, clock.now())
+
+
+class BeginTurn(Handler[PromptBegan]):
+    def handle(self, event: PromptBegan, agents: ReadRows[AgentRow], elsewhere: Elsewhere, providers: Providers, chat: Chat, faults: Faults, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        ledger = ledger_of(elsewhere, row)
+        raise_due(ledger, row, faults, clock.now())
+        facts = catch_up(row, ledger, providers, chat, faults, clock.now())
+        next_turn(ledger)
+        return facts
+
+
+class PostCutOffTurn(Handler[TurnCutOff]):
+    def handle(self, event: TurnCutOff, agents: ReadRows[AgentRow], elsewhere: Elsewhere, providers: Providers, chat: Chat, faults: Faults, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        chat.send(event.words, None)
+        return catch_up(row, ledger_of(elsewhere, row), providers, chat, faults, clock.now())
+
+
+class HoldFallbackFault(Handler[FallbackHeld]):
+    def handle(self, event: FallbackHeld, agents: ReadRows[AgentRow], elsewhere: Elsewhere, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        hold_fault(ledger_of(elsewhere, row), list(event.prints), clock.now() + HELD_FOR)
+        return [FaultWindowOver(agent=row.n).spaced(f"fault window|{row.n}", HELD_FOR)]
+
+
+class RaiseHeldFaults(Handler[FaultWindowOver]):
+    def handle(self, event: FaultWindowOver, agents: ReadRows[AgentRow], elsewhere: Elsewhere, faults: Faults, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        raise_due(ledger_of(elsewhere, row), row, faults, clock.now())
         return []

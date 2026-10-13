@@ -132,6 +132,12 @@ class ReadJournalRoot(JournalRoot):
     writes = False
 
 
+class Faults(Service):
+    """The journal's own fault reports: a fault filed here stands as a notice the user reads, counted each time it is seen again, and a line may be kept beside the other diagnostics."""
+
+    writes = True
+
+
 class OwnWork(Service):
     """What the asking feature does that is no row, file, process or chat of the journal's, such as speaking to the outside service it is for: the methods the feature declares, over this record."""
 

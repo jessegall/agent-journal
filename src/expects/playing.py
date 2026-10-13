@@ -215,6 +215,19 @@ class Viewer(Asked):
 
 
 @dataclass
+class Faults(Asked):
+    """The fault reports: each one filed is remembered as a run, with its title."""
+
+    service: ClassVar[str] = "faults"
+
+    def file(self, title: str, brief: str, **data) -> None:
+        self.seen.ran.append(("fault", title))
+
+    def log(self, line: str) -> None:
+        self.seen.ran.append(("fault log", line))
+
+
+@dataclass
 class JournalRoot(Asked):
     """The journal's folder: what is in it is what the Given says, every change to it is remembered as a run, and a sweep is taken unless the Given says another process holds it."""
 
@@ -339,6 +352,7 @@ class World:
     providers: Providers
     git: Git
     journal_root: JournalRoot
+    faults: Faults
     viewer: Viewer
     own_work: OwnWork
     terminal: Terminal
@@ -349,7 +363,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Viewer(seen, given.viewer), OwnWork(seen, given.own_work), Terminal(seen), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Faults(seen, given.faults), Viewer(seen, given.viewer), OwnWork(seen, given.own_work), Terminal(seen), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

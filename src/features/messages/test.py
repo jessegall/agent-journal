@@ -4,9 +4,7 @@ import time
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from payload import Chunk
 from features.dev_faults.diagnostics import log_file
-from runner.chat_mirror import FELL_BACK, displayed
 from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
@@ -184,110 +182,6 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     assert list(received.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"
 
 
-def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display_hook_only(tmp_path, monkeypatch):
-    from runner import chat_mirror
-    from runner.engine import Engine
-    record, transcript, now = fresh(), tmp_path / "s.jsonl", datetime.now(timezone.utc).isoformat()
-    monkeypatch.setattr(chat_mirror, "SETTLE", 0.5)
-    transcript.write_text(json.dumps({"type": "user", "timestamp": now, "message": {"content": "go"}}) + "\n")
-    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
-    Sessions(record.root).bind("claude-1", record.env, provider="claude")
-    for piece in ({"index": 0, "final": False, "delta": "first "}, {"message_id": "b", "index": 0, "final": True, "delta": "second"}, {"index": 1, "final": True, "delta": "whole"}):
-        displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", **piece}))
-    chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
-    assert chat() == ["second", "first whole"], "a message that finishes never drops the pieces of one still being shown"
-    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
-    engine.tick()
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
-    engine.tick()
-    assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 0, "final": False, "delta": "The summary "}))
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "The summary of the turn"})
-    assert chat().count("The summary of the turn") == 1, "a message whose last pieces never came is sent whole when the turn stops"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 1, "final": True, "delta": "of the turn"}))
-    assert chat().count("The summary of the turn") == 1 and "of the turn" not in chat(), "a piece arriving after that does not send it again"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "d", "index": 0, "final": False, "delta": "Cut short "}))
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Cut short by the next prompt"}]}}) + "\n")
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "claude-1", "prompt": "next"})
-    assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
-    from runner.chat_mirror import FAULTS, DisplayedLedger, fingerprint, raise_held
-    said = lambda: (any(FELL_BACK in line for line in nudges(record)), FELL_BACK in log_file(record.root).read_text())
-    assert said() == (False, False), "the transcript fills the chat at once, but the fault is only held: the hook may be late, not lost"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
-    assert chat().count("second") == 1, "the same words moments later are not posted a second time, whatever turn they came from"
-    branch = Messages(record, actor=USER).create("Which branch?", brief="Which branch?")
-    Messages(record, actor=AGENT).read(branch.n)
-    Messages(record, actor=AGENT).reply(str(branch.n), "Main, sir.")
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "r", "index": 0, "final": True, "delta": "Main, sir."}))
-    assert chat().count("Main, sir.") == 0, "and words already filed as a reply are not posted again as a plain message"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "f", "index": 0, "final": True, "delta": "👍"}))
-    assert ("👍" in chat(), any("your message was only 👍, so it was not posted" in line for line in nudges(record))) == (False, True), \
-        "a message that is only a face is not posted, and the agent is told to react instead"
-    before = len(chat())
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "g", "index": 0, "final": True, "delta": "   "}))
-    assert len(chat()) == before, "a message of nothing but spaces is not posted"
-    from runner.chat_mirror import send_to_chat
-    send_to_chat(record.root, "claude-1", "Parked it for now.", "transcript:1791545582.1:abc")
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "index": 0, "final": True, "delta": "Parked it for now."}))
-    assert chat().count("Parked it for now.") == 1, "a turn the transcript carried first is not posted again when the display hook delivers the same words"
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Done. " * 80}]}}) + "\n")
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Done. " * 80})
-    assert any("paragraph" in line.lower() for line in nudges(record)), "a long answer in one block of sentences is told to be set in paragraphs"
-    late = "Waiting on the measurement."
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": late}]}}) + "\n")
-    fell_back = log_file(record.root).read_text().count(FELL_BACK)
-    monkeypatch.setattr(chat_mirror, "SETTLE", 30.0)
-    threading.Timer(0.1, lambda: displayed(record.root, Chunk.from_json(
-        {"session_id": "claude-1", "message_id": "h", "index": 0, "final": True, "delta": late}))).start()
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": late})
-    assert (chat().count(late), log_file(record.root).read_text().count(FELL_BACK)) == (1, fell_back), \
-        "the turn's last words are waited for: a display hook the stop raced past still delivers them, and the transcript is not blamed"
-    monkeypatch.setattr(chat_mirror, "SETTLE", 0.5)
-    ledger = DisplayedLedger(record.root, "claude-1")
-    with ledger.changing() as kept:
-        assert fingerprint(late) not in kept.get(FAULTS, {}), "and no fault is held for them: the stop waited until they came, however long the machine took, and a hook that never delivered would leave one here"
-    with ledger.changing() as kept:
-        assert fingerprint("Cut short by the next prompt") in kept[FAULTS], "the held fault is kept by the fingerprint of the words"
-        kept[FAULTS] = {one: 0.0 for one in kept[FAULTS]}
-    raise_held(record.root, "claude-1")
-    assert said() == (True, True), "and once its window has run out with nothing arriving, the engine says in its log and to the agent that the transcript filled the chat for the hook"
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Late but not lost"}]}}) + "\n")
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Late but not lost"})
-    raised = log_file(record.root).read_text().count(FELL_BACK)
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "another-id", "index": 0, "final": True, "delta": "Late but not lost"}))
-    with ledger.changing() as kept:
-        assert kept.get(FAULTS, {}) == {}, "the words arriving under another message id withdraw the held fault, by their fingerprint"
-    raise_held(record.root, "claude-1")
-    assert (log_file(record.root).read_text().count(FELL_BACK), chat().count("Late but not lost")) == (raised, 1), "and nothing is said about it, nor shown twice"
-    cut = lambda text: transcript.write_text(transcript.read_text() + "\n".join([
-        json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}}),
-        json.dumps({"type": "user", "timestamp": now, "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}})]) + "\n")
-    monkeypatch.setattr(engine.agent.driver, "alive", lambda: True)
-    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
-    blamed = log_file(record.root).read_text().count(FELL_BACK)
-    cut("Half a sentence of the turn that was cut off")
-    engine.cut_off()
-    engine.cut_off()
-    assert chat().count("Half a sentence of the turn that was cut off") == 1, "a turn the person cut off reaches the chat when the engine sees it, once, without waiting for the next prompt"
-    assert log_file(record.root).read_text().count(FELL_BACK) == blamed, "and the display hook is not blamed for it, since a turn the person cut off has no words for the hook to deliver"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "kept", "index": 0, "final": True, "delta": "Delivered by the hook before the cut"}))
-    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
-    cut("Delivered by the hook before the cut")
-    engine.cut_off()
-    assert chat().count("Delivered by the hook before the cut") == 1, "and words the display hook already delivered are not sent again"
-    across = "Said in one turn and caught up with in the next"
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "across-turns", "index": 0, "final": True, "delta": across}))
-    chat_mirror.turn_began(record.root, "claude-1", Agents(record).by_session("claude-1"))
-    with DisplayedLedger(record.root, "claude-1").changing() as kept:
-        assert fingerprint(across) in kept.get("_matched", []), \
-            "what the hook delivered is still known by its words after the next turn begins: the hook knows a message by the provider's id and the transcript by its own, so the words are the only thing the two share, and a catch-up that runs later has nothing else to recognise it by"
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": across}]}}) + "\n")
-    before_catching_up = log_file(record.root).read_text().count(FELL_BACK)
-    chat_mirror.unfinished(record.root, "claude-1", Agents(record).by_session("claude-1"))
-    assert (chat().count(across), log_file(record.root).read_text().count(FELL_BACK)) == (1, before_catching_up), \
-        "so that catch-up neither posts the words a second time nor blames the hook that did deliver them"
-
-
 def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
     asked = Messages(record := fresh(), actor="user").create("ship it?")
     assert "is a reaction: journal message react" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "👍"))
@@ -389,13 +283,6 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
         "two sessions' answers on the same transcript line are both kept"
     codex.write_text(codex.read_text() + json.dumps({"type": "response_item", "timestamp": datetime.now(timezone.utc).isoformat(),
                                                      "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "what the Codex agent said"}]}}) + "\n")
-    from runner import chat_mirror
-    Sessions(record.root).bind("codex-1", record.env, provider="codex")
-    chat_mirror.unfinished(record.root, "codex-1", Agents(record).by_session("codex-1"))
-    said = [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
-    log = log_file(record.root)
-    assert ("what the Codex agent said" in said, log.exists() and FELL_BACK in log.read_text()) == (True, False), \
-        "a Codex agent's words reach the chat as the agent's own, and a provider that shows nothing as it is displayed is read from its transcript by design, never reported as a hook that failed"
 
 
 def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update():

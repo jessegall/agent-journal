@@ -33,7 +33,7 @@ from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, OwnWork, ReadOwnWork)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, ReadOwnWork)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -88,6 +88,20 @@ class TheGit:
     def link(self, top: Path, workspaces) -> None:
         """Shares the project's journal, skills and hooks with a linked checkout, without git seeing them."""
         worktree.share_journal(Path(top), self.record.root, workspaces)
+
+
+class TheFaults:
+    """The fault reports of the environment, filed through the one place that counts a fault seen again."""
+
+    def __init__(self, record):
+        self.record = record
+
+    def file(self, title: str, brief: str, **data) -> None:
+        FEATURES["dev_faults"].reports.file(self.record, title, brief, **data)
+
+    def log(self, line: str) -> None:
+        from features.dev_faults.diagnostics import logged_at
+        logged_at(self.record.root, line)
 
 
 class TheViewer:
@@ -408,6 +422,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, speaking())),
             Git: PerAsk(lambda feature, asked: TheGit(record)),
             ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
+            Faults: PerAsk(lambda feature, asked: TheFaults(record)),
             Viewer: PerAsk(lambda feature, asked: TheViewer(record)),
             ReadViewer: PerAsk(lambda feature, asked: TheViewer(record)),
             OwnWork: PerAsk(lambda feature, asked: TheOwnWork(FEATURES[feature], record)),

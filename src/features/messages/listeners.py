@@ -2,13 +2,15 @@ from controllers.messages import only_emoji
 from declaring.reach import Reach
 from engine.transcript import IDLE
 from events import Fact
-from events.agents import AgentMessageSent, AgentReported
-from events.messages import (AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageCreated,
+from events.agents import AgentMessageSent, AgentReported, TurnInterrupted, TurnStopped
+from events.messages import (PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageCreated,
                              MessageSettled, MessageUpdated, RunTogether, TurnToPost)
 from events.resources import ResourceCreated
 from features.messages.answering import read_and_open, theirs, unanswered
 from features.messages.details import MessagesDetails
 from features.messages.prose import RUN_ON, SENTENCES, bare, numbers
+from framework.displayed import SETTLE, arrives
+from payload import HookEvent
 from receiving import Listener
 from resources.base import AGENT, SECTION, USER
 from resources.types import STOPPED, AgentRow, Comment, Message, Reaction
@@ -121,3 +123,21 @@ class SpotBareNumbers(Listener[AgentMessageSent]):
         named = [str(n) for n in found if n in known]
         sent = next((m for m in reversed(messages.rows.summaries()) if m.seen[:1] == [AGENT]), None)
         return [BareNumbersNamed(agent=event.agent, n=sent["n"], numbers=", ".join(named))] if named and sent else []
+
+
+class SpotTurnEnd(Listener[TurnStopped]):
+    def listen(self, event: TurnStopped, agents: ReadRows[AgentRow], elsewhere: ReadElsewhere) -> list[Fact]:
+        row = agents.peek(event.agent)
+        ended = TurnEnded(agent=row.n, words=row.last_message)
+        late = bool(row.last_message) and not arrives(elsewhere.here().record.root, row.title, row.last_message)
+        return [ended.spaced(f"turn end|{row.n}", SETTLE) if late else ended]
+
+
+class SpotPrompt(Listener[AgentReported]):
+    def listen(self, event: AgentReported) -> list[Fact]:
+        return [PromptBegan(agent=event.agent)] if event.hook == HookEvent.USER_PROMPT_SUBMIT else []
+
+
+class SpotCutOff(Listener[TurnInterrupted]):
+    def listen(self, event: TurnInterrupted) -> list[Fact]:
+        return [TurnCutOff(agent=event.agent, words=event.text)]

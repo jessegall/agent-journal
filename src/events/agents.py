@@ -13,6 +13,7 @@ TICKED, BEAT = "ticked", "beat"
 COMMAND_RAN = "command.ran"
 TOOL_ANSWERED = "tool.answered"
 INTERRUPTED = "turn.interrupted"
+CHUNK = "chunk.displayed"
 
 
 @dataclass(frozen=True)
@@ -139,6 +140,17 @@ class ToolCallAnswered(AgentEvent):
     paths: tuple[str, ...] = ()
     writings: tuple[str, ...] = ()
     """What the call writes in its own words, such as an edit's new text or a dispatch's prompt; never a path it names."""
+
+
+@dataclass(frozen=True)
+class ChunkDisplayed(AgentEvent):
+    """A word of what the agent said, as its provider's display hook brought it: the part of a message it is, and whether it is the last."""
+
+    on: ClassVar[str] = f"agent.{CHUNK}"
+    message: str = ""
+    index: int = 0
+    delta: str = ""
+    final: bool = False
 
 
 @dataclass(frozen=True)

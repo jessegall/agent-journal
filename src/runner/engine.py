@@ -26,7 +26,7 @@ from agents.seat import SeatReport
 from resources.text import digest, plural
 from engine.transcript import PEER
 from providers.turns import turns
-from runner.chat_mirror import send_row_to_chat, unfinished
+from framework.displayed import send_row_to_chat
 from runner.relay import Relay
 from engine.stored import Growth, read_json, write_json
 from resources.fields import Loaded
@@ -239,7 +239,6 @@ class Engine:
         if reading.provider.interrupted_by_user(reading.transcript):
             words = [turn.text for turn in reading.provider.turns(reading.transcript) if turn.has_agent_text][-1:]
             bus.announce(self.record, "agent", reading.row.n, INTERRUPTED, AGENT, {"text": "".join(words)})
-            unfinished(self.record.root, reading.row.title, reading.row)
 
     def failed(self) -> str:
         reading = self.reading()

@@ -9,7 +9,7 @@ from engine.stored import read_json
 from providers import PROVIDERS
 from payload import Hook
 from resources.fields import Loaded
-from runner import chat_mirror
+from framework.displayed import replay_file, unsent
 from runner.hooks import answer
 
 REPLAYING = threading.Lock()
@@ -29,7 +29,7 @@ class Spooled(Loaded):
 
 def kept_stamp(root: Path) -> int:
     try:
-        return os.stat(chat_mirror.unsent(root)).st_mtime_ns
+        return os.stat(unsent(root)).st_mtime_ns
     except OSError:
         return 0
 
@@ -41,7 +41,7 @@ def waiting_events(root: Path) -> list[Path]:
 
 def recovered(root: Path) -> list[Path]:
     """Every kept event, with any whose move to its final name never happened put right: the hook writes a .tmp and moves it, so a .tmp that reads whole is an event a dying hook left behind, and one that does not is still being written and comes with the next listing."""
-    folder = chat_mirror.unsent(root)
+    folder = unsent(root)
     left_behind = [kept for kept in folder.glob("*.tmp") if read_json(kept, dict, {})]
     for kept in left_behind:
         kept.rename(kept.with_suffix(".json"))
@@ -81,10 +81,10 @@ def handle(root: Path, kept: Path) -> None:
     spooled = Spooled.from_json(read_json(kept, dict, {}))
     provider = PROVIDERS.get(spooled.agent)
     if provider is None or not spooled.body:
-        chat_mirror.replay_file(root, kept)
+        replay_file(root, kept)
         return
     if provider.display_chunk(spooled.body) is not None:
-        chat_mirror.replay_file(root, kept, spooled.body)
+        replay_file(root, kept, spooled.body)
         return
     at = kept.stat().st_mtime
     kept.unlink(missing_ok=True)

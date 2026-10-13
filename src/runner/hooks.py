@@ -13,7 +13,6 @@ from events.answers import Rewritten
 from events.asking import HookResponding
 from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow
-from runner import chat_mirror
 from runner.gate import input_of, refusal
 from runner.hook_report import end_refused, report
 from runner.stepping import rewrite
@@ -81,15 +80,4 @@ def handed_over(call: HookCall) -> str:
     return answer.text if isinstance(answer, Rewritten) else ""
 
 
-def ended(call: HookCall) -> dict:
-    after_answered(lambda: chat_mirror.turn_ended(call.record.root, call.session, call.row, call.hook.last_message))
-    return {}
-
-
-def prompted(call: HookCall) -> dict:
-    if not call.provider.journal_typed(call.hook.prompt):
-        after_answered(lambda: chat_mirror.turn_began(call.record.root, call.session, call.row))
-    return {}
-
-
-ANSWERS = {HookEvent.PRE_TOOL_USE: refused, HookEvent.SESSION_START: started, HookEvent.STOP: ended, HookEvent.USER_PROMPT_SUBMIT: prompted}
+ANSWERS = {HookEvent.PRE_TOOL_USE: refused, HookEvent.SESSION_START: started}

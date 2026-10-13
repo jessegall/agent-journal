@@ -12,6 +12,7 @@ from declaring.holds import Runs
 from declaring.reach import Reach
 from engine.state import State
 from framework import held_lines
+from framework.displayed import send_row_to_chat
 from resources.text import digest
 from payload import STATUS, HookEvent
 from declaring import trigger
@@ -40,6 +41,10 @@ class Speaker:
 
     def nudge(self, line: str, **values):
         return self.feature.journal.whisper(self.record, self.row, line, **values)
+
+    def send(self, text: str, turn: str | None = None) -> bool:
+        """The words of a turn the agent wrote go to the chat, once: the ledger of what was shown knows a turn it has seen, and a blank turn is none."""
+        return bool(text.strip()) and send_row_to_chat(self.record, self.row, text, turn)
 
     def notice(self, line: str, **values):
         """A line the user reads in the notices, about this agent's environment."""

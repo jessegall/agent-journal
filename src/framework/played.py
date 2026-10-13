@@ -211,6 +211,7 @@ def play_services(promise, given: Given, record: Record, world: World) -> dict:
              **({serving.Providers: world.providers} if given.providers.answers else {}),
              **({serving.Git: world.git, serving.ReadGit: world.git} if given.git.answers else {}),
              **({serving.JournalRoot: world.journal_root, serving.ReadJournalRoot: world.journal_root} if given.journal_root.answers else {}),
+             **({serving.Faults: world.faults} if given.faults.answers else {}),
              **({serving.Viewer: world.viewer, serving.ReadViewer: world.viewer} if given.viewer.answers else {})}
     services = Services({**lane_services(record, lambda: spoken_to(record, given)), **fakes})
     return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())

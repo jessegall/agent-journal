@@ -1,23 +1,24 @@
 from controllers.types import Messages
-from events.agents import AgentReported
+from events.agents import AgentReported, ChunkDisplayed, TurnInterrupted, TurnStopped
 from events.agents import AgentMessageSent
 from events.resources import ResourceCreated
 from events.answers import Rewritten
 from events.asking import TextFormatting
-from events.messages import (AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread,
+from events.messages import (FallbackHeld, FaultWindowOver, MessageDisplayed, PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread,
                              MessageCreated, MessageSettled, MessageUpdated, RunTogether, TurnToPost)
 import json
 from dataclasses import asdict, replace
 
-from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
+from expects import WHEN, Answered, File, Ran, Unchanged, Dispatches, Given, Held, Nudged, Remembered, Updated, Wrote, answering, nothing
 from declaring.trigger import Mark
 from framework.base import Feature
+from framework.displayed import FELL_BACK, HELD_FOR, SETTLE, fingerprint
 from framework.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
-from features.messages.handlers import (BeginAnswerWait, CloseTheMessage, HoldUntilAnswered, NameBareNumbers, NameFace, NameInbox, NameRunTogether, NameUnanswered, PostTurn,
+from features.messages.handlers import (BeginTurn, CatchUpAfterTurn, HoldFallbackFault, KeepChunk, PostCutOffTurn, PostDisplayed, RaiseHeldFaults, SendCutOffWords, BeginAnswerWait, CloseTheMessage, HoldUntilAnswered, NameBareNumbers, NameFace, NameInbox, NameRunTogether, NameUnanswered, PostTurn,
                                         RearmAnswering, RearmInbox, ReleaseAnswering, ReleaseInbox)
-from features.messages.listeners import (SpotArrival, SpotBareNumbers, SpotMessagesAnswered, SpotMessagesHandled, SpotMessagesProcessed, SpotMessagesSeenByUser, SpotRunTogether,
+from features.messages.listeners import (SpotCutOff, SpotPrompt, SpotTurnEnd, SpotArrival, SpotBareNumbers, SpotMessagesAnswered, SpotMessagesHandled, SpotMessagesProcessed, SpotMessagesSeenByUser, SpotRunTogether,
                                          SpotTurnToPost, SpotUnanswered, SpotUnread)
 from features.messages.answering import unanswered_in
 from framework.watched import FACTS, state_facts
@@ -92,6 +93,27 @@ SENT = wrote("Closed it earlier", seen=(AGENT,))
 NAMED_ROWS = (SENT, Todo(n=3, title="Row"), Todo(n=4, title="Row"), IDLE)
 
 OWED = AnswerOwed(agent=1, messages="message 5", numbers=(5,), rows=("message:5",))
+
+
+LEDGER = ".journal/runtime/sessions/claude-1/displayed.json"
+TURN = AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "idle", "last_message": "Done, it is filed."})
+FILING = answering({("filing",): True})
+
+
+def ledger(**held) -> dict:
+    """The ledger of what the display hook brought, as the play stages it before the registration runs."""
+    return {LEDGER: json.dumps(held)}
+
+
+def in_a_codex_transcript(text: str) -> str:
+    return json.dumps({"type": "response_item", "timestamp": "2026-01-01T00:00:00Z", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": text}]}}) + "\n"
+
+
+CODEX = AgentRow(n=1, title="codex-1", data={"provider": "codex", "status": "idle"})
+
+
+def delivered(text: str) -> dict:
+    return ledger(_matched=[fingerprint(text)])
 
 
 class MessagesFeature(Feature):
@@ -238,6 +260,64 @@ class MessagesFeature(Feature):
         ])
         journal.events.handle(BareNumbersNamed, NameBareNumbers(), expects=[
             Given.of(BareNumbersNamed(agent=1, n=5, numbers="482"), IDLE) >> Nudged("numbers", n=5, numbers="482"),
+        ])
+        journal.events.handle(ChunkDisplayed, KeepChunk(), expects=[
+            Given(ChunkDisplayed(agent=1, message="m1", index=0, delta="Done, "), rows=[IDLE]) >> Dispatches(nothing),
+            Given(ChunkDisplayed(agent=1, message="m1", index=0, delta="Done, it is filed.", final=True), rows=[IDLE])
+                >> Dispatches(MessageDisplayed(agent=1, message="m1", text="Done, it is filed.")),
+            Given(ChunkDisplayed(agent=1, message="m1", index=1, delta="it is filed.", final=True), earlier=(ChunkDisplayed(agent=1, message="m1", index=0, delta="Done, "),), rows=[IDLE])
+                >> Dispatches(MessageDisplayed(agent=1, message="m1", text="Done, it is filed.")),
+            Given(ChunkDisplayed(agent=1, message="m1", index=1, delta="it is filed.", final=True), rows=[IDLE]) >> Dispatches(nothing),
+            Given(ChunkDisplayed(agent=1, message="b", index=0, delta="second", final=True), rows=[IDLE], files=answering(ledger(a={"0": "first "})))
+                >> Dispatches(MessageDisplayed(agent=1, message="b", text="second")),
+            Given(ChunkDisplayed(agent=1, message="m1", index=0, delta="Done, it is filed.", final=True), rows=[IDLE], files=answering(ledger(_done=["m1"]))) >> Dispatches(nothing),
+        ])
+        journal.events.handle(MessageDisplayed, PostDisplayed(), expects=[
+            Given(MessageDisplayed(agent=1, message="m1", text="Done, it is filed."), rows=[IDLE]) >> Wrote(File(LEDGER, "_done")),
+            Given(MessageDisplayed(agent=1, message="m1", text="   "), rows=[IDLE]) >> Unchanged(),
+        ])
+        journal.events.listen(TurnStopped, SpotTurnEnd(), expects=[
+            Given(TurnStopped(agent=1), rows=[TURN]) >> Dispatches(TurnEnded(agent=1, words="Done, it is filed.").spaced("turn end|1", SETTLE)),
+            Given(TurnStopped(agent=1), rows=[TURN], files=answering(delivered("Done, it is filed."))) >> Dispatches(TurnEnded(agent=1, words="Done, it is filed.")),
+            Given(TurnStopped(agent=1), rows=[IDLE]) >> Dispatches(TurnEnded(agent=1, words="")),
+        ])
+        journal.events.listen(AgentReported, SpotPrompt(), expects=[
+            Given(AgentReported(agent=1, hook="UserPromptSubmit"), rows=[IDLE]) >> Dispatches(PromptBegan(agent=1)),
+            Given(AgentReported(agent=1, hook="PreToolUse"), rows=[IDLE]) >> Dispatches(nothing),
+        ])
+        journal.events.listen(TurnInterrupted, SpotCutOff(), expects=[
+            Given(TurnInterrupted(agent=1, text="half a sentence"), rows=[IDLE]) >> Dispatches(TurnCutOff(agent=1, words="half a sentence")),
+        ])
+        journal.events.handle(TurnEnded, SendCutOffWords(), expects=[
+            Given(TurnEnded(agent=1, words="Done, it is filed."), rows=[TURN], files=answering(ledger(m1={"0": "Done, it"}))) >> Wrote(File(LEDGER, "_done")),
+            Given(TurnEnded(agent=1, words="Another thing."), rows=[TURN], files=answering(ledger(m1={"0": "Done, it"}))) >> Unchanged(),
+            Given(TurnEnded(agent=1, words=""), rows=[TURN]) >> Unchanged(),
+            Given(TurnEnded(agent=1, words="Done, it is filed."), rows=[TURN], faults=FILING, files=answering(ledger(_faults={"gone": WHEN - 1}))) >> Ran(("fault", FELL_BACK)),
+        ])
+        journal.events.handle(TurnEnded, CatchUpAfterTurn(), expects=[
+            Given(TurnEnded(agent=1, words="Done, it is filed."), rows=[TURN], transcript=in_a_transcript("Never delivered."))
+                >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("Never delivered."),))) & Wrote(File(LEDGER, "_sent")),
+            Given(TurnEnded(agent=1, words="Done, it is filed."), rows=[TURN], transcript=in_a_transcript("Never delivered."), files=answering(delivered("Never delivered.")))
+                >> Dispatches(nothing),
+            Given(TurnEnded(agent=1, words="Done, it is filed."), rows=[TURN]) >> Dispatches(nothing),
+            Given(TurnEnded(agent=1, words="Done, it is filed."), rows=[TURN], transcript=in_a_transcript("streamed") + in_a_transcript("never shown"), files=answering(delivered("streamed")))
+                >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("never shown"),))),
+            Given(TurnEnded(agent=1, words="what the Codex agent said"), rows=[CODEX], transcript=in_a_codex_transcript("what the Codex agent said")) >> Wrote(File(LEDGER.replace("claude-1", "codex-1"), "_sent")),
+        ], after=("SendCutOffWords",))
+        journal.events.handle(PromptBegan, BeginTurn(), expects=[
+            Given(PromptBegan(agent=1), rows=[TURN], transcript=in_a_transcript("Never delivered.")) >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("Never delivered."),))),
+            Given(PromptBegan(agent=1), rows=[TURN], files=answering(ledger(_sent=["a" * 40, "plain"]))) >> Wrote(File(LEDGER, "plain")),
+        ])
+        journal.events.handle(TurnCutOff, PostCutOffTurn(), expects=[
+            Given(TurnCutOff(agent=1, words="half a sentence"), rows=[TURN]) >> Wrote(File(LEDGER, "_sent")),
+            Given(TurnCutOff(agent=1, words="half a sentence"), rows=[TURN], files=answering(delivered("half a sentence"))) >> Unchanged(),
+        ])
+        journal.events.handle(FallbackHeld, HoldFallbackFault(), expects=[
+            Given(FallbackHeld(agent=1, prints=("abc",)), rows=[TURN]) >> Dispatches(FaultWindowOver(agent=1).spaced("fault window|1", HELD_FOR)) & Wrote(File(LEDGER, "_faults")),
+        ])
+        journal.events.handle(FaultWindowOver, RaiseHeldFaults(), expects=[
+            Given(FaultWindowOver(agent=1), rows=[TURN], faults=FILING, files=answering(ledger(_faults={"abc": WHEN - 1}))) >> Ran(("fault", FELL_BACK)),
+            Given(FaultWindowOver(agent=1), rows=[TURN], faults=FILING, files=answering(ledger(_faults={"abc": WHEN + 100}))) >> Unchanged(),
         ])
         journal.events.answer(TextFormatting, CommandsAsCode(), expects=[
             Given(TextFormatting(text="Run journal todo create to file it")) >> Answered(Rewritten("Run `journal todo create` to file it")),

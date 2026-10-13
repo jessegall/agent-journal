@@ -145,3 +145,50 @@ class BareNumbersNamed(Fact):
     agent: int
     n: int
     numbers: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class MessageDisplayed(Fact):
+    """Every part of a message the display hook brought is in, and these are its words."""
+
+    agent: int
+    message: str
+    text: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class TurnEnded(Fact):
+    """The agent's turn ended and its last words are, or are no longer awaited from the display hook."""
+
+    agent: int
+    words: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class PromptBegan(Fact):
+    """The person wrote a prompt, which begins a turn."""
+
+    agent: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class TurnCutOff(Fact):
+    """The person cut a turn off, with these as the last words it had written."""
+
+    agent: int
+    words: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class FallbackHeld(Fact):
+    """The chat was filled from the transcript with turns the display hook never brought, which is a fault unless the hook was only late."""
+
+    agent: int
+    prints: tuple[str, ...]
+
+
+@dataclass(frozen=True, kw_only=True)
+class FaultWindowOver(Fact):
+    """The time a late display hook was given has run out."""
+
+    agent: int
