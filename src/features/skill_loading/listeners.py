@@ -3,7 +3,7 @@ from events import Fact
 from events.agents import AgentReported, SessionStarted, ToolCallAnswered, ToolFinished
 from events.messages import MessageCreated
 from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
-from features.skill_loading.answering import asks_for_a_load, refusal_wanted
+from features.skill_loading.answering import NAME, asks_for_a_load, refusal_wanted, skill_not_loaded
 from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, loaded_before_compaction, recent_before_compaction, skills, teaching_command
 from features.skill_loading.required import named_skills
 from payload import HookEvent
@@ -12,7 +12,6 @@ from resources.base import USER
 from resources.types import AgentRow, Message
 from serving import Clock, Providers, ReadElsewhere, ReadMarks, ReadRows, Settings
 
-NAME = "skill_loading"
 WINDOWS = (HookEvent.SESSION_START, HookEvent.PRE_COMPACT)
 
 
@@ -86,13 +85,9 @@ class SpotSkillLoad(Listener[ToolFinished]):
 
 class SpotCommandNeedingSkill(Listener[ToolCallAnswered]):
     def listen(self, event: ToolCallAnswered, agents: ReadRows[AgentRow], marks: ReadMarks, elsewhere: ReadElsewhere) -> list[Fact]:
-        found = None if event.subagent else next((made for made in calls(event.command) if made.noun), None)
-        skill = teaching_command(elsewhere.here().record.root.parent, found.noun) if found else ""
-        if not skill:
-            return []
         row, since = agents.peek(event.agent), marks.last(NAME).since
-        at = loaded_at(row).get(skill, 0.0)
-        return owed(row, {skill: since}) if (not at or at < since) and skill not in loaded_before_compaction(row) else []
+        skill = skill_not_loaded(event.command, event.subagent, row, since, elsewhere.here().record)
+        return owed(row, {skill: since}) if skill else []
 
 
 class CountRefusals(Listener[ToolCallAnswered]):

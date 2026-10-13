@@ -14,7 +14,7 @@ from framework.base import Feature
 from resources.types import AgentRow, Message
 from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
-from features.skill_loading.answering import RefuseUntilLoaded
+from features.skill_loading.answering import RefuseCommandNeedingSkill, RefuseUntilLoaded
 from features.skill_loading.handlers import AskPrimaryForSkills, KeepRefusalCount, NameStaleSkills, NameUnloaded, OpenWindow, OweSessionSkills, OweSkills, ShowSkillLoad, SpendWindow
 from features.skill_loading.listeners import (CountRefusals, SpotCommandNeedingSkill, SpotReload, SpotSessionStart, SpotSkillLoad, SpotSkillsTheUserNames,
                                               SpotStaleSkills, SpotUnloadedWindow)
@@ -149,6 +149,11 @@ class SkillLoading(Feature):
                 >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=5))),
             Given(RefusalCounted(agent=1, wanted=True), rows=[AgentRow(n=1, title="claude-1")], files=answering(marked("skill_loading.refused", count=15)))
                 >> Remembered("trigger-skill_loading.refused", asdict(Mark(count=1))),
+        ])
+        journal.events.answer(ToolCallAsked, RefuseCommandNeedingSkill(), expects=[
+            Given(asked("Bash", "journal plan phase 1 build --when done"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS))
+                >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
+            Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Answered(Allowed()),
         ])
         journal.events.answer(ToolCallAsked, RefuseUntilLoaded(), expects=[
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Answered(Allowed()),
