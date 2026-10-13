@@ -25,6 +25,23 @@ class LinearReplyApproved(ReplyApproved):
 
 
 @dataclass(frozen=True, kw_only=True)
+class CheckDue(Fact):
+    """The integration's trigger says it is time to check its service."""
+
+    agent: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class GmailCheckDue(CheckDue):
+    """Time to check Gmail."""
+
+
+@dataclass(frozen=True, kw_only=True)
+class LinearCheckDue(CheckDue):
+    """Time to check Linear."""
+
+
+@dataclass(frozen=True, kw_only=True)
 class LinearStageMoved(Fact):
     """A ticket from Linear moved to a stage its issue has not been told about."""
 

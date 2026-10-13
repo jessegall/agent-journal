@@ -1,4 +1,4 @@
-from events.integrations import LinearReplyApproved, LinearStageMoved
+from events.integrations import LinearCheckDue, LinearReplyApproved, LinearStageMoved
 from expects import Answered, Dispatches, Given, Ran, Refused, Wrote, nothing
 from framework.integrations.base import IntegrationFeature
 from framework.integrations.details import SEND
@@ -28,6 +28,7 @@ class Linear(LinearWork, IntegrationFeature):
     key_refused = ("answered 401", "answered 403")
     details = LinearDetails
     approved = LinearReplyApproved
+    due = LinearCheckDue
     origin = "https://api.linear.app"
 
     def register(self, journal: Journal) -> None:

@@ -7,15 +7,16 @@ from urllib.parse import urlsplit
 
 from controllers.features import Features
 from events.agents import ClockTicked
-from events.integrations import ReplyApproved
+from events.integrations import CheckDue, ReplyApproved
 from expects import Answered, Dispatches, Given, Ran, nothing
 from controllers.agents import Agents
 from controllers.notices import Notices
 from engine import bus
 from framework.base import Feature
+from framework.due import DueOnClock
 from framework.integrations.commands import SyncIntegration
 from framework.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
-from framework.integrations.handlers import CheckOnClock, sending_approved
+from framework.integrations.handlers import checking_when_due, sending_approved
 from framework.integrations.listeners import SpotApprovedReply
 from events.questions import QuestionCompleted
 from framework.integrations.client import IntegrationClient
@@ -40,6 +41,7 @@ class IntegrationFeature(Feature):
 
     origin = ""
     approved = ReplyApproved
+    due = CheckDue
     key_refused: tuple[str, ...] = ()
 
     def client(self, record) -> IntegrationClient:
@@ -51,8 +53,11 @@ class IntegrationFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         self.clients: dict[str, IntegrationClient] = {}
-        journal.events.handle(ClockTicked, CheckOnClock(), expects=[
-            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "ticked")),
+        journal.events.listen(ClockTicked, DueOnClock(self.due), expects=[
+            Given(ClockTicked(agent=1)) >> Dispatches(self.due(agent=1).due()),
+        ])
+        journal.events.handle(self.due, checking_when_due(self.due), expects=[
+            Given(self.due(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "ticked")),
         ])
         journal.events.listen(QuestionCompleted, SpotApprovedReply(self.name, self.approved), expects=[
             Given(self.closed(), rows=[self.proposal(SEND)]) >> Dispatches(self.approved(question=1, ticket=1, text="Thanks.")),

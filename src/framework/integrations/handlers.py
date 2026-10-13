@@ -1,14 +1,19 @@
 from events import Fact
-from events.agents import ClockTicked
-from events.integrations import ReplyApproved
+from events.integrations import CheckDue, ReplyApproved
 from receiving import Handler
 from serving import OwnWork
 
 
-class CheckOnClock(Handler[ClockTicked]):
-    def handle(self, event: ClockTicked, work: OwnWork) -> list[Fact]:
-        work.ticked()
-        return []
+def checking_when_due(due: type[CheckDue]) -> Handler:
+    """The handler of one service's due check, since a handler receives the one fact class it is registered on."""
+
+    class CheckWhenDue(Handler[due]):
+        def handle(self, event: due, work: OwnWork) -> list[Fact]:
+            work.ticked()
+            return []
+
+    CheckWhenDue.__name__ = CheckWhenDue.__qualname__ = f"Check{due.__name__}"
+    return CheckWhenDue()
 
 
 def sending_approved(approved: type[ReplyApproved]) -> Handler:
