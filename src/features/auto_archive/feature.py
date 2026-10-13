@@ -1,6 +1,8 @@
 from events.agents import ClockTicked
-from expects import Given, Unchanged, Updated, WHEN
+from events.auto_archive import OldRowsDue
+from expects import Dispatches, Given, Unchanged, Updated, WHEN
 from framework.base import Feature
+from framework.due import DueOnClock
 from framework.journal import Journal
 from features.auto_archive.details import AutoArchiveDetails
 from features.auto_archive.handlers import ExpireOldRows
@@ -8,14 +10,17 @@ from resources.types import AgentRow, Report, Todo
 
 DAY = 24 * 3600
 AGENT_ROW = AgentRow(n=1, title="claude-1")
-TICK = ClockTicked(agent=1)
+TICK = OldRowsDue(agent=1)
 
 
 class AutoArchive(Feature):
     details = AutoArchiveDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handle(ClockTicked, ExpireOldRows(), expects=[
+        journal.events.listen(ClockTicked, DueOnClock(OldRowsDue), expects=[
+            Given(ClockTicked(agent=1)) >> Dispatches(OldRowsDue(agent=1).due()),
+        ])
+        journal.events.handle(OldRowsDue, ExpireOldRows(), expects=[
             Given(TICK, rows=[Report(n=1, title="Audit", created=WHEN - 15 * DAY), AGENT_ROW]) >> Updated(Report(n=1), outcome="aged out after 14 days"),
             Given(TICK, rows=[Report(n=1, title="Audit", created=WHEN - 13 * DAY), AGENT_ROW]) >> Unchanged(),
             Given(TICK, rows=[Report(n=1, title="Audit", created=WHEN - 15 * DAY, completed=WHEN - 14 * DAY), AGENT_ROW]) >> Unchanged(),
