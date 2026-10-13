@@ -1,7 +1,7 @@
 from expects import Dispatches, Given, Updated, Wrote, nothing
 from framework.base import Feature
 from controllers.types import Suggestions
-from resources.summary import SUMMARY_COUNTS
+from declaring.registries import SUMMARY_COUNTS
 from framework.journal import Journal
 from features.suggestions.details import SuggestionsDetails
 from features.suggestions.handlers import DropTakenBackMark, FileDecidedSuggestion, ShowAnswerInChat
