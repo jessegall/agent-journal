@@ -201,10 +201,10 @@ def halt(ctx) -> str:
 def still_open(record) -> list[str]:
     from controllers.types import Works
     from framework.loaded import FEATURES
-    from features.messages.answering import unanswered
+    from features.messages.answering import unanswered_in
     works = [f"work {w.n} is still open: {w.title} - journal work end {w.n} --how \"<what landed>\", or journal work park \"<why>\" --n {w.n}"
              for w in Works(record, actor=SYSTEM).rows.standing()]
-    messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(FEATURES["messages"].journal.at(record))]
+    messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered_in(FEATURES["messages"].journal.at(record))]
     return works + messages
 
 def attached(ctx) -> str:

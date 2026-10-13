@@ -1,23 +1,9 @@
 import re
 
-from events.agents import AgentReported
-from events.agents import AgentMessageSent
-from framework.parts import AgentContext, Handler
-from serving import SERVED, Providers
-from resources.base import AGENT, ENVIRONMENT
+from resources.base import ENVIRONMENT
 from resources.types import TYPES
-from controllers.types import CONTROLLERS, Messages
 
 RUN_ON, SENTENCES = 400, 3
-
-
-class NameRunTogether(Handler):
-    behaviour = "paragraphs"
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        last = SERVED.given(Providers).last_said(context.agent.row).strip()
-        if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
-            context.agent.nudge("paragraphs")
 
 
 STANDALONE = re.compile(r"(?<![\w.,:/–—-])#?(\d+)(?![\w%:/–—-]|[.,]\d)")
@@ -73,28 +59,14 @@ def bare(text: str) -> list[int]:
                               and (int(m.group(1)) >= SMALL or HANDLED.search(text[max(0, m.start() - 24):m.start()]))))
 
 
-class NameBareNumbers(Handler):
-    behaviour = "numbers"
-
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        found = bare(event.text)
-        if not found:
-            return
-        known = numbers(context)
-        named = [str(n) for n in found if n in known]
-        sent = next((m for m in reversed(context.journal.get(Messages).rows.summaries()) if m["seen"][:1] == [AGENT]), None)
-        if named and sent:
-            context.agent.nudge("numbers", n=sent["n"], numbers=", ".join(named))
-
-
 NAMED_WITHIN = 3600.0
 """How lately a row must have been written for a bare number to be read as naming it. An older row's number is far more likely to be a quantity the agent is reporting - a count of tests, a size, a port - than a reference to the row."""
 
 
-def numbers(context: AgentContext) -> set[int]:
+def numbers(here) -> set[int]:
     """The rows a bare number could be naming: those written within the hour before the record's newest row. Recency is read from the record rather than from the wall clock, so it answers the same in a replayed world as in a live one."""
     written = [(row["n"], row["updated"]) for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT
-               for row in context.journal.get(CONTROLLERS[name]).rows.summaries()]
+               for row in here.rows_named(name).rows.summaries()]
     if not written:
         return set()
     since = max(at for _, at in written) - NAMED_WITHIN

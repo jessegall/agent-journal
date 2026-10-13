@@ -454,5 +454,5 @@ def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update(
     assert [by for t, _, by in reaction_events if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {reaction_events}"
     closing = Messages(record, actor=SYSTEM)
     held_open = closing.create("closed twice")
-    assert (closing._closed_once(held_open.n, "first").completed > 0, closing._closed_once(held_open.n, "second"), closing.load(held_open.n).outcome) == (True, None, "first"), \
+    assert (closing.close_once(held_open.n, "first").completed > 0, closing.close_once(held_open.n, "second"), closing.load(held_open.n).outcome) == (True, None, "first"), \
         "a message two handlers or threads both close is closed once, and the second asking is no failure"

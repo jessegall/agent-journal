@@ -98,7 +98,7 @@ class Messages(Controller):
                 self.link(n, f"{kind}:{int(num)}")
         return self.section(n, part, result)
 
-    def _closed_once(self, n: int, how: str) -> Resource | None:
+    def close_once(self, n: int, how: str) -> Resource | None:
         """Closes a message unless it is closed already, whoever got there first, so a second handler or thread asking is no failure."""
         with self.record.locked(self.resource.scope):
             return None if self.load(n).completed else self.complete(n, how)
