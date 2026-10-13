@@ -349,7 +349,7 @@ def pruned_at_start(root: Path) -> None:
     record = Record(root, default_env(root))
     try:
         if "runtime_cleanup" in FEATURES and FEATURES["runtime_cleanup"].enabled(record):
-            tidy_files(root, RuntimeCleanupDetails.values(record).days)
+            tidy_files(record, RuntimeCleanupDetails.values(record).days)
     except Exception:
         threw(root, record.env, "pruning the quiet sessions at the start")
 

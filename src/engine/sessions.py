@@ -311,6 +311,10 @@ class Sessions:
     def all(self) -> dict[str, SessionRecord]:
         return self.files.all()
 
+    def ended(self) -> set[str]:
+        """The sessions whose process is no longer there."""
+        return {name for name, session in self.files.all().items() if not alive(session.pid)}
+
     def running(self) -> list[str]:
         return [name for name, s in self.all().items() if s.pid and alive(s.pid)]
 

@@ -2,10 +2,9 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from controllers.types import CONTROLLERS
-from engine.record import Record
-from engine.runtime import folder, profiles, sessions
-from engine.sessions import Sessions, alive
+from engine.sessions import Sessions
 from resources.base import Refused
+from resources.files import RUNTIME
 from resources.text import plural
 from declaring.trigger import DAY
 from serving import SERVED, Clock, Elsewhere, JournalRoot, Providers, ReadSessions
@@ -41,7 +40,7 @@ class Tidied:
         return found if found else "nothing to tidy"
 
 
-RUNTIME, PROFILES, SESSIONS = (str(where(Path())) for where in (folder, profiles, sessions))
+PROFILES, SESSIONS = f"{RUNTIME}/slow", f"{RUNTIME}/sessions"
 
 
 @dataclass(frozen=True)
@@ -81,7 +80,7 @@ class Tidy:
             return Tidied(leftovers=left)
         now = self.clock.now()
         quiet, gone = now - days * DAY, now - GONE_FOR
-        ended = {name for name, session in self.sessions.all().items() if not alive(session.pid)}
+        ended = self.sessions.ended()
         removed = [d for d in self.root.glob(f"{SESSIONS}/*") if self.root.is_dir(d) and self.newest(d) < (gone if Path(d).name in ended else quiet)]
         for d in removed:
             self.root.remove(d)
@@ -117,18 +116,13 @@ class Tidy:
         return Path(queue).suffix == ".jsonl" and Path(queue).parent.name == "channels" and self.clock.now() - self.root.modified(str(Path(queue).with_suffix(".on"))) < LISTENING_FOR
 
 
-def over(root: Path) -> Tidy:
-    records = Record.every(Path(root))
-    return Tidy.over(records[0] if records else Record(Path(root), "main"))
+def tidy(record, days: float) -> Tidied:
+    return Tidy.over(record).everything(days)
 
 
-def tidy(root: Path, days: float) -> Tidied:
-    return over(root).everything(days)
+def tidy_files(record, days: float) -> Tidied:
+    return Tidy.over(record).files(days)
 
 
-def tidy_files(root: Path, days: float) -> Tidied:
-    return over(root).files(days)
-
-
-def leftovers(root: Path) -> int:
-    return over(root).leftovers()
+def leftovers(record) -> int:
+    return Tidy.over(record).leftovers()

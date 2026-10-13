@@ -5,6 +5,7 @@ from pathlib import Path
 
 from resources.base import names
 
+RUNTIME = "runtime"
 KIND = names("edited", "created", "deleted")
 IMAGE_SUFFIXES = (".png", ".gif", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".bmp")
 

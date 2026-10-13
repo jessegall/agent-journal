@@ -38,7 +38,7 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(mon
     kept.write_text("main")
     aged(kept, 8)
 
-    text = tidy(record.root, house.values(record).days)
+    text = tidy(record, house.values(record).days)
 
     assert (big.stat().st_size, big.read_bytes().endswith(b"THE END")) == (64 * 1024, True), \
         "a large capture is cut to its last 64 KB, ending as it did"
@@ -70,7 +70,7 @@ def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monke
     aged(spent, 3)
     running.write_bytes(b"x" * (2 * 1024 * 1024) + b"still going\n")
 
-    tidy(record.root, 2)
+    tidy(record, 2)
 
     assert not spent.exists(), "a launch log quiet past the days goes"
     assert running.stat().st_size == 1024 * 1024, "a running launch log is cut to its last megabyte"
@@ -89,7 +89,7 @@ def test_an_ended_session_loses_its_folder_after_six_hours_and_a_live_one_keeps_
         aged(folder, age)
         sessions[name] = folder
 
-    tidy(record.root, 2)
+    tidy(record, 2)
 
     assert [name for name, folder in sessions.items() if folder.exists()] == ["claude-just-ended", "claude-live"], \
         "the folder of a session whose agent ended goes after six hours; one that ended a moment ago and a live one stay"
@@ -104,7 +104,7 @@ def test_the_days_to_keep_is_a_setting():
     old.write_text("{}")
     aged(old, 2)
     record.set_setting("runtime_cleanup", {"days": 1})
-    tidy(record.root, house.values(record).days)
+    tidy(record, house.values(record).days)
     assert old.parent.exists() is False, "housekeeping.days shortens the wait"
     from features.runtime_cleanup.tidy import Tidied
     assert (Tidied(trimmed=2, removed=1, events=3, leftovers=1).summary, Tidied().summary) == \
@@ -156,7 +156,7 @@ def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not
     record.event_log.set_cursor("gone", first + 4)
     two_days_ago = time.time() - 2 * 86400
     os.utime(record.home / "runtime" / "cursor-gone", (two_days_ago, two_days_ago))
-    tidy(record.root, 2)
+    tidy(record, 2)
     kept = [e.id for e in record.event_log.events()]
     assert (kept[0], len(kept)) == (first + 20, 130), "the last 100 stay, and everything after a live reader's place; a reader gone for days holds nothing"
     assert record.emit("todo", 1, "updated", "system", quiet=True).id == first + 150, "ids keep counting up"
@@ -190,7 +190,7 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
         profile = root / "runtime" / "slow" / f"{i:03}-GET-_api_summary-60ms.txt"
         profile.write_text("profile")
         os.utime(profile, (old + i, old + i))
-    tidy(root, 2)
+    tidy(record, 2)
     assert not unkept.exists(), "an output file left behind for a day goes"
     assert sorted(f.name[:3] for f in (root / "runtime" / "slow").iterdir())[:1] == ["002"], "only the newest fifty slow-request profiles are kept"
     assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
@@ -252,7 +252,7 @@ def test_tidy_keeps_the_saved_transcript_states_and_drops_an_old_builds_folds(mo
     (folds / "flat.pickle").write_bytes(b"from before marks had folders")
     stale = time.time() - OTHER_MARKS_FOR - 60
     os.utime(old, (stale, stale))
-    leftovers(record.root)
+    leftovers(record)
     assert (current.exists(), old.exists(), recent.exists(), (folds / "flat.pickle").exists()) == (True, False, True, False), \
         "the saved states, which outlive an upgrade, stay; a folder of an old build's folds goes once it is old, and loose folds go"
 

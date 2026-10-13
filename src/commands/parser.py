@@ -133,7 +133,7 @@ def built(only: str) -> argparse.ArgumentParser:
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}), ("--board", {"action": "store_true"}), ("--start", {"action": "store_true"}))
     add_query(cmds, "demo", "build a demo's data from a scrubbed recording, every moment answered by the real server",
               lambda ctx: demo(ctx), ("folder", {}), ("into", {}), ("--environment", {"default": ""}), ("--name", {"default": ""}))
-    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: tidy(ctx["record"].root, RuntimeCleanupDetails.values(ctx["record"]).days).summary)
+    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: tidy(ctx["record"], RuntimeCleanupDetails.values(ctx["record"]).days).summary)
     add_query(cmds, "services", "the services plugins run: list them, start, stop or restart one, read its log, or keep them up in this terminal with up",
               lambda ctx: services(ctx), ("action", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
     return top

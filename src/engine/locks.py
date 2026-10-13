@@ -8,13 +8,13 @@ from pathlib import Path
 from typing import IO, Callable
 
 from engine import waits
+from resources.files import RUNTIME
 
 MIGRATIONS = ContextVar("migrations", default=())
 MIGRATION_LOCK = ".migrations.lock"
 LOCK_WAIT = 30.0
 RETRY = 0.05
 FIRST_RETRY = 0.001
-RUNTIME = "runtime"
 
 
 class MigrationsRunning(TimeoutError):
