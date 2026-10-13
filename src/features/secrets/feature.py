@@ -26,6 +26,8 @@ def asked(tool: str, input: str) -> ToolCallAsked:
 
 VALUES = answering({".journal/project-id": "pid", ".secrets/pid.env": 'API_KEY="abc"\n'})
 KEY = [{"name": "key", "variable": "API_KEY"}]
+BOTH = answering({".journal/project-id": "pid", ".secrets/pid.env": 'API_KEY="abc"\nOTHER="def"\n'})
+OTHER = Secret(n=2, title="Other", data={"secret_fields": [{"name": "other", "variable": "OTHER"}]})
 
 
 def deleted(days: int) -> Secret:
@@ -42,6 +44,7 @@ class SecretsFeature(Feature):
         journal.events.handle(PurgeDue, PurgeDeletedSecrets(), expects=[
             Given(PurgeDue(), rows=[deleted(31)], files=VALUES) >> Wrote(File(".secrets/pid.env", "The values of this project's secrets", mode="600")),
             Given(PurgeDue(), rows=[deleted(10)], files=VALUES) >> Wrote(File(".secrets/pid.env", 'API_KEY="abc"')),
+            Given(PurgeDue(), rows=[deleted(31), OTHER], files=BOTH) >> Wrote(File(".secrets/pid.env", 'OTHER="def"', mode="600")),
         ])
         journal.agent.append_to_line("secret.updated", updated_added)
         journal.events.answer(ToolCallAsked, RefuseSecretsFile(), expects=[
