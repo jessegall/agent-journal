@@ -1369,8 +1369,7 @@ def test_a_start_menu_whose_input_ends_leaves_instead_of_spinning():
     os.close(reading)
 
 
-def test_a_record_made_by_version_2_60_0_upgrades_through_every_migration_and_the_journal_starts_on_it(tmp_path):
-    import migrations
+def test_a_record_made_by_version_2_60_0_is_refused_and_told_to_update_to_the_last_2_release_first(tmp_path):
     place = tmp_path
     (place / PROJECT).mkdir(parents=True)
     with tarfile.open(HERE / "tests" / "fixtures" / "journal-2.60.0.tar.gz") as old:
@@ -1380,13 +1379,8 @@ def test_a_record_made_by_version_2_60_0_upgrades_through_every_migration_and_th
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1", "AGENT_JOURNAL_HOME": str(place / "home")}
     env.pop("JOURNAL_ENV", None)
     upgraded = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=180)
-    root = place / PROJECT / ".journal"
-    assert (upgraded.returncode, "Traceback" in upgraded.stderr) == (0, False), upgraded.stdout + upgraded.stderr
-    assert set(migrations.names()) <= set(migrations.applied(root)), f"every migration ran: {sorted(set(migrations.names()) - set(migrations.applied(root)))}"
-    for words, expected in ((["status"], ""), (["doc", "all"], "Style guide"), (["todo", "all", "--completed"], "Write the first chapter"), (["rule", "all"], "Never ship on Friday")):
-        ran = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), *words], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=120)
-        assert (ran.returncode, "Traceback" in ran.stderr, expected in ran.stdout) == (0, False, True), f"{words}: {ran.stdout[-400:]}{ran.stderr[-400:]}"
-    launches(place, root / "journal.py", "claude")
+    assert "update to the last 2.x release first" in upgraded.stdout + upgraded.stderr, upgraded.stdout + upgraded.stderr
+    assert not (place / PROJECT / ".journal" / "migrations.json").is_file() or "m0088_version_3" not in (place / PROJECT / ".journal" / "migrations.json").read_text(), "a refused record is left as it was"
 
 
 def test_the_engines_keep_ticking_through_a_fault_and_a_child_that_will_not_stop_is_killed(tmp_path, monkeypatch):
