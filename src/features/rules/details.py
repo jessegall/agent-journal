@@ -40,9 +40,8 @@ class RulesDetails(FeatureDetails):
         Line(
             name="review",
             title="Is rule {{n}} a ruling for the whole project?",
-            brief='rule {{n}}, "{{title}}", binds every environment of the project. Keep it only if it is a ruling for all of them, '
-                  'worded as one ("Always ...", "Never ..."). If it is about this environment or its current work, strike it with '
-                  'journal rule strike {{n}} --how "<why>" and file it here as a fact or a reminder instead.',
+            brief='rule {{n}}, "{{title}}", binds every environment. Keep it only as a ruling for all, worded "Always ..." or '
+                  '"Never ..."; otherwise journal rule strike {{n}} --how "<why>" and file it here as a fact or a reminder.',
         ),
         Line(
             name="standing",

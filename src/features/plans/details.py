@@ -74,9 +74,7 @@ class PlansDetails(FeatureDetails):
             reply_kept=True,
             title="plan {{n}}, {{title}}, is running and nothing has moved for {{minutes}} minutes",
             brief="""
-                carry on with it now: {{rows}}. If a row is stuck or waits on something, leave it and work
-                the rows you can do; put a question on a row with journal todo ask only for what you cannot
-                decide yourself, and keep going with the rest.
+                carry on now: {{rows}}. Leave a stuck row and work the rest; journal todo ask only what you cannot decide.
             """,
         ),
         Line(
@@ -84,9 +82,8 @@ class PlansDetails(FeatureDetails):
             reply_kept=True,
             title="plan {{n}}, {{title}}, stands still at {{phase}}: its rows are open and nothing holds them",
             brief="""
-                to-dos {{rows}} have not been touched for {{minutes}} minutes, and nothing blocks them, waits on another
-                row or waits on a question. Close each one that is done with journal todo done <n> --how "<what landed>",
-                or say what it waits on with journal todo block <n> "<why>" or journal todo ask <n> "<question>".
+                to-dos {{rows}}, untouched for {{minutes}} minutes: journal todo done <n> --how "<what landed>" for each that
+                is done, or journal todo block <n> "<why>" or journal todo ask <n> "<question>" for what it waits on.
             """,
         ),
         Line(
@@ -94,12 +91,9 @@ class PlansDetails(FeatureDetails):
             reply_kept=True,
             title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",
             brief="""
-                {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock
-                <n>) and work it; a choice the user delegated to you, or one an earlier answer already settles,
-                is yours to decide now: decide it, say so on its row, and go on; make only a choice nobody has
-                settled a question, with journal todo ask <n> "<who decides what>" --set options='[...]' --set pick=<n>; keep the reason of the rest up
-                to date. Then take the next ready row: a blocked row never ends the turn, and once only blocked
-                rows are left in a phase, every later phase's rows whose own waits are done are ready.
+                {{rows}}. Unblock and work any that can go on (journal todo unblock <n>); decide a choice already yours or
+                already settled, and say so on its row; ask only an unsettled one: journal todo ask <n> "<question>"
+                --set options='[...]' --set pick=<n>. Then take the next ready row, in a later phase if this one only waits.
             """,
         ),
         Line(

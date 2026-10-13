@@ -35,19 +35,15 @@ class DumpsDetails(FeatureDetails):
             name="arrived",
             title="dump {{n}} has {{count}} to file - journal dump items {{n}}",
             brief="""
-                Load the journal-dumps skill first if it is not loaded. The Filing a dump sequence
-                hands you its steps one at a time: follow each one and mark it done with journal
-                sequence next, and it hands you the next. Tell the user what you do with journal
-                dump log, and ask only in the dump window, never in the chat: the user is looking
-                at the dump.
+                load journal-dumps if it is not loaded, then follow the Filing a dump sequence step by step. Tell the user
+                what you do with journal dump log; ask only in the dump window, never in the chat.
             """,
         ),
         Line(
             name="carry on",
             title="dump {{n}} still has {{count}} to file - carry on filing it",
             brief="""
-                Filing a dump is yours to finish without waiting for the user, whether or not auto
-                mode is on: journal dump items {{n}} shows what is left. Ask only what you truly
+                finish it without waiting for the user: journal dump items {{n}} shows what is left. Ask only what you
                 cannot tell, with journal dump ask.
             """,
         ),
@@ -60,14 +56,9 @@ class DumpsDetails(FeatureDetails):
             name="filed",
             title="dump {{n}} is filed ({{outcome}}) - sum it up for the user",
             brief="""
-                Everything it made is already in the journal, in the dump's collection. Sum up what
-                you filed and where in two or three plain lines, and suggest a next step only where
-                one is worth taking, as a question with a button on the dump itself, never elsewhere:
-                journal dump offer {{n}} '[{"ask": "The notes say you want to start on the mobile
-                layout. Want me to plan it?", "label": "Plan it"}]' --summary "<what you filed and
-                where>". Use '[]' when nothing is worth suggesting. A step that is a journal action
-                carries its type, n and action and runs as the user when pressed. Never start or
-                plan anything yourself: a suggestion is how you propose it.
+                sum up what you filed and where in two or three lines, with any next step worth taking as a button on the
+                dump: journal dump offer {{n}} '[{"ask": "Want me to plan the mobile layout?", "label": "Plan it"}]' --summary
+                "<what you filed and where>", or '[]' for none. Start nothing yourself.
             """,
         ),
         Line(

@@ -324,7 +324,7 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     assert f"plan {first}, first, is running and nothing has moved for 6 minutes" in nudges(record), \
         "six quiet minutes with a row it can do tell the agent to carry on with the plan"
     stuck_brief = [n.brief for n in Nudges(record).all() if "nothing has moved" in n.title][0]
-    assert "take to-do 2" in stuck_brief and "leave it and work the rows you can do" in stuck_brief, \
+    assert "take to-do 2" in stuck_brief and "Leave a stuck row and work the rest" in stuck_brief, \
         "it names the row to take and says to leave what is stuck and work what it can"
     tick(record)
     assert sum("is running and nothing has moved" in n for n in nudges(record)) == 1, "once per stretch of standing still"

@@ -398,7 +398,7 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
         Works(place, actor=AGENT).create("the release")
         for i in range(1, 4):
             report(place, "working", "PostToolUse", commands=[check] * i, provider=provider)
-        wakes[provider] = [("tells you itself when it ends" in n.brief, "tells you when a" in n.brief) for n in Nudges(place).all() if "same check" in n.title]
+        wakes[provider] = [("a background command says when it ends" in n.brief, "every five minutes" in n.brief) for n in Nudges(place).all() if "same check" in n.title]
     assert wakes == {"claude": [(True, False)], "codex": [(False, True)]}, "each provider is told what wakes it"
     works.action("await")("the CI run on main")
     Todos(record, actor=USER).create("next up")

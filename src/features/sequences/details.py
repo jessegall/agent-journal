@@ -120,7 +120,6 @@ class SequencesDetails(FeatureDetails):
             name=STEP_STALLED,
             while_waiting=True,
             title="sequence {{n}}, {{title}}, has stood on step {{step}} for {{edits}} writes - move it on with journal sequence next {{n}}{{about}}",
-            brief="A sequence says everything else waits until it is finished, so it holds your writes now, as an unanswered message does. "
-                  "Finish the step and move on, or give the sequence up with journal sequence abandon {{n}}{{about}} --why \"<why>\".",
+            brief="it holds your writes until it moves: finish the step, or journal sequence abandon {{n}}{{about}} --why \"<why>\".",
         ),
     ]

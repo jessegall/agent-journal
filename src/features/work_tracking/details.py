@@ -149,10 +149,8 @@ class WorkDetails(FeatureDetails):
             reply_kept=True,
             title="todo {{n}}, {{title}}, is still blocked - is it still?",
             brief="""
-                it is blocked because: {{why}}. If it is not any more, journal todo unblock {{n}}. If it waits
-                on a person or a decision, make it a question to them: journal todo ask {{n}} "<who decides
-                what>" --set options='[...]' --set pick=<n>, and the row waits on their answer. Otherwise tell the user in the chat what it waits
-                on, in their terms, and propose how to clear it.
+                blocked because: {{why}}. Gone: journal todo unblock {{n}}. Waits on a decision: journal todo ask {{n}} "<question>"
+                --set options='[...]' --set pick=<n>. Otherwise say in the chat what it waits on and how to clear it.
             """,
         ),
         Line(
@@ -196,9 +194,8 @@ class WorkDetails(FeatureDetails):
             owed=still_next,
             title="auto mode is on and work {{work}} stands still while todo {{n}} is ready",
             brief="""
-                if work {{work}} waits on the user, decide it yourself when you can; otherwise put the question on
-                its row with journal todo ask, end or park the work, and start todo {{n}}. Stop only when nothing
-                ready is left.
+                decide what work {{work}} waits on yourself if you can; else journal todo ask on its row, end or park the work,
+                and journal todo start {{n}}.
             """,
         ),
         Line(
@@ -207,8 +204,7 @@ class WorkDetails(FeatureDetails):
             owed=still_helped,
             title="{{who}} is working while work {{work}} waits, and todo {{n}} is ready",
             brief="""
-                do not sit out a helper's turn: journal todo start {{n}} and work it yourself in the meantime, or
-                journal work park {{work}} "<why>" first if it must stand still. The helper's report wakes you.
+                journal todo start {{n}} meanwhile, or journal work park {{work}} "<why>" first; the helper's report wakes you.
             """,
         ),
         Line(
@@ -216,8 +212,8 @@ class WorkDetails(FeatureDetails):
             reply_kept=True,
             title="nothing is ready: every open row waits",
             brief="""
-                {{rows}}. For each that waits on a person or a decision, put it to them now with journal todo ask <n>
-                "<who decides what>" --set options='[...]' --set pick=<n>; unblock any that can go on and work it. Stop only when each one waits on a question.
+                {{rows}}. Put each decision to its person: journal todo ask <n> "<question>" --set options='[...]' --set pick=<n>.
+                Work any that can go on.
             """,
         ),
         Line(
@@ -227,10 +223,8 @@ class WorkDetails(FeatureDetails):
             owed=still_stopped,
             title="you stopped with work {{n}}, {{title}}, in hand",
             brief="""
-                carry on with it now. If it waits on the user, put the question on its row with journal todo ask
-                and take the next ready row - waiting for the user is being idle, not waiting, and journal work
-                await is refused for it. If it waits on something outside your hands that will happen on its own,
-                say journal work await "<what you wait for>"; if something else goes first, journal work park {{n}} "<why>".
+                carry on now. Waits on the user: journal todo ask on its row, then the next ready row. Waits on something that
+                happens by itself: journal work await "<what>". Something else first: journal work park {{n}} "<why>".
             """,
         ),
         Line(
@@ -238,9 +232,8 @@ class WorkDetails(FeatureDetails):
             reply_kept=True,
             title="auto mode is on and you stopped - the user last wrote more than {{minutes}} minutes ago",
             brief="""
-                carry on with what you were doing, or take the next ready row. Only the user stopping you
-                keeps you stopped. If you wait on the user, put it as a question on its row with journal todo ask
-                and take the next ready row.
+                carry on, or take the next ready row; only the user stops you. Waits on the user: journal todo ask on its row,
+                then the next row.
             """,
         ),
         Line(
@@ -248,27 +241,22 @@ class WorkDetails(FeatureDetails):
             reply_kept=True,
             title="nothing has happened for {{minutes}} minutes - is there anything left for you to do?",
             brief="""
-                {{seen}}. Carry on with what is open, take the next ready row, or unblock one that can go on now.
-                If every row waits on the user, put each as a question on its row with journal todo ask. If there
-                is genuinely nothing left, say so in one line and stop.
+                {{seen}}. Carry on, take the next ready row, or unblock one. All waiting on the user: journal todo ask on each.
+                Nothing left: say so in one line.
             """,
         ),
         Line(
             name="polling",
             title="you ran the same check {{times}} times in a row - {{command}}",
             brief="""
-                if you are waiting for something to change, say journal work await "<what you wait for>" and end
-                your turn: you are asked to look again every five minutes, and a background command tells you
-                itself when it ends. Keep checking only if each look moves the work on.
+                waiting for a change: journal work await "<what>" and end your turn; a background command says when it ends.
             """,
         ),
         Line(
             name="polling, no wake",
             title="you ran the same check {{times}} times in a row - {{command}}",
             brief="""
-                if you are waiting for something to change, say journal work await "<what you wait for>" and end
-                your turn: the journal types to you every five minutes to look again, and tells you when a
-                background command you left running ends.
+                waiting for a change: journal work await "<what>" and end your turn; you are asked to look again every five minutes.
             """,
         ),
         Line(
@@ -281,10 +269,8 @@ class WorkDetails(FeatureDetails):
             reply_kept=True,
             title="check {{awaiting}} now - you have waited {{minutes}} min",
             brief="""
-                look at the thing itself: the background shell's output, the process, the run's
-                status. If it is still going, say journal work await "<what you wait for>" again and
-                wait. If it finished or failed, journal work log what came of it and take the next
-                step. Never wait for something you can do without.
+                look at it: the output, the process, the run. Still going: journal work await "<what>" again. Done or failed:
+                journal work log what came of it and take the next step.
             """,
         ),
     ]
