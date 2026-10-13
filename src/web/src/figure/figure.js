@@ -285,7 +285,7 @@ function armsAtRest(pose, stance, apart = [], swing = {}, level = stance.level) 
             continue;
         }
         hang(pose, side, swing[side] ?? 0);
-        if (stance.shield?.has(side)) pose.turn(`hand_${side}`, {z: SIDES[side] * SHIELD_TURN});
+        if (stance.shield?.has(side)) pose.turn(`hand_${side}`, {y: -SIDES[side] * SHIELD_ROLL, z: SIDES[side] * SHIELD_TURN});
     }
 }
 
@@ -696,6 +696,8 @@ const SIP_TIP = -25;
 const SQUIRE_SHIELD = {y: 30, z: -55, bend: 70};
 // how far a shield hanging at the side is turned from facing forward, so it is carried edge on, its face to the side
 const SHIELD_TURN = 60;
+// and how far it is rolled in its own plane, so its point hangs straight down
+const SHIELD_ROLL = 45;
 const SQUIRE_QUILL = {y: -35, z: -80, bend: 10};
 const COACH_POINT = {y: 0, z: -15, bend: 0};
 
