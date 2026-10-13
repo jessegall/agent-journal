@@ -526,7 +526,7 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         child.wait(APART_WAIT)
         apart_log.close()
     from types import SimpleNamespace
-    from framework.hosted_journal import apart as kept_apart
+    from commands import login_apart as kept_apart
     served = []
     monkeypatch.setattr(kept_apart, "watch_change_log", lambda: None)
     monkeypatch.setattr(kept_apart, "serve_on", lambda shares, held: served.append(held.family) or held.close())
