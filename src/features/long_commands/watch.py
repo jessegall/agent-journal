@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 
@@ -7,6 +8,9 @@ from declaring.trigger import MINUTE
 from serving import SERVED, Processes, Providers
 from resources.runs import BackgroundTasks
 
+# what splits a chain into commands run one after another, and a command into the parts a pipe joins
+SEQUENCE = re.compile(r"&&|\|\||;|\n")
+PIPE = re.compile(r"(?<!\|)\|(?!\|)")
 RECENT = 10 * MINUTE
 STALLED_AFTER = 5 * MINUTE
 GIVEN_UP_ON = 2 * 60 * MINUTE
@@ -65,5 +69,10 @@ def stalled_runs(context, agent) -> list[Sent]:
 
 
 def part_of(leaves: list[str], chain: str) -> str:
-    """The command at the end of the agent's process tree that is written in the chained command, or nothing when no part of it runs as a process of its own."""
-    return next((clipped(command, 200) for command in reversed(leaves) if command in chain), "")
+    """The command at the end of the agent's process tree that is written in the chained command, or nothing when no part of it runs as a
+    process of its own; a part that only reads another's output through a pipe, as the tail of `npm test | tail -3`, is named only when
+    nothing else runs."""
+    running = [command for command in reversed(leaves) if command in chain]
+    readers = [part for command in SEQUENCE.split(chain) for part in PIPE.split(command)[1:]]
+    working = [command for command in running if not any(command in part for part in readers)]
+    return clipped((working or running or [""])[0], 200)

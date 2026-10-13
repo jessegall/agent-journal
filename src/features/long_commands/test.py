@@ -34,6 +34,10 @@ def test_a_moved_command_is_matched_to_its_task_and_a_part_that_ended_before_it_
     own = BackgroundTasks(started={"old": 100.0, "mine": 205.0, "later": 210.0}, commands={"mine": "npm  test", "later": "ls"})
     assert (matching_task(own, "npm test", 200.0), matching_task(BackgroundTasks(started={"a": 100.0, "b": 205.0}), "x", 200.0)) == ("mine", "b"), \
         "a moved command is matched to the background task of its own words that started after the press, never to an older one"
+    from features.long_commands.watch import part_of
+    chain = "npm test | tail -3 && echo done"
+    assert (part_of(["npm test", "tail -3"], chain), part_of(["tail -3"], chain)) == ("npm test", "tail -3"), \
+        "a moved command names the part doing the work, not the tail reading its output, unless the tail is all that runs"
     from engine.stepped import SteppedCall
     from runner.stepping import report_step
     stepped = SteppedCall("claude-1", record.env, "a; b", ["a", "b"])
