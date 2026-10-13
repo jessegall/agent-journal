@@ -290,9 +290,10 @@ class Controller(Files, Links, Discussed, Buttons):
     def _handled(self, action: str, /, **args) -> None:
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             fn(self, **args)
-        asked = bus.asked(RowWriting(type=self.type, action=action, actor=self.actor, fields=tuple(args.items())), self.record)
+        asked = bus.asked(RowWriting(type=self.type, action=action, actor=self.actor, agent=self.agent or "", forced=bool(self.force),
+                                     fields=tuple(args.items())), self.record)
         if isinstance(asked, Refusal):
-            raise Refused(asked.why)
+            self._refuse(asked.why)
 
     def _plugin_twin(self, title: str, data: dict) -> dict | None:
         name = data.get(OWNER)

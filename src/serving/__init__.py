@@ -68,6 +68,22 @@ class Terminal(Service):
     writes = True
 
 
+class Marks(Service):
+    """What the journal keeps of when the asking feature last did something for the agent the event is about, and the counts and once-claims that pace it."""
+
+    writes = True
+
+
+class ReadMarks(Marks):
+    """The same, asked for to read only."""
+
+    writes = False
+
+
+class Holds(Service):
+    """Why the writes of the agent the event is about are held, by every hold that stands against it."""
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

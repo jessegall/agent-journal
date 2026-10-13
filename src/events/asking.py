@@ -18,11 +18,15 @@ class ToolCallAsked(Asked):
     reduces = FirstRefusalWins
     tool: str = ""
     input: str = ""
+    command: str = ""
+    """The shell command the call runs, whatever the provider names its shell tool; empty for a call that runs none."""
     session: str = ""
     cwd: str = ""
     """The folder the agent works in, which a relative path in the call is read against."""
     paths: tuple[str, ...] = ()
     subagent: bool = False
+    writes: bool = False
+    """Whether the call changes files in the project, as a hold on writes judges it."""
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -71,5 +75,9 @@ class RowWriting(Asked):
     type: str = ""
     action: str = ""
     actor: str = ""
+    agent: str = ""
+    """The agent the write is made on behalf of, when a command names one."""
+    forced: bool = False
+    """Whether the write was forced: a refusal is then recorded on the row it overrides rather than stopping it."""
     fields: tuple[tuple[str, object], ...] = field(default_factory=tuple)
     session: str = ""

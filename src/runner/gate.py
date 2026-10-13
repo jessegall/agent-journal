@@ -8,6 +8,7 @@ from engine import bus
 from events.answers import Refused
 from events.asking import AgentDispatching, ToolCallAsked
 from engine.journal_calls import JournalCall, pieces
+from framework import command_effects
 from engine import runtime
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
 from declaring.reach import Reach
@@ -66,7 +67,8 @@ def gated(call: HookCall) -> str | None:
 def refused_by_a_feature(call: HookCall) -> str | None:
     """Why a swept feature's answerer refused the call, asked as the engine's request."""
     tool = call.hook.tool
-    asked = bus.asked(ToolCallAsked(tool=tool.name, input=input_of(tool), session=call.session, cwd=call.hook.cwd, paths=tuple(tool.paths), subagent=call.subagent),
+    asked = bus.asked(ToolCallAsked(tool=tool.name, input=input_of(tool), command=tool.shell_command or "", session=call.session, cwd=call.hook.cwd, paths=tuple(tool.paths), subagent=call.subagent,
+                                    writes=command_effects.writes(call.hook)),
                       call.record)
     return asked.why if isinstance(asked, Refused) else None
 

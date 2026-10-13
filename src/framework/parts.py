@@ -62,6 +62,45 @@ class Speaker:
 
 
 
+class Marks:
+    """What the journal keeps of when a feature last did something for an agent, and the counts and once-claims that pace it."""
+
+    def __init__(self, feature, record, row):
+        self.feature, self.record, self.row = feature, record, row
+
+    def last(self, name: str) -> "triggering.Mark":
+        return triggering.last(self.record, self.row.title, name)
+
+    def write(self, name: str, **fields) -> None:
+        triggering.write(self.record, self.row, name, **fields)
+
+    def noticed(self, name: str) -> None:
+        triggering.noticed(self.record, self.row, name)
+
+    def every(self, kind: str, key: str, cadence: trigger.Trigger) -> bool:
+        return triggering.claimed(self.record, self.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", cadence)
+
+    def at_most(self, kind: str, key: str, times: int) -> bool:
+        if self.used_up(kind, key, times):
+            return False
+        store, name = self._count(kind, key)
+        store.set(name, int(store.get(name, 0)) + 1)
+        return True
+
+    def used_up(self, kind: str, key: str, times: int) -> bool:
+        store, name = self._count(kind, key)
+        return int(store.get(name, 0)) >= times
+
+    def _count(self, kind: str, key: str) -> tuple:
+        return self.record.state("counts", self.row.title), f"{kind}.{digest(key.strip())}"
+
+    def once(self, kind: str, key: str, then=None) -> bool:
+        store, name = self.record.state("once", self.row.title), f"{kind}.{digest(key.strip())}"
+        if then and (store.get(name) is not None or not then()):
+            return False
+        return store.claim(name, time.time(), keep=ONCE_KEPT)
+
+
 @dataclass
 class Context:
     feature: object
@@ -102,27 +141,19 @@ class Context:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
     def every(self, kind: str, key: str, cadence: trigger.Trigger) -> bool:
-        return triggering.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", cadence)
+        return self.marks().every(kind, key, cadence)
 
     def at_most(self, kind: str, key: str, times: int) -> bool:
-        if self.used_up(kind, key, times):
-            return False
-        store, name = self._count(kind, key)
-        store.set(name, int(store.get(name, 0)) + 1)
-        return True
+        return self.marks().at_most(kind, key, times)
 
     def used_up(self, kind: str, key: str, times: int) -> bool:
-        store, name = self._count(kind, key)
-        return int(store.get(name, 0)) >= times
-
-    def _count(self, kind: str, key: str) -> tuple:
-        return self.record.state("counts", self.agent.session), f"{kind}.{digest(key.strip())}"
+        return self.marks().used_up(kind, key, times)
 
     def once(self, kind: str, key: str, then=None) -> bool:
-        store, name = self.record.state("once", self.agent.session), f"{kind}.{digest(key.strip())}"
-        if then and (store.get(name) is not None or not then()):
-            return False
-        return store.claim(name, time.time(), keep=ONCE_KEPT)
+        return self.marks().once(kind, key, then)
+
+    def marks(self) -> "Marks":
+        return Marks(self.feature, self.record, self.agent.row)
 
     @property
     def state(self) -> "State":

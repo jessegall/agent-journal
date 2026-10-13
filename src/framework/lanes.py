@@ -14,7 +14,8 @@ from engine.command_line import command_line
 from engine.sessions import Sessions as TheSessions
 from events import Fact
 from framework.loaded import FEATURES
-from framework.parts import Speaker
+from framework.parts import Marks as AgentMarks, Speaker
+from engine import gates
 from events.answers import Answer, Refused as Refusal
 from receiving import REFUSE
 from receiving.asking import answered
@@ -22,7 +23,7 @@ from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds)
 
 
 class NobodyToSpeakTo(LookupError):
@@ -55,6 +56,17 @@ class AgentTerminal:
 
     def move_to_background(self, running: str = "") -> dict:
         return control.move_to_background(self.record.root, self.record.env, self.agent.title, running)
+
+
+class AgentHolds:
+    """The holds standing against an agent's writes."""
+
+    def __init__(self, record, agent):
+        self.record, self.agent = record, agent
+
+    def why(self, subagent: bool, writing: bool) -> str:
+        """Why the agent's next call of this kind is refused, by every standing hold that reaches it; empty when nothing holds it."""
+        return gates.held(self.record, self.agent.title, subagent, writing)
 
 
 class TheClock:
@@ -112,6 +124,9 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
             Sessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
             Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, agent())),
+            Marks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
+            ReadMarks: PerAsk(lambda feature, asked: AgentMarks(FEATURES[feature], record, agent())),
+            Holds: PerAsk(lambda feature, asked: AgentHolds(record, agent())),
             ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
 
 
@@ -136,8 +151,9 @@ def agent_of_fact(fact, record):
 def due_now(feature, record, fact: Fact) -> bool:
     """Counts the moment against the agent the fact is about, then asks the feature's trigger whether its behaviour is due, as a 2.x handler did with noticed and due."""
     agent = Agents(record, actor=SYSTEM).peek(fact.agent)
-    triggering.noticed(record, agent, feature.keyed(fact.trigger))
-    return feature.due(record, agent, fact.trigger)
+    behaviour, = fact.trigger
+    triggering.noticed(record, agent, feature.keyed(behaviour))
+    return feature.due(record, agent, behaviour)
 
 
 def answering(registered, request, record) -> Answer:

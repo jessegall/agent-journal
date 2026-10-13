@@ -31,8 +31,8 @@ class Fact(Event):
     """Something that happened, carrying everything a handler could need, so no handler reads the record to fill in what the listener knew."""
 
     claim: str = ""
-    trigger: str = ""
-    """The behaviour whose trigger says when this fact goes on, for a fact dispatched with due."""
+    trigger: tuple = ()
+    """The behaviour whose trigger says when this fact goes on, for a fact dispatched with due: empty for one that is not paced, the empty name for the feature's own trigger."""
     spacing: tuple = ()
     """The key and the seconds a fact dispatched with spaced is held to, at most once per span."""
 
@@ -44,9 +44,9 @@ class Fact(Event):
         """Dispatched at most once every so many seconds for this key: one dispatched sooner is held, the newest replacing the rest, and runs when the time is up, so the last state always lands."""
         return replace(self, spacing=(key, seconds))
 
-    def due(self, behaviour: str) -> "Fact":
+    def due(self, behaviour: str = "") -> "Fact":
         """Dispatched only when the dispatching feature's trigger for this behaviour says it is due: the engine counts the moment and drops the fact until then."""
-        return replace(self, trigger=behaviour)
+        return replace(self, trigger=(behaviour,))
 
 
 @dataclass(frozen=True, kw_only=True)

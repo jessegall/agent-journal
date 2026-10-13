@@ -1,13 +1,12 @@
 import json
 
-from engine.ran import SHELL
 from events import Fact
 from events.agents import AgentMessageSent, ToolCallAnswered, ToolFinished
 from events.journal_laws import LargerResult, LawMentioned, LongReadRefused
 from features.journal_laws.details import LARGEST_RESULT
 from features.journal_laws.laws import laws_for
 from features.journal_laws.reading import long_read
-from framework.recital import BOTH, COMMANDS, TEXT, WHISPER, mentioned
+from framework.recital import COMMANDS, TEXT, WHISPER, mentioned
 from receiving import Listener
 from resources.dumps import Dump
 from resources.form_of_address import Profile
@@ -30,8 +29,8 @@ def strings_in(value) -> list[str]:
 
 def searched(event: ToolCallAnswered, scope: str) -> str:
     """The words of a call a law's keywords are looked for in: a shell call's command, any other call's text."""
-    if event.tool == SHELL:
-        return "" if scope == TEXT else event.input
+    if event.command:
+        return "" if scope == TEXT else event.command
     return "" if scope == COMMANDS else " ".join(strings_in(json.loads(event.input)))
 
 

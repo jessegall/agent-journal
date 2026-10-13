@@ -130,6 +130,8 @@ class ToolCallAnswered(AgentEvent):
     on: ClassVar[str] = f"agent.{TOOL_ANSWERED}"
     tool: str = ""
     input: str = ""
+    command: str = ""
+    """The shell command the call ran, whatever the provider names its shell tool; empty for a call that ran none."""
     why: str = ""
     subagent: bool = False
     cwd: str = ""
