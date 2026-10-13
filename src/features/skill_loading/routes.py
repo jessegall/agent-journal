@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from controllers.invoke import invoked
 from controllers.types import Agents
 from resources.fields import Loaded
 from framework.routing import Reply, Request, handles
@@ -24,17 +23,17 @@ class Keywords(Loaded):
 
 @handles("GET", "/api/{env}/skills")
 def get_skills(req: Request) -> Reply:
-    return Reply(200, invoked(req.as_user(Agents), "skills", named={"agent": req.query_as(SkillsQuery).agent}))
+    return Reply(200, req.as_user(Agents).action("skills")(agent=req.query_as(SkillsQuery).agent))
 
 
 @handles("GET", "/api/{env}/skills/{name}")
 def get_skill(req: Request) -> Reply:
-    return Reply(200, invoked(req.as_user(Agents), "skill", named={"skill": req.params["name"]}))
+    return Reply(200, req.as_user(Agents).action("skill")(skill=req.params["name"]))
 
 
 @handles("POST", "/api/{env}/skills/{name}/load")
 def post_skill_load(req: Request) -> Reply:
-    return Reply(200, invoked(req.as_user(Agents), "load_skill", named={"skill": req.params["name"]}))
+    return Reply(200, req.as_user(Agents).action("load_skill")(skill=req.params["name"]))
 
 
 @handles("POST", "/api/{env}/skills/{name}/always")
@@ -45,4 +44,4 @@ def post_skill_always(req: Request) -> Reply:
 
 @handles("POST", "/api/{env}/skills/{name}/keywords")
 def post_skill_keywords(req: Request) -> Reply:
-    return Reply(200, invoked(req.as_user(Agents), "keywords", named={"skill": req.params["name"], "keywords": req.body_as(Keywords).words}))
+    return Reply(200, req.as_user(Agents).action("keywords")(skill=req.params["name"], keywords=req.body_as(Keywords).words))

@@ -62,3 +62,8 @@ SHARE_ORIGINS = Extension()
 RELIED_ON = Extension()
 """Whether each feature relies on the journal's address staying as it is, by the feature's name."""
 
+
+
+START_PARTS = Extension()
+"""The parts of the block a new session reads first, each a function of the record, built in the order of the places they are keyed by."""
+ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5

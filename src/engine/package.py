@@ -9,13 +9,8 @@ import sys
 import time
 from pathlib import Path
 
-CODE = Path(__file__).resolve().parents[1]
-ZIPPED = CODE.suffix == ".pyz"
-DATA = CODE.with_name("src") if ZIPPED else CODE
+from resources.code import ARCHIVE, CODE, DATA, SRC, ZIPPED, data, entry  # noqa: F401
 
-
-SRC = "src"
-ARCHIVE = "journal.pyz"
 IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
 
@@ -72,14 +67,6 @@ def noticed_digest(root: Path) -> str:
     except (OSError, ValueError, KeyError, TypeError):
         pass
     return installed_digest(root)
-
-
-def data(*parts: str) -> Path:
-    return DATA.joinpath(*parts)
-
-
-def entry(module: str) -> list[str]:
-    return [sys.executable, str(CODE.with_name(ARCHIVE) if ZIPPED else CODE), "-m", module]
 
 
 SERVER_PYTHON = "JOURNAL_SERVER_PYTHON"

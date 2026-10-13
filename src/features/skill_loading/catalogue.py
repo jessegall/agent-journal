@@ -5,14 +5,13 @@ from pathlib import Path
 
 from framework.loaded import FEATURES
 from controllers.types import Agents
-from engine.record import Record
 from serving import SERVED, Providers
-from resources.base import SYSTEM, names
+from resources.base import SYSTEM, USER, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
 from payload import LIBRARY
 from resources.text import skill_name
-from engine.package import data
+from resources.code import data
 from resources.files import mtime
 from engine.frontmatter import frontmatter
 from resources.memo import Memo
@@ -124,13 +123,13 @@ def recent_before_compaction(agent, count: int) -> set[str]:
     return set(sorted(loads, key=loads.get, reverse=True)[:count])
 
 
-def chosen(record: Record) -> list[str]:
-    named = record.setting(Record.skills)
+def chosen(record) -> list[str]:
+    named = record.setting("skills")
     current = available(record.root.parent)
     return sorted(current & (primary() if named is None else set(named) | primary()))
 
 
-def skills(record: Record, n: int = 0) -> list[dict]:
+def skills(record, n: int = 0) -> list[dict]:
     always = set(chosen(record))
     agents = Agents(record, actor=SYSTEM)
     agent = agents.peek(n) if n else agents.primary_to_read()
@@ -142,7 +141,7 @@ def skills(record: Record, n: int = 0) -> list[dict]:
     return out
 
 
-def keywords(record: Record) -> dict[str, list[str]]:
+def keywords(record) -> dict[str, list[str]]:
     chosen_words = record.setting("skill_loading", {}).get("keywords") or {}
     out = {s[SKILL.name]: list(s[SKILL.keywords]) for s in catalogue(record.root.parent)}
     for name, words in chosen_words.items():
@@ -150,20 +149,18 @@ def keywords(record: Record) -> dict[str, list[str]]:
     return {name: words for name, words in out.items() if words}
 
 
-def set_keywords(record: Record, name: str, words: list[str]) -> list[str]:
+def set_keywords(record, name: str, words: list[str]) -> list[str]:
     settings = record.setting("skill_loading", {})
     record.change_setting("skill_loading", {"keywords": {**(settings.get("keywords") or {}), name: words}})
     return keywords(record).get(name, [])
 
 
-def always(record: Record, name: str, on: bool) -> list[str]:
+def always(record, name: str, on: bool) -> list[str]:
     record.skills = sorted(set(chosen(record)) - {name} | ({name} if on else set()))
-    if "session_briefing" in FEATURES:
-        from features.session_briefing.block import rebuild
-        rebuild(record)
+    record.emit("feature", 0, "updated", USER, setting="skills")
     return record.skills
 
 
-def handed(record: Record) -> str:
+def handed(record) -> str:
     named = chosen(record)
     return f"SKILLS to load now, at every start, before the first write: {', '.join(f'Skill: {s}' for s in named)}" if named else ""

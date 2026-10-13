@@ -1,3 +1,4 @@
+from declaring.registries import ADDRESS, LAW, MODE, ORCHESTRATION, SKILLS, START_PARTS  # noqa: F401
 import time
 
 from controllers.types import CONTROLLERS, Works
@@ -56,8 +57,6 @@ QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's wo
          "A line that starts with [journal] is the journal speaking, not the user: act on it, and never answer it in the chat.")
 
 
-START_PARTS = Extension()
-ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
 
 
 def inherited(record) -> str:
