@@ -2,18 +2,18 @@ import time
 from dataclasses import asdict, dataclass
 
 from controllers.types import Messages, Questions, Sequences
-from engine import triggering
-from engine.gates import STILL_HELD
+from declaring.registries import STILL_HELD
 from engine.journal_calls import JournalCall, calls
-from engine.transcript import IDLE
 from features.sequences.dispatch import board_of
-from features.work_tracking.details import WorkDetails
 from framework.journal import waiting
+from framework.loaded import FEATURES
+from framework.marks import mark_of
 from framework.parts import AgentContext
 from framework.sending import Sent
 from declaring.trigger import MINUTE
 from features.sequences.details import STEP_HELD, UNFINISHED, SequencesDetails
 from resources.base import SECTION, SYSTEM
+from resources.types import IDLE
 from resources.sequences import Run, RunKey
 
 FREE_NOUNS = ("search", "carry", "status", "user", "conversation", "upgrade", "heal", "verify", "version", "help", "stop")
@@ -83,12 +83,11 @@ STILL_HELD["sequences.step"] = step_in_hand
 
 def step_stalled(record, session: str) -> bool:
     """Whether a step taken up has stood through more writes than the setting allows, which holds them until the sequence moves on."""
-    from framework.loaded import FEATURES
     found = Sequences(record, actor=SYSTEM).in_hand()
     if not found or found[2].get("followed") != found[2]["step"]:
         return False
     feature = FEATURES["sequences"]
-    return triggering.last(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
+    return mark_of(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
 
 
 STILL_HELD["sequences.stalled"] = step_stalled
@@ -96,7 +95,7 @@ STILL_HELD["sequences.stalled"] = step_stalled
 
 def step_pace(context: AgentContext) -> int:
     if waiting(context.record, context.agent.row):
-        return minutes(WorkDetails.values(context.record).ask_awaiting_every)
+        return minutes(FEATURES["work_tracking"].values(context.record).ask_awaiting_every)
     return minutes(context.feature.cadence(context.record, UNFINISHED).every)
 
 

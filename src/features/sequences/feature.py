@@ -24,7 +24,6 @@ from features.sequences.steps import standing_steps, step_held_text, step_pace
 from framework.base import Feature
 from framework.journal import Journal
 from framework.sending import Nudge
-from providers import PROVIDERS
 from resources.base import USER
 from resources.sequences import Sequence
 from resources.triggers import STARTED_BY, Trigger

@@ -12,6 +12,7 @@ from declaring.holds import Runs
 from declaring.reach import Reach
 from engine.state import State
 from framework import held_lines
+from framework.marks import mark_of
 from framework.displayed import send_row_to_chat
 from resources.text import digest
 from payload import STATUS, HookEvent
@@ -82,7 +83,7 @@ class Marks:
         self.feature, self.record, self.row = feature, record, row
 
     def last(self, name: str) -> "triggering.Mark":
-        return triggering.last(self.record, self.row.title, name)
+        return mark_of(self.record, self.row.title, name)
 
     def write(self, name: str, **fields) -> None:
         triggering.write(self.record, self.row, name, **fields)

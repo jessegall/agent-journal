@@ -3,7 +3,7 @@ from events.agents import ClockTicked
 from events.dumps import (DumpArrived, DumpChoiceMade, DumpChoiceOpen, DumpFilingStalled, DumpFiledAway, DumpQuestionAnswered,
                           DumpWritten, TranscriptPasted)
 from events.messages import MessageUpdated
-from engine.transcript import IDLE
+from resources.types import IDLE
 from receiving import Listener
 from resources.base import COMPLETED
 from resources.dumps import OWN_WORDS

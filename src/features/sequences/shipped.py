@@ -1,7 +1,7 @@
 import re
 
-from features import discover
 from framework.base import REGISTRY
+from framework.loaded import discover
 from controllers.types import Sequences
 from features.sequences.shipping import ShippedSequence
 from controllers.types import Triggers

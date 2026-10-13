@@ -1,6 +1,6 @@
 from controllers.messages import only_emoji
 from declaring.reach import Reach
-from engine.transcript import IDLE
+from resources.types import IDLE
 from events import Fact
 from events.agents import AgentMessageSent, AgentReported, TurnInterrupted, TurnStopped
 from events.messages import (PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageCreated,

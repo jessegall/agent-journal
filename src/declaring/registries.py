@@ -67,3 +67,7 @@ RELIED_ON = Extension()
 START_PARTS = Extension()
 """The parts of the block a new session reads first, each a function of the record, built in the order of the places they are keyed by."""
 ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
+
+
+STILL_HELD: dict = {}
+"""Whether a hold on an agent's writes still stands, by the key of the hold: each is a function of the record and the session, asked before the hold is let go."""
