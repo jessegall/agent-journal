@@ -3,7 +3,7 @@ import time
 from controllers.types import Docs, Questions, Reports, Todos, Works
 from controllers.types import Plans
 from resources.plans import READY, WAITING
-from resources.base import SYSTEM, USER
+from resources.base import SYSTEM, USER, Summary
 from serving import Git
 from typing import TypedDict
 
@@ -27,13 +27,13 @@ def item(section: str, ref: str, title: str, note: str = "") -> Item:
     return {"section": section, "ref": ref, "title": title, "note": note}
 
 
-def updates(reports: Reports) -> list[dict]:
+def updates(reports: Reports) -> list[Summary]:
     return sorted((s for s in reports.rows.summaries() if s.extras.get("kind") == UPDATE and not s.deleted), key=lambda s: s.extras.get("number") or 0)
 
 
 def opened_until(reports: Reports) -> float:
     opened = [s for s in updates(reports) if USER in s.seen and s.extras["until"] is not None]
-    return float(opened[-1]["until"]) if opened else 0.0
+    return float(opened[-1].extras["until"]) if opened else 0.0
 
 
 def since(reports: Reports, now: float) -> float:
