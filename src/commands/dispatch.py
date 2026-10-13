@@ -59,7 +59,7 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Sto
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
     found = resolve(method, path)
     if not found:
-        if method != "GET":
+        if method != "GET" or path.startswith("/api/"):
             return Reply(404, {"error": "no such route"})
         try:
             return static(path, root)
