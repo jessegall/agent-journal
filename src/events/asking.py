@@ -24,6 +24,8 @@ class ToolCallAsked(Asked):
     cwd: str = ""
     """The folder the agent works in, which a relative path in the call is read against."""
     paths: tuple[str, ...] = ()
+    writings: tuple[str, ...] = ()
+    """What the call writes in its own words, such as an edit's new text or a dispatch's prompt; never a path it names."""
     subagent: bool = False
     writes: bool = False
     """Whether the call changes files in the project, as a hold on writes judges it."""

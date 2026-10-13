@@ -17,7 +17,7 @@ from payload import STATUS, HookEvent
 from declaring import trigger
 from engine import triggering
 from declaring.settings import Settings
-from resources.base import AGENT, SYSTEM, titled
+from resources.base import AGENT, SYSTEM, USER, titled
 
 if TYPE_CHECKING:
     from framework.journal import BoundJournal
@@ -59,6 +59,10 @@ class Speaker:
         messages = Messages(self.record, actor=AGENT)
         if not messages.already_posted(text):
             messages.create(titled(text), brief=text, idempotency=turn, **data)
+
+    def post_as_user(self, title: str, brief: str, **data) -> None:
+        """A message in the chat in the user's own name, which a trigger the user wrote sends for them."""
+        Messages(self.record, actor=USER).create(title, brief=brief, **data)
 
     def keep(self, line: str) -> None:
         """Holds the line for the agent's next tool call, where it is told beside the hook's answer."""

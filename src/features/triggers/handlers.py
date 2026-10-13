@@ -1,154 +1,50 @@
-from itertools import takewhile
+from events import Fact
+from events.triggers import ChatWordDenied, TriggerMet, TriggerHolding, TriggerReleased, TriggerShowing
+from features.triggers.listeners import sent_key
+from framework.format import read_as
+from receiving import Handler
+from resources.triggers import DENY, INSTRUCT, MESSAGE, NUDGE, START, Trigger, holding
+from resources.types import AgentRow
+from serving import Chat, Remembered, Rows
 
-from events.agents import AgentReported
-from events.agents import AgentMessageSent, ClockTicked
-from events.messages import MessageCreated
-from engine.transcript import IDLE as AGENT_IDLE
-from declaring import trigger
-from framework import actions
-from framework import watched
-from framework.sending import Nudge, Sent, send
-from framework.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
-from declaring.holds import Runs
-from engine.gates import STILL_HELD
-from framework.recital import COMMANDS, mentioned, searched
-from controllers.types import Triggers
-from resources.triggers import holding
-from resources.triggers import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
-from resources.base import SYSTEM, USER
-from declaring.reach import Reach
-from controllers.types import Agents, Messages
-
-WATCHING, REMINDING = "watching", "reminding"
-CHAT_DENIED = "caught a denied word in the agent's message"
-DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call", START: "started its sequence", HOLD: "held the agent"}
+DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call", START: "started its sequence", "hold": "held the agent"}
 
 
-def standing(context) -> list:
-    return context.journal.acting(SYSTEM).get(Triggers).rows.standing()
-
-
-def firing(context, text_of, from_user: bool = False) -> list:
-    return [row for row in standing(context)
-            if not row.is_state and (from_user or row.words_in != FROM_USER) and mentioned(row.words, text_of(str(row.words_in or "both")))]
-
-
-def fire(context, agent, row, done: str = "", about: str = "") -> None:
-    from framework.format import read_as
-    row = read_as(row, context.record)
-    if row.does != START:
-        context.journal.acting(SYSTEM).get(Agents).card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
-                                                   tone="danger" if row.does == DENY else "note", title=row.wording, ref=row.ref)
-    if row.does == MESSAGE:
-        actions.post_as_user(context, row.title, row.brief or row.text, trigger=row.n)
-    elif row.does in (NUDGE, INSTRUCT):
-        actions.say(context, agent, row.does, title=row.title, text=row.wording)
-    Triggers(context.record, actor=SYSTEM).fired(row.n, about)
-
-
-def in_state(row, agent) -> bool:
-    return {IDLE: agent.status == AGENT_IDLE, WORKING: agent.status != AGENT_IDLE}.get(str(row.only_when), True)
-
-
-def current(row, context, agent) -> list[Sent]:
-    looked = watched.Watched.of(row)
-    if not in_state(row, agent) or not watched.FACTS.holds(looked, context.record):
+class FireTrigger(Handler[TriggerMet]):
+    def handle(self, event: TriggerMet, triggers: Rows[Trigger], agents: Rows[AgentRow], chat: Chat) -> list[Fact]:
+        row = read_as(triggers.load(event.row), triggers.record)
+        if row.does != START:
+            agents.card(event.agent, label=f"Trigger {row.title} {event.done or DONE[row.does]}", icon=Trigger.icon, tone="danger" if row.does == DENY else "note",
+                        title=row.wording, ref=row.ref)
+        if row.does == MESSAGE:
+            chat.post_as_user(row.title, row.brief or row.text, row=row.n)
+        elif row.does in (NUDGE, INSTRUCT):
+            chat.say(row.does, private=True, title=row.title, text=row.wording)
+        triggers.fired(row.n, event.about)
         return []
-    return watched.found(looked, context, agent)
 
 
-def nudge_of(row) -> Nudge:
-    def about(context, agent) -> list[Sent]:
-        return [Sent(f"{row.n}:{found.key}", {**found.values, "title": row.title, "text": watched.filled(row.wording, found.values)}) for found in current(row, context, agent)]
-
-    cadence = trigger.Trigger(unit=trigger.MINUTES, every=row.timing) if row.timing else trigger.NEVER
-    return Nudge(str(row.does), REMINDING, about, private=True, once=not row.timing, most=int(row.most), timing=cadence)
-
-
-def state_nudges(context) -> tuple:
-    return tuple(nudge_of(row) for row in standing(context) if row.is_state and row.does in (NUDGE, INSTRUCT))
+class DenyWordInChat(Handler[ChatWordDenied]):
+    def handle(self, event: ChatWordDenied, triggers: Rows[Trigger], chat: Chat) -> list[Fact]:
+        row = triggers.load(event.row)
+        chat.nudge("denied", title=row.title, text=row.wording)
+        return []
 
 
-class SayWhatTheJournalShowsOnTheClock(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        send(context, state_nudges(context))
+class SayWhatTheJournalShows(Handler[TriggerShowing]):
+    def handle(self, event: TriggerShowing, chat: Chat, remembered: Remembered) -> list[Fact]:
+        chat.say(event.does, private=True, **dict(event.values))
+        remembered.set(sent_key(event.row, event.key), remembered.get(sent_key(event.row, event.key), 0) + 1)
+        return []
 
 
-class SayWhatTheJournalShowsOnToolUse(Handler):
-    hooks = ANY_BUT_POST_TOOL_USE
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        send(context, state_nudges(context))
-
-
-def reminding(record, session: str) -> bool:
-    """Whether the behaviour for facts is on, which is all that keeps a hold of a trigger standing: switching it off lets every one go."""
-    from framework.loaded import FEATURES
-    return FEATURES["triggers"].on(record, REMINDING)
+class HoldWhileTheJournalShows(Handler[TriggerHolding]):
+    def handle(self, event: TriggerHolding, chat: Chat) -> list[Fact]:
+        chat.hold("held", holding(event.row), title=event.title, text=event.text)
+        return []
 
 
-STILL_HELD["triggers.hold"] = reminding
-
-
-class HoldWhileTheJournalShows(Handler):
-    behaviour = REMINDING
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        for row in standing(context):
-            if not row.is_state or row.does != HOLD:
-                continue
-            found = current(row, context, context.agent.row)
-            if not found:
-                context.release(holding(row.n))
-                continue
-            context.hold("held", holding(row.n), title=row.title, text=watched.filled(row.wording, found[0].values))
-
-
-class DenyWhatTheAgentDoes(ToolInterceptor):
-    reach = Reach.MAIN
-    runs = Runs.SYNC
-    behaviour = WATCHING
-
-    def intercept(self, context: AgentContext, call) -> str:
-        row = next((row for row in firing(context, lambda scope: searched(call, scope)) if row.does == DENY), None)
-        if row is None:
-            return ""
-        fire(context, context.agent.row, row)
-        return f"{row.title} - {row.wording or 'this call is denied by a trigger'}"
-
-
-class WatchWhatTheAgentDoes(ToolInterceptor):
-    reach = Reach.MAIN
-    runs = Runs.ASYNC
-    behaviour = WATCHING
-
-    def intercept(self, context: AgentContext, call) -> str:
-        for row in takewhile(lambda row: row.does != DENY, firing(context, lambda scope: searched(call, scope))):
-            fire(context, context.agent.row, row)
-        return ""
-
-
-class WatchWhatTheAgentWrites(Handler):
-    behaviour = WATCHING
-
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        for row in firing(context, lambda scope: "" if scope == COMMANDS else event.text):
-            fire(context, context.agent.row, row, CHAT_DENIED if row.does == DENY else "")
-            if row.does == DENY:
-                context.agent.nudge("denied", title=row.title, text=row.wording)
-
-
-class WatchWhatTheUserWrites(Handler):
-    behaviour = WATCHING
-
-    def handle(self, context: Context, event: MessageCreated) -> None:
-        if event.actor != USER:
-            return
-        agent = context.journal.acting(SYSTEM).get(Agents).primary()
-        message = context.journal.get(Messages).load(event.n)
-        if message.data.get("trigger"):
-            return
-        text = f"{message.title} {message.brief}"
-        for row in firing(context, lambda scope: "" if scope == COMMANDS else text, from_user=True):
-            if agent and row.does != DENY:
-                fire(context, agent, row, about=f"message:{message.n}")
+class ReleaseWhenTheJournalStopsShowing(Handler[TriggerReleased]):
+    def handle(self, event: TriggerReleased, chat: Chat) -> list[Fact]:
+        chat.release(holding(event.row))
+        return []
