@@ -16,7 +16,7 @@ from resources.types import AgentRow, Worktree
 __all__ = ["Worktrees"]
 
 AGENT_ROW = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
-HELPER = Worktree(n=1, title="rhea", path="/elsewhere/rhea", working="main", base="abc", branch="helper-rhea")
+HELPER = Worktree(n=1, title="rhea", data={"path": "/elsewhere/rhea", "working": "main", "base": "abc", "branch": "helper-rhea"})
 
 
 def answered(command: str = "ls", cwd: str = "/project", subagent: bool = False, paths: tuple[str, ...] = ()) -> ToolCallAnswered:
