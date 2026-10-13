@@ -39,7 +39,7 @@ def mention(law: str, agent: int = 1) -> LawMentioned:
 
 
 def dispatch(kind: str = "Plan", model: str = "sonnet", models: tuple[str, ...] = ("sonnet", "haiku"), description: str = "Dr. Einstein: profile the build", **more) -> AgentDispatching:
-    return AgentDispatching(kind=kind, model=model, model_supported=True, models=models, name_supported=True, description=description, session="claude-1", **more)
+    return AgentDispatching(kind=kind, model=model, model_supported=True, models=models, name_supported=True, description=description, session="claude-1", **{"read_only": True, **more})
 
 
 def called(tool: str, input: str, why: str = "", subagent: bool = False) -> ToolCallAnswered:
@@ -56,6 +56,8 @@ def whole_refusal(named: str, count: int, instead: str) -> str:
             f"or list its headings first with grep -n '^#' {named} and read only the part you need; or grep -n for the line you want.")
 
 
+WRITER_REFUSED = ("Journal law L9 refuses a subagent that can write: fork has tools that change files. "
+                  "Dispatch a read-only type such as Explore or Plan, give a job that writes to a helper with journal helper dispatch, or do it yourself.")
 READ_REFUSED = whole_refusal("long.py", 800, RANGE)
 CAT_REFUSED = whole_refusal("long.py", 800, "print a range: sed -n '1,120p' long.py")
 
@@ -90,6 +92,7 @@ class JournalLaws(Feature):
                 >> Answered(Refused("gpt-5-mini is not a model this account offers. Choose one of gpt-5.6-luna, gpt-6-sol.")),
             Given(dispatch(description="profile the build"))
                 >> Answered(Refused(f"Journal law L5 requires a name on every subagent dispatch: start the description with the name, a colon, then the task. {NAMING}")),
+            Given(dispatch(kind="fork", read_only=False)) >> Answered(Refused(WRITER_REFUSED)),
             Given(dispatch()) >> Answered(Allowed()),
             Given(dispatch(kind="", task="search_history", model="gpt-5.6-luna", models=("gpt-5.6-luna", "gpt-6-sol"), description="Dr. Einstein: search the history")) >> Answered(Allowed()),
             Given(dispatch(kind="general-purpose", subagent=True)) >> Answered(Allowed()),

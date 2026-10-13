@@ -1,13 +1,13 @@
 from events.agents import ToolCallAnswered
 from events.answers import Allowed, Refused as Declined
-from events.asking import AgentDispatching, ToolCallAsked
+from events.asking import ToolCallAsked
 from events.boards import BoardStarted
 from events.work_modes import BuilderHandedAway, DriftChecked, EditCounted, OrchestratorDrifted
 from expects import Answered, Dispatches, Given, Nudged, Remembered, Set, Unchanged, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from declaring.registries import MODE, START_PARTS
-from features.work_modes.answering import REFUSED, RefuseDispatchInSolo, RefuseHelperInSolo
+from features.work_modes.answering import REFUSED, RefuseHelperInSolo
 from features.work_modes.details import WorkModesDetails
 from features.work_modes.handlers import ClearTheCount, CountTheEdit, NameTheBuildersHandingAway, NameTheOrchestratorsDrift, OrchestrateWhenABoardStarts
 from features.work_modes.listeners import SpotEditOutsideTheJournal
@@ -28,10 +28,6 @@ def shell(command: str, subagent: bool = False) -> ToolCallAsked:
     return ToolCallAsked(tool="Bash", input=command, command=command, session="claude-1", subagent=subagent)
 
 
-def dispatch(kind: str = "general-purpose", **more) -> AgentDispatching:
-    return AgentDispatching(kind=kind, model="sonnet", model_supported=True, session="claude-1", **more)
-
-
 def editing(*made: int, name: str = "claude-1", **more) -> AgentRow:
     commands = [{"command": "edit", "tool": "Edit", "at": 100.0 + at, "changed": {**CHANGED, "edited": edited}} for at, edited in enumerate(made)]
     return AgentRow(n=1 if name == "claude-1" else 2, title=name, data={"commands": commands, **more})
@@ -49,12 +45,6 @@ class WorkModes(Feature):
         journal.routes.add(post_mode)
         journal.routes.add(post_board)
         START_PARTS.add(self, carried, key=MODE)
-        journal.events.answer(AgentDispatching, RefuseDispatchInSolo(), expects=[
-            Given(dispatch(), settings=SOLO) >> Answered(Declined(REFUSED)),
-            Given(dispatch("Explore", read_only=True), settings=SOLO) >> Answered(Allowed()),
-            Given(dispatch(), settings=BUILDER) >> Answered(Allowed()),
-            Given(dispatch(subagent=True), settings=SOLO) >> Answered(Allowed()),
-        ])
         journal.events.answer(ToolCallAsked, RefuseHelperInSolo(), expects=[
             Given(shell(HELPER_DISPATCH), settings=SOLO) >> Answered(Declined(REFUSED)),
             Given(shell(HELPER_DISPATCH), settings=BUILDER) >> Answered(Allowed()),

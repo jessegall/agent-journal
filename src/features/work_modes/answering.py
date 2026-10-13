@@ -1,5 +1,5 @@
 from events.answers import Allowed, Answer, Refused
-from events.asking import AgentDispatching, ToolCallAsked
+from events.asking import ToolCallAsked
 from engine.journal_calls import calls
 from features.work_modes.details import SOLO
 from features.work_modes.modes import kept_mode
@@ -7,11 +7,6 @@ from receiving import Answerer
 from serving import Settings
 
 REFUSED = "the user set this environment to solo: do the writing yourself; only a subagent that reads, such as Explore or Plan, may be dispatched, and no helper"
-
-
-class RefuseDispatchInSolo(Answerer[AgentDispatching]):
-    def answer(self, event: AgentDispatching, settings: Settings) -> Answer:
-        return Refused(REFUSED) if kept_mode(settings.mode) == SOLO and not event.subagent and not event.read_only else Allowed()
 
 
 class RefuseHelperInSolo(Answerer[ToolCallAsked]):

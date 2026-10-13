@@ -47,6 +47,11 @@ LAWS = (
         "This binds what you write in the chat. Code, commit messages, briefs to other agents, to-do briefs, docs and reports are as long as they "
         "must be to be understood later.",
         (), "text"),
+    Law("L9", "A subagent only reads; work that writes goes to a helper or stays with you.",
+        "A subagent works in your own checkout and environment, so what it writes lands beside your own edits, outside a worktree, unlogged and unjudged. "
+        "Reading, searching, reviewing and designing go to a subagent of a read-only type; a job that changes a file goes to a helper "
+        "(journal helper dispatch, with --worktree for code) or you do it yourself.",
+        ("subagent", "spawn_agent", "fork", "helper dispatch"), "everything"),
 )
 
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
@@ -74,6 +79,9 @@ def carry(record=None) -> str:
 def refusal(dispatch: AgentDispatching, naming: str) -> str:
     if dispatch.kind in GENERIC and dispatch.task in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
+    if not dispatch.read_only:
+        return (f"Journal law L9 refuses a subagent that can write: {dispatch.kind or dispatch.task} has tools that change files. "
+                "Dispatch a read-only type such as Explore or Plan, give a job that writes to a helper with journal helper dispatch, or do it yourself.")
     if dispatch.model_supported and not dispatch.model:
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
     if dispatch.models and dispatch.model not in dispatch.models:
