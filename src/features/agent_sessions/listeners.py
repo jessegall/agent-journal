@@ -1,6 +1,6 @@
 from declaring.trigger import MINUTE
 from events import Fact
-from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, StopAsked,
+from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, SilenceDue, StopAsked,
                                    SubagentAlive, SubagentReportLinked, TakeOverChosen)
 from events.agents import AgentChanged, AgentReported, ClockTicked
 from events.questions import QuestionCompleted
@@ -49,8 +49,8 @@ class SpotTakeOver(Listener[QuestionCompleted]):
         return [TakeOverChosen(session=session, environment=name, place=places.rows.by_title(name).n)]
 
 
-class SpotSilentSessions(Listener[ClockTicked]):
-    def listen(self, event: ClockTicked, agents: ReadRows[AgentRow], sessions: ReadSessions, settings: Settings, clock: Clock) -> list[Fact]:
+class SpotSilentSessions(Listener[SilenceDue]):
+    def listen(self, event: SilenceDue, agents: ReadRows[AgentRow], sessions: ReadSessions, settings: Settings, clock: Clock) -> list[Fact]:
         silent = clock.now() - settings.quiet * MINUTE
         return [SessionEnded(row=row.n) for row in agents.rows.every() if settings.is_on("liveness") and float(row.at) < silent and has_ended(row, sessions, agents)]
 

@@ -1,10 +1,11 @@
-from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, StopAsked,
-                                   SubagentAlive, SubagentReportLinked, TakeOverChosen)
+from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, SilenceDue,
+                                   StopAsked, SubagentAlive, SubagentReportLinked, TakeOverChosen)
 from events.agents import AgentChanged, AgentReported, ClockTicked
 from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.todos import TodoUpdated
 from expects import WHEN, Dispatches, Given, Held, Nudged, Ran, Updated, nothing
+from framework.due import DueOnClock
 from features.agent_sessions.details import AgentSessionsDetails
 from features.agent_sessions.handlers import (AskToStop, ClearLapsedAssignment, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, NoticeReport,
                                               RecordCompaction, ReleaseEvicted, StopEndedSession, TakeOverOnAnswer)
@@ -42,10 +43,13 @@ class AgentSessions(Feature):
         journal.events.listen(QuestionCompleted, SpotTakeOver(), expects=[
             Given(QuestionCompleted(n=3), rows=[Question(n=3, title="take it over?")]) >> Dispatches(nothing),
         ])
-        journal.events.listen(ClockTicked, SpotSilentSessions(), expects=[
-            Given(ClockTicked(agent=1), rows=[QUIET]) >> Dispatches(SessionEnded(row=1)),
-            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"status": "working", "event": "PostToolUse", "at": WHEN})]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"status": "stopped", "event": "Stop", "at": WHEN - 86_400})]) >> Dispatches(nothing),
+        journal.events.listen(ClockTicked, DueOnClock(SilenceDue, "liveness"), expects=[
+            Given(ClockTicked(agent=1)) >> Dispatches(SilenceDue(agent=1).due("liveness")),
+        ])
+        journal.events.listen(SilenceDue, SpotSilentSessions(), expects=[
+            Given(SilenceDue(agent=1), rows=[QUIET]) >> Dispatches(SessionEnded(row=1)),
+            Given(SilenceDue(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"status": "working", "event": "PostToolUse", "at": WHEN})]) >> Dispatches(nothing),
+            Given(SilenceDue(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"status": "stopped", "event": "Stop", "at": WHEN - 86_400})]) >> Dispatches(nothing),
         ])
         journal.events.listen(AgentReported, SpotEndedSessions(), expects=[
             Given(AgentReported(agent=2, hook="SessionStart", session="claude-2"), rows=[WORKING, AgentRow(n=2, title="claude-2", data={"status": "working"})]) >> Dispatches(SessionEnded(row=1)),

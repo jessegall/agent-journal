@@ -98,3 +98,10 @@ class AssignmentLapsed(Fact):
     todo: int
     who: str
     minutes: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class SilenceDue(Fact):
+    """The liveness trigger says it is time to look for sessions that went silent."""
+
+    agent: int
