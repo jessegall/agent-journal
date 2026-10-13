@@ -118,6 +118,14 @@ class Environment:
         """The chat of every live agent here, for a line each of them must hear."""
         return [Speaker(self.feature, self.record, agent) for agent in Agents(self.record, actor=SYSTEM).rows.every() if agent.live]
 
+    def notify(self, line: str, **values):
+        """A line of the asking feature filed as a notification here, which the user and every agent see until it is cleared; it needs no agent to speak to."""
+        return self.feature.journal.notify(self.record, line, **values)
+
+    def clear(self, row, how: str) -> None:
+        """Closes a notification or notice the asking feature filed, saying how it was settled."""
+        self.feature.journal.clear(self.record, row, how)
+
     def is_owed(self, feature: str, line: str, rows: tuple[str, ...]) -> bool:
         """Whether a line another feature sent about these rows still asks the agent to act."""
         return FEATURES[feature].is_owed(self.record, line, rows)
