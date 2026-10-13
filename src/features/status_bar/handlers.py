@@ -1,47 +1,58 @@
-import time
-
-from engine import bus
+from events import Fact
 from events.agents import AgentReported
-from framework.parts import AgentContext, Handler
+from events.status_bar import BarStale, DoingStale, UsageRead
 from features.status_bar.bar import EMPTY, bar, doing
 from features.status_bar.usage import observe
-from controllers.types import Agents
+from receiving import Handler, Listener
+from resources.types import AgentRow
+from serving import Clock, ReadRows, Remembered, Rows, Settings
 
 BAR_EVERY = 1.0
+USAGE = "usage"
 
 
-class WriteBar(Handler):
-    """A person reads the bar about once a second, so it is written at most that often, the latest state winning."""
+class SpotStaleBar(Listener[AgentReported]):
+    """A person reads the bar about once a second, so it is drawn at most that often, the latest state winning."""
 
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        bus.spaced(f"bar {context.record.home}", BAR_EVERY, lambda: self.write(context))
-
-    def write(self, context: AgentContext) -> None:
-        newest = context.journal.get(Agents).primary_to_read()
-        drawn = bar(newest, time.time()) if newest else EMPTY
-        state = context.record.state("status_bar")
-        if state.get("bar") != drawn:
-            state.set("bar", drawn)
+    def listen(self, event: AgentReported) -> list[Fact]:
+        return [BarStale(agent=event.agent).spaced("bar", BAR_EVERY)]
 
 
-class RecordWhatItDoes(Handler):
+class SpotStaleDoing(Listener[AgentReported]):
+    def listen(self, event: AgentReported) -> list[Fact]:
+        return [DoingStale(agent=event.agent).spaced(f"doing|{event.agent}", BAR_EVERY)]
+
+
+class ReadUsage(Listener[AgentReported]):
+    def listen(self, event: AgentReported, agents: ReadRows[AgentRow], settings: Settings) -> list[Fact]:
+        if not settings.is_on(USAGE):
+            return []
+        row = agents.peek(event.agent)
+        usage = observe(row.provider, row.transcript, row.usage)
+        return [UsageRead(agent=event.agent, usage=usage)] if usage is not None and usage != row.usage else []
+
+
+class DrawTheBar(Handler[BarStale]):
+    def handle(self, event: BarStale, agents: ReadRows[AgentRow], memory: Remembered, clock: Clock) -> list[Fact]:
+        newest = agents.primary_to_read()
+        drawn = bar(newest, clock.now()) if newest else EMPTY
+        if memory.get("bar") != drawn:
+            memory.set("bar", drawn)
+        return []
+
+
+class NoteWhatItDoes(Handler[DoingStale]):
     """The agent's own row keeps the bar's plain line for its latest activity, which the Home cells show in place of a tool name."""
 
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        row = context.agent.row
-        bus.spaced(f"doing {context.record.home} {row.n}", BAR_EVERY, lambda: self.record(context, row))
-
-    def record(self, context: AgentContext, row) -> None:
-        line = doing(row, time.time())
+    def handle(self, event: DoingStale, agents: Rows[AgentRow], clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        line = doing(row, clock.now())
         if line != row.doing:
-            context.journal.get(Agents).update(row.n, doing=line)
+            agents.update(row.n, doing=line)
+        return []
 
 
-class RefreshUsage(Handler):
-    behaviour = "usage"
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        row = context.agent.row
-        usage = observe(row.provider, row.transcript, row.usage)
-        if usage is not None and usage != row.usage:
-            context.journal.get(Agents).update(row.n, usage=usage)
+class KeepUsage(Handler[UsageRead]):
+    def handle(self, event: UsageRead, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.update(event.agent, usage=event.usage)
+        return []
