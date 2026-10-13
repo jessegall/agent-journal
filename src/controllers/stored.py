@@ -18,7 +18,7 @@ from engine import transaction
 from engine.locks import WRITING, after_writes
 from engine.disk import ROW_FILES, by_repository
 from engine.developing import found
-from resources.memo import MEMOS, Memo
+from resources.memo import ALL, HELD, MEMOS, Memo, rolling  # noqa: F401  the rows a folder keeps in memory are named in resources
 from engine.numbers import rows
 
 T = TypeVar("T")
@@ -38,8 +38,6 @@ SUMMARIES: dict[str, tuple] = {}
 STANDING: dict[str, tuple] = {}
 DERIVED: dict[tuple[str, str], tuple] = {}
 COUNTED: dict[tuple[str, str], tuple] = {}
-HELD: dict[str, Memo] = {}
-ALL = 0   # a memo with no limit keeps every row
 PACKS = Memo()
 INDEXED: dict[str, dict[int, Summary]] = {}
 PENDING: dict[str, set[int]] = {}
@@ -71,13 +69,6 @@ def is_row_file(path: Path) -> bool:
 
 
 ROW_FILES.append(is_row_file)
-
-
-def rolling(folder: str, limit: int | None) -> Memo:
-    """The parsed rows a folder keeps in memory: at most `limit` of them, the one used longest ago going first, or all of them when a type holds all."""
-    if folder not in HELD:
-        HELD[folder] = Memo(ALL if limit is None else limit)
-    return HELD[folder]
 
 
 def forget_held() -> None:

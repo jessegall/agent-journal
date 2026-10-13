@@ -4,7 +4,8 @@ from pathlib import Path
 
 from engine import runtime
 from engine.stored import write_text
-from install import fetch, released, version_key
+from install import fetch, released
+from resources.versions import newer, shared_parts  # noqa: F401  their home is resources
 
 __all__ = ["fetch"]
 
@@ -55,11 +56,3 @@ def check_now(root: Path) -> None:
             FETCHING.release()
 
     threading.Thread(target=check, daemon=True).start()
-
-
-def newer(version: str, than: str) -> bool:
-    return bool(version) and (not than or than == "0" or version_key(version) > version_key(than))
-
-
-def shared_parts(version: str, other: str, parts: int) -> bool:
-    return version_key(version)[:parts] == version_key(other)[:parts]

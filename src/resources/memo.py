@@ -2,6 +2,7 @@ import threading
 from typing import Callable
 
 MEMOS: list["Memo"] = []
+ALL = 0   # a memo with no limit keeps every row
 
 
 class Memo:
@@ -52,3 +53,13 @@ class Memo:
 def forget_all() -> None:
     for memo in MEMOS:
         memo.clear()
+
+
+HELD: dict[str, Memo] = {}
+
+
+def rolling(folder: str, limit: int | None) -> Memo:
+    """The parsed rows a folder keeps in memory: at most `limit` of them, the one used longest ago going first, or all of them when a type holds all."""
+    if folder not in HELD:
+        HELD[folder] = Memo(ALL if limit is None else limit)
+    return HELD[folder]

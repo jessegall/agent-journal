@@ -3,18 +3,18 @@ import pickle
 import re
 from pathlib import Path
 
-from controllers.stored import HELD, rolling
-from engine import runtime
-from engine.upgrades import newer
 from engine.version import version
+from resources.files import RUNTIME
+from resources.memo import HELD, rolling
 from resources.types import TYPES
+from resources.versions import newer
 
 SNAPSHOT = "rows.snapshot"
 FULL_RESTART = "<!-- full-restart -->"
 
 
 def snapshot_file(root: Path) -> Path:
-    return runtime.folder(root) / SNAPSHOT
+    return Path(root) / RUNTIME / SNAPSHOT
 
 
 def needs_full_restart(changes: str, built: str) -> bool:
