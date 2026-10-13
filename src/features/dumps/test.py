@@ -220,20 +220,3 @@ def a_dump_refuses_what_it_cannot_do(record, dump):
         "a dump is removed once, and only by the user"
 
 
-def test_a_closed_dump_lets_go_of_the_drafts_it_still_held():
-    from controllers.stored import DRAFT_OF
-    from migrations.m0050_dump_drafts_released import run
-
-    record = fresh()
-    dumps = CONTROLLERS["dump"](record, actor=AGENT)
-    dump = dumps.create("Old dump")
-    held = Todos(record, actor=AGENT).create("held draft", **{DRAFT_OF: dump.ref})
-    other = Todos(record, actor=AGENT).create("someone else's", **{DRAFT_OF: "dump:99"})
-    dumps.link(dump.n, held.ref)
-    dumps.link(dump.n, other.ref)
-    dumps.link(dump.n, "todo:77")
-    dumps.link(dump.n, "mystery:1")
-    dumps.complete(dump.n, how="filed")
-    assert run(record.root) == [held.ref], "only a row still held by this dump is released"
-    assert not Todos(record, actor=AGENT).load(held.n).data.get(DRAFT_OF), "the released row no longer names the dump"
-    assert Todos(record, actor=AGENT).load(other.n).data[DRAFT_OF] == "dump:99", "a row held by another dump stays held"

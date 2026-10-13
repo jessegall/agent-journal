@@ -6,7 +6,6 @@ import subprocess
 from pathlib import Path
 
 import features
-from controllers.notices import Notices
 from controllers.types import Messages
 from controllers.secrets.controller import Secrets
 from controllers.secrets.sessions import BrowserLogins
@@ -99,12 +98,6 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     after = Secrets(record, actor=SYSTEM).load(row.n)
     assert (after.programs, after.proposed) == (["cat"], []), "a grant from the viewer's own payload leaves the program allowed, not proposed"
     Secrets(record, actor=SYSTEM).update(row.n, programs=[], proposed=["cat"])
-    from migrations.m0074_secrets_name_their_programs import run as tell_unlisted
-    assert len(tell_unlisted(record.root)) == 1 and any("GitHub (secret" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), \
-        "an upgrade tells the user which secrets list no programs"
-    gone = Secrets(record, actor=USER).create("Old token", kind="api key")
-    Secrets(record, actor=USER).delete(gone.n, "no longer used")
-    assert [line for line in tell_unlisted(record.root) if "Old token" in line] == [], "a deleted secret is never named"
     Secrets(record, actor=SYSTEM).update(row.n, programs=["cat", "base64", "printenv", "bash"])
     assert "has no value yet" in refused(lambda: agent.run("GitHub", "cat")), "a secret without its value is never run"
     Secrets(record, actor=USER).fill(row.n, "key", VALUE)

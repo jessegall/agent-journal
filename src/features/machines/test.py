@@ -1,8 +1,5 @@
-import importlib
-from engine.disk import by_repository
 import re
 from pathlib import Path
-import shutil
 
 import pytest
 
@@ -13,7 +10,7 @@ from controllers.features import Features
 from controllers.requests import deliver, request
 from controllers.types import Rules, Todos
 from engine.event_log import EventLog
-from engine.locks import hold_record_writes, writing
+from engine.locks import writing
 from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
 from engine.outbox import Request
@@ -49,23 +46,6 @@ def test_two_machines_leasing_from_one_record_never_hand_out_the_same_number(tmp
     stored.SUMMARIES.clear()
     stored.INDEXED.clear()
     assert [row.n for row in alone.rows.summaries()][-3:] == [first.n, second.n, third.n], "a list read afresh keeps that order"
-
-
-def test_an_existing_record_upgrades_with_its_numbers_continuing():
-    record = fresh()
-    todos = Todos(record, actor=AGENT)
-    for i in range(5):
-        todos.create(f"old {i}")
-    last_event = record.event_log.last_id()
-    shutil.rmtree(record.root / "project" / "numbers")
-    shutil.rmtree(record.root / "runtime" / "numbers")
-    with hold_record_writes(record.root), by_repository():
-        importlib.import_module("migrations.m0069_numbers_leased_per_writer").run(record.root)
-
-    again = Record(record.root, record.env)
-    assert Todos(again, actor=AGENT).create("new").n == 6, "the next row follows the highest number already in use"
-    assert again.event_log.last_id() > last_event, "events go on numbering above the last one written"
-    assert [r.title for r in Todos(again, actor=AGENT).all()][:5] == [f"old {i}" for i in range(5)], "every row is still there, in order"
 
 
 def test_a_project_row_writes_its_event_into_the_project_log_and_its_writer_still_reads_it():

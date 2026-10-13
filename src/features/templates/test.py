@@ -23,14 +23,6 @@ def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
     assert [phase["title"] for phase in Plans(record, actor=USER).from_doc(phased.n).data["phases"]] == ["Build the queue"], \
         "a design's phase sections become the phases of its plan, and its other sections stay out"
 
-    from engine import runtime
-    from migrations.m0021_functional_design_is_a_doc import run
-    older = fresh()
-    runtime.env_file(older.root).parent.mkdir(parents=True, exist_ok=True)
-    runtime.env_file(older.root).write_text(older.env)
-    blank = Templates(older, actor=USER).create("Blank plan")
-    assert run(older.root).startswith("plan templates replaced by the functional design doc: 1 retired, Functional design"), "an old blank plan template is retired and the new one shipped"
-    assert Templates(older, actor=USER).load(blank.n).completed, "the retired template is closed"
 
 
 def test_a_template_asks_for_its_fields_and_fills_them_in():

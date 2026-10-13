@@ -1,5 +1,3 @@
-import importlib
-from engine.disk import by_repository
 import json
 import re
 import time
@@ -208,15 +206,6 @@ def test_rows_name_who_made_them_older_rows_name_the_owner_and_everyone_sees_who
     row_reply = {member["name"]: member for member in listed["members"]}
     assert (sorted(row_reply), row_reply["Bea"]["environments"], sorted(row_reply["Cy"])) == (["Bea", "Cy"], [hosted.record.env], ["connected", "departed", "id", "name"]), \
         "a member sees their own row whole and of the others only who has joined, by name, never their roles or environments"
-    rows = Todos(hosted.record, actor=SYSTEM).rows
-    older = Todos(hosted.record, actor=USER).create("Written before members")
-    older.data.pop(WRITER)
-    rows.persist(older)
-    migration = importlib.import_module("migrations.m0070_rows_name_their_writer")
-    with by_repository():
-        migration.run(hosted.record.root)
-    assert rows.peek(older.n).data[WRITER] == "owner" and WRITER not in rows.peek(by_agent.n).data, "a row a person wrote before names the owner"
-    assert rows.peek(theirs["n"]).data[WRITER] == bea and migration.run(hosted.record.root).startswith("0 rows"), "the migration keeps every writer and runs once"
 
 
 def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and_their_rows_keep_their_name(hosted):

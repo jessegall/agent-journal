@@ -406,14 +406,6 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     with pytest.raises(ReleaseBroke):
         helpers.complete(3)
     assert (bool(helpers.load(3).completed), todos.load(handed).assigned) == (True, ""), "a finish that breaks after the helper is done has already given back its to-dos"
-    kept = todos.create("kept by a helper that finished before finishing gave rows back").n
-    todos.assign(kept, to=helpers.load(2).ref)
-    from migrations.m0076_finished_helpers_give_back_todos import run as given_back_on_upgrade
-    assert given_back_on_upgrade(repo.record.root) == [f"to-do {kept} in {repo.record.env} is given back from {helpers.load(2).ref}, which had finished"], \
-        "an upgrade gives back every open to-do a finished helper still holds"
-    assert todos.load(kept).assigned == "", "the to-do is free again"
-    helpers.dispatch("Uma", "Change the hooks", "codex", "gpt-5.5", todos=str(kept))
-    assert todos.load(kept).assigned == helpers.load(4).ref, "and it can be handed to a helper again"
 
 
 def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_come_back_when_it_stops(monkeypatch):

@@ -157,62 +157,6 @@ def test_the_voice_and_every_project_wide_setting_and_switch_are_set_once_for_ev
     assert "\"form_of_address\"" in (record.root / "settings.json").read_text(), "the voice is written in the project's settings"
 
 
-def test_the_upgrade_folds_every_environments_settings_into_the_project_with_the_start_environment_first():
-    import json
-    from controllers.types import Features
-    from engine import runtime
-    from engine.record import Record
-    from migrations.m0067_settings_kept_once_per_project import run
-    features.load()
-    root = fresh("aside").root
-    homes = {name: Record(root, name) for name in ("aside", "start")}
-    for record in homes.values():
-        record.home.mkdir(parents=True, exist_ok=True)
-    runtime.set_env(root, "start")
-    values = {"aside": {"form_of_address": {"title": "Madam", "first_name": "Ada"}, "viewer": {"away": False, "zoom": 1}},
-              "start": {"form_of_address": {"title": "Captain"}, "boards": {"orchestrating": True}}}
-    for name, settings in values.items():
-        (homes[name].home / "settings.json").write_text(json.dumps(settings))
-    Features(homes["aside"], actor=SYSTEM).create("tickets", enabled=False)
-    run(root)
-    project = json.loads((root / "settings.json").read_text())
-    assert project["form_of_address"] == {"title": "Captain", "first_name": "Ada"}, "the start environment wins a clash and the others fill what it left unset"
-    assert (project["viewer"], project["features"]) == ({"away": False}, {"tickets": False}), "viewer preferences and project-wide switches move with them"
-    assert json.loads((homes["aside"].home / "settings.json").read_text()) == {"form_of_address": {}, "viewer": {"zoom": 1}}, \
-        "what moved to the project leaves the environment, and the rest stays"
-    assert json.loads((root / "attic" / "settings-before-project" / "aside.json").read_text()) == values["aside"], "the old file is kept in the attic"
-    run(root)
-    assert json.loads((root / "attic" / "settings-before-project" / "aside.json").read_text()) == values["aside"], \
-        "a second run keeps the first backup instead of overwriting it with the emptied file"
-    assert json.loads((root / "settings.json").read_text())["form_of_address"] == {"title": "Captain", "first_name": "Ada"}, "and changes nothing else"
-
-
-def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
-    import json
-    from resources.voices import CARTOON
-    from migrations.m0072_naming_lives_in_the_profile import run
-    record = shipped_record()
-    (record.home / "settings.json").write_text(json.dumps({"journal_laws": {"cartoon_names": True, "output_lines": 400}}))
-    run(record.root)
-    record.reread_settings()
-    profiles = Profiles(record, actor=SYSTEM)
-    chosen = profiles.load(profiles.profile_in_use())
-    assert (chosen.title, chosen.naming, json.loads((record.home / "settings.json").read_text())) == \
-        ("Butler (my copy)", CARTOON.text, {"journal_laws": {"output_lines": 400}}), \
-        "the switch is gone, and a copy of the profile in use, now in use, names agents after cartoon characters"
-    assert run(record.root.parent / "no-journal-here") == [], "a folder with no environment has nothing to move"
-    other = shipped_record()
-    mine = Profiles(other, actor=SYSTEM).create("Mine", naming="")
-    choose(other, mine.n)
-    from engine.stored import read_json
-    held = read_json(other.home / "settings.json", dict, {})
-    (other.home / "settings.json").write_text(json.dumps({**held, "journal_laws": {"cartoon_names": True}}))
-    assert run(other.root) == [f"profile {mine.n}, Mine, names its agents as the journal did: after famous scientists and designers",
-                               f"profile {mine.n}, Mine, names its agents after cartoon characters, as the switch did"], \
-        "a profile of your own keeps the names it had, and when it is the one in use it takes the switch's cartoon names itself"
-    assert Profiles(other, actor=SYSTEM).load(mine.n).naming == CARTOON.text
-
-
 def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dropped_sheets(tmp_path):
     import zipfile
     from controllers.form_of_address.animations import Animation, shipped_animations

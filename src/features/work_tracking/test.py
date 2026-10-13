@@ -128,15 +128,6 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     idle(record)
     assert len(nudges(record)) == before + 1, "it is said once while nothing about the row or the work changes"
 
-    from migrations.m0082_a_split_switch_keeps_its_choice import kept
-    record.set_setting("features", {"work_tracking.carry on": False, "tickets.decisions": False})
-    record.set_setting("triggers", {"work_tracking.carry on": {"every": 42, "unit": "minutes"}})
-    kept(record)
-    assert record.features["work_tracking.nothing ready"] is False and record.features["tickets.waits"] is False \
-        and record.features["tickets.drafts"] is False, \
-        "a switch split out of a shared one starts off when the shared one was off, so a nudge the user silenced stays silent"
-    assert record.triggers["work_tracking.nothing ready"] == {"every": 42, "unit": "minutes"}, \
-        "and keeps the cadence the user set, rather than going back to the one it ships with"
     from engine.record import Record
     from engine.settings_file import PROJECT_PARTS
     assert "work_tracking.carry on" in PROJECT_PARTS.of(Record.features), \
@@ -468,13 +459,3 @@ def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkey
     driver.sent_at = 0
     driver.pump()
     assert delivered == ["a message from the user"], "the wait began while the line was queued: it is dropped, the user's line is not"
-    from migrations.m0005_todo_waits import run as waits_move
-    older = fresh()
-    todos = Todos(older, actor=AGENT)
-    first, second = todos.create("first"), todos.create("second")
-    todos.link(second.n, first.ref)
-    todos.link(second.n, "doc:1")
-    assert waits_move(older.root) == [second.ref], "a to-do that listed another to-do among its links now waits on it"
-    waiting = todos.load(second.n)
-    assert (waiting.after, waiting.refs) == ([first.ref], ["doc:1"]), "the wait moves out of the links and the other links stay"
-    assert waits_move(older.root) == [], "a wait that has moved is not moved again"

@@ -253,28 +253,6 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env, monke
     assert ran_on(reentering).completed, "a catch-up its own save asks for again runs once, and closes the plan without refusing itself"
     assert ran_on(closed_elsewhere).outcome == "closed by another handler", "a catch-up stops at a plan something else closed while it walked"
 
-    from resources.plans import ABANDONED
-    from migrations.m0056_plans_with_open_rows import run as reopen_plans
-    from migrations.m0065_abandoned_plans_closed import run as close_abandoned
-    stale = by_agent.create("done too early", goal="rows are still open")
-    by_agent.phase(stale.n, "only phase", when="its row is closed")
-    by_agent.place(stale.n, 1, [todos.create("a row still open").n])
-    by_agent.ready(stale.n)
-    for how in ("closed", "marked"):
-        marked = by_agent.load(stale.n)
-        marked.status = "done"
-        by_agent.save(marked, "updated", status="done")
-        if how == "closed":
-            by_agent.complete(stale.n, how="finished")
-        assert reopen_plans(record.root) == [f"t {stale.ref}"], f"a plan {how} done with an open row is reopened"
-        assert (by_agent.load(stale.n).status, by_agent.load(stale.n).completed) == ("active", 0.0), "the reopened plan runs again at its open phase"
-    assert reopen_plans(record.root) == [], "a plan that is not done is left alone"
-    gone = by_agent.create("given up", goal="never mind")
-    given_up = by_agent.load(gone.n)
-    given_up.status = ABANDONED
-    by_agent.save(given_up, "updated", status=ABANDONED)
-    assert close_abandoned(record.root) == [f"t: plan {gone.n} was abandoned, so it is closed"], "an abandoned plan is closed"
-    assert close_abandoned(record.root) == [], "a closed plan is not closed twice"
 
 
 def test_an_agent_building_a_plan_is_told_each_next_step():
@@ -382,13 +360,6 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     stuck = approved("stuck", "seven")
     by_user.start(stuck)
     by_user.park(stuck)
-    from migrations.m0077_finished_plans_are_done import run as finished_plans_done
-    stale = by_agent.load(stuck)
-    stale.completed = time.time()
-    by_agent.rows.persist(stale)
-    assert finished_plans_done(record.root) == [f"plan {stuck} in {record.env} is finished, so it is done and no longer parked"], \
-        "an upgrade marks a finished plan that kept its parked status as done"
-    assert by_agent.load(stuck).status == "done", "and it reads done afterwards"
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():

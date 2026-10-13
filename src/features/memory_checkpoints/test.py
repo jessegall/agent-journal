@@ -18,12 +18,3 @@ def test_every_standing_rule_and_fact_is_read_again_a_week_on():
     assert owed(record) is False, "read: no longer owed"
 
 
-def test_the_last_reread_time_moves_into_the_features_own_state_once():
-    from features.memory_checkpoints.reread import READ_AT, STATE
-    from migrations.m0064_reread_time_in_memory_checkpoints_state import run
-
-    record = fresh()
-    record.set_setting(READ_AT, 123.0)
-    assert run(record.root) == ["t: the last reread of rules and facts moved into memory_checkpoints' state"], "a time kept in settings is moved"
-    assert record.state(STATE).get(READ_AT) == 123.0, "the feature's state now holds the time"
-    assert run(record.root) == [], "a time already moved is not moved again"

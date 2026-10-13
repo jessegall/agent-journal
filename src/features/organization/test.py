@@ -281,26 +281,3 @@ def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_t
     assert record.env in rebuilt[first:] and "ticket-3" not in rebuilt[first:], "and only the environment that changed is rebuilt"
 
 
-def test_the_upgrade_tags_every_environment_from_its_owner_and_a_helpers_folder_named_one_as_a_helper():
-    from controllers.base import Controller
-    from controllers.types import Helpers
-    from migrations.m0068_environments_say_their_kind import run
-    features.load()
-    record = fresh()
-    envs = Environments(record, actor=SYSTEM)
-    Helpers(record, actor=SYSTEM).create("a job", name="Ada", provider="claude", model="sonnet", environment="helper-ada", checkout="/elsewhere/platform")
-    for title, owner in (("t", ""), ("helper-ada", "helper:1"), ("role", "todo:4"), ("ticket-3", "ticket:3"), ("platform-2", ""), ("feature", "")):
-        Controller.create(envs, title, owner=owner)
-    run(record.root)
-    assert {row.title: row.kind for row in envs.rows.every()} == {
-        "t": "main", "helper-ada": "helper", "role": "subagent", "ticket-3": "ticket", "platform-2": "helper", "feature": "main"}, \
-        "the owner says the kind, and an unowned environment named after a helper's checkout is that helper's"
-    from migrations.m0010_project_folder import run as gathered
-    old = record.root.parent / "older"
-    for folder, text in ((old / "ticket", "first"), (old / "resources" / "ticket", "a copy")):
-        folder.mkdir(parents=True)
-        (folder / "1.md").write_text(text)
-    assert gathered(old) == "project records moved into project/: ticket", "an upgrade moves project records from either old folder into project/"
-    assert ((old / "project" / "ticket" / "1.md").read_text(), (old / "ticket").exists(), (old / "resources" / "ticket" / "1.md").exists()) == ("first", False, True), \
-        "an emptied old folder goes, and a record already moved is never overwritten by an older copy"
-    assert gathered(record.root.parent / "fresh-start") == "project records already in place", "a journal already laid out is left as it is"

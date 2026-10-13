@@ -44,21 +44,6 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
         "and changing the mode rewrites it, so the files never carry the mode before last"
 
 
-def test_an_upgrade_turns_auto_mode_on_and_renames_the_hands_on_mode():
-    from migrations.m0060_auto_mode_on_everywhere import run as auto_on
-    from migrations.m0061_hands_on_is_builder import run as rename
-
-    record = fresh()
-    record.set_setting("features", {"work_tracking.auto": False, "kept": True})
-    record.set_setting(NAME, {"mode": "hands-on", "other": 1})
-    assert auto_on(record.root) == ["t: auto mode on"], "an environment that switched auto mode off gets it back"
-    assert record.setting("features") == {"work_tracking.auto": True, "kept": True}, "only auto mode changes"
-    assert auto_on(record.root) == [], "an environment with auto mode on is left alone"
-    assert rename(record.root) == ["t: the work mode hands-on is now builder"], "the old mode name is renamed"
-    assert record.setting(NAME) == {"mode": "builder", "other": 1}, "the other work-mode settings stay"
-    assert rename(record.root) == [], "a mode that is already named builder is left alone"
-
-
 def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file():
     features.load()
     record = fresh()

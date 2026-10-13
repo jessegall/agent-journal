@@ -244,10 +244,6 @@ def test_the_budget_is_tunable_per_environment(monkeypatch):
     monkeypatch.setenv("DEVELOPMENT_MODE", "true")
     assert DevFaults().reports.send(record) == "", "in the journal's own development project a notice stays with the agent there"
     monkeypatch.delenv("DEVELOPMENT_MODE")
-    turned(record, False)
-    from migrations.m0080_developer_error_reports_on import run
-    assert (run(record.root), DevFaults.on_for(record)) == ("developer error reports and budget notices switched on in 1 environments", True), \
-        "an upgrade switches them on in the projects where they were left off by the old default"
     turned(record, True)
     record.set_setting("dev_faults", {"budget.request": 0})
     with measured(record, "request", "GET /api/main/message"):

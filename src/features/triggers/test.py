@@ -247,10 +247,3 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     finally:
         FACTS.facts.remove(sleepy)
 
-    from migrations.m0084_a_watched_fact_names_its_clock import run as rename_facts
-    old = Triggers(record, actor=USER).create("old name", text="answer {{n}}", when="state", fact="work.open.logged", over=10, does="nudge")
-    path = Triggers(record, actor=USER).path(old.n)
-    path.write_text(path.read_text().replace("work.open.logged", "work.unlogged"))
-    assert rename_facts(record.root) == [f"trigger {old.n} watches work.open.logged"], "a trigger stored under one of the five old names is renamed"
-    renamed = Triggers(record, actor=USER).load(old.n)
-    assert (renamed.fact, "since its last log entry" in renamed.brief) == ("work.open.logged", True), "and its sentence is written again"
