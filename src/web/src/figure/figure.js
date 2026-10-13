@@ -466,7 +466,7 @@ function eyesAs(pose, mood, strength = 1) {
 }
 
 // where the hands rest to type on a laptop on the lap, and where they cover the eyes
-const TYPING_HANDS = [0.3, -0.25, 1.3];
+const TYPING_HANDS = [0.3, -0.35, 1.77];
 const EYE_HANDS = [0.34, -0.82, 2.32];
 
 // head down at a laptop on its lap, the hands moving, and now and then a pause
@@ -1369,7 +1369,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
 // past upright with the screen toward the face and the mark on its back
-const LAPTOP = {width: 1.4, depth: 0.55, thickness: 0.09, open: 105};
+const LAPTOP = {width: 1.7, depth: 0.62, thickness: 0.1, open: 105};
 const LAPTOP_COLOURS = {base: 0x474a52, lid: 0x2b2e38, screen: 0x1b1d24, edge: 0xa9adb8, mark: 0x5e64c9};
 
 function laptopOf() {
@@ -1405,7 +1405,7 @@ function laptopOf() {
 
 // Where the laptop sits: level on the thighs with its hinge at the knees, its keyboard back over the thighs, turned the way the thighs
 // point, so it turns with the figure
-const LAP_REACH = 1.0;
+const LAP_REACH = 1.1;
 const THIGH_TOP = 0.3;
 
 function lapOf(world) {
