@@ -1,21 +1,13 @@
-"""The moments of the worktree resource type."""
+"""What the worktrees feature recognises: an agent starting in a linked checkout."""
 
 from dataclasses import dataclass
-from typing import ClassVar
 
-from events.resources import ResourceEvent
-
-
-@dataclass(frozen=True)
-class WorktreeCreated(ResourceEvent):
-    on: ClassVar[str] = "worktree.created"
+from events import Fact
 
 
-@dataclass(frozen=True)
-class WorktreeUpdated(ResourceEvent):
-    on: ClassVar[str] = "worktree.updated"
+@dataclass(frozen=True, kw_only=True)
+class WorktreeToLink(Fact):
+    """A session started in a linked checkout, which is to share the project's journal, skills and hooks."""
 
-
-@dataclass(frozen=True)
-class WorktreeCompleted(ResourceEvent):
-    on: ClassVar[str] = "worktree.completed"
+    agent: int
+    top: str
