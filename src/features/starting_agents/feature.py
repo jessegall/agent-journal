@@ -46,6 +46,11 @@ class StartingAgents(Feature):
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t", data={"launched": 990.0}), *CONVERSATIONS], settings=ON, clock=NOW)
                 >> Dispatches(nothing),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), *CONVERSATIONS], settings=ON, clock=NOW) >> Dispatches(nothing),
+            Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t", data={"launched": 940.0}), *CONVERSATIONS], settings=ON, clock=NOW)
+                >> Dispatches(WakeRequested(environment="t", n=1, provider="codex", conversation="bea86f27-last")),
+            Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), ended(2, "ghost-1", "ghost", 200.0)], settings=ON, clock=NOW) >> Dispatches(nothing),
+            Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), ended(1, "4d863ccb-old", "claude", 100.0), ended(3, "claude-20640", "claude", 300.0)], settings=ON, clock=NOW)
+                >> Dispatches(WakeRequested(environment="t", n=1, provider="claude", conversation="4d863ccb-old")),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t")], settings=ON, clock=NOW) >> Dispatches(nothing),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), ended(2, "bea86f27-last", "codex", 200.0, parent="claude-0")], settings=ON, clock=NOW)
                 >> Dispatches(nothing),
