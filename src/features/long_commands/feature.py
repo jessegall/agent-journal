@@ -1,10 +1,10 @@
 import json
 
 from events.agents import AgentBeat, ClockTicked
-from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
-from expects import Dispatches, Given, Ran, Remembered, Updated, at, nothing
+from events.long_commands import CallsLost, LongCommandHeld, LongCommandKept, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
+from expects import Dispatches, Given, Nudged, Ran, Remembered, Updated, at, nothing
 from features.long_commands.details import RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED, LongCommandsDetails
-from features.long_commands.handlers import CloseLostCalls, CloseTheMovedCommand, MoveToTheBackground, PressMoveAgain, ShowThePartRunning, KeepTheTask
+from features.long_commands.handlers import CloseLostCalls, CloseTheMovedCommand, MoveToTheBackground, PressMoveAgain, SayLongCommandKept, ShowThePartRunning, KeepTheTask
 from features.long_commands.listeners import SpotLongCommand, SpotMovedCommand
 from features.long_commands.watch import ended_runs, open_runs, stalled_runs
 from framework.base import Feature
@@ -73,6 +73,9 @@ class LongCommands(Feature):
             Given(LongCommandHeld(agent=1, command="npm test", started="955.0", provider="claude"), rows=[agent()], clock=NOW)
                 >> Ran(("move to background", "955.0")) & Remembered("moved|1", "955.0") & Remembered("task|1", "") & Remembered("pressed|1", 1_000.0)
                 & Updated(AgentRow(n=1), cards=[{"key": "command:955.0", "label": "Moved a long command to the background", "state": "running", "command": "npm test"}]),
+        ])
+        journal.events.handle(LongCommandKept, SayLongCommandKept(), expects=[
+            Given(LongCommandKept(agent=1, reason="pulse: a build is running"), rows=[agent()]) >> Nudged("kept", reason="pulse: a build is running"),
         ])
         journal.events.listen(ClockTicked, SpotMovedCommand(), expects=[
             Given(ClockTicked(agent=1), rows=[agent(done=957.0)], clock=NOW) >> Dispatches(nothing),

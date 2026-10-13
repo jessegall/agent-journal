@@ -3,14 +3,16 @@ from pathlib import Path
 from resources.command_runs import command_runs, open_shell_runs, waiting_run
 from events import Fact
 from events.agents import AgentBeat, ClockTicked
-from events.long_commands import CallsLost, LongCommandHeld, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
+from events.answers import Refused
+from events.asking import LongCommandMoving
+from events.long_commands import CallsLost, LongCommandHeld, LongCommandKept, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
 from features.long_commands.details import background_after, background_switch
 from features.long_commands.watch import background_tasks_of, part_of
 from resources.work_modes import kept_mode
 from framework.command_effects import JOURNAL_CALL
 from receiving import Listener
 from resources.types import AgentRow
-from serving import Clock, Providers, ReadProcesses, ReadRemembered, ReadRows, ReadSessions, Settings
+from serving import Asking, Clock, Providers, ReadProcesses, ReadRemembered, ReadRows, ReadSessions, Settings
 
 SETTLE = 30.0
 TOOK_WITHIN = 20.0
@@ -47,7 +49,8 @@ def open_calls(row: AgentRow, providers: Providers) -> tuple[list, list]:
 
 
 class SpotLongCommand(Listener[AgentBeat]):
-    def listen(self, event: AgentBeat, agents: ReadRows[AgentRow], settings: Settings, remembered: ReadRemembered, providers: Providers, clock: Clock) -> list[Fact]:
+    def listen(self, event: AgentBeat, agents: ReadRows[AgentRow], settings: Settings, remembered: ReadRemembered, providers: Providers, clock: Clock,
+               asking: Asking) -> list[Fact]:
         row, now = agents.peek(event.agent), clock.now()
         oldest = waiting_run(row)
         if not row.live or oldest is None or not providers.knows(row.provider):
@@ -61,6 +64,9 @@ class SpotLongCommand(Listener[AgentBeat]):
         lost = [CallsLost(agent=event.agent, gone=tuple((one.at, one.id) for one in stale))] if stale else []
         if last is None or now - float(last.at) < wait_for(settings, last.command):
             return lost
+        answer = asking.ask(LongCommandMoving(session=row.title, command=last.command, seconds=int(now - float(last.at))))
+        if isinstance(answer, Refused):
+            return [*lost, LongCommandKept(agent=event.agent, reason=answer.why).once(f"asked|{event.agent}|{last.at}")]
         return [*lost, LongCommandHeld(agent=event.agent, command=last.command, started=str(last.at), provider=row.provider).once(f"asked|{event.agent}|{last.at}")]
 
 
@@ -80,7 +86,9 @@ class SpotMovedCommand(Listener[ClockTicked]):
         if task in tasks.ended:
             return [*known, MovedCommandEnded(agent=event.agent, started=started, state="failed" if task in tasks.failed else "done", ended=tasks.ended[task])]
         part = self.running(row, run, sessions, processes)
-        return [*known, *([PartRunning(agent=event.agent, started=started, part=part)] if part and remembered.get(memory("part", event.agent)) != part else [])]
+        if not part or remembered.get(memory("part", event.agent)) == part:
+            return known
+        return [*known, PartRunning(agent=event.agent, started=started, part=part)]
 
     def unmoved(self, agent: int, started: str, run, pressed: float, now: float, remembered: ReadRemembered) -> list[Fact]:
         """A command that never became a task is pressed again once; one that ended before it could be moved closes its card."""

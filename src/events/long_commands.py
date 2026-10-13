@@ -24,6 +24,14 @@ class LongCommandHeld(Fact):
 
 
 @dataclass(frozen=True, kw_only=True)
+class LongCommandKept(Fact):
+    """A command held past its wait that a plugin keeps in the foreground, with the plugin's reason."""
+
+    agent: int
+    reason: str
+
+
+@dataclass(frozen=True, kw_only=True)
 class MoveNotTaken(Fact):
     """A command moved to the background that started no task of its own in time, so the press is made again."""
 
