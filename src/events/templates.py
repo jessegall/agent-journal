@@ -1,8 +1,25 @@
-"""What the templates feature recognises: a row made from a template, and work whose row follows one."""
+"""The moments of the template resource type, and the facts the templates feature recognises: a row made from a template, and work whose row follows one."""
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from events import Fact
+from events.resources import ResourceEvent
+
+
+@dataclass(frozen=True)
+class TemplateCreated(ResourceEvent):
+    on: ClassVar[str] = "template.created"
+
+
+@dataclass(frozen=True)
+class TemplateUpdated(ResourceEvent):
+    on: ClassVar[str] = "template.updated"
+
+
+@dataclass(frozen=True)
+class TemplateCompleted(ResourceEvent):
+    on: ClassVar[str] = "template.completed"
 
 
 @dataclass(frozen=True, kw_only=True)

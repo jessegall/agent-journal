@@ -14,7 +14,7 @@ from expects import Answered, Dispatches, Given, Held, Nudged, Remembered, Uncha
 from controllers.types import Sequences
 from declaring.trigger import Mark
 from features.sequences.answering import HoldJournalWritesForTheStep, KeepOutOfTheChat
-from features.sequences.details import STEP_STALLED, UNFINISHED, SequencesDetails
+from features.sequences.details import STEP_HELD, STEP_STALLED, UNFINISHED, SequencesDetails
 from features.sequences.handlers import (CountTheEdit, CountTheEditsAfresh, DropTheRun, FollowTheStep, HoldTheAgentToTheStep, HoldTheStalledStep, LetTheAgentGo,
                                          NameTheChatRule, RunTheSequence, TellTheDispatch, TellTheStep)
 from features.sequences.listeners import (SpotNoStepInHand, SpotQuestionToDispatchAgain, SpotRunOfADeletedRow, SpotSequenceChange, SpotSequenceToStartOnMoment,
@@ -96,6 +96,9 @@ def ran(command: str, why: str = "") -> ToolCallAnswered:
 
 
 HELD_TEXT = step_held_text(release(), RELEASE_KEY, {"step": 1})
+HELD_TITLE = LINES[STEP_HELD].filled({"n": 4, "title": "Cutting a patch release", "step": 1, "about": ""})[0]
+STALLED_TITLE = LINES[STEP_STALLED].filled({"n": 4, "title": "Cutting a patch release", "step": 1, "edits": 8, "about": ""})[0]
+FILING = Sequence(n=4, title="Filing a to-do", sections=[{"title": "File it", "body": "Run journal todo create to file it."}], data={"runs": {RELEASE_KEY: {"step": 1, "at": 1.0}}})
 STEP_VALUES = {"n": 4, "title": "Cutting a patch release", "step": 1, "count": 1, "name": "Tag it", "body": "Run journal version tag to cut the tag.",
                "then": " When it is done: journal sequence next 4.", "about": "", "chat_rule": ""}
 DISPATCHED = DispatchDue(agent=1, session="claude-1", env="t", sequence=4, title="Planning a board", kind="Planner", about="board:2", board=2,
@@ -146,7 +149,7 @@ class SequencesFeature(Feature):
             Given(MOVED, rows=[DISPATCHING, CLAUDE]) >> Dispatches(DISPATCHED.once("1|4|t|board:2|1.0|a new request")) & Dispatches(StepTakenUp(agent=1)),
         ])
         journal.events.handle(StepHeld, HoldTheAgentToTheStep(), expects=[
-            Given(StepHeld(agent=1, sequence=4, title="Cutting a patch release", step=1, about=""), rows=[CLAUDE]) >> Held(HELD_TEXT),
+            Given(StepHeld(agent=1, sequence=4, title="Cutting a patch release", step=1, about=""), rows=[CLAUDE]) >> Held(HELD_TITLE),
         ])
         journal.events.handle(StepToSay, TellTheStep(), expects=[
             Given(StepToSay(agent=1, values=STEP_VALUES), rows=[CLAUDE]) >> Nudged("step", **STEP_VALUES),
@@ -174,7 +177,7 @@ class SequencesFeature(Feature):
         ])
         journal.events.handle(StepStalled, HoldTheStalledStep(), expects=[
             Given(StepStalled(agent=1, sequence=4, title="Cutting a patch release", step=1, edits=8, about=""), rows=[AGENT_ROW])
-                >> Held(" - ".join(LINES[STEP_STALLED].filled({"n": 4, "title": "Cutting a patch release", "step": 1, "edits": 8, "about": ""}))),
+                >> Held(STALLED_TITLE),
         ])
         journal.events.listen(AnyEvent, SpotSequenceChange(), expects=[
             Given(AnyEvent(n=4, type="sequence", action="updated", actor=USER), rows=[AGENT_ROW]) >> Dispatches(StepCountRestarted(agent=1)),
@@ -215,11 +218,12 @@ class SequencesFeature(Feature):
             Given(shell("git status"), rows=[release()]) >> Answered(Allowed()),
         ])
         journal.events.listen(ToolCallAnswered, SpotStepFollowed(), expects=[
-            Given(ran("journal version tag"), rows=[release()]) >> Dispatches(StepFollowed(sequence=4, about=None)),
+            Given(ran('journal todo create "Later"'), rows=[FILING]) >> Dispatches(StepFollowed(sequence=4, about=None)),
             Given(ran('journal todo create "Later"'), rows=[release()]) >> Dispatches(nothing),
-            Given(ran("journal version tag", why="held"), rows=[release()]) >> Dispatches(nothing),
-            Given(ran("journal version tag"), rows=[release(followed=1)]) >> Dispatches(nothing),
+            Given(ran("journal version tag"), rows=[release()]) >> Dispatches(nothing),
+            Given(ran('journal todo create "Later"', why="held"), rows=[FILING]) >> Dispatches(nothing),
+            Given(ran('journal todo create "Later"'), rows=[Sequence(n=4, title="Filing a to-do", sections=FILING.sections, data={"runs": {RELEASE_KEY: {"step": 1, "at": 1.0, "followed": 1}}})]) >> Dispatches(nothing),
         ])
         journal.events.handle(StepFollowed, FollowTheStep(), expects=[
-            Given(StepFollowed(sequence=4, about=None), rows=[release()]) >> Updated(Sequence(n=4), runs=AtFollowed()),
+            Given(StepFollowed(sequence=4, about=None), rows=[FILING]) >> Updated(Sequence(n=4), runs=AtFollowed()),
         ])
