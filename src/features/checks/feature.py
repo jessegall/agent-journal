@@ -52,6 +52,10 @@ class ChecksFeature(Feature):
         ])
         journal.events.listen(CheckUpdated, SpotCheckResult(), expects=[
             Given(RAN, rows=[lint(FAILING, ok=False), AGENT_ROW]) >> Dispatches(failed(FAILING, ())),
+            Given(RAN, rows=[Check(n=1, title="Sins", data={"command": "checker", "failure": "The checker found {summary}",
+                                                            "last": {"ok": False, "code": 1, "at": 5.0, "output": "3 sins across 1 skill."}})])
+                >> Dispatches(CheckFailed(check=1, about="check:1", title="The checker found 3 sins across 1 skill.", headline="3 sins across 1 skill.",
+                                          output="3 sins across 1 skill.", reported=digest("3 sins across 1 skill.", 12), stale=())),
             Given(RAN, rows=[lint(FAILING, ok=False), filed(FAILING), AGENT_ROW]) >> Dispatches(nothing),
             Given(RAN, rows=[lint("E999 syntax error", ok=False), filed(FAILING), AGENT_ROW]) >> Dispatches(failed("E999 syntax error", (3,))),
             Given(RAN, rows=[lint("all good", ok=True), Notification(n=3, title="check 1 failed", refs=["check:1"]), AGENT_ROW])

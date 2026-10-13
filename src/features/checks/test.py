@@ -13,7 +13,7 @@ def open_notices(record):
     return [r.title for r in Notifications(record, actor=SYSTEM).rows.every() if not r.completed]
 
 
-def test_a_check_runs_its_command_and_a_failure_is_filed_until_it_passes():
+def test_a_check_runs_its_command_and_says_pass_or_fail():
     features.load()
     record = fresh()
     checks = Checks(record, actor=USER)
@@ -21,15 +21,8 @@ def test_a_check_runs_its_command_and_a_failure_is_filed_until_it_passes():
     assert check.data["buttons"][0]["action"] == "run", "a check carries its own Run button"
     ran = checks.run(check.n, wait=True)
     assert ran.last["ok"] is False and ran.last["code"] == 1, ran.last
-    assert open_notices(record) == [f"check {check.n} failed - The marker file exists"], open_notices(record)
     (record.root.parent / "marker").write_text("")
     assert checks.run(check.n, wait=True).last["ok"] is True
-    assert open_notices(record) == [], "a pass clears the failure it filed"
-    worded = Checks(record, actor=USER).create("Sins", command="echo '3 sins across 1 skill.'; exit 1", failure="The checker found {summary}")
-    Checks(record, actor=USER).run(worded.n, wait=True)
-    assert "The checker found 3 sins across 1 skill." in open_notices(record), "a check says in its own words what failed, with its last line"
-    filed = next(r for r in Notifications(record, actor=SYSTEM).rows.every() if r.title.startswith("The checker found"))
-    assert filed.data["label"] == "Check failed", "and the activity list heads it as a failed check, not as a notification"
     gone = Checks(record, actor=USER).create("Guarded by a deleted script", command=".venv/bin/python scripts/checks/gone.py")
     lost = Checks(record, actor=USER).run(gone.n, wait=True).last
     assert lost["code"] == 127 and "cannot run: its script scripts/checks/gone.py is not there" in lost["output"], \
