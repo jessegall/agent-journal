@@ -19,7 +19,7 @@ from engine.stored import write_text
 from engine import project_files, runtime, seats, viewer, worktree
 from engine.developing import developing
 from engine.disk import last_lines
-from engine.files import blob_texts, line_counts
+from engine.files import blob_bytes, blob_texts, line_counts
 from engine.git import Checkout, checkout_of, commits_since
 from engine.locks import project_sweep
 from engine.proc import git as run_git
@@ -81,6 +81,10 @@ class TheGit:
     def blobs(self, shas: list[str]) -> dict[str, str]:
         """The text of each stored file named by its hash, in whichever repository of the project holds it."""
         return blob_texts(self.record.root.parent, shas)
+
+    def blob_bytes(self, sha: str) -> bytes | None:
+        """The bytes of one stored file, or nothing when no repository of the project holds it."""
+        return blob_bytes(self.record.root.parent, sha)
 
     def commits_since(self, since: float, most: int = 0, timeout: float = 5) -> list[tuple[str, str]]:
         """The commits of the project made since a moment, newest first, each as its hash and its subject."""

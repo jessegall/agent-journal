@@ -9,9 +9,9 @@ from engine import bus
 from engine.proc import git, git_blob, git_objects
 from engine.project_files import readable_in
 from events.files import EDITED
-from resources.base import SYSTEM, names
+from resources.base import SYSTEM
+from resources.files import IMAGE_SUFFIXES, KIND, is_image  # noqa: F401  their home is resources
 
-from resources.files import KIND  # noqa: F401
 EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 SNAPSHOT = "files"
 
@@ -80,11 +80,6 @@ RESCAN_SECONDS = 300
 REPOSITORY_DEPTH = 2
 SKIPPED = {"node_modules", "vendor", "dist", "build"}
 LINKED_REPOSITORY = "160000"
-IMAGE_SUFFIXES = (".png", ".gif", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".bmp")
-
-
-def is_image(path: str) -> bool:
-    return path.lower().endswith(IMAGE_SUFFIXES)
 
 
 def ignored_images(project: Path) -> list[str]:

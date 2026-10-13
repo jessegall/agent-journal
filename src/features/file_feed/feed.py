@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from events.files import FileEdited
-from engine.files import KIND, blob_bytes, blob_texts, is_image
 from features.file_feed.diff import DIFFS, DiffRow, diffed
+from resources.files import KIND, is_image
+from serving import Git
 
 KEPT = 500
 PAGE = 25
@@ -79,41 +80,41 @@ def more_before(kept: list[FileEdited], shown: list[FileEdited]) -> bool:
     return bool(shown) and kept[0].at < shown[0].at
 
 
-def edits_since(record, agent: int, since: float, last: int) -> Feed:
+def edits_since(record, git: Git, agent: int, since: float, last: int) -> Feed:
     kept = agent_notes(record, agent)
     shown = [note for note in kept if note.at > since][-last:]
-    return Feed(shown[-1].at if shown else since, cards(record, shown), more_before(kept, shown))
+    return Feed(shown[-1].at if shown else since, cards(git, shown), more_before(kept, shown))
 
 
-def edits_before(record, agent: int, before: float, last: int) -> Page:
+def edits_before(record, git: Git, agent: int, before: float, last: int) -> Page:
     kept = agent_notes(record, agent)
     shown = [note for note in kept if note.at < before][-last:]
-    return Page(cards(record, shown), more_before(kept, shown))
+    return Page(cards(git, shown), more_before(kept, shown))
 
 
-def edited_file(record, agent: int, card: str, side: Side) -> FileText:
+def edited_file(record, git: Git, agent: int, card: str, side: Side) -> FileText:
     note = next((note for note in agent_notes(record, agent) if card_id(note) == card), None)
     if note is None:
         raise NoSuchEdit(f"no edit {card}")
     sha = note.after if side == Side.AFTER else note.before
-    texts = blob_texts(record.root.parent, [sha])
+    texts = git.blobs([sha])
     if sha not in texts:
         raise NoSuchEdit(f"the {side} of {card} is no longer kept")
     return FileText(note.path, texts[sha])
 
 
-def edited_image(record, agent: int, card: str) -> FileImage:
+def edited_image(record, git: Git, agent: int, card: str) -> FileImage:
     note = next((note for note in agent_notes(record, agent) if card_id(note) == card and is_image(note.path)), None)
     if note is None:
         raise NoSuchEdit(f"no picture {card}")
-    data = blob_bytes(record.root.parent, note.after)
+    data = git.blob_bytes(note.after)
     if data is None:
         raise NoSuchEdit(f"the picture of {card} is no longer kept")
     return FileImage(note.path, data)
 
 
-def cards(record, shown: list[FileEdited]) -> tuple[Card, ...]:
-    diffed(record.root.parent, [(note.before, note.after) for note in shown if not is_image(note.path)])
+def cards(git: Git, shown: list[FileEdited]) -> tuple[Card, ...]:
+    diffed(git, [(note.before, note.after) for note in shown if not is_image(note.path)])
     return tuple(_card(note) for note in shown if is_image(note.path) or (note.before, note.after) in DIFFS)
 
 

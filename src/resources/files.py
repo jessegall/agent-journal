@@ -6,6 +6,7 @@ from pathlib import Path
 from resources.base import names
 
 KIND = names("edited", "created", "deleted")
+IMAGE_SUFFIXES = (".png", ".gif", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".bmp")
 
 
 def mtime(path: Path) -> int:
@@ -20,3 +21,7 @@ def older(paths, age: float) -> list[Path]:
     """Of these paths, the ones last written more than that many seconds ago."""
     now = time.time()
     return [path for path in paths if mtime(path) and now - mtime(path) / 1e9 > age]
+
+
+def is_image(path: str) -> bool:
+    return path.lower().endswith(IMAGE_SUFFIXES)

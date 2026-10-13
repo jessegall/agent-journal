@@ -1,8 +1,8 @@
-from engine.files import is_image
 from events import Fact
 from events.file_feed import EditToDiff
 from events.files import FileEdited
 from receiving import Listener
+from resources.files import is_image
 
 
 class SpotEditToDiff(Listener[FileEdited]):

@@ -1,9 +1,9 @@
 import difflib
 from dataclasses import dataclass
 from enum import StrEnum
-from pathlib import Path
 
-from engine.files import blob_texts
+from serving import Git
+
 
 KEEP = 3
 MOST_ROWS = 400
@@ -54,8 +54,8 @@ class Diff:
 DIFFS: dict[tuple[str, str], Diff] = {}
 
 
-def diffed(project: Path, pairs: list[tuple[str, str]]) -> None:
-    warmed(lambda shas: blob_texts(project, shas), pairs)
+def diffed(git: Git, pairs: list[tuple[str, str]]) -> None:
+    warmed(git.blobs, pairs)
 
 
 def warmed(texts_of, pairs: list[tuple[str, str]]) -> None:

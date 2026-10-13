@@ -199,6 +199,9 @@ class Git(Asked):
     def blobs(self, shas: list[str]) -> dict[str, str]:
         return self.answer(("blobs", tuple(shas)))
 
+    def blob_bytes(self, sha) -> bytes | None:
+        return self.answer(("blob", sha))
+
     def commits_since(self, since: float, most: int = 0, timeout: float = 5) -> list[tuple[str, str]]:
         return self.answers.answers.get(("commits",), [])
 
