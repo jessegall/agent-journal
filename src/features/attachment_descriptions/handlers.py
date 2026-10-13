@@ -1,80 +1,42 @@
 import json
-import mimetypes
 import shutil
 
-from controllers.types import CONTROLLERS, Agents, Messages
-from resources.base import AGENT
-from events.agents import SessionStarted
-from resources.memo import Memo
-from events.resources import FileAttached
-from events.messages import MessageUpdated
-from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing
-from framework.parts import AgentContext, Context, Handler
-from controllers.types import CONTROLLERS
-
-MEDIA = ("image/", VIDEO)
-FEW, LISTED = 3, 10
-UNTAGGED = Memo()
+from events import Fact
+from events.attachment_descriptions import ManyMediaUntagged, MediaAttached, MediaUntagged, VideoToSample
+from features.attachment_descriptions.video import TAGGED, frames_of, probe, sampled, spacing
+from receiving import Handler
+from resources.types import Message
+from serving import Chat, Elsewhere, Rows
 
 
-def media(name: str, kinds: tuple[str, ...] | str = MEDIA) -> bool:
-    return (mimetypes.guess_type(name)[0] or "").startswith(kinds)
+class TellLiveAgents(Handler[MediaAttached]):
+    def handle(self, event: MediaAttached, elsewhere: Elsewhere) -> list[Fact]:
+        for chat in elsewhere.here().chats():
+            chat.say("untagged", type=event.type, n=event.n, name=event.name, quoted=json.dumps(event.name))
+        return []
 
 
-def tell(context: Context, type_: str, n: int, name: str) -> None:
-    context.agent.say("untagged", type=type_, n=n, name=name, quoted=json.dumps(name))
+class TellUntagged(Handler[MediaUntagged]):
+    def handle(self, event: MediaUntagged, chat: Chat) -> list[Fact]:
+        chat.say("untagged", type=event.type, n=event.n, name=event.name, quoted=json.dumps(event.name))
+        return []
 
 
-def untagged_in(context: Context, type_: str) -> list[tuple[str, int, str]]:
-    """The media files of a type that still need tags, found again only when the type's rows have changed."""
-    rows = context.journal.get(CONTROLLERS[type_]).rows
-    return UNTAGGED.get(str(rows.folder()), rows.summaries(),
-                        lambda: [(type_, row.n, name) for row in rows.attached() for name, tags in row.files.items() if (not tags or str(tags).startswith(TAGGED)) and media(name)])
+class TellManyUntagged(Handler[ManyMediaUntagged]):
+    def handle(self, event: ManyMediaUntagged, chat: Chat) -> list[Fact]:
+        chat.say("many untagged", count=event.count, listed=event.listed)
+        return []
 
 
-class TagNewMedia(Handler):
-    behaviour = "tagging"
-
-    def handle(self, context: Context, event: FileAttached) -> None:
-        if event.type not in CONTROLLERS or not event.file or not media(event.file):
-            return
-        row = context.journal.get(CONTROLLERS[event.type]).load(event.n)
-        if event.file not in row.files or row.files.get(event.file):
-            return
-        if event.type == Messages.resource.type and AGENT not in row.seen:
-            return  # the line announcing it already names what it brings, and the agent is asked for tags when it reads it
-        for agent in context.journal.get(Agents).rows.every():
-            if agent.live:
-                tell(context.speaking_to(agent), event.type, row.n, event.file)
-
-
-class TagMissingAtStart(Handler):
-    behaviour = "tagging"
-
-    def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        untagged = [found for type_ in CONTROLLERS for found in untagged_in(context, type_)]
-        if len(untagged) <= FEW:
-            for type_, n, name in untagged:
-                tell(context, type_, n, name)
-            return
-        listed = "; ".join(f"{type_} {n} {json.dumps(name)}" for type_, n, name in untagged[:LISTED])
-        context.agent.say("many untagged", count=len(untagged), listed=listed)
-
-
-class SampleVideoFrames(Handler):
-    behaviour = "frames"
-
-    def handle(self, context: Context, event: MessageUpdated) -> None:
-        name = event.file
-        if not name or not media(name, VIDEO):
-            return
-        messages = context.journal.get(Messages)
-        source = messages.folder(event.n) / name
-        row = messages.load(event.n)
+class SampleVideoFrames(Handler[VideoToSample]):
+    def handle(self, event: VideoToSample, messages: Rows[Message]) -> list[Fact]:
+        name = event.name
+        source = messages.folder(event.message) / name
+        row = messages.load(event.message)
         if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
             row.files[name] = f"{TAGGED}ffmpeg and ffprobe are required to extract frames"
             messages.save(row, "updated", video=name, frames=[])
-            return
+            return []
         every = spacing(probe(source))
         for old in frames_of(source):
             old.unlink()
@@ -85,3 +47,4 @@ class SampleVideoFrames(Handler):
         for frame in frames:
             row.files[frame.name] = f"video frame from {name}"
         messages.save(row, "updated", video=name, frames=[frame.name for frame in frames])
+        return []
