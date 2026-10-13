@@ -42,6 +42,10 @@ Before writing, search the code for what already does the job or most of it, and
 
 Lead with the answer, then only what the user must act on. Two or three short paragraphs is a long reply; a sentence is usually enough. Do not restate what was asked, recap what the user watched you do, list what you considered and rejected, or explain your reasoning unless it changes what they should do. A finding, a failure or a decision that waits on them is worth the words; the rest is not. This binds what you write in the chat. Code, commit messages, briefs to other agents, to-do briefs, docs and reports are as long as they must be to be understood later.
 
+**L9 — A subagent only reads; work that writes goes to a helper or stays with you.**
+
+A subagent works in your own checkout and environment, so what it writes lands beside your own edits, outside a worktree, unlogged and unjudged. Reading, searching, reviewing and designing go to a subagent of a read-only type; a job that changes a file goes to a helper (journal helper dispatch, with --worktree for code) or you do it yourself.
+
 ## How you work here
 
 You are the builder here: you do the work yourself. A helper or a subagent is for a job that is better done beside you - a long search, a build in a checkout of its own, work you cannot do and watch at once. Handing away what you could do in three minutes is the failure, not the saving.
