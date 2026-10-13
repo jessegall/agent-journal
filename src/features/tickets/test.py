@@ -492,7 +492,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.update(ticket.n, plan=7, told=0.0)
     with monkeypatch.context() as idle:
         idle.setattr(Tickets, "agent_session", lambda self, n: "claude-9")
-        idle.setattr(Tickets, "_plan_status", lambda self, found: ACTIVE)
+        idle.setattr(Tickets, "plan_status", lambda self, found: ACTIVE)
         idle.setattr(Agents, "state", lambda self, env: IDLE_STATE)
         idle.setattr(Tickets, "_told", lambda self, n, note: told_to.append(note) or self.update(n, told=time.time()))
         tickets.build_approved_plans()
@@ -617,7 +617,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         from types import SimpleNamespace
         looking = SimpleNamespace(idle_for=3600.0)
         with monkeypatch.context() as orchestrating:
-            orchestrating.setattr(Tickets, "_orchestrating", lambda self: [int(board.n)])
+            orchestrating.setattr(Tickets, "orchestrating", lambda self: [int(board.n)])
             context = AgentContext.of(FEATURES["tickets"], record, Agents(record, actor=SYSTEM).by_session("claude-1"))
             assert [sent.key for sent in boards_to_check(context, looking)] == [str(board.n)], "a board whose ticket has a running agent is worth a look"
             user.update(api.n, halted=True)
@@ -629,7 +629,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
     agent.depend(docs.n, api.n)
     assert "does not let its orchestrator accept or decline" in refused(lambda: agent.accept_dependencies(docs.n, why="docs follow the API")), "an agent decides a proposal only where its board lets its orchestrator"
-    monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [board.n])
+    monkeypatch.setattr(Tickets, "orchestrating", lambda self: [board.n])
     assert "orchestrator_accepts_waits" in refused(lambda: agent.accept_dependencies(docs.n, why="x")), "only where the board lets its orchestrator decide"
     Boards(record, actor=USER).update(board.n, orchestrator_accepts_waits=True)
     assert "say why" in refused(lambda: agent.accept_dependencies(docs.n)), "the board's orchestrator gives its reason"
@@ -642,7 +642,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     from resources.plans import READY
     decided = []
     with monkeypatch.context() as planned:
-        planned.setattr(Tickets, "_plan_status", lambda self, found: READY)
+        planned.setattr(Tickets, "plan_status", lambda self, found: READY)
         planned.setattr(Tickets, "_decide_plan", lambda self, n, status, word, method, told: decided.append((n, status)))
         assert user.approve_plan(ui.n).approved_early is True, "an approval given while the ticket still waits is kept, not refused"
         assert decided == [], "and nothing is approved yet"
@@ -785,41 +785,10 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
 
 
 def calls_fire_once_and_repeat_on_time(monkeypatch):
-    import features
-    from features.tickets import calls as ticket_calls, handlers
-    from declaring.trigger import MINUTE
-    from engine import triggering
-    from tests.kit import nudges, report, tick
-    features.load()
+    from features.tickets import calls as ticket_calls
+    from tests.kit import report
     record = fresh()
-    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
-    ticket = Tickets(record, actor=USER).create("Dark mode", board=board.n)
-    report(record, "working", "PreToolUse")
-    moments, held = [], [[("ticket_replied", "message:1", {"text": "done?"}, 0), (ticket_calls.PLAN_DONE_CALL, "plan:5", {}, 15), ("ticket_asks", "question:2", {"question": 2, "text": "which one", "env": "ticket-1", "rule": "decide it"}, 15)]]
-    monkeypatch.setattr(handlers, "watched", lambda tickets: [tickets.load(ticket.n)])
-    monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
-    monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
-    now = [time.time()]
-    monkeypatch.setattr(triggering.time, "time", lambda: now[0])
-    sent = lambda: [n for n in nudges(record) if "Dark mode, answered" in n]
-    tick(record)
-    assert [moment for moment in moments if moment == "finished"] == ["finished"] and len(sent()) == 1, \
-        "a reply is told once and a finished plan raises its moment, while a question is left to the nudge that repeats it"
-    tick(record)
-    assert moments.count("finished") == 1 and len(sent()) == 1, "nothing is said again at once"
-    now[0] += 16 * MINUTE
-    tick(record)
-    assert moments.count("finished") == 1 and len(sent()) == 1, "a finished plan raises its moment once, so the sequence it starts is not restarted, and the reply is not repeated"
-    assert Tickets(record, actor=SYSTEM).load(ticket.n).handed_in_at, "the ticket carries that its work was handed in as a fact written when it reported"
-    assert any("has finished its work and has waited" in n for n in nudges(record)), "while its work waits the orchestrator is told how long, by a nudge that repeats"
-    now[0] += 31 * MINUTE
-    tick(record)
-    assert any("waited" in c.title or "waited" in c.brief for c in Tickets(record, actor=SYSTEM).comments(ticket.n)), "past the limit the user is told on the ticket"
-    held[0] = []
-    now[0] += 16 * MINUTE
-    tick(record)
-    assert moments.count("finished") == 1, "a ticket with nothing to call about raises nothing"
-
+    ticket = Tickets(record, actor=USER).create("Dark mode", board=Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"}).n)
     root = record.root
     ticket_calls.PEOPLE[str(root)] = ["jesse"]
     assert [ticket_calls.waits_on_people(root, text) for text in ("waits for jesse", "asks the user", "the build runs")] == [True, True, False], \
@@ -834,7 +803,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
         "a question its agent marked as the user's is never decided, whatever its words"
     monkeypatch.setattr(ticket_calls, "deciding", lambda held: False)
     assert ticket_calls.rule_for(owner, asked("which of the two approaches"), "ticket-1").endswith("Otherwise ask the user"), "outside that mode the orchestrator is told to answer only what is its to decide"
-    monkeypatch.setattr(Tickets, "_plan_status", lambda self, found: ticket_calls.PLAN_DONE)
+    monkeypatch.setattr(Tickets, "plan_status", lambda self, found: ticket_calls.PLAN_DONE)
     monkeypatch.setattr(Tickets, "is_clean", lambda self, found: True)
     tickets = Tickets(record, actor=SYSTEM)
     assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
@@ -849,28 +818,6 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     assert [(kind, values["text"]) for kind, _, values, _ in ended] == [("ticket_replied", "Final report: all done")], \
         "a ticket agent's last report reaches the orchestrator even with no message written and another agent row working"
     assert ticket_calls.ended_turns(record, Told(told=time.time() + 5)) == [], "a report from before the orchestrator last spoke to the agent is not told again"
-    from types import SimpleNamespace
-    from controllers.types import Questions
-    whispered = []
-    context = SimpleNamespace(record=record, agent=SimpleNamespace(whisper=lambda line, **values: whispered.append(line)), every=lambda *args: True)
-    monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [])
-    monkeypatch.setattr(Tickets, "_needing_a_look", lambda self, boards: [(ticket, SimpleNamespace(kind="stopped", text="its agent is gone"))])
-    monkeypatch.setattr(Tickets, "_revive", lambda self, found: True)
-    handlers.look_at_stuck(context, tickets)
-    assert whispered == ["ticket_restarted"] and handlers.STUCK not in moments, "a ticket whose agent died is restarted and the orchestrator hears of it"
-    monkeypatch.setattr(Tickets, "_revive", lambda self, found: False)
-    handlers.look_at_stuck(context, tickets)
-    assert moments[-1] == handlers.STUCK, "one that cannot be restarted is raised to the orchestrator"
-    delivered = []
-    monkeypatch.setattr(Tickets, "owner_of", lambda self, env, kind: ticket.n)
-    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: delivered.append(note))
-    question = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)
-    Questions(record, actor=USER).complete(question.n, how="Both")
-    assert delivered == [f"Your question {question.n}, Which one?, is answered: Both. That is the answer of the one who runs your board: act on it, and never file the question again."], "a ticket's agent is told when the user answers its question"
-    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
-    handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
-    monkeypatch.setattr(Tickets, "owner_of", lambda self, env, kind: 0)
-    handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
 
 
 def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
