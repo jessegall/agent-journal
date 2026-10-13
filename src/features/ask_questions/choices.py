@@ -13,6 +13,8 @@ NAMED = re.compile(r"\b(?:questions?|vra(?:a)?g(?:en)?) (\d+)(?:\s*(?:-|–|to|t
 LEADING = re.compile(r"^\s*(?:[-*•]\s*)?\**(\d+)\b")
 QUOTED = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”|https?://\S+")
 OPTION = 80
+ON_THE_USER = re.compile(r"\b(?:you|your|yours|the user'?s?|user'?s|jij|je|jouw|u)\b", re.IGNORECASE)
+"""A reason that names the user, as a block that waits on them does: until you say, your call, the user decides."""
 
 
 def named_numbers(text: str) -> set[int]:

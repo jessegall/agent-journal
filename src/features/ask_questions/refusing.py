@@ -1,5 +1,5 @@
 from events.asking import RowWriting
-from features.ask_questions.choices import enumerable, given_options, given_pick, restates, unpicked
+from features.ask_questions.choices import ON_THE_USER, enumerable, given_options, given_pick, restates, unpicked
 from receiving import Refuser
 from resources.base import AGENT, Refused, titled
 from resources.buttons import unspent
@@ -42,10 +42,24 @@ class AskedOnce(Refuser[RowWriting]):
 
 class OneAskPerRow(Refuser[RowWriting]):
     def refuse(self, event: RowWriting, elsewhere: ReadElsewhere) -> None:
-        kind, _, n = str(asking(event).get("about") or "").partition(":")
+        about = asking(event).get("about")
+        if not about:
+            return
+        kind, _, n = str(about).partition(":")
         rows = elsewhere.here().rows_named(kind).rows if kind in TYPES and n.isdigit() else None
         if rows and rows.exists(int(n)) and any(button.choice for button in unspent(rows.peek(int(n)))):
             raise Refused(f"{kind} {n} already asks this through its buttons: wait for that answer, or take its buttons off first")
+
+
+class WaitsOnTheUserByAQuestion(Refuser[RowWriting]):
+    def refuse(self, event: RowWriting) -> None:
+        if event.type != "todo" or event.action != "block" or event.actor != AGENT:
+            return
+        given = dict(event.fields)
+        if ON_THE_USER.search(str(given["why"])):
+            raise Refused(f"a to-do that waits on the user carries a question they can answer, not a block: journal todo ask {given['n']} \"<the decision>\" "
+                          "--set options='[{\"title\": \"...\", \"text\": \"...\"}]' --set pick=<n>, and the answer reaches you when it is given; "
+                          "a block is for what happens outside, such as a release or another machine")
 
 
 class OptionsWhenEnumerable(Refuser[RowWriting]):

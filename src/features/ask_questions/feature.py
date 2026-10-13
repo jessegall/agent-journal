@@ -9,7 +9,7 @@ from events.resources import AnyEvent
 from events.messages import MessageCreated
 from events.questions import AnswerGiven, AnswerOnScreen, AskingSettled, ProseOffersChoices, QuestionCompleted, QuestionCreated, QuestionSettled, QuestionsToFile
 from expects import Answered, Dispatches, Given, Held, Kept, Nudged, Ran, Refused, Updated, answering, exited, nothing
-from resources.base import AGENT, Ref
+from resources.base import AGENT, USER, Ref
 from resources.put_questions import PutQuestion
 from resources.types import AgentRow, Question, Todo
 from framework.base import Feature
@@ -21,7 +21,7 @@ from features.ask_questions.details import AskQuestionsDetails
 from features.ask_questions.answering import AskInTheJournal, AskOnItsOwn
 from features.ask_questions.handlers import AnswerOnTheScreen, AskInsteadOfProse, DismissSettledQuestion, FileQuestions, MarkTheAnswer, ReleaseOnceSettled, ask
 from features.ask_questions.listeners import SpotAnswer, SpotAnswerOnScreen, SpotProse, SpotQuestionAsked, SpotQuestionToolRefused, SpotSettledRows, SpotUserWrote
-from features.ask_questions.refusing import AskedOnce, NamesItsPick, OneAskPerRow, OptionsOnlyInTheirButtons, OptionsWhenEnumerable
+from features.ask_questions.refusing import AskedOnce, NamesItsPick, OneAskPerRow, OptionsOnlyInTheirButtons, OptionsWhenEnumerable, WaitsOnTheUserByAQuestion
 from features.ask_questions.waiting import open_a_day
 from framework.sending import Nudge
 
@@ -51,6 +51,10 @@ def asking(tool: str, input: str, subagent: bool = False) -> ToolCallAsked:
 
 def writing(actor: str = "system", **fields) -> RowWriting:
     return RowWriting(type="question", action="create", actor=actor, fields=tuple(fields.items()))
+
+
+def blocking(actor: str, why: str) -> RowWriting:
+    return RowWriting(type="todo", action="block", actor=actor, fields=(("n", 7), ("why", why)))
 
 
 
@@ -159,4 +163,12 @@ class AskQuestions(Feature):
                            "a question is open only for a name, a secret or a free description, and then says so with --set free=name|secret|description"),
             Given(writing(AGENT, title="Should I merge?", free="name")) >> Kept(),
             Given(writing(AGENT, title="What is the repository called")) >> Kept(),
+        ])
+        journal.commands.refuse(RowWriting, WaitsOnTheUserByAQuestion(), expects=[
+            Given(blocking(AGENT, "waits on PR 25 until you say to release it")) >> Refused(
+                "a to-do that waits on the user carries a question they can answer, not a block: journal todo ask 7 \"<the decision>\" "
+                "--set options='[{\"title\": \"...\", \"text\": \"...\"}]' --set pick=<n>, and the answer reaches you when it is given; "
+                "a block is for what happens outside, such as a release or another machine"),
+            Given(blocking(AGENT, "measure on the 3.0 server once it is installed here")) >> Kept(),
+            Given(blocking(USER, "waits on your call")) >> Kept(),
         ])
