@@ -35,7 +35,7 @@ from features.plans.answering import RefusePlanMode
 from features.plans.refusing import HoldWhilePlanned
 from features.plans.watching import STANDING_STILL, STILL_TIMES, blocked_plans, still_plans
 from events.asking import RowWriting, ToolCallAsked
-from events.answers import Allowed
+from events.answers import Allowed, Refused as Refusal
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
                           ReviewEndedWithReport, ReviewReportLinked, StruckRowInUnapprovedPlan)
 from framework.sending import Nudge
@@ -212,7 +212,7 @@ class PlansFeature(Feature):
                 >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
         ])
         journal.events.answer(ToolCallAsked, RefusePlanMode(), expects=[
-            Given(ToolCallAsked(tool="EnterPlanMode", session="claude-1")) >> Answered(Refused(PLAN_MODE_REFUSED)),
+            Given(ToolCallAsked(tool="EnterPlanMode", session="claude-1")) >> Answered(Refusal(PLAN_MODE_REFUSED)),
             Given(ToolCallAsked(tool="Read", session="claude-1")) >> Answered(Allowed()),
         ])
         journal.commands.refuse(RowWriting, HoldWhilePlanned(), expects=[

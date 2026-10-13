@@ -19,7 +19,6 @@ from controllers.helper_worktrees import Worktrees
 from controllers.form_of_address.address import voice_of
 from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
-from agents.terminal import launch_failure, launch_output
 from controllers.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, NewEnvironment, Running, Todo
@@ -351,13 +350,13 @@ class Helpers(Controller):
         provider = SERVED.given(Providers).offers(row.provider)
         sessions = [seat for seat in Sessions(root).all().values() if seat.environment == row.environment]
         agent = Agents(Record(root, row.environment), actor=SYSTEM).primary_to_read()
-        return HelperWatch(refusal=None if provider is None else provider.refusal_in(launch_output(root, row.environment)), seated=bool(sessions),
+        return HelperWatch(refusal=None if provider is None else provider.refusal_in(self.processes.output(root, row.environment)), seated=bool(sessions),
                            heard=max((seat.last_heard for seat in sessions), default=0.0), runs=agent_runs(self.record, row),
                            own_work=bool(agent) and bool(agent.command_running or agent.background_run),
                            agent_present=agent is not None, idle_for=agent.idle_for if agent else 0.0, agent_at=float(agent.at) if agent else 0.0)
 
     def launch_cause(self, row: Helper) -> str:
-        return launch_failure(self.record.root, row.environment)
+        return self.processes.failure(self.record.root, row.environment)
 
     def helper_here(self) -> Helper | None:
         """The helper this environment was made for, when it is a helper's."""
