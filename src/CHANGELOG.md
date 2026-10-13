@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.7 — The butler polishes his visor
+
+- The butler keeps his cloth in his pocket, so both hands hang free at rest, and now and then he draws it out, polishes his visor and tucks it away again.
+
 ## 3.0.6 — The butler's wrist and the squire's shield
 
 - The butler's hand with the cloth sits straight at the end of its forearm instead of bending sharply at the wrist.
