@@ -1062,7 +1062,6 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     from types import SimpleNamespace
     from engine import bus
     from features.plugins import refusing
-    context = SimpleNamespace(record=None, feature=SimpleNamespace(journal=None), hook=SimpleNamespace(session="s-1"))
     own_command_text = []
     with monkeypatch.context() as slow:
         slow.setattr(bus, "BACKGROUND", True)
@@ -1071,7 +1070,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
         slow.setattr(refusing, "apply", lambda record, journal, name, session, reply: own_command_text.append(reply["say"]))
         slow.setattr(refusing.PluginAsk, "answer", lambda self, record, row, tool, payload, seconds: time.sleep(0.6) or "no")
         began = time.monotonic()
-        waited_for = refusing.PluginAsk().within(context, object(), "Bash", {}, 0.2)
+        waited_for = refusing.PluginAsk().within(None, None, "s-1", object(), "Bash", {}, 0.2)
         took = time.monotonic() - began
         until = time.monotonic() + 3
         while not own_command_text and time.monotonic() < until:
