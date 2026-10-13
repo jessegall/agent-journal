@@ -223,7 +223,7 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
     from features.long_commands import watch
     stalling = lambda: [n for n in nudges(record) if "npm ci" in n]
     monkeypatch.setattr(watch, "background_tasks_of",
-                        lambda agent: BackgroundTasks(started={"s9": time.time() - 11 * 60}, commands={"s9": "npm ci"}))
+                        lambda providers, agent: BackgroundTasks(started={"s9": time.time() - 11 * 60}, commands={"s9": "npm ci"}))
     report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
     tick(record)
     assert stalling() == ["a command you left running has shown nothing new for 11 minutes - npm ci",
