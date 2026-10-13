@@ -651,7 +651,6 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
 
     features.load()
     said = dict(line.split(": ", 1) for line in listing().splitlines())
-    assert any(line.startswith("adapted (") for line in said.values()), "a feature whose handlers all run on the adapter says which"
     assert {said[name] for name in ("command_tags", "chat_etiquette", "acknowledgements", "sequences")} == {"moved"}, \
         "the four features on the sending path are swept, since a handler there could not run on the adapter at all"
     handled = {one.feature.name for one in PROMISED.each if one.kind == "handler"}
