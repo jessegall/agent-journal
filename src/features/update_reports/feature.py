@@ -1,11 +1,13 @@
 from controllers.types import Reports
 from events.agents import TurnStopped
-from expects import Answered, Given, Refused, Unchanged, Updated, Wrote
+from expects import Answered, Dispatches, Given, Nudged, Refused, Updated, Wrote, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.update_reports.commands import AddItem, Changes, Dismiss, Drop, Note, Recap
 from features.update_reports.details import UpdateReportsDetails
-from features.update_reports.handlers import OfferAnUpdate
+from features.update_reports.handlers import OFFER, HoldOfferBack, MarkFirstCommit, OfferAnUpdate
+from features.update_reports.listeners import SpotCommitToOffer
+from events.update_reports import CommitFirstSeen, OfferHeldBack, UpdateOffered
 from resources.types import AgentRow, Report
 
 
@@ -52,6 +54,15 @@ class UpdateReports(Feature):
         journal.commands.add("report", Dismiss(), expects=[
             Given((Reports, 1), rows=[UPDATE]) >> Updated(Report(n=1), dismissed=True),
         ])
-        journal.events.handler(OfferAnUpdate(), expects=[
-            Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.listen(TurnStopped, SpotCommitToOffer(), expects=[
+            Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(CommitFirstSeen, MarkFirstCommit(), expects=[
+            Given(CommitFirstSeen(commit="aaa"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(OfferHeldBack, HoldOfferBack(), expects=[
+            Given(OfferHeldBack(commit="bbb", at="0"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(UpdateOffered, OfferAnUpdate(), expects=[
+            Given(UpdateOffered(commit="ccc"), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged(OFFER),
         ])

@@ -1,33 +1,26 @@
-import time
+from events import Fact
+from events.update_reports import CommitFirstSeen, OfferHeldBack, UpdateOffered
+from features.update_reports.listeners import OFFERED
+from receiving import Handler
+from serving import Chat, Clock, Elsewhere
 
-from events.agents import TurnStopped
-from framework.parts import AgentContext, Handler
-from features.update_reports.gather import UPDATE
-from resources.base import USER
-from controllers.types import Reports
-
-COMMITS = "close_from_commits"
-OFFERED = "update-offered"
-OFFER_EVERY = 3600
 OFFER = "offer"
 
 
-class OfferAnUpdate(Handler):
-    def handle(self, context: AgentContext, event: TurnStopped) -> None:
-        commit = context.record.event_log.cursor_text(COMMITS)
-        seen, _, at = context.record.event_log.cursor_text(OFFERED).partition(" ")
-        if not commit or commit == seen:
-            return
-        if not seen:
-            context.record.event_log.set_cursor_text(OFFERED, f"{commit} {time.time()}")
-            return
-        if time.time() - float(at) < OFFER_EVERY or self._unread(context):
-            context.record.event_log.set_cursor_text(OFFERED, f"{commit} {at}")
-            return
-        context.record.event_log.set_cursor_text(OFFERED, f"{commit} {time.time()}")
-        context.agent.say(OFFER)
+class MarkFirstCommit(Handler[CommitFirstSeen]):
+    def handle(self, event: CommitFirstSeen, elsewhere: Elsewhere, clock: Clock) -> list[Fact]:
+        elsewhere.here().keep_cursor(OFFERED, f"{event.commit} {clock.now()}")
+        return []
 
-    @staticmethod
-    def _unread(context: AgentContext) -> bool:
-        return any(r.data.get("kind") == UPDATE and not r.data.get("dismissed") and USER not in r.seen
-                   for r in context.journal.get(Reports).rows.standing())
+
+class HoldOfferBack(Handler[OfferHeldBack]):
+    def handle(self, event: OfferHeldBack, elsewhere: Elsewhere) -> list[Fact]:
+        elsewhere.here().keep_cursor(OFFERED, f"{event.commit} {event.at}")
+        return []
+
+
+class OfferAnUpdate(Handler[UpdateOffered]):
+    def handle(self, event: UpdateOffered, elsewhere: Elsewhere, clock: Clock, chat: Chat) -> list[Fact]:
+        elsewhere.here().keep_cursor(OFFERED, f"{event.commit} {clock.now()}")
+        chat.say(OFFER)
+        return []
