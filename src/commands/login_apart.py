@@ -11,7 +11,7 @@ from pathlib import Path
 import features
 from engine import runtime
 from engine.record import Record
-from features.hosted_journal.feature import APART
+from framework.hosted_journal.standing import APART
 from controllers.types import Shares
 from controllers.sharing.server import serve_on
 from framework.switches import watch_change_log

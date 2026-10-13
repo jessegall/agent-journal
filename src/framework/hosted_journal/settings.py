@@ -2,10 +2,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from resources.fields import Loaded
-from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.vault import Vault
+from framework.loaded import FEATURES
+from framework.hosted_journal.vault import Vault
 
 GATEWAY = "gateway.json"
+NAME = "hosted_journal"
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,7 @@ class FromRecord:
     """The login page's settings as the journal's record holds them, for a login page the journal runs itself."""
 
     def of(self, record) -> GatewaySettings:
-        values = HostedJournalDetails.values(record)
+        values = FEATURES[NAME].values(record)
         return GatewaySettings(values["address"], values["proxy"], int(values["days"]))
 
 

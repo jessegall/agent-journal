@@ -24,17 +24,17 @@ from engine import disk
 from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
-from features.hosted_journal.host import clear_tries, log_out_everywhere, machine_key, reset_password
-from features.hosted_journal.hosting import Hosting
-from features.hosted_journal.owner import LOCKED_FOR, LOGINS, Logins, MOST_EVERYWHERE, MOST_TRIES, MachineKeys, Owner, Standing, WrongTries, hashed
+from framework.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
+from commands.login_host import clear_tries, log_out_everywhere, machine_key, reset_password
+from framework.hosted_journal.hosting import Hosting
+from framework.hosted_journal.owner import LOCKED_FOR, LOGINS, Logins, MOST_EVERYWHERE, MOST_TRIES, MachineKeys, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.feature import APART
-from features.hosted_journal.apart import serving_command, serving_environment
-from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
-from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
-from features.hosted_journal.watch import DiskWatch
+from commands.login_apart import serving_command, serving_environment
+from framework.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
+from framework.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
+from framework.hosted_journal.watch import DiskWatch
 from engine.disk import DiskFull
-from features.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
+from framework.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
 from declaring.trigger import DAY
 from controllers.types import Phones
 from controllers.types import Shares
@@ -255,8 +255,8 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
         "a browser that logged in before is never locked out by wrong tries from elsewhere"
     assert "cleared" in clear_tries(hosted.record.root)
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.78", **proxied).status == 303
-    from features.hosted_journal import host
-    from features.hosted_journal.settings import GATEWAY
+    from commands import login_host as host
+    from framework.hosted_journal.settings import GATEWAY
     root = str(hosted.record.root.resolve())
     for word in ("password-status", "setup-code", "logout-everywhere", "clear-tries", "reset-password", "password-status", "setup-code"):
         host.main(["--root", root, word])
@@ -519,14 +519,14 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         launcher, start = (DOCKER / "hosted-journal").read_text(), (DOCKER / "entrypoint.sh").read_text()
         as_gateway = re.search(r'AS_GATEWAY="([^"]*)"', start)[1]
         assert ("cd /\n" in launcher and "python3 -P " in launcher, "env -C / " in as_gateway and "PYTHONSAFEPATH=1" in as_gateway,
-                bool(re.search(r"env -C / .*python3 -P -m features.hosted_journal.apart keep", start))) == (True, True, True), \
+                bool(re.search(r"env -C / .*python3 -P -m commands.login_apart keep", start))) == (True, True, True), \
             "every command run as the login page's user starts in / and never imports from the folder it was started in"
     finally:
         child.terminate()
         child.wait(APART_WAIT)
         apart_log.close()
     from types import SimpleNamespace
-    from features.hosted_journal import apart as kept_apart
+    from framework.hosted_journal import apart as kept_apart
     served = []
     monkeypatch.setattr(kept_apart, "watch_change_log", lambda: None)
     monkeypatch.setattr(kept_apart, "serve_on", lambda shares, held: served.append(held.family) or held.close())

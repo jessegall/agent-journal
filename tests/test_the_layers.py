@@ -31,7 +31,7 @@ NAMES = {
     "agents": {"controllers", "declaring", "engine", "payload", "providers", "resources", "supervisor"},
     "providers": {"controllers", "declaring", "engine", "framework", "payload", "resources", "serving", "supervisor"},
     "controllers": {"commands", "declaring", "engine", "events", "framework", "resources", "serving"},
-    "framework": {"agents", "controllers", "declaring", "engine", "events", "expects", "payload", "providers", "receiving", "resources", "serving"},
+    "framework": {"agents", "controllers", "declaring", "engine", "events", "expects", "overview", "payload", "providers", "receiving", "resources", "serving"},
     "overview": {"controllers", "declaring", "engine", "providers", "resources"},
     "mcp_headers": {"controllers", "features", "resources"},
     "migrations": {"controllers", "declaring", "engine", "features", "providers", "resources"},

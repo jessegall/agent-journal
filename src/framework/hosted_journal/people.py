@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING, Protocol
 
 from resources.extension import Extension
 from engine.record import Record
-from features.hosted_journal.owner import KeptLogin
+from framework.hosted_journal.owner import KeptLogin
 from resources.base import OWNER_ID, Resource
 
 if TYPE_CHECKING:
-    from features.hosted_journal.gateway import Gateway, Visit
+    from framework.hosted_journal.gateway import Gateway, Visit
 
 PEOPLE = Extension()
 

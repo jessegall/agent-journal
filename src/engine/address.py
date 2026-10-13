@@ -1,11 +1,9 @@
 from dataclasses import asdict, dataclass
 
-from declaring.registries import RELIED_ON
-from resources.extension import Extension
+from declaring.registries import ANSWERS_AT, RELIED_ON
 from engine.record import Record
 from engine.machines import this_machine
 
-ANSWERS_AT = Extension()
 
 
 @dataclass(frozen=True)

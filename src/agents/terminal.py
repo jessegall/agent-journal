@@ -11,7 +11,6 @@ from engine import runtime
 from engine.state import State
 from engine.stored import write_json, write_text
 from engine.package import CODE, code, entry_in
-from resources.extension import Extension
 from resources.fields import Loaded
 from engine.record import Record
 from resources.base import Refused
@@ -21,12 +20,11 @@ from typing import TypedDict
 from supervisor import LAUNCHED
 
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|[\x00-\x08\x0b-\x1f\x7f]")
-AT_ONCE = Extension()
 
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
 BRIEFED = "Your instructions are in {path}. Read that file first, then carry them out."
-from declaring.registries import LAUNCH_ARGS  # noqa: F401
+from declaring.registries import AT_ONCE, LAUNCH_ARGS  # noqa: F401
 from declaring.registries import OUTPUT_LINES  # noqa: F401
 
 

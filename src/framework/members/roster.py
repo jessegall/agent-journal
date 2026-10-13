@@ -3,9 +3,9 @@ from dataclasses import asdict, dataclass, field, replace
 from enum import StrEnum
 
 from resources.fields import Loaded
-from features.hosted_journal.owner import KeptCode, KeptPassword
-from features.hosted_journal.vault import Vault
-from features.members.roles import Role
+from framework.hosted_journal.owner import KeptCode, KeptPassword
+from framework.hosted_journal.vault import Vault
+from framework.members.roles import Role
 from declaring.trigger import DAY
 from resources.base import OWNER_ID, Refused
 

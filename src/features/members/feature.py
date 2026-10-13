@@ -1,16 +1,16 @@
 import os
 
-from controllers.base import SAVE_MARKS
+from declaring.registries import SAVE_MARKS
 from framework.base import Feature
 from events.answers import Allowed, Rewritten
 from events.asking import TextFormatting
 from expects import Answered, Given
 from framework.format import SHARED, VIEWER
-from features.hosted_journal.feature import APART
-from features.hosted_journal.people import PEOPLE
+from framework.hosted_journal.standing import APART
+from framework.hosted_journal.people import PEOPLE
 from framework.journal import Journal
 from features.members.details import MembersDetails
-from features.members.gate import MemberLogins
+from framework.members.gate import MemberLogins
 from features.members.answering import ReadMarkedWordsPlainly
 from framework.words import MemberWords, WrittenBy
 

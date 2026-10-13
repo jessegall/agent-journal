@@ -6,10 +6,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from controllers.features import Features  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.record import Record  # noqa: E402
-from features.hosted_journal.details import HostedJournalDetails  # noqa: E402
-from features.hosted_journal.owner import Logins, MachineKeys, Owner, WrongTries  # noqa: E402
-from features.hosted_journal.settings import GatewaySettings, keep_gateway_settings  # noqa: E402
-from features.hosted_journal.vault import Vault  # noqa: E402
+from framework.hosted_journal.settings import NAME  # noqa: E402
+from framework.hosted_journal.owner import Logins, MachineKeys, Owner, WrongTries  # noqa: E402
+from framework.hosted_journal.settings import GatewaySettings, keep_gateway_settings  # noqa: E402
+from framework.hosted_journal.vault import Vault  # noqa: E402
 from resources.base import USER  # noqa: E402
 
 WAITING = "No owner password yet. Get a one-time setup code with: docker compose exec -u gateway journal hosted-journal setup-code"
@@ -26,9 +26,9 @@ def prepare(root: Path, address: str, listen: str, port: int, proxy: str) -> str
     """Switches the journal on a server on, at its address, with its login page run apart under a user of its own."""
     record = record_of(root)
     features = Features(record, actor=USER)
-    features.switch(HostedJournalDetails.name, True)
+    features.switch(NAME, True)
     for key, value in (("address", address), ("listen", listen), ("port", str(port)), ("proxy", proxy), ("apart", "true")):
-        features.configure(HostedJournalDetails.name, key, value)
+        features.configure(NAME, key, value)
     return ""
 
 

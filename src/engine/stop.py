@@ -4,13 +4,12 @@ import time
 from contextlib import suppress
 from pathlib import Path
 from engine import runtime
-from resources.extension import Extension
+from declaring.registries import STAYS_UP
 from engine.proc import ran
 from engine.sessions import alive
 from engine.stored import write_text
 from engine.viewer import last, running
 
-STAYS_UP = Extension()
 WAIT = 15.0
 EVERY = 0.2
 ESCALATE = 5.0

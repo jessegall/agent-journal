@@ -1,28 +1,22 @@
 import os
 from pathlib import Path
 
-from agents.terminal import AT_ONCE
-from engine.stop import STAYS_UP
 from framework.base import Feature
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, PHONE_OWNER_ACTIONS, Gateway
-from features.hosted_journal.people import people_of
-from features.hosted_journal.phones import VaultGuard
-from features.hosted_journal.standing import Standing
-from features.hosted_journal.vault import Vault
-from features.hosted_journal.watch import DiskWatch
+from framework.hosted_journal.gateway import NEVER_FROM_OUTSIDE, PHONE_OWNER_ACTIONS, Gateway
+from framework.hosted_journal.people import people_of
+from framework.hosted_journal.phones import VaultGuard
+from framework.hosted_journal.standing import APART, Standing
+from framework.hosted_journal.vault import Vault
+from framework.hosted_journal.watch import DiskWatch
 from framework.journal import Journal
 from framework.phone.desktop import CLOSED
 from resources.phones import PHONE_GUARDS
 from framework.phone.members import MEMBER_RIGHTS
-from engine.address import ANSWERS_AT
 from declaring.registries import SHARE_ORIGINS
 from declaring.registries import EVERY_OTHER, SHARE_ROUTES, SHARE_TICKS
-from declaring.registries import SHARE_KEEP_UP, SHARE_LISTENS
-from controllers.sharing.services import Listen
-
-APART = "AGENT_JOURNAL_APART"
-
+from declaring.registries import ANSWERS_AT, AT_ONCE, SHARE_KEEP_UP, SHARE_LISTENS, STAYS_UP
+from resources.sharing import Listen
 
 def always(root: Path) -> bool:
     return True

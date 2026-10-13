@@ -1,5 +1,6 @@
-from features.hosted_journal.settings import FromRecord, FromVault
+from framework.hosted_journal.settings import FromRecord, FromVault
 from controllers.sharing.origins import ProxyLookup, ProxyOrigins
+APART = "AGENT_JOURNAL_APART"
 
 
 class Standing:

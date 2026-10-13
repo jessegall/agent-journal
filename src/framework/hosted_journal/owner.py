@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 
 from resources.fields import Loaded
-from features.hosted_journal.vault import Vault
+from framework.hosted_journal.vault import Vault
 from declaring.trigger import DAY, MINUTE
 from resources.base import OWNER_ID, Refused
 

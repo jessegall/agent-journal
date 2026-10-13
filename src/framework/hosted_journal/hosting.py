@@ -4,7 +4,7 @@ from enum import Enum
 from resources.fields import Loaded
 from engine.disk import read_json
 from engine.version import version
-from features.hosted_journal.vault import Vault
+from framework.hosted_journal.vault import Vault
 
 REQUEST = "hosting-request.json"
 UPDATER_FOLDER = "updater"

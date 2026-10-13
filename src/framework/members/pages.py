@@ -1,6 +1,6 @@
 import html
 
-from features.hosted_journal.pages import Notice, framed
+from framework.hosted_journal.pages import Notice, framed
 
 BELOW_LOGIN = '<p class="abstract">Did the owner invite you? <a href="/member">Log in with your name</a>.</p>'
 

@@ -62,6 +62,15 @@ SHARE_ORIGINS = Extension()
 RELIED_ON = Extension()
 """Whether each feature relies on the journal's address staying as it is, by the feature's name."""
 
+ANSWERS_AT = Extension()
+"""The address each feature answers at besides the tunnel's, by the feature's name."""
+
+STAYS_UP = Extension()
+"""Whether each feature keeps the journal's server running while nothing else asks it to, by the feature's name."""
+
+AT_ONCE = Extension()
+"""How many agents each feature lets run at once in an environment, by the feature's name."""
+
 
 
 START_PARTS = Extension()

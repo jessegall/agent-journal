@@ -1,4 +1,5 @@
 import time
+from dataclasses import dataclass
 from typing import ClassVar
 
 from resources.base import PROJECT, Resource, ResourceDetails
@@ -7,6 +8,7 @@ from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
 SHARED_TYPES = ("doc", "report", "collection", "plan")
 SHARING = "sharing"
 
+LOOPBACK = "127.0.0.1"
 LAYOUT_FILE = "layout.json"
 HEALTH = "health"
 HEALTH_MARKER = "journal-share-server"
@@ -65,3 +67,12 @@ def hold(agents, row, numbers) -> None:
 
 def unhold(agents, row, n: int) -> None:
     agents.update(row.n, **{UNAGREED: [held for held in row.data.get(UNAGREED, []) if held != int(n)]})
+
+
+@dataclass(frozen=True)
+class Listen:
+    """Where the share server listens: on this machine alone, at a port it is given or one it finds, and whether the journal runs it."""
+
+    host: str = LOOPBACK
+    port: int | None = None
+    kept: bool = True

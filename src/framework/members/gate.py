@@ -8,14 +8,14 @@ from engine.paths import known_environment
 from engine.record import Record
 from controllers.base import SENDER, Sender
 from controllers.shared import environment_of
-from features.hosted_journal.gateway import COOKIE, Gateway, Visit
-from features.hosted_journal.owner import KeptLogin
-from features.hosted_journal.pages import Notice, notice_page
-from features.hosted_journal.people import Act, PageHandler
-from features.hosted_journal.vault import Vault
-from features.members.pages import BELOW_LOGIN, join_page, member_login_page
-from features.members.roles import OWNER_ABILITIES, Abilities, Role
-from features.members.roster import Departure, Member, Roster
+from framework.hosted_journal.gateway import COOKIE, Gateway, Visit
+from framework.hosted_journal.owner import KeptLogin
+from framework.hosted_journal.pages import Notice, notice_page
+from framework.hosted_journal.people import Act, PageHandler
+from framework.hosted_journal.vault import Vault
+from framework.members.pages import BELOW_LOGIN, join_page, member_login_page
+from framework.members.roles import OWNER_ABILITIES, Abilities, Role
+from framework.members.roster import Departure, Member, Roster
 from controllers.types import Phones
 from framework.routing import MEMBER, ROLE, SHARED
 from framework.phone.allow_list import Action, Page

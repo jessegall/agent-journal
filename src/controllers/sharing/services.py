@@ -8,13 +8,12 @@ from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
 from controllers.features import Features
 from controllers.sharing.controller import Shares
-from resources.sharing import ADDRESS_TAKEN
+from resources.sharing import ADDRESS_TAKEN, LOOPBACK, Listen
 from resources.sharing import ended
 from engine.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
 from declaring.registries import SHARE_KEEP_UP, SHARE_LISTENS
 
-LOOPBACK = "127.0.0.1"
 IDLE = "Nothing is shared and no phone is paired, so the tunnel stays off."
 SWITCHED_OFF = "Sharing is switched off, so the tunnel stays off."
 
@@ -41,15 +40,6 @@ def why_idle(root: Path) -> str:
 
 def wanted(root: Path) -> bool:
     return not why_idle(root)
-
-
-@dataclass(frozen=True)
-class Listen:
-    """Where the share server listens: on this machine alone, at a port it is given or one it finds, and whether the journal runs it."""
-
-    host: str = LOOPBACK
-    port: int | None = None
-    kept: bool = True
 
 
 def listen_place(root: Path) -> Listen:

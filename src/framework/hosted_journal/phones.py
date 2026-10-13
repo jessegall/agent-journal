@@ -1,4 +1,4 @@
-from features.hosted_journal.vault import Vault
+from framework.hosted_journal.vault import Vault
 from resources.phones import RecordGuard
 
 PHONES = "phones.json"

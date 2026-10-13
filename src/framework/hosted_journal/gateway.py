@@ -19,13 +19,13 @@ from controllers.types import Phones
 from engine.color import identity
 from resources.fields import Loaded
 from engine.viewer import lately_running
-from features.hosted_journal.settings import FromRecord, FromVault
-from features.hosted_journal.owner import Devices, KeptLogin, Logins, MOST_EVERYWHERE, MachineKeys, Owner, SHORTEST, Standing, WrongTries, hashed
-from features.hosted_journal.people import people_of
-from features.hosted_journal.hosting import Ask, Hosting
-from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
-from features.hosted_journal.phones import VaultGuard
-from features.hosted_journal.vault import RefusalLog, Vault
+from framework.hosted_journal.settings import FromRecord, FromVault
+from framework.hosted_journal.owner import Devices, KeptLogin, Logins, MOST_EVERYWHERE, MachineKeys, Owner, SHORTEST, Standing, WrongTries, hashed
+from framework.hosted_journal.people import people_of
+from framework.hosted_journal.hosting import Ask, Hosting
+from framework.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
+from framework.hosted_journal.phones import VaultGuard
+from framework.hosted_journal.vault import RefusalLog, Vault
 from framework.phone.allow_list import Action, GenericPath, Page, post, reach
 from framework.phone.desktop import Desktop, closed, encoded
 from controllers.sharing.origins import origins_of
