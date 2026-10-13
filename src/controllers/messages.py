@@ -5,18 +5,13 @@ from controllers.base import Controller, CONTROLLERS
 from resources import types
 from resources.base import AGENT, SYSTEM, USER, Refused, Resource, titled
 from resources.replies import ACKNOWLEDGING, ASKING
-from resources.text import QUOTE, unquoted  # noqa: F401  its home is resources, and callers still name it here
+from resources.text import QUOTE, only_emoji, unquoted  # noqa: F401  its home is resources, and callers still name it here
 from controllers.comments import Comments
 from controllers.reactions import Reactions
 from controllers.marks import action
 
 
 SAID_JUST_NOW = 60.0
-
-
-def only_emoji(text: str) -> bool:
-    kept = "".join(ch for ch in text if not ch.isspace())
-    return bool(kept) and not any(ch.isalnum() or ch in ".,;:!?-_'\"()[]<>/@#" for ch in kept) and any(ord(ch) > 0x2000 for ch in kept)
 
 
 def references(about: str, todos: str) -> list[str]:

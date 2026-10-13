@@ -3,9 +3,9 @@ import time
 from controllers.base import Controller
 from resources import types
 from resources.base import AGENT, Refused
+from resources.types import ANSWERED_BY
 from controllers.marks import action
 
-ANSWERED_BY = "answered_by"
 REASON = "reason"
 CHOSEN = "chosen"
 ANSWERED_SHOWN = 3600

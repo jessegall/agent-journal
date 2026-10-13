@@ -2,10 +2,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Environments
-from engine.record import Record
-from engine.transcript import PEER, SENT
 from serving import SERVED, Providers
 from resources.base import SYSTEM
+from resources.turns import PEER, SENT
 from typing import TypedDict
 
 
@@ -65,14 +64,15 @@ class Family(TypedDict):
     links: list[dict]
 
 
-def family(record) -> Family:
+def family(agents_here) -> Family:
+    record = agents_here.record
     rows = {env.title: env for env in Environments(record, actor=SYSTEM).rows.every() if not env.deleted}
     envs = [Place(title, rows[title].owner if title in rows else "", rows[title].launched_from if title in rows else "")
             for title in dict.fromkeys([record.env, *rows])]
     members, links = {}, []
     primary = {}
     for env in envs:
-        agents = Agents(Record(record.root, env.title), actor=SYSTEM)
+        agents = agents_here.in_env(env.title)
         for row in (row for row in agents.rows.standing() if not row.parent):
             key = agent_id(env.title, row.title)
             members[key] = Member(key, f"{env.title} · {row.provider or 'agent'}", env.owner.split(":", 1)[0] if env.owner else "main",

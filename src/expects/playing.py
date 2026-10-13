@@ -213,6 +213,22 @@ class Git(Asked):
 
 
 @dataclass
+class CommandWords(Asked):
+    """The journal's command words: the Given says which nouns there are and the words each takes."""
+
+    service: ClassVar[str] = "command words"
+
+    def words(self, noun: str) -> set[str]:
+        return self.nouns().get(noun, set())
+
+    def queries(self) -> set[str]:
+        return self.answers.answers.get(("queries",), set())
+
+    def nouns(self) -> dict[str, set[str]]:
+        return self.answers.answers.get(("nouns",), {})
+
+
+@dataclass
 class Viewer(Asked):
     """The viewer: where it runs is what the Given says, and every tab shown is remembered as a run."""
 
@@ -371,6 +387,7 @@ class World:
     git: Git
     journal_root: JournalRoot
     faults: Faults
+    command_words: CommandWords
     viewer: Viewer
     own_work: OwnWork
     terminal: Terminal
@@ -381,7 +398,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Faults(seen, given.faults), Viewer(seen, given.viewer), OwnWork(seen, given.own_work), Terminal(seen), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Git(seen, given.git), JournalRoot(seen, given.journal_root), Faults(seen, given.faults), CommandWords(seen, given.command_words), Viewer(seen, given.viewer), OwnWork(seen, given.own_work), Terminal(seen), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

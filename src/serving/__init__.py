@@ -108,6 +108,10 @@ class ReadGit(Git):
     writes = False
 
 
+class CommandWords(Service):
+    """The words of the journal's own command line: its nouns, and the words each noun takes."""
+
+
 class Viewer(Service):
     """The viewer in the browser: whether one is running for this journal, and showing its tab for an environment."""
 

@@ -1,24 +1,13 @@
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from argparse import _SubParsersAction
 
-from engine.command_line import command_line
-from serving import ReadFiles
+from serving import CommandWords, ReadFiles
 from declaring.trigger import DAY
 
 PATH = re.compile(r"(?<![\w/.~])(~/)?((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")
 COMMAND = re.compile(r"`journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?[^`]*`|^\s*journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?", re.MULTILINE)
 WAITING_DAYS = 7
-
-
-def command_words() -> dict[str, set[str]]:
-    top = next(a for a in command_line().parser()._actions if isinstance(a, _SubParsersAction))
-    out = {}
-    for name, command in top.choices.items():
-        nested = next((a for a in command._actions if isinstance(a, _SubParsersAction)), None)
-        out[name] = set(nested.choices) if nested else set()
-    return out
 
 
 def missing_paths(files: ReadFiles, indexed: bool, text: str) -> list[str]:
@@ -53,8 +42,8 @@ def retiring(controller, r) -> str:
     return f"journal {controller.type} {r.n} {controller.named('complete')} \"<why>\""
 
 
-def claim_evidence(claims: tuple, files: ReadFiles) -> list[Evidence]:
-    words, indexed = command_words(), files.is_indexed()
+def claim_evidence(claims: tuple, files: ReadFiles, command_words: CommandWords) -> list[Evidence]:
+    words, indexed = command_words.nouns(), files.is_indexed()
     found = []
     for controller in claims:
         for r in controller.rows.standing():

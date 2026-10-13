@@ -270,6 +270,9 @@ class Reminder(Shape, Resource):
     command_names = {"complete": "retire"}
 
 
+ANSWERED_BY = "answered_by"
+
+
 class Question(Options, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, "", name="reason"),

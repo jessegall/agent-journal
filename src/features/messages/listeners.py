@@ -1,6 +1,4 @@
-from controllers.messages import only_emoji
 from declaring.reach import Reach
-from resources.types import IDLE
 from events import Fact
 from events.agents import AgentMessageSent, AgentReported, TurnInterrupted, TurnStopped
 from events.messages import (PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageCreated,
@@ -13,7 +11,8 @@ from framework.displayed import SETTLE, arrives
 from payload import HookEvent
 from receiving import Listener
 from resources.base import AGENT, SECTION, USER
-from resources.types import STOPPED, AgentRow, Comment, Message, Reaction
+from resources.text import only_emoji
+from resources.types import IDLE, STOPPED, AgentRow, Comment, Message, Reaction
 from serving import Providers, ReadElsewhere, ReadMarks, ReadRows, Settings
 
 INBOX_AFTER = 5

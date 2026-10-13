@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from controllers.questions import ANSWERED_BY
 from controllers.types import Questions
+from resources.types import ANSWERED_BY
 from resources.text import clipped
 from resources.base import SYSTEM, USER
 

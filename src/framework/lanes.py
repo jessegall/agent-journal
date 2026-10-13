@@ -1,6 +1,7 @@
 """What a receiver on a lane is handed: its services by type, over the lane's record, and the engine's own reads that a fact dispatched with due asks for."""
 
 import io
+from argparse import _SubParsersAction
 import shlex
 import shutil
 import time
@@ -36,7 +37,7 @@ from receiving.ticks import IN_HAND, PerAsk, Services, Unserved
 from resources.base import AGENT, SYSTEM, Refused
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, ReadOwnWork)
+                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, CommandWords, ReadOwnWork)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -113,6 +114,30 @@ class TheFaults:
     def log(self, line: str) -> None:
         from features.dev_faults.diagnostics import logged
         logged(TheJournalRoot(self.record), line)
+
+
+class TheCommandWords:
+    """The nouns and words the journal's command line parses, read from the parser wired into this process."""
+
+    NO_NOUN = "queries"
+
+    def words(self, noun: str) -> set[str]:
+        return set(command_line().words(noun))
+
+    def queries(self) -> set[str]:
+        line = command_line()
+        if not line.queries:
+            line.parser(self.NO_NOUN)
+        return set(line.queries)
+
+    def nouns(self) -> dict[str, set[str]]:
+        """Every noun to the words it takes."""
+        top = next(a for a in command_line().parser()._actions if isinstance(a, _SubParsersAction))
+        out = {}
+        for name, command in top.choices.items():
+            nested = next((a for a in command._actions if isinstance(a, _SubParsersAction)), None)
+            out[name] = set(nested.choices) if nested else set()
+        return out
 
 
 class TheViewer:
@@ -439,6 +464,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
             Sessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
             Terminal: PerAsk(lambda feature, asked: AgentTerminal(record, speaking())),
+            CommandWords: PerAsk(lambda feature, asked: TheCommandWords()),
             Git: PerAsk(lambda feature, asked: TheGit(record)),
             ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
             Faults: PerAsk(lambda feature, asked: TheFaults(record)),

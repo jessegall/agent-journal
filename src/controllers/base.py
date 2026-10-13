@@ -134,6 +134,10 @@ class Controller(Files, Links, Discussed, Buttons):
         """This controller over the same record, writing as the actor whose doing the write is, such as the user whose message a handler acts on."""
         return type(self)(self.record, actor=actor, session=self.session, agent=self.agent, force=self.force)
 
+    def in_env(self, env: str) -> "Controller":
+        """This controller over another environment of the journal, acting as the same actor."""
+        return type(self)(Record(self.record.root, env), actor=self.actor)
+
     @property
     def providers(self):
         """The providers this journal runs agents on. A controller asks the service what a provider offers; it never reaches into the package."""
@@ -480,7 +484,7 @@ class Controller(Files, Links, Discussed, Buttons):
         r = self.load(n)
         self._shipped(r, "deleted")
         self._guarded(r, "deleted")
-        there = type(self)(Record(self.record.root, env), actor=self.actor)
+        there = self.in_env(env)
         with there.record.locked(self.resource.scope):
             m = there.rows.draw_number()
             moved = self.resource(**{**asdict(r), "n": m})

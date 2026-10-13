@@ -1,7 +1,7 @@
 import json
 import mimetypes
 
-from controllers.base import CONTROLLERS
+from controllers.types import CONTROLLERS
 from events import Fact
 from events.agents import SessionStarted
 from events.attachment_descriptions import ManyMediaUntagged, MediaAttached, MediaUntagged, VideoToSample

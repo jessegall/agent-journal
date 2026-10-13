@@ -1,4 +1,4 @@
-from engine.transcript import IDLE as AGENT_IDLE
+from resources.types import IDLE as AGENT_IDLE
 from framework import watched
 from framework.recital import mentioned
 from framework.sending import Sent

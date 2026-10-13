@@ -43,3 +43,8 @@ def unquoted(said: str) -> str:
 def skill_name(name: str) -> str:
     """What a feature's skill is called: the feature's own name, in the journal's naming."""
     return f"journal-{name.removeprefix('journal_').replace('_', '-')}"
+
+
+def only_emoji(text: str) -> bool:
+    kept = "".join(ch for ch in text if not ch.isspace())
+    return bool(kept) and not any(ch.isalnum() or ch in ".,;:!?-_'\"()[]<>/@#" for ch in kept) and any(ord(ch) > 0x2000 for ch in kept)

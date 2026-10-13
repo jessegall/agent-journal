@@ -17,7 +17,7 @@ def test_the_tree_links_who_started_whom_and_who_dispatched_which_subagent():
     Environments(record, actor=SYSTEM).create("ticket-1", owner="ticket:1", launched_from=record.env)
     ticket = Record(record.root, "ticket-1")
     report(ticket, "working", "PreToolUse", session="claude-t1")
-    tree = family(record)
+    tree = family(agents)
     kinds = {(link["source"].split(":")[0], link["target"].split(":")[0], link["kind"]) for link in tree["links"]}
     assert {("agent", "sub", "dispatched"), ("agent", "agent", "started")} <= kinds, tree["links"]
     started = next(link for link in tree["links"] if link["kind"] == "started")

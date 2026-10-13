@@ -1,4 +1,4 @@
-from controllers.base import CONTROLLERS
+from controllers.types import CONTROLLERS
 from declaring.trigger import DAY
 from events import Fact
 from events.agents import ClockTicked

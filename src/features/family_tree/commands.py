@@ -6,4 +6,4 @@ class ShowFamily(Command):
     name = "family"
 
     def run(self, context: Context, agents):
-        return family(agents.record)
+        return family(agents)
