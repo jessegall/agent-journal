@@ -65,7 +65,9 @@ const place = computed(() => {
     const vertical = up
         ? {bottom: `${window.innerHeight - at.top + props.gap}px`, maxHeight: within(props.maxHeight, space.above)}
         : {top: `${at.bottom + props.gap}px`, maxHeight: within(props.maxHeight, space.below)};
-    return {...size.value, ...vertical, left: `${x}px`, maxWidth: within(props.maxWidth, window.innerWidth - x - EDGE)};
+    // the width it may take is the room across its window, never what is left right of a place worked out before it was measured,
+    // which pinned an unmeasured panel at the edge and kept it a sliver there
+    return {...size.value, ...vertical, left: `${x}px`, maxWidth: within(props.maxWidth, space.across)};
 });
 const emit = defineEmits(["close"]);
 const items = () => [...panel.value.querySelectorAll("button:not(:disabled)")];

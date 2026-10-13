@@ -59,6 +59,11 @@ await runScenarios(process.argv[2], {
         await shot(page, "plan-bars-folded");
         await page.locator(".planmore").click();
         await page.getByText("Other plans").waitFor();
+        const box = await page.locator(".menu-panel.anchored").boundingBox();
+        const across = page.viewportSize().width;
+        if (box.width < 240 || box.x + box.width > across) {
+            throw new Error(`the list of other plans opens ${Math.round(box.width)}px wide at ${Math.round(box.x)}, not whole inside the ${across}px window`);
+        }
     },
     async "a helper pill stays inside its phase card beside one row, beside a group and on a phone"(page, url) {
         const stamp = Date.now();
