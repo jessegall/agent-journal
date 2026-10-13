@@ -1,75 +1,55 @@
+import json
+import re
+import shlex
 
-from resources.types import Running
-from events.agents import AgentReported
-from controllers.types import Agents, Questions
-from events.resources import AnyEvent
-from events.messages import MessageCreated
-from events.questions import QuestionCompleted, QuestionCreated
-from engine.sessions import Sessions
-from features.agent_sessions.launch import driver_in
-from framework.sending import Sent
-from framework import watched
-from declaring.trigger import DAY, MINUTE
-from serving import SERVED, Providers
-from framework.parts import AgentContext, Context, Handler
-from features.ask_questions.choices import offers_choices
-from resources.base import SYSTEM, USER, Ref
-
-ASKING = "asking"
-WAITED_ON = ("todo", "plan", "ticket")
-GONE = {"completed": "closed", "deleted": "deleted"}
+from events import Fact
+from events.questions import AnswerGiven, AnswerOnScreen, AskingSettled, ProseOffersChoices, QuestionSettled, QuestionsToFile
+from features.ask_questions.listeners import ASKING
+from receiving import Handler
+from resources.base import SYSTEM, USER, titled
+from resources.types import AgentRow, Question
+from serving import Chat, Commands, Rows, Terminal
 
 
-class AskInsteadOfProse(Handler):
-    behaviour = ASKING
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if offers_choices(SERVED.given(Providers).last_said(context.agent.row)):
-            context.agent.say("prose")
-            context.hold("prose held", ASKING)
+class AskInsteadOfProse(Handler[ProseOffersChoices]):
+    def handle(self, event: ProseOffersChoices, chat: Chat) -> list[Fact]:
+        chat.say("prose")
+        chat.hold("prose held", ASKING)
+        return []
 
 
-class ReleaseOnceAnswered(Handler):
-    def handle(self, context: Context, event: MessageCreated) -> None:
-        if event.actor == USER:
-            context.release(ASKING)
+class ReleaseOnceSettled(Handler[AskingSettled]):
+    def handle(self, event: AskingSettled, chat: Chat) -> list[Fact]:
+        chat.release(ASKING)
+        return []
 
 
-class ReleaseOnceAsked(Handler):
-    def handle(self, context: Context, event: QuestionCreated) -> None:
-        context.release(ASKING)
+class MarkTheAnswer(Handler[AnswerGiven]):
+    def handle(self, event: AnswerGiven, agents: Rows[AgentRow], chat: Chat) -> list[Fact]:
+        agents.card(event.agent, label=f"You answered question {event.n}", icon="question", color="var(--blocking)", side=USER, row=event.ref)
+        chat.say("answered", n=event.n, answer=event.answer, rows=[event.ref])
+        return []
 
 
-class MarkTheAnswer(Handler):
-    def handle(self, context: Context, event: QuestionCompleted) -> None:
-        question = Questions(context.record, actor=SYSTEM).load(event.n)
-        agents = Agents(context.record, actor=SYSTEM)
-        row = agents.primary()
-        if event.actor != USER or question.hidden or not row or Sessions(context.record.root).asking(question.n):
-            return
-        agents.card(row.n, label=f"You answered question {question.n}", icon="question",
-                    color="var(--blocking)", side=USER, row=question.ref)
-        context.feature.to_primary(context.record, "answered", n=question.n, answer=question.outcome, rows=[question.ref])
+class AnswerOnTheScreen(Handler[AnswerOnScreen]):
+    def handle(self, event: AnswerOnScreen, terminal: Terminal) -> list[Fact]:
+        terminal.answer_prompt(event.option, event.text, event.options)
+        return []
 
 
-class AnswerOnTheScreen(Handler):
-    def handle(self, context: Context, event: QuestionCompleted) -> None:
-        """An answer reaches the question the agent stands at on its own screen, which no typed line can: the option is pressed, or the words are typed into the free choice."""
-        question = Questions(context.record, actor=SYSTEM).load(event.n)
-        row = Agents(context.record, actor=SYSTEM).primary()
-        driver = driver_in(Running(context.record, context.record.env, row.provider)) if row else None
-        if driver is not None and question.completed and not Sessions(context.record.root).asking(question.n):
-            driver.answer_prompt(int(question.chosen), question.outcome, len(question.options))
+class DismissSettledQuestion(Handler[QuestionSettled]):
+    def handle(self, event: QuestionSettled, questions: Rows[Question]) -> list[Fact]:
+        questions.dismiss(event.n, why=event.why)
+        return []
 
 
-class DismissSettledQuestions(Handler):
-    def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type not in WAITED_ON or event.action not in GONE:
-            return
-        ref, questions = Ref(event.type, event.n), Questions(context.record, actor=SYSTEM)
-        for question in [q for q in questions.rows.standing() if str(ref) in q.refs]:
-            questions.dismiss(question.n, why=f"{ref.spoken}, which it was about, is {GONE[event.action]}")
+class FileQuestions(Handler[QuestionsToFile]):
+    def handle(self, event: QuestionsToFile, commands: Commands, chat: Chat) -> list[Fact]:
+        filed = [commands.run(ask(one)) for one in json.loads(event.asked)]
+        chat.nudge("filed as", numbers=", ".join(number.group() for ran in filed if (number := re.search(r"\d+", ran.output))) or "none")
+        return []
 
 
-def open_a_day(context, agent) -> list[Sent]:
-    return watched.found(watched.Watched("question", "open", "created", DAY / MINUTE), context, agent)
+def ask(one: dict) -> str:
+    pick = f" --set pick={one['pick']}" if one["pick"] else ""
+    return f"question ask {shlex.quote(titled(one['text']))} --brief {shlex.quote(one['text'])} --set options={shlex.quote(json.dumps(one['options']))}{pick}"

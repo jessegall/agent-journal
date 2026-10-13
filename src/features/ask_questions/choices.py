@@ -1,4 +1,7 @@
+import json
 import re
+
+from resources.shapes import normalize_options
 
 
 LISTED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|\(?[A-Za-z][.)]|\d+[.)]|[-*•])\s+\S", re.MULTILINE)
@@ -57,3 +60,27 @@ ALTERNATIVES = re.compile(r"\bwhich\b|\b\w+ or \w+", re.IGNORECASE)
 
 def enumerable(title: str) -> bool:
     return bool(YES_OR_NO.match(title) or ALTERNATIVES.search(title))
+
+FILED = "filed"
+UNPICKED = "unpicked"
+
+
+def option_titles(options) -> list[str]:
+    if not isinstance(options, list):
+        return []
+    return [option["title"] if isinstance(option, dict) else str(option) for option in normalize_options(options)]
+
+
+def given_pick(given) -> int | None:
+    if given is None:
+        return None
+    text = str(given).strip()
+    return int(text) if text.isdigit() else None
+
+
+def unpicked(titles, pick: int | None) -> bool:
+    return len(titles) > 1 and (pick is None or not 1 <= pick <= len(titles))
+
+
+def given_options(given) -> list[str]:
+    return option_titles(json.loads(given) if isinstance(given, str) and given.strip().startswith("[") else given)

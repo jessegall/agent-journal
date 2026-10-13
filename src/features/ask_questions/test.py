@@ -85,7 +85,7 @@ def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal
     question = Questions(record, actor=AGENT).all()[-1]
     assert (question.title, [o["title"] for o in question.data["options"]], question.data["pick"], question.seen[:1]) == \
         ("Which store - files or SQLite?", ["Files", "SQLite"], 1, [AGENT]), "the question, its options and the recommended one as the agent's pick"
-    assert result.get("decision") == "block" and f"question {question.n}" in result.get("reason", ""), "the call is refused with the number"
+    assert result.get("decision") == "block" and "asked in the journal" in result.get("reason", ""), "the call is refused and says the question is asked"
     passed = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "agent_id": "sub-1",
                                                                      "tool_name": "AskUserQuestion", "tool_input": {"questions": [{"question": "Keep the old parser?", "options": [{"label": "Yes"}, {"label": "No"}]}]}})
     assert (passed.get("decision"), Questions(record, actor=AGENT).all()[-1].title) == (None, "Which store - files or SQLite?"), \

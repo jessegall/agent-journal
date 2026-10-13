@@ -1,5 +1,5 @@
 from declaring.trigger import IDLE, MINUTES, Trigger
-from features.ask_questions.interceptors import FILED, UNPICKED
+from features.ask_questions.choices import FILED, UNPICKED
 from declaring.details import Behaviour, FeatureDetails, Line
 from declaring.settings import Setting
 from declaring.groups import Group
@@ -50,8 +50,8 @@ class AskQuestionsDetails(FeatureDetails):
 
         A question tool the provider offers, such as Claude Code's AskUserQuestion, never opens
         in the terminal: each question in the call is filed as a journal question with its
-        options and the one labelled (Recommended) as your pick, and the call is refused with the
-        numbers, so you carry on and hear the answer as an event.
+        options and the one labelled (Recommended) as your pick, and the call is refused and the
+        question named to you by its number, so you carry on and hear the answer as an event.
 
         A question is open, without options, only for a name, a secret or a free description,
         and says so with --set free=name|secret|description. A yes or no, a which, or
@@ -112,8 +112,13 @@ class AskQuestionsDetails(FeatureDetails):
         ),
         Line(
             name=FILED,
-            title="asked in the journal as question {{numbers}}",
+            title="asked in the journal",
             brief="the user answers it in the viewer and the answer reaches you as an event; carry on with what does not depend on it",
+        ),
+        Line(
+            name="filed as",
+            title="your question is asked as question {{numbers}}",
+            brief="the user answers it in the viewer and the answer reaches you as an event",
         ),
         Line(
             name="prose",
