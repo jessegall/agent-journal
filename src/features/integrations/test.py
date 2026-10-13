@@ -348,7 +348,7 @@ def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_lea
     board = linear.choices(record).board
     stages = Boards(record, actor=SYSTEM).load(board).stages
     mapped = {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {stages[0]: "s1", stages[1]: "s2"}}}
-    assert "needs" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {}, "send_status": True}}, USER)), \
+    assert "can be turned on once stage states are set" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {}, "send_status": True}}, USER)), \
         "status changes can only be turned on after a stage is mapped"
     apply(record, {"linear": {**mapped["linear"], "send_status": True}}, USER)
     linear.check(record)

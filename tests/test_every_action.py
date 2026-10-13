@@ -282,9 +282,10 @@ def row_of_reply(record, reply) -> dict:
     return CONTROLLERS[type_](record, actor=SYSTEM).load(int(rest.split(":")[0])).__dict__
 
 
-def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_every_type():
+@pytest.mark.parametrize("type_", sorted(TYPES))
+def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_every_type(type_):
     wrong = {}
-    for type_, resource, record, controller in each_type():
+    for type_, resource, record, controller in one_type(type_):
         row = acting(type_, record, SYSTEM).create(f"a {type_} to answer for", **needed(type_))
         names = actions(type(controller))
         make, close = resource.command_names.get("create", "create"), controller.named("complete")
@@ -314,6 +315,9 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_ev
             facts["the plugin the query names is the one the command runs as"] = row_of_reply(record, plugin)["data"].get("plugin") == "clock"
         reckon(wrong, type_, facts)
     assert wrong == {}, "every type answers a missing row with 404, a refusal with 400 in words, and never a 500"
+
+
+def test_a_missing_environment_or_type_is_a_404_and_a_profiled_request_is_answered():
     features.load()
     record = fresh()
     assert get(record, "/api/nowhere/todo").code == 404, "an environment that is not there is a 404"
@@ -845,6 +849,13 @@ def each_type():
         yield type_, resource, record, CONTROLLERS[type_](record, actor=SYSTEM)
 
 
+def one_type(type_: str):
+    """each_type for the one type a parametrized test is about, so the types spread over the workers."""
+    features.load()
+    record = fresh(type_[:2])
+    yield type_, TYPES[type_], record, CONTROLLERS[type_](record, actor=SYSTEM)
+
+
 def acting(type_: str, record, actor: str):
     return CONTROLLERS[type_](record, actor=actor, force="a test makes many rows of a type that opens one at a time" if type_ == "work" else "")
 
@@ -1261,11 +1272,12 @@ def test_an_upload_and_the_file_route_stay_inside_the_rows_folder_for_every_type
         "a file's bytes come out exactly as sent, blank lines inside them included, and a part that is no file is left out"
 
 
-def test_no_chip_marker_is_kept_in_a_row_of_any_type_or_reaches_a_command_or_a_nudge():
+@pytest.mark.parametrize("type_", sorted(TYPES))
+def test_no_chip_marker_is_kept_in_a_row_of_any_type_or_reaches_a_command_or_a_nudge(type_):
     marked = "see [[chip todo:1|to-do 1]] and [[file src/a.py|a.py]]"
     leaked, record = {}, fresh("ch")
     features.load()
-    for type_ in TYPES:
+    for type_ in (type_,):
         controller = CONTROLLERS[type_](record, actor=SYSTEM)
         fields = {name: "a title" if name == "title" else marked for name in TYPES[type_].required}
         try:
