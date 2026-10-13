@@ -192,6 +192,9 @@ class JournalRoot(Asked):
     def named(self, ask: tuple, otherwise):
         return self.answers.answers.get(ask, otherwise)
 
+    def project(self) -> Path:
+        return self.named(("project",), Path("/work/app"))
+
     def tests_running(self) -> bool:
         return self.named(("tests running",), False)
 

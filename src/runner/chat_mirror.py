@@ -14,7 +14,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
 from resources.text import digest, plural
-from features.dev_faults.diagnostics import logged
+from features.dev_faults.diagnostics import logged_at
 from providers import PROVIDERS
 from payload import Chunk
 from resources.base import SYSTEM
@@ -89,7 +89,7 @@ def displayed(root: Path, chunk: Chunk) -> None:
 
 def traced(root: Path, line: str) -> None:
     """What the catch-up found the hook had not brought, kept beside the other diagnostics. It fires only when the transcript fills the chat, which is rare and is the thing worth a line forever; the per-chunk evidence that named the cause of to-do 4549 is gone, since the hook's path is hot and a line per delta grows without bound."""
-    logged(root, f"display {line}")
+    logged_at(root, f"display {line}")
 
 
 def shown(root: Path, chunk: Chunk) -> None:
@@ -247,7 +247,7 @@ def raise_held(root: Path, session: str) -> None:
             return
         held[FAULTS] = {one: at for one, at in faults.items() if one not in over}
     said = plural(len(over), "message")
-    logged(root, f"{FELL_BACK}: {said} in session {session} came from the transcript instead")
+    logged_at(root, f"{FELL_BACK}: {said} in session {session} came from the transcript instead")
     faults = features.FEATURES.get("dev_faults")
     if faults is None:
         return

@@ -264,7 +264,7 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "took long", "request", "", "slow") is True, "a report of a slow request that was already filed is taken as filed"
     from engine.developing import developing
-    from features.dev_faults.diagnostics import logged
+    from features.dev_faults.diagnostics import logged_at as logged
     project = record.root.parent / "dev-project"
     project.mkdir()
     (project / ".env").write_text("OTHER=1\nDEVELOPMENT_MODE=true\n")

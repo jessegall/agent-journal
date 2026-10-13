@@ -1,30 +1,25 @@
-
+from events import Fact
+from events.dev_faults import OverdueTodoClosed, OverdueTodoFiled
 from events.measured import Measured
-from events.resources import ResourceCreated
-from features.dev_faults.reports import OVER
-from framework.parts import Context, Handler
-from controllers.types import Todos
-from resources.base import SYSTEM
-from events.todos import TodoCompleted
+from features.dev_faults.reports import FaultReports
+from receiving import Handler
+from serving import Elsewhere, JournalRoot
 
 
-class ReportSlow(Handler):
-    def handle(self, context: Context, event: Measured) -> None:
-        context.feature.reports.spent(event.root, event.env, event.kind, event.target, event.took, event.working, event.profile, event.garbage, event.waiting,
-                                     event.after, event.whole_reads, event.stacks, event.request, event.within)
+class ReportSlow(Handler[Measured]):
+    def handle(self, event: Measured, elsewhere: Elsewhere, root: JournalRoot) -> list[Fact]:
+        FaultReports(elsewhere, root).spent(event.env, event.kind, event.target, event.took, event.working, event.profile, event.garbage, event.waiting,
+                                            event.after, event.whole_reads, event.stacks, event.request, event.within)
+        return []
 
 
-class LiftOverdueHold(Handler):
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        if event.type != "todo":
-            return
-        title = Todos(context.record, actor=SYSTEM).load(event.n).title
-        if OVER in title:
-            context.feature.reports.lift(context.record.root, title)
+class LiftOverdueHold(Handler[OverdueTodoFiled]):
+    def handle(self, event: OverdueTodoFiled, elsewhere: Elsewhere, root: JournalRoot) -> list[Fact]:
+        FaultReports(elsewhere, root).lift(event.title)
+        return []
 
 
-class RestartCountOnClose(Handler):
-    def handle(self, context: Context, event: TodoCompleted) -> None:
-        title = Todos(context.record, actor=SYSTEM).load(event.n).title
-        if OVER in title:
-            context.feature.reports.restart(context.record.root, title)
+class RestartCountOnClose(Handler[OverdueTodoClosed]):
+    def handle(self, event: OverdueTodoClosed, elsewhere: Elsewhere, root: JournalRoot) -> list[Fact]:
+        FaultReports(elsewhere, root).restart(event.title)
+        return []

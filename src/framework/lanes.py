@@ -90,6 +90,10 @@ class TheJournalRoot:
     def __init__(self, record):
         self.record, self.root = record, record.root
 
+    def project(self) -> Path:
+        """The folder of the project the journal belongs to."""
+        return self.root.parent
+
     def tests_running(self) -> bool:
         return runtime.tests_running(self.root)
 
@@ -239,6 +243,14 @@ class Environment:
     def release(self, behaviour: str = "") -> None:
         """Lets go the holds this feature put on every agent of the environment, under that behaviour."""
         self.feature.release(self.record, behaviour)
+
+    def hold(self, line: str, behaviour: str = "", **values) -> None:
+        """Holds the writes of every agent of the environment, with the words of one of this feature's lines."""
+        self.feature.hold(self.record, line, behaviour, **values)
+
+    def log(self, line: str, **values):
+        """Files one of this feature's lines in the environment's notices."""
+        return self.feature.journal.log(self.record, line, **values)
 
     def chats(self) -> list[Speaker]:
         """The chat of every live agent here, for a line each of them must hear."""
