@@ -129,19 +129,16 @@ def test_a_cards_words_pass_the_formatters_like_every_other_field():
     Todos(record, actor=USER).create("[!info] tagged title")
     assert [c["title"] for lane in board(record)["lanes"] for c in lane["cards"]] == ["tagged title"], "a leftover tag is taken off the card's title"
     from controllers.types import Docs
-    from framework.format import FORMATTERS, formatted, markdown
+    from unittest.mock import patch
+    from framework.format import formatted, markdown
     doc = Docs(record, actor=USER).create("[!info] A guide", abstract="short", brief="Words")
     Docs(record, actor=USER).section(doc.n, "Steps", "Do it")
     assert markdown(Docs(record, actor=USER).load(doc.n), record) == "# A guide\n\n_short_\n\nWords\n\n## Steps\n\nDo it\n", \
         "a downloaded document is its title, its line, its words and its sections, with the same tags taken off"
-    broken = (lambda text, _: 1 / 0, ())
-    FORMATTERS.add(None, broken)
-    try:
+    with patch("engine.bus.asked", side_effect=ZeroDivisionError):
         assert formatted("kept", record) == "kept", "a formatter that fails leaves the words as they were"
         with pytest.raises(ZeroDivisionError):
             formatted("kept")
-    finally:
-        FORMATTERS.remove(broken)
 
 
 def test_a_parked_to_do_is_held_not_doing():

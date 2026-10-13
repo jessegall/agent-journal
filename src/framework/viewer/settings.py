@@ -49,8 +49,8 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             record.change_setting(key, value)
             continue
         record.set_setting(key, value)
-    switched = body[Record.features] if isinstance(body.get(Record.features), dict) else {}
-    settings_changed(record, [*body, *switched], actor)
+    asked_switches = body[Record.features] if isinstance(body.get(Record.features), dict) else {}
+    settings_changed(record, [*body, *asked_switches], actor)
     for applied in SETTINGS_APPLIED.each(record):
         applied(record)
     after = switches(record)

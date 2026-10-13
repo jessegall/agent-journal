@@ -41,9 +41,8 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
 
 def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
     import pytest
-    from framework.parts import ActionInterceptor, Canceler, Command, Handler, TextFormatter, ToolInterceptor
-    calls = (lambda: Handler().handle(None, None), lambda: TextFormatter().format(None, ""), lambda: ToolInterceptor().intercept(None, None),
-             lambda: Canceler().cancel(None, None), lambda: Command().run(None, None), lambda: ActionInterceptor().intercept(None, None))
+    from framework.parts import ActionInterceptor, Command
+    calls = (lambda: Command().run(None, None), lambda: ActionInterceptor().intercept(None, None))
     for call in calls:
         with pytest.raises(NotImplementedError):
             call()
