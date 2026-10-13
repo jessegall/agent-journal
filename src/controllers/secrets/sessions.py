@@ -8,8 +8,10 @@ from resources.text import slugged
 from controllers.secrets.values import project_id, secrets_folder
 from resources.base import Refused
 
-OPEN_BROWSER = ("npx", "-y", "playwright@latest", "open")
-INSTALL_BROWSER = ("npx", "-y", "playwright@latest", "install", "chromium")
+# the Playwright src/web/package.json pins, so the browser build it fetches into the cache every Playwright on the machine shares is the one the viewer's tests drive
+PLAYWRIGHT = "playwright@1.63.0"
+OPEN_BROWSER = ("npx", "-y", PLAYWRIGHT, "open")
+INSTALL_BROWSER = ("npx", "-y", PLAYWRIGHT, "install", "chromium")
 UNSAVED = "log in in the browser that opens, then close its window"
 
 

@@ -177,7 +177,10 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     login_text = secrets.login(row.n, wait=True)
     logins = BrowserLogins(record.root)
     merged = json.loads(logins.merged.read_text())
-    assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in login_text, "the browser opens for the user, and the agent is told to restart once"
+    from controllers.secrets.sessions import PLAYWRIGHT
+    pinned = json.loads((Path(__file__).resolve().parents[2] / "web" / "package.json").read_text())["devDependencies"]["playwright-core"]
+    assert opened[0][:4] == ["npx", "-y", PLAYWRIGHT, "open"] and "Restart the agent once" in login_text, "the browser opens for the user, and the agent is told to restart once"
+    assert PLAYWRIGHT == f"playwright@{pinned.lstrip('^~')}", "the login flow fetches the Playwright the viewer pins, never whatever is newest"
     assert (len(merged["cookies"]), len(merged["origins"])) == (1, 1), "logging in again replaces the saved session instead of adding a second"
     assert {stat.S_IMODE(path.stat().st_mode) for path in (logins.merged, logins.saved_for("Staging"))} == {0o600}, "only the owner reads a saved login"
     servers = json.loads((project / ".mcp.json").read_text())["mcpServers"]
