@@ -6,7 +6,7 @@ from expects import Dispatches, Given, Nudged, at, nothing
 from features.put_off_work.details import PutOffWorkDetails
 from features.put_off_work.handlers import NameTheDeferral
 from features.put_off_work.listeners import SpotDeferredWork
-from features.work_modes.modes import filing_on
+from resources.work_modes import filing_on
 from framework.base import Feature
 from framework.journal import Journal
 from resources.types import AgentRow, Board, Todo

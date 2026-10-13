@@ -41,3 +41,14 @@ NEW_WORK_TO_DOS = 'journal todo create "<title>" --brief "<why, where to start>"
 
 def kept_mode(kept: str) -> str:
     return kept if kept in MODES else BUILDER
+
+
+def board_in(boards, n: int):
+    return boards.load(n) if n and boards.rows.exists(n) and not boards.load(n).finished else None
+
+
+def filing_on(board) -> str:
+    if not board:
+        return f"file new work as to-dos: {NEW_WORK_TO_DOS}"
+    return (f"file each new request as a ticket on board {board.n}, {board.title}: journal ticket create \"<the work>\" --brief \"<what is wanted>\" "
+            f"--set board={board.n}, then journal ticket start <n>; its agent plans it and you review, approve and merge, never a to-do")

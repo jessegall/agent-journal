@@ -1,7 +1,6 @@
 from events import Fact
 from events.put_off_work import WorkDeferred
-from features.work_modes.details import ORCHESTRATOR
-from features.work_modes.modes import board_in, filing_on, kept_mode
+from resources.work_modes import ORCHESTRATOR, board_in, filing_on, kept_mode
 from receiving import Handler
 from resources.types import Board
 from serving import Chat, Rows, Settings

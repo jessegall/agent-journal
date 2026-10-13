@@ -1,7 +1,7 @@
 from features.work_modes.details import WorkModesDetails
 from framework.work_mode import CARRIED_IN, mode_of, taking  # noqa: F401
 from resources.base import Refused
-from resources.work_modes import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, kept_mode  # noqa: F401
+from resources.work_modes import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, board_in, filing_on, kept_mode  # noqa: F401
 
 
 def pick(record, mode: str, actor: str) -> str:
@@ -19,10 +19,6 @@ def pick(record, mode: str, actor: str) -> str:
     return mode
 
 
-def board_in(boards, n: int):
-    return boards.load(n) if n and boards.rows.exists(n) and not boards.load(n).finished else None
-
-
 def board_of(record):
     from controllers.types import Boards
     from resources.base import SYSTEM
@@ -31,13 +27,6 @@ def board_of(record):
 
 def filing(record) -> str:
     return filing_on(board_of(record) if mode_of(record) == ORCHESTRATOR else None)
-
-
-def filing_on(board) -> str:
-    if not board:
-        return f"file new work as to-dos: {NEW_WORK_TO_DOS}"
-    return (f"file each new request as a ticket on board {board.n}, {board.title}: journal ticket create \"<the work>\" --brief \"<what is wanted>\" "
-            f"--set board={board.n}, then journal ticket start <n>; its agent plans it and you review, approve and merge, never a to-do")
 
 
 def choose_board(record, n: int, actor: str) -> int:
