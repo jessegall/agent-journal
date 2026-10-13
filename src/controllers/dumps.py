@@ -1,5 +1,6 @@
 import json
 import time
+from pathlib import Path
 
 from controllers.base import CONTROLLERS, Controller, controller_of
 from controllers.messages import Messages
@@ -21,6 +22,10 @@ def named_refs(text: str) -> list[str]:
 
 class Dumps(Controller):
     resource = Dump
+
+    def holds(self, path: Path) -> bool:
+        """Whether a path lies inside the folder of some dump."""
+        return path.is_relative_to(self.rows.folder())
 
     @action
     def create(self, title: str = "", abstract: str = "", brief: str = "", **data):

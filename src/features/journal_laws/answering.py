@@ -16,5 +16,5 @@ class EnforceDispatchLaw(Answerer[AgentDispatching]):
 
 class RefuseWholeLongReads(Answerer[ToolCallAsked]):
     def answer(self, event: ToolCallAsked, settings: Settings, files: ReadFiles, dumps: ReadRows[Dump]) -> Answer:
-        read = None if event.subagent else long_read(event, settings, files, dumps.folder())
+        read = None if event.subagent else long_read(event, settings, files, dumps)
         return Refused(read.reason) if read else Allowed()

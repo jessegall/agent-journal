@@ -5,6 +5,7 @@ from pathlib import Path
 
 from engine.ran import SHELL
 from events.asking import ToolCallAsked
+from controllers.types import Dumps
 from serving import ReadFiles, Settings
 
 READ = "Read"
@@ -53,13 +54,13 @@ def printed_whole(event: ToolCallAsked) -> tuple[str, bool]:
     return (given.get("file_path", "") if whole else ""), whole
 
 
-def long_read(event: ToolCallAsked, settings: Settings, files: ReadFiles, exempt: Path) -> LongRead | None:
+def long_read(event: ToolCallAsked, settings: Settings, files: ReadFiles, dumps: Dumps) -> LongRead | None:
     named, whole = printed_whole(event)
     if not named:
         return None
     path = Path(named).expanduser()
     path = Path(event.cwd) / path if event.cwd else path
-    if path.is_relative_to(exempt):
+    if dumps.holds(path):
         return None
     count = lines_in(files, path)
     return LongRead(named, path, count, whole) if count > int(settings.whole_read_lines) else None
