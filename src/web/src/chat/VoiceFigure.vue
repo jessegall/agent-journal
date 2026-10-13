@@ -395,9 +395,10 @@ function react(moment) {
     stay = stayForLook(stay, place.value);
 }
 
-// the figure appears at home on its feet, where its entrance plays
+// the figure appears at home on its feet, where its entrance plays, keeping to that ground from the start, so a compose box that mounts
+// after it, as on coming back to Home, carries it up from the floor rather than leaving it there
 function home() {
-    place.value = spotOf(null, figureSize());
+    settle(spotOf(null, figureSize()));
     rest();
 }
 
