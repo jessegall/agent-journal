@@ -178,7 +178,7 @@ test("at rest it hangs by its grip, plays a beat turned to it, points while the 
         facing: 180,
     });
     expect(clipFor(scene({beat: {clip: "joy", facing: 270}}), canDraw)).toEqual({clip: "joy", facing: 270, once: true});
-    expect(clipFor(scene({place: {posture: "stand", view: "question"}, state: "asking", doing: "idle"}), canDraw).clip).toBe("point");
+    expect(clipFor(scene({place: {posture: "stand", view: "question"}, state: "asking", doing: "waiting"}), canDraw).clip).toBe("waiting");
     expect(clipFor(scene({place: {posture: "stand", view: "question"}}), canDraw).clip).toBe("think");
     expect(clipFor(scene({place: {posture: "sit", face: 60}, state: "running", doing: "type"}), canDraw)).toEqual({
         clip: "type",

@@ -4,12 +4,12 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {ON_FLOOR, aimedAt, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {KEPT_WITHIN, ON_FLOOR, aimedAt, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
-import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
+import {beatsAfter, cardsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
-import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
+import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, walkingMoment, workMoments} from "../figure/reactions.js";
 import {
     clickedBody,
     CHANGE_SECONDS,
@@ -38,6 +38,10 @@ const SIZE = 112;
 const LOOK_EVERY = 1000;
 // how many times a second the body is drawn while it eases from one clip, posture or facing to the next
 const BLEND_FPS = 30;
+const COMPOSE_TURN = 30;
+const SLEEP_GLYPHS = 3;
+const SLEEP_DRIFT_SECONDS = 3;
+const SLEEP_HEAD_OFFSET = 0.1;
 
 const props = defineProps({voice: {type: String, required: true}});
 
@@ -74,6 +78,7 @@ let looking = null;
 const memory = {reacted: new Map(), played: []};
 const pastimesDue = new Map();
 const testStates = new Map();
+const knownCards = new Set();
 // the voice's own entrance plays when its figure appears, and its exit when the environment's agent goes; with no agent it is not shown
 const arriving = ref(false);
 // the landing plays once after a jump or a fall, unless the figure goes on to hang
@@ -106,6 +111,9 @@ let rolled = {stretch: "", clip: ""};
 // the user has typed in the compose box since the last look, and when the agent's work in hand began
 let typed = false;
 let workBegan = 0;
+let walkBegan = 0;
+const shownFrame = ref(0);
+const headAt = ref({x: 0.5, y: 0.3});
 
 // the clip of this name the figure has, or idle when it has none
 const clipNamed = (name) => clips.find((clip) => clip.name === name) || clips.find((clip) => clip.name === "idle");
@@ -121,6 +129,7 @@ function doing() {
 
 // what plays now, as figureState.js clipFor decides it, with the clip itself in place of its name
 function current() {
+    if (!moving.value?.moves || moving.value.hopping) beats.value = beats.value.filter((beat) => beat.clip !== "stumble");
     const first = beats.value[0];
     const beat = first && {clip: first.clip, facing: facingToward(first.card, at.value.x + SIZE / 2)};
     const scene = {
@@ -132,9 +141,15 @@ function current() {
         beat,
         state: held.value.state,
         doing: doing(),
+        composeFacing: composeFacing(),
     };
     const wanted = clipFor(scene, canDraw);
     return {...wanted, clip: clipNamed(wanted.clip)};
+}
+
+function composeFacing() {
+    const box = document.querySelector(HOME)?.getBoundingClientRect();
+    return box ? (box.left + box.width / 2 >= at.value.x + SIZE / 2 ? COMPOSE_TURN : -COMPOSE_TURN) : 0;
 }
 
 const keyOf = (shown) => `${shown.clip.name}/${shown.facing}`;
@@ -195,11 +210,13 @@ function step() {
     const pace = shown.pace ?? 1;
     const stride = drawn === "walk" ? strideNow(pace) : null;
     walking.value = stride !== null || shown.clip.name === "walk";
-    player.show(shown.clip, frameIn(shown.clip, index, playing.closing), shown.facing, {
+    shownFrame.value = frameIn(shown.clip, index, playing.closing);
+    player.show(shown.clip, shownFrame.value, shown.facing, {
         posture: drawn,
         eyes: look.eyes,
         stride,
     });
+    headAt.value = player.headAt();
     const strideFps = stride === null ? 0 : clipNamed("walk").fps * pace;
     const fps = Math.max(fpsOf(shown), look.eyes ? LOOK_FPS : 0, strideFps, player.blending() ? BLEND_FPS : 0);
     frameTimer = setTimeout(step, 1000 / fps);
@@ -283,7 +300,7 @@ function depart() {
     leg.value = next;
     if (!next.hopping) {
         const feet = feetOf(at.value);
-        walk.on = floorAt(latestFloors().floors, feet.x, feet.y)?.id ?? null;
+        walk.on = floorAt(latestFloors().floors, feet.x, feet.y, KEPT_WITHIN)?.id ?? null;
         return void (legTimer = setTimeout(nextLeg, next.lead + next.ms));
     }
     legTimer = setTimeout(() => {
@@ -329,7 +346,7 @@ const feetOf = (picture) => ({x: picture.x + SIZE / 2, y: picture.y + (1 - below
 
 function walkOn() {
     const feet = feetOf(legAt(leg.value, walk.from, performance.now() - walk.began));
-    const under = walk.on ? underWalker(latestFloors().floors, walk.on, feet.x, feet.y) : {falls: false, dx: 0, dy: 0};
+    const under = underWalker(latestFloors().floors, walk.on, feet.x, feet.y);
     if (under.falls) return fallFrom({...feet, posture: "stand"}, moving.value.to);
     if (Math.abs(under.dx) > 0.3 || Math.abs(under.dy) > 0.3) carryWalk(under.dx, under.dy);
     at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
@@ -436,7 +453,7 @@ function uprooted() {
 }
 
 // the scene the reactions are decided in
-const scene = () => ({place: place.value, beats: beats.value.length, arriving: arriving.value, leaving: leaving.value});
+const scene = () => ({voice: voice.value, moving: Boolean(moving.value), place: place.value, beats: beats.value.length, arriving: arriving.value, leaving: leaving.value});
 
 function look() {
     clearTimeout(lookTimer);
@@ -444,10 +461,14 @@ function look() {
     waitingSince.value = waitingSinceAt(counts.value, waitingSince.value, now.value);
     const happened = [
         ...beatsAfter(agent.value, seenAt),
+        ...cardsAfter(agent.value, knownCards),
         ...testResultsAfter(agent.value, testStates),
         ...facesAfter(rows("reaction"), seenAt),
     ];
     if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.at));
+    const stroll = walkingMoment(moving.value, walkBegan, now.value);
+    walkBegan = stroll.began;
+    if (stroll.moment && !beats.value.some((beat) => beat.clip === "stumble")) react(stroll.moment);
     const work = workMoments(held.value.state, typed, workBegan, now.value);
     typed = false;
     workBegan = work.began;
@@ -515,7 +536,7 @@ const onType = (event) => {
 // what the figure does about a moment, as reactions.js answerTo decides: a beat the body plays, or a look the eyes take on
 function react(moment) {
     const answer = answerTo(moment, voice.value, memory, now.value, Math.random, hasClip);
-    if (answer?.beat) beats.value = [...beats.value, answer.beat];
+    if (answer?.beat) beats.value = moment.beat === "long_walk" ? [answer.beat, ...beats.value] : [...beats.value, answer.beat];
     if (!answer?.look) return;
     looking = lookOf(answer.look, performance.now() / 1000);
     stay = stayForLook(stay, place.value);
@@ -565,6 +586,7 @@ async function load(name) {
         clips = module.CLIPS.filter((clip) => !clip.voices || clip.voices.includes(name));
         hands = [...loaded.stance.free];
         testResultsAfter(agent.value, testStates);
+        cardsAfter(agent.value, knownCards);
         below.value = module.GROUND;
         canvas.value.width = canvas.value.height = Math.round(SIZE * (window.devicePixelRatio || 1));
         player = new FigurePlayer(loaded, canvas.value);
@@ -603,6 +625,13 @@ onUnmounted(() => {
     document.removeEventListener("input", onType, true);
     window.removeEventListener("resize", look);
 });
+
+const sleeping = computed(() => shownClip.value?.name === "sleep" && shownFrame.value >= shownClip.value.intro);
+const sleepStyle = computed(() => ({
+    left: `${headAt.value.x * 100}%`,
+    top: `${(headAt.value.y - SLEEP_HEAD_OFFSET) * 100}%`,
+    "--sleep-seconds": `${SLEEP_DRIFT_SECONDS}s`,
+}));
 
 const chasing = computed(() => shownClip.value?.name === "squire_chase");
 // during an entrance or exit what is below the edge the figure stands on is hidden, as the box it climbs over or drops past would hide it
@@ -643,6 +672,13 @@ const style = computed(() => ({
         <div class="voice-figure-body" :style="bodyStyle" @mousedown.prevent @click="clicked" />
         <div :class="['voice-figure-actor', moved, {chasing}]" :style="actorStyle">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
+            <template v-if="sleeping">
+                <span class="voice-figure-sleep" :style="sleepStyle">
+                    <template v-for="index in SLEEP_GLYPHS" :key="index">
+                        <span :style="{animationDelay: `${-(index - 1) * SLEEP_DRIFT_SECONDS / SLEEP_GLYPHS}s`}">Z</span>
+                    </template>
+                </span>
+            </template>
             <template v-if="chasing">
                 <svg class="voice-figure-bug" :style="{animationDuration: `${chaseMs}ms`}" viewBox="0 0 16 12" width="16" height="12">
                     <path d="M3 3 1 1M3 6H0M3 9 1 11M13 3l2-2M13 6h3M13 9l2 2" stroke="currentColor" stroke-width="1.2" />
@@ -654,6 +690,33 @@ const style = computed(() => ({
 </template>
 
 <style scoped>
+.voice-figure-sleep {
+    position: absolute;
+    color: var(--text);
+    pointer-events: none;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.voice-figure-sleep > span {
+    position: absolute;
+    opacity: 0;
+    animation: voice-figure-sleep var(--sleep-seconds) linear infinite;
+}
+
+@keyframes voice-figure-sleep {
+    0% {transform: translate(0, 0) scale(0.65); opacity: 0;}
+    20% {opacity: 0.65;}
+    100% {transform: translate(14px, -28px) scale(1); opacity: 0;}
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .voice-figure-sleep > span {animation: none;}
+    .voice-figure-sleep > span:first-child {opacity: 0.5;}
+}
+
 .voice-figure {
     position: fixed;
     top: 0;

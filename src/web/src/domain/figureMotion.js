@@ -5,8 +5,15 @@ export const ON_FLOOR = 2;
 
 const holds = (floor, x) => x >= floor.left && x <= floor.right;
 
-// The floor a figure's feet at `x`, `y` stand on, or null when they stand on none the snapshot holds
-export const floorAt = (floors, x, y) => floors.find((floor) => holds(floor, x) && Math.abs(floor.top - y) <= ON_FLOOR) ?? null;
+// How far a walker's feet may be from a floor's top and still keep to it, as when the floor moved while the figure got up to go: it is
+// carried onto that floor's top, or falls to it
+export const KEPT_WITHIN = 8;
+
+// The floor nearest a figure's feet at `x`, `y` within `within` pixels of them, or null when the snapshot holds none so near
+export const floorAt = (floors, x, y, within = ON_FLOOR) =>
+    floors
+        .filter((floor) => holds(floor, x) && Math.abs(floor.top - y) <= within)
+        .sort((a, b) => Math.abs(a.top - y) - Math.abs(b.top - y))[0] ?? null;
 
 // The highest floor under a figure's feet at `x`, `y`: never one the feet were already below
 export const floorBelow = (floors, x, y) =>

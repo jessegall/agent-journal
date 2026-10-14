@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {aimedAt, catching, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
+import {KEPT_WITHIN, aimedAt, catching, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
 const FRAME = 1 / 60;
@@ -94,5 +94,20 @@ describe("a hop and the floor it is headed for", () => {
         let state = {x: midway.x, y: midway.y, speed: 0, landed: null};
         for (let frame = 0; frame < 600 && !state.landed; frame++) state = fallFrame(state, [floor("home", 500)], FRAME, FALLS.butler, 112);
         expect([state.x, state.y, state.landed.id]).toEqual([400, 500, "home"]);
+    });
+});
+
+describe("the floor a walker keeps to", () => {
+    it("is the one nearest its feet when the floor moved a few pixels as it got up to go, and none when it set off in the air", () => {
+        const floors = [floor("home", 506), floor("foot", 900)];
+        expect(floorAt(floors, 300, 500)).toBe(null);
+        expect(floorAt(floors, 300, 500, KEPT_WITHIN)?.id).toBe("home");
+        expect(floorAt([floor("home", 520), floor("foot", 900)], 300, 500, KEPT_WITHIN)).toBe(null);
+    });
+
+    it("falls when it keeps to no floor, rather than walking on at the height it set off at", () => {
+        expect(underWalker([floor("home", 540)], null, 400, 500).falls).toBe(true);
+        expect(underWalker([floor("home", 506)], "home", 400, 500).falls).toBe(true);
+        expect(underWalker([floor("home", 495)], "home", 400, 500)).toEqual({falls: false, dx: 0, dy: -5});
     });
 });

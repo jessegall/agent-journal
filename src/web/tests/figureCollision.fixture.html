@@ -3,9 +3,11 @@
 <canvas id="figure" width="128" height="128"></canvas>
 <script type="module">
 import * as THREE from "three";
-import {CLIPS, Stage, figureOf} from "/src/figure/figure.js";
+import {CLIPS, Stage, figureOf, WRITING, TOOLS} from "/src/figure/figure.js";
 import {surfaceIntersection, surfaceTree, trianglesOf} from "./figureReadGeometry.js";
-import {collisionParts, sweepCases} from "./figureCollisionScope.js";
+import {collisionParts, sweepCases, shown} from "./figureCollisionScope.js";
+
+import {jointAngles} from "/src/figure/blend.js";
 
 const stage = new Stage();
 const canvas = document.getElementById("figure");
@@ -82,6 +84,63 @@ window.releaseCollisionFigure = (voice) => {
     for (const material of materials) material.dispose();
     loaded.delete(voice);
 };
+window.measureRoundThree = async (voice) => {
+    const figure = await figureFor(voice);
+    const names = new Set(["read", "waiting", "write", "compacting", "yawn", "whistle", "sip", "headphones", "shield_polish", "bow", "salute", "startled", "stumble", "glance"]);
+    const report = {voice, poses: 0, errors: [], gazeRays: 0, gazeMisses: [], nibs: 0, maximumNibError: 0, nativePropConflicts: [], blendFrames: 0, maximumJointDegrees: 0};
+    const toGLB = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
+    const head = figure.rig.bones.find((bone) => bone.name === "head");
+    for (const sample of sweepCases(CLIPS.filter((clip) => names.has(clip.name)), voice)) {
+        try {
+            const clip = CLIPS.find((each) => each.name === sample.clip);
+            stage.draw(figure, clip, sample.frame, sample.facing, canvas, {posture: sample.posture, stride: sample.frame / clip.fps, eyes: sample.clip === "read" ? {mood: "amused", seconds: 1, lasts: 3} : null});
+            figure.scene.updateMatrixWorld(true);
+            report.poses++;
+            if (sample.clip === "read" && sample.frame >= clip.intro && sample.frame < clip.frames - clip.outro) {
+                const delta = head.matrixWorld.clone().multiply(figure.rig.rest.get("head").clone().invert());
+                for (const eye of figure.rig.eyes) {
+                    const origin = eye.clone().applyMatrix4(toGLB).applyMatrix4(delta);
+                    const direction = new THREE.Vector3(0, 0, 1).transformDirection(delta);
+                    const ray = new THREE.Raycaster(origin, direction);
+                    report.gazeRays++;
+                    if (!ray.intersectObjects(Object.values(figure.book.userData.pages)).length) report.gazeMisses.push(sample);
+                }
+            }
+            const tool = Object.entries(WRITING).find(([name]) => name === voice)?.[1];
+            const pen = figure.propByName.get(tool);
+            if (sample.clip === "write" && pen?.visible) {
+                const pad = figure.propByName.get(voice === "butler" ? "writing_tablet" : "writing_paper");
+                const nib = pad.worldToLocal(pen.userData.tip.getWorldPosition(new THREE.Vector3()));
+                const surface = TOOLS.paper.thickness * (voice === "butler" ? 2.5 : 0.5);
+                report.maximumNibError = Math.max(report.maximumNibError, Math.abs(nib.y - surface));
+                if (Math.abs(nib.x) > TOOLS.paper.width / 2 || Math.abs(nib.z) > TOOLS.paper.depth / 2) report.errors.push({...sample, error: "nib outside surface"});
+                report.nibs++;
+            }
+            if (["write", "compacting", "read", "waiting", "whistle"].includes(sample.clip) && (figure.book.visible || figure.props.some((prop) => prop.visible))) {
+                if (figure.inHand.some(shown)) report.nativePropConflicts.push(sample);
+            }
+        } catch (error) {
+            report.errors.push({...sample, error: error.message});
+        }
+    }
+    const held = CLIPS.filter((clip) => clip.loops && !clip.name.startsWith("hang") && clip.postures.includes("stand"));
+    for (const from of held) for (const to of held) {
+        const original = stage.draw(figure, from, from.intro || 0, 30, canvas);
+        let previous = original;
+        for (let frame = 0; frame < 60; frame++) {
+            const blend = {from: original, previous, k: Math.min(frame / 12, 1), settled: false};
+            const moves = stage.draw(figure, to, to.intro || 0, 70, canvas, {blend});
+            const maximum = Math.max(...jointAngles(figure.rig, previous, moves).values());
+            report.maximumJointDegrees = Math.max(report.maximumJointDegrees, THREE.MathUtils.radToDeg(maximum));
+            report.blendFrames++;
+            previous = moves;
+            if (blend.settled) break;
+            if (frame === 59) report.errors.push({from: from.name, to: to.name, error: "blend never settled"});
+        }
+    }
+    return report;
+};
+
 document.title = "ready";
 </script>
 </body></html>
