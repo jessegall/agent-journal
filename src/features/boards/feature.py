@@ -5,6 +5,7 @@ from events.boards import BoardChanged
 from resources.boards import PANEL_REPLY, Board
 from features.boards.exploration import FILLER
 from resources.base import AGENT, USER
+from resources.tickets import Ticket
 from resources.types import AgentRow, Message
 from resources.base import SYSTEM
 from declaring.registries import SHIPPED
@@ -101,6 +102,7 @@ class BoardsFeature(Feature):
             Given(writing("plan", agent=FILLER, hidden=True)) >> Kept(),
             Given(writing("todo", agent=FILLER)) >> Kept(),
             Given(writing("plan")) >> Kept(),
+            Given(writing("question", agent=FILLER, hidden=True)) >> Kept(),
         ])
         journal.commands.refuse(RowWriting, PanelRepliesStayShort(), expects=[
             Given(writing("comment", about="message:1", brief="x" * (PANEL_REPLY + 1)), rows=[on_the_board()]) >> Refused(TOO_LONG.format(PANEL_REPLY + 1)),
@@ -118,14 +120,20 @@ class BoardsFeature(Feature):
             Given(added(), rows=[board(4, 5)]) >> Dispatches(nothing),
             Given(added(fields=("title",)), rows=[board(4, 5), AGENT_ROW]) >> Dispatches(nothing),
             Given(added(action="created"), rows=[board(4, 5), AGENT_ROW]) >> Dispatches(nothing),
+            Given(added(), rows=[board(4, 5, done_when=["It builds", "Its tests pass"]), Ticket(n=4, title="Port the core", data={"board": 1, "covers": [1]}),
+                                 Ticket(n=5, title="Port the CLI", data={"board": 1, "covers": [1]}), AGENT_ROW])
+                >> Dispatches(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", missing=("Its tests pass",)).once("added|1:10.0")),
         ])
         journal.events.handle(CardsAddedToBoard, OfferToPlaceAddedCards(), expects=[
             Given(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", missing=()), rows=[board(4, 5), AGENT_ROW]) >> Nudged("added", n=1, count=2),
+            Given(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", missing=("Its tests pass",)), rows=[board(4, 5), AGENT_ROW])
+                >> Nudged("added", n=1, count=2, uncovered=" Name in the same line what the goal will miss without a card for it: Its tests pass."),
         ])
         journal.events.listen(ClockTicked, SpotQuietFilling(), expects=[
             Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "drafting", "since": 1.0}}), AGENT_ROW])
                 >> Dispatches(BoardFillingQuiet(board=1, seconds=int(WHEN))),
             Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "waiting"}}), AGENT_ROW]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", updated=WHEN - 10, data={"drafting": {"phase": "drafting", "since": 1.0}}), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(BoardFillingQuiet, MarkQuietFillingStalled(), expects=[
             Given(BoardFillingQuiet(board=1, seconds=100), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "drafting", "since": 1.0}}), AGENT_ROW])

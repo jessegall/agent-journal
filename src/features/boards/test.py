@@ -1,3 +1,4 @@
+# Stays a test: it drives the Boards controller words and the sequences, agent-profile and hook modules no boards registration reaches, and attaches real document files from outside the project folder.
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
 from controllers.types import Boards
