@@ -1,3 +1,4 @@
+# Stays a test: it reads real organization files and their mtimes, real session and attic files and tar archives, the real agent launch arguments, and code no registration reaches: a direct brief, another environment's rows and the summary cache
 import pytest
 
 import features

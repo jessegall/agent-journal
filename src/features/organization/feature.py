@@ -46,6 +46,9 @@ class OrganizationFeature(Feature):
         journal.commands.add("todo", Delegate(), expects=[
             Given((Todos, "Fix the login", "web")) >> Refused("the organization has no domain 'web'; it has none"),
             Given((Todos, "Build dark mode", "engineering", "developer"), files=ORGANIZED) >> Refused("developer needs acceptance named in the task or --given"),
+            Given((Todos, "Fix the login", "engineering", "tester"), files=ORGANIZED) >> Refused("domain engineering has no role 'tester'; it has developer, lead"),
+            Given((Todos, "Build search", "engineering", "developer", "acceptance: results in 100ms"), rows=[DEVELOPING], files=ORGANIZED)
+                >> Updated(Todo(title="Build search"), after=["todo:5"]),
             Given((Todos, "Build dark mode", "engineering", "developer", "acceptance: the toggle persists"), files=ORGANIZED)
                 >> Wrote(Todo(title="Build dark mode", data={"domain": "engineering", "role": "developer"})),
         ])

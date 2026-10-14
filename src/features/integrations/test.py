@@ -1,3 +1,4 @@
+# Stays a test: it plays a real redirecting server, a real OAuth sign-in and the MCP config files, the client's host check and the record's state and key files, and tests code no registration reaches: describe, secret picking, ticket refusals, wrapped words and the webhook through the share route
 import contextlib
 import io
 import json
