@@ -198,6 +198,40 @@ Later: suggestions, templates, dumps, collections, attachment_descriptions, reco
 Viewer only: status_bar, open_viewer, family_tree, terminal, thinking, history_searches, report_dock, avatar, figure_floors, agent_profiles, organization, critique, session_recording, browser_control, dev_faults.
 Dropped: boards, kanban, tickets, hosting.
 
+## To a version you can test in a browser (decided 2026-10-15, in this order)
+
+A. **Providers answer hooks in their own shape.** Claude ignores `additionalContext` on Stop
+   and reads exit 2 with stderr as "do not stop, here is why"; so on Stop a nudge is a refusal
+   of the stop, and on SessionStart, UserPromptSubmit, PreToolUse and PostToolUse it is
+   `hookSpecificOutput.additionalContext`. `Provider.answer(kind, decision)` shapes the
+   Response; Codex uses the same JSON shape. Claude's hook block goes into
+   `.claude/settings.json` with the statusline; Codex's into `.codex/hooks.json`.
+   Resume: `claude --resume <session>`, `codex resume <session>`. Transcripts:
+   `~/.claude/projects/<cwd with non-alphanumerics as ->/<session>.jsonl`,
+   `~/.codex/sessions/**/rollout-*-<session>.jsonl`.
+B. **`journal setup`**: makes `.journal/`, wires both providers' hooks where their folder
+   exists (Claude always), writes the skills, writes the law block into AGENTS.md and the
+   `@AGENTS.md` line into CLAUDE.md, and puts a `journal` shim in `~/.local/bin`. The shim
+   finds the root by walking up to a `.journal`.
+C. **Who ran a command.** An agent's shell has no session id. The shim sends `agent: true`
+   when `CLAUDECODE` or `CODEX_SANDBOX` is in its environment, and the server attributes the
+   command to the environment's live agent (the latest session not ended). A terminal is the
+   local user.
+D. **Supervisor bodies** and `journal claude|codex [args]` in the entry point. The supervisor
+   sets `AGENT_JOURNAL_ACTIVE=1`, `JOURNAL_ENV`, `JOURNAL_ROOT` and `JOURNAL_INBOX` for both
+   the agent and the server it starts with `journal.py serve`.
+E. **API for the viewer** under `/api`: environments, agents (with state and context), tasks,
+   plans, messages, questions (answer), facts, rules, reminders, entries (`?since=` for live
+   updates), settings (feature switches), skills; the server serves the built viewer at `/`.
+F. **The viewer is rebuilt small.** Decision: the v3 viewer has 107 endpoints and v3's row
+   shapes (todo, work, `n`, `status`); wiring it faithfully means re-implementing v3's HTTP
+   layer, which is the redundancy v4 exists to drop. The new viewer keeps v3's look
+   (tokens.css, light.css, the kit's look) and has the pages the core has: Home (chat, agent
+   state, questions), Tasks, Plans, Memory, Timeline (entries and nudges), Settings. Vue 3
+   and Vite, built into `src/web/dist`. The phone and the hub come later.
+G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, the viewer in
+   a browser, fix what breaks.
+
 ## The plan
 
 Each phase ends with something that runs. Phases 1 to 5 are done and proven by `tests/`
