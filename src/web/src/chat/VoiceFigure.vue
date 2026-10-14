@@ -4,7 +4,7 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf, fallStep} from "../domain/falls.js";
-import {fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
 import {latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
@@ -21,7 +21,6 @@ import {
     facingToward,
     footingOn,
     gripIn,
-    groundEdge,
     groundUnder,
     hiddenAt,
     landingOn,
@@ -343,6 +342,8 @@ function fallenTo(spot) {
 // A walk is stepped here, frame by frame, against the floors the floors loop read (figure/floors.js): the walker keeps to its floor as
 // it rises, and falls from where it is the moment its floor drops away or goes, then lands and sets off again for where it was going
 let walk = {from: {x: 0, y: 0}, began: 0, on: null};
+// the odds that a bubble the figure falls past catches it, rather than it dropping straight home: the avatar's own choice, fall by fall
+const BUBBLES_CATCH = 0.5;
 let airborne = null;
 const feetOf = (picture) => ({x: picture.x + SIZE / 2, y: picture.y + (1 - below.value) * SIZE});
 const pictureOf = (feet) => ({x: feet.x - SIZE / 2, y: feet.y - (1 - below.value) * SIZE});
@@ -366,7 +367,7 @@ function fallFrom(feet) {
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
     sliding.value = false;
-    airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to: moving.value.to};
+    airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to: moving.value.to, catches: Math.random() < BUBBLES_CATCH};
     moving.value = null;
     footing = null;
     at.value = pictureOf(feet);
@@ -374,15 +375,14 @@ function fallFrom(feet) {
 
 function fallOn() {
     const now = performance.now();
-    const step = fallFrame(airborne, latestFloors().floors, (now - airborne.at) / 1000, fall.value, SIZE);
+    const step = fallFrame(airborne, catching(latestFloors().floors, airborne.catches), (now - airborne.at) / 1000, fall.value, SIZE);
     airborne = {...airborne, ...step, at: now};
     at.value = pictureOf(step);
     if (!step.landed) return;
     const to = airborne.to;
     airborne = null;
     groundMoved("dropping");
-    const home = step.landed.id === "home" ? groundEdge().element : null;
-    settle({x: step.x, y: step.landed.top, posture: "stand", view: null, on: home});
+    settle({x: step.x, y: step.landed.top, posture: "stand", view: null, on: step.landed.element ?? null});
     rest();
     if (to) moveTo(to);
 }

@@ -12,13 +12,21 @@ export const floorAt = (floors, x, y) => floors.find((floor) => holds(floor, x) 
 export const floorBelow = (floors, x, y) =>
     floors.filter((floor) => holds(floor, x) && floor.top >= y - ON_FLOOR).sort((a, b) => a.top - b.top)[0] ?? null;
 
-// What became of the floor a walker set off on: gone or dropped away under its feet, so it falls; or still there, `dy` pixels above or
-// below the line it walks and `dx` pixels to bring it back inside a floor that narrowed past its feet, which carry it along
+// The floors at home, the only ones that throw a figure up or let it drop: anywhere else a floor that moves, as a bubble the chat scrolls,
+// carries the figure with it
+export const HOME_FLOORS = ["dock", "compose", "foot"];
+
+// What became of the floor a walker set off on: gone, or a home floor dropped away under its feet, so it falls; or still there, `dy`
+// pixels above or below the line it walks and `dx` pixels to bring it back inside a floor that narrowed past its feet, which carry it
 export function underWalker(floors, id, x, y) {
     const floor = floors.find((each) => each.id === id);
-    if (!floor || floor.top > y + ON_FLOOR) return {falls: true, dx: 0, dy: 0};
+    if (!floor || (HOME_FLOORS.includes(floor.kind) && floor.top > y + ON_FLOOR)) return {falls: true, dx: 0, dy: 0};
     return {falls: false, dx: Math.min(Math.max(x, floor.left), floor.right) - x, dy: floor.top - y};
 }
+
+// The floors a fall can end on: every floor when the figure lets a bubble catch it, else only the floors at home (the user's ruling: it is
+// up to the avatar, fall by fall)
+export const catching = (floors, bubblesCatch) => (bubblesCatch ? floors : floors.filter((floor) => HOME_FLOORS.includes(floor.kind)));
 
 // Where a leg under way has carried the picture `elapsed` milliseconds after it set off from `from`: still at the start through the
 // leg's lead, then at an even pace to its end

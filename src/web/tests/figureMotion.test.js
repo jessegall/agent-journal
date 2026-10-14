@@ -1,8 +1,8 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
+import {catching, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
-const floor = (id, top, left = 0, right = 1000) => ({id, kind: id, left, right, top, vy: 0});
+const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
 const FRAME = 1 / 60;
 
 function fallTo(body, floors) {
@@ -43,5 +43,16 @@ describe("a walking figure and the floor under it", () => {
 
     it("is carried back inside a floor that narrowed past its feet, as when the side panel opens", () => {
         expect(underWalker([floor("home", 500, 100, 300), floor("foot", 900)], "home", 350, 500)).toEqual({falls: false, dx: -50, dy: 0});
+    });
+
+    it("is carried by a bubble the chat scrolls, however fast, and only a floor at home lets it drop", () => {
+        const scrolled = [floor("b1", 800, 0, 1000, "bubble"), floor("home", 900)];
+        expect(underWalker(scrolled, "b1", 400, 500)).toEqual({falls: false, dx: 0, dy: 300});
+    });
+
+    it("lands on a bubble it passes only when it lets a bubble catch it, else falls home", () => {
+        const floors = [floor("b1", 600, 0, 1000, "bubble"), floor("home", 800)];
+        expect(fallTo({x: 400, y: 500}, catching(floors, true)).landed.id).toBe("b1");
+        expect(fallTo({x: 400, y: 500}, catching(floors, false)).landed.id).toBe("home");
     });
 });
