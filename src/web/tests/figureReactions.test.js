@@ -22,13 +22,13 @@ const {
     workClip,
     workMoments,
 } = await import("../src/figure/reactions.js");
-const {EGGS, HELD, beatsAfter, facesAfter, testResultsAfter} = await import("../src/domain/figureState.js");
+const {EGGS, HELD, beatsAfter, cardsAfter, facesAfter, testResultsAfter} = await import("../src/domain/figureState.js");
 const {CLIPS, EYES} = await import("../src/figure/figure.js");
 const {FACES} = await import("../src/domain/faces.js");
 
-test("a test run that passed turns the figure to its card and jumps for joy, and one that failed has it cover its eyes", () => {
+test("a test run that passed turns the figure to its card and jumps for joy, and one that failed gives it a startled hop", () => {
     expect(REACTIONS.find((each) => each.moment === "tests_passed")).toMatchObject({clip: "joy", toward: "card"});
-    expect(REACTIONS.find((each) => each.moment === "tests_failed")).toMatchObject({clip: "dismay", toward: "card"});
+    expect(REACTIONS.find((each) => each.moment === "tests_failed")).toMatchObject({clip: "startled", toward: "card"});
 });
 
 test("a reaction fires only when its roll wins, and not again before its cooldown is over", () => {
@@ -40,8 +40,8 @@ test("a reaction fires only when its roll wins, and not again before its cooldow
     expect(reactionTo("a moment nobody reacts to", memory, 200, () => 0)).toBe(null);
 });
 
-test("what the user does is answered by the eyes and never moves the body; what happens in the work moves the body", () => {
-    const user = ["heard", "answered", "typing", ...FACES.map((face) => `reacted:${face}`)];
+test("typing and reactions change the eyes; messages and work can move the body", () => {
+    const user = ["answered", "typing", ...FACES.map((face) => `reacted:${face}`)];
     for (const moment of user) {
         const reactions = REACTIONS.filter((each) => each.moment === moment);
         expect(reactions.length, moment).toBeGreaterThan(0);
@@ -118,11 +118,13 @@ test("every moment a reaction waits for is one the journal makes, from cards sha
     const faces = FACES.map((face, n) => ({deleted: false, seen: ["user"], created: 2, data: {face}, refs: [`message:${n}`]}));
     const made = new Set([
         ...beatsAfter(agent, 1),
+        ...cardsAfter(agent, new Set()),
         ...testResultsAfter(agent, new Map()),
         ...facesAfter(faces, 1),
         // the figure's own page sees these two: a key pressed in the compose box, and the agent settling after WORKED_SECONDS of work
         {beat: "typing"},
         {beat: "work_done"},
+        {beat: "long_walk"},
     ].map((fire) => fire.beat));
     for (const each of REACTIONS) expect(made.has(each.moment), each.moment).toBe(true);
 });

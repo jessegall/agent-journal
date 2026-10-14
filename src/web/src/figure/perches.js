@@ -1,11 +1,11 @@
 import {RESTS} from "../domain/figureState.js";
-import {HOME, boxAt, clearOf, hiddenAt, inWorld, openTabs, overlaps, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
+import {latestFloors} from "./floors.js";
+import {boxAt, clearOf, hiddenAt, inWorld, openTabs, overlaps, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
 import {letsGoFor} from "./reactions.js";
 
 // Where a figure perches on a message bubble now and then, instead of the compose box's edge: on top of it with its legs over the side,
-// or hanging from its top corner by its hands. It is a place in the thread's own coordinates: read from the bubble each frame, so it
-// rides the bubble as the thread scrolls, and let go when the bubble leaves the thread's view.
-export const BUBBLE = "[data-figure-bubble]";
+// or hanging from its top corner by its hands. A perch names its bubble's floor (figure/floors.js), so it rides the bubble as the thread
+// scrolls, and is let go when the bubble leaves the thread's view.
 export const SITS = "sit";
 export const HANGS = "hang";
 
@@ -37,7 +37,7 @@ export const between = ([least, most], random) => least + random() * (most - lea
 // the side of a bubble with more room outside it, so a figure there stays off the bubbles' text
 const sideOf = (rect, scroller) => (rect.left - scroller.left > scroller.right - rect.right ? "left" : "right");
 
-// whether a figure perched on this bubble's top corner stays inside the thread's view
+// whether a figure perched on this bubble's top corner stays inside the thread's view `scroller`
 const inView = (rect, scroller, figure) => rect.top - seatRise(figure) >= scroller.top && rect.top <= scroller.bottom - 8;
 
 // a figure sitting on a bubble has its hips this share of its height inside the corner, over the bubble's padding rather than its words,
@@ -49,45 +49,40 @@ const HAND_CORNER = {l: "left", r: "right"};
 const HANG_OUT = 0.3;
 const TURNED_TO_THE_BUBBLE = 180;
 
-// The perch a figure takes now, or null when no bubble in view has one free: the newest bubble first, as the thread keeps it in view
-// while older ones scroll away, and on each the way the roll says first, a hang or a sit, then the other. `hands` are the sides, "l" or
-// "r", of the hands that carry nothing; `random` is a function returning 0 up to 1.
-export function perchOn(bubbles, scroller, figure, hands, random) {
-    const box = scroller.getBoundingClientRect();
-    const open = bubbles.filter((bubble) => bubble.getBoundingClientRect().width && inView(bubble.getBoundingClientRect(), box, figure));
+// The perch a figure takes now on the bubbles of the floors snapshot `floors`, or null when no bubble in view has one free: the newest
+// bubble first, as the thread keeps it in view while older ones scroll away, and on each the way the roll says first, a hang or a sit,
+// then the other. `hands` are the sides, "l" or "r", of the hands that carry nothing; `random` is a function returning 0 up to 1.
+export function perchOn(floors, figure, hands, random) {
+    const open = floors.floors.filter((floor) => floor.kind === "bubble" && inView(floor, floors.view, figure));
     const kinds = !hands.length ? [SITS] : random() < HANG_SHARE ? [HANGS, SITS] : [SITS, HANGS];
-    const perches = open.reverse().flatMap((bubble) => kinds.map((kind) => perchAt(bubble, kind, box, hands)));
-    return perches.find((perch) => perchSpot(perch, scroller, figure)) ?? null;
+    const perches = open.reverse().flatMap((floor) => kinds.map((kind) => perchAt(floor, kind, floors.view, hands)));
+    return perches.find((perch) => perchSpot(perch, floors, figure)) ?? null;
 }
 
-// A perch of `kind` on a bubble, on its side with more room. A hang there is by the hand on that side, facing the viewer; with only the
-// other hand free it turns to face the bubble, as one hangs from a ledge facing the wall, so that hand comes to the corner.
-function perchAt(bubble, kind, box, hands) {
-    const side = sideOf(bubble.getBoundingClientRect(), box);
-    if (kind === SITS) return {bubble, kind, side, grip: ""};
+// A perch of `kind` on a bubble's floor, on its side with more room. A hang there is by the hand on that side, facing the viewer; with
+// only the other hand free it turns to face the bubble, as one hangs from a ledge facing the wall, so that hand comes to the corner.
+function perchAt(floor, kind, view, hands) {
+    const side = sideOf(floor, view);
+    if (kind === SITS) return {floor: floor.id, kind, side, grip: ""};
     const grip = hands.find((hand) => HAND_CORNER[hand] === side);
-    return grip ? {bubble, kind, side, grip, face: 0} : {bubble, kind, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
+    return grip ? {floor: floor.id, kind, side, grip, face: 0} : {floor: floor.id, kind, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
 }
 
-// Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view, when any part
-// of the figure there would be outside its world, or when it would hide words or controls, such as those of the message above
-export function perchSpot(perch, scroller, figure) {
-    if (!perch.bubble.isConnected) return null;
-    const rect = perch.bubble.getBoundingClientRect();
-    if (!inView(rect, scroller.getBoundingClientRect(), figure)) return null;
-    const spot = spotOn(perch, rect, figure);
+// Where the perch's figure stands now, with the way it faces, or null when its bubble is no floor of `floors` or out of the thread's view,
+// when any part of the figure there would be outside its world, or when it would hide words or controls, such as those of the message above
+export function perchSpot(perch, floors, figure) {
+    const floor = floors.floors.find((each) => each.id === perch.floor);
+    if (!floor || !inView(floor, floors.view, figure)) return null;
+    const spot = spotOn(perch, floor, figure);
     return inWorld(spot, figure) && !hiddenAt(spot, figure) ? spot : null;
 }
 
-function spotOn(perch, rect, figure) {
-    if (perch.kind === SITS) return {...seatAt(rect, perch.side, figure, PERCH_INBOARD), on: perch.bubble};
+function spotOn(perch, floor, figure) {
+    if (perch.kind === SITS) return {...seatAt({...floor, width: floor.right - floor.left}, perch.side, figure, PERCH_INBOARD), on: floor.element};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
-    const x = (perch.side === "left" ? rect.left : rect.right) + out;
-    return {x, y: rect.top, face: perch.face, posture: "hang", grip: perch.grip, on: perch.bubble};
+    const x = (perch.side === "left" ? floor.left : floor.right) + out;
+    return {x, y: floor.top, face: perch.face, posture: "hang", grip: perch.grip, on: floor.element};
 }
-
-// the thread the main chat shows, whose bubbles the figure may perch on
-export const threadOf = () => document.querySelector(HOME)?.closest(".thread")?.querySelector(".thread-scroll") ?? null;
 
 // The next stay, drawn at `now` seconds by the roams' odds: where, until when, and what it holds for the stay, the perch on a bubble, the
 // tab it stands on, of those with a spot inside its world, or the point along the home edge it strolls to. A hang from a bubble is a short
@@ -96,8 +91,7 @@ export function nextStay(now, figure, hands, random) {
     const {where, stay: seconds} = roamNext(random);
     const until = now + seconds;
     if (where === "bubble") {
-        const thread = threadOf();
-        const perch = thread && perchOn([...thread.querySelectorAll(BUBBLE)], thread, figure, hands, random);
+        const perch = perchOn(latestFloors(), figure, hands, random);
         return {where, until: perch?.kind === HANGS ? now + between(HANG_STAY, random) : until, perch};
     }
     if (where === "tab") {
@@ -112,8 +106,7 @@ export function nextStay(now, figure, hands, random) {
 // visits is not one it points at
 export function stayingAt(stay, figure, near) {
     if (stay.where === "bubble") {
-        const thread = threadOf();
-        const spot = stay.perch && thread && perchSpot(stay.perch, thread, figure);
+        const spot = stay.perch && perchSpot(stay.perch, latestFloors(), figure);
         return spot ? {...spot, view: null} : null;
     }
     if (stay.where === "tab") {

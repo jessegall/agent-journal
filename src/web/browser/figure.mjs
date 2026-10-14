@@ -10,6 +10,8 @@ const DOCKS = "[data-figure-docked-bars]";
 const CLOSE_THE_BAR = 'section[aria-label="Update report"] .btn.icon';
 // the most of its whole fall the figure may come down in one frame as the bar under it goes
 const MOST_OF_A_FALL_IN_A_FRAME = 0.5;
+// the most of a hop's height the figure may cover in one frame of it, so the jump and the fall stepped in code never snap
+const MOST_OF_A_HOP_IN_A_FRAME = 0.25;
 
 // the environment's agent as the agent list reports it, with `data` on its row
 async function agentAs(page, data) {
@@ -90,6 +92,7 @@ const framesOf = (page, ms) =>
                         y: box.top,
                         t: performance.now(),
                         walking: element.dataset.walking === "true",
+                        hopping: element.dataset.hopping === "true",
                         trip: element.dataset.trip,
                         clip: element.dataset.clip,
                     });
@@ -100,6 +103,15 @@ const framesOf = (page, ms) =>
             }),
         [FIGURE, ms]
     );
+
+// the runs of frames in a row that `holds` holds for
+const runsOf = (frames, holds) =>
+    frames.reduce((runs, frame, at) => {
+        if (!holds(frame)) return runs;
+        if (at && holds(frames[at - 1])) runs.at(-1).push(frame);
+        else runs.push([frame]);
+        return runs;
+    }, []);
 
 // How far the figure moved on each frame, by `of`, weighed against the longer of the last two gaps between frames in frames' worth of
 // time, as after a frame stalled on a busy machine the figure makes up the stalled stretch one frame late
@@ -238,6 +250,65 @@ await runScenarios(process.argv[2], {
             } finally {
                 journal("report", "dismiss", String(report));
             }
+        }
+    },
+
+    async "a walking figure falls frame by frame when the floor it walks on drops away, and lands on it"(page, url) {
+        await working(page);
+        await page.goto(`${url}#/main`);
+        await page.locator(FIGURE).waitFor({state: "visible"});
+        await settled(page);
+        await page.locator(`${FIGURE}-body`).click();
+        const frames = await page.evaluate(
+            ([figure, home]) =>
+                new Promise((done, failed) => {
+                    const element = document.querySelector(figure);
+                    const floor = document.querySelector(home);
+                    const frames = [];
+                    const until = performance.now() + 6000;
+                    let dropped = 0;
+                    const look = () => {
+                        const bottom = element.getBoundingClientRect().bottom;
+                        if (!dropped && element.dataset.walking === "true") {
+                            floor.style.transform = "translateY(40px)";
+                            dropped = performance.now();
+                        }
+                        if (dropped) frames.push({bottom, floor: floor.getBoundingClientRect().top, t: performance.now()});
+                        if (dropped && performance.now() > dropped + 1500) return done(frames);
+                        if (performance.now() > until) return failed(new Error("the figure never walked after the click"));
+                        requestAnimationFrame(look);
+                    };
+                    requestAnimationFrame(look);
+                }),
+            [FIGURE, HOME]
+        );
+        const drop = frames.at(-1).bottom - frames[0].bottom;
+        const longest = Math.max(0, ...weighedSteps(frames, (frame) => frame.bottom));
+        const measured = `fell ${drop.toFixed(1)}px, longest step ${longest.toFixed(1)}px a frame, ending ${(frames.at(-1).bottom - frames.at(-1).floor).toFixed(1)}px past the floor's top`;
+        console.log(`a walker's fall: ${measured}`);
+        if (drop < 30) throw new Error(`the floor dropped 40px under a walking figure and it did not come down: ${measured}`);
+        if (longest > drop * MOST_OF_A_FALL_IN_A_FRAME) throw new Error(`the walking figure snapped down: ${measured}`);
+    },
+
+    async "a hop stepped in code rises and falls frame by frame, never covering much of its height in one frame"(page, url) {
+        await working(page);
+        await page.goto(`${url}#/main`);
+        await page.locator(FIGURE).waitFor({state: "visible"});
+        await settled(page);
+        // the figure roams onto bubbles and tabs and back by its own odds; a click now and then sends it on, until it has hopped
+        let hops = [];
+        for (let round = 0; round < 8 && !hops.length; round++) {
+            await page.locator(`${FIGURE}-body`).click();
+            const frames = await framesOf(page, 6000);
+            hops = runsOf(frames, (frame) => frame.hopping).filter((run) => Math.abs(run.at(-1).y - run[0].y) > 20);
+        }
+        if (!hops.length) throw new Error("the figure never hopped in eight rounds of clicks");
+        for (const hop of hops) {
+            const height = Math.abs(hop.at(-1).y - hop[0].y);
+            const longest = Math.max(0, ...weighedSteps(hop, (frame) => frame.y));
+            const measured = `a ${hop[0].clip} of ${height.toFixed(0)}px in ${hop.length} frames, longest step ${longest.toFixed(1)}px a frame`;
+            console.log(`a hop: ${measured}`);
+            if (longest > height * MOST_OF_A_HOP_IN_A_FRAME) throw new Error(`the hop snapped: ${measured}`);
         }
     },
 

@@ -9,13 +9,9 @@ const {
     clearOf,
     clickedBody,
     facingToward,
-    footingNow,
-    footingOn,
     groundEdge,
-    groundUnder,
     hiddenAt,
     inWorld,
-    landingOn,
     postureOf,
     seatOf,
     seatRise,
@@ -23,6 +19,7 @@ const {
     tripBetween,
     tripTo,
 } = await import("../src/figure/places.js");
+const {floorOf, footingNow, footingOn, groundUnder, landingOn, readFloors} = await import("../src/figure/floors.js");
 const {write} = await import("./figurePage.js");
 
 const FIGURE = {size: 112, below: 0.05};
@@ -47,6 +44,15 @@ const page = (box, docked = null, {chat = CHAT, tabs = {}} = {}) => {
         querySelectorAll: () => [],
     };
 };
+
+// the floors the page holds now, with the floors of the bubbles `elements` at their boxes
+const floorsNow = (...elements) => [
+    ...readFloors().floors,
+    ...elements.map((element) => {
+        const box = element.getBoundingClientRect();
+        return {id: floorOf(element), kind: "bubble", element, left: box.left, right: box.left + box.width, top: box.top, vy: 0};
+    }),
+];
 
 afterEach(() => {
     delete globalThis.window;
@@ -180,26 +186,25 @@ test("a trip up walks under the place and then jumps, one down falls and then wa
     expect(above.legs.filter((each) => each.ms > 0).map((each) => each.clip ?? "walk")).toEqual(["jump"]);
 });
 
-test("a figure keeps its place on what it rests on as that moves, and loses its ground when it goes or the ground at home changes", () => {
+test("a figure keeps its place on the floor it rests on as that moves, and loses its ground when the floor goes", () => {
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
-    const home = groundEdge().element;
     const seat = seatOf(FIGURE, {x: 700, y: 600});
-    expect(footingOn(seat, 5)).toEqual({element: home, dx: seat.x - 300, dy: 0, posture: "sit", home: true, ground: {y: 600, at: 5}});
-    expect(footingOn({...seat, on: null})).toBe(null);
-    const moved = {isConnected: true, getBoundingClientRect: () => ({...box, left: 320, top: 580})};
-    const kept = {element: moved, dx: 10, dy: 0, posture: "stand", home: false};
-    expect(footingNow(kept, FIGURE)).toEqual({x: 330, y: 580});
-    expect(footingNow({...kept, element: {isConnected: false}}, FIGURE)).toBe(null);
-    expect(footingNow({...kept, element: {isConnected: true, getBoundingClientRect: () => ({...box, height: 0})}}, FIGURE)).toBe(null);
+    expect(footingOn(seat, floorsNow(), 5)).toEqual({id: "home", dx: seat.x - 300, dy: 0, posture: "sit", home: true, ground: {y: 600, at: 5}});
+    expect(footingOn({...seat, on: null}, floorsNow())).toBe(null);
+    const moved = {getBoundingClientRect: () => ({...box, left: 320, top: 580})};
+    const kept = {id: floorOf(moved), dx: 10, dy: 0, posture: "stand", home: false};
+    expect(footingNow(kept, FIGURE, floorsNow(moved))).toEqual({x: 330, y: 580});
+    expect(footingNow(kept, FIGURE, floorsNow())).toBe(null);
     // on the ground at home it keeps to whatever the ground there is, here a bar docked over the compose box
     page(box, {left: 300, top: 556, width: 400, height: 44});
-    expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toEqual({x: 310, y: 556});
+    expect(footingNow({id: "home", dx: 10, dy: 0, posture: "stand", home: true}, FIGURE, floorsNow())).toEqual({x: 310, y: 556});
     // hanging from a bubble it is carried with it, until the bubble brings its feet down onto that ground, where it lets go
-    const bubbleAt = (top) => ({isConnected: true, getBoundingClientRect: () => ({left: 400, top, width: 200, height: 40})});
+    const bubble = {getBoundingClientRect: () => ({left: 400, top: 200, width: 200, height: 40})};
+    const low = {getBoundingClientRect: () => ({left: 400, top: 500, width: 200, height: 40})};
     const hanging = {dx: 20, dy: 40, posture: "hang", home: false};
-    expect(footingNow({...hanging, element: bubbleAt(200)}, FIGURE)).toEqual({x: 420, y: 240});
-    expect(footingNow({...hanging, element: bubbleAt(500)}, FIGURE)).toBe(null);
+    expect(footingNow({...hanging, id: floorOf(bubble)}, FIGURE, floorsNow(bubble))).toEqual({x: 420, y: 240});
+    expect(footingNow({...hanging, id: floorOf(low)}, FIGURE, floorsNow(low))).toBe(null);
 });
 
 test("at home the figure is launched when the ground under it rises more than a few pixels in a moment, falls when it drops so, and a drift carries it", () => {
@@ -207,8 +212,8 @@ test("at home the figure is launched when the ground under it rises more than a 
     page(box);
     const spot = spotOf(null, FIGURE, {x: 640, y: 600});
     let at = 0;
-    let now = {spot, footing: footingOn(spot, at)};
-    const frame = () => (now = groundUnder(now.footing, now.spot, FIGURE, (at += 16)));
+    let now = {spot, footing: footingOn(spot, floorsNow(), at)};
+    const frame = () => (now = groundUnder(now.footing, now.spot, FIGURE, floorsNow(), (at += 16)));
     // the compose box drifts up a few pixels, and carries it
     box.top = 596;
     expect(frame()).toMatchObject({spot: {x: spot.x, y: 596}, motion: "carried"});
@@ -248,15 +253,15 @@ test("a trip lands on the line where it is when the figure arrives, not where it
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
     const spot = spotOf(null, FIGURE, {x: 640, y: 600});
-    const footing = footingOn(spot);
+    const footing = footingOn(spot, floorsNow());
     // while the figure travels the compose box grows by two lines, so its top edge rises by 40 pixels
     box.top = 560;
-    expect(landingOn(spot, footing, FIGURE)).toMatchObject({x: spot.x, y: 560, posture: "stand"});
+    expect(landingOn(spot, footing, FIGURE, floorsNow())).toMatchObject({x: spot.x, y: 560, posture: "stand"});
     // a footing taken only on arrival keeps the old height as an offset from the edge, which is the figure sunk 40 pixels into the box
-    expect(footingOn(spot).dy).toBe(40);
-    expect(footingOn(landingOn(spot, footing, FIGURE)).dy).toBe(0);
-    // with its ground gone the spot is kept as it was, and the footing that is gone uproots the figure as it rests
-    expect(landingOn(spot, {...footing, home: false, element: {isConnected: false}}, FIGURE)).toEqual(spot);
+    expect(footingOn(spot, floorsNow()).dy).toBe(40);
+    expect(footingOn(landingOn(spot, footing, FIGURE, floorsNow()), floorsNow()).dy).toBe(0);
+    // with its floor gone the spot is kept as it was, and the footing that is gone uproots the figure as it rests
+    expect(landingOn(spot, {...footing, id: "gone", home: false}, FIGURE, floorsNow())).toEqual(spot);
 });
 
 test("a trip is drawn from where the figure is as it sets off, so one getting up from a seat that moved walks level along the line", () => {
@@ -264,16 +269,16 @@ test("a trip is drawn from where the figure is as it sets off, so one getting up
     page(box);
     const right = seatOf(FIGURE, {x: 700, y: 600});
     const left = seatOf(FIGURE, {x: 300, y: 600});
-    const [rightFooting, leftFooting] = [footingOn(right), footingOn(left)];
+    const [rightFooting, leftFooting] = [footingOn(right, floorsNow()), footingOn(left, floorsNow())];
     // while it gets up the compose box grows, and the seat it sits on rises with it
     box.top = 560;
-    const seated = {...right, ...footingNow(rightFooting, FIGURE)};
+    const seated = {...right, ...footingNow(rightFooting, FIGURE, floorsNow())};
     const level = (y) => Math.round(y * 100) / 100;
     const steps = (trip) => trip.legs.filter((each) => each.ms > 0).map((each) => [each.clip ?? "walk", level(each.y)]);
     const standing = level(560 - (1 - FIGURE.below) * FIGURE.size);
-    expect(steps(tripTo(seated, landingOn(left, leftFooting, FIGURE), FIGURE))).toEqual([["walk", standing]]);
+    expect(steps(tripTo(seated, landingOn(left, leftFooting, FIGURE, floorsNow()), FIGURE))).toEqual([["walk", standing]]);
     // drawn from where it sat before the box grew, it would walk 40 pixels down in the box and then jump up
-    expect(steps(tripTo(right, landingOn(left, leftFooting, FIGURE), FIGURE, {random: () => 0.99}))).toEqual([
+    expect(steps(tripTo(right, landingOn(left, leftFooting, FIGURE, floorsNow()), FIGURE, {random: () => 0.99}))).toEqual([
         ["walk", level(standing + 40)],
         ["jump", standing],
     ]);
@@ -324,12 +329,12 @@ test("a figure carried by what it rests on loses its footing once that would tak
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
     let top = 400;
-    const bubble = {isConnected: true, getBoundingClientRect: () => ({left: 300, right: 500, width: 200, top, height: 60})};
-    const footing = footingOn({x: 480, y: 400, posture: "sit", on: bubble});
-    expect(footingNow(footing, FIGURE)).toEqual({x: 480, y: 400});
+    const bubble = {getBoundingClientRect: () => ({left: 300, right: 500, width: 200, top, height: 60})};
+    const footing = footingOn({x: 480, y: 400, posture: "sit", on: bubble}, floorsNow(bubble));
+    expect(footingNow(footing, FIGURE, floorsNow(bubble))).toEqual({x: 480, y: 400});
     // the thread scrolls the bubble up until the seated figure's head would leave the top of the chat window
     top = CHAT.top + 40;
-    expect(footingNow(footing, FIGURE)).toBe(null);
+    expect(footingNow(footing, FIGURE, floorsNow(bubble))).toBe(null);
 });
 
 test("a figure sitting on the chat box takes no press below its seat, so a click on the box's top edge reaches the box", () => {

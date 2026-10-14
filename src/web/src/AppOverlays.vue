@@ -2,6 +2,7 @@
 import {onMounted} from "vue";
 import SuggestionLayer from "./chat/SuggestionLayer.vue";
 import VoiceFigure from "./chat/VoiceFigure.vue";
+import FigureFloors from "./chat/FigureFloors.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import Tooltip from "./kit/Tooltip.vue";
 import AwayCard from "./layout/AwayCard.vue";
@@ -13,6 +14,7 @@ import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {dismissNewFeature, loadNewFeatures, newFeature, turnOffNewFeature, useNewFeature} from "./composables/newFeature.js";
 import {firstChoice, loadProfilesUntilLoaded, figureVoice, profilesLoaded} from "./composables/profiles.js";
+import {floorsShown} from "./composables/voiceFigure.js";
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
 
@@ -29,6 +31,9 @@ if (!profilesLoaded.value) loadProfilesUntilLoaded();
     <Tooltip />
     <template v-if="figureVoice && home">
         <VoiceFigure :voice="figureVoice" />
+        <template v-if="floorsShown()">
+            <FigureFloors />
+        </template>
     </template>
     <template v-if="ui.away.open">
         <AwayCard />

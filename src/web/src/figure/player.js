@@ -36,8 +36,7 @@ export class FigurePlayer {
         if (shape !== this.shape && this.moves) this.blend = {from: this.moves, began: performance.now()};
         this.shape = shape;
         const k = this.blend ? Math.min((performance.now() - this.blend.began) / 1000 / CHANGE_SECONDS, 1) : 1;
-        const blend = k < 1 ? {from: this.blend.from, k: smooth(k)} : null;
-        if (!blend) this.blend = null;
+        const blend = this.blend ? {from: this.blend.from, previous: this.moves, k: smooth(k), settled: false} : null;
         const key = `${clip.name}/${index}/${facing}/${posture}/${stride}/${this.canvas.width}/${eyes ? `${eyes.mood}@${eyes.seconds}` : ""}`;
         if (key === this.shown && !blend) return;
         const live = eyes || stride !== null || blend;
@@ -48,8 +47,13 @@ export class FigurePlayer {
         context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         context.drawImage(frame, 0, 0);
         this.moves = moves;
+        if (blend?.settled) this.blend = null;
         // a frame drawn part way through a change is never the frame the clip itself draws there
         this.shown = blend ? "" : key;
+    }
+
+    headAt() {
+        return this.stage.headAt(this.figure, this.moves);
     }
 
     frameOf(clip, index, facing, posture) {

@@ -25,10 +25,10 @@ const THREAD = {
     },
 };
 
-const bubble = (rect, connected = true) => ({
-    isConnected: connected,
-    getBoundingClientRect: () => ({width: rect.right - rect.left, ...rect}),
-});
+// a bubble's floor, as figure/floors.js reads it, and the floors snapshot that holds the bubbles given, in the thread's view
+let issued = 0;
+const bubble = (rect) => ({id: `bubble-${++issued}`, kind: "bubble", element: {rect}, ...rect});
+const floorsOf = (...bubbles) => ({view: THREAD, floors: bubbles});
 const at = (top, left = 260, right = 500) => bubble({left, right, top, bottom: top + 60});
 const fixed =
     (...values) =>
@@ -40,9 +40,9 @@ test("a figure perches on the newest bubble in view first, and never on one too 
     const low = at(655);
     const older = at(300);
     const newest = at(500);
-    expect(perchOn([high, older, newest, low], THREAD, FIGURE, HANDS, () => 0).bubble).toBe(newest);
-    expect(perchOn([high, older, low], THREAD, FIGURE, HANDS, () => 0).bubble).toBe(older);
-    expect(perchOn([high, low], THREAD, FIGURE, HANDS, () => 0)).toBe(null);
+    expect(perchOn(floorsOf(high, older, newest, low), FIGURE, HANDS, () => 0).floor).toBe(newest.id);
+    expect(perchOn(floorsOf(high, older, low), FIGURE, HANDS, () => 0).floor).toBe(older.id);
+    expect(perchOn(floorsOf(high, low), FIGURE, HANDS, () => 0)).toBe(null);
 });
 
 test("a perch whose figure would hide words is not taken: it hangs beside the bubble instead, or takes an older bubble", () => {
@@ -50,27 +50,28 @@ test("a perch whose figure would hide words is not taken: it hangs beside the bu
     const newest = at(500);
     // words just above the newest bubble's right corner, where a seated body rises and a hanging one does not reach
     write([{left: 470, right: 520, top: 440, bottom: 470}]);
-    expect(perchOn([older, newest], THREAD, FIGURE, HANDS, () => 0.99)).toMatchObject({bubble: newest, kind: HANGS});
-    expect(perchOn([older, newest], THREAD, FIGURE, [], () => 0.99)).toMatchObject({bubble: older, kind: SITS});
-    expect(perchSpot({bubble: newest, kind: SITS, side: "right", grip: ""}, THREAD, FIGURE)).toBe(null);
+    expect(perchOn(floorsOf(older, newest), FIGURE, HANDS, () => 0.99)).toMatchObject({floor: newest.id, kind: HANGS});
+    expect(perchOn(floorsOf(older, newest), FIGURE, [], () => 0.99)).toMatchObject({floor: older.id, kind: SITS});
+    expect(perchSpot({floor: newest.id, kind: SITS, side: "right", grip: ""}, floorsOf(older, newest), FIGURE)).toBe(null);
 });
 
 test("it perches on the side of a bubble with more room outside it, and hangs or sits as the roll says", () => {
-    expect(perchOn([at(300, 260, 500)], THREAD, FIGURE, HANDS, () => 0).side).toBe("right");
-    expect(perchOn([at(300, 450, 690)], THREAD, FIGURE, HANDS, () => 0).side).toBe("left");
-    expect(perchOn([at(300)], THREAD, FIGURE, HANDS, fixed(0)).kind).toBe(HANGS);
-    expect(perchOn([at(300)], THREAD, FIGURE, HANDS, fixed(HANG_SHARE)).kind).toBe(SITS);
-    expect(perchOn([at(300)], THREAD, FIGURE, [], fixed(0)).kind).toBe(SITS);
+    expect(perchOn(floorsOf(at(300, 260, 500)), FIGURE, HANDS, () => 0).side).toBe("right");
+    expect(perchOn(floorsOf(at(300, 450, 690)), FIGURE, HANDS, () => 0).side).toBe("left");
+    expect(perchOn(floorsOf(at(300)), FIGURE, HANDS, fixed(0)).kind).toBe(HANGS);
+    expect(perchOn(floorsOf(at(300)), FIGURE, HANDS, fixed(HANG_SHARE)).kind).toBe(SITS);
+    expect(perchOn(floorsOf(at(300)), FIGURE, [], fixed(0)).kind).toBe(SITS);
 });
 
 test("a hanging figure grips the roomy corner with the hand on its side, or turns to face the bubble to grip it with its one free hand", () => {
-    const right = perchOn([at(300, 260, 500)], THREAD, FIGURE, HANDS, fixed(0));
+    const right = perchOn(floorsOf(at(300, 260, 500)), FIGURE, HANDS, fixed(0));
     expect([right.grip, right.side, right.face]).toEqual(["r", "right", 0]);
-    const left = perchOn([at(300, 450, 690)], THREAD, FIGURE, HANDS, fixed(0));
+    const left = perchOn(floorsOf(at(300, 450, 690)), FIGURE, HANDS, fixed(0));
     expect([left.grip, left.side, left.face]).toEqual(["l", "left", 0]);
-    const one = perchOn([at(300, 260, 500)], THREAD, FIGURE, ["l"], fixed(0));
+    const only = at(300, 260, 500);
+    const one = perchOn(floorsOf(only), FIGURE, ["l"], fixed(0));
     expect([one.grip, one.side, one.face]).toEqual(["l", "right", 180]);
-    expect(perchSpot(one, THREAD, FIGURE)).toMatchObject({face: 180, posture: "hang"});
+    expect(perchSpot(one, floorsOf(only), FIGURE)).toMatchObject({face: 180, posture: "hang"});
 });
 
 test("every place the figure roams to comes up by its odds and is stayed at between its shortest and longest stay", () => {
@@ -94,17 +95,18 @@ test("mostly the figure strolls along the compose box's edge and sits on its cor
 
 test("a figure sitting or hanging stands where its bubble's corner is, and is let go when the bubble leaves the thread's view or the page", () => {
     const one = at(300, 260, 500);
-    const sitting = {bubble: one, kind: SITS, side: "right", grip: ""};
+    const sitting = {floor: one.id, kind: SITS, side: "right", grip: ""};
     const hanging = {...sitting, kind: HANGS, grip: "r", face: 0};
-    expect(perchSpot(sitting, THREAD, FIGURE).face).toBe(60);
-    expect(perchSpot(sitting, THREAD, FIGURE).on).toBe(one);
+    expect(perchSpot(sitting, floorsOf(one), FIGURE).face).toBe(60);
+    expect(perchSpot(sitting, floorsOf(one), FIGURE).on).toBe(one.element);
     // its hips sit over the bubble's padding, inside the corner by less than the padding, so its legs hang clear of the words
-    expect(500 - perchSpot(sitting, THREAD, FIGURE).x).toBeLessThan(7);
-    expect(perchSpot(hanging, THREAD, FIGURE)).toMatchObject({face: 0});
-    expect(perchSpot(hanging, THREAD, FIGURE).x).toBeGreaterThan(500);
-    expect(perchSpot(hanging, THREAD, FIGURE)).toMatchObject({y: 300, posture: "hang", grip: "r"});
-    expect(perchSpot({...sitting, bubble: at(105)}, THREAD, FIGURE)).toBe(null);
-    expect(perchSpot({...sitting, bubble: bubble({left: 260, right: 500, top: 300, bottom: 360}, false)}, THREAD, FIGURE)).toBe(null);
+    expect(500 - perchSpot(sitting, floorsOf(one), FIGURE).x).toBeLessThan(7);
+    expect(perchSpot(hanging, floorsOf(one), FIGURE)).toMatchObject({face: 0});
+    expect(perchSpot(hanging, floorsOf(one), FIGURE).x).toBeGreaterThan(500);
+    expect(perchSpot(hanging, floorsOf(one), FIGURE)).toMatchObject({y: 300, posture: "hang", grip: "r"});
+    const high = at(105);
+    expect(perchSpot({...sitting, floor: high.id}, floorsOf(high), FIGURE)).toBe(null);
+    expect(perchSpot(sitting, floorsOf(), FIGURE)).toBe(null);
 });
 
 test("when its ground goes the figure keeps a stay at home and gives up one away from it, and a look ends a stay hanging back to the viewer", () => {
@@ -130,9 +132,9 @@ test("the figure goes home to sit while its agent cannot act, keeps a stay until
 
 test("a perch that would put any part of the figure past the edge of its world is refused", () => {
     const edge = at(300, 1000, 1270);
-    expect(perchSpot({bubble: edge, kind: SITS, side: "right", grip: ""}, THREAD, FIGURE)).toBe(null);
-    expect(perchSpot({bubble: edge, kind: HANGS, side: "right", grip: "r", face: 0}, THREAD, FIGURE)).toBe(null);
-    expect(perchSpot({bubble: edge, kind: SITS, side: "left", grip: ""}, THREAD, FIGURE)).toMatchObject({posture: "sit"});
+    expect(perchSpot({floor: edge.id, kind: SITS, side: "right", grip: ""}, floorsOf(edge), FIGURE)).toBe(null);
+    expect(perchSpot({floor: edge.id, kind: HANGS, side: "right", grip: "r", face: 0}, floorsOf(edge), FIGURE)).toBe(null);
+    expect(perchSpot({floor: edge.id, kind: SITS, side: "left", grip: ""}, floorsOf(edge), FIGURE)).toMatchObject({posture: "sit"});
 });
 
 test("with something waiting on the user the figure keeps its stay rather than go to a tab outside its world, and points from one inside", () => {

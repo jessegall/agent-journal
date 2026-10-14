@@ -266,62 +266,15 @@ export function clearOf(box, figure, near, seated) {
     return spot && {...spot, view: null, on: element};
 }
 
-// The edge a figure stands on at home: the bars docked over the main chat's compose box while there are any, else the compose box, else
-// the foot of the window
+// The edge a figure stands on at home: the bars docked over the main chat's compose box while there are any, `docked` then, else the
+// compose box, else the foot of the window
 export function groundEdge() {
     const home = document.querySelector(HOME);
-    const element = home?.closest(".thread")?.querySelector(DOCKED_BARS) || home;
-    if (!element) return {element: null, edge: {left: 0, width: window.innerWidth, top: window.innerHeight}};
+    const bars = home?.closest(".thread")?.querySelector(DOCKED_BARS);
+    const element = bars || home;
+    if (!element) return {element: null, docked: false, edge: {left: 0, width: window.innerWidth, top: window.innerHeight}};
     const box = element.getBoundingClientRect();
-    return {element, edge: {left: box.left, width: box.width, top: box.top}};
-}
-
-// What a figure resting on a spot keeps of it: the element it rests on, the spot's place from that element's edge, the posture it rests in
-// there, whether it rests on the ground at home, which is then whatever is the ground at home, as bars dock over the compose box and go,
-// and the height of that edge and the moment `at` it was there; null when it rests on nothing on the page
-export function footingOn(spot, at = performance.now()) {
-    const element = spot.on;
-    if (!element?.isConnected) return null;
-    const home = element === groundEdge().element;
-    const edge = home ? groundEdge().edge : element.getBoundingClientRect();
-    return {element, dx: spot.x - edge.left, dy: spot.y - edge.top, posture: spot.posture, home, ground: {y: edge.top, at}};
-}
-
-// Where a footing's spot is now, carried along as what it rests on moves, or null when the ground went from under the figure: the element
-// left the page or has no size, it carried the figure out of its world, as a bubble scrolls out of the chat, or it carried a hanging
-// figure's feet down onto the ground at home, where it lets go and stands
-export function footingNow({element, dx, dy, posture, home}, figure) {
-    const edge = home ? groundEdge().edge : element.isConnected && element.getBoundingClientRect();
-    if (!home && (!edge?.width || !edge.height)) return null;
-    const spot = {x: edge.left + dx, y: edge.top + dy, posture};
-    if (posture === "hang" && boxAt(spot, figure).bottom >= groundEdge().edge.top) return null;
-    return inWorld(spot, figure) ? {x: spot.x, y: spot.y} : null;
-}
-
-// how far the ground at home moves within GROUND_JUMP_MS, in pixels, before the figure is thrown up with it or falls with it rather than
-// carried along
-const GROUND_JUMP = 8;
-const GROUND_JUMP_MS = 200;
-
-// Where a figure resting at `spot` by `footing` is now, at the moment `at`, with the footing it keeps and how it got there, or null once its
-// ground has gone from under it. Anywhere but home it is carried along with what it rests on. At home it stays where it stood along the
-// ground, at its height above whatever is the ground there now, and moves with it as the flat figure did: "launched" when the ground rose
-// more than GROUND_JUMP pixels within GROUND_JUMP_MS, as when a bar docks over the compose box or the box grows a line, "dropping" when it
-// fell so, as when a bar goes, else "carried", as on a ground that drifts. The footing's ground is where the edge was when that moment
-// began, and it starts again once the edge stands still, jumps, or the moment is over.
-export function groundUnder(footing, spot, figure, at = performance.now()) {
-    const now = footingNow(footing, figure);
-    if (!now) return null;
-    if (!footing.home) return {spot: {...spot, ...now}, footing, motion: "carried"};
-    const {element, edge} = groundEdge();
-    const there = {...spot, y: now.y};
-    const shift = edge.top - footing.ground.y;
-    const within = at - footing.ground.at <= GROUND_JUMP_MS;
-    const jumped = within && Math.abs(shift) > GROUND_JUMP;
-    const still = Math.abs(there.y - spot.y) <= 0.3;
-    const ground = jumped || still || !within ? {y: edge.top, at} : footing.ground;
-    const motion = !jumped ? "carried" : shift > 0 ? "dropping" : "launched";
-    return {spot: there, footing: {...footing, element, dx: spot.x - edge.left, ground}, motion};
+    return {element, docked: Boolean(bars), edge: {left: box.left, width: box.width, top: box.top}};
 }
 
 // The trip of a figure resting at `place` to `spot` (tripBetween), from its picture in the posture it travels in where it is to its picture
@@ -335,13 +288,6 @@ export function tripTo(place, spot, figure, {straight = false, pace = 1, random 
         pace,
         random,
     });
-}
-
-// Where a trip to a spot ends: the spot carried along by `footing`, taken when the spot was read from the page, as what it rests on may
-// have moved while the figure travelled, so it lands on the line where the line is now; the spot as it was once its ground has gone
-export function landingOn(spot, footing, figure) {
-    const now = footing && footingNow(footing, figure);
-    return now ? {...spot, ...now} : spot;
 }
 
 // The way a figure whose middle is at `x` turns to look at a chat mark, by its key: to its right or its left, or toward the viewer when

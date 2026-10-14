@@ -10,9 +10,9 @@ export const HELD = {
     reading: "read",
     writing: "write",
     running: "work",
-    waiting: "idle",
-    asking: "idle",
-    compacting: "idle",
+    waiting: "waiting",
+    asking: "waiting",
+    compacting: "compacting",
     paused: "idle",
     stopped: "sleep",
 };
@@ -73,16 +73,29 @@ export const waitingSinceAt = (counts, since, now) => (counts.question + counts.
 // clip is drawn in a posture. A beat comes with the way it faces.
 // A trip has `started` once the figure stands ready to travel and `moves` while a leg carries it; the hop of a leg or the walk is named
 // only then, so the walk is never drawn on the spot. The clip of a leg that waits is marked `startsLeg`: the leg sets off the moment it is on screen.
+// The body's mode, highest first: in the air, landing, on its way, or resting on its floor
+export const AIRBORNE = "airborne";
+export const LANDING = "landing";
+export const TRAVELLING = "travelling";
+export const GROUNDED = "grounded";
+export const modeOf = ({airborne, landing, trip}) => (airborne ? AIRBORNE : landing ? LANDING : trip?.started ? TRAVELLING : GROUNDED);
+
 export function clipFor(scene, canDraw) {
-    const {leaving, arriving, trip, landing, place, beat, state, doing} = scene;
+    const {mode, leaving, arriving, trip, landing, place, beat, state, doing} = scene;
+    // a figure in the air on its feet falls before anything else, leaving included: it lands first, and then goes; one dropping with its
+    // seat stays seated
+    if (mode === AIRBORNE && place.posture === "stand") return {clip: "fall", facing: 0};
     if (leaving) return {clip: "exit", facing: 0, once: true, departure: true};
     if (arriving) return {clip: "enter", facing: 0, once: true, arrival: true};
     if (landing) return {clip: "land", facing: 0, once: true, landed: true};
+    if (trip?.started && trip.moves && !trip.hopping && beat?.clip === "stumble") {
+        return {clip: "stumble", facing: trip.way > 0 ? 90 : 270, posture: "walk", once: true};
+    }
     if (trip?.started) return {...legClip(trip, doing, canDraw), ...(trip.moves ? {} : {startsLeg: true})};
     // a hanging figure holds on until it is let go; a beat waits until it has dropped
     if (place.posture === "hang") return {clip: `hang_${place.grip}`, facing: place.face};
     if (beat) return {clip: beat.clip, facing: beat.facing, once: true};
-    if (place.view && state === "asking") return {clip: "point", facing: 0};
+    if (["asking", "waiting"].includes(state)) return {clip: "waiting", facing: scene.composeFacing ?? 0};
     return {clip: canDraw(doing, place.posture) ? doing : clipOf(state), facing: place.posture === "sit" ? place.face : 0};
 }
 
@@ -95,30 +108,7 @@ function legClip(trip, doing, canDraw) {
     return doing !== "idle" && canDraw(doing, "walk") ? {clip: doing, facing, posture: "walk", ...steps} : {clip: "walk", facing, ...steps};
 }
 
-// Intro and outro frames are not part of a held loop.
-export function frameIn(clip, index, closing = null) {
-    if (!clip.loops) return Math.min(index, clip.frames - 1);
-    const intro = clip.intro || 0;
-    const outro = clip.outro || 0;
-    if (closing !== null && index >= closing) return Math.min(clip.frames - outro + index - closing, clip.frames - 1);
-    return index < intro ? index : intro + ((index - intro) % (clip.frames - intro - outro));
-}
-
-// Close at a resting page, not halfway through a turn.
-export function closeAt(clip, index) {
-    const intro = clip.intro || 0;
-    const unit = clip.leaves || clip.frames - intro - (clip.outro || 0);
-    return intro + Math.ceil(Math.max(index - intro, 0) / unit) * unit;
-}
-
-// Whether the clip on screen gives way to another that is wanted: at once when it is interruptible (figure.js CLIPS), else once it has played
-// out, between the frame it was at when last drawn, `last`, and the frame it is at now, `index`
-export function canSwitch(clip, index, last) {
-    if (clip.interruptible) return true;
-    if (!clip.loops) return index >= clip.frames;
-    const unit = clip.leaves || clip.frames;
-    return Math.floor(index / unit) > Math.floor(last / unit);
-}
+export {frameIn, closeAt, canSwitch} from "../figure/timeline.js";
 
 // One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
 // the first rule a card matches names its beat
@@ -149,6 +139,12 @@ export function testResultsAfter(agent, known) {
         at: Number(card.ended || card.at),
         card: card.key,
     }));
+}
+
+export function cardsAfter(agent, known) {
+    const cards = (agent?.data.cards || []).filter((card) => card.key && !known.has(card.key));
+    cards.forEach((card) => known.add(card.key));
+    return cards.map((card) => ({beat: "card_arrived", at: Number(card.at), card: card.key}));
 }
 
 // The beats for what reached the agent's row after `seenAt` (seconds), oldest first: its cards, and the user's own message
