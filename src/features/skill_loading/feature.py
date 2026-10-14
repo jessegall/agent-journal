@@ -3,11 +3,13 @@ from dataclasses import asdict
 from controllers.types import Agents
 from declaring.trigger import Mark
 from events.agents import AgentReported, SessionStarted, ToolCallAnswered, ToolFinished
+import json
+
 from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
 from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
-from expects import WHEN, Acted, Answered, Dispatches, Given, Nudged, Refused, Remembered, Replied, Requested, Reported, Told, Unchanged, Updated, Wrote, answering, nothing
+from expects import WHEN, Acted, Answered, Dispatches, DispatchesWith, Given, Nudged, Refused, Remembered, Replied, Requested, Reported, Told, Unchanged, Updated, Wrote, answering, nothing
 from events.answers import Refused as RefusedCall
 from framework.base import Feature
 from resources.base import AGENT
@@ -26,6 +28,10 @@ from features.skill_loading.routes import get_skill, get_skills, post_skill_alwa
 CLAUDE = AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": ["journal"]})
 CLAUDE_TRANSCRIBED = AgentRow(n=1, title="claude-1", data={"provider": "claude", "event": "PostToolUse", "skills": ["journal"]})
 LIBRARY = ".agents/skills"
+
+
+def loaded(name: str) -> str:
+    return json.dumps({"type": "assistant", "timestamp": "2026-01-01T00:00:00Z", "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": name}}]}}) + "\n"
 PLANS = {f"{LIBRARY}/journal-plans/SKILL.md": "---\nname: journal-plans\nkeywords: roadmap\ncommands: plan\n---\n"}
 JOURNAL = {f"{LIBRARY}/journal/SKILL.md": "---\nname: journal\n---\n"}
 CODEX = AgentRow(n=1, title="codex-1", data={"provider": "codex"})
@@ -118,6 +124,9 @@ class SkillLoading(Feature):
         ])
         journal.events.listen(AgentReported, SpotStaleSkills(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[CLAUDE_TRANSCRIBED], transcript=loaded("journal-work-tracking"),
+                  files=answering({f"{LIBRARY}/journal-work-tracking/SKILL.md": "---\nname: journal-work-tracking\n---\n"}))
+                >> Dispatches(StaleSkillsNamed(agent=1, skills="journal-work-tracking").once("1:journal-work-tracking")),
         ])
         journal.events.listen(SessionStarted, SpotSessionStart(), expects=[
             Given(SessionStarted(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(SessionOwesSkills(agent=1, session="claude-1", skills=())),

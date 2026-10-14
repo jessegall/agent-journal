@@ -1,7 +1,8 @@
 from functools import cached_property
 
 from events.measured import Measured
-from expects import Dispatches, File, Given, Removed, Replied, Requested, Told, Unchanged, Updated, Wrote, answering, nothing
+from expects import Dispatches, File, Given, Released, Removed, Replied, Requested, Told, Unchanged, Updated, Wrote, answering, nothing
+from resources.text import digest
 from expects.watching import BROKEN
 from framework.base import Feature
 from framework.journal import Journal
@@ -57,6 +58,8 @@ class DevFaults(Feature):
         ])
         journal.events.handle(OverdueTodoFiled, LiftOverdueHold(), expects=[
             Given(OverdueTodoFiled(title=SLOW_TITLE), journal_root=answering({("environments",): ["t"]})) >> Unchanged(),
+            Given(OverdueTodoFiled(title=SLOW_TITLE), rows=[AgentRow(n=1, title="claude-1")], held="overdue", held_under=digest(SLOW_TITLE, 12),
+                  journal_root=answering({("environments",): ["t"]})) >> Released(),
         ])
         journal.events.listen(TodoCompleted, SpotOverdueTodoClosed(), expects=[
             Given(TodoCompleted(n=2, type="todo"), rows=[Todo(n=2, title=SLOW_TITLE)]) >> Dispatches(OverdueTodoClosed(title=SLOW_TITLE)),

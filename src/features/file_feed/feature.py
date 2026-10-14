@@ -3,7 +3,7 @@ from dataclasses import replace
 
 from events.file_feed import EditToDiff
 from events.files import FileEdited
-from expects import Answered, Dispatches, Given, Refused, Remembered, Unchanged, answering, nothing
+from expects import Answered, Dispatches, Given, Ran, Refused, Remembered, Unchanged, answering, nothing
 from framework.base import Feature
 from features.file_feed.details import FileFeedDetails
 from features.file_feed.handlers import KeepEdits, WarmTheDiff
@@ -47,4 +47,6 @@ class FileFeed(Feature):
         ])
         journal.events.handle(EditToDiff, WarmTheDiff(), expects=[
             Given(EditToDiff(before="a\n", after="a\nb\n"), rows=[AGENT_ROW], git=answering({("blobs", ("a\n", "a\nb\n")): {"a\n": "a\n", "a\nb\n": "a\nb\n"}})) >> Unchanged(),
+            Given(EditToDiff(before="warm-a\n", after="warm-b\n"), rows=[AGENT_ROW], git=answering({("blobs", ("warm-a\n", "warm-b\n")): {"warm-a\n": "warm-a\n", "warm-b\n": "warm-b\n"}}))
+                >> Ran(("blobs", ("warm-a\n", "warm-b\n"))),
         ])

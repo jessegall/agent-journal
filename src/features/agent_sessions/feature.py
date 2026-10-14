@@ -1,10 +1,12 @@
+import json
+
 from events.agent_sessions import (AssignmentLapsed, CompactionStarted, EvictionLifted, ReportHandedBack, ReportNoticed, SessionEnded, SessionEvicted, SilenceDue,
                                    StopAsked, SubagentAlive, SubagentReportLinked, TakeOverChosen)
 from events.agents import AgentChanged, AgentReported, ClockTicked
 from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.todos import TodoUpdated
-from expects import WHEN, Dispatches, Given, Held, Nudged, Ran, Released, Updated, nothing
+from expects import WHEN, Dispatches, Given, Held, Nudged, Ran, Released, Updated, answering, nothing
 from framework.due import DueOnClock
 from features.agent_sessions.details import AgentSessionsDetails
 from features.agent_sessions.handlers import (AskToStop, ClearLapsedAssignment, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, NoticeReport,
@@ -42,6 +44,9 @@ class AgentSessions(Feature):
         ])
         journal.events.listen(QuestionCompleted, SpotTakeOver(), expects=[
             Given(QuestionCompleted(n=3), rows=[Question(n=3, title="take it over?")]) >> Dispatches(nothing),
+            Given(QuestionCompleted(n=3), rows=[Question(n=3, title="take it over?", data={"chosen": 1}), Environment(n=2, title="other")],
+                  files=answering({".journal/runtime/sessions/claude-2/session.json": json.dumps({"takeover": {"environment": "other", "question": 3, "holder": "claude-1"}})}))
+                >> Dispatches(TakeOverChosen(session="claude-2", environment="other", place=2)),
         ])
         journal.events.listen(ClockTicked, DueOnClock(SilenceDue, "liveness"), expects=[
             Given(ClockTicked(agent=1)) >> Dispatches(SilenceDue(agent=1).due("liveness")),

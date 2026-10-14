@@ -1201,30 +1201,10 @@ def test_a_stubbed_mailbox_is_read_only_as_the_given_names_it_and_never_shows_th
 # receivers whose expectations state only what does not happen, so they would still pass if the receiver did nothing; each is
 # owed an expectation of what it does (to-do 4843), and comes off this list when it has one
 STATES_ONLY_NOTHING = {
-    "agent_sessions/SpotTakeOver",
-    "dev_faults/LiftOverdueHold",
-    "file_feed/WarmTheDiff",
     "heavy_runs/HoldHeavyRunsToOneAtATime",
     "heavy_runs/LeaveTheQueue",
-    "helper_worktrees/KeepCheckedTip",
-    "helper_worktrees/SpotDriftedWorktree",
-    "helper_worktrees/StayInYourCheckout",
-    "helpers/SpotWatchedHelpers",
-    "plugins/AskPluginsToCancel",
-    "plugins/AskPluginsToRefuse",
     "plugins/SpotChangedManifests",
-    "skill_loading/SpotStaleSkills",
-    "tickets/LookAfterTickets",
-    "tickets/RaiseStuckTicket",
-    "tickets/RaiseWaitingPlan",
-    "tickets/SpotTicketCalls",
-    "tickets/SpotWaitingPlans",
     "tickets/WakeTheTicketAgent",
-    "triggers/ReleaseWhenTheJournalStopsShowing",
-    "update_reports/HoldOfferBack",
-    "update_reports/MarkFirstCommit",
-    "update_reports/SpotCommitToOffer",
-    "work_tracking/LetGoOfWorkFiles",
 }
 
 

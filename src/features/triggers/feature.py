@@ -5,7 +5,7 @@ from events.answers import Allowed, Refused
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
 from events.triggers import ChatWordDenied, TriggerHolding, TriggerMet, TriggerReleased, TriggerShowing
-from expects import WHEN, Answered, answering, Dispatches, Given, Held, Nudged, Remembered, Unchanged, Updated, Wrote, nothing
+from expects import WHEN, Answered, answering, Dispatches, Given, Held, Nudged, Released, Remembered, Unchanged, Updated, Wrote, nothing
 from framework.base import Feature
 from resources.triggers import Trigger
 from resources.base import USER
@@ -143,6 +143,7 @@ class TriggersFeature(TriggersWork, Feature):
         ])
         journal.events.handle(TriggerReleased, ReleaseWhenTheJournalStopsShowing(), expects=[
             Given(TriggerReleased(agent=1, row=6), rows=[HOLD_WHEN_IDLE, JUST_NOW]) >> Unchanged(),
+            Given(TriggerReleased(agent=1, row=6), rows=[HOLD_WHEN_IDLE, JUST_NOW], held="Hold while idle: Pick up the next row.", held_under="hold.6") >> Released(),
         ])
         journal.events.answer(ToolCallAsked, DenyWhatTheAgentDoes(), expects=[
             Given(shell_asked("git push --force"), rows=[NO_FORCE, AGENT_ROW]) >> Answered(Refused("No force push - Never force push.")),
