@@ -160,3 +160,50 @@ def test_the_same_check_three_times_is_named(app):
     for _ in range(2):
         assert "additionalContext" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]
     assert "same check 3 times in a row: ls build" in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]["additionalContext"]
+
+
+def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
+    console = app.console()
+    console.run(["sequence", "create", "release", "--steps", "bump the version | tag it | push"], USER)
+    hook(app, "SessionStart")
+    console.run(["task", "create", "t", "--start"], AGENT)
+    assert "step 1: bump the version" in console.run(["sequence", "run", "1"], AGENT).out
+    assert "step 1: bump the version" in hook(app, "Stop")[1]["additionalContext"]
+    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
+    assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
+    assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
+    assert app.container.get(Machine).current("s1") == Working(task_id=1)
+
+
+def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1", "2"], AGENT)
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    assert machine.current("s1").name == "awaiting" and typed == ["worker 1, Lady Lovelace, reported in the chat"]
+    console.run(["worker", "stop", "2"], USER)
+    assert machine.current("s1") == Working(task_id=1)
+    assert typed[-1] == "what you waited on came back: carry on"
+
+
+def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
+    hook(app, "SessionStart")
+    status, body = hook(app, "PreToolUse", tool_name="Task", tool_input={"description": "x", "prompt": "y"})
+    assert status == 409 and "names no model" in body["error"]
+    status, body = hook(app, "PreToolUse", tool_name="Task", tool_input={"model": "fast", "prompt": "y"})
+    assert status == 409 and "no concrete job" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Task", tool_input={"model": "fast", "description": "x", "prompt": "y"})[0] == 200
+
+
+def test_a_large_result_is_named(app):
+    hook(app, "SessionStart")
+    body = hook(app, "PostToolUse", tool_name="Bash", tool_input={}, tool_response="\n" * 500)[1]
+    assert "501 lines" in body["additionalContext"]

@@ -36,7 +36,7 @@ class Console:
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             try:
                 args = self.parser().parse_args(argv)
-                code = self.commands[args.noun].run(args, where)
+                code = self.commands[args.noun].perform(args, where)
             except (argparse.ArgumentError, SystemExit) as refused:
                 self.parser().print_usage(err)
                 print(refused, file=err)

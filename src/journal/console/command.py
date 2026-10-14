@@ -13,7 +13,8 @@ class Command:
         """Adds a parser per verb to the noun's subparsers."""
         ...
 
-    def run(self, args: Namespace, where: Where) -> int:
+    def perform(self, args: Namespace, where: Where) -> int:
+        """Runs the verb's method; a verb may be any word, since this is the one name a command keeps for itself."""
         return getattr(self, args.verb)(args, where)
 
     @staticmethod

@@ -1,13 +1,17 @@
 from journal.features.feature import Feature
+from journal.features.laws.listeners.judge_dispatch import JudgeDispatch
+from journal.features.laws.listeners.measure_result import MeasureResult
 from journal.features.nudge import Nudge
 
 
 class Laws(Feature):
+    """The journal's law: what binds every agent and cannot be switched off."""
+
     name = "laws"
     title = "Journal laws"
+    listeners = (JudgeDispatch, MeasureResult)
 
-    NO_MODEL = Nudge(name, "no_model", "the dispatch names no model: name the least expensive that fits")
-    NO_JOB = Nudge(name, "no_job", "the dispatch binds the agent to no concrete job")
-    LONG_READ = Nudge(name, "long_read", "a whole read of {{lines}} lines was refused: read the range you need")
-    LARGE_RESULT = Nudge(name, "large_result", "the result was {{lines}} lines: cap it next time")
-    nudges = (NO_MODEL, NO_JOB, LONG_READ, LARGE_RESULT)
+    NO_MODEL = Nudge(name, "no_model", "the dispatch names no model", "name the least expensive model that reliably fits the work")
+    NO_JOB = Nudge(name, "no_job", "the dispatch binds the agent to no concrete job", "give it a description and a bounded prompt")
+    LARGE_RESULT = Nudge(name, "large_result", "that result was {{lines}} lines, and every line stays in the context", "cap output with grep, head or tail next time")
+    nudges = (NO_MODEL, NO_JOB, LARGE_RESULT)

@@ -1,5 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.features.workers.commands.worker_command import WorkerCommand
+from journal.features.workers.listeners.release_awaiting import ReleaseAwaiting
 from journal.features.workers.states.awaiting import Awaiting
 
 
@@ -9,12 +11,10 @@ class Workers(Feature):
     name = "workers"
     title = "Workers"
     states = (Awaiting,)
+    commands = (WorkerCommand,)
+    listeners = (ReleaseAwaiting,)
 
-    REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in message {{message}}")
-    STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported")
-    REFUSED = Nudge(name, "refused", "worker {{n}}, {{name}}, cannot work: {{provider}} refused it")
-    IDLE = Nudge(name, "idle", "worker {{n}}, {{name}}, has stood idle for {{minutes}} minutes")
-    QUIET = Nudge(name, "quiet", "worker {{n}}, {{name}}, has done nothing for {{minutes}} minutes")
-    RETURNED = Nudge(name, "returned", "what you waited on came back: carry on")
-    WORKTREE_BEHIND = Nudge(name, "worktree_behind", "worker {{n}}'s worktree is behind the branch: rebase before taking it")
-    nudges = (REPORTED, STOPPED, REFUSED, IDLE, QUIET, RETURNED, WORKTREE_BEHIND)
+    REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
+    STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
+    RETURNED = Nudge(name, "returned", "what you waited on came back: carry on", repeat_after=0)
+    nudges = (REPORTED, STOPPED, RETURNED)
