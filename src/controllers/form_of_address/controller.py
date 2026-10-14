@@ -2,7 +2,6 @@ from pathlib import Path
 
 from controllers.base import Controller
 from controllers.features import settings_of
-from declaring.registries import SETTINGS_CHANGED
 from controllers.marks import action
 from engine import runtime
 from resources.form_of_address import Profile
@@ -99,9 +98,7 @@ class Profiles(Controller):
         return given
 
     def _tell(self) -> None:
-        changed = SETTINGS_CHANGED.keyed().get("form_of_address")
-        if changed:
-            changed(self.record, self.actor)
+        self.record.emit("feature", 0, "updated", self.actor, setting="form_of_address")
 
 
 def ship(record) -> list[str]:
