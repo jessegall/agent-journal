@@ -213,6 +213,8 @@ const placed = (spot, posture) => {
 // The picture kept where the figure rests, in the posture of the clip on screen; when that posture changes where it rests, as it sits down
 // or gets up, the picture slides to its new place while the body eases into the posture, stepped each frame (slideOn)
 const rest = () => {
+    // a figure arriving at a hang keeps the picture its hop ended in, already hanging, until its hands take the grip
+    if (body.place.posture === "hang" && drawn !== "hang") return;
     const to = placed(body.place, drawn);
     if (drawn !== body.rested) slide();
     body.rested = drawn;
