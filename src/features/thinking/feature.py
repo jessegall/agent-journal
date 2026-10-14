@@ -1,6 +1,7 @@
 from events.agents import AgentMessageSent, AgentReported
 from events.thinking import ThinkingCleared, TranscriptRead
-from expects import WHEN, Dispatches, Given, Remembered, Updated, nothing
+from expects import WHEN, Dispatches, DispatchesWith, Given, Remembered, Updated, nothing
+from expects.staged import in_a_transcript
 from features.thinking.details import ThinkingDetails
 from features.thinking.handlers import ClearTheThought, ShowTheThoughts
 from features.thinking.listeners import FollowTheTranscript, SpotVisibleMessage
@@ -19,6 +20,8 @@ class Thinking(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.listen(AgentReported, FollowTheTranscript(), expects=[
             Given(AgentReported(agent=1), rows=[AGENT]) >> Dispatches(nothing),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude", "thinking": "Earlier"})], transcript=in_a_transcript("hello"))
+                >> DispatchesWith(TranscriptRead, agent=1, thinking="Earlier", thoughts=()),
         ])
         journal.events.handle(TranscriptRead, ShowTheThoughts(), expects=[
             Given(TranscriptRead(agent=1, path="s.jsonl", offset=40, thinking="Second", thoughts=("First", "Second")), rows=[AGENT])

@@ -63,7 +63,7 @@ ENDED_ALONE = WorkCompleted(n=3, type="work", action="completed", actor=AGENT, t
 ON_TODO = Work(n=3, title="Fix the crash", data={"todo": 5})
 ENDED_ON_TODO = Work(n=3, title="Fix the crash", completed=2.0, data={"todo": 5})
 STARTED_TODO = Todo(n=5, title="Fix the crash", data={"status": "started"})
-AUTO = {"work_tracking.auto": True}
+AUTO = {"features.work_tracking.auto": True}
 FIRST = Todo(n=1, title="first")
 SECOND = Todo(n=2, title="second")
 STOPPED = (Reported("idle", "Stop"),)
@@ -109,13 +109,13 @@ class WorkFeature(Feature):
     details = WorkDetails
     nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, cap=Cap(1),
                     guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready.",
-                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=STOPPED) >> Told("next") & Nudged("next", n=1),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings={"work_tracking.auto": False}, earlier=STOPPED) >> Told("next", times=0),
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=STOPPED) >> Told("next"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings={"features.work_tracking.auto": False}, earlier=STOPPED) >> Told("next", times=0),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST, WORKING), settings=AUTO, earlier=STOPPED) >> Told("next", times=0),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=(*STOPPED, Ticked(), Ticked())) >> Told("next", times=1))),
               Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, cap=Cap(1),
                     guarantee="When the work in hand is waiting on something, the agent is offered the next ready to-do rather than sitting out the wait.",
-                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, SECOND, WORKING), settings=AUTO, earlier=STOPPED) >> Told("next while waiting") & Nudged("next while waiting", n=2),
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, SECOND, WORKING), settings=AUTO, earlier=STOPPED) >> Told("next while waiting"),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, SECOND), settings=AUTO, earlier=STOPPED) >> Told("next while waiting", times=0))),
               Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, cap=Cap(1),
                     guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),

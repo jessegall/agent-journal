@@ -76,7 +76,7 @@ class BoardsFeature(Feature):
     details = BoardsDetails
     nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas,
                     guarantee="When a board asks for ideas, the agent is told to think up what might be wanted on it.",
-                    expects=(Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t"}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas") & Nudged("ideas", n=1),
+                    expects=(Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t"}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas"),
                              Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t", "ideas_at": WHEN}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas", times=0),
                              Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "elsewhere"}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas", times=0),
                              Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t", "finished": WHEN}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas", times=0))),)

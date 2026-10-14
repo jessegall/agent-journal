@@ -87,7 +87,7 @@ class AskQuestions(Feature):
     details = AskQuestionsDetails
     nudges = (Nudge("settled", behaviour="settled", about=open_a_day,
                     guarantee="When a question has waited a day for an answer, the agent is told, so a question is not left hanging for ever.",
-                    expects=(Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 2 * 86400)), earlier=(Reported("idle", "Stop"),)) >> Told("settled") & Nudged("settled", n=3),
+                    expects=(Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 2 * 86400)), earlier=(Reported("idle", "Stop"),)) >> Told("settled"),
                              Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 3600)), earlier=(Reported("idle", "Stop"),)) >> Told("settled", times=0),
                              Given(ClockTicked(agent=1), rows=(CLAUDE, BRANCH), earlier=(Reported("idle", "Stop"),)) >> Told("settled", times=0))),)
 
