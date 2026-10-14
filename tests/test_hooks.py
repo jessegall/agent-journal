@@ -62,6 +62,7 @@ def test_a_hook_lands_as_an_entry_and_answers_200(app):
 
 def test_a_blocking_listener_refuses_with_409_and_tells_with_context(app):
     app.container.get(Bus).listen(ToolStarting, RefuseWrites())
+    hook = {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}}
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
     assert status == 409 and body == {"error": "no work declared"}
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {}})

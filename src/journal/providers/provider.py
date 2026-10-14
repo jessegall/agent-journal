@@ -19,4 +19,5 @@ class Provider:
         """Writes the journal's hook into the program's settings file, idempotently."""
         ...
 
-    def writes(self, tool: str) -> bool: ...
+    def writes(self, tool: str) -> bool:
+        return tool in self.write_tools

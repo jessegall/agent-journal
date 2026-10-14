@@ -9,5 +9,5 @@ class HookController:
         self.receiver = receiver
 
     def receive(self, request: Request) -> Response:
-        decision = self.receiver.receive(Hook.parse(request.body, request.environment))
+        decision = self.receiver.receive(Hook.parse(request.body, request.environment, request.params["agent"]))
         return Response(decision.status, decision.as_hook_output())

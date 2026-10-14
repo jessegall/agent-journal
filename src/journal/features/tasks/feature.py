@@ -1,4 +1,6 @@
 from journal.features.feature import Feature
+from journal.features.tasks.commands.halt_command import HaltCommand
+from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.nudge import Nudge
 from journal.features.tasks.states.halted import Halted
 from journal.features.tasks.states.idle import Idle
@@ -9,6 +11,7 @@ class Tasks(Feature):
     name = "tasks"
     title = "Tasks"
     states = (Idle, Working, Halted)
+    commands = (TaskCommand, HaltCommand)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
     CARRY_ON = Nudge(name, "carry_on", "task {{n}} is in hand: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck")

@@ -9,3 +9,5 @@ class ToolStarting(AgentEvent):
 
     tool: str
     input: dict
+    writes: bool = False
+    """Whether this tool changes a file, as the agent's provider says."""

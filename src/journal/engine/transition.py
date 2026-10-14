@@ -10,4 +10,4 @@ class Transition:
 
     to: AgentState
     says: tuple[Said, ...] = ()
-    refused: str = ""
+    refused: Said | None = None

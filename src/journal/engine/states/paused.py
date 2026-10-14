@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from journal.engine.agent_state import AgentState
+from journal.engine.resume import Resume
 from journal.engine.transition import Transition
 from journal.features.said import Said
 
@@ -11,7 +12,9 @@ class Paused(AgentState):
 
     resume: dict = field(default_factory=dict)
 
-    def back(self, *says: Said) -> Transition: ...
+    def back(self, *says: Said) -> Transition:
+        return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)
 
     @classmethod
-    def leaving(cls, state: AgentState, **data) -> "Paused": ...
+    def leaving(cls, state: AgentState, **data) -> "Paused":
+        return cls(resume={"state": state.name, "data": state.to_data()}, **data)

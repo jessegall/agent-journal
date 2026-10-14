@@ -8,8 +8,17 @@ from journal.app import App  # noqa: E402
 from journal.config import Config  # noqa: E402
 from journal.console.where import Where  # noqa: E402
 
-if __name__ == "__main__":
-    outcome = App(Config.at(Path.cwd())).console().run(sys.argv[1:], Where.from_environ(os.environ))
+
+def main(argv: list[str]) -> int:
+    app = App(Config.at(Path.cwd()))
+    if argv[:1] == ["serve"]:
+        app.runtime().run()
+        return 0
+    outcome = app.console().run(argv, Where.from_environ(os.environ))
     sys.stdout.write(outcome.out)
     sys.stderr.write(outcome.err)
-    sys.exit(outcome.code)
+    return outcome.code
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

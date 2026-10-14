@@ -1,7 +1,4 @@
-from journal.console.commands.task import TaskCommand
-
-
 class StandardCommands:
-    """The commands the journal ships with."""
+    """The commands the journal ships with beside those its features bring."""
 
-    COMMANDS = (TaskCommand,)
+    COMMANDS = ()

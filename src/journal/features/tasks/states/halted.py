@@ -13,6 +13,8 @@ class Halted(Paused):
     name = "halted"
     why: str = ""
 
-    def tool_starting(self, event: ToolStarting) -> Transition: ...
+    def tool_starting(self, event: ToolStarting) -> Transition:
+        return self.back()
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition: ...
+    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
+        return self.back()

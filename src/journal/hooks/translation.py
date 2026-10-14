@@ -13,27 +13,28 @@ from journal.hooks.context_file import ContextFile
 from journal.hooks.hook import Hook
 from journal.hooks.hook_kind import HookKind
 from journal.models.environment import Environment
+from journal.providers.providers import Providers
 
 
 class Translation:
     """Each hook kind to the agent event it means; one table, so no kind is ever read twice in two places."""
 
     EVENTS = {
-        HookKind.SESSION_START: lambda hook: SessionStarted(),
-        HookKind.USER_PROMPT: lambda hook: PromptSubmitted(prompt=hook.text),
-        HookKind.PRE_TOOL_USE: lambda hook: ToolStarting(tool=hook.tool, input=hook.input),
-        HookKind.POST_TOOL_USE: lambda hook: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output),
-        HookKind.PRE_COMPACT: lambda hook: Compacting(),
-        HookKind.STOP: lambda hook: Idle(),
-        HookKind.SUBAGENT_START: lambda hook: SubagentStarted(subagent=hook.subagent),
-        HookKind.SUBAGENT_STOP: lambda hook: SubagentEnded(subagent=hook.subagent),
-        HookKind.MESSAGE_DISPLAY: lambda hook: TurnWritten(text=hook.text),
-        HookKind.SESSION_END: lambda hook: SessionEnded(),
+        HookKind.SESSION_START: lambda hook, provider: SessionStarted(),
+        HookKind.USER_PROMPT: lambda hook, provider: PromptSubmitted(prompt=hook.text),
+        HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool)),
+        HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output),
+        HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
+        HookKind.STOP: lambda hook, provider: Idle(),
+        HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
+        HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
+        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text),
+        HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
-    def __init__(self, context: ContextFile) -> None:
-        self.context = context
+    def __init__(self, context: ContextFile, providers: Providers) -> None:
+        self.context, self.providers = context, providers
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
-        bare = self.EVENTS[hook.kind](hook)
+        bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
         return bare.placed(hook.session, environment.id, self.context.of(hook.session))

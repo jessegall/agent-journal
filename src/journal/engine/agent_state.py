@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, fields
 from typing import ClassVar
 
 from journal.engine.permission import Permission
@@ -15,15 +16,33 @@ class AgentState:
 
     def on(self, event: AgentEvent) -> "Transition":
         """Finds the method named after the event's class and calls it; the default stays put and says nothing."""
-        ...
+        method = getattr(self, self.method_for(type(event)), None)
+        return method(event) if method else self.stay()
 
-    def stay(self, *says: "Said") -> "Transition": ...
+    @staticmethod
+    def method_for(event: type[AgentEvent]) -> str:
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", event.__name__).lower()
 
-    def go(self, to: "AgentState", *says: "Said") -> "Transition": ...
+    def stay(self, *says: Said) -> "Transition":
+        from journal.engine.transition import Transition
+        return Transition(self, says)
 
-    def refuse(self, why: str) -> "Transition": ...
+    def go(self, to: "AgentState", *says: Said) -> "Transition":
+        from journal.engine.transition import Transition
+        return Transition(to, says)
 
-    def to_data(self) -> dict: ...
+    def refuse(self, why: Said) -> "Transition":
+        from journal.engine.transition import Transition
+        return Transition(self, (), why)
+
+    def session_ended(self, event: AgentEvent) -> "Transition":
+        from journal.engine.states.ended import Ended
+        return self.go(Ended())
+
+    def to_data(self) -> dict:
+        return {field.name: getattr(self, field.name) for field in fields(self)}
 
     @classmethod
-    def from_data(cls, data: dict) -> "AgentState": ...
+    def from_data(cls, data: dict) -> "AgentState":
+        known = {field.name for field in fields(cls)}
+        return cls(**{name: value for name, value in data.items() if name in known})

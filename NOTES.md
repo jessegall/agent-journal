@@ -144,7 +144,8 @@ Dropped: boards, kanban, tickets, hosting.
 
 ## The plan
 
-Each phase ends with something that runs. Bodies only; the layout is done.
+Each phase ends with something that runs. Phases 1 to 5 are done and proven by `tests/`
+(`pytest`, about a second). The CLI goes through the server since phase 2.
 
 1. **Data.** `Connection`, `Schema`, `Migrator`, `Model`, `Repository`, `ScopedRepository`,
    `Actor`, `Link`, `Links`. The model events fire. Proof: a test creates, links, updates and
@@ -187,6 +188,16 @@ Each phase ends with something that runs. Bodies only; the layout is done.
 - **Live updates to the viewer**: long-poll or server-sent events off the same threaded server.
 - **Users on a shared journal**: how a user token is issued and checked, and whether
   environments are shared per user. `Identity` is the one place to grow.
+- **Subagent sessions**: a Claude subagent's hooks carry the parent's session id with an
+  agent id; today a new session id lands in Idle and would be refused writes. Decide how a
+  subagent is told apart (SubagentStarted carries its id) and put it in the Subagent state.
+- **Hook output per provider**: today a nudge rides back as `additionalContext` for every
+  hook; Claude's Stop hook needs `{"decision": "block", "reason": ...}` to make the agent
+  carry on, and PreToolUse context is shown to the user, not the agent. The provider should
+  shape `Decision.as_hook_output` per hook kind.
+- **Permissions**: `allows` is declared on every state but only Idle's write refusal uses it.
+  The gate should read `allows` generically (a tool that writes needs WRITE_FILES) so a new
+  state cannot forget to refuse.
 - **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
 - **Where the database lives**: `.journal/journal.db`, and what else stays in `.journal/`
   (settings, runtime socket path, logs).

@@ -10,11 +10,12 @@ class Hook:
     kind: HookKind
     session: str
     environment: str
+    provider: str = "claude"
     body: dict = field(default_factory=dict)
 
     @classmethod
-    def parse(cls, body: dict, environment: str) -> "Hook":
-        return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, body)
+    def parse(cls, body: dict, environment: str, provider: str) -> "Hook":
+        return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, provider, body)
 
     @property
     def tool(self) -> str:

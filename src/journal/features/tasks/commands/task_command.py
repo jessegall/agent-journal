@@ -3,9 +3,12 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.repositories.environments import Environments
+from journal.engine.machine import Machine
+from journal.features.tasks.states.working import Working
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
+from journal.repositories.environments import Environments
+from journal.repositories.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
@@ -13,8 +16,8 @@ from journal.repositories.tasks import Tasks
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments) -> None:
-        self.tasks, self.logs, self.environments = tasks, logs, environments
+    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments, machine: Machine) -> None:
+        self.tasks, self.logs, self.environments, self.machine = tasks, logs, environments, machine
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -33,12 +36,12 @@ class TaskCommand(Command):
     def create(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(Task(environment_id=self.environments.named(where.environment).id, title=args.title, brief=args.brief), where.actor)
         if args.start:
-            task = self.tasks.save(task.started(self._now()), where.actor)
+            task = self._start(task, where)
         print(f"task {task.id} {task.state}: {task.title}")
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).started(self._now()), where.actor)
+        task = self._start(self.tasks.find(args.n), where)
         print(f"task {task.id} started: {task.title}")
         return 0
 
@@ -50,6 +53,7 @@ class TaskCommand(Command):
 
     def done(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), where.actor)
+        self._let_go(task, where)
         print(f"task {task.id} done: {task.title}")
         return 0
 
@@ -57,6 +61,23 @@ class TaskCommand(Command):
         for task in self.tasks.in_(self.environments.named(where.environment).id):
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0
+
+    def _start(self, task: Task, where: Where) -> Task:
+        started = self.tasks.save(task.started(self._now()), where.actor)
+        if where.session:
+            self.machine.move(where.session, started.environment_id, Working(task_id=started.id))
+        return started
+
+    def _let_go(self, task: Task, where: Where) -> None:
+        """An agent that finished the task it was on is idle again."""
+        if not where.session:
+            return
+        try:
+            current = self.machine.current(where.session)
+        except NotFound:
+            return
+        if isinstance(current, Working) and current.task_id == task.id:
+            self.machine.move(where.session, task.environment_id, self.machine.states.first())
 
     @staticmethod
     def _now() -> datetime:

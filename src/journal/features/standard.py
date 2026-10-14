@@ -8,7 +8,6 @@ from journal.features.memory.feature import Memory
 from journal.features.messages.feature import Messages
 from journal.features.plans.feature import Plans
 from journal.features.questions.feature import Questions
-from journal.features.registry import Registry
 from journal.features.sequences.feature import Sequences
 from journal.features.skills.feature import Skills
 from journal.features.tasks.feature import Tasks

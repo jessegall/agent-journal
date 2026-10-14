@@ -5,7 +5,11 @@ from journal.console.standard_commands import StandardCommands
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.features.bus import Bus
+from journal.engine.runtime import Runtime
+from journal.features.registry import Registry
+from journal.features.standard import Standard
 from journal.hooks.context_file import ContextFile
+from journal.repositories.settings import Settings
 from journal.http.router import Router
 from journal.http.routes import Routes
 from journal.http.server import Server
@@ -25,6 +29,7 @@ class App:
         self.container.bind(Connection, self.connection)
         self.container.bind(Router, lambda: Routes(self.container).mount(Router()))
         self.container.bind(Console, self._console)
+        self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(Settings)))
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)
@@ -42,4 +47,10 @@ class App:
         console = Console(self.container)
         for command in StandardCommands.COMMANDS:
             console.add(command)
+        for feature in self.container.get(Registry).features:
+            for command in feature.commands:
+                console.add(command)
         return console
+
+    def runtime(self) -> Runtime:
+        return self.container.get(Runtime)
