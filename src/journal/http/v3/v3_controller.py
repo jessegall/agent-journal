@@ -21,6 +21,7 @@ from journal.http.v3.v3_events import V3Events
 from journal.http.v3.v3_manifest import VERSION, V3Manifest
 from journal.http.v3.v3_row import seconds
 from journal.http.v3.v3_settings import V3Settings
+from journal.hooks.hook import Hook
 from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
@@ -269,8 +270,7 @@ class V3Controller:
         for e in reversed(self.entries.of_kind_in(environment.id, 400)):
             if e.kind != "ToolFinished" or e.data.get("tool_name") != "Bash" or not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= after:
                 continue
-            output = e.data.get("tool_response", "")
-            lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Bash", "command": e.data.get("tool_input", {}).get("command", ""), "output": output if isinstance(output, str) else str(output), "stepped": False, "level": "everything"})
+            lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Bash", "command": e.data.get("tool_input", {}).get("command", ""), "output": Hook.printed(e.data.get("tool_response", "")), "stepped": False, "level": "everything"})
         return Response.json({"lines": lines[-200:]})
 
     def get_agent_transcript(self, request: Request) -> Response:
