@@ -1196,3 +1196,74 @@ def test_a_stubbed_mailbox_is_read_only_as_the_given_names_it_and_never_shows_th
         played(promise, Expectation(replace(given, outside=answering({("login",): ""})), Outcomes.of(Unchanged())), isolation.world())
     seen = played(promise, Expectation(replace(given, outside=answering({("mail",): {}, ("login",): "AUTHENTICATIONFAILED"})), Outcomes.of(Unchanged())), isolation.world())
     assert "abcd efgh" not in repr(seen.ran), "a refused sign-in leaves no run holding the password it carried"
+
+
+# receivers whose expectations state only what does not happen, so they would still pass if the receiver did nothing; each is
+# owed an expectation of what it does (to-do 4843), and comes off this list when it has one
+STATES_ONLY_NOTHING = {
+    "agent_sessions/ReleaseEvicted",
+    "ask_questions/ReleaseOnceSettled",
+    "agent_sessions/SpotTakeOver",
+    "sequences/LetTheAgentGo",
+    "dev_faults/LiftOverdueHold",
+    "file_feed/WarmTheDiff",
+    "heavy_runs/HoldHeavyRunsToOneAtATime",
+    "heavy_runs/LeaveTheQueue",
+    "helper_worktrees/KeepCheckedTip",
+    "helper_worktrees/SpotDriftedWorktree",
+    "helper_worktrees/StayInYourCheckout",
+    "helpers/OfferKeptAgentsFirst",
+    "helpers/SpotWatchedHelpers",
+    "plugins/AskPluginsToCancel",
+    "plugins/AskPluginsToRefuse",
+    "plugins/SpotChangedManifests",
+    "skill_loading/AskPrimaryForSkills",
+    "skill_loading/SpotStaleSkills",
+    "status_bar/ReadUsage",
+    "thinking/FollowTheTranscript",
+    "tickets/LookAfterTickets",
+    "tickets/RaiseStuckTicket",
+    "tickets/RaiseWaitingPlan",
+    "tickets/SpotStuckTickets",
+    "tickets/SpotTicketCalls",
+    "tickets/SpotWaitingPlans",
+    "tickets/WakeTheTicketAgent",
+    "triggers/ReleaseWhenTheJournalStopsShowing",
+    "update_reports/HoldOfferBack",
+    "update_reports/MarkFirstCommit",
+    "update_reports/SpotCommitToOffer",
+    "work_tracking/LetGoOfWorkFiles",
+    "work_tracking/ReleaseOnceDeclared",
+}
+
+
+def quiet_receivers():
+    """Every 3.0 receiver that carries expectations, each to be played once more doing nothing at all."""
+    import features
+    from framework.promises import Promise
+    from receiving import REGISTERED
+    features.load()
+    return [pytest.param(Promise.of(one), id=f"{one.feature}/{one.name}") for one in REGISTERED.each if one.expects]
+
+
+@pytest.mark.parametrize("promise", quiet_receivers())
+def test_a_receiver_that_does_nothing_breaks_one_of_its_expectations(promise):
+    import copy
+    from dataclasses import replace
+    from events.answers import Allowed
+    from expects.playing import wrong
+    from framework.played import played
+    from tests import isolation
+    idle = {"listen": list, "handle": list, "answer": Allowed, "refuse": lambda: None}[type(promise.part).takes]
+    quiet = copy.copy(promise.part)
+    quiet.__class__ = type(f"Quiet{type(promise.part).__name__}", (type(promise.part),), {type(promise.part).takes: lambda self, event, **_: idle()})
+
+    def broken(expectation) -> bool:
+        try:
+            return bool(wrong(expectation, played(replace(promise, part=quiet), expectation, isolation.world())))
+        except Exception:
+            return True
+    proven = any(broken(expectation) for expectation in promise.expects)
+    owed = f"{promise.feature.name}/{promise.name}" in STATES_ONLY_NOTHING
+    assert proven != owed, (f"{promise.feature.name}'s {promise.name} now fails when it does nothing: take it off STATES_ONLY_NOTHING" if owed else
+                            f"{promise.feature.name}'s {promise.name}: not one of its {len(promise.expects)} expectations fails when it does nothing, so they prove nothing it does")

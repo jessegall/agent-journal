@@ -2,7 +2,7 @@ from controllers.types import Rules
 from events.agents import AgentChanged, AgentReported
 from events.memory_checkpoints import AgentKeptSomething, ContextDecided, ContextMarkReached
 from events.resources import ResourceCreated
-from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, nothing
+from expects import Released, WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, nothing
 from framework.base import Feature
 from features.memory_checkpoints.commands import Reread
 from features.memory_checkpoints.details import MemoryCheckpointsDetails
@@ -61,7 +61,7 @@ class MemoryCheckpoints(Feature):
                 >> Held("context 60% full — decide before any other write — journal fact, journal rule, or journal nothing \"<why>\"") & Nudged("decide", percent=60),
         ])
         journal.events.handle(ContextDecided, ReleaseOnceDecided(), expects=[
-            Given(ContextDecided(agent=1), rows=[AgentRow(n=1, data={"context": 60, "decided": 60})]) >> Dispatches(nothing),
+            Given(ContextDecided(agent=1), rows=[AgentRow(n=1, data={"context": 60, "decided": 60})], held="context 60% full") >> Dispatches(nothing) & Released(),
         ])
         journal.events.handle(AgentKeptSomething, MarkWhatWasKept(), expects=[
             Given(AgentKeptSomething(agent=1, label="Wrote a fact", icon="pin", detail="the viewer runs from dist", ref="fact:4"), rows=[AgentRow(n=1)])
