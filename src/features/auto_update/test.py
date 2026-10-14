@@ -1,3 +1,4 @@
+# Stays a test: real child processes (shell shims, hooks, installs, a signal-ignoring sleep), real git repositories and an HTTP server on a thread, and update, install, heal and launch code that no registration reaches.
 import fcntl
 from dataclasses import replace
 import json
