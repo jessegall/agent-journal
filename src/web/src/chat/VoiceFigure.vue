@@ -3,8 +3,8 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
-import {fallOf, fallStep} from "../domain/falls.js";
-import {catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {fallOf} from "../domain/falls.js";
+import {ON_FLOOR, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
 import {footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
@@ -313,27 +313,12 @@ function watchFooting() {
     const ground = groundUnder(footing, place.value, figureSize());
     if (!ground) return uprooted();
     footing = ground.footing;
-    const spot = footing.home ? fallenTo(ground.spot) : ground.spot;
+    if (footing.home && ground.spot.y > place.value.y + ON_FLOOR) return fallFrom(place.value, null);
+    const spot = ground.spot;
     if (Math.hypot(spot.x - place.value.x, spot.y - place.value.y) <= 0.3) return;
     if (ground.motion === "launched") groundMoved("launched");
     place.value = spot;
     rest();
-}
-
-// The ground at home holds the figure up every frame as it rises, and drops away from under it as it goes: the figure falls to it then,
-// frame by frame (domain/falls.js fallStep), and lands the moment it touches, so it never stands inside the bars or in the air above them
-let falling = {y: 0, speed: 0, at: 0};
-function fallenTo(spot) {
-    const now = performance.now();
-    const from = place.value.y;
-    if (spot.y <= from + 0.3) {
-        falling = {y: spot.y, speed: 0, at: now};
-        return spot;
-    }
-    const step = fallStep({y: from, speed: falling.speed}, spot.y, (now - falling.at) / 1000, fall.value, SIZE);
-    falling = {...step, at: now};
-    if (step.landed) groundMoved("dropping");
-    return {...spot, y: step.y};
 }
 
 // A walk is stepped here, frame by frame, against the floors the floors loop read (figure/floors.js): the walker keeps to its floor as
@@ -343,12 +328,11 @@ let walk = {from: {x: 0, y: 0}, began: 0, on: null};
 const BUBBLES_CATCH = 0.5;
 let airborne = null;
 const feetOf = (picture) => ({x: picture.x + SIZE / 2, y: picture.y + (1 - below.value) * SIZE});
-const pictureOf = (feet) => ({x: feet.x - SIZE / 2, y: feet.y - (1 - below.value) * SIZE});
 
 function walkOn() {
     const feet = feetOf(legAt(leg.value, walk.from, performance.now() - walk.began));
     const under = walk.on ? underWalker(latestFloors().floors, walk.on, feet.x, feet.y) : {falls: false, dx: 0, dy: 0};
-    if (under.falls) return fallFrom(feet, moving.value.to);
+    if (under.falls) return fallFrom({...feet, posture: "stand"}, moving.value.to);
     if (Math.abs(under.dx) > 0.3 || Math.abs(under.dy) > 0.3) carryWalk(under.dx, under.dy);
     at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
 }
@@ -360,26 +344,30 @@ function carryWalk(dx, dy) {
     moving.value = {...moving.value, legs: moving.value.legs.map(lifted)};
 }
 
-function fallFrom(feet, to) {
+// The figure falls from the line it rests on at `spot`, in its posture there, never from below the ground at home, and goes on to `to`
+// once it lands
+function fallFrom(spot, to) {
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
     sliding.value = false;
-    airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to, catches: Math.random() < BUBBLES_CATCH};
+    const home = latestFloors().floors.find((floor) => floor.id === "home");
+    const y = home ? Math.min(spot.y, home.top) : spot.y;
+    airborne = {x: spot.x, y, posture: spot.posture, speed: 0, at: performance.now(), to, catches: Math.random() < BUBBLES_CATCH};
     moving.value = null;
     footing = null;
-    at.value = pictureOf(feet);
+    at.value = placed(airborne, airborne.posture);
 }
 
 function fallOn() {
     const now = performance.now();
     const step = fallFrame(airborne, catching(latestFloors().floors, airborne.catches), (now - airborne.at) / 1000, fall.value, SIZE);
     airborne = {...airborne, ...step, at: now};
-    at.value = pictureOf(step);
+    at.value = placed(step, airborne.posture);
     if (!step.landed) return;
-    const to = airborne.to;
+    const {to, posture} = airborne;
     airborne = null;
     groundMoved("dropping");
-    settle({x: step.x, y: step.landed.top, posture: "stand", view: null, on: step.landed.element ?? null});
+    settle({x: step.x, y: step.landed.top, posture, view: null, on: step.landed.element ?? null});
     rest();
     if (to) moveTo(to);
 }
@@ -448,7 +436,7 @@ function uprooted() {
     landing.value = false;
     const spot = stayingAt(stay, figureSize(), place.value);
     const clear = {state: held.value.state, now: Date.now() / 1000, near: place.value, figure: figureSize(), cleared};
-    fallFrom(feetOf(at.value), keptClear(spot, clear));
+    fallFrom({...feetOf(at.value), posture: "stand"}, keptClear(spot, clear));
 }
 
 // the scene the reactions are decided in
