@@ -33,6 +33,13 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - Style: no clutter, small methods, no big if-chains (dispatch on type), docstrings one line
   and only for a non-obvious why.
 
+- **Server**: one process, `journal serve`, started and kept alive by the supervisor. A
+  `ThreadingHTTPServer`: each request on a thread. The hook is `hooks/hook.sh`, a curl to
+  `/hooks/<agent>` with the body on stdin; it decides nothing and exits 0 when the server
+  is away. The port is read from `.journal/port`.
+- **Threads and SQLite**: WAL mode; one sqlite connection per thread for reads, one process
+  lock for writes inside `Connection.transaction()`.
+
 ## Roots, in order
 
 1. `Connection`, `Model`, `Repository`, `Schema`: fill them, with `Task` as the first table
@@ -55,9 +62,11 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   tasks, messages, questions, memory, reports and docs, plans, the write gate, viewer, CLI.
   Candidates to drop or defer: helpers, tickets, boards, plugins, phone, sharing, hosting,
   Linear, Gmail, the avatar, the Chrome extension.
-- **Process count.** Proposal: supervisor + one journal server + the hook script. CLI and
-  viewer talk to the server. Confirm the CLI never opens the database itself (or decide it may,
-  for reads, since SQLite allows it).
+- **CLI and the database.** The server is the one writer. Decide whether `journal task ...` run
+  by the agent posts to the server (consistent, one process) or opens the database itself
+  (works with no server up). Leaning: post to the server, fall back to direct when it is away.
+- **Live updates to the viewer**: long-poll or server-sent events off the same threaded server.
+- **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
 - **Where the database lives**: `.journal/journal.db`, and what else stays in `.journal/`
   (settings, runtime socket path, logs).
 - **Migrations from v3** records: do we import the old file rows at all, or start empty.
