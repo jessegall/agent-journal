@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, WORKING, beatsAfter, canSwitch, clipFor, clipOf, closeAt, eggFor, figureStateOf, frameIn, waitingSinceAt} =
+const {AIRBORNE, ASLEEP_AFTER, EGGS, GROUNDED, LANDING, POINTED_AFTER, RESTS, TRAVELLING, WORKING, beatsAfter, canSwitch, clipFor, clipOf, closeAt, eggFor, figureStateOf, frameIn, modeOf, waitingSinceAt} =
     await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
 const {drawnIn, pointedView} = await import("../src/figure/places.js");
@@ -227,4 +227,14 @@ test("a book opens once, keeps reading across loops, and closes only when asked 
         }
         expect(frameIn(clip, closing + clip.outro, closing)).toBe(clip.frames - 1);
     }
+});
+
+test("a figure in the air on its feet falls before anything else, leaving included, and one dropping with its seat stays seated", () => {
+    const airborne = {mode: AIRBORNE, leaving: true};
+    expect(clipFor(scene(airborne), canDraw)).toEqual({clip: "fall", facing: 0});
+    expect(clipFor(scene({...airborne, leaving: false, place: {posture: "sit", face: 60, view: null}}), canDraw).clip).not.toBe("fall");
+    expect(modeOf({airborne: {posture: "stand"}, landing: true, trip: {started: true}})).toBe(AIRBORNE);
+    expect(modeOf({airborne: null, landing: true, trip: null})).toBe(LANDING);
+    expect(modeOf({airborne: null, landing: false, trip: {started: true}})).toBe(TRAVELLING);
+    expect(modeOf({airborne: null, landing: false, trip: {started: false}})).toBe(GROUNDED);
 });

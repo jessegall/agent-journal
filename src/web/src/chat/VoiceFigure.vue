@@ -6,7 +6,7 @@ import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.j
 import {fallOf} from "../domain/falls.js";
 import {KEPT_WITHIN, ON_FLOOR, aimedAt, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
-import {beatsAfter, cardsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
+import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, walkingMoment, workMoments} from "../figure/reactions.js";
@@ -133,11 +133,12 @@ function current() {
     const first = beats.value[0];
     const beat = first && {clip: first.clip, facing: facingToward(first.card, at.value.x + SIZE / 2)};
     const scene = {
+        mode: modeOf({airborne, landing: landing.value, trip: moving.value}),
         leaving: leaving.value,
         arriving: arriving.value,
         trip: moving.value,
         landing: landing.value,
-        place: place.value,
+        place: airborne ? {...place.value, posture: airborne.posture} : place.value,
         beat,
         state: held.value.state,
         doing: doing(),
@@ -331,7 +332,7 @@ function watchFooting() {
     if (footing.home && ground.spot.y > place.value.y + ON_FLOOR) return fallFrom(place.value, null);
     const spot = ground.spot;
     if (Math.hypot(spot.x - place.value.x, spot.y - place.value.y) <= 0.3) return;
-    if (ground.motion === "launched") groundMoved("launched");
+    if (ground.motion === "launched" && !arriving.value) groundMoved("launched");
     place.value = spot;
     rest();
 }
@@ -371,6 +372,7 @@ function fallFrom(spot, to) {
     moving.value = null;
     footing = null;
     at.value = placed(airborne, airborne.posture);
+    step();
 }
 
 function fallOn() {
@@ -381,9 +383,11 @@ function fallOn() {
     if (!step.landed) return;
     const {to, posture} = airborne;
     airborne = null;
+    landing.value = posture === "stand";
     groundMoved("dropping");
     settle({x: step.x, y: step.landed.top, posture, view: null, on: step.landed.element ?? null});
     rest();
+    step();
     if (to) moveTo(to);
 }
 

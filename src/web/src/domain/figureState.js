@@ -73,8 +73,18 @@ export const waitingSinceAt = (counts, since, now) => (counts.question + counts.
 // clip is drawn in a posture. A beat comes with the way it faces.
 // A trip has `started` once the figure stands ready to travel and `moves` while a leg carries it; the hop of a leg or the walk is named
 // only then, so the walk is never drawn on the spot. The clip of a leg that waits is marked `startsLeg`: the leg sets off the moment it is on screen.
+// The body's mode, highest first: in the air, landing, on its way, or resting on its floor
+export const AIRBORNE = "airborne";
+export const LANDING = "landing";
+export const TRAVELLING = "travelling";
+export const GROUNDED = "grounded";
+export const modeOf = ({airborne, landing, trip}) => (airborne ? AIRBORNE : landing ? LANDING : trip?.started ? TRAVELLING : GROUNDED);
+
 export function clipFor(scene, canDraw) {
-    const {leaving, arriving, trip, landing, place, beat, state, doing} = scene;
+    const {mode, leaving, arriving, trip, landing, place, beat, state, doing} = scene;
+    // a figure in the air on its feet falls before anything else, leaving included: it lands first, and then goes; one dropping with its
+    // seat stays seated
+    if (mode === AIRBORNE && place.posture === "stand") return {clip: "fall", facing: 0};
     if (leaving) return {clip: "exit", facing: 0, once: true, departure: true};
     if (arriving) return {clip: "enter", facing: 0, once: true, arrival: true};
     if (landing) return {clip: "land", facing: 0, once: true, landed: true};
