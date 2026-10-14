@@ -53,6 +53,7 @@ class UpdateReports(Feature):
         ])
         journal.commands.add("report", Dismiss(), expects=[
             Given((Reports, 1), rows=[UPDATE]) >> Updated(Report(n=1), dismissed=True),
+            Given((Reports, 1), rows=[PLAIN]) >> Updated(Report(n=1), dismissed=True),
         ])
         journal.events.listen(TurnStopped, SpotCommitToOffer(), expects=[
             Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
