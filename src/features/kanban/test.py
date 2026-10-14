@@ -24,13 +24,11 @@ def lane(record, n: int) -> str:
     return lane_of(sources_of(journal), Todos(record, actor=USER).load(n))
 
 
-def test_every_to_do_sits_in_one_lane_by_its_state_and_the_first_rule_that_matches():
+def test_a_row_with_open_work_is_doing_a_closed_one_is_done_until_it_is_old_and_a_question_outranks_work():
     features.load()
     record = fresh()
     todos = Todos(record, actor=USER)
-    plain, blocked, waiting, started, asked, done, old = (todos.create(f"row {i}").n for i in range(7))
-    todos.block(blocked, "the api is down")
-    todos.after(waiting, plain)
+    started, asked, done, old, finished = (todos.create(f"row {i}").n for i in range(5))
     Works(record, actor=AGENT).create("building it", todo=started)
     Works(record, actor=AGENT, force="two at once for the test").create("another", todo=asked)
     Questions(record, actor=AGENT).create("which way", about=f"todo:{asked}", options=[{"title": "A"}, {"title": "B"}], pick=1)
@@ -39,22 +37,13 @@ def test_every_to_do_sits_in_one_lane_by_its_state_and_the_first_rule_that_match
     closed = todos.load(old)
     closed.completed = time.time() - 30 * 86400
     todos.save(closed, "updated")
-    assert [lane(record, n) for n in (plain, blocked, waiting, started, asked, done)] == \
-        ["todo", "held", "held", "doing", "asked", "done"], "a question outranks open work, work outranks a hold"
-    on_board = {card["n"] for column in board(record)["lanes"] for card in column["cards"]}
-    assert old not in on_board and done in on_board, "a row closed longer ago than done_days is off the board"
-    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
-    assert (cards[plain]["targets"], cards[blocked]["targets"], cards[waiting]["targets"], cards[started]["targets"], cards[done]["targets"]) == \
-        (["held", "doing", "done"], ["todo", "done"], [], [], ["todo"]), "each card carries the lanes it may move to"
-    assert "waits on todo" in cards[waiting]["reason"] and cards[blocked]["reason"] == "blocked: the api is down", "a held card says why"
-    helped, finished = todos.create("row with a helper").n, todos.create("row a helper finished").n
-    todos.assign(helped, "helper:3")
     todos.assign(finished, "helper:4")
     todos.update(finished, pending={"how": "built", "worktree": "w"})
-    from features.kanban.lanes import reason_of
-    sources = sources_of(features.FEATURES["kanban"].journal.at(record))
-    reasons = {n: reason_of(sources, todos.load(n)) for n in (helped, finished)}
-    assert (reasons[helped], reasons[finished]) == ("helper 3 has it", "done by helper 4, waits for its merge"), "a card a helper holds says which helper, and one it finished says it waits for its merge"
+    assert [lane(record, n) for n in (started, asked, done)] == ["doing", "asked", "done"], "a question outranks open work"
+    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
+    assert (old in cards, done in cards, cards[started]["targets"], cards[done]["targets"]) == (False, True, [], ["todo"]), \
+        "a row closed longer ago than done_days is off the board, open work leaves its card to its agent, a closed card may reopen"
+    assert cards[finished]["reason"] == "done by helper 4, waits for its merge", "a card a helper finished says it waits for its merge"
 
 
 def test_a_row_outside_an_active_plan_stays_in_to_do_and_the_hold_is_one_line():

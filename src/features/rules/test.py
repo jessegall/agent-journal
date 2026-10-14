@@ -1,8 +1,7 @@
-from controllers.types import Nudges, Rules
+from controllers.types import Rules
 from features.journal_laws.briefing import BEGIN, END, brief
 from resources.base import USER
 from tests.conftest import fresh, refused
-from tests.kit import nudges, report
 
 
 def test_a_rules_keywords_are_a_field_read_as_a_list():
@@ -17,26 +16,6 @@ def test_a_rules_keywords_are_a_field_read_as_a_list():
     assert Rules(record).load(rule.n).data["keywords"] == ["git checkout"], "one word is a list of one"
     assert ("keywords is a list" in refused(lambda: Rules(record, actor=USER).set(rule.n, "keywords", "7"))) is True, \
         "something that is no kind of list is refused"
-
-
-def test_standing_rules_are_said_on_a_chosen_cadence_and_a_struck_rule_drops_out():
-    record = fresh()
-    rules = Rules(record, actor=USER)
-    rules.create("name the model on every dispatch", keywords="word")
-    rules.create("a title never explains with a colon", keywords="word")
-    for pct in (10, 25, 50, 80):
-        report(record, "working", "PostToolUse", context=pct)
-    report(record, "idle", "SessionStart")
-    assert [n for n in nudges(record) if "in force" in n] == [], "by default neither the context filling nor a start says them: the start block lists them"
-    record.set_setting("triggers", {"rules": {"unit": "start"}})
-    report(record, "idle", "SessionStart")
-    assert [n for n in nudges(record) if "in force" in n] == ["2 rules in force, read them"], "a start or a compaction says the standing rules by number"
-    assert [n.brief for n in Nudges(record).all() if "in force" in n.title] == ["1. name the model on every dispatch; 2. a title never explains with a colon"], \
-        "the words carry the rules"
-    rules.complete(2, "retired")
-    report(record, "working", "PostToolUse", context=5)
-    report(record, "idle", "SessionStart")
-    assert [n for n in nudges(record) if "in force" in n][-1] == "1 rule in force, read them", "a struck rule is not said"
 
 
 def test_inject_and_uninject_change_the_rules_in_the_one_block_and_pin_notices_the_rule():

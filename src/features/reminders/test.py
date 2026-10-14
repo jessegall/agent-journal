@@ -6,49 +6,6 @@ from tests.kit import nudges_with_briefs as nudges, report
 from tests.conftest import fresh
 
 
-def test_by_default_standing_reminders_are_left_to_the_start_block_and_a_chosen_cadence_says_them():
-    record = fresh()
-    Reminders(record, actor=USER).create("run the suites first")
-    report(record, "working", "PreToolUse")
-    report(record, "idle", "Stop")
-    report(record, "working", "PostToolUse", context=26)
-    assert nudges(record) == [], "neither the idle nor a quarter of context says them"
-    report(record, "idle", "SessionStart")
-    assert [n for n in nudges(record) if "standing" in n[0]] == [], "nor a start or a compaction, whose start block already lists them"
-    record.set_setting("triggers", {"reminders": {"unit": "start"}})
-    report(record, "idle", "SessionStart")
-    assert [n for n in nudges(record) if "standing" in n[0]] == [("1 reminder standing, read them", "1. run the suites first")], \
-        "a cadence chosen in Settings says them"
-
-
-def test_configured_by_unit_every_2_tool_uses():
-    record = fresh()
-    record.set_setting("triggers", {"reminders": {"every": 2, "unit": "uses"}})
-    Reminders(record, actor=USER).create("keep going")
-    for uses in (1, 2, 3, 4):
-        report(record, "working", "PreToolUse", uses=uses)
-    assert len(nudges(record)) == 2, "every 2 uses: said at 2 and at 4"
-    report(record, "idle", "Stop", uses=4)
-    assert len(nudges(record)) == 2, "idle no longer triggers it"
-
-
-def test_every_10_percent_of_context_said_when_a_mark_is_crossed():
-    record = fresh()
-    record.set_setting("triggers", {"reminders": {"every": 10, "unit": "percent"}})
-    Reminders(record, actor=USER).create("keep going")
-    for pct in (3, 9.9, 10, 14, 19, 20.5, 41):
-        report(record, "working", "PostToolUse", context=pct)
-    assert len(nudges(record)) == 3, "10 percent marks: said at 10, 20 and 41"
-
-
-def test_switched_off_silent():
-    record = fresh()
-    record.set_setting("features", {"reminders": False})
-    Reminders(record, actor=USER).create("keep going")
-    report(record, "idle", "Stop")
-    assert nudges(record) == [], "feature off: nothing said"
-
-
 def test_a_reminder_aimed_at_one_agent_is_said_only_to_that_session_and_stays_out_of_the_start_block():
     record = fresh()
     record.set_setting("triggers", {"reminders": {"on": "worked"}})

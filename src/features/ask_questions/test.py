@@ -2,55 +2,10 @@ import features
 import json
 
 from controllers.types import Messages, Nudges, Questions
-from features.ask_questions.choices import offers_choices
 from resources.base import AGENT, SYSTEM, USER
 from tests.kit import idle, nudges
 from tests.conftest import fresh, holds
 from commands.http import dispatch
-
-
-def test_offers_choices_recognizes_numbered_and_lettered_options_but_not_prose():
-    assert offers_choices("Which do you want?\n1. the blue one\n2. the red one") is True, \
-        "a numbered list with a question offers choices"
-    assert offers_choices("Should I:\nA) merge now\nB) wait for CI") is True, "lettered options too"
-    assert offers_choices("Done:\n- built\n- tested") is False, "a list that asks nothing is a list"
-    assert offers_choices("Shall I merge it?") is False, "a question without options is fine"
-    assert offers_choices("Wil je liever:\n1. één lange gids\n2. een pagina per onderwerp") is True, "options under a Dutch question are choices too"
-    assert offers_choices("Done:\n- built the route\n- tested it\n\nQuestion 15 is still open: should the server answer first?") is False, \
-        "a summary that points at an open question by number is not offering choices"
-    assert offers_choices("Done:\n- the engine can see which step is running\n- the band is taller") is False, \
-        "a statement that uses 'which' asks nothing"
-    assert offers_choices("Two ways:\n1. blue\n2. red\nLet me know.") is True, \
-        "a list and a phrase addressed to the user still offers choices"
-    assert offers_choices("See question 3.\nWhich do you want?\n1. blue\n2. red") is True, "choices beside a named question still count"
-    assert offers_choices("Questions 60-63 are yours in the viewer:\n- 60, where it lives?\n- 61, what Doing does?") is False, \
-        "lines naming questions already asked, in the plural, do not count"
-    assert offers_choices("I asked \"is there an agent?\" and:\n- one\n- two") is False, "a question inside quotes is not asked"
-    assert offers_choices("**Did the hook fire?** I checked.\n\n- **Does it fire?** Yes, for every real message, and the server passed each one on to the chat, whole.\n"
-                          "- **Why some went missing:** they were written into hidden thinking, never as messages at all.") is False, \
-        "a summary answering questions in long points offers no choices"
-    assert offers_choices("Status:\n- built the page\n- tested it\n\nDesign: https://claude.ai/design/p/abc?file=X") is False, "a question mark inside a link asks nothing"
-    assert offers_choices("I found two ways.\n\n- keep it\n- drop it\n\nWhich do you prefer?") is True, "a closing question after the options still counts"
-
-
-def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly():
-    record = fresh()
-    transcript = record.root / "runtime" / "t.jsonl"
-    transcript.parent.mkdir(parents=True, exist_ok=True)
-
-    def text(text):
-        transcript.write_text(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": text}]}}) + "\n")
-
-    text("[!reply] Which do you want?\n1. the blue one\n2. the red one")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert ([n for n in nudges(record) if "choices in prose" in n], bool(holds(record).get("ask_questions.asking"))) == \
-        (["your last message offers choices in prose"], True), "choices in prose: the agent is told once, and its writes are held"
-    Questions(record, actor=AGENT).create("Which one?", options=[{"title": "the blue one", "description": "", "code": ""}, {"title": "the red one", "description": "", "code": ""}], pick=1)
-    assert not holds(record).get("ask_questions.asking"), "a question asked properly lifts the hold"
-    text("[!reply] Which do you want?\n1. the blue one\n2. the red one")
-    idle(record, provider="claude", transcript=str(transcript))
-    Messages(record, actor=USER).create("the blue one, thanks")
-    assert not holds(record).get("ask_questions.asking"), "an answer by message lifts it too"
 
 
 def test_a_picked_answer_is_held_for_a_configurable_duration():

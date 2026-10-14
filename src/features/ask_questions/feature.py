@@ -26,6 +26,25 @@ from features.ask_questions.waiting import open_a_day
 from framework.sending import Nudge
 
 
+OFFERED = (
+    "Which do you want?\n1. the blue one\n2. the red one",
+    "Should I:\nA) merge now\nB) wait for CI",
+    "Wil je liever:\n1. één lange gids\n2. een pagina per onderwerp",
+    "Two ways:\n1. blue\n2. red\nLet me know.",
+    "See question 3.\nWhich do you want?\n1. blue\n2. red",
+    "I found two ways.\n\n- keep it\n- drop it\n\nWhich do you prefer?",
+)
+NOT_OFFERED = (
+    "Done:\n- built\n- tested",
+    "Shall I merge it?",
+    "Done:\n- built the route\n- tested it\n\nQuestion 15 is still open: should the server answer first?",
+    "Done:\n- the engine can see which step is running\n- the band is taller",
+    "Questions 60-63 are yours in the viewer:\n- 60, where it lives?\n- 61, what Doing does?",
+    "I asked \"is there an agent?\" and:\n- one\n- two",
+    "**Did the hook fire?** I checked.\n\n- **Does it fire?** Yes, for every real message, and the server passed each one on to the chat, whole.\n"
+    "- **Why some went missing:** they were written into hidden thinking, never as messages at all.",
+    "Status:\n- built the page\n- tested it\n\nDesign: https://claude.ai/design/p/abc?file=X",
+)
 CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
 BRANCH = Question(n=3, title="which branch?", completed=1.0, outcome="main")
 FILED_LINE = "asked in the journal - the user answers it in the viewer and the answer reaches you as an event; carry on with what does not depend on it"
@@ -73,6 +92,8 @@ class AskQuestions(Feature):
         journal.events.listen(AgentReported, SpotProse(), expects=[
             Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript("Should I use files or SQLite?\n\n1. Files\n2. SQLite")) >> Dispatches(ProseOffersChoices(agent=1).due("asking")),
             Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript("The build is green.")) >> Dispatches(nothing),
+            *(Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript(prose)) >> Dispatches(ProseOffersChoices(agent=1).due("asking")) for prose in OFFERED),
+            *(Given(AgentReported(agent=1), rows=[CLAUDE], transcript=in_a_transcript(prose)) >> Dispatches(nothing) for prose in NOT_OFFERED),
         ])
         journal.events.listen(QuestionCreated, SpotQuestionAsked(), expects=[
             Given(QuestionCreated(n=3), rows=[CLAUDE, Question(n=3, title="which branch?")]) >> Dispatches(AskingSettled(agent=1)),
