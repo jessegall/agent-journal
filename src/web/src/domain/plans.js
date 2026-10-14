@@ -160,7 +160,7 @@ export function standingOf(p, todos) {
 
 export function planButton(p) {
     if (p.completed) return null;
-    return {ready: ["approve", "Approve"], reviewing: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Close"]}[p.data.status] || null;
+    return {ready: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Close"]}[p.data.status] || null;
 }
 
 export function planProgress(resource) {

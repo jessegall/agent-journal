@@ -101,3 +101,10 @@ test("the plan card never counts the plan it shows among the other plans", async
     expect(otherPlans(plans, {...plans[1]}).map((p) => p.n)).toEqual([34]);
     expect(othersLine(otherPlans(plans, plans[1]))).toBe("+1 more active plan");
 });
+
+test("a plan under review offers no Approve button until its review is in and it is ready again", async () => {
+    const {planButton} = await import("../src/domain/plans.js");
+    const made = (status) => ({n: 35, type: "plan", completed: 0, data: {status, phases: [], current: 1}});
+    expect(planButton(made("reviewing"))).toBe(null);
+    expect(planButton(made("ready"))).toEqual(["approve", "Approve"]);
+});
