@@ -20,7 +20,7 @@ class Working(AgentState):
 
     def idle(self, event: AgentIdle) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.stay(Tasks.CARRY_ON.about(n=self.task_id))
+        return self.stay() if event.again else self.stay(Tasks.CARRY_ON.about(n=self.task_id))
 
     def session_started(self, event: SessionStarted) -> Transition:
         """A session resumed with a task in hand is told which."""

@@ -23,7 +23,7 @@ class Machine(AgentListener[AgentEvent]):
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
 
     def handle(self, event: AgentEvent) -> Decision:
-        agent = self.agent(event.session, event.environment_id)
+        agent = self.agent(event.session, event.environment_id, event.provider)
         transition = self.states.named(agent.state, agent.data).on(event)
         agent = self._settle(agent, transition.to)
         lines = [line for said in transition.says if (line := self.nudger.say(agent, said))]
@@ -39,12 +39,12 @@ class Machine(AgentListener[AgentEvent]):
         agent = self.agents.for_session(session)
         return self.states.named(agent.state, agent.data)
 
-    def agent(self, session: str, environment_id: int) -> Agent:
+    def agent(self, session: str, environment_id: int, provider: str = "") -> Agent:
         try:
             return self.agents.for_session(session)
         except NotFound:
             first = self.states.first()
-            return self.agents.save(Agent(environment_id=environment_id, session=session, state=first.name, data=first.to_data()), Actor.system())
+            return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.to_data()), Actor.system())
 
     def _settle(self, agent: Agent, to: AgentState) -> Agent:
         if isinstance(to, Resume):

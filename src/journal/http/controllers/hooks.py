@@ -11,4 +11,4 @@ class HookController:
 
     def receive(self, request: Request) -> Response:
         hook = Hook.parse(request.body, request.environment, request.params["agent"])
-        return self.providers.named(hook.provider).answer(hook.kind, self.receiver.receive(hook))
+        return self.providers.named(hook.provider).answer(hook, self.receiver.receive(hook))

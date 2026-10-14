@@ -20,15 +20,15 @@ class Translation:
     """Each hook kind to the agent event it means; one table, so no kind is ever read twice in two places."""
 
     EVENTS = {
-        HookKind.SESSION_START: lambda hook, provider: SessionStarted(),
+        HookKind.SESSION_START: lambda hook, provider: SessionStarted(source=hook.source),
         HookKind.USER_PROMPT: lambda hook, provider: PromptSubmitted(prompt=hook.text),
         HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool)),
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output, read_path=provider.read_path(hook.tool, hook.input)),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
-        HookKind.STOP: lambda hook, provider: Idle(),
+        HookKind.STOP: lambda hook, provider: Idle(again=hook.stop_again),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
-        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text),
+        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text, turn_id=hook.turn_id, final=hook.final),
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
@@ -37,4 +37,4 @@ class Translation:
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
-        return bare.placed(hook.session, environment.id, self.context.of(hook.session))
+        return bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session))

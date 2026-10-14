@@ -9,8 +9,9 @@ class AgentEvent(Event):
 
     session: str = ""
     environment_id: int = 0
+    provider: str = ""
     context: float | None = None
     """How full the agent's context window is, 0 to 1, when its provider reports it."""
 
-    def placed(self, session: str, environment_id: int, context: float | None) -> "AgentEvent":
-        return replace(self, session=session, environment_id=environment_id, context=context)
+    def placed(self, session: str, environment_id: int, provider: str, context: float | None) -> "AgentEvent":
+        return replace(self, session=session, environment_id=environment_id, provider=provider, context=context)

@@ -18,6 +18,8 @@ class ReadTurn(AgentListener[TurnWritten]):
 
     def handle(self, event: TurnWritten) -> None:
         from journal.features.etiquette.feature import Etiquette
+        if not event.final:
+            return
         agent = self.machine.agent(event.session, event.environment_id)
         for pattern, said in ((SHOP_TALK, Etiquette.SHOP_TALK), (THIRD_PERSON, Etiquette.THIRD_PERSON)):
             if pattern.search(event.text) and (line := self.nudger.say(agent, said.about())):

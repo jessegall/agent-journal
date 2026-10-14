@@ -32,7 +32,24 @@ class Hook:
 
     @property
     def text(self) -> str:
-        return self.body.get("prompt", "") or self.body.get("message", "")
+        return self.body.get("prompt", "") or self.body.get("delta", "") or self.body.get("message", "")
+
+    @property
+    def turn_id(self) -> str:
+        return self.body.get("message_id", "") or self.body.get("turn_id", "")
+
+    @property
+    def final(self) -> bool:
+        return bool(self.body.get("final", True))
+
+    @property
+    def stop_again(self) -> bool:
+        """Claude's Stop hook says when it already refused this stop once; a second refusal would loop."""
+        return bool(self.body.get("stop_hook_active", False))
+
+    @property
+    def source(self) -> str:
+        return self.body.get("source", "")
 
     @property
     def subagent(self) -> str:

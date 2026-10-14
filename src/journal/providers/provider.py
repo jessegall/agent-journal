@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from journal.hooks.decision import Decision
+from journal.hooks.hook import Hook
 from journal.hooks.hook_kind import HookKind
 from journal.http.response import Response
 
@@ -26,14 +27,15 @@ class Provider:
 
     def resume(self, session: str) -> tuple[str, ...]: ...
 
-    def answer(self, kind: HookKind, decision: Decision) -> Response:
-        """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say is a refusal of the stop, since that is how the program is told to go on."""
+    def answer(self, hook: Hook, decision: Decision) -> Response:
+        """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say is a refusal of the stop, since that is how the program is told to go on, and a stop already refused once is let through."""
+        kind = hook.kind
         if not decision.allowed:
             return Response(409, {"error": decision.reason})
         if not decision.context:
             return Response(200, {})
         if kind == HookKind.STOP:
-            return Response(409, {"error": decision.context})
+            return Response(200, {}) if hook.stop_again else Response(409, {"error": decision.context})
         if kind in CONTEXT_HOOKS:
             return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}})
         return Response(200, {})
