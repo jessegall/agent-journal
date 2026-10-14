@@ -75,3 +75,13 @@ def test_a_chained_command_runs_part_by_part_and_each_part_marks_the_chat_once_i
     assert marks() == ["Tagged `v9`"] and not Agents(record, actor=SYSTEM).by_session("claude-1").step, "the whole call marks nothing again, and a part that failed marks nothing"
     report_step(root, call, 2, "end", 1, "tk")
     assert marks() == ["Tagged `v9`"], "an end that arrives twice is taken quietly: the parts report in the background, so one can be delivered again"
+
+
+def test_a_repository_nested_in_the_project_is_named_apart_so_entering_it_is_no_switch(tmp_path):
+    from resources.checkout import MAIN, checkout_name
+    project = tmp_path / "project"
+    nested = project / "services" / "api"
+    nested.mkdir(parents=True)
+    assert (checkout_name(project, False, project), checkout_name(nested, False, project), checkout_name(tmp_path / "app-wt", True, project)) == \
+        (MAIN, "repository services/api", "worktree app-wt"), \
+        "the project's own repository is the main checkout, a nested one is named by its path, so each keeps its own branch and stepping into one is no switch"

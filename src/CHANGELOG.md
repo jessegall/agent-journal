@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.19 — A repository nested in the project is no longer read as a branch switch
+
+- In a project that holds other repositories, the agent stepping into one of them no longer marks the chat with a branch switch: a nested repository is named by its own folder and keeps its own branch, where it was taken for the project's main checkout.
+
 ## 3.0.18 — The avatar puts its own item away while it holds a prop
 
 - While the avatar holds the magnifying glass or the laptop, it puts away what it carries in its hands — the squire's shield and quill, the coach's clipboard, the colleague's mug, the butler's towel — so it never holds two things, and takes them up again after.

@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
-from engine.git import MAIN
+from resources.checkout import checkout_name
 from engine.record import Record
 from engine.stored import read_json
 from expects import At, Answering, Counting, Expectation, Given
@@ -194,7 +194,10 @@ class CheckedOut:
 
     @property
     def name(self) -> str:
-        return f"worktree {self.top.name}" if self.linked else MAIN
+        return checkout_name(self.top, self.linked, self.top)
+
+    def named_in(self, project: Path) -> str:
+        return checkout_name(self.top, self.linked, project)
 
     @property
     def head_log(self) -> Path:

@@ -7,6 +7,15 @@ BRANCH_REF = "ref: refs/heads/"
 REMOTE_DEFAULT = "refs/remotes/origin/HEAD"
 
 
+def checkout_name(top: Path, linked: bool, project: Path) -> str:
+    """What the chat calls a checkout: a linked worktree by its folder, a repository nested in the project by its path there, and the project's own as the main checkout."""
+    if linked:
+        return f"worktree {top.name}"
+    if project.resolve() in top.resolve().parents:
+        return f"repository {top.resolve().relative_to(project.resolve())}"
+    return MAIN
+
+
 @dataclass(frozen=True)
 class Checkout:
     top: Path
@@ -15,7 +24,10 @@ class Checkout:
 
     @property
     def name(self) -> str:
-        return f"worktree {self.top.name}" if self.linked else MAIN
+        return checkout_name(self.top, self.linked, self.top)
+
+    def named_in(self, project: Path) -> str:
+        return checkout_name(self.top, self.linked, project)
 
     @property
     def head_log(self) -> Path:

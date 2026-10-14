@@ -13,8 +13,8 @@ def branch_key(checkout_name: str, agent: int) -> str:
     return f"{checkout_name}|{agent}"
 
 
-def branch_label(checkout, before: str | None) -> str:
-    label = f"{checkout.name} started on `{checkout.branch}`" if before is None else f"{checkout.name} switched from `{before}` to `{checkout.branch}`"
+def branch_label(name: str, branch: str, before: str | None) -> str:
+    label = f"{name} started on `{branch}`" if before is None else f"{name} switched from `{before}` to `{branch}`"
     return label[:1].upper() + label[1:]
 
 
@@ -22,15 +22,17 @@ class SpotBranchSwitch(Listener[AgentReported]):
     def listen(self, event: AgentReported, agents: ReadRows[AgentRow], git: ReadGit, elsewhere: ReadElsewhere, remembered: ReadRemembered) -> list[Fact]:
         if event.hook == HookEvent.PRE_TOOL_USE:
             return []
-        checkout = git.checkout(elsewhere.here().working_folder(agents.peek(event.agent)))
+        here = elsewhere.here()
+        checkout = git.checkout(here.working_folder(agents.peek(event.agent)))
         if not checkout or not checkout.branch:
             return []
-        before = remembered.get(branch_key(checkout.name, event.agent))
+        name = checkout.named_in(here.record.root.parent)
+        before = remembered.get(branch_key(name, event.agent))
         if before == checkout.branch:
             return []
         if before is None and not checkout.linked:
-            return [BranchNoted(agent=event.agent, checkout=checkout.name, branch=checkout.branch)]
-        return [BranchSwitched(agent=event.agent, checkout=checkout.name, branch=checkout.branch, label=branch_label(checkout, before))]
+            return [BranchNoted(agent=event.agent, checkout=name, branch=checkout.branch)]
+        return [BranchSwitched(agent=event.agent, checkout=name, branch=checkout.branch, label=branch_label(name, checkout.branch, before))]
 
 
 class SpotGitAction(Listener[CommandRan]):
