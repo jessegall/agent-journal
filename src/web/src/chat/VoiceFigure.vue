@@ -4,6 +4,8 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf, fallStep} from "../domain/falls.js";
+import {fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
@@ -19,6 +21,7 @@ import {
     facingToward,
     footingOn,
     gripIn,
+    groundEdge,
     groundUnder,
     hiddenAt,
     landingOn,
@@ -280,7 +283,13 @@ function nextLeg() {
 function depart() {
     const [next, ...legs] = moving.value.legs;
     moving.value = {...moving.value, moves: true, legs};
+    walk = {from: {...at.value}, began: performance.now(), on: null};
     leg.value = next;
+    if (!next.hopping) {
+        const feet = feetOf(at.value);
+        walk.on = floorAt(latestFloors().floors, feet.x, feet.y)?.id ?? null;
+        return void (legTimer = setTimeout(nextLeg, next.lead + next.ms));
+    }
     at.value = {x: next.x, y: next.y};
     legTimer = setTimeout(() => {
         landing.value = Boolean(moving.value.hopping && moving.value.lands);
@@ -300,6 +309,8 @@ function settle(spot, held = footingOn(spot)) {
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
     if (!here.value || document.hidden) return;
+    if (airborne) return fallOn();
+    if (moving.value?.moves && !moving.value.hopping) return walkOn();
     followTripGround();
     if (!footing) return;
     sway();
@@ -327,6 +338,51 @@ function fallenTo(spot) {
     falling = {...step, at: now};
     if (step.landed) groundMoved("dropping");
     return {...spot, y: step.y};
+}
+
+// A walk is stepped here, frame by frame, against the floors the floors loop read (figure/floors.js): the walker keeps to its floor as
+// it rises, and falls from where it is the moment its floor drops away or goes, then lands and sets off again for where it was going
+let walk = {from: {x: 0, y: 0}, began: 0, on: null};
+let airborne = null;
+const feetOf = (picture) => ({x: picture.x + SIZE / 2, y: picture.y + (1 - below.value) * SIZE});
+const pictureOf = (feet) => ({x: feet.x - SIZE / 2, y: feet.y - (1 - below.value) * SIZE});
+
+function walkOn() {
+    const feet = feetOf(legAt(leg.value, walk.from, performance.now() - walk.began));
+    const under = walk.on ? underWalker(latestFloors().floors, walk.on, feet.x, feet.y) : {falls: false, dy: 0};
+    if (under.falls) return fallFrom(feet);
+    if (Math.abs(under.dy) > 0.3) carryWalk(under.dy);
+    at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
+}
+
+function carryWalk(dy) {
+    const lifted = (each) => ({...each, y: each.y + dy});
+    walk = {...walk, from: lifted(walk.from)};
+    leg.value = lifted(leg.value);
+    moving.value = {...moving.value, legs: moving.value.legs.map(lifted)};
+}
+
+function fallFrom(feet) {
+    clearTimeout(legTimer);
+    airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to: moving.value.to};
+    moving.value = null;
+    footing = null;
+    at.value = pictureOf(feet);
+}
+
+function fallOn() {
+    const now = performance.now();
+    const step = fallFrame(airborne, latestFloors().floors, (now - airborne.at) / 1000, fall.value, SIZE);
+    airborne = {...airborne, ...step, at: now};
+    at.value = pictureOf(step);
+    if (!step.landed) return;
+    const to = airborne.to;
+    airborne = null;
+    groundMoved("dropping");
+    const home = step.landed.id === "home" ? groundEdge().element : null;
+    settle({x: step.x, y: step.landed.top, posture: "stand", view: null, on: home});
+    rest();
+    if (to) moveTo(to);
 }
 
 // On its way, the figure keeps to the ground it is headed for as that moves: the legs that end on it, the one under way among them, are
@@ -535,6 +591,7 @@ async function load(name) {
         arriving.value = here.value;
         figureStatus.value = "shown";
         cancelAnimationFrame(footFrame);
+        startFloors();
         footFrame = requestAnimationFrame(watchFooting);
         look();
         step();
@@ -554,6 +611,7 @@ onMounted(() => {
 });
 onUnmounted(() => {
     cancelAnimationFrame(footFrame);
+    stopFloors();
     cancelAnimationFrame(homeFrame);
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
@@ -585,7 +643,7 @@ const style = computed(() => ({
     width: `${SIZE}px`,
     height: `${SIZE}px`,
     transform: `translate(${at.value.x}px, ${at.value.y}px)`,
-    transition: moving.value?.moves
+    transition: moving.value?.moves && moving.value.hopping
         ? `transform ${leg.value.ms}ms ${leg.value.easing} ${leg.value.lead}ms`
         : sliding.value
           ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
