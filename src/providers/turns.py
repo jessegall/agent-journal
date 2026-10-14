@@ -17,16 +17,9 @@ SETTLE, SETTLE_STEP = 1.5, 0.05
 TURNS = Memo(CONVERSATIONS_HELD)
 READING: dict[str, threading.Lock] = {}
 READING_LOCK = threading.Lock()
-BUILDER: subprocess.Popen | None = None
-WAITING: dict[str, str] = {}
-READ_NOW: dict[str, str] = {}
-TRIED: dict[str, float] = {}
 FIRST_INLINE = 200_000
 GROWN_INLINE = 4_000_000
 RETRY_AFTER = 600.0
-LATER: dict[str, object] = {}
-LATER_LOCK = threading.Lock()
-LOADER: threading.Thread | None = None
 PAUSE = 0.02
 
 
@@ -70,19 +63,19 @@ def every_turn(agent, limit: LoadLimit | None = None) -> list:
         return []
     if limit and not TURNS.contains(agent.transcript) and limit.spent():
         limit.left.append(agent.transcript)
-        load_later(agent)
+        LATER.add(agent)
         return []
     with reading(agent.transcript):
         held = TURNS.kept(agent.transcript)
         whole = held[0] if held and held[1] == found.st_ino and held[0].end <= found.st_size else search_folds.restored(path, found.st_size)
         if whole is None:
             if found.st_size > FIRST_INLINE:
-                begin_reading(agent)
+                FOLDS.queue(agent)
                 return []
             whole = provider.whole_turns(path, WholeRead.SEARCH)
         elif whole.end < found.st_size:
             if found.st_size - whole.end > GROWN_INLINE:
-                begin_reading(agent)
+                FOLDS.queue(agent)
                 return whole.turns
             whole = provider.grown_turns(path, whole)
         else:
@@ -93,53 +86,76 @@ def every_turn(agent, limit: LoadLimit | None = None) -> list:
         return whole.turns
 
 
-def load_later(agent) -> None:
-    """Leaves a conversation to a thread that loads its folds one at a time after the search has answered, so a search never waits on more than its time limit."""
-    global LOADER
-    with LATER_LOCK:
-        LATER[agent.transcript] = agent
-        if LOADER and LOADER.is_alive():
-            return
-        LOADER = threading.Thread(target=load_every_later, daemon=True)
-        LOADER.start()
+class LaterLoads:
+    """The conversations a search left to load after it answered, read one at a time by a thread of their own, so a search never waits on
+    more than its time limit."""
 
+    def __init__(self) -> None:
+        self.waiting: dict[str, object] = {}
+        self.lock = threading.Lock()
+        self.thread: threading.Thread | None = None
 
-def load_every_later() -> None:
-    while True:
-        with LATER_LOCK:
-            if not LATER:
+    def add(self, agent) -> None:
+        with self.lock:
+            self.waiting[agent.transcript] = agent
+            if self.thread and self.thread.is_alive():
                 return
-            agent = next(iter(LATER.values()))
-        try:
-            every_turn(agent)
-        finally:
-            with LATER_LOCK:
-                LATER.pop(agent.transcript, None)
-        time.sleep(PAUSE)
+            self.thread = threading.Thread(target=self.load_each, daemon=True)
+            self.thread.start()
+
+    def load_each(self) -> None:
+        while True:
+            with self.lock:
+                if not self.waiting:
+                    return
+                agent = next(iter(self.waiting.values()))
+            try:
+                every_turn(agent)
+            finally:
+                with self.lock:
+                    self.waiting.pop(agent.transcript, None)
+            time.sleep(PAUSE)
+
+    def count(self) -> int:
+        return len(self.waiting)
 
 
-def begin_reading(agent) -> None:
-    """Queues a conversation for the one low-priority process that keeps conversations' turns on disk, and leaves it be for a while after it was tried; loading() starts the process once the search has queued them all."""
-    if time.monotonic() - TRIED.get(agent.transcript, -RETRY_AFTER) < RETRY_AFTER:
-        return
-    TRIED[agent.transcript] = time.monotonic()
-    WAITING[agent.transcript] = agent.provider
+class FoldBuilder:
+    """The one low-priority process that keeps conversations' turns on disk, and the conversations queued for it; a conversation it tried is
+    left be for RETRY_AFTER."""
+
+    def __init__(self) -> None:
+        self.waiting: dict[str, str] = {}
+        self.reading: dict[str, str] = {}
+        self.tried: dict[str, float] = {}
+        self.process: subprocess.Popen | None = None
+
+    def queue(self, agent) -> None:
+        if time.monotonic() - self.tried.get(agent.transcript, -RETRY_AFTER) < RETRY_AFTER:
+            return
+        self.tried[agent.transcript] = time.monotonic()
+        self.waiting[agent.transcript] = agent.provider
+
+    def run(self) -> int:
+        """How many conversations are queued or being read; starts the process when there is work and none runs."""
+        if self.process and self.process.poll() is None:
+            return len(self.waiting) + len(self.reading)
+        self.reading = dict(self.waiting)
+        self.waiting.clear()
+        if not self.reading:
+            return 0
+        pairs = [part for path, provider in self.reading.items() for part in (provider, path)]
+        self.process = subprocess.Popen([*entry("providers.fold"), *pairs], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        return len(self.reading)
+
+
+LATER = LaterLoads()
+FOLDS = FoldBuilder()
 
 
 def loading() -> int:
-    """How many conversations are queued or being read by the process of their own; starts the process when there is work and none runs."""
-    global BUILDER
-    if BUILDER and BUILDER.poll() is None:
-        return len(WAITING) + len(READ_NOW) + len(LATER)
-    if WAITING:
-        READ_NOW.clear()
-        READ_NOW.update(WAITING)
-        WAITING.clear()
-        pairs = [part for path, provider in READ_NOW.items() for part in (provider, path)]
-        BUILDER = subprocess.Popen([*entry("providers.fold"), *pairs], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        return len(READ_NOW) + len(LATER)
-    READ_NOW.clear()
-    return len(LATER)
+    """How many conversations are queued, being read by the fold process, or left to load after a search."""
+    return FOLDS.run() + LATER.count()
 
 
 def reading(transcript: str) -> threading.Lock:
