@@ -52,17 +52,19 @@ export function eased(easing, share) {
 }
 
 // Where a leg under way has carried the picture `elapsed` milliseconds after it set off from `from`: still at the start through the
-// leg's lead, then along it by the leg's easing to its end
-export function legAt(leg, from, elapsed) {
-    const share = eased(leg.easing, leg.ms > 0 ? (elapsed - leg.lead) / leg.ms : 1);
+// leg's lead, then along it by the leg's easing to its end; with motion kept `still`, a hop is at its end at once
+export function legAt(leg, from, elapsed, still = false) {
+    const share = still && leg.hopping ? 1 : eased(leg.easing, leg.ms > 0 ? (elapsed - leg.lead) / leg.ms : 1);
     return {x: from.x + (leg.x - from.x) * share, y: from.y + (leg.y - from.y) * share};
 }
 
 // One frame of a figure falling from `body` (its feet line and speed) to the floor under it, `seconds` after the last: it lands on that
-// floor the moment it touches, with the floor it landed on, and falls to the window's foot when nothing else is under it
-export function fallFrame(body, floors, seconds, fall, size) {
+// floor the moment it touches, with the floor it landed on, and falls to the window's foot when nothing else is under it; with motion
+// kept `still`, it is on that floor at once
+export function fallFrame(body, floors, seconds, fall, size, still = false) {
     const floor = floorBelow(floors, body.x, body.y);
     if (!floor) return {...body, landed: null};
+    if (still) return {x: body.x, y: floor.top, speed: 0, landed: floor};
     const step = fallStep({y: body.y, speed: body.speed}, floor.top, seconds, fall, size);
     return {x: body.x, y: step.y, speed: step.speed, landed: step.landed ? floor : null};
 }

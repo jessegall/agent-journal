@@ -340,6 +340,8 @@ function watchFooting() {
 // A walk is stepped here, frame by frame, against the floors the floors loop read (figure/floors.js): the walker keeps to its floor as
 // it rises, and falls from where it is the moment its floor drops away or goes, then lands and sets off again for where it was going
 let walk = {from: {x: 0, y: 0}, began: 0, on: null};
+// whether the user asks for motion to be kept still: then a fall or a hop stepped in code is where it ends at once
+const keptStill = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 // the odds that a bubble the figure falls past catches it, rather than it dropping straight home: the avatar's own choice, fall by fall
 const BUBBLES_CATCH = 0.5;
 let airborne = null;
@@ -377,7 +379,7 @@ function fallFrom(spot, to) {
 
 function fallOn() {
     const now = performance.now();
-    const step = fallFrame(airborne, catching(latestFloors().floors, airborne.catches), (now - airborne.at) / 1000, fall.value, SIZE);
+    const step = fallFrame(airborne, catching(latestFloors().floors, airborne.catches), (now - airborne.at) / 1000, fall.value, SIZE, keptStill());
     airborne = {...airborne, ...step, at: now};
     at.value = placed(step, airborne.posture);
     if (!step.landed) return;
@@ -403,7 +405,7 @@ function hopOn() {
         leg.value = aimed.leg;
         walk = {...walk, from: aimed.from};
     }
-    at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
+    at.value = legAt(leg.value, walk.from, performance.now() - walk.began, keptStill());
 }
 
 // The bars under the figure shrank, went, grew or came, and it falls with them or is lifted by them as the flat figure did, for twice the

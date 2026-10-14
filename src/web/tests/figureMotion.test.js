@@ -111,3 +111,12 @@ describe("the floor a walker keeps to", () => {
         expect(underWalker([floor("home", 495)], "home", 400, 500)).toEqual({falls: false, dx: 0, dy: -5});
     });
 });
+
+describe("motion kept still", () => {
+    it("puts a falling figure on the floor under it at once, and a hop at its end, while a walk still walks", () => {
+        expect(fallFrame({x: 400, y: 300, speed: 0}, [floor("home", 500)], FRAME, FALLS.butler, 112, true)).toMatchObject({y: 500, landed: {id: "home"}});
+        const hop = {x: 0, y: 0, ms: 400, lead: 100, easing: "linear", hopping: true};
+        expect(legAt(hop, {x: 0, y: 100}, 0, true)).toEqual({x: 0, y: 0});
+        expect(legAt({...hop, hopping: false, lead: 0}, {x: 0, y: 100}, 200, true)).toEqual({x: 0, y: 50});
+    });
+});
