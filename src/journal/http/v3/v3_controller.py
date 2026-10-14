@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from pathlib import Path
 from queue import Empty
 from typing import Iterator
 
@@ -217,10 +218,58 @@ class V3Controller:
         return Response.json({"queued": False})
 
     def get_agent_edits(self, request: Request) -> Response:
-        return Response.json({"cursor": time.time(), "edits": []})
+        """The files the agent wrote or edited, newest last, with the lines each change added and removed, as the file edits pane draws them."""
+        environment = self.environment_of(request)
+        n = int(request.params["n"])
+        agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
+        if agent is None:
+            return Response.json({"cursor": time.time(), "edits": [], "older": False})
+        edits = []
+        for e in reversed(self.entries.of_kind_in(environment.id, 400)):
+            tool = e.data.get("tool_name", "")
+            if e.kind != "ToolFinished" or tool not in ("Edit", "Write", "MultiEdit") or not (e.actor and e.actor.id == agent.session):
+                continue
+            edit = self.edit_of(e, tool)
+            if edit:
+                edits.append(edit)
+        return Response.json({"cursor": time.time(), "edits": edits[-50:], "older": False})
+
+    def edit_of(self, entry, tool: str) -> dict | None:
+        input_ = entry.data.get("tool_input", {})
+        path = input_.get("file_path", "")
+        if not path:
+            return None
+        try:
+            path = str(Path(path).resolve().relative_to(self.config.root.resolve()))
+        except ValueError:
+            path = Path(path).name
+        removed = input_.get("old_string", "").splitlines() if tool == "Edit" else []
+        added = (input_.get("new_string", "") if tool == "Edit" else input_.get("content", "")).splitlines()
+        rows = [*({"kind": "del", "line": 0, "text": line, "hidden": 0} for line in removed[:60]), *({"kind": "add", "line": 0, "text": line, "hidden": 0} for line in added[:60])]
+        at = seconds(entry.created_at)
+        return {"id": f"{path}@{at}", "path": path, "kind": "create" if tool == "Write" else "edit", "at": at, "added": len(added), "removed": len(removed), "first_line": 0, "last_line": 0, "rows": rows, "image": False}
+
+    def get_agent_edited_file(self, request: Request) -> Response:
+        path = request.query.get("id", "").split("@")[0]
+        file = (self.config.root / path).resolve()
+        if not str(file).startswith(str(self.config.root.resolve())) or not file.is_file():
+            return Response.not_found(path)
+        return Response.json({"path": path, "text": file.read_text(errors="replace")[:200000]})
 
     def get_agent_terminal(self, request: Request) -> Response:
-        return Response.json({"lines": []})
+        """The shell commands the agent ran, with what they printed, as the terminal pane shows them."""
+        environment = self.environment_of(request)
+        n = int(request.params["n"])
+        agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
+        if agent is None:
+            return Response.json({"lines": []})
+        lines = []
+        for e in reversed(self.entries.of_kind_in(environment.id, 400)):
+            if e.kind != "ToolFinished" or e.data.get("tool_name") != "Bash" or not (e.actor and e.actor.id == agent.session):
+                continue
+            output = e.data.get("tool_response", "")
+            lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Bash", "command": e.data.get("tool_input", {}).get("command", ""), "output": output if isinstance(output, str) else str(output), "stepped": False, "level": "everything"})
+        return Response.json({"lines": lines[-200:]})
 
     def get_agent_transcript(self, request: Request) -> Response:
         return Response.json({"turns": [], "rows": [], "more": False})

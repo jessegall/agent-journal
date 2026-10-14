@@ -33,6 +33,7 @@ class V3Routes:
         router.post(f"{API}/{{env}}/console", c.post_console)
         router.get(f"{API}/{{env}}/agent/{{n}}/edits", c.get_agent_edits)
         router.get(f"{API}/{{env}}/agent/{{n}}/edits/older", c.get_agent_edits)
+        router.get(f"{API}/{{env}}/agent/{{n}}/edits/file", c.get_agent_edited_file)
         router.get(f"{API}/{{env}}/agent/{{n}}/terminal", c.get_agent_terminal)
         router.get(f"{API}/{{env}}/agent/{{n}}/transcript", c.get_agent_transcript)
         router.get(f"{API}/{{env}}/{{type}}", c.get_list)
