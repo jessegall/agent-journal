@@ -5,6 +5,7 @@ from controllers.types import Plugins as PluginRows, Todos
 from events.agents import ClockTicked
 from events.answers import Allowed, Refused as Refusing, Rewritten
 from events.asking import AgentDispatching, LongCommandMoving, TextFormatting, ToolCallAsked
+from resources.cancels import DISPATCHING
 from expects import WHEN, Answered, Dispatches, Given, Kept, Ran, Refused, Updated, answering, nothing
 from framework.base import Feature
 from payload import BashCall, Dispatch
@@ -31,6 +32,7 @@ NAMED = Plugin(n=7, title="Pulse beat", data={"enabled": True, "manifest": {"nam
 NOT_A_SOURCE = "'nonsense' is neither a repository URL, an owner/repo, nor a folder on this machine"
 OWNED = Todo(n=5, title="Check the pulse", data={"plugin": "pulse", "locked": True})
 MOVING = LongCommandMoving(session="claude-1", command="npm test", seconds=40)
+DISPATCH = AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True)
 
 
 class Plugins(PluginsWork, Feature):
@@ -76,10 +78,13 @@ class Plugins(PluginsWork, Feature):
         ])
         journal.events.answer(ToolCallAsked, AskPluginsToRefuse(), expects=[
             Given(ToolCallAsked(tool="Bash", input="ls", command="ls", session="claude-1"), rows=[ON]) >> Answered(Allowed()),
+            Given(ToolCallAsked(tool="Bash", input="ls", command="ls", session="claude-1"), rows=[ON], own_work=answering({("refuse_call", "claude-1", "Bash", "", "ls", False): "pulse: the build is running"}))
+                >> Answered(Refusing("pulse: the build is running")),
         ])
         journal.events.answer(AgentDispatching, AskPluginsToCancel(), expects=[
             Given(AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True), rows=[ON]) >> Answered(Allowed()),
             Given(AgentDispatching(session="claude-1", kind="general-purpose", model="sonnet", model_supported=True)) >> Answered(Allowed()),
+            Given(DISPATCH, rows=[ON], own_work=answering({("cancel_call", DISPATCHING, DISPATCH): "pulse: hold the subagents"})) >> Answered(Refusing("pulse: hold the subagents")),
         ])
         journal.events.answer(LongCommandMoving, AskPluginsToKeepLongCommand(), expects=[
             Given(MOVING, rows=[ON]) >> Answered(Allowed()),

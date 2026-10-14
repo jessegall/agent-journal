@@ -1,6 +1,6 @@
 from controllers.types import Reports
 from events.agents import TurnStopped
-from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Updated, Wrote, nothing
+from expects import WHEN, Answered, Answering, Dispatches, File, Given, Nudged, Refused, Updated, Wrote, answering, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.update_reports.commands import AddItem, Changes, Dismiss, Drop, Note, Recap
@@ -40,6 +40,12 @@ ASKED = {"section": "need", "ref": "question:2", "title": "Should New work pick 
 SHIPPED = {"section": "done", "ref": "todo:1", "title": "Settings page made calmer", "note": ""}
 NEWLY_SHIPPED = {"section": "done", "ref": "todo:3", "title": "Files page redesign", "note": ""}
 LAST_UPDATE = Report(n=1, title="What happened in the last day", seen=["user"], data={"kind": "update", "number": 1, "until": 100.0})
+COMMITS_FILE = ".journal/environments/t/runtime/cursor-close_from_commits"
+OFFERED_FILE = ".journal/environments/t/runtime/cursor-update-offered"
+
+
+def cursors(commit: str = "", offered: str = "") -> Answering:
+    return answering({**({COMMITS_FILE: commit} if commit else {}), **({OFFERED_FILE: offered} if offered else {})})
 
 
 class UpdateReports(Feature):
@@ -80,12 +86,18 @@ class UpdateReports(Feature):
         ])
         journal.events.listen(TurnStopped, SpotCommitToOffer(), expects=[
             Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")], files=cursors("aaa")) >> Dispatches(CommitFirstSeen(commit="aaa")),
+            Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")], files=cursors("bbb", f"aaa {WHEN - 600}")) >> Dispatches(OfferHeldBack(commit="bbb", at=f"{WHEN - 600}")),
+            Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1"), UPDATE], files=cursors("bbb", f"aaa {WHEN - 7200}")) >> Dispatches(OfferHeldBack(commit="bbb", at=f"{WHEN - 7200}")),
+            Given(TurnStopped(agent=1), rows=[AgentRow(n=1, title="claude-1")], files=cursors("bbb", f"aaa {WHEN - 7200}")) >> Dispatches(UpdateOffered(commit="bbb").once("offer|bbb")),
         ])
         journal.events.handle(CommitFirstSeen, MarkFirstCommit(), expects=[
             Given(CommitFirstSeen(commit="aaa"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(CommitFirstSeen(commit="aaa"), rows=[AgentRow(n=1, title="claude-1")]) >> Wrote(File(OFFERED_FILE, f"aaa {WHEN}")),
         ])
         journal.events.handle(OfferHeldBack, HoldOfferBack(), expects=[
             Given(OfferHeldBack(commit="bbb", at="0"), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(OfferHeldBack(commit="bbb", at="0"), rows=[AgentRow(n=1, title="claude-1")]) >> Wrote(File(OFFERED_FILE, "bbb 0")),
         ])
         journal.events.handle(UpdateOffered, OfferAnUpdate(), expects=[
             Given(UpdateOffered(commit="ccc"), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged(OFFER),

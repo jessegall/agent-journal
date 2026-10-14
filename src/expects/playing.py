@@ -234,6 +234,7 @@ class Git(Asked):
         return self.answer(("git", *args))
 
     def blobs(self, shas: list[str]) -> dict[str, str]:
+        self.recording.ran.append(("blobs", tuple(shas)))
         return self.answer(("blobs", tuple(shas)))
 
     def blob_bytes(self, sha) -> bytes | None:

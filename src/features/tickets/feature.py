@@ -4,12 +4,13 @@ from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOrchestrator, TicketAgentToWake, TicketCalled, TicketCompleted, TicketHandedIn,
                             TicketNeedsLook, TicketRestarted, TicketsDue, TicketToRevive, TicketWaitedLong)
-from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Reported, Told, Unchanged, Updated, Waited, Wrote, nothing
+from expects import WHEN, Answered, Dispatches, DispatchesWith, Given, Kept, Nudged, Refused, Reported, Told, Unchanged, Updated, Waited, Wrote, nothing
 from framework.base import Feature
 from framework.due import DueOnClock
 from resources.boards import Board
 from resources.tickets import Ticket
-from resources.base import AGENT, PLAN_WAITS, USER
+from resources.base import AGENT, CHECKPOINT, PLAN_WAITS, USER
+from resources.plans import Plan
 from resources.types import Notification, AgentRow, Comment, Environment, Question, Rule, Todo
 from framework.journal import Journal
 from features.tickets.commands import ShowTicketTodos
@@ -112,16 +113,25 @@ class TicketsFeature(Feature):
         ])
         journal.events.handle(TicketsDue, LookAfterTickets(), expects=[
             Given(TicketsDue(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TicketsDue(agent=1), rows=[Ticket(n=1, title="Dark mode", data={"work_environment": "ticket-1", "launched": WHEN - 120}), AgentRow(n=1, title="claude-1")])
+                >> Updated(Ticket(n=1), launched=0.0),
         ])
         journal.events.listen(TicketsDue, SpotWaitingPlans(), expects=[
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TicketsDue(agent=1), rows=[run_here(orchestrator_approves_plans=True), Ticket(n=1, title="Dark mode", data={"board": 1, "stage": "Doing", "work_environment": "t", "plan": 1}),
+                                             Plan(n=1, title="Ship it", data={"status": "ready"}), AgentRow(n=1, title="claude-1")])
+                >> DispatchesWith(PlanWaitsForOrchestrator, ticket=1, moment=PLAN_WAITS),
         ])
         journal.events.handle(PlanWaitsForOrchestrator, RaiseWaitingPlan(), expects=[
             Given(PlanWaitsForOrchestrator(ticket=1, moment=PLAN_WAITS), rows=[run_here(), waiting_for(5)]) >> Dispatches(nothing),
+            Given(PlanWaitsForOrchestrator(ticket=1, moment=PLAN_WAITS), rows=[run_here(), waiting_for(5)]) >> Updated(Ticket(n=1)),
         ])
         journal.events.listen(TicketsDue, SpotTicketCalls(), expects=[
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
             Given(TicketsDue(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
+            Given(TicketsDue(agent=1), rows=[run_here(), Ticket(n=1, title="Dark mode", data={"board": 1, "stage": "Doing", "work_environment": "t"}),
+                                             AgentRow(n=1, title="claude-1", data={"event": "Stop", "last_message": "All done.", "at": WHEN - 60})])
+                >> Dispatches(TicketCalled(kind="ticket_replied", ticket=1, title="Dark mode", values={"text": "All done."}).once(f"ticket_replied|ticket:1|turn:1:{int(WHEN - 60)}")),
         ])
         journal.events.handle(TicketCalled, PassOnCall(), expects=[
             Given(TicketCalled(kind="ticket_replied", ticket=1, title="Dark mode", values={"text": "done"}), rows=[AgentRow(n=1, title="claude-1")])
@@ -143,6 +153,7 @@ class TicketsFeature(Feature):
         ])
         journal.events.handle(TicketNeedsLook, RaiseStuckTicket(), expects=[
             Given(TicketNeedsLook(ticket=1, text="stopped"), rows=[waiting_for(5)]) >> Dispatches(nothing),
+            Given(TicketNeedsLook(ticket=1, text="stopped"), rows=[waiting_for(5)]) >> Updated(Ticket(n=1)),
         ])
         journal.events.listen(TicketsDue, SpotLongWaits(), expects=[
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")])

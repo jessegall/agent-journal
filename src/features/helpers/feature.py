@@ -6,7 +6,7 @@ from events.helpers import (AnswerToRelay, HelperAsks, HelpersWatchDue, HelperBr
                             SubagentAsks, SubagentTouched)
 from events.messages import MessageCreated
 from events.questions import QuestionCreated
-from expects import Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, nothing
+from expects import Answered, Dispatches, DispatchesWith, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, answering, nothing
 from framework.base import Feature
 from framework.due import DueOnClock
 from resources.base import AGENT, USER
@@ -98,6 +98,9 @@ class HelpersFeature(Feature):
         journal.events.listen(HelpersWatchDue, SpotWatchedHelpers(), expects=[
             Given(HelpersWatchDue(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(HelpersWatchDue(agent=2), rows=[AGENT_ROW, Helper(n=1, title="Rhea", data={"name": "Rhea"})]) >> Dispatches(nothing),
+            Given(HelpersWatchDue(agent=1), rows=[AGENT_ROW, Helper(n=1, title="Rhea", data={"name": "Rhea", "provider": "claude", "environment": "helper-env"})],
+                  files=answering({".journal/runtime/sessions/helper-1/session.json": '{"environment": "helper-env", "seen": 5.0}'}))
+                >> DispatchesWith(HelperStopped, n=1, name="Rhea"),
         ])
         journal.events.handle(HelperRefused, NameRefusedHelper(), expects=[
             Given(HelperRefused(n=3, name="Rhea", provider="codex", reason="no such model", ref="helper:3"), rows=[AGENT_ROW])
