@@ -1,5 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.features.plans.commands.plan_command import PlanCommand
+from journal.features.plans.listeners.advance_plan import AdvancePlan
 from journal.features.plans.states.following_plan import FollowingPlan
 
 
@@ -7,14 +9,10 @@ class Plans(Feature):
     name = "plans"
     title = "Plans"
     states = (FollowingPlan,)
+    commands = (PlanCommand,)
+    listeners = (AdvancePlan,)
 
-    STARTED = Nudge(name, "started", "the user started plan {{n}}, {{title}}: build it with them")
-    PHASES = Nudge(name, "phases", "plan {{n}} is building: add its phases")
-    TASKS = Nudge(name, "tasks", "plan {{n}} is at its tasks")
-    READY = Nudge(name, "ready", "every phase of plan {{n}} has its tasks")
-    REVIEWED = Nudge(name, "reviewed", "the review of plan {{n}} is in: report {{report}}")
-    APPROVED = Nudge(name, "approved", "the user approved plan {{n}}: start it")
+    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
+    DONE = Nudge(name, "done", "plan {{n}} is done: its last task closed", repeat_after=0)
     PARKED = Nudge(name, "parked", "the user parked plan {{n}}")
-    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next")
-    DONE = Nudge(name, "done", "plan {{n}} is done: its last task closed")
-    nudges = (STARTED, PHASES, TASKS, READY, REVIEWED, APPROVED, PARKED, NEXT, DONE)
+    nudges = (NEXT, DONE, PARKED)

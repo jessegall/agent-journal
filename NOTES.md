@@ -119,6 +119,22 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   own design philosophy, which the journal never writes and never injects anywhere: it is
   for developing the journal itself, not for any project the journal is installed in.
 
+## Done so far, beyond the core
+
+- tasks: Idle, Working, Halted; task and halt commands; still-open after a quiet quarter hour;
+  the same check three times; done names the next open task.
+- plans: Plan with tasks linked `in_plan`; plan create/add/start/park/show/list;
+  FollowingPlan starts the next task when one is done and ends the plan after the last.
+  Deferred: phases, checkpoints, review reports, approval.
+- messages: message send/list/read; unread user messages put before the agent at start,
+  prompt and stop; every agent turn recorded as a message; `[!reply:N]` answers and reads N.
+- questions: question ask/answer/list; Waiting leaves and returns; a prompt answers in place;
+  the answer is typed in through the supervisor.
+- memory: fact, rule, reminder, nothing; AtMark at 25/50/80 percent.
+- briefing: ready, rules, facts, reminders at every session start.
+- Deferred from tasks: work put off in words (needs a text heuristic), closed by commit
+  trailer, auto mode's carry-on timing.
+
 ## Skills (proposed, to confirm)
 
 A skill is a feature's teaching: each feature declares one `Skill` (name, body, keywords, the
@@ -149,7 +165,7 @@ Features to port first, with what they fold in and what they say:
 - questions: ask_questions. Answered so act, waited a day, choices in prose.
 - plans: plans. Started, phases, to-dos, ready, reviewed, approved, parked.
 - sequences: sequences. Next step, step stalled.
-- helpers: helpers, helper_worktrees, awaited's lines. Reported, stopped, refused, idle, quiet, worktree behind.
+- workers (was helpers): helpers, helper_worktrees, awaited's lines. A subagent only reads; a worker writes, in a worktree of its own. Reported, stopped, refused, idle, quiet, worktree behind.
 - laws: journal_laws. Refuse a dispatch without model or job, long read refused, large result.
 - skills: skill_loading. None loaded, stale, required.
 - triggers: triggers. Nudge, instruct, held, denied.

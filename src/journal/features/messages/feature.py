@@ -1,14 +1,17 @@
 from journal.features.feature import Feature
+from journal.features.messages.commands.message_command import MessageCommand
+from journal.features.messages.listeners.inbox_at_prompt import InboxAtPrompt
+from journal.features.messages.listeners.inbox_at_start import InboxAtStart
+from journal.features.messages.listeners.inbox_at_stop import InboxAtStop
+from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.nudge import Nudge
 
 
 class Messages(Feature):
     name = "messages"
     title = "Messages"
+    commands = (MessageCommand,)
+    listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, RecordTurn)
 
-    INBOX = Nudge(name, "inbox", "there are new messages in your inbox")
-    ANSWER = Nudge(name, "answer", "answer {{messages}} before you do anything else")
-    REACTION = Nudge(name, "reaction", "your message was only {{face}}, so it was not posted: react instead")
-    PARAGRAPHS = Nudge(name, "paragraphs", "your last message ran its paragraphs together")
-    NUMBERS = Nudge(name, "numbers", "your message names {{numbers}} without saying what they are")
-    nudges = (INBOX, ANSWER, REACTION, PARAGRAPHS, NUMBERS)
+    ANSWER = Nudge(name, "answer", "answer these messages before you do anything else: {{messages}}", "reply with [!reply:N] in your turn, or journal message send \"<text>\" --reply-to N", repeat_after=60)
+    nudges = (ANSWER,)

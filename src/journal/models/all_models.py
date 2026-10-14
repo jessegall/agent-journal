@@ -5,6 +5,7 @@ from journal.models.environment import Environment
 from journal.models.fact import Fact
 from journal.models.link import Link
 from journal.models.message import Message
+from journal.models.plan import Plan
 from journal.models.question import Question
 from journal.models.reminder import Reminder
 from journal.models.report import Report
@@ -18,4 +19,4 @@ from journal.models.user import User
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Message, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Message, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link)

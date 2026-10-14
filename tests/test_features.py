@@ -78,3 +78,85 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
 def test_a_rule_binds_the_project_not_an_environment(app):
     app.console().run(["rule", "create", "Always name the model"], Where("other"))
     assert "Always name the model" in app.console().run(["rule", "list"], USER).out
+
+
+def test_pauses_nest_and_each_back_pops_one(app):
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    context(app, 30)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    app.console().run(["halt", "now", "stuck"], AGENT)
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "halted"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    assert isinstance(machine.current("s1"), AtMark), "the halt went back to the mark it left"
+    app.console().run(["nothing", "survives", "fine"], AGENT)
+    assert machine.current("s1") == Working(task_id=1), "the mark went back to the task"
+
+
+def test_a_plan_is_followed_task_by_task_to_its_end(app):
+    from journal.features.plans.states.following_plan import FollowingPlan
+    from journal.models.plan_state import PlanState
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "release", "--brief", "ship 4.0"], USER)
+    console.run(["plan", "add", "1", "write the notes"], USER)
+    console.run(["plan", "add", "1", "tag it"], USER)
+    hook(app, "SessionStart")
+    out = console.run(["plan", "start", "1"], AGENT).out
+    assert "task 1 is next, write the notes" in out
+    machine = app.container.get(Machine)
+    assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
+    assert "task 1 is in hand" in hook(app, "Stop")[1]["additionalContext"]
+    out = console.run(["task", "done", "1"], AGENT).out
+    assert "task 2 is next, tag it" in out
+    assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=2)
+    out = console.run(["task", "done", "2"], AGENT).out
+    assert "plan 1 is done" in out
+    assert machine.current("s1").name == "idle"
+    assert app.container.get(Plans).find(1).state == PlanState.DONE
+
+
+def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
+    from journal.repositories.messages import Messages
+    console = app.console()
+    console.run(["message", "send", "can you look at the login?"], USER)
+    status, body = hook(app, "UserPromptSubmit", prompt="hi")
+    assert "answer these messages before you do anything else: 1. can you look at the login?" in body["additionalContext"]
+    hook(app, "MessageDisplay", message="[!reply:1] On it, the login is next.")
+    app.runtime().deferred.drain()
+    messages = app.container.get(Messages).in_(1)
+    assert [m.author for m in messages] == ["user", "agent"]
+    assert messages[1].reply_to == 1 and messages[1].text == "On it, the login is next."
+    assert messages[0].read_at is not None
+    assert hook(app, "Stop")[1] == {}, "nothing unread is left"
+
+
+def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
+    from journal.features.questions.states.waiting import Waiting
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
+    machine = app.container.get(Machine)
+    assert isinstance(machine.current("s1"), Waiting) and machine.current("s1").question_id == 1
+    assert hook(app, "Stop")[1] == {}, "idle while waiting is fine"
+    assert "Which name?  [alpha / beta]" in console.run(["question", "list"], USER).out
+    console.run(["question", "answer", "1", "beta"], USER)
+    assert machine.current("s1") == Working(task_id=1)
+    assert console.run(["question", "list"], USER).out == ""
+
+
+def test_a_prompt_answers_a_question_in_other_words(app):
+    from journal.features.questions.states.waiting import Waiting
+    hook(app, "SessionStart")
+    app.console().run(["question", "ask", "Which name?"], AGENT)
+    hook(app, "UserPromptSubmit", prompt="call it beta")
+    assert app.container.get(Machine).current("s1").name == "idle"
+
+
+def test_the_same_check_three_times_is_named(app):
+    hook(app, "SessionStart")
+    for _ in range(2):
+        assert "additionalContext" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]
+    assert "same check 3 times in a row: ls build" in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]["additionalContext"]

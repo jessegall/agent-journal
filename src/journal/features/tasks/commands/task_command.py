@@ -7,6 +7,7 @@ from journal.engine.machine import Machine
 from journal.features.tasks.states.working import Working
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
+from journal.models.task_state import TaskState
 from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
@@ -55,12 +56,19 @@ class TaskCommand(Command):
         task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), where.actor)
         self._let_go(task, where)
         print(f"task {task.id} done: {task.title}")
+        self._name_next(task)
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
         for task in self.tasks.in_(self.environments.named(where.environment).id):
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0
+
+    def _name_next(self, done: Task) -> None:
+        from journal.features.tasks.feature import Tasks
+        open_ = [t for t in self.tasks.in_state(done.environment_id, TaskState.OPEN)]
+        if open_:
+            print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())
 
     def _start(self, task: Task, where: Where) -> Task:
         started = self.tasks.save(task.started(self._now()), where.actor)

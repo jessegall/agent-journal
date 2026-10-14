@@ -6,6 +6,9 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Agents(ScopedRepository[Agent]):
     model = Agent
 
+    def in_state(self, name: str) -> list[Agent]:
+        return self.where(state=name)
+
     def for_session(self, session: str) -> Agent:
         found = self.where(session=session)
         if not found:
