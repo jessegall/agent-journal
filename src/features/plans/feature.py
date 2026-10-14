@@ -210,6 +210,7 @@ class PlansFeature(Feature):
         journal.events.handle(PlanBuildingGuided, GuideBuilding(), expects=[
             Given(PlanBuildingGuided(plan=1, line="phases"), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
             Given(PlanBuildingGuided(plan=1, line="todos"), rows=[AT_TODOS, AGENT_ROW]) >> Nudged("todos"),
+            Given(PlanBuildingGuided(plan=1, line="ready"), rows=[plan("building", stage="todos", phases=VISIBLE), AGENT_ROW]) >> Nudged("ready"),
         ])
         journal.events.listen(ClockTicked, SpotCheckpointToPass(), expects=[
             Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": True})

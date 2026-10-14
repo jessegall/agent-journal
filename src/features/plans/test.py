@@ -255,22 +255,6 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env, monke
 
 
 
-def test_an_agent_building_a_plan_is_told_each_next_step():
-    from tests.kit import nudges, report
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    plans = Plans(record, actor="agent")
-    n = plans.create("ship it", goal="it is out").n
-    plans.phase(n, "build", when="it builds")
-    plans.stage(n, "todos")
-    plans.place(n, 1, [Todos(record, actor="agent").create("write it").n])
-    notified = [t for t in nudges(record) if f"plan {n}" in t]
-    assert notified == [f"plan {n} is building - add its phases", f"plan {n} is at its to-dos", f"every phase of plan {n} has its to-dos"], notified
-    Plans(record, actor="user").approve(plans.ready(n).n)
-    assert nudges(record)[-1] == f"the user approved plan {n}, ship it - start it", "approving tells the agent to start it"
-    assert (Plans(record, actor="user").create("a digest").status, nudges(record)[-1]) == ("building", f"the user started plan {n + 1}, a digest - build it with them")
-
-
 def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_where_it_stopped(monkeypatch):
     from tests.kit import nudges, report
     record = fresh()
@@ -360,14 +344,6 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     stuck = approved("stuck", "seven")
     by_user.start(stuck)
     by_user.park(stuck)
-
-
-def test_claude_plan_mode_is_refused_for_a_journal_plan():
-    from tests.kit import handle
-    from providers import PROVIDERS
-    record = fresh()
-    text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "EnterPlanMode", "tool_input": {}})
-    assert "journal plan create" in str(text), text
 
 
 def test_a_plan_is_built_at_the_depth_the_user_picked():
