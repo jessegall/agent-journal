@@ -11,4 +11,9 @@ class Decision:
 
     def merged(self, other: "Decision") -> "Decision": ...
 
+    @property
+    def status(self) -> int:
+        """200 to go on, 409 when refused; the hook script turns it into the agent's exit code."""
+        ...
+
     def as_hook_output(self) -> dict: ...
