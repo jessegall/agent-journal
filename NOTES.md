@@ -276,9 +276,10 @@ Still to do, in rough order:
   triggers; no hub of journals; no phone; no sharing; no plugins.
 - Memory keyword whispers and the rule review; put-off-work; closed-by-commit; auto mode and
   work mode settings; permission prompts routed to the viewer.
-- Pages still served empty: file edits, terminal, code, collections, suggestions, dumps,
-  plugins, integrations, secrets, phone, sharing, the hub of journals. Each is a shaper or a
-  stub in `http/v3/` away.
+- Panes now read from the entries: file edits (Edit and Write calls, with the lines added
+  and removed) and the terminal (shell commands and their output). Still served empty:
+  collections, suggestions, dumps, plugins, integrations, secrets, phone, sharing, the hub
+  when the project is under a throwaway path. Each is a shaper or a stub in `http/v3/` away.
 - Chat marks drawn today: commit badges (from the git feature's entries), replies as comments,
   skills loaded; not yet: subagent marks, thoughts, whispers, test-run cards, reactions.
 - Install from a clone or a release (`install.sh`), upgrade and migrations; the `.pyz` build.
