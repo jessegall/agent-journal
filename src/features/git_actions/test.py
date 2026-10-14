@@ -1,3 +1,4 @@
+# Stays a test: it runs real git (init, switch, worktree add) and real sh -c to prove a stepped command runs as the original, and tests how a checkout is named from its folder directly, which a Given cannot state because the project folder is the play's own.
 import subprocess
 
 import features
