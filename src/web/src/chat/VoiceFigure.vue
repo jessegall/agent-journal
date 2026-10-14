@@ -349,14 +349,14 @@ const pictureOf = (feet) => ({x: feet.x - SIZE / 2, y: feet.y - (1 - below.value
 
 function walkOn() {
     const feet = feetOf(legAt(leg.value, walk.from, performance.now() - walk.began));
-    const under = walk.on ? underWalker(latestFloors().floors, walk.on, feet.x, feet.y) : {falls: false, dy: 0};
+    const under = walk.on ? underWalker(latestFloors().floors, walk.on, feet.x, feet.y) : {falls: false, dx: 0, dy: 0};
     if (under.falls) return fallFrom(feet);
-    if (Math.abs(under.dy) > 0.3) carryWalk(under.dy);
+    if (Math.abs(under.dx) > 0.3 || Math.abs(under.dy) > 0.3) carryWalk(under.dx, under.dy);
     at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
 }
 
-function carryWalk(dy) {
-    const lifted = (each) => ({...each, y: each.y + dy});
+function carryWalk(dx, dy) {
+    const lifted = (each) => ({...each, x: each.x + dx, y: each.y + dy});
     walk = {...walk, from: lifted(walk.from)};
     leg.value = lifted(leg.value);
     moving.value = {...moving.value, legs: moving.value.legs.map(lifted)};

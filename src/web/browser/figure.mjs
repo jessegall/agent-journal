@@ -241,6 +241,43 @@ await runScenarios(process.argv[2], {
         }
     },
 
+    async "a walking figure falls frame by frame when the floor it walks on drops away, and lands on it"(page, url) {
+        await working(page);
+        await page.goto(`${url}#/main`);
+        await page.locator(FIGURE).waitFor({state: "visible"});
+        await settled(page);
+        await page.locator(`${FIGURE}-body`).click();
+        const frames = await page.evaluate(
+            ([figure, home]) =>
+                new Promise((done, failed) => {
+                    const element = document.querySelector(figure);
+                    const floor = document.querySelector(home);
+                    const frames = [];
+                    const until = performance.now() + 6000;
+                    let dropped = 0;
+                    const look = () => {
+                        const bottom = element.getBoundingClientRect().bottom;
+                        if (!dropped && element.dataset.walking === "true") {
+                            floor.style.transform = "translateY(40px)";
+                            dropped = performance.now();
+                        }
+                        if (dropped) frames.push({bottom, floor: floor.getBoundingClientRect().top, t: performance.now()});
+                        if (dropped && performance.now() > dropped + 1500) return done(frames);
+                        if (performance.now() > until) return failed(new Error("the figure never walked after the click"));
+                        requestAnimationFrame(look);
+                    };
+                    requestAnimationFrame(look);
+                }),
+            [FIGURE, HOME]
+        );
+        const drop = frames.at(-1).bottom - frames[0].bottom;
+        const longest = Math.max(0, ...weighedSteps(frames, (frame) => frame.bottom));
+        const measured = `fell ${drop.toFixed(1)}px, longest step ${longest.toFixed(1)}px a frame, ending ${(frames.at(-1).bottom - frames.at(-1).floor).toFixed(1)}px past the floor's top`;
+        console.log(`a walker's fall: ${measured}`);
+        if (drop < 30) throw new Error(`the floor dropped 40px under a walking figure and it did not come down: ${measured}`);
+        if (longest > drop * MOST_OF_A_FALL_IN_A_FRAME) throw new Error(`the walking figure snapped down: ${measured}`);
+    },
+
     async "a click on the figure sends it walking or hopping out of the box it was in, never across the page in one frame"(page, url) {
         for (const agent of [working, idle, paused]) await clickedAway(page, url, agent);
     },

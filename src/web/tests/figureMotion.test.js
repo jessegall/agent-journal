@@ -23,7 +23,7 @@ describe("a walking figure and the floor under it", () => {
         const leg = {x: 600, y: 388, ms: 1000, lead: 0};
         const halfway = legAt(leg, {x: 200, y: 388}, 500);
         expect(halfway.x).toBe(400);
-        expect(underWalker(before, "home", 400, 500)).toEqual({falls: false, dy: 0});
+        expect(underWalker(before, "home", 400, 500)).toEqual({falls: false, dx: 0, dy: 0});
         const after = [floor("home", 540), floor("foot", 900)];
         expect(underWalker(after, "home", 400, 500).falls).toBe(true);
         const landed = fallTo({x: 400, y: 500}, after);
@@ -37,11 +37,11 @@ describe("a walking figure and the floor under it", () => {
     });
 
     it("is carried by a floor that rises under it, and never lands on a floor its feet were already below", () => {
-        expect(underWalker([floor("home", 480)], "home", 400, 500)).toEqual({falls: false, dy: -20});
+        expect(underWalker([floor("home", 480)], "home", 400, 500)).toEqual({falls: false, dx: 0, dy: -20});
         expect(floorBelow([floor("bar", 450), floor("foot", 900)], 400, 500).id).toBe("foot");
     });
 
-    it("falls when it walks off the end of its floor", () => {
-        expect(underWalker([floor("home", 500, 100, 300), floor("foot", 900)], "home", 350, 500).falls).toBe(true);
+    it("is carried back inside a floor that narrowed past its feet, as when the side panel opens", () => {
+        expect(underWalker([floor("home", 500, 100, 300), floor("foot", 900)], "home", 350, 500)).toEqual({falls: false, dx: -50, dy: 0});
     });
 });

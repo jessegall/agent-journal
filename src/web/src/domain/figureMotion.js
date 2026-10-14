@@ -13,11 +13,11 @@ export const floorBelow = (floors, x, y) =>
     floors.filter((floor) => holds(floor, x) && floor.top >= y - ON_FLOOR).sort((a, b) => a.top - b.top)[0] ?? null;
 
 // What became of the floor a walker set off on: gone or dropped away under its feet, so it falls; or still there, `dy` pixels above or
-// below the line it walks, which carries it along
+// below the line it walks and `dx` pixels to bring it back inside a floor that narrowed past its feet, which carry it along
 export function underWalker(floors, id, x, y) {
     const floor = floors.find((each) => each.id === id);
-    if (!floor || !holds(floor, x) || floor.top > y + ON_FLOOR) return {falls: true, dy: 0};
-    return {falls: false, dy: floor.top - y};
+    if (!floor || floor.top > y + ON_FLOOR) return {falls: true, dx: 0, dy: 0};
+    return {falls: false, dx: Math.min(Math.max(x, floor.left), floor.right) - x, dy: floor.top - y};
 }
 
 // Where a leg under way has carried the picture `elapsed` milliseconds after it set off from `from`: still at the start through the
