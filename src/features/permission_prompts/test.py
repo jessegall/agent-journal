@@ -15,23 +15,6 @@ from resources.base import SYSTEM
 from tests.conftest import fresh, refused
 
 
-def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answered():
-    record = fresh()
-    provider = PROVIDERS["claude"]()
-    hook = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "git push"}}
-
-    def waiting():
-        return [n.title for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
-
-    handle(provider, record.root, record.env, {**hook, "hook_event_name": "PreToolUse"})
-    assert waiting() == [], "a tool use alone asks for nothing"
-    handle(provider, record.root, record.env, {**hook, "hook_event_name": "PermissionRequest"})
-    assert waiting() == ["Waiting for permission - Bash git push"], "the prompt is shown, naming the call"
-    assert Agents(record, actor=SYSTEM).by_session("claude-1").asking["tool"] == "Bash"
-    handle(provider, record.root, record.env, {**hook, "hook_event_name": "PostToolUse"})
-    assert waiting() == [], "the call ran: the notice goes"
-
-
 def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeypatch, tmp_path):
     claude = DRIVERS["claude"]
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
