@@ -135,7 +135,26 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - Deferred from tasks: work put off in words (needs a text heuristic), closed by commit
   trailer, auto mode's carry-on timing.
 
-## Skills (proposed, to confirm)
+## Decisions taken while building the features
+
+- A feature's listeners go on the bus wrapped in `Switched`, which runs the inner listener only
+  where its feature is on; so a switched-off feature has no listener running, by construction.
+- The machine fires `StateEntered(session, environment_id, left, entered)` on the bus whenever
+  an agent's state name changes, by event or by command. It is a plain Event, not an AgentEvent,
+  since no hook reported it. Skills are required on it; nothing listens to Agent `Updated` for
+  state changes, since a row can change for other reasons.
+- A `Skill` names the states it is `required_in`; Idle requires nothing, so a fresh session
+  reads the journal skill only. A keyword in a prompt requires that skill too.
+- The console appends `created: task 3 "title", link 7` to every command's output, listing every
+  row created while it ran that the system did not make itself, by the command or by what its
+  events caused; `Creations` is a bus listener with a per-run list.
+- A command's dispatcher is `perform`, so a verb may be any word, `run` included. A state's
+  fields never shadow its methods (`on` is the method; Awaiting holds `workers`).
+- Skills, triggers, checks, long runs and etiquette are built; the feature table is complete.
+  A check runs `subprocess` in the project root with a ten-minute cap, on demand or on the
+  clock; the clock also dispatches a journal-wide `ClockTicked`.
+
+## Skills (built as proposed)
 
 A skill is a feature's teaching: each feature declares one `Skill` (name, body, keywords, the
 states it is needed in). The skills feature writes them from the registry into

@@ -24,6 +24,7 @@ AGENT = Where("main", "s1")
 @pytest.fixture
 def app(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     yield app
     app.runtime().stop()
@@ -94,6 +95,7 @@ def test_the_session_end_ends_the_agent(app):
 
 def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
     first = App(Config(tmp_path, port=0))
+    first.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     first.runtime().start()
     hook(first, "SessionStart")
     first.console().run(["task", "create", "t", "--start"], AGENT)

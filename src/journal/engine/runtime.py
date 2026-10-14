@@ -1,8 +1,11 @@
 from journal.engine.clock import Clock
 from journal.engine.machine import Machine
+from journal.console.creations import Creations
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.models.created import Created
 from journal.features.bus import Bus
 from journal.features.registry import Registry
+from journal.features.switched import Switched
 from journal.hooks.deferred import Deferred
 from journal.container import Container
 from journal.http.server import Server
@@ -17,12 +20,15 @@ class Runtime:
     def boot(self) -> None:
         """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
         self.bus.listen(AgentEvent, self.machine)
+        self.bus.listen(Created, Creations())
         for feature in self.registry.features:
             for listener in feature.listeners:
-                self.bus.listen(listener.kind(), self.container.get(listener))
+                self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry))
 
     def start(self) -> None:
         self.boot()
+        from journal.features.skills.skill_files import SkillFiles
+        self.container.get(SkillFiles).write_all()
         self.deferred.start()
         self.clock.start()
         self.server.start()

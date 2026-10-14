@@ -10,3 +10,5 @@ class ToolFinished(AgentEvent):
     tool: str
     input: dict
     output: str
+    read_path: str = ""
+    """The file this call read, when it was a read."""

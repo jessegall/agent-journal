@@ -6,6 +6,7 @@ from journal.features.memory.commands.rule_command import RuleCommand
 from journal.features.memory.listeners.hold_at_mark import HoldAtMark
 from journal.features.memory.states.at_mark import AtMark
 from journal.features.nudge import Nudge
+from journal.features.skill import Skill
 
 
 class Memory(Feature):
@@ -22,3 +23,16 @@ class Memory(Feature):
     HELD = Nudge(name, "held", "writes wait until you decide what survives the context", "journal fact create, journal rule create, or journal nothing \"<why>\"")
     RULE_REVIEW = Nudge(name, "rule_review", "is rule {{n}} a ruling for the whole project?", "keep it only as Always or Never for every environment; otherwise strike it and file a fact or a reminder here")
     nudges = (DECIDE, HELD, RULE_REVIEW)
+
+    skill = Skill("memory", 'Decide what survives the context window: a fact, a rule or a reminder; load it at a context mark', """
+# Memory
+
+At a mark of the context window, writes wait until you decide what must survive it.
+
+- A **fact** is true of this environment: `journal fact create "<what is true here>"`.
+- A **rule** binds the whole project, worded as the ruling itself: `journal rule create "Always ..." --reason "<why>"`.
+  Only the user makes one; right after, read it again as one.
+- A **reminder** is what to keep doing here: `journal reminder create "<do this>"`.
+- Nothing worth keeping: `journal nothing survives "<why>"`.
+- Facts, rules and reminders are handed to you at every session start.
+""", keywords=('fact', 'facts', 'rule', 'rules', 'reminder', 'remember', 'memory'), required_in=('at_mark',))

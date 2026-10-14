@@ -41,5 +41,5 @@ class Receiver:
     def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
         """The listeners of this event, blocking ones first and deferred ones second."""
         listeners = self.bus.listeners(type(event))
-        blocking = [l for l in listeners if isinstance(l, AgentListener) and l.blocking]
+        blocking = [l for l in listeners if getattr(l, "blocking", False)]
         return blocking, [l for l in listeners if l not in blocking]

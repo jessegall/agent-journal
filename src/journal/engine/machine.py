@@ -4,6 +4,8 @@ from journal.engine.resume import Resume
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.engine.transition import Transition
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.state_entered import StateEntered
+from journal.features.bus import Bus
 from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
 from journal.models.actor import Actor
@@ -17,8 +19,8 @@ class Machine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger) -> None:
-        self.agents, self.states, self.nudger = agents, states, nudger
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus) -> None:
+        self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
 
     def handle(self, event: AgentEvent) -> Decision:
         agent = self.agent(event.session, event.environment_id)
@@ -49,4 +51,7 @@ class Machine(AgentListener[AgentEvent]):
             to = self.states.named(to.state, to.data)
         if to.name == agent.state and to.to_data() == agent.data:
             return agent
-        return self.agents.save(agent.with_(state=to.name, data=to.to_data()), Actor.system())
+        settled = self.agents.save(agent.with_(state=to.name, data=to.to_data()), Actor.system())
+        if to.name != agent.state:
+            self.bus.dispatch(StateEntered(session=agent.session, environment_id=agent.environment_id, left=agent.state, entered=to.name))
+        return settled

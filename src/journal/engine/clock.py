@@ -3,6 +3,7 @@ import time
 
 from journal.engine.states.ended import Ended
 from journal.events.agent.ticked import Ticked
+from journal.events.clock_ticked import ClockTicked
 from journal.features.bus import Bus
 from journal.hooks.decision import Decision
 from journal.repositories.agents import Agents
@@ -23,6 +24,7 @@ class Clock:
 
     def tick(self) -> None:
         now = time.time()
+        self.bus.dispatch(ClockTicked(at=now))
         for agent in self.agents.all():
             if agent.state == Ended.name:
                 continue

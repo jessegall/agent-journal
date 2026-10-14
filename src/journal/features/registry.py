@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.features.skill import Skill
 from journal.repositories.settings import Settings
 
 
@@ -9,12 +10,22 @@ class Registry:
     def __init__(self, features: tuple[type[Feature], ...], settings: Settings) -> None:
         self.features, self.settings = features, settings
         self._by_name = {feature.name: feature for feature in features}
+        self._by_state = {state.name: feature for feature in features for state in feature.states}
 
     def on(self, environment_id: int) -> list[type[Feature]]:
         return [feature for feature in self.features if self.is_on(feature, environment_id)]
 
     def is_on(self, feature: type[Feature], environment_id: int) -> bool:
         return bool(self.settings.get(environment_id, f"features.{feature.name}", feature.default))
+
+    def skill_required_in(self, state: str) -> Skill | None:
+        return next((skill for skill in self.skills() if state in skill.required_in), None)
+
+    def skills(self) -> list[Skill]:
+        return [feature.skill for feature in self.features if feature.skill]
+
+    def skill_named(self, name: str) -> Skill | None:
+        return next((skill for skill in self.skills() if skill.name == name), None)
 
     def owner_of(self, nudge: Nudge) -> type[Feature]:
         return self._by_name[nudge.feature]

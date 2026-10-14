@@ -6,6 +6,7 @@ from journal.providers.provider import Provider
 class Claude(Provider):
     name = "claude"
     write_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
+    read_tool = "Read"
 
     def transcript(self, project: Path, session: str) -> Path: ...
 

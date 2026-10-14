@@ -9,6 +9,9 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.models.actor import Actor
+from journal.models.setting import Setting
+from journal.repositories.settings import Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.memory.states.at_mark import AtMark
@@ -22,6 +25,7 @@ USER = Where("main")
 def app(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
     app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     yield app
     app.runtime().stop()
@@ -207,3 +211,114 @@ def test_a_large_result_is_named(app):
     hook(app, "SessionStart")
     body = hook(app, "PostToolUse", tool_name="Bash", tool_input={}, tool_response="\n" * 500)[1]
     assert "501 lines" in body["additionalContext"]
+
+
+@pytest.fixture
+def skilled(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    yield app
+    app.runtime().stop()
+
+
+def read_skill(app, folder: str):
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / f".claude/skills/{folder}/SKILL.md")}, tool_response="")
+
+
+def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_hold(skilled):
+    from journal.features.skills.states.loading_skill import LoadingSkill
+    app = skilled
+    status, body = hook(app, "SessionStart")
+    assert "read the journal skill before anything else: .claude/skills/journal/SKILL.md" in body["additionalContext"]
+    machine = app.container.get(Machine)
+    assert isinstance(machine.current("s1"), LoadingSkill)
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409
+    read_skill(app, "journal")
+    assert machine.current("s1").name == "idle"
+    assert "journal skill" not in hook(app, "SessionStart")[1].get("additionalContext", ""), "loaded once, not owed again"
+
+
+def test_entering_a_state_requires_its_feature_skill_in_the_command_output(skilled):
+    from journal.features.skills.states.loading_skill import LoadingSkill
+    app = skilled
+    hook(app, "SessionStart")
+    read_skill(app, "journal")
+    out = app.console().run(["task", "create", "t", "--start"], AGENT).out
+    assert "read the tasks skill before anything else" in out
+    machine = app.container.get(Machine)
+    assert isinstance(machine.current("s1"), LoadingSkill) and machine.current("s1").skill == "tasks"
+    read_skill(app, "journal-tasks")
+    assert machine.current("s1") == Working(task_id=1)
+    hook(app, "PreCompact")
+    assert "journal skill" in hook(app, "SessionStart")[1]["additionalContext"], "a compaction owes them again"
+
+
+def test_a_prompt_naming_a_keyword_requires_that_skill(skilled):
+    app = skilled
+    hook(app, "SessionStart")
+    read_skill(app, "journal")
+    assert "read the plans skill" in hook(app, "UserPromptSubmit", prompt="make me a plan for the release")[1]["additionalContext"]
+
+
+def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
+    console = app.console()
+    console.run(["trigger", "create", "deploy,release", "check the changelog first", "--do", "instruct"], USER)
+    console.run(["trigger", "create", "rm -rf", "no recursive deletes here", "--do", "deny"], USER)
+    hook(app, "SessionStart")
+    assert "do this now: check the changelog first" in hook(app, "UserPromptSubmit", prompt="let's deploy it")[1]["additionalContext"]
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "rm -rf build"})
+    assert status == 409 and "no recursive deletes here" in body["error"]
+
+
+def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["check", "create", "it is fine", "--command", "true"], USER)
+    console.run(["check", "create", "it is broken", "--command", "echo boom; exit 1", "--every", "1"], USER)
+    assert console.run(["check", "run", "1"], USER).code == 0
+    out = console.run(["check", "run", "2"], USER)
+    assert out.code == 1 and "boom" in out.out
+    assert typed and "check 2, it is broken, failed" in typed[0] and "boom" in typed[0]
+    assert "failed   it is broken" in console.run(["check", "list"], USER).out
+
+
+def test_a_due_check_runs_on_the_clock(app):
+    from journal.engine.clock import Clock
+    from journal.repositories.checks import Checks
+    app.console().run(["check", "create", "due", "--command", "true", "--every", "1"], USER)
+    app.container.get(Clock).tick()
+    assert app.container.get(Checks).find(1).last_passed is True
+
+
+def test_a_command_that_took_a_minute_is_sent_to_the_background_next_time(app):
+    from journal.features.long_runs.listeners.time_runs import TimeRuns
+    timing = app.container.get(TimeRuns)
+    clock = [1000.0]
+    timing.now = lambda: clock[0]
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest"})
+    clock[0] += 90
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "pytest"}, tool_response="ok")
+    body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest"})[1]
+    assert "pytest took 90s last time" in body["additionalContext"]
+    assert "took" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest", "run_in_background": True})[1].get("additionalContext", "")
+
+
+def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    hook(app, "SessionStart")
+    hook(app, "MessageDisplay", message="I ran journal task start 3 because the user wants it.")
+    app.runtime().deferred.drain()
+    assert any("talks about the journal's commands" in t for t in typed) and any("say you, never the user" in t for t in typed)
+
+
+def test_a_command_reports_every_row_it_caused(app):
+    console = app.console()
+    assert 'created: plan 1 "release"' in console.run(["plan", "create", "release"], USER).out
+    assert 'created: task 1 "write the notes", link 1' in console.run(["plan", "add", "1", "write the notes"], USER).out
