@@ -1,3 +1,4 @@
+# Stays a test: it runs real shell commands, real git, file locks and timeouts, and tests the Checks controller's run, pass and fail words and the progress parser directly, which no registration reaches.
 import os
 
 import features
@@ -48,18 +49,6 @@ def test_a_check_without_a_command_refuses_in_words_unless_it_carries_an_instruc
     assert checks.passes(asked.n, "none stuck").last["ok"] is True and open_notices(record) == [], "and the pass that follows clears it"
     assert checks.due(checks.load(asked.n).last["at"] + 60) == [] and [c.n for c in checks.due(checks.load(asked.n).last["at"] + 3600)] == [asked.n], \
         "an instruction check comes due on its interval like a command"
-
-
-def test_only_the_checks_that_are_due_come_up_on_the_timer():
-    features.load()
-    record = fresh()
-    checks = Checks(record, actor=USER)
-    hourly = checks.create("Hourly", command="true", every=60)
-    checks.create("By hand", command="true")
-    assert checks.due(hourly.created + 60) == [], "a new check does not run the moment it is made"
-    assert [c.n for c in checks.due(hourly.created + 3600)] == [hourly.n], "it runs a full interval after it was made"
-    checks.run(hourly.n, wait=True)
-    assert checks.due(checks.load(hourly.n).last["at"] + 60) == [], "it waits its minutes after a run"
 
 
 def test_a_running_check_counts_its_steps_against_what_it_knows_of_the_total():

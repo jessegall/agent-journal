@@ -43,6 +43,8 @@ class ChecksFeature(Feature):
             Given(ClockTicked(agent=1), rows=[Check(n=1, title="Lint", data={"command": "make lint", "every": 5}), AGENT_ROW]) >> Dispatches(CheckDue(check=1)),
             Given(ClockTicked(agent=1), rows=[Check(n=1, title="Lint", data={"command": "make lint", "every": 5, "last": {"ok": True, "at": WHEN - 60}}), AGENT_ROW])
                 >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[Check(n=1, title="Lint", created=WHEN - 60, data={"command": "make lint", "every": 60}), AGENT_ROW]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[Check(n=1, title="Lint", created=WHEN - 3600, data={"command": "make lint", "every": 60}), AGENT_ROW]) >> Dispatches(CheckDue(check=1)),
             Given(ClockTicked(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(ClockTicked, ForgetDeadRuns(), expects=[
