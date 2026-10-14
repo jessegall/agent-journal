@@ -1,3 +1,4 @@
+# Stays a test: every test runs the hosted journal's real login server on a socket through the hosted fixture, holds live streams open on it, and one plays it in a browser.
 import json
 import re
 import time
