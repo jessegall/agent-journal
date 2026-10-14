@@ -16,7 +16,8 @@ class MessagesShaper(Shaper):
         self.messages = messages
 
     def rows(self, environment: Environment) -> list[V3Row]:
-        return [self.row(m) for m in self.messages.in_(environment.id)]
+        """An agent's reply to a message is the comment on it, not a message of its own, so the chat shows it once."""
+        return [self.row(m) for m in self.messages.in_(environment.id) if not (m.reply_to and m.author == Author.AGENT)]
 
     @staticmethod
     def row(m) -> V3Row:

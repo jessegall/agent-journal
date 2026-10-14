@@ -1,9 +1,11 @@
 import os
 import select
 import signal
-import sys
 import termios
+import time
 import tty
+import webbrowser
+from pathlib import Path
 
 from supervisor.inbox import Inbox
 from supervisor.instructions.instruction import Instruction
@@ -20,15 +22,20 @@ LONGEST = 65536
 class Supervisor:
     """One loop: stdin to the agent, the agent to stdout, the inbox's instructions carried out, the journal kept running."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, stdin: int = 0, stdout: int = 1) -> None:
+    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, stdin: int = 0, stdout: int = 1, viewer: str = "") -> None:
         self.terminal, self.inbox, self.journal, self.stdin, self.stdout = terminal, inbox, journal, stdin, stdout
+        self.viewer = viewer
+        """A page to open in the browser once the journal is up, as #/<environment>; empty opens nothing."""
         self._stopping = False
         self._code: int | None = None
+        self._opened = False
+        self._started_at = 0.0
 
     def run(self) -> int:
         saved = self._raw()
         self.inbox.open()
         self.journal.start()
+        self._started_at = time.time()
         self.terminal.start()
         signal.signal(signal.SIGWINCH, lambda *_: self.terminal.resize(*Terminal.size_of(self.stdin)))
         signal.signal(signal.SIGTERM, lambda *_: self.stop())
@@ -36,6 +43,7 @@ class Supervisor:
             while self._code is None:
                 self.relay_once(0.5)
                 self.journal.keep_alive()
+                self.open_viewer_once()
         finally:
             self.journal.stop()
             self.inbox.close()
@@ -66,6 +74,21 @@ class Supervisor:
             self.terminal.write(data)
         if (code := self.terminal.exited()) is not None and not self._stopping:
             self._code = code
+
+    def open_viewer_once(self) -> None:
+        """Opens the viewer in the browser the first time the journal has written its port, and never again."""
+        if self._opened or not self.viewer:
+            return
+        port_file = self.journal.root / ".journal" / "port"
+        if not port_file.is_file():
+            if time.time() - self._started_at > 30:
+                self._opened = True
+            return
+        self._opened = True
+        try:
+            webbrowser.open(f"http://127.0.0.1:{port_file.read_text().strip()}/{self.viewer}", new=2)
+        except Exception:
+            return
 
     def carry_out(self, instruction: Instruction) -> None:
         """Dispatches on the instruction's type to one of the four below."""

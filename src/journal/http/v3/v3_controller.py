@@ -196,6 +196,8 @@ class V3Controller:
             return Response.json([{"label": label, "text": text} for label, text in (("Historical figures", HISTORICAL), ("Street nicknames", STREET), ("First name and role", PLAIN), ("Sporting names", SPORTING), ("Knights of the realm", KNIGHTLY))])
         if type_ == "ticket" and action == "organization":
             return Response.json({"domains": []})
+        if type_ == "ticket" and action == "todos":
+            return Response.json([])
         if type_ == "profile" and action == "choose":
             return self.post_settings(Request(request.method, request.path, request.query, {"form_of_address": {"profile": request.body.get("n")}}, request.params, request.headers, request.actor))
         return Response.refused(f"{action} on {type_} is not something the viewer can do here")

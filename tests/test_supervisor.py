@@ -10,6 +10,7 @@ from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
 from supervisor.launch import Launch
 from supervisor.menu import Menu
+from supervisor.screen import Screen
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
@@ -52,10 +53,12 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
         inbox.close()
 
 
-def test_the_menu_defaults_and_answers(tmp_path: Path):
-    answers = iter(["", "n", "aside"])
+def test_the_menu_defaults_and_answers(tmp_path: Path, monkeypatch):
+    import io
+    answers = iter(["", "n", "a"])
+    monkeypatch.setattr("builtins.input", lambda: next(answers))
     rows = [{"name": "main", "last_session": "abc", "last_used": "2 hours ago"}, {"name": "spike", "last_session": "", "last_used": ""}]
-    menu = Menu(tmp_path, tmp_path / "journal.py", ask=lambda prompt: next(answers), say=lambda line: None)
+    menu = Menu(tmp_path, tmp_path / "journal.py", Screen(io.StringIO()))
     menu.environments = lambda: rows
     choice = menu.choose()
     assert choice.environment == "main" and choice.resume == "" and choice.hooks_aside

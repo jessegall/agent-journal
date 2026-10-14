@@ -10,7 +10,7 @@ from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
-FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--yes": 0}
+FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--yes": 0, "--no-open": 0}
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,7 @@ class Launch:
     new: bool = False
     aside: bool = False
     yes: bool = False
+    no_open: bool = False
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
@@ -33,7 +34,7 @@ class Launch:
             if arg == "--":
                 rest.extend(it)
             elif arg in FLAGS:
-                flags[arg.lstrip("-")] = next(it) if FLAGS[arg] else True
+                flags[arg.lstrip("-").replace("-", "_")] = next(it) if FLAGS[arg] else True
             else:
                 rest.append(arg)
         return cls(agent, root, tuple(rest), **flags)
@@ -66,4 +67,4 @@ class Launch:
         environ = self.environ(choice)
         terminal = Terminal(self.agent_command(choice), str(self.root), environ)
         journal = JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
-        return Supervisor(terminal, Inbox(Inbox.path_for(self.root)), journal)
+        return Supervisor(terminal, Inbox(Inbox.path_for(self.root)), journal, viewer="" if self.no_open else f"#/{choice.environment}")
