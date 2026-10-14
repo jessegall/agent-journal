@@ -59,3 +59,16 @@ export function fallFrame(body, floors, seconds, fall, size) {
     const step = fallStep({y: body.y, speed: body.speed}, floor.top, seconds, fall, size);
     return {x: body.x, y: step.y, speed: step.speed, landed: step.landed ? floor : null};
 }
+
+// A trip re-aimed at where its destination is now, `landed`: the legs that end on the destination's line, and the leg under way among
+// them, `leg`, carried with it, and `from`, where that leg set off, moved along with it, so a hop stays upright and lands on the ground
+// where it is rather than where it was
+export function aimedAt(trip, leg, from, landed) {
+    const dx = landed.x - trip.to.x;
+    const dy = landed.y - trip.to.y;
+    if (Math.hypot(dx, dy) <= 0.3) return {trip, leg, from};
+    const end = (trip.legs.at(-1) ?? leg).y;
+    const carried = (each) => (each.y === end ? {...each, x: each.x + dx, y: each.y + dy} : each);
+    const under = leg.y === end;
+    return {trip: {...trip, to: landed, legs: trip.legs.map(carried)}, leg: under ? carried(leg) : leg, from: under ? {...from, x: from.x + dx} : from};
+}

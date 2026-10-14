@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {catching, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
+import {aimedAt, catching, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
 const FRAME = 1 / 60;
@@ -67,5 +67,32 @@ describe("a hop stepped in code", () => {
         const fall = {...jump, y: 200, lead: 0, easing: "cubic-bezier(0.55, 0, 0.9, 0.6)"};
         expect(legAt(fall, from, 200).y - 100).toBeLessThan(30);
         expect(eased("linear", 0.25)).toBe(0.25);
+    });
+});
+
+describe("a hop and the floor it is headed for", () => {
+    // a jump straight up from a stroll at 500 onto a floor whose top is 300, set off from 400, 500
+    const trip = {to: {x: 400, y: 300}, legs: []};
+    const jump = {x: 400, y: 300, ms: 400, lead: 0, easing: "cubic-bezier(0.2, 0.7, 0.4, 1)", hopping: true};
+    const from = {x: 400, y: 500};
+
+    it("lands on the new top of a floor that rose while it was in the air", () => {
+        const aimed = aimedAt(trip, jump, from, {x: 400, y: 260});
+        expect(legAt(aimed.leg, aimed.from, 400)).toEqual({x: 400, y: 260});
+        expect(aimed.trip.to.y).toBe(260);
+    });
+
+    it("stays upright on a floor that moved sideways, and is left alone by one that stood still", () => {
+        const aimed = aimedAt(trip, jump, from, {x: 450, y: 300});
+        expect([aimed.leg.x, aimed.from.x]).toEqual([450, 450]);
+        expect(aimedAt(trip, jump, from, {x: 400, y: 300}).trip).toBe(trip);
+    });
+
+    it("falls from its point in the arc when its floor goes, and lands on the floor under it", () => {
+        const midway = legAt(jump, from, 200);
+        expect(midway.y).toBeLessThan(500);
+        let state = {x: midway.x, y: midway.y, speed: 0, landed: null};
+        for (let frame = 0; frame < 600 && !state.landed; frame++) state = fallFrame(state, [floor("home", 500)], FRAME, FALLS.butler, 112);
+        expect([state.x, state.y, state.landed.id]).toEqual([400, 500, "home"]);
     });
 });

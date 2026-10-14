@@ -4,7 +4,7 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {ON_FLOOR, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {ON_FLOOR, aimedAt, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
@@ -370,23 +370,17 @@ function fallOn() {
     if (to) moveTo(to);
 }
 
-// A hop is stepped here, frame by frame, toward the ground it is headed for as that moves: the legs that end on it, the one under way
-// among them, are carried with it, so it lands where the ground is now rather than where it was; and once that ground has gone it falls
-// from where it is in the air
+// A hop is stepped here, frame by frame, toward the ground it is headed for as that moves (aimedAt), so it lands where the ground is now
+// rather than where it was; and once that ground has gone it falls from where it is in the air
 function hopOn() {
     const trip = moving.value;
     if (trip.footing && !footingNow(trip.footing, figureSize())) return fallFrom({...feetOf(at.value), posture: "stand"}, null);
     const landed = trip.footing ? landingOn(trip.to, trip.footing, figureSize()) : trip.to;
-    const dx = landed.x - trip.to.x;
-    const dy = landed.y - trip.to.y;
-    if (Math.hypot(dx, dy) > 0.3) {
-        const end = (trip.legs.at(-1) ?? leg.value).y;
-        const carried = (each) => (each.y === end ? {...each, x: each.x + dx, y: each.y + dy} : each);
-        moving.value = {...trip, to: landed, legs: trip.legs.map(carried)};
-        if (leg.value.y === end) {
-            leg.value = carried(leg.value);
-            walk = {...walk, from: {...walk.from, x: walk.from.x + dx}};
-        }
+    const aimed = aimedAt(trip, leg.value, walk.from, landed);
+    if (aimed.trip !== trip) {
+        moving.value = aimed.trip;
+        leg.value = aimed.leg;
+        walk = {...walk, from: aimed.from};
     }
     at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
 }
