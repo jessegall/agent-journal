@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import ClassVar
 
 from resources.checkout import checkout_name
+from engine.machines import Lease, this_machine
+from engine.offline import Sent
 from engine.record import Record
 from engine.stored import read_json
 from expects import At, Answering, Counting, Expectation, Given
@@ -266,6 +268,60 @@ class CommandWords(Asked):
 
 
 @dataclass
+class Server(Asked):
+    """The journal on a server this copy syncs with: what it says of itself, who it says holds each environment, what it takes in and what it turns down. Every ask is remembered as a run; an answer that is an error is raised, and a tuple of answers is given one by one, the last again and again."""
+
+    service: ClassVar[str] = "server"
+
+    asked: dict = field(default_factory=dict)
+
+    def given(self, key: tuple):
+        """The next answer for an ask: a tuple of answers is read in order, the last staying; an error is raised, not returned."""
+        answer = self.answer(key)
+        if isinstance(answer, tuple):
+            at = self.asked[key] = self.asked.get(key, -1) + 1
+            answer = answer[min(at, len(answer) - 1)]
+        if isinstance(answer, OSError):
+            raise answer
+        return answer
+
+    def leased(self, key: tuple) -> Lease:
+        lease = self.given(key)
+        return Lease(lease.machine or this_machine(), lease.epoch)
+
+    def reaching(self, address: str):
+        server = self
+
+        class Line:
+            def hello(self):
+                server.recording.ran.append(("hello", address))
+                return server.given(("hello",))
+
+            def handover(self, env: str, lease: Lease) -> None:
+                server.recording.ran.append(("handover", env, lease.machine, lease.epoch))
+                if ("handover",) in server.answers.answers:
+                    server.given(("handover",))
+
+            def handback(self, env: str) -> Lease:
+                server.recording.ran.append(("handback", env))
+                return server.leased(("handback",))
+
+            def holder(self, env: str) -> Lease:
+                server.recording.ran.append(("holder", env))
+                return server.leased(("holder",))
+
+            def send(self, held) -> Sent:
+                server.recording.ran.append(("send", held.asked.line()))
+                return server.answers.answers.get(("send", held.asked.line()), Sent.TAKEN)
+
+            def events(self, asked) -> list:
+                server.recording.ran.append(("events", asked.scope, asked.since))
+                return list(server.answers.answers.get(("events", asked.scope), []))
+
+        return Line()
+
+
+@dataclass
 class Viewer(Asked):
     """The viewer: where it runs is what the Given says, and every tab shown is remembered as a run."""
 
@@ -515,6 +571,7 @@ class World:
     viewer: Viewer
     own_work: OwnWork
     outside: Outside
+    server: Server
     terminal: Terminal
     clock: Clock
     ids: Ids
@@ -523,7 +580,7 @@ class World:
     def of(cls, given: Given) -> "World":
         recording = Recording()
         return cls(recording, Commands(recording, given.commands), Files(recording, given.files),
-                   Processes(recording, given.processes), Providers(recording, given.providers), Git(recording, given.git), JournalRoot(recording, given.journal_root), Faults(recording, given.faults), CommandWords(recording, given.command_words), Viewer(recording, given.viewer), OwnWork(recording, given.own_work), Outside(recording, given.outside), Terminal(recording), Clock(given.clock), Ids(given.ids))
+                   Processes(recording, given.processes), Providers(recording, given.providers), Git(recording, given.git), JournalRoot(recording, given.journal_root), Faults(recording, given.faults), CommandWords(recording, given.command_words), Viewer(recording, given.viewer), OwnWork(recording, given.own_work), Outside(recording, given.outside), Server(recording, given.server), Terminal(recording), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

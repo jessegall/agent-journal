@@ -3,13 +3,11 @@ from dataclasses import asdict
 from controllers.types import Environments
 from framework.connection.code import pull, push_from_here
 from framework.connection.linking import fail_to_join, hand, join, leave, sync, view
-from framework.connection.transport import HttpTransport, ServerKey, Transport
+from framework.connection.transport import ServerKey, Transport
+from serving import Servers
+from framework.lanes import served
 from framework.parts import Command, Context
 from resources.base import Refused
-
-
-def transport_for(record, address: str) -> Transport:
-    return HttpTransport(address, ServerKey(record.root).read())
 
 
 def join_again(record, address: str) -> None:
@@ -17,7 +15,7 @@ def join_again(record, address: str) -> None:
     if not address:
         return
     try:
-        join(record, transport_for(record, address))
+        join(record, served(record, Servers, "connection").reaching(address))
     except (Refused, OSError) as error:
         fail_to_join(record, error)
 
@@ -26,7 +24,7 @@ def server_of(context: Context) -> Transport:
     named = str(context.settings.address)
     if not named:
         raise Refused("name the server first: journal environment connect --address <address>, or its address in Settings")
-    return transport_for(context.record, named)
+    return context.service(Servers).reaching(named)
 
 
 class ConnectToServer(Command):
@@ -36,7 +34,7 @@ class ConnectToServer(Command):
     def run(self, context: Context, environments: Environments, address: str | None = None, key: str | None = None) -> str:
         if key is not None:
             ServerKey(context.record.root).keep(key)
-        welcome = join(context.record, server_of(context) if address is None else transport_for(context.record, address))
+        welcome = join(context.record, server_of(context) if address is None else context.service(Servers).reaching(address))
         if address is not None:
             context.record.change_setting("connection", {"address": address})
         return f"connected: this journal is {welcome.release.value} of the server's release, and its record must {welcome.comparison.step.value} before it syncs"

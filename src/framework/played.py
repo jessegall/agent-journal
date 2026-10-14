@@ -203,7 +203,8 @@ def commanded(promise, given: Given, record: Record, world: World) -> None:
     """A command, through its own run: the controller it is on, then the arguments the Given states."""
     controller, *arguments = given.on
     try:
-        world.recording.answered = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
+        context = replace(Context.of(promise.feature, record), fakes={serving.Servers: world.server} if given.server.answers else {})
+        world.recording.answered = promise.part.run(context, controller(record, actor=SYSTEM), *arguments)
     except Refused as refusal:
         world.recording.refused = str(refusal)
 

@@ -1,3 +1,4 @@
+# Stays a test: it runs real server processes, real git and sockets, and the outbox's files, which a Given cannot state.
 import http.server
 import socket
 import subprocess
@@ -16,6 +17,7 @@ from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
 from framework.connection.code import Pushed, pull, push
 from framework.connection.linking import Synced, hand, join, local_hello, sync
+from framework.lanes import TheServers
 from framework.connection.transport import HttpTransport, ServerKey
 from engine.ledger import applied
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Event
@@ -94,7 +96,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     assert (view(record, "https://server.example").connected, view(record, "https://server.example").step) == (True, "in step"), "a copy that has joined is shown as connected and how it stands"
     leave(record)
     assert (view(record, "").connected, record.setting("connection", {}).get("address")) == (False, ""), "disconnecting forgets the address and what was learned of the server"
-    monkeypatch.setattr("features.connection.commands.transport_for", lambda record, address: Server(record.root))
+    monkeypatch.setattr(TheServers, "reaching", lambda self, address: Server(self.record.root))
     Features(record, actor=USER).switch("connection", True)
     Environments(record, actor=USER).action("connect")("https://server.example", "the-machine-key")
     kept = ServerKey(record.root)
@@ -113,7 +115,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     record.hand_over("", this_machine())
     monkeypatch.setenv("JOURNAL_ADDRESS", "journal.example.com")
     assert view(record, "").role == "the server", "a journal that runs on a server says that it is the server"
-    monkeypatch.setattr("features.connection.commands.transport_for", lambda record, address: Server(record.root, up=False))
+    monkeypatch.setattr(TheServers, "reaching", lambda self, address: Server(self.record.root, up=False))
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)
     assert any("Could not connect" in n.title for n in Notices(record, actor=SYSTEM).all()), "an address nobody answers at becomes a notice, not an error"
@@ -384,7 +386,7 @@ def test_every_connection_command_reaches_the_server_its_settings_name(monkeypat
     record = fresh()
     Features(record, USER).switch("connection", True)
     server = Server(record.root)
-    monkeypatch.setattr(commands, "transport_for", lambda record, address: server)
+    monkeypatch.setattr(TheServers, "reaching", lambda self, address: server)
     monkeypatch.setattr(commands, "push_from_here", lambda project: Pushed(("platform",), ("notes",)))
     monkeypatch.setattr(commands, "pull", lambda project, name: ["a.py", "b.py"])
     run = lambda word, *given: invoked(Environments(record, actor=AGENT), word, given)

@@ -118,6 +118,12 @@ class CommandWords(Service):
     """The words of the journal's own command line: its nouns, and the words each noun takes."""
 
 
+class Servers(Service):
+    """The journal on a server this copy syncs with: the line to it, by its address."""
+
+    writes = True
+
+
 class Viewer(Service):
     """The viewer in the browser: whether one is running for this journal, and showing its tab for an environment."""
 

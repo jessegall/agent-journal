@@ -18,6 +18,7 @@ from engine import bus, triggering
 from framework.auto_mode import automatic
 from framework.diagnostics import logged
 from engine import project_files, runtime, seats, viewer, worktree
+from framework.connection.transport import HttpTransport, ServerKey
 from engine.developing import developing
 from engine.disk import last_lines
 from engine.files import blob_bytes, blob_texts, line_counts
@@ -43,7 +44,7 @@ from resources.base import AGENT, SYSTEM, Refused
 from resources.prompt_answers import PromptAnswer
 from resources.runs import Exited
 from serving import (SERVED, Adapted as TheRecord, Providers, Asking, SessionMemory, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
-                     Remembered, Rows, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, CommandWords, ReadOwnWork)
+                     Remembered, Rows, Servers, Sessions, Settings, Terminal, Marks, ReadMarks, Holds, Elsewhere, ReadElsewhere, Git, ReadGit, JournalRoot, ReadJournalRoot, Viewer, ReadViewer, Faults, OwnWork, CommandWords, ReadOwnWork)
 
 
 class NobodyToSpeakTo(Unserved):
@@ -155,6 +156,16 @@ class TheCommandWords:
             nested = next((a for a in command._actions if isinstance(a, _SubParsersAction)), None)
             out[name] = set(nested.choices) if nested else set()
         return out
+
+
+class TheServers:
+    """The journal on a server, over HTTP with this copy's machine key when it keeps one."""
+
+    def __init__(self, record):
+        self.record = record
+
+    def reaching(self, address: str):
+        return HttpTransport(address, ServerKey(self.record.root).read())
 
 
 class TheViewer:
@@ -531,6 +542,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Git: PerAsk(lambda feature, asked: TheGit(record)),
             ReadGit: PerAsk(lambda feature, asked: TheGit(record)),
             Faults: PerAsk(lambda feature, asked: TheFaults(record)),
+            Servers: PerAsk(lambda feature, asked: TheServers(record)),
             Viewer: PerAsk(lambda feature, asked: TheViewer(record)),
             ReadViewer: PerAsk(lambda feature, asked: TheViewer(record)),
             OwnWork: PerAsk(lambda feature, asked: TheOwnWork(FEATURES[feature], record)),
