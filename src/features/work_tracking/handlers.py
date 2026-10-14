@@ -76,8 +76,8 @@ class KeepClosedCount(Handler[ClosedCounted]):
 
 class AskStillBlockedRow(Handler[StillBlocked]):
     def handle(self, event: StillBlocked, chat: Chat, memory: Remembered) -> list[Fact]:
-        chat.say("still blocked", n=event.n, title=event.title, why=event.why)
-        memory.set("asked", {**dict(memory.get("asked", {})), str(event.n): event.at})
+        chat.say("still blocked", rows=event.rows, why=event.why)
+        memory.set("asked", {**dict(memory.get("asked", {})), **{str(n): event.why for n in event.ns}})
         return []
 
 

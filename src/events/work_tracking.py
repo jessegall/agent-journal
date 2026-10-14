@@ -84,13 +84,13 @@ class ClosedCounted(Fact):
 
 @dataclass(frozen=True, kw_only=True)
 class StillBlocked(Fact):
-    """A row has stayed blocked through enough closed to-dos for the agent to be asked about it."""
+    """Rows have stayed blocked for one reason through enough closed to-dos for the agent to be asked about them, once for that reason:
+    `rows` names them, as todo 8 or todos 8 and 9, and `ns` holds their numbers."""
 
     agent: int
-    n: int
-    title: str
+    rows: str
+    ns: tuple[int, ...]
     why: str
-    at: float
 
 
 @dataclass(frozen=True, kw_only=True)
