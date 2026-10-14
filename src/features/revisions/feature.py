@@ -1,5 +1,5 @@
 from controllers.types import Docs
-from expects import Answered, Dispatches, Given, Refused, Updated, nothing
+from expects import Acted, Answered, Dispatches, Given, Refused, Updated, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.revisions.commands import Keep, Revision, Revisions
@@ -8,13 +8,15 @@ from features.revisions.handlers import KeepRevisions
 from features.revisions.listeners import SpotRevisableDoc
 from events.docs import DocWritten
 from events.revisions import DocRevisable
-from resources.base import AGENT
+from resources.base import AGENT, USER
 from resources.types import Doc
 
 
 UNWRITTEN = Doc(n=1, title="How the viewer is built")
 OPEN = Doc(n=1, title="How the viewer is built", data={"revisions": 2, "open_until": 4_102_444_800.0})
 KEPT = Doc(n=1, title="How the viewer is built", data={"revisions": 2, "open_until": 500.0})
+FIRST_IDEA = Doc(n=1, title="How handlers are written", abstract="the first idea")
+EDITED = (Acted(Docs, "section", 1, "Goals", "one", by=AGENT), Acted(Docs, "section", 1, "Goals", "two", by=USER))
 
 
 class RevisionsFeature(Feature):
@@ -27,6 +29,8 @@ class RevisionsFeature(Feature):
         ])
         journal.events.handle(DocRevisable, KeepRevisions(), expects=[
             Given(DocRevisable(n=1), rows=[Doc(n=1, title="How the viewer is built", abstract="the first idea")]) >> Updated(Doc(n=1), revisions=1),
+            Given(DocRevisable(n=1), rows=[FIRST_IDEA], earlier=(*EDITED,)) >> Updated(Doc(n=1), revisions=1),
+            Given(DocRevisable(n=1), rows=[FIRST_IDEA], earlier=(*EDITED, Acted(Docs, "keep", 1, by=USER), Acted(Docs, "cut", 1, "Goals", by=AGENT))) >> Updated(Doc(n=1), revisions=2),
         ])
         journal.commands.add("doc", Keep(), expects=[
             Given((Docs, 1), rows=[UNWRITTEN]) >> Refused("doc 1 has no revision to keep yet: its first edit opens one"),

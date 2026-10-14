@@ -1,6 +1,6 @@
 import time
 
-from controllers.types import Agents, Messages, Nudges, Todos, Works
+from controllers.types import Agents, Nudges, Todos, Works
 from features.nudges.standing import STANDING
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh
@@ -14,23 +14,6 @@ def aged(record, minutes: float) -> None:
 
 def numbered(record, title: str, completed: bool = False) -> list[int]:
     return [n.n for n in Nudges(record).all(completed=completed) if n.title == title]
-
-
-def test_a_line_about_named_rows_stands_until_every_one_of_them_is_answered():
-    record = fresh()
-    idle(record)
-    nudges = Nudges(record, actor=SYSTEM)
-    for title in ("the first asked about", "the second asked about", "an unrelated one"):
-        Messages(record, actor=USER).create(title)
-    asked = nudges.to_primary("answer message 1, message 2", asks="messages.answer", until=["message.completed"], rows=["message:1", "message:2"])
-    Messages(record, actor=SYSTEM).complete(3)
-    assert not nudges.load(asked.n).completed, "closing another message leaves it standing"
-    Messages(record, actor=SYSTEM).complete(1)
-    assert not nudges.load(asked.n).completed, "closing one of the two leaves it standing for the other"
-    Works(record, actor=AGENT).create("something else")
-    assert not nudges.load(asked.n).completed, "an event of a kind it does not wait for leaves it standing"
-    Messages(record, actor=SYSTEM).complete(2)
-    assert nudges.load(asked.n).completed, "closing the last one it names answers it"
 
 
 def test_carry_on_is_said_once_by_work_tracking_and_again_only_by_the_repeat():
@@ -55,26 +38,6 @@ def test_carry_on_is_said_once_by_work_tracking_and_again_only_by_the_repeat():
     aged(record, 6)
     assert len(idle_for(40)) == 2, "work it declared a wait on is left to the wait"
     assert numbered(record, "you stopped with work 1, the release, in hand") == [], "and the line is closed, its subject gone"
-
-
-def test_a_repeat_ends_when_the_row_it_is_about_changes_or_waits():
-    record = fresh()
-    todos = Todos(record, actor=USER)
-    todos.create("the schema")
-    todos.create("the import")
-    idle(record)
-    tick(record)
-    assert len(numbered(record, "todo 1 next")) == 1, "the top row is offered"
-    Todos(record, actor=AGENT).block(1, "waits on the vendor")
-    assert numbered(record, "todo 1 next") == [], "blocking the row ends the line about it"
-    idle(record)
-    tick(record)
-    assert len(numbered(record, "todo 2 next")) == 1, "the next ready row is offered in its place"
-    Todos(record, actor=AGENT).ask(2, "Files or SQLite?", options=[{"title": "Files"}, {"title": "SQLite"}], pick=1)
-    aged(record, 60)
-    tick(record)
-    assert (numbered(record, "todo 2 next"), len(numbered(record, "todo 2 next", completed=True))) == ([], 1), \
-        "a row that waits on a question is not asked about again, and its line is closed"
 
 
 def test_lines_said_to_an_earlier_session_close_and_the_minutes_at_zero_stop_the_repeat():

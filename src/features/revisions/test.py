@@ -5,21 +5,15 @@ from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
 
 
-def test_edits_change_the_open_revision_and_a_kept_one_never_changes():
+def test_an_open_revision_left_alone_is_kept_and_revisions_are_never_rows_of_their_own():
     record = fresh()
     mine, theirs = Docs(record, actor=AGENT), Docs(record, actor=USER)
     doc = mine.create("How handlers are written", abstract="the first idea")
     mine.section(doc.n, "Goals", "one")
     theirs.section(doc.n, "Goals", "two")
-    assert mine.load(doc.n).data["revisions"] == 1, "while the revision is open, edits change it in place"
-    assert mine.action("revision")(doc.n, 1).data["change"] == "written; added Goals; rewrote Goals", "its note collects what changed"
-
-    theirs.action("keep")(doc.n)
-    assert "already kept" in refused(lambda: theirs.action("keep")(doc.n)), "a kept revision is kept once"
+    mine.action("keep")(doc.n)
     mine.update(doc.n, title="How handlers and events are written")
     mine.action("cut")(doc.n, "Goals")
-    now = mine.load(doc.n)
-    assert (now.title, now.sections, now.data["revisions"]) == ("How handlers and events are written", [], 2), "the next edit opens a new revision"
     kept = mine.action("revision")(doc.n, 1)
     assert (kept.title, [s["body"] for s in kept.sections]) == ("How handlers are written", ["two"]), "the kept revision stays as it was"
 

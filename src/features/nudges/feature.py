@@ -64,6 +64,8 @@ class NudgesFeature(Feature):
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=OFFERED) >> Told("next", times=1) & Stands("next"),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Waited(6))) >> Told("next", times=2) & Stands("next") & Closed("next", why="replaced by nudge"),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "start", 1, by=AGENT), Waited(60))) >> Told("next", times=1),
+            Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "block", 1, "waits on the vendor", by=AGENT))) >> Closed("next"),
+            Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "ask", 1, "Files or SQLite?", by=AGENT), Waited(60))) >> Told("next", times=1) & Closed("next"),
         ])
         journal.events.handle(StandingNudgesLost, LetGoOfLostNudges(), expects=[
             Given(StandingNudgesLost(elsewhere=(1,), gone=(), kept=()), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": {"1": {**ON_TODO_7["1"], "session": "claude-0"}}})
