@@ -13,6 +13,8 @@ from journal.repositories.settings import Settings
 from journal.http.router import Router
 from journal.http.routes import Routes
 from journal.http.server import Server
+from journal.http.static_files import StaticFiles
+from pathlib import Path
 from journal.models.all_models import AllModels
 
 
@@ -29,6 +31,7 @@ class App:
         self.container.bind(Connection, self.connection)
         self.container.bind(Router, lambda: Routes(self.container).mount(Router()))
         self.container.bind(Console, self._console)
+        self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(Settings)))
 
     def connection(self) -> Connection:

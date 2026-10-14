@@ -6,6 +6,7 @@ from journal.http.identity import Identity
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.router import Router
+from journal.http.static_files import StaticFiles
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -13,9 +14,13 @@ class Handler(BaseHTTPRequestHandler):
 
     router: Router
     identity: Identity
+    static: StaticFiles
 
     def do_GET(self) -> None:
-        self._reply(self.router.dispatch(self._request()))
+        request = self._request()
+        if not request.path.startswith(("/api/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
+            return self._file(*found)
+        self._reply(self.router.dispatch(request))
 
     def do_POST(self) -> None:
         self._reply(self.router.dispatch(self._request()))
@@ -29,6 +34,14 @@ class Handler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b""
         headers = {name.lower(): value for name, value in self.headers.items()}
         return Request(self.command, url.path, {k: v[-1] for k, v in parse_qs(url.query).items()}, json.loads(raw) if raw else {}, {}, headers, self.identity.of(headers))
+
+    def _file(self, status: int, kind: str, body: bytes) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", kind)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(body)
 
     def _reply(self, response: Response) -> None:
         body = response.encoded()
