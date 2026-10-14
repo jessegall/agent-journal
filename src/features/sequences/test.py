@@ -120,39 +120,6 @@ def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
     assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
 
 
-def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
-    import time
-    from tests.kit import tick
-    features.load()
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    made = sequences.create("Two steps", talks_in="the dump window")
-    sequences.section(made.n, "First", "do the first")
-    sequences.section(made.n, "Second", "do the second")
-    sequences.run(made.n)
-    key = next(iter(sequences.load(made.n).runs))
-    sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 600}})
-    late = lambda: [n for n in nudges(record) if "is still at step" in n]
-    tick(record)
-    assert len(late()) == 1, "a step handed ten minutes ago is called late"
-    sequences.follow(made.n)
-    sequences.next(made.n)
-    tick(record)
-    assert len(late()) == 1, "the next step, handed just now, is not called late though the run began long ago"
-    from engine import chat
-    sent = []
-    import engine.bus
-    real = engine.bus.emit
-    engine.bus.emit = lambda event, record=None: (sent.append(event.data.get("text")) if event.action == "message.sent" else None, real(event, record))[1]
-    try:
-        chat.send(record, Agents(record, actor="system").by_session("claude-1"), "Filed the second item.")
-    finally:
-        engine.bus.emit = real
-    assert (sent, [n for n in nudges(record) if "kept out of the chat" in n][:1]) == ([], ["what you wrote during Two steps was kept out of the chat"]), \
-        "while a sequence that talks in a window runs, the agent's words stay out of the main chat, and it is told so once"
-
-
 def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     from features.sequences.shipped import ship
     features.load()

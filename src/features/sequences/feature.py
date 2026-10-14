@@ -11,7 +11,7 @@ from events.sequences import SequenceMoved
 from events.sequences_run import (DispatchDue, RunEnded, SequenceStarts, StepCountRestarted, StepEdited, StepFollowed, StepHeld, StepStalled, StepTakenUp, StepToSay,
                                   TalkKeptOut)
 from events.triggers import TriggerFired
-from expects import Answered, Dispatches, Given, Held, Nudged, Remembered, Unchanged, Updated, answering, nothing
+from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Reported, Ticked, Told, Unchanged, Updated, answering, nothing
 from controllers.types import Sequences
 from declaring.trigger import Mark
 from features.sequences.answering import HoldJournalWritesForTheStep, KeepOutOfTheChat
@@ -42,6 +42,11 @@ def release(step: int = 1, **run) -> Sequence:
 AFTER_SEVEN_EDITS = {".journal/runtime/sessions/claude-1/trigger-sequences.json": json.dumps(asdict(Mark(edits=7)))}
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
+
+
+def handed(at: float) -> Sequence:
+    return Sequence(n=4, title="Cutting a patch release", sections=[{"title": "Tag it", "body": "Run journal version tag to cut the tag."}],
+                    data={"runs": {"t|by hand": {"step": 1, "at": at}}})
 MOVED = SequenceMoved(n=4, type="sequence", action="updated", actor=USER)
 
 
@@ -102,7 +107,9 @@ DISPATCHED = DispatchDue(agent=1, session="claude-1", env="t", sequence=4, title
 class SequencesFeature(Feature):
     details = SequencesDetails
     nudges = (Nudge(UNFINISHED, behaviour=UNFINISHED, about=standing_steps, private=False, pace=step_pace,
-                    guarantee="While a sequence stands at a step, the agent is told which step it is on until it moves on or gives the sequence up."),)
+                    guarantee="While a sequence stands at a step, the agent is told which step it is on until it moves on or gives the sequence up.",
+                    expects=(Given(Ticked(), rows=(AGENT_ROW, handed(WHEN - 600)), earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished") & Nudged("unfinished"),
+                             Given(Ticked(), rows=(AGENT_ROW, handed(WHEN)), earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished", times=0))),)
     sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:

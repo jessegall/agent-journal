@@ -2,7 +2,7 @@ from events.agents import ClockTicked
 from events.todos import TodoCompleted
 from dataclasses import replace
 
-from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
+from expects import WHEN, Acted, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
 from framework.base import Feature
 from features.plans.summary import plans_shown
 from declaring.registries import SUMMARY_PARTS
@@ -48,7 +48,7 @@ from events.reports import ReportLinked
 from events.todos import TodoUpdated
 from resources.plans import DEPTHS, Plan
 from events.resources import AnyEvent, RowReopened
-from controllers.types import Plans
+from controllers.types import Plans, Todos
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import AgentRow, Question, Todo, Work
 
@@ -230,6 +230,12 @@ class PlansFeature(Feature):
             Given(PlansToAdvance(passing=False), rows=[done(5), done(6), Todo(n=7, title="Row 7"), plan("parked", phases=phases(5, 6, 7), current=1)])
                 >> Updated(Plan(n=1), current=3, status="parked"),
             Given(PlansToAdvance(passing=False), rows=[done(5), done(6), plan("parked", phases=phases(5, 6, checkpoint=True), current=1)]) >> Unchanged(),
+            Given(PlansToAdvance(passing=False), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))], earlier=(Acted(Todos, "complete", 5, "done", by=USER),))
+                >> Updated(Plan(n=1), current=2),
+            Given(PlansToAdvance(passing=False), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], earlier=(Acted(Todos, "complete", 5, "done", by=USER),))
+                >> Updated(Plan(n=1), status="waiting"),
+            Given(PlansToAdvance(passing=False), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))], earlier=(Acted(Todos, "complete", 5, "done", by=USER),))
+                >> Updated(Plan(n=1), status="done"),
         ])
         journal.events.listen(RowReopened, SpotReopenedRowOfAPlan(), expects=[
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False)),
@@ -242,6 +248,9 @@ class PlansFeature(Feature):
         ])
         journal.events.handle(PlanRowReopened, ReopenPlansWithTheirRows(), expects=[
             Given(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)])
+                >> Updated(Plan(n=1), status="active", current=1),
+            Given(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=True), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))],
+                  earlier=(Acted(Todos, "complete", 5, "done", by=USER), Acted(Todos, "reopen", 5, "it came back", by=USER)))
                 >> Updated(Plan(n=1), status="active", current=1),
         ])
         journal.events.listen(TodoCompleted, SpotStruckRowOfAnUnapprovedPlan(), expects=[
