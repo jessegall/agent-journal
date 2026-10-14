@@ -385,15 +385,15 @@ function fallFrom(spot, to) {
 
 function fallOn() {
     const now = performance.now();
-    const step = fallFrame(body.airborne, catching(latestFloors().floors, body.airborne.catches), (now - body.airborne.at) / 1000, fall.value, SIZE, keptStill());
-    body.airborne = {...body.airborne, ...step, at: now};
-    body.at = placed(step, body.airborne.posture);
-    if (!step.landed) return;
+    const fell = fallFrame(body.airborne, catching(latestFloors().floors, body.airborne.catches), (now - body.airborne.at) / 1000, fall.value, SIZE, keptStill());
+    body.airborne = {...body.airborne, ...fell, at: now};
+    body.at = placed(fell, body.airborne.posture);
+    if (!fell.landed) return;
     const {to, posture} = body.airborne;
     body.airborne = null;
     body.landing = posture === "stand";
     groundMoved("dropping");
-    settle({x: step.x, y: step.landed.top, posture, view: null, on: step.landed.element ?? null});
+    settle({x: fell.x, y: fell.landed.top, posture, view: null, on: fell.landed.element ?? null});
     rest();
     step();
     if (to) moveTo(to);
