@@ -26,6 +26,7 @@ class KanbanFeature(Feature):
             Given((Todos,), rows=[Todo(n=1, title="Write it"), Todo(n=2, title="Then ship", data={"after": ["todo:1"]})])
                 >> Answered(lanes(todo=[Card(1, "Write it", 100, "todo", targets=["held", "doing", "done"])],
                                   held=[Card(2, "Then ship", 100, "held", "waits on todo 1")]).shaped()),
+            Given((Todos,), rows=[Todo(n=1, title="Long ago", completed=1.0)]) >> Answered(lanes().shaped()),
             Given((Todos,), rows=[Todo(n=1, title="Pick a way"), Question(n=3, title="which way?", refs=["todo:1"])])
                 >> Answered(lanes(asked=[Card(1, "Pick a way", 100, "asked", question=3)]).shaped()),
             Given((Todos,), rows=[Todo(n=1, title="Built by a helper", data={"assigned": "helper:3"})])
@@ -38,5 +39,7 @@ class KanbanFeature(Feature):
             Given((Todos, 1, "todo", "it came back"), rows=[Todo(n=1, title="Deploy", completed=1.0)]) >> Updated(Todo(n=1), completed=0.0),
             Given((Todos, 1, "done"), rows=[Todo(n=1, title="Deploy"), Work(n=3, title="Deploy it", data={"todo": 1})]) >> Refused("work 3 is open on todo 1: the agent ends it with journal work end or parks it with journal work park"),
             Given((Todos, 1, "held"), rows=[Todo(n=1, title="Deploy")]) >> Refused('moving todo 1 to held needs --why "<why>"'),
+            Given((Todos, 1, "todo"), rows=[Todo(n=1, title="Deploy", completed=1.0)]) >> Refused('moving todo 1 to todo needs --why "<why>"'),
+            Given((Todos, 1, "done"), rows=[Todo(n=1, title="Then ship", data={"after": ["todo:2"]}), Todo(n=2, title="Write it")]) >> Refused("todo 1 waits on todo 2: close that first"),
             Given((Todos, 1, "someday"), rows=[Todo(n=1, title="Deploy")]) >> Refused("a lane is one of todo, held, doing, asked, done"),
         ])
