@@ -1,6 +1,6 @@
 from controllers.types import Reports
 from events.agents import TurnStopped
-from expects import Answered, Dispatches, Given, Nudged, Refused, Updated, Wrote, nothing
+from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Updated, Wrote, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.update_reports.commands import AddItem, Changes, Dismiss, Drop, Note, Recap
@@ -8,7 +8,7 @@ from features.update_reports.details import UpdateReportsDetails
 from features.update_reports.handlers import OFFER, HoldOfferBack, MarkFirstCommit, OfferAnUpdate
 from features.update_reports.listeners import SpotCommitToOffer
 from events.update_reports import CommitFirstSeen, OfferHeldBack, UpdateOffered
-from resources.types import AgentRow, Report
+from resources.types import AgentRow, Question, Report, Todo
 
 
 CLOSED = {"section": "done", "ref": "todo:4", "title": "Close the old to-do", "note": ""}
@@ -25,15 +25,35 @@ class StartsWith:
         return len(listed) == 1 and listed[0].startswith(self.text)
 
 
+class Lists:
+    def __init__(self, *parts: str) -> None:
+        self.parts = parts
+
+    def __eq__(self, listed: list) -> bool:
+        return listed[0].startswith("since ") and all(any(part in line for line in listed) for part in self.parts)
+
+
+ASKED = {"section": "need", "ref": "question:2", "title": "Should New work pick drafts for you?", "note": ""}
+SHIPPED = {"section": "done", "ref": "todo:1", "title": "Settings page made calmer", "note": ""}
+NEWLY_SHIPPED = {"section": "done", "ref": "todo:3", "title": "Files page redesign", "note": ""}
+LAST_UPDATE = Report(n=1, title="What happened in the last day", seen=["user"], data={"kind": "update", "number": 1, "until": 100.0})
+
+
 class UpdateReports(Feature):
     details = UpdateReportsDetails
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("report", Changes(), expects=[
             Given((Reports,)) >> Answered(StartsWith("since ")),
+            Given((Reports,), rows=[Todo(n=3, title="Wording pass", data={"status": "started"})]) >> Answered(Lists("doing todo:3 Wording pass")),
         ])
         journal.commands.add("report", Recap(), expects=[
             Given((Reports, "Shipped the expectations")) >> Wrote(Report(title="What happened in the last day", abstract="Shipped the expectations")),
+            Given((Reports, "The settings page is calmer; one question waits on you."),
+                  rows=[Todo(n=1, title="Settings page made calmer", completed=WHEN - 3600, outcome="shipped"), Question(n=2, title="Should New work pick drafts for you?")])
+                >> Wrote(Report(title="What happened in the last day", data={"number": 1, "items": [ASKED, SHIPPED]})),
+            Given((Reports, "The files page is redesigned."), rows=[LAST_UPDATE, Todo(n=1, title="Settings page made calmer", completed=50.0), Todo(n=3, title="Files page redesign", completed=WHEN - 10)])
+                >> Wrote(Report(title="What happened since your last update", data={"number": 2, "since": 100.0, "items": [NEWLY_SHIPPED]})),
             Given((Reports, "Shipped more"), rows=[Report(n=1, title="What happened in the last day", seen=["user"], data={"kind": "update", "number": 1, "until": 100.0})])
                 >> Wrote(Report(title="What happened since your last update", abstract="Shipped more")),
         ])
