@@ -7,7 +7,7 @@ import {createServer} from "vite";
 
 const VOICES = ["butler", "coach", "colleague", "homie", "squire"];
 const BROWSERS = ["/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"];
-const TIMEOUT = 900_000;
+const TIMEOUT = 300_000;
 let server, browser, page;
 
 beforeAll(async () => {

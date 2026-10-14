@@ -184,10 +184,14 @@ class Posing {
         this.aim(lower, target.clone().sub(middle));
     }
 
-    // rig.Posing.revolve: rotate a snapshot, not a parent already rotated twice.
-    revolve(degrees) {
-        const turn = new THREE.Matrix4().makeRotationZ(radians(degrees));
+    // Rotate a snapshot, not a parent already rotated twice.
+    turnAll({x = 0, y = 0, z = 0}, at = new THREE.Vector3()) {
+        const turn = aboutPoint(at, euler(x, y, z));
         this.final = new Map(this.rig.order.map((name) => [name, turn.clone().multiply(this.matrix(name))]));
+    }
+
+    revolve(degrees) {
+        this.turnAll({z: degrees});
     }
 
     // a point given against the body at rest, carried wherever the root has been lifted or moved
@@ -1014,7 +1018,7 @@ function read(pose, stance, t) {
 
 // The butler draws his cloth from his pocket, polishes his visor in small circles, and tucks it away again
 const POCKET = [0.55, -0.35, 1.35];
-const VISOR = [0.3, -0.92, 2.22];
+const VISOR = [0.36, -0.92, 2.22];
 const POLISH_ELBOW = [0.7, 0.2, -1.0];
 const POLISH_RUB = 0.06;
 function polish(pose, stance, t) {
@@ -1114,6 +1118,9 @@ function jump(pose, stance, t) {
     tucked(pose, air);
 }
 
+const BACKFLIP_RAISE = 25;
+const BACKFLIP_TURN = 360;
+
 // a jump that turns over backwards on the way: the crouch, then the body tucked and turned all the way round about its hips in the air
 function backflip(pose, stance, t) {
     const u = onceTime(t, 22);
@@ -1121,12 +1128,12 @@ function backflip(pose, stance, t) {
     const turn = rise(u, 0.3, 0.86);
     const air = rise(u, 0.28, 0.4) * (1 - rise(u, 0.86, 0.95));
     pose.lift("root", {z: 0.1 * air});
-    pose.turn("hips", {x: 360 * turn});
     breathe(pose, 0);
     trunk(pose, {lean: 12 * crouch});
-    flung(pose, stance, 30 * crouch, 55 * air);
+    flung(pose, stance, 30 * crouch, BACKFLIP_RAISE * air);
     fold(pose, 0.28 * crouch);
     tucked(pose, 1.2 * air);
+    pose.turnAll({x: BACKFLIP_TURN * turn}, pose.head("hips", pose.matrix("hips")));
 }
 
 // a fall down to a perch: the arms thrown up and flailing, the legs kicking, the body leaning back as it drops
