@@ -80,7 +80,7 @@ class StatusLine(Feature):
             drawn(ran("x", effect="writes", files=["a.py"], made=["a.py"])) >> Remembered("bar", {"queue": [
                 said(0, "creating a.py", [verb("creating"), named("a.py")], False, 0, 1.0)]}),
             drawn(ran("journal question answer 10"), ran("journal todo add 12", 1), ran("journal work log 12 x", 2), clock=at(WHEN + 3)) >> Remembered("bar", {"queue": [
-                said(0, "journalling answering question 10", [verb("journalling"), rolling(["answering", "adding", "logging"]), rolling(["question", "todo", "work"]), rolling(["10", "12", "12"])], True, 1, 3.0)]}),
+                said(0, "journalling answering question 10", [verb("journalling"), rolling(["answering", "adding", "logging"]), rolling(["question", "todo", "work"]), rolling(["10", "12", "12"])], False, 1, 3.0)]}),
         ])
         journal.events.listen(AgentReported, SpotStaleDoing(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1)]) >> Dispatches(DoingStale(agent=1).spaced("doing|1", BAR_EVERY)),

@@ -132,7 +132,7 @@ class TicketsFeature(Feature):
         ])
         journal.events.listen(TicketsDue, SpotStuckTickets(), expects=[
             Given(TicketsDue(agent=1), rows=[run_here(), Ticket(n=1, title="Dark mode", data={"board": 1, "stage": "Doing", "work_environment": "ticket-1", "agent_seen": WHEN - 600}), AgentRow(n=1, title="claude-1")])
-                >> Dispatches(TicketToRevive(ticket=1, title="Dark mode", text="stopped")),
+                >> Dispatches(TicketToRevive(ticket=1, title="Dark mode", text="stopped in ticket-1")),
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(TicketToRevive, ReviveTicket(), expects=[

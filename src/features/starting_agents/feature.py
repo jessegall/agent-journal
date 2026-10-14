@@ -67,8 +67,6 @@ class StartingAgents(Feature):
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t")], settings=ON, clock=NOW) >> Dispatches(nothing),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), ended(2, "bea86f27-last", "codex", 200.0, parent="claude-0")], settings=ON, clock=NOW)
                 >> Dispatches(nothing),
-        ])
-        journal.events.listen(MessageCreated, SpotMessageToWake(), expects=[
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), *CONVERSATIONS], settings=ON, clock=NOW, files=HELD_HERE) >> Dispatches(nothing),
             Given(MessageCreated(n=1, type="message"), rows=[written("user"), Environment(n=1, title="t"), *CONVERSATIONS], settings=ON, clock=NOW, files=LAST_ELSEWHERE) >> Dispatches(nothing),
         ])
