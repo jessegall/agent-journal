@@ -11,6 +11,7 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
 import PlanPageActions from "./PlanPageActions.vue";
+import PlanReviewChoices from "./PlanReviewChoices.vue";
 import PlanPhase from "./PlanPhase.vue";
 import TicketAgent from "../agents/TicketAgent.vue";
 import {useHelpersHolding} from "../composables/helpers.js";
@@ -130,6 +131,7 @@ async function run(action, body = {}) {
                 :error="error"
                 @run="run"
             />
+            <PlanReviewChoices :plan="resource" />
         </template>
         <template v-if="resource.brief">
             <div class="brief">

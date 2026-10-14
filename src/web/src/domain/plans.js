@@ -1,4 +1,5 @@
 import {counted} from "../format/number.js";
+import {unanswered} from "./buttons.js";
 
 export const NOT_STARTED = {
     building: "being written",
@@ -168,3 +169,9 @@ export function planProgress(resource) {
     const {phases = [], status = "building", current = 1} = resource.data;
     return {total: phases.length, finished: status === "done" ? phases.length : Math.max(0, current - 1), phase: Math.min(current, phases.length) || 1, status};
 }
+
+// the reports linked to a plan that still wait on a choice from their buttons, newest first, so the plan can offer the same choice
+export const reviewChoices = (plan, reports) =>
+    reports
+        .filter((r) => !r.deleted && r.refs.includes(`plan:${plan.n}`) && unanswered(r))
+        .sort((a, b) => b.created - a.created || b.n - a.n);
