@@ -1,3 +1,4 @@
+# Stays a test: it serves the phone over a real socket, with pairing codes, keys and a push service, which a Given cannot state.
 import hashlib
 import json
 import os

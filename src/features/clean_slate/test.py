@@ -1,3 +1,4 @@
+# Stays a test: it moves the user's real hook files and ends real sessions by pid, which a Given cannot state.
 import json
 
 from features.clean_slate.slate import others, put_back, set_aside
