@@ -1,3 +1,4 @@
+# Stays a test: it keeps secret values in real files outside the project, runs commands with them and starts the agent's browser, which a Given cannot state.
 import json
 import re
 import shutil

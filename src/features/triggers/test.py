@@ -1,3 +1,4 @@
+# Stays a test: it plays real trigger rows, the command line and the engine's hook flow end to end, which a Given cannot state.
 import features
 import pytest
 from controllers.types import Agents, Messages

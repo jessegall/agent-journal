@@ -1,3 +1,4 @@
+# Stays a test: it writes the real briefing files, indexes real long outputs and plays hooks through the engine, which a Given cannot state.
 import json
 from contextlib import chdir
 from pathlib import Path

@@ -1,3 +1,4 @@
+# Stays a test: it files real dropped files into a dump's folder and plays the controller's flows end to end (items, collection, removal, queue), which a Given cannot state.
 from controllers.types import CONTROLLERS, Docs, Messages, Todos
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
