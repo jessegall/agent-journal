@@ -28,11 +28,11 @@ class Gmail(GmailWork, IntegrationFeature):
         due = GmailCheckDue(agent=1)
         return [
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {1: HELLO}}))
-                >> Wrote(Ticket(title="Hello", data={"source": "gmail", "source_id": "1", "board": 1, "gmail_from": "ana@example.com", "gmail_id": "<Hello@example.com>"})) & Ran(("login", "imap.gmail.com", "me@gmail.com")) & Ran(("search", "label:journal")),
+                >> Wrote(Ticket(title='<untrusted source="gmail" author="Ana">Hello</untrusted>', data={"source": "gmail", "source_id": "1", "board": 1, "gmail_from": "ana@example.com", "gmail_id": "<Hello@example.com>"})) & Ran(("login", "imap.gmail.com", "me@gmail.com")) & Ran(("search", '"label:journal"')),
             Given(due, rows=SEEDED, settings={**CHOSEN, "gmail.search": ""}, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("login",): ""})) >> Unchanged(),
             Given(due, rows=SEEDED, settings={**CHOSEN, "gmail.fetching": False}, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("login",): ""})) >> Unchanged(),
             Given(due, rows=[*SEEDED, Ticket(n=1, title="Hello", data={"source": "gmail", "source_id": "1", "board": 1, "stage": "Doing"})], settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {1: HELLO}}))
-                >> Ran(("search", "label:journal")) & Unchanged(),
+                >> Ran(("search", '"label:journal"')) & Unchanged(),
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {}, ("login",): "AUTHENTICATIONFAILED"}))
                 >> Wrote(Notice(title="Gmail refused the app password")),
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {}, ("login",): "no route to host"}))
