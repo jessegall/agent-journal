@@ -1,3 +1,4 @@
+# Stays a test: it runs a menu dialog through a real sh -c subprocess, builds the environment that launched a helper beside the helper's, which a Given cannot state, and tests the launch arguments, the typed-flag question, Claude's settings file, the viewer's agent-control routes and the session file write directly, which no registration reaches.
 import os
 import tempfile
 import time
