@@ -32,6 +32,7 @@ class HostingFeature(Feature):
         APP_HERE.add(self, app_here)
         journal.commands.add("ticket", HostApp(), expects=[
             Given((Tickets, 1), rows=[Ticket(n=1, title="Card")]) >> Refused("the project names no app to host: add agentic-organization/hosting.toml with run, ready and idle_minutes"),
+            Given((Tickets, 1), rows=[Ticket(n=1, title="Card")], files=HOSTING_FILE) >> Updated(Ticket(n=1), hosted=True, idle_since=0.0),
         ])
         journal.commands.add("ticket", StopApp(), expects=[
             Given((Tickets, 1), rows=[HOSTED]) >> Updated(Ticket(n=1), hosted=False),

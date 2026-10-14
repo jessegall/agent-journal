@@ -1,3 +1,4 @@
+# Stays a test: it tests the ticket card's app link, the app a ticket asks the machine to run and the services listing directly, which no registration reaches, and starts a real HTTP server and socket to see whether a service answers.
 import time
 
 import features
