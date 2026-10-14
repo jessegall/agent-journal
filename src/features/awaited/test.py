@@ -1,3 +1,4 @@
+# Stays a test: it tests how a run says it ended, the state, session and row files' re-reads, the agent lanes, the stored caches and the managed-file hash directly, which no registration reaches, and runs a lock and a supervisor on real threads.
 import features
 from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh
