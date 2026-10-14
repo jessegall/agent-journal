@@ -1,3 +1,4 @@
+# Stays a test: it runs the supervisor, typist and worker on real pseudo-terminals, unix sockets, pipes, processes and threads, and tests the terminal log and the engine's pause, permit, force, nudge and probe directly, which no registration reaches.
 import time
 
 
@@ -29,19 +30,6 @@ def test_shell_commands_are_kept_with_their_output_and_journal_calls_are_left_ou
                                                                               "tail -3 .journal/runtime/engine.log"], "the journal level adds them back"
     printed = kept[0]["output"].splitlines()
     assert (printed[0], len(printed), printed[-1]) == ("1", MOST_LINES + 1, f"… {100 - MOST_LINES} more lines were not kept"), "the output is cut to its first lines"
-
-
-def test_a_poll_after_the_last_line_gets_only_the_newer_ones():
-    record = fresh()
-    ran(record, "ls", "a")
-    seen = lines(record, "claude-1", COMMANDS)[-1]["at"]
-    ran(record, "pwd", "/tmp")
-    assert [line["command"] for line in lines(record, "claude-1", COMMANDS, seen)] == ["pwd"], "only the line after the last one seen comes back"
-    from commands.http import dispatch
-    agent = Agents(record, actor="system").by_session("claude-1").n
-    polled = lambda query: dispatch("GET", f"/api/{record.env}/agent/{agent}/terminal", record.root, query, {})
-    assert [line["command"] for line in polled({"level": COMMANDS, "after": str(seen)}).body["lines"]] == ["pwd"], "the viewer's poll gets the same"
-    assert polled({"level": "everything-and-more"}).code == 400, "a level the terminal does not know is refused"
 
 
 def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch, tmp_path):

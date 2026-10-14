@@ -1,10 +1,11 @@
 from events.agents import CommandRan
-from expects import Given, Remembered
+from expects import Given, Refused, Remembered, Replied, Requested
 from resources.types import AgentRow
 from framework.base import Feature
 from framework.journal import Journal
 from features.terminal.details import TerminalDetails
 from features.terminal.handlers import KeepCommands
+from features.terminal.log import LEVELS
 from features.terminal.routes import get_terminal
 
 
@@ -22,7 +23,12 @@ class Terminal(Feature):
     details = TerminalDetails
 
     def register(self, journal: Journal) -> None:
-        journal.routes.add(get_terminal)
+        journal.routes.add(get_terminal, expects=[
+            Given(Requested(query={"level": "commands", "after": "5.0"}, n=1), rows=[AGENT],
+                  remembered={"terminal@claude-1.commands": [logged("commands", "Bash", "ls", "a", 5.0), logged("commands", "Bash", "pwd", "/tmp", 9.0)]})
+                >> Replied(200, {"lines": [logged("commands", "Bash", "pwd", "/tmp", 9.0)]}),
+            Given(Requested(query={"level": "everything-and-more"}, n=1), rows=[AGENT]) >> Refused(f"level is one of {', '.join(LEVELS)}"),
+        ])
         journal.events.handle(CommandRan, KeepCommands(), expects=[
             Given(CommandRan(agent=1, tool="Bash", command="ls", output="a.txt", at=5.0), rows=[AgentRow(n=1, title="claude-1")])
                 >> Remembered("commands", [{"agent": 1, "at": 5.0, "tool": "Bash", "command": "ls", "output": "a.txt", "stepped": False, "level": "commands"}]),
@@ -30,6 +36,10 @@ class Terminal(Feature):
                 >> Remembered("everything", [logged("everything", "Read", "src/a.py")]),
             Given(CommandRan(agent=1, tool="Bash", command="journal todo all", output="", at=5.0), rows=[AGENT])
                 >> Remembered("journal", [logged("journal", "Bash", "journal todo all")]),
+            Given(CommandRan(agent=1, tool="Bash", command="cd /tmp && journal message read 12", output="done", at=5.0), rows=[AGENT])
+                >> Remembered("journal", [logged("journal", "Bash", "cd /tmp && journal message read 12", "done")]),
+            Given(CommandRan(agent=1, tool="Bash", command="tail -3 .journal/runtime/engine.log", output="log", at=5.0), rows=[AGENT])
+                >> Remembered("journal", [logged("journal", "Bash", "tail -3 .journal/runtime/engine.log", "log")]),
             Given(CommandRan(agent=1, tool="Bash", command="ls", output="  a.txt\n\n", at=5.0), rows=[AGENT])
                 >> Remembered("commands", [logged("commands", "Bash", "ls", "a.txt")]),
             Given(CommandRan(agent=1, tool="Bash", command="seq 100", output="\n".join(map(str, range(1, 101))), at=5.0), rows=[AGENT])
