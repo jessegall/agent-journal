@@ -132,6 +132,8 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   the answer is typed in through the supervisor.
 - memory: fact, rule, reminder, nothing; AtMark at 25/50/80 percent.
 - briefing: ready, rules, facts, reminders at every session start.
+- A compaction hook carries nothing to the agent (Claude reads no context on PreCompact), so
+  no state says anything on Compacting; the context marks ask before it. LOG_FIRST is gone.
 - Deferred from tasks: work put off in words (needs a text heuristic), closed by commit
   trailer, auto mode's carry-on timing.
 

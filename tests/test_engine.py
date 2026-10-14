@@ -57,9 +57,9 @@ def test_task_start_moves_the_agent_to_working_and_a_stop_says_carry_on_once(app
     assert app.container.get(Machine).current("s1") == Working(task_id=1)
     assert write(app)[0] == 200
     status, body = hook(app, "Stop")
-    assert status == 200 and "task 1 is in hand: carry on" in body["additionalContext"]
+    assert status == 409 and "task 1 is in hand: carry on" in body["error"], "a stop with work in hand is refused, which is how Claude is told to go on"
     assert hook(app, "Stop")[1] == {}, "the same line is not said twice within the window"
-    assert "log where task 1 stands" in hook(app, "PreCompact")[1]["additionalContext"]
+    assert hook(app, "PreCompact")[1] == {}, "a compaction hook carries nothing to the agent; the marks said it"
 
 
 def test_done_makes_the_agent_idle_again(app):

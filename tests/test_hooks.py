@@ -66,7 +66,7 @@ def test_a_blocking_listener_refuses_with_409_and_tells_with_context(app):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
     assert status == 409 and body == {"error": "no work declared"}
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {}})
-    assert status == 200 and body == {"additionalContext": "carry on"}
+    assert status == 200 and body["hookSpecificOutput"]["additionalContext"] == "carry on"
 
 
 def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app):

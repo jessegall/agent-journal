@@ -51,12 +51,12 @@ def test_the_session_start_is_answered_with_the_briefing(app):
     app.console().run(["fact", "create", "the api lives on port 9"], USER)
     app.console().run(["reminder", "create", "run the linter before a push"], USER)
     status, body = hook(app, "SessionStart")
-    text = body["additionalContext"]
+    text = body["hookSpecificOutput"]["additionalContext"]
     assert status == 200 and "ready on main" in text
     assert "1 rules in force: 1. Never skip the gate" in text
     assert "facts about this environment: 1. the api lives on port 9" in text
     assert "reminders here: 1. run the linter" in text
-    assert "ready on main" in hook(app, "SessionStart")[1]["additionalContext"], "a resume is briefed again"
+    assert "ready on main" in hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"], "a resume is briefed again"
 
 
 def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
@@ -64,7 +64,7 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
     app.console().run(["task", "create", "t", "--start"], AGENT)
     context(app, 30)
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert "context 25% full" in body["additionalContext"]
+    assert "context 25% full" in body["hookSpecificOutput"]["additionalContext"]
     machine = app.container.get(Machine)
     assert isinstance(machine.current("s1"), AtMark) and machine.current("s1").mark == 25
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
@@ -72,9 +72,9 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
     assert app.console().run(["fact", "create", "the login is flaky"], AGENT).code == 0
     assert machine.current("s1") == Working(task_id=1)
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
-    assert "additionalContext" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
+    assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
     context(app, 55)
-    assert "context 50% full" in hook(app, "Stop")[1]["additionalContext"]
+    assert "context 50% full" in hook(app, "Stop")[1]["error"]
     app.console().run(["nothing", "survives", "all logged"], AGENT)
     assert machine.current("s1") == Working(task_id=1)
 
@@ -111,7 +111,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert "task 1 is next, write the notes" in out
     machine = app.container.get(Machine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
-    assert "task 1 is in hand" in hook(app, "Stop")[1]["additionalContext"]
+    assert "task 1 is in hand" in hook(app, "Stop")[1]["error"]
     out = console.run(["task", "done", "1"], AGENT).out
     assert "task 2 is next, tag it" in out
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=2)
@@ -126,7 +126,7 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     console = app.console()
     console.run(["message", "send", "can you look at the login?"], USER)
     status, body = hook(app, "UserPromptSubmit", prompt="hi")
-    assert "answer these messages before you do anything else: 1. can you look at the login?" in body["additionalContext"]
+    assert "answer these messages before you do anything else: 1. can you look at the login?" in body["hookSpecificOutput"]["additionalContext"]
     hook(app, "MessageDisplay", message="[!reply:1] On it, the login is next.")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).in_(1)
@@ -162,8 +162,8 @@ def test_a_prompt_answers_a_question_in_other_words(app):
 def test_the_same_check_three_times_is_named(app):
     hook(app, "SessionStart")
     for _ in range(2):
-        assert "additionalContext" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]
-    assert "same check 3 times in a row: ls build" in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]["additionalContext"]
+        assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]
+    assert "same check 3 times in a row: ls build" in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls build"})[1]["hookSpecificOutput"]["additionalContext"]
 
 
 def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
@@ -172,7 +172,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     hook(app, "SessionStart")
     console.run(["task", "create", "t", "--start"], AGENT)
     assert "step 1: bump the version" in console.run(["sequence", "run", "1"], AGENT).out
-    assert "step 1: bump the version" in hook(app, "Stop")[1]["additionalContext"]
+    assert "step 1: bump the version" in hook(app, "Stop")[1]["error"]
     assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
@@ -210,7 +210,7 @@ def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
 def test_a_large_result_is_named(app):
     hook(app, "SessionStart")
     body = hook(app, "PostToolUse", tool_name="Bash", tool_input={}, tool_response="\n" * 500)[1]
-    assert "501 lines" in body["additionalContext"]
+    assert "501 lines" in body["hookSpecificOutput"]["additionalContext"]
 
 
 @pytest.fixture
@@ -230,13 +230,13 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     from journal.features.skills.states.loading_skill import LoadingSkill
     app = skilled
     status, body = hook(app, "SessionStart")
-    assert "read the journal skill before anything else: .claude/skills/journal/SKILL.md" in body["additionalContext"]
+    assert "read the journal skill before anything else: .claude/skills/journal/SKILL.md" in body["hookSpecificOutput"]["additionalContext"]
     machine = app.container.get(Machine)
     assert isinstance(machine.current("s1"), LoadingSkill)
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409
     read_skill(app, "journal")
     assert machine.current("s1").name == "idle"
-    assert "journal skill" not in hook(app, "SessionStart")[1].get("additionalContext", ""), "loaded once, not owed again"
+    assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
 
 
 def test_entering_a_state_requires_its_feature_skill_in_the_command_output(skilled):
@@ -251,14 +251,14 @@ def test_entering_a_state_requires_its_feature_skill_in_the_command_output(skill
     read_skill(app, "journal-tasks")
     assert machine.current("s1") == Working(task_id=1)
     hook(app, "PreCompact")
-    assert "journal skill" in hook(app, "SessionStart")[1]["additionalContext"], "a compaction owes them again"
+    assert "journal skill" in hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"], "a compaction owes them again"
 
 
 def test_a_prompt_naming_a_keyword_requires_that_skill(skilled):
     app = skilled
     hook(app, "SessionStart")
     read_skill(app, "journal")
-    assert "read the plans skill" in hook(app, "UserPromptSubmit", prompt="make me a plan for the release")[1]["additionalContext"]
+    assert "read the plans skill" in hook(app, "UserPromptSubmit", prompt="make me a plan for the release")[1]["hookSpecificOutput"]["additionalContext"]
 
 
 def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
@@ -266,7 +266,7 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
     console.run(["trigger", "create", "deploy,release", "check the changelog first", "--do", "instruct"], USER)
     console.run(["trigger", "create", "rm -rf", "no recursive deletes here", "--do", "deny"], USER)
     hook(app, "SessionStart")
-    assert "do this now: check the changelog first" in hook(app, "UserPromptSubmit", prompt="let's deploy it")[1]["additionalContext"]
+    assert "do this now: check the changelog first" in hook(app, "UserPromptSubmit", prompt="let's deploy it")[1]["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "rm -rf build"})
     assert status == 409 and "no recursive deletes here" in body["error"]
 
@@ -304,8 +304,8 @@ def test_a_command_that_took_a_minute_is_sent_to_the_background_next_time(app):
     clock[0] += 90
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "pytest"}, tool_response="ok")
     body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest"})[1]
-    assert "pytest took 90s last time" in body["additionalContext"]
-    assert "took" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest", "run_in_background": True})[1].get("additionalContext", "")
+    assert "pytest took 90s last time" in body["hookSpecificOutput"]["additionalContext"]
+    assert "took" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest", "run_in_background": True})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
 
 
 def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
