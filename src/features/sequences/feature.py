@@ -25,10 +25,10 @@ from features.sequences.steps import standing_steps, step_held_text, step_pace
 from framework.base import Feature
 from framework.journal import Journal
 from framework.sending import Nudge
-from resources.base import USER
+from resources.base import AGENT, USER
 from resources.sequences import Sequence
 from resources.triggers import STARTED_BY, Trigger
-from resources.types import AgentRow, Question
+from resources.types import AgentRow, Question, Todo
 from serving import SERVED, Providers
 
 __all__ = ["Sequences"]
@@ -62,6 +62,10 @@ def on_creating(starts_on: str, **data) -> Sequence:
 class AtStepOne:
     def __eq__(self, run) -> bool:
         return run["step"] == 1
+
+
+def wanted(**more) -> Question:
+    return Question(n=1, title="Is this step still wanted?", refs=["sequence:4"], **more)
 
 
 def todo(action: str, actor: str = USER) -> AnyEvent:
@@ -109,7 +113,12 @@ class SequencesFeature(Feature):
     nudges = (Nudge(UNFINISHED, behaviour=UNFINISHED, about=standing_steps, private=False, pace=step_pace,
                     guarantee="While a sequence stands at a step, the agent is told which step it is on until it moves on or gives the sequence up.",
                     expects=(Given(Ticked(), rows=(AGENT_ROW, handed(WHEN - 600)), earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished") & Nudged("unfinished"),
-                             Given(Ticked(), rows=(AGENT_ROW, handed(WHEN)), earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished", times=0))),)
+                             Given(Ticked(), rows=(AGENT_ROW, handed(WHEN)), earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished", times=0),
+                             Given(Ticked(), rows=(AGENT_ROW, handed(WHEN - 90), Question(n=1, title="Which colour for the button?")), earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished"),
+                             Given(Ticked(), rows=(AGENT_ROW, handed(WHEN - 300), wanted(updated=WHEN - 10)),
+                                   earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished", times=0),
+                             Given(Ticked(), rows=(AGENT_ROW, handed(WHEN - 300), wanted(completed=WHEN - 10)),
+                                   earlier=(Reported("working", "PreToolUse"),)) >> Told("unfinished"))),)
     sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:
@@ -121,6 +130,11 @@ class SequencesFeature(Feature):
             Given(todo("created"), rows=[on_creating("todo.created", started_by="agent")]) >> Dispatches(nothing),
             Given(todo("created"), rows=[on_creating("todo.created", only_when_idle=True), release()]) >> Dispatches(nothing),
             Given(todo("renamed"), rows=[on_creating("todo.created")]) >> Dispatches(nothing),
+            Given(todo("created"), rows=[on_creating("todo.created", started_by="user")]) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
+            Given(todo("created", AGENT), rows=[on_creating("todo.created", started_by="user")]) >> Dispatches(nothing),
+            Given(todo("created"), rows=[on_creating("todo.created", unless={"assigned": "bot"}), Todo(n=5, title="assigned to a bot", data={"assigned": "bot"})]) >> Dispatches(nothing),
+            Given(todo("created"), rows=[on_creating("todo.created", unless={"assigned": "bot"}), Todo(n=5, title="free")]) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
+            Given(todo("created"), rows=[on_creating("todo.created", only_when_idle=True)]) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
         ])
         journal.events.listen(TriggerFired, SpotSequenceToStartOnTrigger(), expects=[
             Given(TriggerFired(n=2, type="trigger", action="fired", actor=USER, about="message:7"), rows=[Trigger(n=2, title="Triage", data={"does": "start", "words": ["triage"]}), on_creating("trigger:2")])
