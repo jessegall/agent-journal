@@ -29,8 +29,8 @@ class RevisionsFeature(Feature):
         ])
         journal.events.handle(DocRevisable, KeepRevisions(), expects=[
             Given(DocRevisable(n=1), rows=[Doc(n=1, title="How the viewer is built", abstract="the first idea")]) >> Updated(Doc(n=1), revisions=1),
-            Given(DocRevisable(n=1), rows=[FIRST_IDEA], earlier=(*EDITED,)) >> Updated(Doc(n=1), revisions=1),
-            Given(DocRevisable(n=1), rows=[FIRST_IDEA], earlier=(*EDITED, Acted(Docs, "keep", 1, by=USER), Acted(Docs, "cut", 1, "Goals", by=AGENT))) >> Updated(Doc(n=1), revisions=2),
+            Given(Acted(Docs, "section", 1, "Goals", "two", by=USER), rows=[FIRST_IDEA], earlier=(EDITED[0],)) >> Updated(Doc(n=1), revisions=1),
+            Given(Acted(Docs, "cut", 1, "Goals", by=AGENT), rows=[FIRST_IDEA], earlier=(*EDITED, Acted(Docs, "keep", 1, by=USER))) >> Updated(Doc(n=1), revisions=2),
         ])
         journal.commands.add("doc", Keep(), expects=[
             Given((Docs, 1), rows=[UNWRITTEN]) >> Refused("doc 1 has no revision to keep yet: its first edit opens one"),

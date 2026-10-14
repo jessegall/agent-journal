@@ -232,7 +232,7 @@ class PlansFeature(Feature):
             Given(PlansToAdvance(passing=False), rows=[done(5), done(6), plan("parked", phases=phases(5, 6, checkpoint=True), current=1)]) >> Unchanged(),
             Given(Acted(Todos, "complete", 5, "done", by=USER), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))])
                 >> Updated(Plan(n=1), current=2),
-            Given(Acted(Todos, "complete", 5, "done", by=USER), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))])
+            Given(Acted(Todos, "complete", 5, "done", by=USER), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": False})
                 >> Updated(Plan(n=1), status="waiting"),
             Given(Acted(Todos, "complete", 5, "done", by=USER), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))])
                 >> Updated(Plan(n=1), status="done"),
