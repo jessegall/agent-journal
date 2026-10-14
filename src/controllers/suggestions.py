@@ -5,7 +5,7 @@ from controllers.plugins import Plugins
 from resources import types
 from controllers.marks import action
 from resources.base import SYSTEM, USER
-from resources.suggestions import CHANGE, Decision, NO, OPEN_SUGGESTIONS, WORDS, YES
+from resources.suggestions import CHANGE, Decision, NO, WORDS, YES
 
 ACCEPTING = {"title": YES, "description": "Adds it as a to-do", "code": ""}
 ADJUSTING = {"title": CHANGE, "description": "Write your version as a to-do", "code": ""}
@@ -17,14 +17,6 @@ class Suggestions(Controller):
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        waiting = self.rows.standing()
-        if len(waiting) >= OPEN_SUGGESTIONS:
-            self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}. "
-                         "Write the rest into your report as sections with journal report section <report n> \"<part>\" \"<body>\" and link it, or wait until the user answers one")
-        declined = [s for s in self.rows.every() if s.decision == Decision.DECLINE and s.title.lower() == title.lower()]
-        if declined and not data.pop("despite", None):
-            s = declined[-1]
-            self._refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
         options = [ACCEPTING, ADJUSTING, DECLINING]
         return super().create(title, abstract, brief, options=options, **data)
 

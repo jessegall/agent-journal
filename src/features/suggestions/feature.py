@@ -1,10 +1,12 @@
-from expects import Dispatches, Given, Updated, Wrote, nothing
+from events.asking import RowWriting
+from expects import Dispatches, Given, Kept, Refused, Updated, Wrote, nothing
 from framework.base import Feature
 from controllers.types import Suggestions
 from declaring.registries import SUMMARY_COUNTS
 from framework.journal import Journal
 from features.suggestions.details import SuggestionsDetails
 from features.suggestions.handlers import DropTakenBackMark, FileDecidedSuggestion, ShowAnswerInChat
+from features.suggestions.refusing import FiveWaitAtMost, NotAgainAfterNo
 from features.suggestions.listeners import SpotDecidedSuggestion, SpotFiledSuggestion, SpotTakenBackAnswer
 from events.suggestions import AnswerTakenBack, SuggestionCompleted, SuggestionFiled, SuggestionReopened, SuggestionToFile, UserAnswered
 from resources.base import AGENT, SYSTEM, USER
@@ -22,6 +24,14 @@ def decided(actor: str = USER) -> SuggestionCompleted:
     return SuggestionCompleted(n=3, type="suggestion", action="completed", actor=actor)
 
 
+def proposing(title: str, **data) -> RowWriting:
+    return RowWriting(type="suggestion", action="create", actor=AGENT, fields=(("title", title), ("abstract", ""), ("brief", ""), *data.items()))
+
+
+FIVE = [Suggestion(n=n, title=f"proposal {n}") for n in range(1, 6)]
+DECLINED = Suggestion(n=2, title="Drop the tests", outcome="the tests stay", completed=1.0, data={"decision": "decline"})
+
+
 def waiting_suggestions(record) -> int:
     return len(Suggestions(record, actor=SYSTEM).rows.standing())
 
@@ -31,6 +41,16 @@ class SuggestionsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         SUMMARY_COUNTS.add(None, waiting_suggestions, key="suggestions")
+        journal.commands.refuse(RowWriting, FiveWaitAtMost(), expects=[
+            Given(proposing("one more"), rows=FIVE) >> Refused("5 suggestions already wait on the user: 1, 2, 3, 4, 5. Write the rest into your report as sections with journal report section <report n> \"<part>\" \"<body>\" and link it, or wait until the user answers one"),
+            Given(proposing("one more"), rows=FIVE[:4]) >> Kept(),
+            Given(RowWriting(type="todo", action="create", actor=AGENT, fields=(("title", "one more"),)), rows=FIVE) >> Kept(),
+        ])
+        journal.commands.refuse(RowWriting, NotAgainAfterNo(), expects=[
+            Given(proposing("drop the tests"), rows=[DECLINED]) >> Refused("suggestion 2 was declined: the tests stay; --set despite=true --set because=\"<what changed>\" to propose it again"),
+            Given(proposing("drop the tests", despite=True), rows=[DECLINED]) >> Kept(),
+            Given(proposing("rename the helper"), rows=[DECLINED]) >> Kept(),
+        ])
         journal.events.listen(SuggestionCompleted, SpotDecidedSuggestion(), expects=[
             Given(decided(), rows=[proposed("accept"), AGENT_ROW]) >> Dispatches(SuggestionToFile(n=3, actor=USER)),
             Given(decided(), rows=[proposed("adjust", "Run it nightly instead"), AGENT_ROW]) >> Dispatches(SuggestionToFile(n=3, actor=USER)),
