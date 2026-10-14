@@ -69,6 +69,43 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Threads and SQLite**: WAL mode; one sqlite connection per thread for reads, one process
   lock for writes inside `Connection.transaction()`.
 
+- **A feature lives beside the states.** It owns its nudges (declared lines with templates),
+  its state-free listeners and its settings. A state never owns a line: it names a feature's
+  nudge in its `Transition` (`Tasks.CARRY_ON.about(task_id)`). A switched-off feature's nudges
+  are silent wherever a state names them, so no state checks a switch. A nudge is a row, so
+  the viewer shows it and a repeat is not sent twice.
+- **Delivery**: a nudge born in a transition rides back in the hook's answer (context, or the
+  Stop hook's carry-on); one born later (clock, deferred) is typed in through the supervisor.
+- **Not ported: boards, kanban, tickets, hosting.** The board is re-envisioned later.
+
+## v3 features, sorted
+
+Became states: work_tracking (Idle, Working), awaited (Awaiting), catching_up (CatchingUp),
+memory_checkpoints (AtMark), plans' flow (FollowingPlan), sequences' flow (RunningSequence),
+ask_questions' hold (Waiting), halt (Halted), subagent tracking (Subagent).
+
+Features to port first, with what they fold in and what they say:
+- briefing: session_briefing, recital, skill_loading required. Ready on env, rules in force, facts, reminders, load these skills.
+- memory: facts, rules, reminders, memory_checkpoints, rules review. Keyword whispers, rule review, moves the agent to AtMark.
+- tasks: work_tracking's rest, put_off_work, close_from_commits. Carry on, still open, unlogged, next, deferred in words, commit closed rows, same check N times.
+- messages: messages, acknowledgements, message_buttons, message_todos. Inbox, answer before anything, reaction only, paragraphs, bare numbers.
+- questions: ask_questions. Answered so act, waited a day, choices in prose.
+- plans: plans. Started, phases, to-dos, ready, reviewed, approved, parked.
+- sequences: sequences. Next step, step stalled.
+- helpers: helpers, helper_worktrees, awaited's lines. Reported, stopped, refused, idle, quiet, worktree behind.
+- laws: journal_laws. Refuse a dispatch without model or job, long read refused, large result.
+- skills: skill_loading. None loaded, stale, required.
+- triggers: triggers. Nudge, instruct, held, denied.
+- checks: checks. Failed, failing again.
+- commands: long_commands, heavy_runs. Held, moved to background, forgotten after.
+- etiquette: chat_etiquette, form_of_address, command_tags. Voice, shop talk, tag hint, tag refused.
+
+Settings, not features: work_modes, auto mode, permission_prompts routing.
+Server-side, no nudges: updates, archive (auto_archive, runtime_cleanup, revisions, kept_rows), sessions liveness (agent_sessions, starting_agents).
+Later: suggestions, templates, dumps, collections, attachment_descriptions, record_audit, source_links, git (git_actions, pull_requests, worktrees, file_feed), sharing, phone, connection, plugins, secrets, linear, gmail.
+Viewer only: status_bar, open_viewer, family_tree, terminal, thinking, history_searches, report_dock, avatar, figure_floors, agent_profiles, organization, critique, session_recording, browser_control, dev_faults.
+Dropped: boards, kanban, tickets, hosting.
+
 ## Roots, in order
 
 1. `Connection`, `Model`, `Repository`, `Schema`: fill them, with `Task` as the first table
