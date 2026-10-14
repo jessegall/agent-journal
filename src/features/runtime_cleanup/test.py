@@ -219,21 +219,6 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     assert not packed.exists(), "a late index save or a reader's place never brings back the folder of a removed environment"
 
 
-def test_an_installed_update_tidies_at_once():
-    from controllers.types import Notifications
-    from features import load
-    from resources.base import SYSTEM
-    from resources.types import UPDATE
-    load()
-    record = fresh()
-    left = record.root / "plugins" / ".staging-old"
-    left.mkdir(parents=True)
-    old = time.time() - 2 * 3600
-    os.utime(left, (old, old))
-    Notifications(record, actor=SYSTEM)._logged("Journal updated to 9.9.9", brief="from 9.9.8", kind=UPDATE, version="9.9.9")
-    assert not left.exists(), "a new version is housekept the moment it is announced, not an hour later"
-
-
 def test_tidy_keeps_the_saved_transcript_states_and_drops_an_old_builds_folds(monkeypatch):
     from features.runtime_cleanup.tidy import OTHER_MARKS_FOR, leftovers
     from providers.transcript_cache import STATES

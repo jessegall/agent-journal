@@ -54,4 +54,6 @@ class RuntimeCleanup(Feature):
         journal.events.handle(UpdateInstalled, TidyAfterUpdate(), expects=[
             Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": UPDATE})], files=LEFT_OVER, clock=LONG_AFTER) >> Removed(File(QUIET_SESSION)),
             Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": UPDATE})], files=LEFT_OVER) >> Wrote(File(QUIET_SESSION, "what the agent last showed")),
+            Given(UpdateInstalled(notification=1), rows=[Notification(n=1, title="Updated to a new version", data={"kind": UPDATE})],
+                  journal_root=answering({("glob", "plugins/.staging-*"): [STAGED], ("is dir", STAGED): True, ("modified", STAGED): WHEN - 7200})) >> Ran(("remove", STAGED)),
         ])
