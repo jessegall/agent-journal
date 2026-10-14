@@ -291,8 +291,11 @@ function depart() {
     // (slideOn), and the walk sets off once it is there; every later leg sets off where the one before it ended
     const from = next.hopping || body.trip.departed ? {...body.at} : placed(body.place, POSTURES[body.place.posture].travels);
     if (Math.hypot(from.x - body.at.x, from.y - body.at.y) > 1) {
+        if (body.trip.rising) return;
+        body.trip = {...body.trip, rising: true};
+        const rising = body.trip;
         body.slide = {from: {...body.at}, to: from, began: performance.now()};
-        return void slideWaits.push(depart);
+        return void slideWaits.push(() => body.trip === rising && depart());
     }
     body.trip = {...body.trip, moves: true, departed: true, legs};
     const feet = feetOf(from);
