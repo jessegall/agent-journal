@@ -348,7 +348,7 @@ const pictureOf = (feet) => ({x: feet.x - SIZE / 2, y: feet.y - (1 - below.value
 function walkOn() {
     const feet = feetOf(legAt(leg.value, walk.from, performance.now() - walk.began));
     const under = walk.on ? underWalker(latestFloors().floors, walk.on, feet.x, feet.y) : {falls: false, dx: 0, dy: 0};
-    if (under.falls) return fallFrom(feet);
+    if (under.falls) return fallFrom(feet, moving.value.to);
     if (Math.abs(under.dx) > 0.3 || Math.abs(under.dy) > 0.3) carryWalk(under.dx, under.dy);
     at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
 }
@@ -360,11 +360,11 @@ function carryWalk(dx, dy) {
     moving.value = {...moving.value, legs: moving.value.legs.map(lifted)};
 }
 
-function fallFrom(feet) {
+function fallFrom(feet, to) {
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
     sliding.value = false;
-    airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to: moving.value.to, catches: Math.random() < BUBBLES_CATCH};
+    airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to, catches: Math.random() < BUBBLES_CATCH};
     moving.value = null;
     footing = null;
     at.value = pictureOf(feet);
@@ -440,16 +440,15 @@ const grip = computed(() => {
     return /^hang_[lr]$/.test(name) ? gripIn(name.slice(-1), shownFacing.value, below.value) : null;
 });
 
+// The floor under a resting figure went, so it falls from where it is and, once it lands, goes on to a stay at home
 function uprooted() {
-    footing = null;
     stay = stayAtHome(stay);
-    clearTimeout(legTimer);
     playing = {name: "", started: 0, shown: null, index: 0, closing: null};
     beats.value = [];
     landing.value = false;
     const spot = stayingAt(stay, figureSize(), place.value);
     const clear = {state: held.value.state, now: Date.now() / 1000, near: place.value, figure: figureSize(), cleared};
-    moveTo(keptClear(spot, clear), {straight: true});
+    fallFrom(feetOf(at.value), keptClear(spot, clear));
 }
 
 // the scene the reactions are decided in
