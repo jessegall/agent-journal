@@ -1,16 +1,21 @@
-from typing import Callable
-
 from journal.http.request import Request
 from journal.http.response import Response
-
-Handler = Callable[[Request], Response]
+from journal.http.route import Handler, Route
 
 
 class Router:
-    def __init__(self) -> None: ...
+    def __init__(self) -> None:
+        self.routes: list[Route] = []
 
-    def get(self, path: str, handler: Handler) -> None: ...
+    def get(self, path: str, handler: Handler) -> None:
+        self.routes.append(Route("GET", path, handler))
 
-    def post(self, path: str, handler: Handler) -> None: ...
+    def post(self, path: str, handler: Handler) -> None:
+        self.routes.append(Route("POST", path, handler))
 
-    def dispatch(self, request: Request) -> Response: ...
+    def dispatch(self, request: Request) -> Response:
+        for route in self.routes:
+            params = route.params(request.method, request.path)
+            if params is not None:
+                return route.handler(request.with_params(params))
+        return Response.not_found(f"{request.method} {request.path}")

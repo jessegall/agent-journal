@@ -1,4 +1,7 @@
+import json
 from dataclasses import dataclass
+
+from journal.http.json_out import JsonOut
 
 
 @dataclass(frozen=True)
@@ -7,7 +10,16 @@ class Response:
     body: object = None
 
     @classmethod
-    def json(cls, body: object, status: int = 200) -> "Response": ...
+    def json(cls, body: object, status: int = 200) -> "Response":
+        return cls(status, body)
 
     @classmethod
-    def not_found(cls) -> "Response": ...
+    def not_found(cls, what: str = "") -> "Response":
+        return cls(404, {"error": what or "not found"})
+
+    @classmethod
+    def refused(cls, why: str) -> "Response":
+        return cls(409, {"error": why})
+
+    def encoded(self) -> bytes:
+        return json.dumps(self.body, cls=JsonOut).encode()

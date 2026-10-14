@@ -1,0 +1,25 @@
+import re
+from dataclasses import dataclass
+from typing import Callable
+
+from journal.http.request import Request
+from journal.http.response import Response
+
+Handler = Callable[[Request], Response]
+
+
+@dataclass(frozen=True)
+class Route:
+    """One method and path pattern, such as POST /tasks/{id}/start, and what answers it."""
+
+    method: str
+    pattern: str
+    handler: Handler
+
+    def params(self, method: str, path: str) -> dict | None:
+        """The named parts when this route matches, None when it does not."""
+        if method != self.method:
+            return None
+        regex = "^" + re.sub(r"\{(\w+)\}", r"(?P<\1>[^/]+)", self.pattern) + "$"
+        match = re.match(regex, path)
+        return match.groupdict() if match else None

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from journal.models.actor import Actor
 
@@ -10,5 +10,13 @@ class Request:
     query: dict
     body: dict
     params: dict
+    headers: dict
     actor: Actor
-    """Who sent it: the agent whose hook it is, the user the viewer is signed in as, or the system."""
+    """Who sent it: the user the viewer is signed in as, or the one local user; a hook names its own agent in its body."""
+
+    def with_params(self, params: dict) -> "Request":
+        return replace(self, params=params)
+
+    @property
+    def environment(self) -> str:
+        return self.headers.get("x-journal-env", "main")

@@ -1,14 +1,46 @@
+from dataclasses import fields
+from typing import Generic, TypeVar
+
 from journal.http.request import Request
 from journal.http.response import Response
+from journal.models.scoped import Scoped
+from journal.repositories.environments import Environments
+from journal.repositories.not_found import NotFound
+from journal.repositories.scoped_repository import ScopedRepository
+
+S = TypeVar("S", bound=Scoped)
 
 
-class Controller:
-    """One per model: turns a request into repository calls and a response."""
+class Controller(Generic[S]):
+    """One per model: index, show, store and update over its repository, within the request's environment."""
 
-    def index(self, request: Request) -> Response: ...
+    repository: ScopedRepository[S]
+    environments: Environments
 
-    def show(self, request: Request) -> Response: ...
+    def index(self, request: Request) -> Response:
+        return Response.json(self.repository.in_(self.environment_id(request)))
 
-    def store(self, request: Request) -> Response: ...
+    def show(self, request: Request) -> Response:
+        try:
+            return Response.json(self.repository.find(int(request.params["id"])))
+        except NotFound as missing:
+            return Response.not_found(str(missing))
 
-    def update(self, request: Request) -> Response: ...
+    def store(self, request: Request) -> Response:
+        row = self.repository.model(environment_id=self.environment_id(request), **self.fields_of(request.body))
+        return Response.json(self.repository.save(row, request.actor), 201)
+
+    def update(self, request: Request) -> Response:
+        try:
+            row = self.repository.find(int(request.params["id"]))
+        except NotFound as missing:
+            return Response.not_found(str(missing))
+        return Response.json(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor))
+
+    def environment_id(self, request: Request) -> int:
+        return self.environments.named(request.environment).id
+
+    def fields_of(self, body: dict) -> dict:
+        """Only the model's own fields, never its id or its stamps."""
+        own = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "created_by", "updated_at", "updated_by"}
+        return {name: value for name, value in body.items() if name in own}
