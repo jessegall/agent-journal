@@ -9,3 +9,5 @@ class AgentEvent(Event):
 
     session: str
     environment_id: int
+    context: float | None = None
+    """How full the agent's context window is, 0 to 1, when its provider reports it."""

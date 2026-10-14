@@ -10,4 +10,5 @@ class HookKind(StrEnum):
     STOP = "Stop"
     SUBAGENT_START = "SubagentStart"
     SUBAGENT_STOP = "SubagentStop"
+    MESSAGE_DISPLAY = "MessageDisplay"
     SESSION_END = "SessionEnd"

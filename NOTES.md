@@ -104,6 +104,16 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   Stop hook's carry-on); one born later (clock, deferred) is typed in through the supervisor.
 - **Not ported: boards, kanban, tickets, hosting.** The board is re-envisioned later.
 
+- **Providers.** `providers/`: `Provider` answers four questions about Claude or Codex and no
+  more: the transcript path, the resume arguments, which tools write, and how to wire the
+  hook into its settings file. `TranscriptReader` yields `Turn`s from the conversation file.
+- **The agent's chat** arrives as `TurnWritten` (from the MessageDisplay hook, or the
+  transcript); message tags are a listener on it.
+- **Settings** are rows: `Setting(key, value)` per environment, with environment 0 the
+  project's, laid over. The `Registry` reads switches from `Settings`.
+- **Context** comes from Claude's statusline (`hooks/status.sh` writes one file per session);
+  `ContextFile` reads it and `Translation` puts it on every `AgentEvent.context`.
+
 ## v3 features, sorted
 
 Became states: work_tracking (Idle, Working), awaited (Awaiting), catching_up (CatchingUp),
@@ -175,8 +185,6 @@ Each phase ends with something that runs. Bodies only; the layout is done.
   by the agent posts to the server (consistent, one process) or opens the database itself
   (works with no server up). Leaning: post to the server, fall back to direct when it is away.
 - **Live updates to the viewer**: long-poll or server-sent events off the same threaded server.
-- **Context marks**: v3 nudged at 10/25/50/80% of the context window. Needs the context figure
-  from the hook payload; decide whether it is a field on every agent event or its own event.
 - **Users on a shared journal**: how a user token is issued and checked, and whether
   environments are shared per user. `Identity` is the one place to grow.
 - **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
@@ -192,6 +200,7 @@ Each phase ends with something that runs. Bodies only; the layout is done.
 - **Viewer**: keep `v3.bak/src/web` as is and repoint its API client, or rebuild it smaller.
 - **Install and upgrade**: `install.sh`, `install.py`, the `.pyz` build and the self-update
   loop are all old; decide the new install path before touching them.
-- **Tests**: shape of the new suite. Old generated runs are gone with `v3.bak/tests`.
+- **Tests**: pytest, `tests/`, one file per phase proof, a temp database fixture, no mocks,
+  core only; no tests on single models or features until the core stands.
 - Old root files still to deal with: `docker/`, `install.py`, `install.sh`, `pytest.ini`,
   `conftest.py`, `.coveragerc`, `plugins.json`, `.githooks/`, `.codex/agents/`.
