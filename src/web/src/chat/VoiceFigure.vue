@@ -364,6 +364,8 @@ function carryWalk(dy) {
 
 function fallFrom(feet) {
     clearTimeout(legTimer);
+    clearTimeout(slideTimer);
+    sliding.value = false;
     airborne = {x: feet.x, y: feet.y, speed: 0, at: performance.now(), to: moving.value.to};
     moving.value = null;
     footing = null;
@@ -475,7 +477,7 @@ function look() {
     const pastime = pastimeFor(scene(), waited, pastimesDue, now.value, Math.random, hasClip);
     const after = [egg, pastime].filter(Boolean);
     if (after.length) beats.value = [...beats.value, ...after];
-    if (coveredSince()) stepOutOf(boxAt(place.value, figureSize(), drawn));
+    if (coveredSince() && !airborne) stepOutOf(boxAt(place.value, figureSize(), drawn));
     const target = targetFor({
         state: held.value.state,
         counts: counts.value,
@@ -487,7 +489,7 @@ function look() {
         cleared,
     });
     stay = target.stay;
-    if (!moving.value && !arriving.value) {
+    if (!moving.value && !arriving.value && !airborne) {
         moveTo(target.spot, {pace: hurried ? SPRINT : 1});
         hurried = false;
     }
