@@ -21,7 +21,7 @@ from expects import (Answered, Changed, Dispatches, DispatchesWith, Expectation,
                      exited, nothing)
 
 OUTCOME_WORDS = (Dispatches, DispatchesWith, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Released, Answered, Set, Whispered, Told, Stands, Closed)
-GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "faults", "command_words", "viewer", "own_work", "secrets", "outside", "server")
+GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "held_under", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "faults", "command_words", "viewer", "own_work", "secrets", "outside", "server")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work", "secrets", "outside", "server")
 
 
@@ -1201,10 +1201,7 @@ def test_a_stubbed_mailbox_is_read_only_as_the_given_names_it_and_never_shows_th
 # receivers whose expectations state only what does not happen, so they would still pass if the receiver did nothing; each is
 # owed an expectation of what it does (to-do 4843), and comes off this list when it has one
 STATES_ONLY_NOTHING = {
-    "agent_sessions/ReleaseEvicted",
-    "ask_questions/ReleaseOnceSettled",
     "agent_sessions/SpotTakeOver",
-    "sequences/LetTheAgentGo",
     "dev_faults/LiftOverdueHold",
     "file_feed/WarmTheDiff",
     "heavy_runs/HoldHeavyRunsToOneAtATime",

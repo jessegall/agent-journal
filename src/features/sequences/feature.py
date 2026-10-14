@@ -11,7 +11,7 @@ from events.sequences import SequenceMoved
 from events.sequences_run import (DispatchDue, RunEnded, SequenceStarts, StepCountRestarted, StepEdited, StepFollowed, StepHeld, StepStalled, StepTakenUp, StepToSay,
                                   TalkKeptOut)
 from events.triggers import TriggerFired
-from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Reported, Ticked, Told, Unchanged, Updated, answering, nothing
+from expects import WHEN, Answered, Dispatches, Given, Held, Nudged, Released, Remembered, Reported, Ticked, Told, Unchanged, Updated, answering, nothing
 from controllers.types import Sequences
 from declaring.trigger import Mark
 from features.sequences.answering import HoldJournalWritesForTheStep, KeepOutOfTheChat
@@ -156,7 +156,7 @@ class SequencesFeature(Feature):
             Given(StepToSay(agent=1, values=STEP_VALUES), rows=[CLAUDE]) >> Nudged("step", **STEP_VALUES),
         ])
         journal.events.handle(StepTakenUp, LetTheAgentGo(), expects=[
-            Given(StepTakenUp(agent=1), rows=[CLAUDE]) >> Unchanged(),
+            Given(StepTakenUp(agent=1), rows=[CLAUDE], held=HELD_TEXT, held_under="step") >> Released(),
         ])
         journal.events.handle(DispatchDue, TellTheDispatch(), expects=[
             Given(DISPATCHED, rows=[CLAUDE]) >> Nudged("dispatch", kind="Planner", n=4, title="Planning a board", about="board:2", board=2, model=DISPATCHED.model, why="a new request", request=""),

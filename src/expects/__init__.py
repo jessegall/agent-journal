@@ -552,6 +552,8 @@ class Given:
     held: str = ""
     hook: Hooked = Hooked()
     """Why the agents' writes are already held when the registration runs, as a feature's hold would leave them, so a registration that refuses held calls can be played against one."""
+    held_under: str = ""
+    """The behaviour the hold is kept under, as the feature names it when it releases the hold ('step' for the hold the feature releases as 'sequences.step'); empty is the feature's own, unnamed hold."""
     clock: At = At(WHEN)
     ids: Counting = Counting()
     chat: Answering = Answering({})

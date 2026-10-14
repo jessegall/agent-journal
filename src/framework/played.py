@@ -65,7 +65,7 @@ def scratch(given: Given, inside: Path, holder: str = "expects") -> Record:
     if given.transcript:
         speaking_from(record, given.transcript)
     if given.held:
-        holding(record, given.held, holder)
+        holding(record, given.held, f"{holder}.{given.held_under}" if given.held_under else holder)
     return record
 
 

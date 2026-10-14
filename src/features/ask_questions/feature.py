@@ -9,7 +9,7 @@ from events.asking import RowWriting, ToolCallAsked
 from events.resources import AnyEvent
 from events.messages import MessageCreated
 from events.questions import AnswerGiven, AnswerOnScreen, AskingSettled, ProseOffersChoices, QuestionCompleted, QuestionCreated, QuestionSettled, QuestionsToFile
-from expects import WHEN, Answered, Dispatches, Given, Held, Kept, Nudged, Ran, Refused, Reported, Told, Updated, answering, exited, nothing
+from expects import WHEN, Answered, Dispatches, Given, Held, Kept, Nudged, Ran, Refused, Released, Reported, Told, Updated, answering, exited, nothing
 from resources.base import AGENT, USER, Ref
 from resources.put_questions import PutQuestion
 from resources.types import AgentRow, Question, Todo
@@ -137,7 +137,7 @@ class AskQuestions(Feature):
             Given(ProseOffersChoices(agent=1), rows=[CLAUDE]) >> Nudged("prose") & Held(PROSE_HELD),
         ])
         journal.events.handle(AskingSettled, ReleaseOnceSettled(), expects=[
-            Given(AskingSettled(agent=1), rows=[CLAUDE], held=PROSE_HELD) >> Dispatches(nothing),
+            Given(AskingSettled(agent=1), rows=[CLAUDE], held=PROSE_HELD, held_under="asking") >> Released(),
         ])
         journal.events.handle(AnswerGiven, MarkTheAnswer(), expects=[
             Given(AnswerGiven(agent=1, n=3, answer="main", ref="question:3"), rows=[CLAUDE, BRANCH])

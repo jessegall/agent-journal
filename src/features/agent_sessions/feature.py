@@ -4,7 +4,7 @@ from events.agents import AgentChanged, AgentReported, ClockTicked
 from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.todos import TodoUpdated
-from expects import WHEN, Dispatches, Given, Held, Nudged, Ran, Updated, nothing
+from expects import WHEN, Dispatches, Given, Held, Nudged, Ran, Released, Updated, nothing
 from framework.due import DueOnClock
 from features.agent_sessions.details import AgentSessionsDetails
 from features.agent_sessions.handlers import (AskToStop, ClearLapsedAssignment, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, NoticeReport,
@@ -92,7 +92,7 @@ class AgentSessions(Feature):
             Given(SessionEvicted(agent=1, environment="'work'", by="claude-2", why="it asked"), rows=[AgentRow(n=1, title="claude-1")]) >> Held(EVICTED),
         ])
         journal.events.handle(EvictionLifted, ReleaseEvicted(), expects=[
-            Given(EvictionLifted(agent=1), rows=[AgentRow(n=1, title="claude-1")], held=EVICTED) >> Dispatches(nothing),
+            Given(EvictionLifted(agent=1), rows=[AgentRow(n=1, title="claude-1")], held=EVICTED, held_under="eviction") >> Released(),
         ])
         journal.events.handle(TakeOverChosen, TakeOverOnAnswer(), expects=[
             Given(TakeOverChosen(session="claude-2", environment="t", place=1), rows=[Environment(n=1, title="t")]) >> Updated(Environment(n=1), holder="claude-2"),
