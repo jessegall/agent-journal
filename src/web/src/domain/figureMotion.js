@@ -89,3 +89,23 @@ export function chaseRoom(floors, world, feet, picture, most) {
     if (!floor) return 0;
     return Math.max(0, Math.min(most, floor.right - feet.x, world.right - picture.right));
 }
+
+// the odds that a bubble a figure falls past catches it, rather than it dropping straight home: the avatar's own choice, fall by fall
+export const BUBBLES_CATCH = 0.5;
+
+// A fall from the line a figure rests on at `spot`, in its posture there, starting at `now`: never from below the floor at home, going on
+// to `to` once it lands, and caught by a bubble it falls past when `random()` says so
+export function fallingFrom(spot, to, floors, now, random) {
+    const home = floors.find((floor) => floor.id === "home");
+    const y = home ? Math.min(spot.y, home.top) : spot.y;
+    return {x: spot.x, y, posture: spot.posture, speed: 0, at: now, to, catches: random() < BUBBLES_CATCH};
+}
+
+// One frame of a fall at `now` (fallFrame): the fall stepped on, or, once it lands, null with the spot it settles on in the posture it
+// fell in, where it goes on to and whether it landed on its feet
+export function airborneFrame(airborne, floors, now, fall, size, still = false) {
+    const fell = fallFrame(airborne, catching(floors, airborne.catches), (now - airborne.at) / 1000, fall, size, still);
+    if (!fell.landed) return {airborne: {...airborne, ...fell, at: now}, landed: null};
+    const spot = {x: fell.x, y: fell.landed.top, posture: airborne.posture, view: null, on: fell.landed.element ?? null};
+    return {airborne: null, landed: {spot, to: airborne.to, standing: airborne.posture === "stand"}};
+}

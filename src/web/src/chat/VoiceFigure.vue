@@ -1,11 +1,12 @@
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {KEPT_WITHIN, ON_FLOOR, aimedAt, catching, chaseRoom, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
-import {footingNow, footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
+import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {footingNow, footingOn, groundUnder, landingOn, latestFloors} from "../figure/floors.js";
+import {useFigureBody} from "../composables/figureBody.js";
 import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
@@ -55,39 +56,11 @@ let clips = [];
 let frameTimer = 0;
 let lookTimer = 0;
 let legTimer = 0;
-let footFrame = 0;
 const now = ref(Date.now() / 1000);
 const waitingSince = ref(0);
 // below the figure's feet in its picture, as a share of its height: the clips' ground row (figure.js GROUND)
 const below = ref(0);
-// The figure's body, one state:
-// - place: where it rests, or last rested while it travels, a spot on a line with the posture it takes there (places.js)
-// - at: the picture's left and top in the window, kept at the place while it rests and stepped along each leg while it travels
-// - trip: the trip in hand, or null: the spot it goes to with that spot's footing, and once it sets off its legs still to go (places.js
-//   tripTo); `started` once it stands ready to travel, `moves` while a leg carries it, and `hopping` and `clip` for the leg it is on or
-//   sets off on next
-// - leg: the leg under way, and walk: where and when it set off and the floor a walk keeps to
-// - footing: what it rests on (figure/floors.js footingOn), watched each frame, also while it gets ready to go; null once it sets off,
-//   when the trip keeps the footing of the spot it goes to
-// - airborne: the fall it is in, or null; landing: the land clip plays once after a jump or a fall, unless it goes on to hang
-// - arriving, leaving, here: the voice's entrance plays when its figure appears, and its exit when the environment's agent goes
-// - sliding: the picture eases to a new place as the posture changes; rested: the posture it rests in; way: the way its last trip went
-const body = reactive({
-    place: {x: 0, y: 0, posture: "stand", view: null, on: null},
-    at: {x: 0, y: 0},
-    trip: null,
-    leg: {x: 0, y: 0, ms: 0, lead: 0, easing: "linear"},
-    walk: {from: {x: 0, y: 0}, began: 0, on: null},
-    footing: null,
-    airborne: null,
-    landing: false,
-    arriving: false,
-    leaving: false,
-    here: false,
-    sliding: false,
-    rested: "stand",
-    way: 0,
-});
+const {body, start: startBody, stop: stopBody} = useFigureBody(() => watchFooting());
 // the one-off clips the body waits to play, oldest first, each as {clip, card}, `card` the chat mark it turns to while it plays, or ""
 const beats = ref([]);
 // the look the eyes wear (reactions.js eyesAt), or null
@@ -328,8 +301,6 @@ function settle(spot, held = footingOn(spot)) {
 // when the ground went from under it, it goes at once, without waiting for its clip, as gravity does not, straight up or down to the
 // ground at home and on to its place there
 function watchFooting() {
-    footFrame = requestAnimationFrame(watchFooting);
-    if (!body.here || document.hidden) return;
     if (body.airborne) return fallOn();
     if (body.trip?.moves) return body.trip.hopping ? hopOn() : walkOn();
     if (!body.footing) return;
@@ -345,14 +316,12 @@ function watchFooting() {
     rest();
 }
 
-// A walk is stepped here, frame by frame, against the floors the floors loop read (figure/floors.js): the walker keeps to its floor as
-// it rises, and falls from where it is the moment its floor drops away or goes, then lands and sets off again for where it was going
 // whether the user asks for motion to be kept still: then a fall or a hop stepped in code is where it ends at once
 const keptStill = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-// the odds that a bubble the figure falls past catches it, rather than it dropping straight home: the avatar's own choice, fall by fall
-const BUBBLES_CATCH = 0.5;
 const feetOf = (picture) => ({x: picture.x + SIZE / 2, y: picture.y + (1 - below.value) * SIZE});
 
+// A walk is stepped here, frame by frame, against the floors the floors loop read (figure/floors.js): the walker keeps to its floor as
+// it rises, and falls from where it is the moment its floor drops away or goes, then lands and sets off again for where it was going
 function walkOn() {
     const feet = feetOf(legAt(body.leg, body.walk.from, performance.now() - body.walk.began));
     const under = underWalker(latestFloors().floors, body.walk.on, feet.x, feet.y);
@@ -374,9 +343,7 @@ function fallFrom(spot, to) {
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
     body.sliding = false;
-    const home = latestFloors().floors.find((floor) => floor.id === "home");
-    const y = home ? Math.min(spot.y, home.top) : spot.y;
-    body.airborne = {x: spot.x, y, posture: spot.posture, speed: 0, at: performance.now(), to, catches: Math.random() < BUBBLES_CATCH};
+    body.airborne = fallingFrom(spot, to, latestFloors().floors, performance.now(), Math.random);
     body.trip = null;
     body.footing = null;
     body.at = placed(body.airborne, body.airborne.posture);
@@ -384,19 +351,16 @@ function fallFrom(spot, to) {
 }
 
 function fallOn() {
-    const now = performance.now();
-    const fell = fallFrame(body.airborne, catching(latestFloors().floors, body.airborne.catches), (now - body.airborne.at) / 1000, fall.value, SIZE, keptStill());
-    body.airborne = {...body.airborne, ...fell, at: now};
-    body.at = placed(fell, body.airborne.posture);
-    if (!fell.landed) return;
-    const {to, posture} = body.airborne;
-    body.airborne = null;
-    body.landing = posture === "stand";
+    const {airborne, landed} = airborneFrame(body.airborne, latestFloors().floors, performance.now(), fall.value, SIZE, keptStill());
+    body.at = placed(airborne ?? landed.spot, (airborne ?? landed.spot).posture);
+    body.airborne = airborne;
+    if (!landed) return;
+    body.landing = landed.standing;
     groundMoved("dropping");
-    settle({x: fell.x, y: fell.landed.top, posture, view: null, on: fell.landed.element ?? null});
+    settle(landed.spot);
     rest();
     step();
-    if (to) moveTo(to);
+    if (landed.to) moveTo(landed.to);
 }
 
 // A hop is stepped here, frame by frame, toward the ground it is headed for as that moves (aimedAt), so it lands where the ground is now
@@ -601,9 +565,7 @@ async function load(name) {
         body.here = belongs.value;
         body.arriving = body.here;
         figureStatus.value = "shown";
-        cancelAnimationFrame(footFrame);
-        startFloors();
-        footFrame = requestAnimationFrame(watchFooting);
+        startBody();
         look();
         step();
     } catch (error) {
@@ -621,8 +583,7 @@ onMounted(() => {
     load(voice.value);
 });
 onUnmounted(() => {
-    cancelAnimationFrame(footFrame);
-    stopFloors();
+    stopBody();
     cancelAnimationFrame(homeFrame);
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
