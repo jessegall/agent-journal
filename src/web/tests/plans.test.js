@@ -93,3 +93,11 @@ test("a delegated plan names its helpers with their jobs and branches, or the ag
     expect(delegationOf(plan, {todos: [], helpers: [], worktrees: [], tickets: [{n: 41, completed: 0}]}).line).toBe("Ticket: 41");
     expect(delegationOf({...plan, data: {...plan.data, delegated: false}}, {todos, helpers, worktrees, tickets: []})).toBe(null);
 });
+
+test("the plan card never counts the plan it shows among the other plans", async () => {
+    const {otherPlans, othersLine} = await import("../src/domain/plans.js");
+    const made = (n, status) => ({n, type: "plan", data: {status, phases: [], current: 1}});
+    const plans = [made(34, "active"), made(35, "building")];
+    expect(otherPlans(plans, {...plans[1]}).map((p) => p.n)).toEqual([34]);
+    expect(othersLine(otherPlans(plans, plans[1]))).toBe("+1 more active plan");
+});

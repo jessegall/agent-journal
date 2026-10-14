@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.3 — The plan card no longer counts its own plan among the others
+
+- A plan being written showed "+1 more planned" on its card in the chat, and that one more was the plan itself. The card now counts only the other open plans.
+
 ## 3.1.2 — A history search keeps only the last few conversations in memory
 
 - A history search held every conversation it ever read in memory for as long as the journal ran. It now keeps the last four, as the transcript cache does, and reads one it let go again from disk when it is searched.

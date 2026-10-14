@@ -64,9 +64,8 @@ export function barPlans(plans) {
     return running.length > MAX_BARS ? running.slice(0, MAX_BARS) : running;
 }
 
-export function otherPlans(plans) {
-    const lead = leadingPlan(plans);
-    return openPlans(plans).filter((p) => p !== lead);
+export function otherPlans(plans, shown) {
+    return openPlans(plans).filter((p) => p.n !== shown.n);
 }
 
 export function foldedPlans(plans) {

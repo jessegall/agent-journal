@@ -26,7 +26,7 @@ const parked = computed(() => status.value === "parked");
 const reviewing = computed(() => status.value === "reviewing");
 const reviewers = computed(() => (reviewing.value ? reviewersLine(reviewersAtWork(rows("agent"))) : ""));
 const building = computed(() => status.value === "building" || status.value === "draft");
-const others = computed(() => otherPlans(rows("plan")));
+const others = computed(() => otherPlans(rows("plan"), props.plan));
 const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
 const hidden = computed(() => Math.max(0, phases.value.length - PREVIEW_PHASES));
 const adding = computed(() => (props.plan.data.stage === "todos" ? "Adding to-dos…" : "Adding phases…"));
