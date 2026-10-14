@@ -63,6 +63,10 @@ ENDED_ALONE = WorkCompleted(n=3, type="work", action="completed", actor=AGENT, t
 ON_TODO = Work(n=3, title="Fix the crash", data={"todo": 5})
 ENDED_ON_TODO = Work(n=3, title="Fix the crash", completed=2.0, data={"todo": 5})
 STARTED_TODO = Todo(n=5, title="Fix the crash", data={"status": "started"})
+AUTO = {"work_tracking.auto": True}
+FIRST = Todo(n=1, title="first")
+SECOND = Todo(n=2, title="second")
+STOPPED = (Reported("idle", "Stop"),)
 ran = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "ls", "at": 10.0, "done": 11.0}]})
 
 
@@ -104,9 +108,15 @@ def todo_ready(context, agent, over: float) -> list[Sent]:
 class WorkFeature(Feature):
     details = WorkDetails
     nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, cap=Cap(1),
-                    guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready."),
+                    guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready.",
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=STOPPED) >> Told("next") & Nudged("next", n=1),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings={"work_tracking.auto": False}, earlier=STOPPED) >> Told("next", times=0),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST, WORKING), settings=AUTO, earlier=STOPPED) >> Told("next", times=0),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=(*STOPPED, Ticked(), Ticked())) >> Told("next", times=1))),
               Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, cap=Cap(1),
-                    guarantee="When the work in hand is waiting on something, the agent is offered the next ready to-do rather than sitting out the wait."),
+                    guarantee="When the work in hand is waiting on something, the agent is offered the next ready to-do rather than sitting out the wait.",
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, SECOND, WORKING), settings=AUTO, earlier=STOPPED) >> Told("next while waiting") & Nudged("next while waiting", n=2),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, SECOND), settings=AUTO, earlier=STOPPED) >> Told("next while waiting", times=0))),
               Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, cap=Cap(1),
                     guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
@@ -119,7 +129,10 @@ class WorkFeature(Feature):
               Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(1),
                     guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."),
               Nudge(CHECK_IN, behaviour=CHECK_IN, about=nothing_happening, pace=check_in_pace,
-                    guarantee="When nothing has happened for the check-in interval, the agent is asked whether anything is left to do and told what this environment holds, whether or not it has work in hand."))
+                    guarantee="When nothing has happened for the check-in interval, the agent is asked whether anything is left to do and told what this environment holds, whether or not it has work in hand.",
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW,), earlier=(*STOPPED, Waited(31))) >> Told(CHECK_IN) & Nudged(CHECK_IN, seen="nothing is open at all"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST, SECOND), earlier=(*STOPPED, Waited(31))) >> Nudged(CHECK_IN, seen="2 open to-dos"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW,), earlier=(*STOPPED, Waited(5))) >> Told(CHECK_IN, times=0))))
 
     def chosen(self, record, key: str) -> bool:
         return chosen_or_steered(super().chosen(record, key), record, key)
