@@ -14,6 +14,8 @@ from resources.base import SYSTEM
 from resources.files import RUNTIME
 from resources.types import AgentRow, Notification
 
+CAPTURE = f".journal/{RUNTIME}/sessions/codex-1/printed"
+COMMANDS_LOG = f".journal/{RUNTIME}/commands.log"
 QUIET_SESSION = ".journal/runtime/sessions/claude-9/screen"
 LEFT_OVER = answering({QUIET_SESSION: "what the agent last showed"})
 LONG_AFTER = at(2 * WHEN)
@@ -37,6 +39,9 @@ class RuntimeCleanup(Feature):
         journal.events.handle(RuntimeTidyDue, TidyRuntime(), expects=[
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=LEFT_OVER, clock=LONG_AFTER) >> Removed(File(QUIET_SESSION)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=LEFT_OVER) >> Wrote(File(QUIET_SESSION, "what the agent last showed")),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({CAPTURE: "old" * 100_000 + "THE END"})) >> Wrote(File(CAPTURE, "THE END", size=64 * 1024)),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({CAPTURE: "short"})) >> Wrote(File(CAPTURE, "short", size=5)),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({COMMANDS_LOG: "x" * (2 * 1024 * 1024) + "last line\n"})) >> Wrote(File(COMMANDS_LOG, "last line", size=1024 * 1024)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW],
                   journal_root=answering({("is dir", RUNTIME): True, ("glob", f"{SESSIONS}/*"): [SESSION], ("is dir", SESSION): True,
                                           ("glob", f"{SESSION}/*"): [f"{SESSION}/screen"], ("modified", f"{SESSION}/screen"): WHEN - 3 * DAY})) >> Ran(("remove", SESSION)),

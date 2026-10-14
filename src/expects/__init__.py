@@ -139,14 +139,17 @@ class File:
     path: str
     text: str = ""
     mode: str = ""
+    size: int = 0
+    """The length in bytes the file must have, for a cut that the text alone does not show; zero says nothing of its length."""
 
 
 @dataclass(frozen=True)
 class Left:
-    """A file as the play left it: what it holds and the permission bits it carries."""
+    """A file as the play left it: what it holds, the permission bits it carries and its length in bytes."""
 
     text: str = ""
     mode: str = ""
+    size: int = 0
 
 
 @dataclass(frozen=True)
@@ -167,6 +170,8 @@ class Wrote(Outcome):
             return f"the file {self.row.path!r} does not hold {self.row.text!r}; it holds {found.text[:200]!r}"
         if self.row.mode and self.row.mode != found.mode:
             return f"the file {self.row.path!r} is {found.mode}, not {self.row.mode}"
+        if self.row.size and self.row.size != found.size:
+            return f"the file {self.row.path!r} is {found.size} bytes, not {self.row.size}"
         return ""
 
 

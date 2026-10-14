@@ -417,7 +417,7 @@ def with_the_givens_programs(given: Given):
 def files_left(record: Record) -> dict:
     """Every file under the scratch project after the play, by path under the project folder to what it holds and the bits it carries, which is what Wrote(File) and Removed read."""
     project = record.root.parent
-    return {str(path.relative_to(project)): Left(path.read_text(errors="replace"), oct(path.stat().st_mode & 0o7777)[2:])
+    return {str(path.relative_to(project)): Left(path.read_text(errors="replace"), oct(path.stat().st_mode & 0o7777)[2:], path.stat().st_size)
             for path in project.rglob("*") if path.is_file()}
 
 
