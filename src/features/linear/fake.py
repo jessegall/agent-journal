@@ -4,9 +4,10 @@ import threading
 from dataclasses import asdict, dataclass, field
 from typing import ClassVar
 
-from framework.integrations.client import Answer, Posted
+from framework.integrations.client import Answer
 from resources.base import Refused
 from resources.fields import Loaded
+from resources.posted import Posted
 
 
 @dataclass(frozen=True)

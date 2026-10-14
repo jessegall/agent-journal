@@ -14,6 +14,7 @@ ENV = "t"
 LAPTOP = "laptop-1"
 SENT = {"key": "write-1", "scope": "", "asked": {"env": ENV, "type": "todo", "word": "create", "args": ["Sent from the laptop"], "actor": USER}}
 PULLED = [Event(id=9000 + i, at=1.0, type="todo", n=900 + i, action="created", actor=AGENT, env=ENV) for i in range(2)]
+SWITCHED_ON = {"features.connection": True}
 ADDRESS = {"connection.address": "https://server.example"}
 
 
@@ -55,7 +56,7 @@ class ConnectionFeature(Feature):
             Given((Environments,)) >> Refused(NAME_THE_SERVER),
             Given((Environments,), settings=ADDRESS, server=answering({("hello",): hello()}))
                 >> Answered("sent 0 writes that waited, took in 0 events from the server") & Ran(("hello", ADDRESS["connection.address"])),
-            Given((Environments,), settings=ADDRESS, earlier=(Acted(Environments, "hand", ENV, "server", by=USER),), server=answering({("hello",): hello(), ("events", ""): PULLED}))
+            Given((Environments,), settings={**ADDRESS, **SWITCHED_ON}, earlier=(Acted(Environments, "hand", ENV, "server", by=USER),), server=answering({("hello",): hello(), ("events", ""): PULLED}))
                 >> Answered("sent 0 writes that waited, took in 2 events from the server") & Ran(("events", "", 0)),
             Given((Environments,), settings=ADDRESS, server=answering({("hello",): (hello(), hello(1))}))
                 >> Refused("the server has a new epoch since this sync began, so nothing is taken in; connect again to pull everything"),

@@ -4,12 +4,13 @@ from dataclasses import dataclass, replace
 from controllers.types import Comments
 from controllers.types import Boards
 from controllers.types import Tickets
-from framework.integrations.client import Answer, IntegrationClient, Posted
+from framework.integrations.client import Answer, IntegrationClient
 from framework.integrations.state import Choice, IntegrationState
 from framework.integrations.words import BODY, COMMENT, TITLE, cleaned
 from features.linear.reading import ADD_COMMENT, ISSUES, KNOWN, SET_STATE, TEAMS, WORKFLOW, Issue, Reply, Team, reply_of
 from framework.words import words_from
 from resources.base import Refused, SYSTEM, titled
+from resources.posted import Posted
 
 SOURCE = "linear"
 LOW = 20

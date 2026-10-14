@@ -8,7 +8,8 @@ from types import SimpleNamespace
 import features
 import mcp_headers
 from controllers.features import Features, SettingsWrite
-from framework.integrations.client import IntegrationClient, Posted
+from framework.integrations.client import IntegrationClient
+from resources.posted import Posted
 from framework.integrations.state import IntegrationState, read_state, state_file, write_state
 from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, USER

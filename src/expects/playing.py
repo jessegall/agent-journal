@@ -10,7 +10,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
-from framework.integrations.client import Posted
 from resources.checkout import checkout_name
 from engine.machines import Lease, this_machine
 from engine.offline import Sent
@@ -20,6 +19,7 @@ from expects import At, Answering, Counting, Expectation, Given
 from resources.agent_starts import AgentToStart, DetachedStart
 from resources.commit_logs import CommitsAsked
 from resources.base import SYSTEM
+from resources.posted import Posted
 from resources.prompt_answers import PromptAnswer
 
 

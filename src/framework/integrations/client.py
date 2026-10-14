@@ -1,13 +1,14 @@
 import json
 import urllib.error
 import urllib.request
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from urllib.parse import urlsplit
 
 from controllers.integrations.opener import OPENER, TIMEOUT
 from resources.masking import Masker
 from controllers.secrets.values import ValuesFile
 from resources.base import Refused
+from resources.posted import Posted
 
 REMAINING, RESET = "X-RateLimit-Requests-Remaining", "X-RateLimit-Requests-Reset"
 
@@ -19,14 +20,6 @@ class Answer:
     text: str
     remaining: int = -1
     reset: float = 0.0
-
-
-@dataclass(frozen=True)
-class Posted:
-    """What a service is sent: its query and the variables the query runs with."""
-
-    query: str
-    variables: dict = field(default_factory=dict)
 
 
 def number(value, kind, otherwise):
