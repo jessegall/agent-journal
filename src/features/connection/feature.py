@@ -1,11 +1,9 @@
 from controllers.types import Environments
-from engine.machines import Lease
-from engine.sync import PROTOCOL, Hello, Shape
-from engine.version import version
 from expects import Answered, Given, Ran, Refused, Replied, Requested, Wrote, answering
 from framework.base import Feature
 from features.connection.commands import ConnectToServer, DisconnectFromServer, HandEnvironment, PullCode, PushCode, ShowConnection, SyncWithServer, join_again
 from features.connection.details import ConnectionDetails
+from framework.connection.answers import hello, lease
 from framework.connection.routes import get_sync_hello, post_sync_events, post_sync_handback, post_sync_handover, post_sync_holder, post_sync_write
 from framework.journal import Journal
 from resources.base import USER
@@ -16,14 +14,6 @@ ENV = "t"
 LAPTOP = "laptop-1"
 SENT = {"key": "write-1", "scope": "", "asked": {"env": ENV, "type": "todo", "word": "create", "args": ["Sent from the laptop"], "actor": USER}}
 ADDRESS = {"connection.address": "https://server.example"}
-
-
-def hello(epoch: int = 0) -> Hello:
-    return Hello(version(), Shape(PROTOCOL, frozenset(), epoch), "server-1")
-
-
-def server(**answers) -> dict:
-    return {"server": answering(answers)}
 
 
 NAME_THE_SERVER = "name the server first: journal environment connect --address <address>, or its address in Settings"
@@ -49,15 +39,15 @@ class ConnectionFeature(Feature):
             Given((Environments, ENV, "nowhere"), settings=ADDRESS) >> Refused("hand an environment to server or to here, not to 'nowhere'"),
             Given((Environments, ENV, "server"), settings=ADDRESS, server=answering({("hello",): hello()}))
                 >> Answered(f"{ENV} is written by the server from epoch 1") & Ran(("handover", ENV, "server-1", 1)),
-            Given((Environments, ENV, "server"), settings=ADDRESS, server=answering({("hello",): hello(), ("handover",): TimeoutError("lost"), ("holder",): Lease("server-1", 1)}))
+            Given((Environments, ENV, "server"), settings=ADDRESS, server=answering({("hello",): hello(), ("handover",): TimeoutError("lost"), ("holder",): lease("server-1", 1)}))
                 >> Answered(f"{ENV} is written by the server from epoch 1"),
-            Given((Environments, ENV, "server"), settings=ADDRESS, server=answering({("hello",): hello(), ("handover",): TimeoutError("lost"), ("holder",): Lease("server-1", 0)}))
+            Given((Environments, ENV, "server"), settings=ADDRESS, server=answering({("hello",): hello(), ("handover",): TimeoutError("lost"), ("holder",): lease("server-1", 0)}))
                 >> Refused(f"this machine let go of {ENV} at epoch 1 and the server has not taken it yet: run hand again to finish"),
             Given((Environments, ENV, "server"), settings=ADDRESS, server=answering({("hello",): hello(), ("handover",): TimeoutError("lost"), ("holder",): OSError("gone")}))
                 >> Refused(f"the server's answer about {ENV} was lost and it cannot be asked who holds it now: run hand again once it answers"),
-            Given((Environments, ENV, "here"), settings=ADDRESS, server=answering({("handback",): Lease("", 1)}))
+            Given((Environments, ENV, "here"), settings=ADDRESS, server=answering({("handback",): lease("", 1)}))
                 >> Answered(f"{ENV} is written by this machine from epoch 1") & Ran(("handback", ENV)),
-            Given((Environments, ENV, "here"), settings=ADDRESS, server=answering({("handback",): Lease("desk-2", 9)}))
+            Given((Environments, ENV, "here"), settings=ADDRESS, server=answering({("handback",): lease("desk-2", 9)}))
                 >> Refused(f"the server handed {ENV} to desk-2, not to this machine"),
         ])
         journal.commands.add("environment", SyncWithServer(), expects=[

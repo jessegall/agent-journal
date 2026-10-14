@@ -556,10 +556,10 @@ class Given:
     """What the asking feature's own work answers, by the method it was asked to do and its arguments: ("ticked",) to what that returned; every call is remembered as a run, as ("own work", method, *arguments), and an ask the Given does not name returns nothing."""
     secrets: Answering = Answering({})
     """The secret values the journal holds, by variable name to value, put where the journal reads them before the play and kept out of the user's own."""
-    server: Answering = Answering({})
-    """The journal on a server this copy syncs with, and a Given that names any makes a command reach it instead of a real one: ("hello",) to what it says of itself, ("holder",) and ("handback",) to the lease it names (an empty machine is this one), ("handover",) to an error it raises when it does not take the lease, ("send", the write's line) to what became of that write, ("events", scope) to the events it gives. An answer that is a tuple is given one by one, and an error is raised. Every ask is remembered as a run."""
     outside: Answering = Answering({})
     """The service on the far side of an integration, and a Given that names any makes the feature's own work run for real against it: ("mail",) to the messages its mailbox holds by uid, as the raw bytes; ("login",) to the words it answers a sign-in with when it refuses; ("far side",) to a stand-in the feature's client posts to instead, copied afresh for each play. Every sign-in, search and message sent is remembered as a run, never with a password in it."""
+    server: Answering = Answering({})
+    """The journal on a server this copy syncs with, and a Given that names any makes a command reach it instead of a real one: ("hello",) to what it says of itself, ("holder",) and ("handback",) to the lease it names (an empty machine is this one), ("handover",) to an error it raises when it does not take the lease, ("send", the write's line) to what became of that write, ("events", scope) to the events it gives. An answer that is a tuple is given one by one, and an error is raised. Every ask is remembered as a run."""
 
     @classmethod
     def of(cls, on, *rows, **more) -> "Given":
