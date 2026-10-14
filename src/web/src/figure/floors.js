@@ -1,5 +1,5 @@
 import {BUBBLE, threadOf} from "./perches.js";
-import {DOCKED_BARS, HOME, worldBox} from "./places.js";
+import {boxAt, groundEdge, inWorld, worldBox} from "./places.js";
 
 // How long a gap between two reads may be and still count as one stretch of motion: after a longer one, as when the tab was away, the
 // floors start still, so a figure is carried to where they are now instead of being thrown
@@ -39,18 +39,12 @@ const velocity = (prev, floor, at) => {
     return was && ms > 0 && ms <= GAP_MS ? ((floor.top - was.top) / ms) * 1000 : 0;
 };
 
-// One read of the page: home is the topmost of the bars docked over the compose box, else the compose box itself, and under everything
-// the foot of the figure's world
+// One read of the page: home is the ground at home (places.js groundEdge), and under everything the foot of the figure's world
 export function readFloors(prev = snapshot, at = performance.now()) {
     const world = worldBox();
-    const home = document.querySelector(HOME);
-    const bars = home?.closest(".thread")?.querySelector(DOCKED_BARS);
+    const {element, docked, edge} = groundEdge();
     const read = [];
-    const element = bars || home;
-    if (element) {
-        const box = element.getBoundingClientRect();
-        read.push({id: "home", kind: bars ? "dock" : "compose", element, left: box.left, right: box.right, top: box.top});
-    }
+    if (element) read.push({id: "home", kind: docked ? "dock" : "compose", element, left: edge.left, right: edge.left + edge.width, top: edge.top});
     read.push(...elementFloors());
     read.push({id: "foot", kind: "foot", left: world.left, right: world.right, top: world.bottom});
     return Object.freeze({at, world, floors: Object.freeze(read.map((floor) => Object.freeze({...floor, vy: velocity(prev, floor, at)})))});
@@ -67,4 +61,60 @@ export function startFloors() {
 
 export function stopFloors() {
     cancelAnimationFrame(frame);
+}
+
+// how far the ground at home moves within GROUND_JUMP_MS, in pixels, before the figure is thrown up with it or falls with it rather than
+// carried along
+const GROUND_JUMP = 8;
+const GROUND_JUMP_MS = 200;
+
+const floorNamed = (floors, id) => floors.find((floor) => floor.id === id) ?? null;
+
+// What a figure resting on a spot keeps of it: the floor it rests on by id, the spot's place from that floor's left end and top, the
+// posture it rests in there, whether it rests at home, which is then whatever is the ground at home as bars dock over the compose box
+// and go, and the height of home and the moment `at` it was there; null when it rests on no floor on the page
+export function footingOn(spot, floors = readFloors().floors, at = performance.now()) {
+    const home = floorNamed(floors, "home");
+    const id = !spot.on ? null : spot.on === home?.element ? "home" : floorOf(spot.on);
+    const floor = id && floorNamed(floors, id);
+    if (!floor) return null;
+    return {id, dx: spot.x - floor.left, dy: spot.y - floor.top, posture: spot.posture, home: id === "home", ground: {y: floor.top, at}};
+}
+
+// Where a footing's spot is now, carried along as its floor moves, or null when the ground went from under the figure: the floor left the
+// snapshot, as a bubble scrolls out of the chat, it carried the figure out of its world, or it carried a hanging figure's feet down onto
+// the ground at home, where it lets go and stands
+export function footingNow({id, dx, dy, posture}, figure, floors = latestFloors().floors) {
+    const floor = floorNamed(floors, id);
+    if (!floor) return null;
+    const spot = {x: floor.left + dx, y: floor.top + dy, posture};
+    const home = floorNamed(floors, "home");
+    if (posture === "hang" && home && boxAt(spot, figure).bottom >= home.top) return null;
+    return inWorld(spot, figure) ? {x: spot.x, y: spot.y} : null;
+}
+
+// Where a figure resting at `spot` by `footing` is now, at the moment `at`, with the footing it keeps and how it got there, or null once its
+// ground has gone from under it. Anywhere but home it is carried along with its floor. At home it stays where it stood along the ground, at
+// its height above whatever is home now, and moves with it: "launched" when home rose more than GROUND_JUMP pixels within GROUND_JUMP_MS,
+// as when a bar docks over the compose box, "dropping" when it fell so, as when a bar goes, else "carried".
+export function groundUnder(footing, spot, figure, floors = latestFloors().floors, at = performance.now()) {
+    const now = footingNow(footing, figure, floors);
+    if (!now) return null;
+    if (!footing.home) return {spot: {...spot, ...now}, footing, motion: "carried"};
+    const home = floorNamed(floors, "home");
+    const there = {...spot, y: now.y};
+    const shift = home.top - footing.ground.y;
+    const within = at - footing.ground.at <= GROUND_JUMP_MS;
+    const jumped = within && Math.abs(shift) > GROUND_JUMP;
+    const still = Math.abs(there.y - spot.y) <= 0.3;
+    const ground = jumped || still || !within ? {y: home.top, at} : footing.ground;
+    const motion = !jumped ? "carried" : shift > 0 ? "dropping" : "launched";
+    return {spot: there, footing: {...footing, dx: spot.x - home.left, ground}, motion};
+}
+
+// Where a trip to a spot ends: the spot carried along by `footing`, so it lands on the line where its floor is now; the spot as it was
+// once its floor has gone
+export function landingOn(spot, footing, figure, floors = latestFloors().floors) {
+    const now = footing && footingNow(footing, figure, floors);
+    return now ? {...spot, ...now} : spot;
 }

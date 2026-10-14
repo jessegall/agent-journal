@@ -5,7 +5,7 @@ import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf, fallStep} from "../domain/falls.js";
 import {catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
-import {latestFloors, startFloors, stopFloors} from "../figure/floors.js";
+import {footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
@@ -19,11 +19,8 @@ import {
     boxAt,
     drawnIn,
     facingToward,
-    footingOn,
     gripIn,
-    groundUnder,
     hiddenAt,
-    landingOn,
     spotOf,
     tripTo,
 } from "../figure/places.js";
@@ -101,7 +98,7 @@ let stay = {where: "seat", until: 0};
 let cleared = {until: 0};
 // the sides, "l" or "r", of the hands this voice carries nothing in, which it can hang by
 let hands = [];
-// what the figure rests on (places.js footingOn), watched each frame, also while it gets ready to go; null once it sets off, when the
+// what the figure rests on (figure/floors.js footingOn), watched each frame, also while it gets ready to go; null once it sets off, when the
 // trip keeps the footing of the spot it goes to, taken as the spot was read from the page
 let footing = null;
 // the clip rolled for the stretch the figure is in (reactions.js stretchClip)
@@ -302,7 +299,7 @@ function settle(spot, held = footingOn(spot)) {
     covering = hiddenAt(spot, figureSize());
 }
 
-// Each frame the figure keeps to what it rests on as that moves (places.js groundUnder), falling with the bars under it or lifted by them;
+// Each frame the figure keeps to what it rests on as that moves (figure/floors.js groundUnder), falling with the bars under it or lifted by them;
 // when the ground went from under it, it goes at once, without waiting for its clip, as gravity does not, straight up or down to the
 // ground at home and on to its place there
 function watchFooting() {
