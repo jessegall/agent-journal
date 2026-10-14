@@ -130,6 +130,8 @@ class MessagesFeature(Feature):
             after_report(asked("Can you look at this?"), IDLE) >> Dispatches(InboxSettled(agent=1)),
             after_report(wrote("Here is the result", seen=(AGENT,)), IDLE) >> Dispatches(InboxSettled(agent=1)),
             after_report(IDLE) >> Dispatches(InboxSettled(agent=1)),
+            after_report(*(replace(wrote(f"and this {i}"), n=10 + i) for i in range(6)), WORKING) >> Dispatches(InboxUnread(agent=1).due("unread")),
+            after_report(*(replace(wrote(f"and this {i}"), n=10 + i) for i in range(5)), WORKING) >> Dispatches(InboxSettled(agent=1)),
         ])
         journal.events.listen(AgentReported, SpotUnanswered(), expects=[
             after_report(asked(), IDLE) >> Dispatches(AnswerWaitBegan(agent=1, uses=1)) & Dispatches(OWED),
@@ -255,6 +257,7 @@ class MessagesFeature(Feature):
         journal.events.handle(MessageSettled, CloseTheMessage(), expects=[
             Given.of(MessageSettled(n=5, how="handled: todo:7"), asked(refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
             Given.of(MessageSettled(n=5, how="read by the user"), SENT, IDLE) >> Updated(Message(n=5), outcome="read by the user"),
+            Given.of(MessageSettled(n=5, how="second"), replace(asked(), completed=WHEN, outcome="first"), IDLE) >> Unchanged(),
         ])
         journal.events.handle(RunTogether, NameRunTogether(), expects=[
             Given.of(RunTogether(agent=1), IDLE) >> Nudged("paragraphs"),

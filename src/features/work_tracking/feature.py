@@ -153,6 +153,7 @@ class WorkFeature(Feature):
                              Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO, earlier=(WORKED, Reported("idle", "Stop"), WORKED)) >> Told("next", times=1),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first", data={"blocked": "the release is not cut"})), settings=AUTO) >> Told("next", times=0),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first"), Question(n=1, title="which way", refs=["todo:1"])), settings=AUTO) >> Told("next", times=0),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first"), Question(n=1, title="which way", refs=["todo:1"], completed=1.0)), settings=AUTO) >> Nudged("next", n=1),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first"), Work(n=3, title="x", data={"todo": 1, "parked": "a subagent holds it"})), settings=AUTO) >> Told("next", times=0),
                              Given(STOPS, rows=(IDLE_ROW, FIRST, Work(n=3, title="the release", data={"awaiting": "the CI run on main"})), settings=AUTO) >> Told("next", times=0))),
               Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, cap=Cap(1),
@@ -257,6 +258,7 @@ class WorkFeature(Feature):
                                                parkings=("3:the user asked for something first",))),
             Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), Todo(n=4, title="Next"), PARKED, AGENT_ROW]) >> Dispatches(nothing),
             Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED]) >> Dispatches(nothing),
+            Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED, AGENT_ROW], remembered={"work_tracking.named_parked": ["3:the user asked for something first"]}) >> Dispatches(nothing),
             Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), Work(n=3, title="Work", data={"todo": 9, "parked": "later"}), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.listen(TodoCompleted, SpotUnblockedByTodo(), expects=[
@@ -313,6 +315,7 @@ class WorkFeature(Feature):
             Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 5.0}), ran])
                 >> Dispatches(WaitCleared(agent=1, work=3, awaiting="the build")),
             Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 20.0}), ran]) >> Dispatches(nothing),
+            Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 10.0}), ran]) >> Dispatches(nothing),
             Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the helper", data={"awaiting": "the helper", "awaiting_on": "helper:2", "awaiting_since": 5.0}), ran])
                 >> Dispatches(nothing),
         ])
@@ -403,7 +406,7 @@ class WorkFeature(Feature):
             Given(PollingNamed(agent=1, times=3, command="git status", wakes=True), rows=[AGENT_ROW]) >> Nudged("polling"),
         ])
         journal.events.handle(WaitCleared, ClearWait(), expects=[
-            Given(WaitCleared(agent=1, work=3, awaiting="the build"), rows=[WAITING, AGENT_ROW]) >> Updated(Work(n=3), awaiting="") & Nudged("wait cleared"),
+            Given(WaitCleared(agent=1, work=3, awaiting="the build"), rows=[WAITING, AGENT_ROW]) >> Updated(Work(n=3), awaiting="") & Nudged("wait cleared", awaiting="the build"),
         ])
         journal.events.handle(StillAwaiting, AskStillAwaiting(), expects=[
             Given(StillAwaiting(agent=1, awaiting="the build", minutes=7), rows=[WAITING, AGENT_ROW]) >> Nudged("still awaiting"),

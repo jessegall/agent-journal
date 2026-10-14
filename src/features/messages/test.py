@@ -1,3 +1,4 @@
+# Stays a test: it needs the engine, the driver, a real transcript file tree or the hook gate, or it tests controller and render code no registration reaches
 import json
 import threading
 import time
