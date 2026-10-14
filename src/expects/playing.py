@@ -4,6 +4,7 @@ The Fakes answer and remember. Nothing here knows what any one outcome word mean
 record of the play itself - so a word added to the grammar is a word added in one place.
 """
 
+import copy
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -431,6 +432,17 @@ class Outside(Asked):
                 return "BYE", []
 
         return Connection()
+
+    def client(self):
+        """The far side as a client that posts to it, a fresh copy of what the Given holds each time, every post remembered as a run."""
+        far, outside = copy.deepcopy(self.answer(("far side",))), self
+
+        class Client:
+            def post(self, path: str, body: dict):
+                outside.recording.ran.append(("post", path, body.get("variables", {})))
+                return far.post(path, body)
+
+        return Client()
 
     def smtp(self, host: str, timeout: float):
         outside = self

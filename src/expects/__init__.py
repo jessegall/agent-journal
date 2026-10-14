@@ -527,7 +527,7 @@ class Given:
     secrets: Answering = Answering({})
     """The secret values the journal holds, by variable name to value, put where the journal reads them before the play and kept out of the user's own."""
     outside: Answering = Answering({})
-    """The service on the far side of an integration, and a Given that names any makes the feature's own work run for real against it: ("mail",) to the messages its mailbox holds by uid, as the raw bytes; ("login",) to the words it answers a sign-in with when it refuses. Every sign-in, search and message sent is remembered as a run, never with a password in it."""
+    """The service on the far side of an integration, and a Given that names any makes the feature's own work run for real against it: ("mail",) to the messages its mailbox holds by uid, as the raw bytes; ("login",) to the words it answers a sign-in with when it refuses; ("far side",) to a stand-in the feature's client posts to instead, copied afresh for each play. Every sign-in, search and message sent is remembered as a run, never with a password in it."""
 
     @classmethod
     def of(cls, on, *rows, **more) -> "Given":

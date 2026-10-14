@@ -228,15 +228,17 @@ def play_services(promise, given: Given, record: Record, world: World) -> dict:
         if getattr(given, name).answers:
             fakes |= dict.fromkeys(kinds, getattr(world, name))
     if given.outside.answers:
-        fakes |= dict.fromkeys((serving.OwnWork, serving.ReadOwnWork), TheOwnWork(outside_of(promise.feature, world), record))
+        fakes |= dict.fromkeys((serving.OwnWork, serving.ReadOwnWork), TheOwnWork(outside_of(promise.feature, record, world), record))
     services = Services({**lane_services(record, lambda: spoken_to(record, given)), **fakes})
     return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())
 
 
-def outside_of(feature, world: World):
-    """The feature as it works when the far side of its integration is the one the Given states."""
+def outside_of(feature, record: Record, world: World):
+    """The feature as it works when the far side of its integration is the one the Given states: its mail connections, or its client, are the stub's."""
     reaching = copy.copy(feature)
     reaching.wires = world.outside
+    if ("far side",) in world.outside.answers.answers:
+        reaching.clients = {str(record.home): world.outside.client()}
     return reaching
 
 
