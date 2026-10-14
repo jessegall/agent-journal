@@ -99,6 +99,10 @@ def changed(action: str, actor: str, status: str = "", **fields) -> PlanChanged:
     return PlanChanged(n=1, type="plan", action=action, actor=actor, status=status, **fields)
 
 
+def idle_for(minutes: int) -> AgentRow:
+    return AgentRow(n=1, title="claude-1", data={"status": "idle", "at": WHEN - minutes * 60})
+
+
 STILL_CASES = (
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), AGENT_ROW])
         >> Nudged("standing still", phase="Every nudge is visible", rows="4366, 4367"),
@@ -122,7 +126,10 @@ def held(record, todo) -> bool:
 class PlansFeature(Feature):
     details = PlansDetails
     nudges = (Nudge("still", behaviour="still", about=still_plans, cap=Cap(STILL_TIMES),
-                    guarantee="When a running plan has not moved for a while, the agent is told, a few times."),
+                    guarantee="When a running plan has not moved for a while, the agent is told, a few times.",
+                    expects=(Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), idle_for(6)])
+                                 >> Nudged("still", title="Ship it", minutes=6, rows="take to-do 4366, to-do 4367"),
+                             Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), idle_for(4)]) >> Unchanged())),
               Nudge("blocked", behaviour="blocked", about=blocked_plans,
                     guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."),
               Nudge("left building", behaviour="left building", about=left_building, cap=Cap(STILL_TIMES),
