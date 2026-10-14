@@ -4,7 +4,7 @@ from events.questions import QuestionCompleted
 from events.resources import ResourceCreated
 from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOrchestrator, TicketAgentToWake, TicketCalled, TicketCompleted, TicketHandedIn,
                             TicketNeedsLook, TicketRestarted, TicketsDue, TicketToRevive, TicketWaitedLong)
-from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote, nothing
+from expects import WHEN, Answered, Dispatches, Given, Kept, Nudged, Refused, Reported, Told, Unchanged, Updated, Waited, Wrote, nothing
 from framework.base import Feature
 from framework.due import DueOnClock
 from resources.boards import Board
@@ -90,7 +90,11 @@ class TicketsFeature(Feature):
         Nudge("ticket_handed_in", behaviour="handed in", about=handed_in,
               guarantee="While a ticket's finished work waits for the agent orchestrating its board, that agent is told how long it has waited and what to do: review, test and merge it."),
         Nudge("check_board", behaviour="board check", about=boards_to_check,
-              guarantee="While a board has tickets running, the agent orchestrating it is told to look in on their agents."),
+              guarantee="While a board has tickets running, the agent orchestrating it is told to look in on their agents.",
+              expects=(Given(ClockTicked(agent=1), rows=(AgentRow(n=1, title="claude-1"), run_here(), Ticket(n=1, title="Dark mode", data={"board": 1, "stage": "Doing", "work_environment": "ticket-1", "launched": WHEN + 350})),
+                             earlier=(Reported("idle", "Stop"), Waited(6))) >> Nudged("check_board", about="board 1"),
+                       Given(ClockTicked(agent=1), rows=(AgentRow(n=1, title="claude-1"), run_here(), Ticket(n=1, title="Dark mode", data={"board": 1, "stage": "Doing", "work_environment": "ticket-1", "launched": WHEN + 350, "halted": True})),
+                             earlier=(Reported("idle", "Stop"), Waited(6))) >> Told("check_board", times=0))),
     )
 
     def register(self, journal: Journal) -> None:
@@ -127,6 +131,8 @@ class TicketsFeature(Feature):
             Given(TicketHandedIn(ticket=1), rows=[run_here(), waiting_for(0, handed_in_at=0.0)]) >> Updated(Ticket(n=1), handed_in_at=WHEN),
         ])
         journal.events.listen(TicketsDue, SpotStuckTickets(), expects=[
+            Given(TicketsDue(agent=1), rows=[run_here(), Ticket(n=1, title="Dark mode", data={"board": 1, "stage": "Doing", "work_environment": "ticket-1", "agent_seen": WHEN - 600}), AgentRow(n=1, title="claude-1")])
+                >> Dispatches(TicketToRevive(ticket=1, title="Dark mode", text="stopped")),
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
         ])
         journal.events.handle(TicketToRevive, ReviveTicket(), expects=[

@@ -1,3 +1,4 @@
+# Stays a test: it drives Tickets, Boards and Messages controller words no registration reaches, reads other environments' rows and live session files, runs a real supervisor subprocess (Popen) and real git repositories and worktrees.
 import time
 from dataclasses import replace
 from controllers.types import Comments, Environments, Todos
