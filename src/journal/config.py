@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,4 +27,5 @@ class Config:
 
     @classmethod
     def at(cls, root: Path) -> "Config":
-        return cls(root.resolve())
+        """JOURNAL_PORT picks the port; 0 takes a free one, which the port file then names."""
+        return cls(root.resolve(), int(os.environ.get("JOURNAL_PORT", cls.port)))
