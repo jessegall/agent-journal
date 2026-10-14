@@ -59,7 +59,8 @@ class V3Controller:
 
     def environment_summary(self, environment: Environment) -> dict:
         live = self.agents.live(environment.id)
-        agent, work = None, None
+        agent = {"status": "stopped", "provider": "claude", "model": "", "context": 0, "uses": 0, "started": 0, "at": 0, "tool": "", "file": "", "asking": False, "background_run": "", "says": "", "doing": ""}
+        work = None
         if live:
             row = self.shapers.named("agent").row(live, list(reversed(self.entries.of_kind_in(environment.id, 200))))
             d = row.data
@@ -71,7 +72,8 @@ class V3Controller:
                     work = {"n": task.id, "title": task.title, "todo": task.id, "parked": False, "awaiting": ""}
                 except NotFound:
                     work = None
-        return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": []}
+        open_questions = len([q for q in self.shapers.named("question").rows(environment) if q.is_open])
+        return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": {"questions": open_questions, "prompts": 0, "routed": 0}}
 
     def get_agents(self, request: Request) -> Response:
         online = []
@@ -201,6 +203,18 @@ class V3Controller:
         if type_ == "profile" and action == "choose":
             return self.post_settings(Request(request.method, request.path, request.query, {"form_of_address": {"profile": request.body.get("n")}}, request.params, request.headers, request.actor))
         return Response.refused(f"{action} on {type_} is not something the viewer can do here")
+
+    def get_project_files(self, request: Request) -> Response:
+        """One folder of the project, folders first, as the Code page lists it."""
+        folder = request.query.get("folder", "").strip("/")
+        root = (self.config.root / folder).resolve()
+        if not str(root).startswith(str(self.config.root.resolve())) or not root.is_dir():
+            return Response.json([])
+        entries = sorted(root.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
+        return Response.json([{"path": str(p.relative_to(self.config.root)), "name": p.name, "folder": p.is_dir()} for p in entries if not p.name.startswith(".") and p.name != "node_modules"])
+
+    def post_console(self, request: Request) -> Response:
+        return Response.json({"queued": False})
 
     def get_agent_edits(self, request: Request) -> Response:
         return Response.json({"cursor": time.time(), "edits": []})
