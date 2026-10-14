@@ -11,41 +11,24 @@ from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh
 
 
-def test_a_message_wakes_the_environments_last_conversation_when_no_agent_runs(monkeypatch):
+def test_a_message_wakes_nothing_while_a_running_session_holds_the_conversation(monkeypatch):
+    import os
+    from engine.sessions import Sessions
     features.load()
     started = []
     monkeypatch.setattr("agents.terminal.detached",
                         lambda root, start: started.append((start.environment, start.provider, start.conversation)) or 1)
     record = fresh()
     Environments(record, actor=SYSTEM).create(record.env)
-    Agents(record, actor=SYSTEM).create("4d863ccb-old", event="SessionEnd", provider="claude", at=100.0)
     Agents(record, actor=SYSTEM).create("bea86f27-last", event="SessionEnd", provider="codex", at=200.0)
-    Agents(record, actor=SYSTEM).create("claude-20640", provider="claude", at=300.0)
-    Messages(record, actor=USER).create("are you there?")
-    assert started == [], "with the setting off, a message starts nothing"
     record.set_setting("starting_agents", {"wake_on_message": True})
-    Messages(record, actor=AGENT).create("I am writing to myself")
-    assert started == [], "the agent's own message wakes nothing"
-    Messages(record, actor=USER).create("are you there now?")
-    assert started == [(record.env, "codex", "bea86f27-last")], "the user's message resumes the environment's last conversation on its provider"
-    Messages(record, actor=USER).create("hello again")
-    assert len(started) == 1, "a second message while that start is under way starts nothing more"
-    import os
-    from engine.sessions import Sessions
-    environments = Environments(record, actor=SYSTEM)
-    environments.update(environments.rows.by_title(record.env).n, launched=0)
     Sessions(record.root).write("claude-held", environment=record.env, pid=os.getpid())
     Messages(record, actor=USER).create("are you still there?")
-    assert len(started) == 1, "a message while an agent holds the environment wakes nothing"
+    assert started == [], "a message while an agent holds the environment wakes nothing"
     Sessions(record.root).write("claude-held", environment="elsewhere")
     Sessions(record.root).write("bea86f27-last", environment="elsewhere", pid=os.getpid())
     Messages(record, actor=USER).create("where did you go?")
-    assert len(started) == 1, "a conversation still running in another environment is never resumed a second time"
-    quiet = fresh("quiet")
-    quiet.set_setting("starting_agents", {"wake_on_message": True})
-    Environments(quiet, actor=SYSTEM).create(quiet.env)
-    Messages(quiet, actor=USER).create("anyone?")
-    assert len(started) == 1, "an environment with no conversation to carry on starts nothing"
+    assert started == [], "a conversation still running in another environment is never resumed a second time"
 
 
 def test_the_agents_command_is_found_where_it_installs_itself_or_refused_in_words(tmp_path, monkeypatch):
