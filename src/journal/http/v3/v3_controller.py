@@ -224,10 +224,11 @@ class V3Controller:
         agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
         if agent is None:
             return Response.json({"cursor": time.time(), "edits": [], "older": False})
+        since = float(request.query.get("since", 0) or 0)
         edits = []
         for e in reversed(self.entries.of_kind_in(environment.id, 400)):
             tool = e.data.get("tool_name", "")
-            if e.kind != "ToolFinished" or tool not in ("Edit", "Write", "MultiEdit") or not (e.actor and e.actor.id == agent.session):
+            if e.kind != "ToolFinished" or tool not in ("Edit", "Write", "MultiEdit") or not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= since:
                 continue
             edit = self.edit_of(e, tool)
             if edit:
@@ -263,9 +264,10 @@ class V3Controller:
         agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
         if agent is None:
             return Response.json({"lines": []})
+        after = float(request.query.get("after", 0) or 0)
         lines = []
         for e in reversed(self.entries.of_kind_in(environment.id, 400)):
-            if e.kind != "ToolFinished" or e.data.get("tool_name") != "Bash" or not (e.actor and e.actor.id == agent.session):
+            if e.kind != "ToolFinished" or e.data.get("tool_name") != "Bash" or not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= after:
                 continue
             output = e.data.get("tool_response", "")
             lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Bash", "command": e.data.get("tool_input", {}).get("command", ""), "output": output if isinstance(output, str) else str(output), "stepped": False, "level": "everything"})
