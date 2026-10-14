@@ -7,9 +7,10 @@ from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
 from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
-from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Replied, Requested, Unchanged, Updated, Wrote, answering, nothing
+from expects import WHEN, Acted, Answered, Dispatches, Given, Nudged, Refused, Remembered, Replied, Requested, Reported, Told, Unchanged, Updated, Wrote, answering, nothing
 from events.answers import Refused as RefusedCall
 from framework.base import Feature
+from resources.base import AGENT
 from resources.types import AgentRow, Message
 from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
@@ -27,6 +28,9 @@ CLAUDE_TRANSCRIBED = AgentRow(n=1, title="claude-1", data={"provider": "claude",
 LIBRARY = ".agents/skills"
 PLANS = {f"{LIBRARY}/journal-plans/SKILL.md": "---\nname: journal-plans\nkeywords: roadmap\ncommands: plan\n---\n"}
 JOURNAL = {f"{LIBRARY}/journal/SKILL.md": "---\nname: journal\n---\n"}
+CODEX = AgentRow(n=1, title="codex-1", data={"provider": "codex"})
+OWED_TO_CODEX = {"skill_loading.required.codex-1": {"journal-plans": 5.0}}
+USE = Reported("working", "PreToolUse", skills=[])
 
 
 
@@ -44,6 +48,8 @@ class SkillLoading(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_skills, expects=[
+            Given(Requested(), files=answering({".claude/skills/journal-obsolete/SKILL.md": '---\nname: journal-obsolete\ndescription: "Old skill"\n---\n\n# Old\n'}))
+                >> Replied(200, [{"name": "journal-obsolete", "description": "Old skill", "path": ".claude/skills/journal-obsolete/SKILL.md"}]),
             Given(Requested(), files=answering({f"{LIBRARY}/journal-work-tracking/SKILL.md": '---\nname: journal-work-tracking\ndescription: "Auto mode"\n---\n\n# Auto\n'}))
                 >> Replied(200, [{"name": "journal-work-tracking", "description": "Auto mode", "path": f"{LIBRARY}/journal-work-tracking/SKILL.md", "loaded": 0, "stale": False, "always": False}]),
             Given(Requested(), files=answering({f"{LIBRARY}/journal-lean/SKILL.md": "---\nname: journal-lean\n---\n", f"{LIBRARY}/journal-todos/SKILL.md": "---\nname: journal-todos\n---\n"}))
@@ -51,7 +57,14 @@ class SkillLoading(Feature):
             Given(Requested(), files=answering({f"{LIBRARY}/lint-rules/SKILL.md": "---\nname: lint-rules\nplugin: linter\nkeywords: sinful, lint\n---\n"}))
                 >> Replied(200, [{"name": "lint-rules", "keywords": ["sinful", "lint"]}]),
         ])
-        journal.routes.add(post_skill_load, post_skill_always)
+        journal.routes.add(post_skill_load)
+        journal.routes.add(post_skill_always, expects=[
+            Given(Requested({"on": True}, name="journal-work-tracking"), files=answering({f"{LIBRARY}/journal-work-tracking/SKILL.md": "---\nname: journal-work-tracking\n---\n"}))
+                >> Replied(200, {"skills": ["journal-work-tracking"]}),
+            Given(Requested({"on": False}, name="journal-lean"),
+                  files=answering({f"{LIBRARY}/journal-lean/SKILL.md": "---\nname: journal-lean\n---\n", f"{LIBRARY}/journal-todos/SKILL.md": "---\nname: journal-todos\n---\n"}))
+                >> Replied(200, {"skills": ["journal-todos"]}),
+        ])
         journal.routes.add(get_skill, expects=[
             Given(Requested(name="no-such-skill")) >> Refused("no skill no-such-skill"),
             Given(Requested(name="journal-demo"), files=answering({".agents/skills/journal-demo/SKILL.md": '---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n'}))
@@ -64,6 +77,9 @@ class SkillLoading(Feature):
         journal.commands.add("agent", ShowSkills(), expects=[Given((Agents,)) >> Answered([])])
         journal.commands.add("agent", ShowSkill(), expects=[Given((Agents, "journal")) >> Refused("no skill journal")])
         journal.commands.add("agent", LoadSkill(), expects=[
+            Given((Agents, "journal"), rows=[AgentRow(n=1, title="claude-1")], files=answering(JOURNAL))
+                >> Answered({"notice": "the agent is asked, and its tool calls wait until the skill is loaded"}) & Wrote(Message(title="Please load the journal skill now")) & Remembered("required.claude-1"),
+            Given(Acted(Agents, "load_skill", "journal-plans", by=AGENT)) >> Refused("only the user may agent load_skill: they do it from the viewer"),
             Given((Agents, "journal"), rows=[AgentRow(n=1, title="claude-1")]) >> Answered({"notice": "the agent is asked, and its tool calls wait until the skill is loaded"})
                 & Wrote(Message(title="Please load the journal skill now")),
         ])
@@ -72,6 +88,11 @@ class SkillLoading(Feature):
         ])
         START_PARTS.add(self, handed, key=SKILLS)
         journal.events.listen(AgentReported, SpotUnloadedWindow(), expects=[
+            Given(USE, earlier=(USE,) * 24) >> Told("unloaded"),
+            Given(USE, earlier=(USE,) * 23) >> Told("unloaded", times=0),
+            Given(USE, earlier=(USE,) * 49) >> Told("unloaded"),
+            Given(Reported("working", "PreToolUse", skills=["journal", "journal-todos"]), earlier=(Reported("working", "PreToolUse", skills=["journal", "journal-todos"]),) * 29)
+                >> Told("unloaded", times=0),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PostToolUse", "skills": []})]) >> Dispatches(JournalSkillMissing(agent=1).due()),
             Given(AgentReported(agent=1), rows=[CLAUDE]) >> Dispatches(WindowSpent(agent=1).due()),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"event": "PreCompact", "skills": []})])
@@ -179,6 +200,10 @@ class SkillLoading(Feature):
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], files=answering(PLANS)) >> Answered(Allowed()),
         ])
         journal.events.answer(ToolCallAsked, RefuseUntilLoaded(), expects=[
+            Given(ToolCallAsked(tool="exec", input="ls", command="", session="codex-1"), rows=[CODEX], remembered=OWED_TO_CODEX)
+                >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: read .agents/skills/journal-plans/SKILL.md")),
+            Given(ToolCallAsked(tool="exec", input="sed -n '1,200p' .agents/skills/journal-plans/SKILL.md", command="", session="codex-1"), rows=[CODEX], remembered=OWED_TO_CODEX)
+                >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}})
                 >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
