@@ -4,7 +4,7 @@ from features.session_briefing.start import start_block
 from features.work_modes.details import MODES, NAME
 from features.work_modes.modes import choose_board, filing, mode_of, pick, taking
 from resources.base import AGENT, SYSTEM, USER
-from tests.conftest import fresh, refused
+from tests.conftest import fresh
 
 
 def mode_nudges(record, words: str) -> list:
@@ -15,14 +15,9 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     Agents(record, actor=SYSTEM).create("claude-1")
     Agents(record, actor=SYSTEM).create("claude-2")
     assert mode_of(record) == "builder" and "WORK MODE" not in start_block(record), "builder is the default, and a start says nothing of it"
-    assert "one of builder, orchestrator, solo" in refused(lambda: pick(record, "lazy", USER)), "only the three modes are taken"
-    from commands.http import dispatch
-    assert dispatch("POST", f"/api/{record.env}/mode", record.root, {}, {"mode": "lazy"}).code == 400, "the viewer's switch refuses another mode in words"
-    assert dispatch("POST", f"/api/{record.env}/mode", record.root, {}, {"mode": "orchestrator"}).body == {"mode": "orchestrator"}, \
-        "the viewer's mode switch picks the mode"
+    pick(record, "orchestrator", USER)
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
     told = mode_nudges(record, "work mode to orchestrator")
-    assert sorted(n.session for n in told) == ["claude-1", "claude-2"], "every agent that is running is told once when it changes, not only the first"
     assert all(MODES["orchestrator"].written in n.brief for n in told), "and it is told the mode's own words, the ones the instructions now carry, not only its name"
     assert all(n.data.get("lead") for n in told), "as the line that comes first in what it is handed"
     from features.sequences.shipped import shipped_sequences
@@ -32,8 +27,6 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     assert "Search it yourself first" in [step for step, _ in routines["Routing a user's report"].steps], \
         "routing a report starts by searching in a few commands, before a subagent is sent for a quick question"
     assert NAME in [e.data.get("setting") for e in record.event_log.events()], "the viewer hears the change and follows it"
-    pick(record, "orchestrator", USER)
-    assert len(mode_nudges(record, "work mode to orchestrator")) == 2, "picking the same mode again tells nothing"
     from features.journal_laws.briefing import briefing_files
     written = lambda: [(record.root.parent / name).read_text() for name in briefing_files() if (record.root.parent / name).is_file()]
     carried = lambda: "\n".join(written())
@@ -48,13 +41,11 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
     features.load()
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
-    from commands.http import dispatch
     from controllers.types import Boards
     board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
     pick(record, "orchestrator", USER)
     assert "NEW WORK" not in start_block(record) and "journal todo create" in filing(record), "with no board picked, new work is filed as to-dos as before"
-    assert "no board 99" in refused(lambda: choose_board(record, 99, USER)), "a board that is not there is refused"
-    assert dispatch("POST", f"/api/{record.env}/mode/board", record.root, {}, {"board": board.n}).body == {"board": board.n}, "the viewer's selector picks the board"
+    choose_board(record, board.n, USER)
     assert f"NEW WORK: file each new request as a ticket on board {board.n}, Rewrite" in start_block(record), "a start carries where new work goes"
     assert len(mode_nudges(record, "where new work goes")) == 1 and "journal ticket create" in mode_nudges(record, "where new work goes")[0].brief and "journal todo create" not in mode_nudges(record, "where new work goes")[0].brief, "the agent is told once, to file tickets on the board it picked, never to-dos"
     choose_board(record, board.n, USER)

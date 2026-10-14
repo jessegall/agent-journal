@@ -20,7 +20,7 @@ __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Released", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
-           "Step", "Reported", "Ticked", "Acted", "Waited", "Happened", "Told", "Stands", "Closed",
+           "Step", "Reported", "Ticked", "Acted", "Waited", "Happened", "Told", "Stands", "Closed", "Requested", "Replied",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
@@ -375,6 +375,36 @@ class Closed(Outcome):
         if any(one.completed and one.outcome.startswith(self.why) for one in said):
             return ""
         return f"no {self.line!r} it said was closed with {self.why!r}; they stand as {[one.outcome or 'open' for one in said]}"
+
+
+@dataclass(frozen=True, init=False)
+class Requested:
+    """What a route is asked, as the viewer sends it: the body, the query and the path parameters beyond the environment, which the play names itself."""
+
+    body: tuple[tuple[str, Any], ...]
+    query: tuple[tuple[str, Any], ...]
+    params: tuple[tuple[str, Any], ...]
+
+    def __init__(self, body: Mapping[str, Any] | None = None, query: Mapping[str, Any] | None = None, **params) -> None:
+        object.__setattr__(self, "body", tuple(sorted((body or {}).items())))
+        object.__setattr__(self, "query", tuple(sorted((query or {}).items())))
+        object.__setattr__(self, "params", tuple(sorted(params.items())))
+
+
+@dataclass(frozen=True)
+class Replied(Outcome):
+    """A route answered with this code and a body holding what is stated of it; with no body stated, only the code is judged."""
+
+    code: int
+    body: Any = None
+
+    def holds(self, seen) -> str:
+        reply = seen.answered
+        if reply is None:
+            return "the route gave no reply"
+        if reply.code != self.code:
+            return f"it replied {reply.code}, not {self.code}"
+        return "" if self.body is None or contains(reply.body, self.body) else f"it replied {reply.body!r}, which does not hold {self.body!r}"
 
 
 class Step:

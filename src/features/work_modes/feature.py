@@ -3,7 +3,7 @@ from events.answers import Allowed, Refused as Declined
 from events.asking import ToolCallAsked
 from events.boards import BoardStarted
 from events.work_modes import BuilderHandedAway, DriftChecked, EditCounted, OrchestratorDrifted
-from expects import Answered, Dispatches, Given, Nudged, Remembered, Set, Unchanged, nothing
+from expects import Answered, Dispatches, Given, Nudged, Refused, Remembered, Replied, Requested, Set, Told, Unchanged, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from declaring.registries import MODE, START_PARTS
@@ -14,7 +14,8 @@ from features.work_modes.listeners import SpotEditOutsideTheJournal
 from features.work_modes.modes import carried
 from features.work_modes.routes import post_board, post_mode
 from features.work_modes.shipped import SEQUENCES
-from resources.types import AgentRow
+from resources.types import AgentRow, Board
+from resources.work_modes import MODE_SET
 
 SOLO = {"work_modes.mode": "solo"}
 BUILDER = {"work_modes.mode": "builder"}
@@ -42,8 +43,19 @@ class WorkModes(Feature):
             Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=BUILDER) >> Set("work_modes.mode", "orchestrator"),
             Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=ORCHESTRATOR) >> Unchanged(),
         ])
-        journal.routes.add(post_mode)
-        journal.routes.add(post_board)
+        journal.routes.add(post_mode, expects=[
+            Given(Requested({"mode": "orchestrator"}), settings=BUILDER) >> Replied(200, {"mode": "orchestrator"}) & Set("work_modes.mode", "orchestrator"),
+            Given(Requested({"mode": "orchestrator"}), settings=BUILDER, rows=[AgentRow(n=1, title="claude-1"), AgentRow(n=2, title="claude-2")])
+                >> Told(MODE_SET, times=2),
+            Given(Requested({"mode": "orchestrator"}), settings=ORCHESTRATOR, rows=[AgentRow(n=1, title="claude-1")])
+                >> Replied(200, {"mode": "orchestrator"}) & Told(MODE_SET, times=0),
+            Given(Requested({"mode": "lazy"}), settings=BUILDER) >> Refused("the work mode is one of builder, orchestrator, solo, not 'lazy'") & Unchanged(),
+        ])
+        journal.routes.add(post_board, expects=[
+            Given(Requested({"board": 1}), settings=ORCHESTRATOR, rows=[Board(n=1, title="Rewrite")]) >> Replied(200, {"board": 1}) & Set("work_modes.board", 1),
+            Given(Requested({"board": 99}), settings=ORCHESTRATOR) >> Refused("there is no board 99 to send new work to") & Unchanged(),
+            Given(Requested({"board": 0}), settings={**ORCHESTRATOR, "work_modes.board": 1}, rows=[Board(n=1, title="Rewrite")]) >> Replied(200, {"board": 0}) & Set("work_modes.board", 0),
+        ])
         START_PARTS.add(self, carried, key=MODE)
         journal.events.answer(ToolCallAsked, RefuseHelperInSolo(), expects=[
             Given(shell(HELPER_DISPATCH), settings=SOLO) >> Answered(Declined(REFUSED)),

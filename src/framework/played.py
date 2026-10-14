@@ -30,6 +30,7 @@ import serving
 from framework.lanes import NobodyToSpeakTo, TheOwnWork, lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
+from framework.routing import Request
 from resources.base import AGENT, Refused, SYSTEM
 
 FAKED_WHEN_STATED = (("processes", (serving.Processes, serving.ReadProcesses)), ("providers", (serving.Providers,)), ("git", (serving.Git, serving.ReadGit)),
@@ -270,10 +271,20 @@ def refused_the_write(promise, given: Given, record: Record, world: World) -> No
         world.recording.refused = str(why)
 
 
-ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,
+def requested(promise, given: Given, record: Record, world: World) -> None:
+    """A route, through its own handler: the request the viewer would send, over the scratch record. A refusal the handler raises is what the server answers 400 for."""
+    asked = given.on
+    request = Request(record.root, {"env": record.env, **dict(asked.params)}, dict(asked.query), dict(asked.body), record)
+    try:
+        world.recording.answered = promise.part(request)
+    except Refused as refusal:
+        world.recording.refused = str(refusal)
+
+
+ENTRIES = {"route": requested, "handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,
            "action_interceptor": refused_before_the_write, "command": commanded, "responder": answered_a_hook,
            LISTEN: listened, HANDLE: acted_on_a_fact, ANSWER: answered_a_request, REFUSE: refused_the_write}
-"""One entry per kind, and no kind with two, so the run and the engine cannot disagree about how a registration is reached. A route has none yet: it is reached through the server, which an expectation does not stand up."""
+"""One entry per kind, and no kind with two, so the run and the engine cannot disagree about how a registration is reached."""
 
 
 def reported(record: Record, status: str, event: str, session: str = "claude-1", **more) -> None:
