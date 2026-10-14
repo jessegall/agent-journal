@@ -1,8 +1,8 @@
 from controllers.types import Rules
-from events.agents import AgentChanged, AgentReported
+from events.agents import AgentChanged, AgentReported, ClockTicked
 from events.memory_checkpoints import AgentKeptSomething, ContextDecided, ContextMarkReached
 from events.resources import ResourceCreated
-from expects import Released, WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Updated, nothing
+from expects import Released, WHEN, Answered, Dispatches, Given, Held, Nudged, Remembered, Unchanged, Updated, nothing
 from framework.base import Feature
 from features.memory_checkpoints.commands import Reread
 from features.memory_checkpoints.details import MemoryCheckpointsDetails
@@ -17,7 +17,12 @@ from resources.types import AgentRow, Fact, Reminder, Rule
 class MemoryCheckpoints(Feature):
     details = MemoryCheckpointsDetails
     nudges = (Nudge("reread", behaviour="rereading", about=owed_reading, private=False,
-                    guarantee="When the weekly reading of every rule and fact is owed, the agent is told to do it."),)
+                    guarantee="When the weekly reading of every rule and fact is owed, the agent is told to do it.",
+                    expects=(
+                        Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")], remembered={"memory_checkpoints.cleanup_read_at": 1.0})
+                            >> Nudged("reread"),
+                        Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+                    )),)
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("rule", Reread(), expects=[

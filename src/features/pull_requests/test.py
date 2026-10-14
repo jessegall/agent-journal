@@ -1,3 +1,4 @@
+# Stays a test: it tests the parser outcome_of directly across every test runner's printed summary, one shape after another
 def test_a_commands_outcome_is_read_in_the_shape_of_each_runner():
     from framework.command_effects import outcome_of
     from payload import BashCall, Hook, ReadCall

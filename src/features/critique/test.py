@@ -1,3 +1,4 @@
+# Stays a test: it writes each critic's brief to disk and reads Codex's model from a real home config
 from pathlib import Path
 
 import features

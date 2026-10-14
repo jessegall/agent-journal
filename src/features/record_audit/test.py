@@ -1,3 +1,4 @@
+# Stays a test: it audits claims against a real project file tree and a home folder's Codex config
 import time
 
 

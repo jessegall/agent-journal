@@ -1,3 +1,4 @@
+# Stays a test: it grows a real transcript file between hook calls, which a Given's one fixed transcript cannot state
 import json
 
 from controllers.types import Agents, Messages
