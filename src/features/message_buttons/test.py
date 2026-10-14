@@ -1,3 +1,4 @@
+# Stays a test: it tests the controllers' button shaping and pressing directly, which no registration reaches
 import pytest
 
 from controllers.types import Messages

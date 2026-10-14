@@ -1,3 +1,4 @@
+# Stays a test: it writes and reads the briefing blocks in real CLAUDE.md and AGENTS.md files, and the rules controller's keyword field directly
 from controllers.types import Rules
 from features.journal_laws.briefing import BEGIN, END, brief
 from resources.base import USER

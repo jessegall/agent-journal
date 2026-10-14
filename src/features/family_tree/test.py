@@ -1,3 +1,4 @@
+# Stays a test: it builds the tree across several real environment records and reads the agents' notes from transcripts on disk
 import features
 from controllers.types import Agents, Environments
 from engine.record import Record

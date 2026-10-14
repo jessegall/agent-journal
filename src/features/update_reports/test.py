@@ -1,3 +1,4 @@
+# Stays a test: it plays the shipped sequences and triggers and the event log's commit cursors through the whole engine; a Given cannot plant a cursor text
 import features
 from controllers.types import Messages, Reports
 from resources.base import SYSTEM, USER
