@@ -2,7 +2,7 @@
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
-import {figureStatus} from "../composables/voiceFigure.js";
+import {figureStatus, figureVisible} from "../composables/voiceFigure.js";
 import {fallOf, fallStep} from "../domain/falls.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
@@ -592,7 +592,7 @@ const style = computed(() => ({
 
 <template>
     <div
-        v-show="figureStatus === 'shown' && here"
+        v-show="figureVisible(here)"
         class="voice-figure"
         :style="style"
         aria-hidden="true"
