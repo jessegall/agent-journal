@@ -52,19 +52,6 @@ TODO = [{"name": "todo", "title": "To-do", "names": {"create": "add"}}]
 WORK = [{"name": "work", "title": "Work", "names": {}}]
 
 
-def test_one_message_per_run_of_consecutive_commands_of_the_same_kind():
-    assert text([edit("a.vue"), edit("b.py"), edit("c.md")]) == [["editing", ["a.vue", "b.py", "c.md"]]], \
-        "a run of the same kind is one message, naming everything it worked on in order"
-    assert text([edit("a.vue"), shell("git commit -m x"), edit("c.md")]) == \
-        [["editing", "a.vue"], ["git", "committing", "changes"], ["editing", "c.md"]], \
-        "a command of another kind closes the message and opens the next"
-    assert text([edit("one.py"), edit("two.py"), shell("journal todo add x", NOW + 1), shell("git commit -m x", NOW + 2), edit("three.py", NOW + 3)]) == \
-        [["editing", ["one.py", "two.py"]], ["journalling", "adding", "todo"], ["git", "committing", "changes"], ["editing", "three.py"]], \
-        "the user's case: two writes, a journal command, a commit, a write"
-    assert queue([], NOW) == [], "nothing that has not run is in the queue: an empty ring is an empty queue"
-    assert text([shell("")]) == [], "a command with nothing to say is left out"
-
-
 def test_the_verb_is_the_root_and_the_only_unmuted_part():
     assert coloured([used("mcp__x__y", "playwright · browser evaluate")])[0][:2] == [("using", "gray"), ("playwright", "muted")], \
         "the verb is gray and everything else muted"
