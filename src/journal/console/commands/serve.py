@@ -1,15 +1,15 @@
 from argparse import ArgumentParser, Namespace
 
 from journal.console.command import Command
-from journal.http.server import Server
+from journal.agent.runtime import Runtime
 
 
 class ServeCommand(Command):
-    """journal serve: what the supervisor starts and keeps alive."""
+    """journal serve: the runtime, which is what the supervisor starts and keeps alive."""
 
     noun = "serve"
 
-    def __init__(self, server: Server) -> None: ...
+    def __init__(self, runtime: Runtime) -> None: ...
 
     def arguments(self, parser: ArgumentParser) -> None: ...
 

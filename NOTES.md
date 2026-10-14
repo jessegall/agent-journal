@@ -51,7 +51,16 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   there. A method returns a `Transition`: the next state, nudges, an optional refusal.
   `agent/machine.py` is the one blocking listener on every agent event; commands move the
   agent too (`task start` -> Working). Starting states: Idle, Working, FollowingPlan,
-  RunningSequence, Waiting, Subagent, Ended.
+  RunningSequence, Awaiting, Waiting, Halted, CatchingUp, AtMark, Subagent, Ended. The last
+  five extend `Paused`, which holds `resume` (the state it left, serialised) and goes back
+  with `back()`; a pause inside a pause nests in the data, so no stack is kept anywhere.
+- **Settings, not states**: auto mode and the work mode (hands-on, orchestrator, solo). They
+  change what a state allows or says. Liveness (alive, compacting now) is not a state either;
+  the viewer derives it from the last event's time.
+- **The runtime is the server process.** `agent/runtime.py` keeps three threads: HTTP, the
+  `Deferred` worker and the `Clock`, which tells `Ticked` for every live agent every few
+  seconds so a state can act on time (five quiet minutes, helpers back). The machine holds
+  nothing between events; the agent row is the state.
 - **Hooks are deferred by default.** A feature's `AgentListener` has `blocking = False`: the
   server records the entry, replies to the agent, then runs it on the one `Deferred` worker
   thread. A listener that must answer before the agent goes on (the write gate, a hold)
