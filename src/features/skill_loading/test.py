@@ -291,14 +291,6 @@ def test_a_skills_keyword_makes_the_agent_load_it():
         "its Load button asks the agent to load it and holds its tool calls until it has"
 
 
-def test_the_todos_skill_is_loaded_at_every_start_and_cannot_be_switched_off():
-    from features import load
-    from features.skill_loading.catalogue import primary
-    load()
-    assert "journal-todos" in primary(), "marked primary in its own front matter, like a feature's skill"
-    assert "journal-lean" in primary(), "the lean, reused code skill is loaded at every start by default, in every project"
-
-
 def test_housekeeping_that_asks_nothing_of_the_agent_ships_no_skill():
     import skills
     rendered = skills.render()

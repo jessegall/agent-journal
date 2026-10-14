@@ -43,7 +43,15 @@ class SkillLoading(Feature):
     details = SkillLoadingDetails
 
     def register(self, journal: Journal) -> None:
-        journal.routes.add(get_skills, post_skill_load, post_skill_always)
+        journal.routes.add(get_skills, expects=[
+            Given(Requested(), files=answering({f"{LIBRARY}/journal-work-tracking/SKILL.md": '---\nname: journal-work-tracking\ndescription: "Auto mode"\n---\n\n# Auto\n'}))
+                >> Replied(200, [{"name": "journal-work-tracking", "description": "Auto mode", "path": f"{LIBRARY}/journal-work-tracking/SKILL.md", "loaded": 0, "stale": False, "always": False}]),
+            Given(Requested(), files=answering({f"{LIBRARY}/journal-lean/SKILL.md": "---\nname: journal-lean\n---\n", f"{LIBRARY}/journal-todos/SKILL.md": "---\nname: journal-todos\n---\n"}))
+                >> Replied(200, [{"name": "journal-lean", "always": True}, {"name": "journal-todos", "always": True}]),
+            Given(Requested(), files=answering({f"{LIBRARY}/lint-rules/SKILL.md": "---\nname: lint-rules\nplugin: linter\nkeywords: sinful, lint\n---\n"}))
+                >> Replied(200, [{"name": "lint-rules", "keywords": ["sinful", "lint"]}]),
+        ])
+        journal.routes.add(post_skill_load, post_skill_always)
         journal.routes.add(get_skill, expects=[
             Given(Requested(name="no-such-skill")) >> Refused("no skill no-such-skill"),
             Given(Requested(name="journal-demo"), files=answering({".agents/skills/journal-demo/SKILL.md": '---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n'}))
@@ -139,7 +147,8 @@ class SkillLoading(Feature):
                   remembered={"skill_loading.required.claude-1": {"journal": 1.0}}) >> Remembered("required.claude-1", {"journal": 1.0, "journal-plans": 5.0}),
         ])
         journal.events.handle(SkillsAsked, AskPrimaryForSkills(), expects=[
-            Given(SkillsAsked(agent=1, names="journal-plans", at=5.0), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(SkillsAsked(agent=1, names="lint-rules,not-installed", at=5.0), rows=[AgentRow(n=1, title="claude-1")],
+                  files=answering({f"{LIBRARY}/lint-rules/SKILL.md": "---\nname: lint-rules\n---\n"})) >> Remembered("required.claude-1", {"lint-rules": 5.0}),
         ])
         journal.events.handle(SessionOwesSkills, OweSessionSkills(), expects=[
             Given(SessionOwesSkills(agent=1, session="claude-1", skills=(("journal", 5.0),)), rows=[AgentRow(n=1, title="claude-1")],
