@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.17 — A report finished after you wrote still docks above the chat
+
+- A report the agent began before your last message and finished after it now docks above the chat box, where it stayed hidden because it was counted from when it was begun. A report whose buttons you have pressed leaves the dock.
+
 ## 3.0.16 — A waiting message moves a running command to the background at once
 
 - While a message from you waits unread, a command running in the agent's foreground is moved to the background at once, so your message reaches the agent; otherwise it still waits the 30 seconds Settings sets. A journal command is left in the foreground, since it may be the agent reading that message.

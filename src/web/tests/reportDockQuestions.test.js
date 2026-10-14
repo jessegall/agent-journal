@@ -50,4 +50,9 @@ describe("the report above the chat", () => {
         expect([dockedReport([made()]).n, dockedReport([made()], 99).n]).toEqual([1, 1]);
         expect([dockedReport([made()], 100), dockedReport([made()], 200), dockedReport([made({seen: ["user"]})]), dockedReport([made({data: {dismissed: true}})])]).toEqual([null, null, null, null]);
     });
+
+    test("docks a report finished after the person last wrote, though it was begun before, until one of its buttons is pressed", () => {
+        expect(dockedReport([made({updated: 300})], 200).n).toBe(1);
+        expect(dockedReport([made({updated: 300, data: {pressed: ["Start the fixes"]}})], 200)).toBe(null);
+    });
 });
