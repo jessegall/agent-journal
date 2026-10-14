@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {fallOf} from "../domain/falls.js";
+import {fallOf, fallStep} from "../domain/falls.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
@@ -303,10 +303,27 @@ function watchFooting() {
     const ground = groundUnder(footing, place.value, figureSize());
     if (!ground) return uprooted();
     footing = ground.footing;
-    if (Math.hypot(ground.spot.x - place.value.x, ground.spot.y - place.value.y) <= 0.3) return;
-    if (ground.motion !== "carried") groundMoved(ground.motion);
-    place.value = ground.spot;
+    const spot = footing.home ? fallenTo(ground.spot) : ground.spot;
+    if (Math.hypot(spot.x - place.value.x, spot.y - place.value.y) <= 0.3) return;
+    if (ground.motion === "launched") groundMoved("launched");
+    place.value = spot;
     rest();
+}
+
+// The ground at home holds the figure up every frame as it rises, and drops away from under it as it goes: the figure falls to it then,
+// frame by frame (domain/falls.js fallStep), and lands the moment it touches, so it never stands inside the bars or in the air above them
+let falling = {y: 0, speed: 0, at: 0};
+function fallenTo(spot) {
+    const now = performance.now();
+    const from = place.value.y;
+    if (spot.y <= from + 0.3) {
+        falling = {y: spot.y, speed: 0, at: now};
+        return spot;
+    }
+    const step = fallStep({y: from, speed: falling.speed}, spot.y, (now - falling.at) / 1000, fall.value, SIZE);
+    falling = {...step, at: now};
+    if (step.landed) groundMoved("dropping");
+    return {...spot, y: step.y};
 }
 
 // On its way, the figure keeps to the ground it is headed for as that moves: the legs that end on it, the one under way among them, are
@@ -551,11 +568,6 @@ const chaseMs = computed(() => (chasing.value ? (shownClip.value.frames / shownC
 
 // how the picture moves with the bars under it, as the flat figure's did: down over the voice's fall, falling faster as it goes, or up
 // quickly, easing out
-const GROUND_MOVES = {
-    dropping: (fall) => `transform ${fall.ms}ms cubic-bezier(0.55, 0, 1, 0.45)`,
-    launched: () => "transform 260ms cubic-bezier(0.2, 0.8, 0.3, 1)",
-};
-
 // the body squashes and bounces as the flat figure's did when the bars under it move, `moved` naming which way
 const actorStyle = computed(() => ({
     "--size": `${SIZE}px`,
@@ -572,11 +584,9 @@ const style = computed(() => ({
     transform: `translate(${at.value.x}px, ${at.value.y}px)`,
     transition: moving.value?.moves
         ? `transform ${leg.value.ms}ms ${leg.value.easing} ${leg.value.lead}ms`
-        : moved.value
-          ? GROUND_MOVES[moved.value](fall.value)
-          : sliding.value
-            ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
-            : "none",
+        : sliding.value
+          ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
+          : "none",
 }));
 </script>
 
@@ -634,7 +644,7 @@ const style = computed(() => ({
 }
 
 .voice-figure-actor.dropping {
-    animation: figure-land calc(var(--fall-ms) * 0.9) ease-out var(--fall-ms) both;
+    animation: figure-land calc(var(--fall-ms) * 0.9) ease-out both;
 }
 
 .voice-figure-actor.launched {

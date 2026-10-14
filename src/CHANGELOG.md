@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.6 — The avatar stays on its floor when the floor moves
+
+- When a bar it stands on opens upward, the avatar now rises with its top every frame instead of trailing behind inside the bar.
+- When the bar folds away under it, the avatar falls to the new floor under gravity, frame by frame, and lands the moment it touches, instead of hanging in the air for up to a second.
+
 ## 3.1.5 — Typing and pasting in the chat box always land
 
 - The avatar sitting on the chat box's corner no longer takes clicks meant for the top of the box, which left the box without the cursor so typing and pasting went nowhere.
