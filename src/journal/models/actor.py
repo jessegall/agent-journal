@@ -11,16 +11,22 @@ class Actor:
     id: str = ""
 
     @classmethod
-    def system(cls) -> "Actor": ...
+    def system(cls) -> "Actor":
+        return cls(ActorKind.SYSTEM)
 
     @classmethod
-    def agent(cls, session: str) -> "Actor": ...
+    def agent(cls, session: str) -> "Actor":
+        return cls(ActorKind.AGENT, session)
 
     @classmethod
-    def user(cls, id: int) -> "Actor": ...
+    def user(cls, id: int) -> "Actor":
+        return cls(ActorKind.USER, str(id))
 
     @classmethod
-    def parse(cls, stamp: str) -> "Actor": ...
+    def parse(cls, stamp: str) -> "Actor":
+        kind, _, id = stamp.partition(":")
+        return cls(ActorKind(kind), id)
 
     @property
-    def stamp(self) -> str: ...
+    def stamp(self) -> str:
+        return f"{self.kind.value}:{self.id}" if self.id else self.kind.value

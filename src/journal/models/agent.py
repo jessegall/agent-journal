@@ -10,4 +10,4 @@ class Agent(Scoped):
     session: str = ""
     provider: str = ""
     state: str = "idle"
-    data: dict = None
+    data: dict | None = None

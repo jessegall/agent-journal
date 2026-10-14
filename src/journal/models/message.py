@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from journal.models.author import Author
 from journal.models.scoped import Scoped
@@ -9,4 +10,4 @@ class Message(Scoped):
     author: Author = Author.USER
     text: str = ""
     reply_to: int | None = None
-    read_at: str | None = None
+    read_at: datetime | None = None

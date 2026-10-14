@@ -8,4 +8,5 @@ E = TypeVar("E", bound=Event)
 class Listener(Generic[E]):
     """Hears one kind of event. Returns what it has to say, or nothing."""
 
-    def handle(self, event: E) -> object: ...
+    def handle(self, event: E) -> object:
+        return None

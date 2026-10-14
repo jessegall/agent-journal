@@ -9,4 +9,5 @@ S = TypeVar("S", bound=Scoped)
 class ScopedRepository(Repository[S]):
     """The same, within one environment."""
 
-    def in_(self, environment_id: int) -> list[S]: ...
+    def in_(self, environment_id: int) -> list[S]:
+        return self.where(environment_id=environment_id)

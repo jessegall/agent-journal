@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, replace
 from datetime import datetime
 
 from journal.models.actor import Actor
@@ -15,6 +16,16 @@ class Model:
     updated_by: Actor | None = None
 
     @classmethod
-    def table(cls) -> str: ...
+    def table(cls) -> str:
+        """The class in snake_case, plural: Task is tasks, TaskLog is task_logs, Entry is entries."""
+        singular = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__).lower()
+        if singular.endswith("y") and singular[-2] not in "aeiou":
+            return singular[:-1] + "ies"
+        return singular + "s"
 
-    def with_(self, **changes) -> "Model": ...
+    @property
+    def is_new(self) -> bool:
+        return self.id is None
+
+    def with_(self, **changes) -> "Model":
+        return replace(self, **changes)

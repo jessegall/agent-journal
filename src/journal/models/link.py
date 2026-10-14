@@ -8,6 +8,6 @@ from journal.models.ref import Ref
 class Link(Model):
     """A relation between any two rows. Models declare no relations themselves; every one is a row here, with a kind that says what it means."""
 
-    source: Ref = None
-    target: Ref = None
+    source: Ref | None = None
+    target: Ref | None = None
     kind: str = ""

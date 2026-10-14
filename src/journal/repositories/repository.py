@@ -1,9 +1,21 @@
+from datetime import datetime, timezone
 from typing import Generic, TypeVar
 
+from journal.db.column import Column
 from journal.db.connection import Connection
+from journal.db.schema import Schema
+from journal.events.models.created import Created
+from journal.events.models.creating import Creating
+from journal.events.models.deleted import Deleted
+from journal.events.models.deleting import Deleting
+from journal.events.models.saved import Saved
+from journal.events.models.saving import Saving
+from journal.events.models.updated import Updated
+from journal.events.models.updating import Updating
 from journal.features.bus import Bus
 from journal.models.actor import Actor
 from journal.models.model import Model
+from journal.repositories.not_found import NotFound
 
 M = TypeVar("M", bound=Model)
 
@@ -13,18 +25,64 @@ class Repository(Generic[M]):
 
     model: type[M]
 
-    def __init__(self, connection: Connection, bus: Bus) -> None: ...
+    def __init__(self, connection: Connection, bus: Bus) -> None:
+        self.connection, self.bus = connection, bus
+        self.columns: tuple[Column, ...] = Schema.columns(self.model)
+        self.table = self.model.table()
 
-    def find(self, id: int) -> M: ...
+    def find(self, id: int) -> M:
+        row = self.connection.one(f"SELECT * FROM {self.table} WHERE id = ?", (id,))
+        if row is None:
+            raise NotFound(self.table, id)
+        return self._load(row)
 
-    def all(self) -> list[M]: ...
+    def all(self) -> list[M]:
+        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} ORDER BY id")]
 
-    def where(self, **fields) -> list[M]: ...
+    def where(self, **fields) -> list[M]:
+        clause = " AND ".join(f"{name} = ?" for name in fields)
+        params = tuple(self._column(name).to_sql(value) for name, value in fields.items())
+        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause} ORDER BY id", params)]
 
-    def save(self, row: M, by: Actor) -> M: ...
+    def save(self, row: M, by: Actor) -> M:
+        with self.connection.transaction():
+            self.bus.dispatch(Saving(model=row, by=by))
+            saved = self._insert(row, by) if row.is_new else self._update(row, by)
+            self.bus.dispatch(Saved(model=saved, by=by))
+            return saved
 
-    def delete(self, row: M, by: Actor) -> None: ...
+    def delete(self, row: M, by: Actor) -> None:
+        with self.connection.transaction():
+            self.bus.dispatch(Deleting(model=row, by=by))
+            self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
+            self.bus.dispatch(Deleted(model=row, by=by))
 
-    def _insert(self, row: M, by: Actor) -> M: ...
+    def _insert(self, row: M, by: Actor) -> M:
+        now = self._now()
+        stamped = row.with_(created_at=now, created_by=by, updated_at=now, updated_by=by)
+        self.bus.dispatch(Creating(model=stamped, by=by))
+        names = [column.name for column in self.columns if column.name != "id"]
+        values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
+        cursor = self.connection.execute(f"INSERT INTO {self.table} ({', '.join(names)}) VALUES ({', '.join('?' for _ in names)})", values)
+        created = stamped.with_(id=cursor.lastrowid)
+        self.bus.dispatch(Created(model=created, by=by))
+        return created
 
-    def _update(self, row: M, by: Actor) -> M: ...
+    def _update(self, row: M, by: Actor) -> M:
+        stamped = row.with_(updated_at=self._now(), updated_by=by)
+        self.bus.dispatch(Updating(model=stamped, by=by))
+        names = [column.name for column in self.columns if column.name != "id"]
+        values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
+        self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
+        self.bus.dispatch(Updated(model=stamped, by=by))
+        return stamped
+
+    def _load(self, row) -> M:
+        return self.model(**{column.name: column.from_sql(row[column.name]) for column in self.columns})
+
+    def _column(self, name: str) -> Column:
+        return next(column for column in self.columns if column.name == name)
+
+    @staticmethod
+    def _now() -> datetime:
+        return datetime.now(timezone.utc)

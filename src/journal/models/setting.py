@@ -8,4 +8,4 @@ class Setting(Scoped):
     """One key with a JSON value. environment_id 0 is the project's, laid over every environment's own."""
 
     key: str = ""
-    value: object = None
+    value: object | None = None

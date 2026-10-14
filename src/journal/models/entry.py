@@ -10,4 +10,4 @@ class Entry(Scoped):
 
     kind: str = ""
     actor: Actor | None = None
-    data: dict = None
+    data: dict | None = None

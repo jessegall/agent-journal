@@ -1,0 +1,21 @@
+from journal.models.agent import Agent
+from journal.models.doc import Doc
+from journal.models.entry import Entry
+from journal.models.environment import Environment
+from journal.models.fact import Fact
+from journal.models.link import Link
+from journal.models.message import Message
+from journal.models.question import Question
+from journal.models.reminder import Reminder
+from journal.models.report import Report
+from journal.models.rule import Rule
+from journal.models.setting import Setting
+from journal.models.task import Task
+from journal.models.task_log import TaskLog
+from journal.models.user import User
+
+
+class AllModels:
+    """Every model with a table, so the schema can create them."""
+
+    MODELS = (Environment, User, Agent, Task, TaskLog, Message, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link)
