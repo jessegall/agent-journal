@@ -11,6 +11,7 @@ class Workers(Feature):
 
     name = "workers"
     title = "Workers"
+    help = "Agents sent to write one bounded job; the agent waits for their reports."
     states = (Awaiting,)
     commands = (WorkerCommand,)
     listeners = (ReleaseAwaiting,)

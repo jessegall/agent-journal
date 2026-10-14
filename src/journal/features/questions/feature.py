@@ -8,6 +8,7 @@ from journal.features.questions.states.waiting import Waiting
 class Questions(Feature):
     name = "questions"
     title = "Questions"
+    help = "The agent asks you a question and waits; your answer sends it back to work."
     states = (Waiting,)
     commands = (QuestionCommand,)
 

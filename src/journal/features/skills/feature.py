@@ -15,6 +15,7 @@ class Skills(Feature):
 
     name = "skills"
     title = "Skills"
+    help = "The journal's skills are written for the agent and required at the moments they matter; writes wait until read."
     states = (LoadingSkill,)
     commands = (SkillCommand,)
     listeners = (RequireAtStart, RequireOnEntering, RequireAtPrompt, MarkLoaded, ForgetAtCompaction)

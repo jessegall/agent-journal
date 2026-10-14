@@ -4,6 +4,8 @@ import {api} from "../api.js";
 import {live} from "../live.js";
 import AgentCard from "../kit/AgentCard.vue";
 import QuestionCard from "../kit/QuestionCard.vue";
+import VoiceFigure from "../chat/VoiceFigure.vue";
+import {store} from "../state/store.js";
 
 const messages = ref([]);
 const questions = ref([]);
@@ -53,17 +55,18 @@ watch(() => live.version, load);
 
 <template>
     <div class="home">
-        <div class="thread-wrap">
-            <div ref="thread" class="thread">
+        <div class="thread-wrap thread">
+            <VoiceFigure :voice="store.voice" />
+            <div ref="thread" class="thread-scroll">
                 <button v-if="older && messages.length" class="btn" type="button" @click="loadOlder">Older messages</button>
                 <div v-if="!messages.length" class="empty">Nothing said here yet. Write to the agent below; it answers in this thread.</div>
-                <div v-for="m in messages" :key="m.id" :class="['bubble', m.author]">
+                <div v-for="m in messages" :key="m.id" :class="['bubble', m.author]" data-figure-bubble>
                     <span v-if="m.reply_to" class="reply-to">answers {{ m.reply_to }}</span>
                     {{ m.text }}
                     <span class="when">{{ m.author }} · {{ when(m.created_at) }}<template v-if="m.author === 'user' && m.read_at"> · read</template></span>
                 </div>
             </div>
-            <form class="compose" @submit.prevent="send">
+            <form class="compose" data-figure-home @submit.prevent="send">
                 <textarea v-model="text" class="field" placeholder="Write to the agent. Enter sends, Shift+Enter is a new line." @keydown="onKey" />
                 <button class="btn primary" type="submit">Send</button>
             </form>

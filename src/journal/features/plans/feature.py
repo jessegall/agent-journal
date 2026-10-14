@@ -9,6 +9,7 @@ from journal.features.plans.states.following_plan import FollowingPlan
 class Plans(Feature):
     name = "plans"
     title = "Plans"
+    help = "A plan is ordered tasks; following it, finishing one starts the next."
     states = (FollowingPlan,)
     commands = (PlanCommand,)
     listeners = (AdvancePlan,)

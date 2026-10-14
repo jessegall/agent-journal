@@ -12,6 +12,7 @@ from journal.features.tasks.states.working import Working
 class Tasks(Feature):
     name = "tasks"
     title = "Tasks"
+    help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
     states = (Idle, Working, Halted)
     commands = (TaskCommand, HaltCommand)
     listeners = (SpotPolling,)

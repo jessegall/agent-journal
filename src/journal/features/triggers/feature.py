@@ -8,6 +8,7 @@ from journal.features.triggers.listeners.watch_tool import WatchTool
 class Triggers(Feature):
     name = "triggers"
     title = "Triggers"
+    help = "Words you choose, and what the journal does when one comes up."
     commands = (TriggerCommand,)
     listeners = (WatchPrompt, WatchTool)
 

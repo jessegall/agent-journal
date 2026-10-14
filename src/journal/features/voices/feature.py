@@ -10,6 +10,7 @@ class Voices(Feature):
 
     name = "voices"
     title = "Voice"
+    help = "The agent talks to you in the voice you choose, by your title and first name."
     commands = (VoiceCommand,)
     listeners = (SayVoiceAtStart, SayVoiceWhenChanged)
 

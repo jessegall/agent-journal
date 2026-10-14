@@ -246,6 +246,28 @@ F2. **The built viewer is committed** in `src/web/dist`, so `journal setup` and 
 G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, the viewer in
    a browser, fix what breaks.
 
+## Where it stands (2026-10-15)
+
+Done and run for real: setup, the server, the hooks with a real Claude session (briefing, inbox,
+skill hold, gate, chat recorded with reply tags, task started from inside the agent), the
+viewer in a browser with the avatar on the chat's bubbles, voices, profiles, pagination.
+The supervisor is proven with a shell agent in a pty; `journal claude` interactively is the
+first thing to try by hand.
+
+Still to do, in rough order:
+- Workers do not spawn yet: `worker dispatch` records the row; the supervisor's headless launch
+  of a second agent in a worktree is next.
+- Resume after `RestartAgent` is wired but untried; Codex is wired but untried live.
+- The context figure needs Claude's statusline, which runs only interactively; untested.
+- Reports and docs have models and routes but no page; no page for workers, checks, sequences,
+  triggers; no hub of journals; no phone; no sharing; no plugins.
+- Memory keyword whispers and the rule review; put-off-work; closed-by-commit; auto mode and
+  work mode settings; permission prompts routed to the viewer.
+- The avatar's reactions to chat marks (cards, test results, faces) read nothing yet; it walks,
+  sits, sleeps and points by the agent's state only.
+- Install from a clone or a release (`install.sh`), upgrade and migrations; the `.pyz` build.
+- `v3.bak/` can go once nothing is left to read from it.
+
 ## The plan
 
 Each phase ends with something that runs. Phases 1 to 5 are done and proven by `tests/`

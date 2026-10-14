@@ -1,0 +1,40 @@
+/* How a figure falls with the bars under it and is lifted by them, the flat figure's own motion, which the 3D figure plays as well:
+   a hop of a fifth of its height that squashes and bounces as the bars come up under it, and a squash and bounce as it lands */
+@keyframes figure-launch {
+    0% {
+        transform: none;
+        animation-timing-function: ease-out;
+    }
+
+    35% {
+        transform: translateY(calc(-1 * var(--size) / 5));
+        animation-timing-function: ease-in;
+    }
+
+    70% {
+        transform: scale(calc(1 + var(--squash)), calc(1 - var(--squash)));
+        animation-timing-function: ease-out;
+    }
+
+    85% {
+        transform: translateY(calc(-1 * var(--bounce)));
+    }
+
+    100% {
+        transform: none;
+    }
+}
+
+@keyframes figure-land {
+    0% {
+        transform: scale(calc(1 + var(--squash)), calc(1 - var(--squash)));
+    }
+
+    45% {
+        transform: translateY(calc(-1 * var(--bounce)));
+    }
+
+    100% {
+        transform: none;
+    }
+}

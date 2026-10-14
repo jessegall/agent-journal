@@ -11,6 +11,7 @@ from journal.features.skill import Skill
 class Messages(Feature):
     name = "messages"
     title = "Messages"
+    help = "Your unread messages are put before the agent at start, at a prompt and at a stop, and it answers them first."
     commands = (MessageCommand,)
     listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, RecordTurn)
 

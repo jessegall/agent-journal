@@ -9,6 +9,7 @@ class Laws(Feature):
 
     name = "laws"
     title = "Journal laws"
+    help = "A dispatch without a model or a job is refused; a large result is named."
     listeners = (JudgeDispatch, MeasureResult)
 
     NO_MODEL = Nudge(name, "no_model", "the dispatch names no model", "name the least expensive model that reliably fits the work")

@@ -7,6 +7,7 @@ from journal.features.nudge import Nudge
 class LongRuns(Feature):
     name = "long_runs"
     title = "Long commands"
+    help = "A shell command that took a minute last time is sent to the background next time."
     listeners = (HoldLongRuns, TimeRuns)
 
     BACKGROUND = Nudge(name, "background", "{{command}} took {{seconds}}s last time", "run it in the background and carry on; you are told when it ends", repeat_after=600)

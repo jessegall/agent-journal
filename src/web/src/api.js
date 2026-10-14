@@ -37,5 +37,6 @@ export const api = {
     since: (id) => send("GET", `/entries/since?since=${id}`),
     settings: () => send("GET", "/settings"),
     voice: () => send("GET", "/settings/voice"),
+    settingValues: () => send("GET", "/settings/values"),
     setSetting: (key, value) => send("POST", "/settings", {key, value}),
 };

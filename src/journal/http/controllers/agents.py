@@ -4,6 +4,7 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.agent import Agent
 from journal.repositories.agents import Agents
+from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
 
@@ -11,8 +12,8 @@ from journal.supervisor_link import SupervisorLink
 class AgentController(Controller[Agent]):
     """Agents with what their state allows, and a line typed into the live one."""
 
-    def __init__(self, agents: Agents, environments: Environments, states: StatesCatalogue, supervisor: SupervisorLink) -> None:
-        self.repository, self.environments, self.states, self.supervisor = agents, environments, states, supervisor
+    def __init__(self, agents: Agents, environments: Environments, states: StatesCatalogue, supervisor: SupervisorLink, entries: Entries) -> None:
+        self.repository, self.environments, self.states, self.supervisor, self.entries = agents, environments, states, supervisor, entries
 
     def index(self, request: Request) -> Response:
         return Response.json([self.described(agent) for agent in self.repository.page_in(self.environment_id(request), self.limit(request), self.before(request))])
@@ -23,4 +24,6 @@ class AgentController(Controller[Agent]):
 
     def described(self, agent: Agent) -> dict:
         state = self.states.named(agent.state, agent.data)
-        return {**{f: getattr(agent, f) for f in ("id", "environment_id", "session", "provider", "state", "data", "context_mark", "updated_at")}, "allows": sorted(p.value for p in state.allows)}
+        last = self.entries.last_of_session(agent.environment_id, agent.session)
+        activity = {"kind": last.kind, "tool": last.data.get("tool_name", ""), "at": last.created_at} if last else None
+        return {**{f: getattr(agent, f) for f in ("id", "environment_id", "session", "provider", "state", "data", "context_mark", "updated_at")}, "allows": sorted(p.value for p in state.allows), "activity": activity}

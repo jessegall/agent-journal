@@ -10,6 +10,7 @@ import Settings from "./pages/Settings.vue";
 import {route} from "./route.js";
 import {live, startLive} from "./live.js";
 import {api} from "./api.js";
+import {fillStore} from "./state/store.js";
 
 const pages = {home: Home, tasks: Tasks, plans: Plans, memory: Memory, timeline: Timeline, settings: Settings};
 const page = computed(() => pages[route.page] || Home);
@@ -21,9 +22,10 @@ const openQuestions = ref(0);
 async function refresh() {
     environments.value = await api.environments();
     agents.value = await api.agents();
-    const [messages, questions] = await Promise.all([api.messages(50), api.questions()]);
+    const [messages, questions, values, voice] = await Promise.all([api.messages(50), api.questions(), api.settingValues(), api.voice()]);
     unread.value = messages.filter((m) => m.author === "agent" && !m.read_at).length;
     openQuestions.value = questions.filter((q) => q.answer === null).length;
+    fillStore(agents.value, values, {question: openQuestions.value, waiting: 0, suggestion: 0}, voice.chosen);
 }
 
 onMounted(() => {

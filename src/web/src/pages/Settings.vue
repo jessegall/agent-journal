@@ -6,11 +6,20 @@ const features = ref([]);
 const voice = ref(null);
 const title = ref("");
 const name = ref("");
+const avatar = ref("always");
+const AVATAR = [["always", "Always"], ["waiting", "While idle or waiting on you"], ["idle", "Only while idle"], ["never", "Never"]];
 const load = async () => {
-    [features.value, voice.value] = await Promise.all([api.settings(), api.voice()]);
+    let values;
+    [features.value, voice.value, values] = await Promise.all([api.settings(), api.voice(), api.settingValues()]);
     title.value = voice.value.title;
     name.value = voice.value.name;
+    avatar.value = values["avatar.shown"] || "always";
 };
+
+async function showAvatar(when) {
+    await api.setSetting("avatar.shown", when);
+    await load();
+}
 
 async function choose(which) {
     await api.setSetting("voice.profile", which);
@@ -49,10 +58,21 @@ onMounted(load);
                 <button class="btn" type="submit">Save</button>
             </form>
         </template>
+        <h2>The avatar in the chat</h2>
+        <div class="switch">
+            <div>
+                <div>When the figure is shown</div>
+                <div class="help">It walks the chat's bubbles and shows what the agent is doing.</div>
+            </div>
+            <div class="choices">
+                <button v-for="[key, label] in AVATAR" :key="key" :class="['btn', {primary: avatar === key}]" type="button" @click="showAvatar(key)">{{ label }}</button>
+            </div>
+        </div>
         <h2>Features</h2>
         <div v-for="f in features" :key="f.name" class="switch">
             <div>
                 <div>{{ f.title }}</div>
+                <div class="help">{{ f.help }}</div>
                 <div class="help">{{ f.nudges.length }} lines it can say<template v-if="f.states.length"> · states: {{ f.states.join(", ").replaceAll("_", " ") }}</template></div>
             </div>
             <button :class="['btn', {primary: f.on}]" type="button" @click="flip(f)">{{ f.on ? "On" : "Off" }}</button>

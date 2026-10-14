@@ -8,6 +8,7 @@ from journal.features.sequences.states.running_sequence import RunningSequence
 class Sequences(Feature):
     name = "sequences"
     title = "Sequences"
+    help = "Steps the agent follows one at a time."
     states = (RunningSequence,)
     commands = (SequenceCommand,)
 

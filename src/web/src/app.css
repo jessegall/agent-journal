@@ -223,7 +223,7 @@ form.add {
     border-right: 1px solid var(--border);
 }
 
-.thread {
+.thread-scroll {
     flex: 1;
     overflow: auto;
     padding: 24px 28px 12px;
@@ -382,4 +382,11 @@ form.add {
     padding: 4px 10px;
     border-radius: 6px;
     font-size: 11px;
+}
+
+.switch .choices {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }

@@ -6,6 +6,7 @@ from journal.features.nudge import Nudge
 class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
+    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it."
     listeners = (BriefAtStart,)
 
     READY = Nudge(name, "ready", "the journal is ready on {{env}}", repeat_after=0)

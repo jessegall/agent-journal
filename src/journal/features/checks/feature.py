@@ -8,6 +8,7 @@ from journal.features.skill import Skill
 class Checks(Feature):
     name = "checks"
     title = "Checks"
+    help = "Scripts that pass or fail, run by hand or on a schedule; a failure is told to the agent."
     commands = (CheckCommand,)
     listeners = (RunDueChecks,)
 

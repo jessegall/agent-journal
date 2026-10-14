@@ -12,6 +12,7 @@ from journal.features.skill import Skill
 class Memory(Feature):
     name = "memory"
     title = "Memory"
+    help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     states = (AtMark,)
     listeners = (HoldAtMark,)
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)

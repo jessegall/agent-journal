@@ -6,3 +6,4 @@ class Profiles(Feature):
 
     name = "profiles"
     title = "Agent profiles"
+    help = "A researcher, a planner and a debugger are written as read-only subagent profiles for Claude and Codex."
