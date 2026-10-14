@@ -57,7 +57,10 @@ class SkillLoading(Feature):
             Given(Requested(), files=answering({f"{LIBRARY}/lint-rules/SKILL.md": "---\nname: lint-rules\nplugin: linter\nkeywords: sinful, lint\n---\n"}))
                 >> Replied(200, [{"name": "lint-rules", "keywords": ["sinful", "lint"]}]),
         ])
-        journal.routes.add(post_skill_load)
+        journal.routes.add(post_skill_load, expects=[
+            Given(Requested(name="journal-demo"), files=answering({".agents/skills/journal-demo/SKILL.md": '---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n'}))
+                >> Replied(200, {"notice": "the agent is asked, and its tool calls wait until the skill is loaded"}),
+        ])
         journal.routes.add(post_skill_always, expects=[
             Given(Requested({"on": True}, name="journal-work-tracking"), files=answering({f"{LIBRARY}/journal-work-tracking/SKILL.md": "---\nname: journal-work-tracking\n---\n"}))
                 >> Replied(200, {"skills": ["journal-work-tracking"]}),
@@ -218,6 +221,8 @@ class SkillLoading(Feature):
                 >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
                   files=answering(Mark.staged("skill_loading.refused", count=15))) >> Answered(RefusedCall("load journal-plans before anything else - every tool call waits until it is loaded: Skill: journal-plans")),
+            Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal-plans": 5.0}},
+                  settings={"skill_loading.most_refusals": 2, "skill_loading.steps_aside": 2}, files=answering(Mark.staged("skill_loading.refused", count=3))) >> Answered(Allowed()),
             Given(asked("Bash", "ls"), rows=[AgentRow(n=1, title="claude-1")], remembered={"skill_loading.required.claude-1": {"journal": 5.0, "journal-plans": 5.0}})
                 >> Answered(RefusedCall("load journal, journal-plans before anything else - every tool call waits until it is loaded: Skill: journal, Skill: journal-plans")),
         ])

@@ -1,3 +1,4 @@
+# Stays a test: it reads real skill folders, symlinks, git and thread-timed transcript folds, and checks code no registration reaches: the catalogue cache, the start block, the shipped skills, plugin manifests and renames
 import subprocess
 import pytest
 import features
@@ -8,7 +9,7 @@ from features.skill_loading.catalogue import SKILL, always, catalogue, chosen, h
 from features.skill_loading.required import load_now
 from resources.base import USER
 from tests.conftest import fresh
-from tests.kit import nudges, report
+from tests.kit import report
 
 
 def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_what_is_loaded():
@@ -58,41 +59,6 @@ def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_
     assert outstanding(record, Agents(record, actor="system").primary()) == ["journal-work-tracking"], "and every tool call waits until it is loaded"
 
 
-def test_no_journal_skill_loaded_in_a_window_is_told_once_privately_per_window():
-    record = fresh()
-    for i in range(26):
-        report(record, "working", "PreToolUse", skills=[])
-    assert [n for n in nudges(record) if "journal skill" in n] == ["no journal skill is loaded in this window"], \
-        "twenty-five tool uses with no journal skill in the window: told once, privately"
-    for i in range(26):
-        report(record, "working", "PreToolUse", skills=[])
-    assert len([n for n in nudges(record) if "journal skill" in n]) == 1, "the unloaded window is not nurtured again"
-
-    report(record, "compacting", "PreCompact", skills=[])
-    for i in range(25):
-        report(record, "working", "PreToolUse", skills=[])
-    assert len([n for n in nudges(record) if "journal skill" in n]) == 2, "a compaction opens one fresh window"
-
-    for i in range(25):
-        report(record, "working", "PreToolUse", skills=["journal"])
-    for i in range(25):
-        report(record, "working", "PreToolUse", skills=[])
-    assert len([n for n in nudges(record) if "journal skill" in n]) == 2, "loading later does not re-arm the same window"
-
-    report(record, "idle", "SessionStart", skills=[])
-    for i in range(25):
-        report(record, "working", "PreToolUse", skills=[])
-    assert len([n for n in nudges(record) if "journal skill" in n]) == 3, "a new session window permits one reminder"
-
-    loaded = fresh()
-    for i in range(30):
-        report(loaded, "working", "PreToolUse", skills=["journal", "journal-todos"])
-    assert nudges(loaded) == [], "with the skill loaded nothing is said"
-    for i in range(30):
-        report(loaded, "working", "PreToolUse", skills=[])
-    assert nudges(loaded) == [], "an existing fired window upgrades without a fresh nudge"
-
-
 def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
     from skills import publish
     (tmp_path / "skills").mkdir()
@@ -129,7 +95,6 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
 
 
 def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
-    import json
     from datetime import datetime, timezone
     from tests.kit import appended, handle
     from providers import PROVIDERS
