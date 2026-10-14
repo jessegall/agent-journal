@@ -1,3 +1,4 @@
+# Stays a test: it needs real session files and pids, a terminal screen and typed keys, a driver's queue and timing, and a thread, and it tests start_block, carry and status, which no registration reaches
 import pytest
 
 from controllers.types import Docs, Facts, Rules, Todos, Works

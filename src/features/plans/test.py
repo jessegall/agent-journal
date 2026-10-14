@@ -1,3 +1,4 @@
+# Stays a test: it drives the Plans controller's own rules, the readiness order, the catch-up guard and the hand-off of tickets to a plan's agent, which no registration reaches or which need a patched process
 import time
 from dataclasses import dataclass
 
@@ -42,6 +43,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     record, todos, rows, by_agent, by_user = env.record, env.todos, env.rows, env.by_agent, env.by_user
     plan = by_agent.create("Port everything", goal="it all runs on v2")
     assert (plan.data["status"], plan.data["phases"]) == ("building", []), "a plan the agent creates is building, with no phases"
+    assert refused(lambda: by_agent.create("Rollout", depth="deep")) == "a plan's depth is normal or thorough", "only the two depths"
     assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is building, not one that can become approved", "still building"
     by_agent.phase(plan.n, "First", when="the first is done")
     by_agent.phase(plan.n, "Third", when="the third is done", checkpoint=True)
@@ -344,56 +346,6 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     stuck = approved("stuck", "seven")
     by_user.start(stuck)
     by_user.park(stuck)
-
-
-def test_a_plan_is_built_at_the_depth_the_user_picked():
-    from controllers.types import Nudges
-    from tests.kit import report
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    plans = Plans(record, actor=USER)
-    assert refused(lambda: plans.create("Rollout", depth="deep")) == "a plan's depth is normal or thorough", "only the two depths"
-    plans.create("Rollout", depth="thorough")
-    stuck_brief = [n.brief for n in Nudges(record).all() if n.title.startswith("the user started plan")]
-    assert "file a to-do for every small thing" in stuck_brief[-1], "the agent is told to plan every small thing"
-
-
-def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_once_approved():
-    from features import load
-    load()
-    record = fresh()
-    todos, by_agent, by_user = Todos(record, actor=AGENT), Plans(record, actor=AGENT), Plans(record, actor=USER)
-    building = by_agent.create("still building", goal="rows revised")
-    by_agent.phase(building.n, "only phase", when="its rows close")
-    kept, dropped = todos.create("kept").n, todos.create("dropped").n
-    by_agent.place(building.n, 1, [kept, dropped])
-    todos.strike(dropped, "no longer part of it")
-    assert by_agent.load(building.n).phases[0]["todos"] == [kept], "a row struck before approval leaves the plan"
-    todos.complete(kept, "done early")
-    by_agent.ready(building.n)
-    todos.reopen(kept, "half of it is still to do")
-    assert (by_agent.load(building.n).data["status"], by_agent.load(building.n).data["current"]) == ("ready", 1), \
-        "a row reopened before approval leaves the plan waiting for the user's go"
-    approved = by_agent.create("approved", goal="rows stay on the record")
-    by_agent.phase(approved.n, "only phase", when="its rows close")
-    row = todos.create("struck after approval").n
-    by_agent.place(approved.n, 1, [row, todos.create("other").n])
-    by_agent.ready(approved.n)
-    by_user.approve(approved.n)
-    todos.strike(row, "dropped later")
-    assert row in by_agent.load(approved.n).phases[0]["todos"], "once approved, a struck row stays in its phase"
-    given_up = by_agent.create("given up", goal="nothing")
-    by_agent.phase(given_up.n, "only phase", when="its rows close")
-    both = todos.create("in an abandoned plan and the running one").n
-    by_agent.place(given_up.n, 1, [both])
-    by_agent.abandon(given_up.n, "given up")
-    running = by_agent.create("running", goal="its row starts")
-    by_agent.phase(running.n, "only phase", when="its rows close")
-    by_agent.place(running.n, 1, [both])
-    by_agent.ready(running.n)
-    by_user.approve(running.n)
-    by_agent.start(running.n)
-    assert todos.start(both).status != "", "a row in the running plan's phase starts, even when an abandoned plan also holds it (issue 21)"
 
 
 def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch):

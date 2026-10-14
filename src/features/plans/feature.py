@@ -2,7 +2,7 @@ from events.agents import ClockTicked
 from events.todos import TodoCompleted
 from dataclasses import replace
 
-from expects import WHEN, Acted, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
+from expects import WHEN, Acted, Told, Answered, Dispatches, Given, Kept, Nudged, Refused, Unchanged, Updated, nothing
 from framework.base import Feature
 from features.plans.summary import plans_shown
 from declaring.registries import SUMMARY_PARTS
@@ -129,7 +129,7 @@ class PlansFeature(Feature):
                     guarantee="When a running plan has not moved for a while, the agent is told, a few times.",
                     expects=(Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), idle_for(6)])
                                  >> Nudged("still", title="Ship it", minutes=6, rows="take to-do 4366, to-do 4367"),
-                             Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), idle_for(4)]) >> Unchanged())),
+                             Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), idle_for(4)]) >> Told("still", times=0))),
               Nudge("blocked", behaviour="blocked", about=blocked_plans,
                     guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."),
               Nudge("left building", behaviour="left building", about=left_building, cap=Cap(STILL_TIMES),
@@ -260,6 +260,7 @@ class PlansFeature(Feature):
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=False)),
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=1)]) >> Dispatches(nothing),
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("abandoned", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("ready", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
             Given(reopened(9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6), current=2)]) >> Dispatches(nothing),
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), Plan(n=1, title="Ship it", completed=1.0, data={"status": "done", "phases": phases(5, 6), "current": 2})])
                 >> Dispatches(PlanRowReopened(plan=1, type="todo", n=5, phase=1, was_done=True)),
@@ -275,6 +276,7 @@ class PlansFeature(Feature):
             Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))])
                 >> Dispatches(RowLeavesPhase(plan=1, phase=1, todo=5)),
             Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Dispatches(nothing),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("approved", phases=phases(5))]) >> Dispatches(nothing),
             Given(TodoCompleted.of(5), rows=[done(5), plan("building", phases=phases(5))]) >> Dispatches(nothing),
             Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(9))]) >> Dispatches(nothing),
         ])
@@ -305,4 +307,5 @@ class PlansFeature(Feature):
             Given(writing(), rows=[plan("parked", phases=phases(5, 6))]) >> Kept(),
             Given(RowWriting(type="todo", action="create", actor=AGENT), rows=[plan("active", phases=phases(5, 6))]) >> Kept(),
             Given(writing(todo=5), rows=[Todo(n=5, title="Row 5"), plan("done", phases=phases(5))]) >> Kept(),
+            Given(writing(todo=5), rows=[Todo(n=5, title="Row 5"), plan("abandoned", phases=phases(5)), Plan(n=2, title="Running", data={"status": "active", "phases": phases(5)})]) >> Kept(),
         ])
