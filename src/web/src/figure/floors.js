@@ -1,11 +1,13 @@
-import {BUBBLE, threadOf} from "./perches.js";
-import {boxAt, groundEdge, inWorld, worldBox} from "./places.js";
+import {HOME, boxAt, groundEdge, inWorld, worldBox} from "./places.js";
+
+// the chat's bubbles, which the figure walks, sits and hangs on
+const BUBBLE = "[data-figure-bubble]";
 
 // How long a gap between two reads may be and still count as one stretch of motion: after a longer one, as when the tab was away, the
 // floors start still, so a figure is carried to where they are now instead of being thrown
 const GAP_MS = 250;
 
-let snapshot = Object.freeze({at: 0, world: null, floors: Object.freeze([])});
+let snapshot = Object.freeze({at: 0, world: null, view: null, floors: Object.freeze([])});
 let frame = 0;
 
 // The floors the figure lives on, as they were at the last frame the loop read the page; the avatar's loop reads only this
@@ -21,10 +23,11 @@ export function floorOf(element) {
 
 const inView = (box, view) => box.top >= view.top && box.top <= view.bottom && box.right > view.left && box.left < view.right;
 
+// the thread the main chat shows, whose bubbles are floors
+const threadOf = () => document.querySelector(HOME)?.closest(".thread")?.querySelector(".thread-scroll") ?? null;
+
 // The tops of the chat's bubbles in the thread's view and of the page's tabs, each a floor named by its element
-function elementFloors() {
-    const thread = threadOf();
-    const view = thread?.getBoundingClientRect();
+function elementFloors(thread, view) {
     const bubbles = thread ? [...thread.querySelectorAll(BUBBLE)].map((element) => ({element, kind: "bubble"})) : [];
     const tabs = [...document.querySelectorAll("[data-tab]")].map((element) => ({element, kind: "tab"}));
     return [...bubbles, ...tabs]
@@ -42,12 +45,14 @@ const velocity = (prev, floor, at) => {
 // One read of the page: home is the ground at home (places.js groundEdge), and under everything the foot of the figure's world
 export function readFloors(prev = snapshot, at = performance.now()) {
     const world = worldBox();
+    const thread = threadOf();
+    const view = thread?.getBoundingClientRect() ?? null;
     const {element, docked, edge} = groundEdge();
     const read = [];
     if (element) read.push({id: "home", kind: docked ? "dock" : "compose", element, left: edge.left, right: edge.left + edge.width, top: edge.top});
-    read.push(...elementFloors());
+    read.push(...elementFloors(thread, view));
     read.push({id: "foot", kind: "foot", left: world.left, right: world.right, top: world.bottom});
-    return Object.freeze({at, world, floors: Object.freeze(read.map((floor) => Object.freeze({...floor, vy: velocity(prev, floor, at)})))});
+    return Object.freeze({at, world, view, floors: Object.freeze(read.map((floor) => Object.freeze({...floor, vy: velocity(prev, floor, at)})))});
 }
 
 export function startFloors() {

@@ -1499,13 +1499,15 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
 const LAPTOP = {width: 1.7, depth: 0.62, thickness: 0.1, open: 105};
 const LAPTOP_COLOURS = {base: 0x474a52, lid: 0x2b2e38, screen: 0x1b1d24, edge: 0xa9adb8, mark: 0x5e64c9};
 
+// a mesh of one flat colour, seen from both sides and never culled, for the props the figure holds
+const flat = (geometry, colour) => {
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide}));
+    mesh.frustumCulled = false;
+    return mesh;
+};
+
 function laptopOf() {
     const {width, depth, thickness, open} = LAPTOP;
-    const flat = (geometry, colour) => {
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide}));
-        mesh.frustumCulled = false;
-        return mesh;
-    };
     const slab = (colour, w, h, d) => {
         const mesh = flat(new THREE.BoxGeometry(w, h, d), colour);
         mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), new THREE.LineBasicMaterial({color: LAPTOP_COLOURS.edge})));
@@ -1607,11 +1609,6 @@ function bookGrip(side, open) {
 }
 
 function bookOf() {
-    const flat = (geometry, colour) => {
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide}));
-        mesh.frustumCulled = false;
-        return mesh;
-    };
     const slab = (name, colour, width, height, depth) => {
         const mesh = flat(new THREE.BoxGeometry(width, height, depth), colour);
         mesh.name = name;
