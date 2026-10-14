@@ -112,3 +112,13 @@ export function airborneFrame(airborne, floors, now, fall, size, still = false) 
     const spot = {x: fell.x, y: fell.landed.top, posture: airborne.posture, view: null, on: fell.landed.element ?? null};
     return {airborne: null, landed: {spot, to: airborne.to, standing: airborne.posture === "stand"}};
 }
+
+// the ease a change of posture slides the picture by, as CSS's ease-in-out
+const SLIDE_EASING = "cubic-bezier(0.42, 0, 0.58, 1)";
+
+// Where a picture sliding from `slide.from` to `slide.to` since `slide.began` is at `now`, over `ms`, and whether it has got there
+export function slideAt(slide, now, ms) {
+    const share = Math.min(1, Math.max(0, (now - slide.began) / ms));
+    const along = eased(SLIDE_EASING, share);
+    return {at: {x: slide.from.x + (slide.to.x - slide.from.x) * along, y: slide.from.y + (slide.to.y - slide.from.y) * along}, done: share >= 1};
+}

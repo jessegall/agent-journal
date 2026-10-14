@@ -4,7 +4,7 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, legEnded, underWalker} from "../domain/figureMotion.js";
+import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, legEnded, slideAt, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors} from "../figure/floors.js";
 import {useFigureBody} from "../composables/figureBody.js";
 import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
@@ -211,19 +211,31 @@ const placed = (spot, posture) => {
     return {x: box.left, y: box.top};
 };
 // The picture kept where the figure rests, in the posture of the clip on screen; when that posture changes where it rests, as it sits down
-// or gets up, the picture slides to its new place while the body eases into the posture
-let slideTimer = 0;
+// or gets up, the picture slides to its new place while the body eases into the posture, stepped each frame (slideOn)
 const rest = () => {
+    const to = placed(body.place, drawn);
     if (drawn !== body.rested) slide();
     body.rested = drawn;
-    body.at = placed(body.place, drawn);
+    if (body.slide) body.slide = {...body.slide, to};
+    else body.at = to;
 };
 
-// the picture's next move eases over the time a change of posture takes
+// the picture's next move eases over the time a change of posture takes, from where it is now
 function slide() {
-    body.sliding = true;
-    clearTimeout(slideTimer);
-    slideTimer = setTimeout(() => (body.sliding = false), CHANGE_SECONDS * 1000);
+    body.slide = {from: {...body.at}, to: {...body.at}, began: performance.now()};
+}
+
+// those waiting for the slide under way to end, as a trip does before it sets off
+const slideWaits = [];
+function endSlide() {
+    body.slide = null;
+    slideWaits.splice(0).forEach((done) => done());
+}
+
+function slideOn() {
+    const {at, done} = slideAt(body.slide, performance.now(), CHANGE_SECONDS * 1000);
+    body.at = at;
+    if (done) endSlide();
 }
 
 // the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js); the
@@ -234,7 +246,7 @@ async function moveTo(spot, {straight = false, pace = 1} = {}) {
     // read back, since the ref hands out its reactive copy, never the object it was given
     const trip = body.trip;
     step();
-    if (body.sliding) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
+    if (body.slide) await new Promise((done) => slideWaits.push(done));
     if (body.trip === trip) setOff();
 }
 
@@ -300,6 +312,7 @@ function settle(spot, held = footingOn(spot)) {
 // when the ground went from under it, it goes at once, without waiting for its clip, as gravity does not, straight up or down to the
 // ground at home and on to its place there
 function watchFooting() {
+    if (body.slide && !body.trip?.moves && !body.airborne) slideOn();
     if (body.airborne) return fallOn();
     if (body.trip?.moves) {
         if (body.trip.hopping) hopOn();
@@ -344,8 +357,7 @@ function carryWalk(dx, dy) {
 // The figure falls from the line it rests on at `spot`, in its posture there, never from below the ground at home, and goes on to `to`
 // once it lands
 function fallFrom(spot, to) {
-    clearTimeout(slideTimer);
-    body.sliding = false;
+    endSlide();
     body.airborne = fallingFrom(spot, to, latestFloors().floors, performance.now(), Math.random);
     body.trip = null;
     body.footing = null;
@@ -588,7 +600,6 @@ onMounted(() => {
 onUnmounted(() => {
     stopBody();
     cancelAnimationFrame(homeFrame);
-    clearTimeout(slideTimer);
     clearTimeout(frameTimer);
     clearTimeout(lookTimer);
     document.removeEventListener("visibilitychange", seen);
@@ -632,7 +643,6 @@ const style = computed(() => ({
     width: `${SIZE}px`,
     height: `${SIZE}px`,
     transform: `translate(${body.at.x}px, ${body.at.y}px)`,
-    transition: body.sliding ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out` : "none",
 }));
 </script>
 

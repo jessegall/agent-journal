@@ -12,7 +12,8 @@ import {startFloors, stopFloors} from "../figure/floors.js";
 //   when the trip keeps the footing of the spot it goes to
 // - airborne: the fall it is in, or null; landing: the land clip plays once after a jump or a fall, unless it goes on to hang
 // - arriving, leaving, here: the voice's entrance plays when its figure appears, and its exit when the environment's agent goes
-// - sliding: the picture eases to a new place as the posture changes; rested: the posture it rests in; way: the way its last trip went
+// - slide: the picture easing to its new place as the posture changes, from where, to where and since when, or null; rested: the posture
+//   it rests in; way: the way its last trip went
 // `frame` steps the body once; it runs each frame while the figure is here and the page is shown.
 export function useFigureBody(frame) {
     const body = reactive({
@@ -27,7 +28,7 @@ export function useFigureBody(frame) {
         arriving: false,
         leaving: false,
         here: false,
-        sliding: false,
+        slide: null,
         rested: "stand",
         way: 0,
     });

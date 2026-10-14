@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {airborneFrame, fallingFrom, legEnded} from "../src/domain/figureMotion.js";
+import {airborneFrame, fallingFrom, legEnded, slideAt} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, kind = id === "home" ? "compose" : "bubble") => ({id, kind, left: 0, right: 1000, top, vy: 0});
 const FRAME_MS = 1000 / 60;
@@ -45,5 +45,15 @@ describe("a leg on the frame clock", () => {
         expect(legEnded(leg, 1000, 1499)).toBe(false);
         expect(legEnded(leg, 1000, 1500)).toBe(true);
         expect(legEnded({...leg, ms: 0, lead: 0}, 1000, 1000)).toBe(true);
+    });
+});
+
+describe("the posture slide", () => {
+    it("eases the picture to its new place over the time a change takes, half-way along at the middle, and is there at the end", () => {
+        const slide = {from: {x: 0, y: 0}, to: {x: 0, y: 40}, began: 1000};
+        expect(slideAt(slide, 1000, 500)).toEqual({at: {x: 0, y: 0}, done: false});
+        expect(slideAt(slide, 1250, 500).at.y).toBeCloseTo(20, 0);
+        expect(slideAt(slide, 1100, 500).at.y).toBeLessThan(8);
+        expect(slideAt(slide, 1600, 500)).toEqual({at: {x: 0, y: 40}, done: true});
     });
 });
