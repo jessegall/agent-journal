@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.2.1 — Every feature states what it does as expectations
+
+- Each feature's behaviour is now stated as expectations on its own registrations and played by the generated runs; a feature's own test file keeps only what needs a real process, file, server or browser, and says why on its first line. A check refuses a test file that does not.
+- Reading a conversation while it is still being written no longer waits on the wall clock, so it can never spin when time stands still.
+
 ## 3.2.0 — Choose when the avatar is in the chat, and decide a plan's review from the plan
 
 - Settings, Chat, Avatar has a new choice: show the figure always, only while the agent is idle, or while it is idle or waits on you. When the agent starts working, the figure makes its exit, and it comes back when the agent is done.
