@@ -1,0 +1,102 @@
+<script setup>
+import {ref, watch} from "vue";
+import Icon from "./Icon.vue";
+import TextInput from "./TextInput.vue";
+
+const props = defineProps({value: {type: String, default: ""}, placeholder: {type: String, default: ""}});
+const emit = defineEmits(["change"]);
+const lines = ref([]);
+let made = 0;
+const entry = (text) => ({id: made++, text});
+
+watch(
+    () => props.value,
+    (value) =>
+        (lines.value = value
+            .split("\n")
+            .filter((line) => line.trim())
+            .map((text, i) => ({id: lines.value[i]?.id ?? made++, text}))),
+    {immediate: true}
+);
+
+const save = () =>
+    emit(
+        "change",
+        lines.value
+            .map((line) => line.text.trim())
+            .filter(Boolean)
+            .join("\n")
+    );
+const remove = (i) => {
+    lines.value.splice(i, 1);
+    save();
+};
+</script>
+
+<template>
+    <div class="line-list">
+        <template v-for="(line, i) in lines" :key="line.id">
+            <div class="line-row">
+                <TextInput
+                    :value="line.text"
+                    class="line-input"
+                    :placeholder="placeholder"
+                    @input="line.text = $event.target.value"
+                    @change="save"
+                />
+                <button type="button" class="line-remove" aria-label="Remove" @click="remove(i)"><Icon name="x" :size="12" /></button>
+            </div>
+        </template>
+        <button type="button" class="line-add" @click="lines.push(entry(''))">
+            <Icon name="plus" :size="12" />
+            Add
+        </button>
+    </div>
+</template>
+
+<style scoped>
+.line-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.line-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.line-input {
+    flex: 1;
+}
+
+.line-remove,
+.line-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.line-remove {
+    padding: 5px;
+}
+
+.line-add {
+    align-self: flex-start;
+    padding: 4px 6px;
+}
+
+.line-remove:hover,
+.line-add:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+</style>

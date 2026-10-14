@@ -20,6 +20,6 @@ class Route:
         """The named parts when this route matches, None when it does not."""
         if method != self.method:
             return None
-        regex = "^" + re.sub(r"\{(\w+)\}", r"(?P<\1>[^/]+)", self.pattern) + "$"
+        regex = "^" + re.sub(r"\{(\w+)\}", r"(?P<\1>[^/]+)", re.escape(self.pattern).replace("\\{", "{").replace("\\}", "}")) + "$"
         match = re.match(regex, path)
         return match.groupdict() if match else None

@@ -1,0 +1,37 @@
+import {ref} from "vue";
+import {store} from "../state/store.js";
+import {ui} from "../state/ui.js";
+
+const FOCUS_FOR = 1800;
+const SETTLE = 120;
+
+export const framed = window.parent !== window;
+export const chatOnly = new URLSearchParams(location.search).has("chat");
+export const soloView = new URLSearchParams(location.search).get("view") || "";
+export const floatWindow = chatOnly || Boolean(soloView);
+export const soloFloat = Number(new URLSearchParams(location.search).get("float")) || 0;
+
+const NARROW = window.matchMedia("(max-width: 700px)");
+export const narrow = ref(NARROW.matches);
+NARROW.addEventListener("change", (e) => (narrow.value = e.matches));
+
+export const laidOut = ref(0);
+let resizing = 0;
+window.addEventListener("resize", () => {
+    clearTimeout(resizing);
+    resizing = setTimeout(() => (laidOut.value += 1), SETTLE);
+});
+
+export function openPictures(pictures, at) {
+    ui.lightbox.pictures = pictures;
+    ui.lightbox.at = at;
+}
+
+export function focusTurn(ref, {instant = false} = {}) {
+    const el = document.querySelector(`[data-ref="${ref}"]`);
+    if (!el) return false;
+    store.focus = ref;
+    el.scrollIntoView({behavior: instant ? "auto" : "smooth", block: "center"});
+    setTimeout(() => (store.focus = store.focus === ref ? "" : store.focus), FOCUS_FOR);
+    return true;
+}

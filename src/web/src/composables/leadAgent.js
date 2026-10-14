@@ -1,5 +1,10 @@
 import {computed} from "vue";
+import {leadOf} from "../domain/agents.js";
+import {route} from "../route.js";
 import {store} from "../state/store.js";
 
-const stopped = (a) => (a.data.status === "stopped" ? 1 : 0);
-export const agent = computed(() => [...store.agents].sort((a, b) => stopped(a) - stopped(b) || (b.data.at || 0) - (a.data.at || 0))[0] || null);
+export const agent = computed(() => leadOf(store.agents));
+
+export const agentOnline = computed(() => Boolean(agent.value) && store.online.some((live) => live.session === agent.value.title && live.environment === route.value.env));
+
+export const agentWorking = computed(() => Boolean(agent.value) && ["busy", "working"].includes(agent.value.data.status));

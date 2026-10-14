@@ -1,6 +1,8 @@
 from journal.engine.clock import Clock
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
+from journal.features.listeners.record_changes import RecordChanges
+from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.models.created import Created
 from journal.features.bus import Bus
@@ -21,6 +23,7 @@ class Runtime:
         """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
         self.bus.listen(AgentEvent, self.machine)
         self.bus.listen(Created, Creations())
+        self.bus.listen(ModelEvent, self.container.get(RecordChanges))
         for feature in self.registry.features:
             for listener in feature.listeners:
                 self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry))

@@ -1,8 +1,47 @@
+import {feedOn} from "./settings.js";
+import {meta, types} from "../domain/spec.js";
 import {computed} from "vue";
-import {store} from "../state/store.js";
+import {open, unreadByUser} from "../domain/records.js";
+import {VIEWS} from "../domain/panes.js";
 
-// What waits on the user, as the figure counts it: open questions here.
+const OWN_TABS = ["question", "suggestion"];
+
 export function useHomeViews() {
-    const views = computed(() => ({question: {count: store.counts.question}, waiting: {count: store.counts.waiting}, suggestion: {count: store.counts.suggestion}}));
-    return {views};
+    const views = computed(() => ({
+        chat: {title: "Chat", icon: "chat", all: {page: "message", label: "View all messages"}},
+        feed: {title: "File edits", icon: "edits", canFlush: true},
+        terminal: {title: "Terminal", icon: "terminal"},
+        family: {title: "Agent family tree", icon: "family"},
+        agents: {title: "Agents", icon: "agents"},
+        waiting: {
+            title: "Notifications",
+            icon: "bell",
+            count: types.value.filter((t) => t.needs_attention && !OWN_TABS.includes(t.name)).flatMap((t) => unreadByUser(t.name)).length,
+            warm: true,
+            all: {page: "notification", label: "View all notifications"},
+        },
+        question: {
+            title: "Questions",
+            icon: meta("question").icon,
+            count: open("question").length,
+            warm: true,
+            all: {page: "question", label: "View all questions"},
+        },
+        suggestion: {
+            title: "Suggestions",
+            icon: meta("suggestion").icon,
+            count: open("suggestion").length,
+            warm: true,
+            all: {page: "suggestion", label: "View all suggestions"},
+        },
+        todos: {
+            title: "To-dos",
+            icon: meta("todo").icon,
+            count: open("todo").length,
+            warm: false,
+            all: {page: "todo", label: "View all to-dos"},
+        },
+    }));
+    const usable = computed(() => VIEWS.filter((v) => v !== "feed" || feedOn.value));
+    return {views, usable};
 }

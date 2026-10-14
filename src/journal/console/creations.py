@@ -3,6 +3,7 @@ from contextvars import ContextVar
 from journal.events.models.created import Created
 from journal.features.listener import Listener
 from journal.models.actor_kind import ActorKind
+from journal.models.entry import Entry
 from journal.models.model import Model
 
 RUN: ContextVar[list | None] = ContextVar("creations", default=None)
@@ -13,7 +14,7 @@ class Creations(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         made = RUN.get()
-        if made is not None and event.by.kind != ActorKind.SYSTEM:
+        if made is not None and event.by.kind != ActorKind.SYSTEM and not isinstance(event.model, Entry):
             made.append(event.model)
 
     @staticmethod

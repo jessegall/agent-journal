@@ -1,1 +1,109 @@
-{}
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "MessageDisplay": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/status.sh",
+    "padding": 0
+  }
+}

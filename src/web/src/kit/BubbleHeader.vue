@@ -1,0 +1,75 @@
+<script setup>
+import Icon from "./Icon.vue";
+
+const props = defineProps({
+    icon: {type: String, required: true},
+    label: {type: String, required: true},
+    tone: {type: String, default: "agent"},
+    clickable: {type: Boolean, default: false},
+    small: {type: Boolean, default: false},
+});
+const emit = defineEmits(["click"]);
+</script>
+
+<template>
+    <component
+        :is="props.clickable ? 'button' : 'div'"
+        :type="props.clickable ? 'button' : undefined"
+        :class="['bubble-header', props.tone, {clickable: props.clickable, small: props.small}]"
+        @click.stop="props.clickable && emit('click')"
+    >
+        <Icon :name="props.icon" :size="props.small ? 10 : 12" />
+        <span class="label" :title="props.label">{{ props.label }}</span>
+    </component>
+</template>
+
+<style scoped>
+.bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 0 6px;
+    margin: 0 0 6px;
+    border: 0;
+    border-bottom: 1px solid var(--border-2);
+    background: none;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.bubble-header .label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bubble-header.clickable {
+    border-bottom: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+.bubble-header.small {
+    gap: 4px;
+    padding: 0 0 4px;
+    margin: 0 0 5px;
+    font-size: 9.5px;
+}
+
+.bubble-header.muted {
+    border-bottom-color: #1d1e22;
+    color: var(--text-4);
+}
+
+.bubble-header.agent {
+    color: var(--accent-text);
+}
+
+.bubble-header.blocking {
+    color: var(--blocking);
+}
+</style>

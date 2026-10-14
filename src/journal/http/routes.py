@@ -11,6 +11,7 @@ from journal.http.controllers.resource_controller import ResourceController
 from journal.http.controllers.settings import SettingController
 from journal.http.controllers.tasks import TaskController
 from journal.http.router import Router
+from journal.http.v3.v3_routes import V3Routes
 from journal.repositories.docs import Docs
 from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
@@ -53,6 +54,7 @@ class Routes:
         router.get(f"{API}/entries/since", get(EntryController).since)
         router.get(f"{API}/settings", get(SettingController).index)
         router.post(f"{API}/settings", get(SettingController).store)
+        V3Routes(self.container).mount(router)
         router.get(f"{API}/settings/voice", get(SettingController).voice)
         router.get(f"{API}/settings/values", get(SettingController).values)
         return router

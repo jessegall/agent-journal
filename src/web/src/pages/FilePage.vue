@@ -1,0 +1,293 @@
+<script setup>
+import EmptyState from "../kit/EmptyState.vue";
+import Skeleton from "../kit/Skeleton.vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {api} from "../api/client.js";
+import {highlight, languageOf} from "../text/highlight.js";
+import Icon from "../kit/Icon.vue";
+import Btn from "../kit/Btn.vue";
+import Highlight from "../resource/Highlight.vue";
+import Diff from "../kit/Diff.vue";
+import {sendMessage} from "../chat/outbox.js";
+import {aboutLines} from "../format/quote.js";
+import {href, route} from "../route.js";
+
+const file = ref(null);
+const error = ref("");
+const matches = computed(() => (file.value && file.value.matches) || []);
+const lines = computed(() => (file.value && !matches.value.length ? highlight(file.value.text, languageOf(file.value.path)) : []));
+
+const diff = ref("");
+const changes = computed(() => route.value.sub === "diff");
+const modeHref = (sub) => href.file(route.value.env, route.value.q, 0, sub);
+
+async function load() {
+    error.value = "";
+    file.value = null;
+    diff.value = "";
+    if (!route.value.q) {
+        error.value = "No file is named.";
+        return;
+    }
+    try {
+        [file.value, diff.value] = await Promise.all([
+            api
+                .projectFile(route.value.q)
+                .catch((e) => (changes.value ? {path: route.value.q, kind: "", size: 0, lines: 0, gone: true} : Promise.reject(e))),
+            changes.value ? api.fileDiff(route.value.q).then((got) => got.diff) : "",
+        ]);
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+const picked = ref(null);
+const words = ref("");
+const sent = ref(false);
+const lineOf = (node) =>
+    Number(((node.nodeType === 1 ? node : node.parentElement).closest("[data-line]") || {dataset: {}}).dataset.line || 0);
+
+function pick(text, range) {
+    const first = range ? lineOf(range.startContainer) : 0;
+    const last = range ? lineOf(range.endContainer) || first : first;
+    picked.value = {text, first, last};
+    words.value = "";
+    sent.value = false;
+}
+
+async function send() {
+    await sendMessage(route.value.env, {brief: aboutLines(file.value, picked.value, words.value)});
+    picked.value = null;
+    sent.value = true;
+}
+
+async function reveal() {
+    await nextTick();
+    const at = route.value.line && document.querySelector(`.filepage [data-line="${route.value.line}"]`);
+    if (at) at.scrollIntoView({block: "center"});
+}
+
+onMounted(() => load().then(reveal));
+watch(
+    () => [route.value.q, route.value.sub],
+    () => load().then(reveal)
+);
+watch(() => route.value.line, reveal);
+</script>
+
+<template>
+    <section class="filepage">
+        <template v-if="error">
+            <EmptyState class="empty">{{ error }}</EmptyState>
+        </template>
+        <template v-if="matches.length">
+            <EmptyState class="empty">{{ matches.length }} files in the project are named {{ route.q }}:</EmptyState>
+            <ul class="matches">
+                <template v-for="path in matches" :key="path">
+                    <li>
+                        <a :href="href.file(route.env, path)">
+                            <Icon name="file" />
+                            <code>{{ path }}</code>
+                        </a>
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template v-else-if="file">
+            <header class="head">
+                <Icon name="file" />
+                <code class="path">{{ file.path }}</code>
+                <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${file.lines} lines · ` : ""}${file.size} bytes` }}</span>
+                <template v-if="!file.project">
+                    <a class="mode" :href="modeHref(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
+                </template>
+            </header>
+            <template v-if="file.project">
+                <p class="elsewhere">
+                    From another project,
+                    <strong>{{ file.project }}</strong>
+                    , at
+                    <code>{{ file.root }}</code>
+                </p>
+            </template>
+            <template v-if="changes">
+                <template v-if="diff">
+                    <Diff :text="diff" :file-href="(path) => href.file(route.env, path)" />
+                </template>
+                <template v-else>
+                    <EmptyState class="empty">No changes since the last commit.</EmptyState>
+                </template>
+            </template>
+            <template v-else-if="file.kind.startsWith('image/')">
+                <EmptyState class="empty">An image; open it from Files if it is an attachment.</EmptyState>
+            </template>
+            <template v-else>
+                <template v-if="picked">
+                    <div class="ask">
+                        <p class="lines">
+                            {{
+                                picked.first
+                                    ? picked.first === picked.last
+                                        ? `Line ${picked.first}`
+                                        : `Lines ${picked.first}-${picked.last}`
+                                    : "Selection"
+                            }}
+                            of {{ file.path }}
+                        </p>
+                        <textarea v-model="words" rows="3" placeholder="Your comment, sent to the agent" autofocus />
+                        <div class="actions">
+                            <Btn small @click="picked = null">Cancel</Btn>
+                            <Btn kind="primary" small :disabled="!words.trim()" @click="send">Send to the agent</Btn>
+                        </div>
+                    </div>
+                </template>
+                <template v-if="sent">
+                    <p class="sent">Sent to the agent; the file itself is unchanged.</p>
+                </template>
+                <Highlight @quote="pick">
+                    <pre
+                        class="text"
+                    ><template v-for="(line, i) in lines" :key="i"><span :class="['line', {target: i + 1 === route.line}]" :data-line="i + 1"><span class="n">{{ i + 1 }}</span><span v-html="line" /></span>
+</template></pre>
+                </Highlight>
+            </template>
+        </template>
+        <template v-else-if="!error">
+            <Skeleton shape="text" label="Loading the file" />
+        </template>
+    </section>
+</template>
+
+<style scoped>
+.filepage {
+    max-width: 1080px;
+    padding: 22px 28px 60px;
+}
+
+.ask {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    background: var(--raised);
+}
+
+.lines,
+.sent {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+
+.ask textarea {
+    padding: 7px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.elsewhere {
+    margin: 10px 0 0;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.elsewhere strong {
+    color: var(--text-2);
+    font-weight: 600;
+}
+
+.head .ico {
+    width: 15px;
+    height: 15px;
+    color: var(--text-3);
+}
+
+.path {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--raised);
+    font-size: 12.5px;
+    color: var(--accent-text);
+}
+
+.when {
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+.mode {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-3);
+    text-decoration: none;
+}
+
+.mode:hover {
+    color: var(--accent-text);
+}
+
+.text {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--code-bg);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.n {
+    display: inline-block;
+    width: 3.5em;
+    margin-right: 10px;
+    text-align: right;
+    color: var(--text-4);
+    user-select: none;
+}
+.matches {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.matches a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    color: var(--text-2);
+    text-decoration: none;
+}
+
+.matches a:hover {
+    color: var(--accent-text);
+}
+
+.line.target {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+</style>

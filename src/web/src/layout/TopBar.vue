@@ -1,0 +1,295 @@
+<script setup>
+import {meta, types} from "../domain/spec.js";
+import People from "./People.vue";
+import TakeDown from "./TakeDown.vue";
+import {familyOn, hostedOn, membersOn, sharingOn} from "../composables/settings.js";
+import {ownsJournal} from "../composables/me.js";
+import {store} from "../state/store.js";
+import {demo} from "../platform/demo.js";
+import CountBadge from "../kit/CountBadge.vue";
+import {computed, onUnmounted, ref} from "vue";
+import Icon from "../kit/Icon.vue";
+import RailWaiting from "../rail/RailWaiting.vue";
+import PhoneDialog from "./PhoneDialog.vue";
+import ShareTunnel from "./ShareTunnel.vue";
+import {href, route} from "../route.js";
+import {rows} from "../sync/rows.js";
+import {unreadByUser} from "../domain/records.js";
+import {connectedPhones} from "../composables/phones.js";
+import {useOutside} from "../composables/outside.js";
+import {activityVisible, toggleActivity} from "../actions/panels.js";
+import {narrow} from "../platform/view.js";
+import {project, tint} from "../state/identity.js";
+import {pageTitle as title} from "../composables/pageTitle.js";
+import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js";
+
+const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
+const drop = ref(false);
+const phoneOpen = ref(false);
+const wrap = ref(null);
+useOutside(wrap, () => (drop.value = false));
+const full = computed(() => route.value.page === "kanban");
+const place = computed(() => rows("environment").find((e) => e.title === route.value.env && !e.deleted) || null);
+const owner = computed(() => (place.value && place.value.data.owner) || "");
+const from = computed(() => (place.value && place.value.data.launched_from) || "");
+const envLink = computed(() =>
+    owner.value && from.value
+        ? href.opened(from.value, owner.value.startsWith("ticket:") ? "kanban" : "", owner.value)
+        : href.page(route.value.env)
+);
+const {floatingChat, toggleChat} = useFloatingChat();
+const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
+</script>
+
+<template>
+    <div class="top">
+        <div class="crumb">
+            <template v-if="narrow">
+                <button type="button" class="icon-btn" v-tip="'Open the menu'" @click="store.sideOpen = !store.sideOpen">
+                    <Icon name="list" />
+                </button>
+            </template>
+            <template v-if="full">
+                <a class="icon-btn back" :href="href.page(route.env)" v-tip="'Back to Home'"><Icon name="back" /></a>
+            </template>
+            <a
+                class="crumb-link crumb-project"
+                :href="href.page(route.env, demo ? '' : 'hub')"
+                v-tip="demo ? '' : 'The journals running on this machine'"
+            >
+                <span class="crumb-tint" :style="{background: tint}" />
+                <span class="crumb-name">{{ project }}</span>
+            </a>
+            <span class="sep crumb-wide">/</span>
+            <a class="crumb-link" :href="envLink" v-tip="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
+                {{ route.env }}
+            </a>
+            <span class="sep crumb-wide">/</span>
+            <b class="crumb-wide">{{ title }}</b>
+            <template v-if="route.page && meta(route.page)">
+                <span class="icon-btn help-btn" v-tip="meta(route.page).help"><Icon name="info" /></span>
+            </template>
+        </div>
+        <div class="top-tools">
+            <button
+                type="button"
+                :class="['icon-btn', {on: floatingChat}]"
+                v-tip="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
+                @click="toggleChat"
+            >
+                <Icon name="chat" />
+            </button>
+            <template v-if="familyOn">
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: floatingFamily}]"
+                    v-tip="
+                        floatingFamily
+                            ? 'Close the agent family tree'
+                            : 'Open the agent family tree: who started, sent out or messaged which agent'
+                    "
+                    @click="toggleFamily"
+                >
+                    <Icon name="family" />
+                </button>
+            </template>
+            <template v-if="sharingOn">
+                <ShareTunnel />
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: phoneOpen}]"
+                    v-tip="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
+                    @click="phoneOpen = true"
+                >
+                    <Icon name="phone" />
+                    <template v-if="connectedPhones.length">
+                        <span class="phone-dot" />
+                    </template>
+                </button>
+                <template v-if="phoneOpen">
+                    <PhoneDialog @close="phoneOpen = false" />
+                </template>
+            </template>
+            <a class="icon-btn" :href="href.page(route.env, 'search')" v-tip="'Search'"><Icon name="search" /></a>
+            <div ref="wrap" class="drop-wrap">
+                <button type="button" :class="['icon-btn', {on: drop}]" v-tip="'Notifications'" :aria-expanded="drop" @click="drop = !drop">
+                    <Icon name="bell" />
+                    <template v-if="waiting">
+                        <CountBadge :count="waiting" />
+                    </template>
+                </button>
+                <Transition name="drop">
+                    <div v-if="drop" class="drop" @click="(e) => e.target.closest('.needs-card') && (drop = false)">
+                        <div class="drop-head">Notifications</div>
+                        <RailWaiting />
+                    </div>
+                </Transition>
+            </div>
+            <template v-if="membersOn">
+                <People />
+            </template>
+            <template v-if="hostedOn">
+                <template v-if="ownsJournal">
+                    <TakeDown />
+                </template>
+                <form method="post" action="/logout" class="logout">
+                    <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'">
+                        <Icon name="lock" />
+                    </button>
+                </form>
+            </template>
+            <template v-if="!full">
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: activityVisible()}]"
+                    v-tip="activityVisible() ? 'Hide activity' : 'Show activity'"
+                    @click="toggleActivity"
+                >
+                    <Icon name="activity" />
+                </button>
+            </template>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.top {
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px 0 20px;
+    border-bottom: 1px solid var(--border);
+}
+.top-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+}
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-2);
+    min-width: 0;
+    overflow: hidden;
+}
+.crumb b {
+    color: var(--text);
+    font-weight: 500;
+}
+.sep {
+    color: var(--text-3);
+}
+.crumb-link {
+    color: var(--text-2);
+}
+.crumb-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.crumb-tint {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.crumb-link:hover {
+    color: var(--text);
+}
+
+@media (max-width: 640px) {
+    .crumb-name,
+    .crumb-wide {
+        display: none;
+    }
+}
+.help-btn {
+    width: 22px;
+    height: 22px;
+    margin-left: -4px;
+    color: var(--text-3);
+}
+.help-btn .ico {
+    width: 14px;
+    height: 14px;
+}
+.icon-btn.back {
+    margin-left: -7px;
+}
+
+.icon-btn {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+.icon-btn:hover,
+.icon-btn.on {
+    background: var(--hover);
+    color: var(--text);
+}
+.icon-btn.on {
+    background: var(--sel);
+}
+.icon-btn .ico {
+    width: 15px;
+    height: 15px;
+}
+.logout {
+    display: contents;
+}
+
+.drop-wrap {
+    position: relative;
+}
+
+.drop {
+    --rail-gutter: 12px;
+    --rail-tabs-top: 0px;
+    position: absolute;
+    right: 0;
+    top: 34px;
+    z-index: 95;
+    width: 340px;
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden auto;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    background: var(--side);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.drop-head {
+    flex: none;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: var(--text-2);
+}
+
+.phone-dot {
+    position: absolute;
+    right: 4px;
+    bottom: 5px;
+    width: 6px;
+    height: 6px;
+    border: 1.5px solid var(--bg);
+    border-radius: 50%;
+    background: var(--tone-good);
+}
+</style>

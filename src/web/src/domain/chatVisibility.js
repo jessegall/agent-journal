@@ -1,0 +1,56 @@
+import {store} from "../state/store.js";
+
+export const VISIBILITY_GROUPS = [
+    {
+        title: "Agent",
+        kinds: [
+            {key: "thoughts", label: "Thoughts", icon: "bulb"},
+            {key: "skills", label: "Skills the agent loads", icon: "book"},
+            {key: "subagents", label: "Subagents", icon: "agents"},
+            {key: "helpers", label: "Helpers the agent sends", icon: "bot"},
+            {key: "compactions", label: "Conversation compacted", icon: "gauge"},
+            {key: "made", label: "Documents the agent made", icon: "docs"},
+            {key: "acknowledgements", label: "Acknowledged reminders", icon: "check"},
+        ],
+    },
+    {
+        title: "Reminders",
+        kinds: [
+            {key: "rules", label: "Rules", icon: "rules"},
+            {key: "facts", label: "Facts", icon: "pins"},
+            {key: "reminders", label: "Reminders", icon: "reminders"},
+        ],
+    },
+    {
+        title: "Other",
+        kinds: [
+            {key: "commands", label: "Long commands and outputs", icon: "terminal"},
+            {key: "commits", label: "Commits", icon: "branch"},
+            {key: "sequences", label: "Sequences starting and finishing", icon: "list"},
+            {key: "sequence_steps", label: "Every step of a sequence", icon: "list"},
+            {key: "triggers", label: "Triggers", icon: "bolt"},
+            {key: "plugins", label: "Plugin notes", icon: "plug"},
+            {key: "visitors", label: "Visitor comments", icon: "chat"},
+            {key: "filed", label: "Filed from your messages", icon: "inbox"},
+            {key: "notes", label: "Notices", icon: "bell"},
+        ],
+    },
+];
+
+const chatKinds = () => store.spec.chat_kinds;
+export const HIDDEN_KEY = "chat_hidden";
+export const DEFAULT_HIDDEN = ["acknowledgements", "sequence_steps"];
+
+export const turnKind = (type) => chatKinds().turns[type];
+
+export const kindOf = (turn) => {
+    if (turn.type === "message") return turn.data.acknowledgement ? "acknowledgements" : "";
+    return turn.data.shows || turnKind(turn.type) || "";
+};
+
+export const visibleIn = (hidden) => (turn) => !hidden.includes(kindOf(turn));
+
+export const visibilityChoices = (hidden) =>
+    VISIBILITY_GROUPS.map((group) => ({...group, kinds: group.kinds.map((kind) => ({...kind, on: !hidden.includes(kind.key)}))}));
+
+export const toggled = (hidden, key) => (hidden.includes(key) ? hidden.filter((k) => k !== key) : [...hidden, key]);

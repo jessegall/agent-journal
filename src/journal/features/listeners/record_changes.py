@@ -1,0 +1,26 @@
+from journal.events.models.created import Created
+from journal.events.models.deleted import Deleted
+from journal.events.models.model_event import ModelEvent
+from journal.events.models.updated import Updated
+from journal.features.listener import Listener
+from journal.models.entry import Entry
+from journal.models.scoped import Scoped
+from journal.repositories.entries import Entries
+from journal.repositories.settings import PROJECT
+
+ACTIONS = {Created: "created", Updated: "updated", Deleted: "deleted"}
+
+
+class RecordChanges(Listener[ModelEvent]):
+    """Every row made, changed or removed is an entry in the timeline, which is what the viewer's live updates read."""
+
+    def __init__(self, entries: Entries) -> None:
+        self.entries = entries
+
+    def handle(self, event: ModelEvent) -> None:
+        action = ACTIONS.get(type(event))
+        if action is None or isinstance(event.model, Entry):
+            return
+        model = event.model
+        environment = model.environment_id if isinstance(model, Scoped) else PROJECT
+        self.entries.save(Entry(environment_id=environment, kind=action, actor=event.by, data={"table": model.table(), "id": model.id, "title": getattr(model, "title", "") or getattr(model, "text", "")[:80]}), event.by)

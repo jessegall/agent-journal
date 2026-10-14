@@ -1,0 +1,449 @@
+:root {
+    --font: -apple-system, "SF Pro Text", system-ui, sans-serif;
+    --scrim: rgb(0 0 0 / 45%);
+    --shade: rgb(0 0 0 / 45%);
+    --scrim-menu: rgb(0 0 0 / 55%);
+    --card-shadow: 0 4px 18px rgb(0 0 0 / 35%);
+    --badge: #d70015;
+    --shadow-1: 0 8px 24px var(--shade);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --danger: #a83f2f;
+        --scrim: rgb(0 0 0 / 22%);
+        --shade: rgb(0 0 0 / 22%);
+        --scrim-menu: rgb(0 0 0 / 35%);
+        --card-shadow: 0 6px 22px rgb(0 0 0 / 10%);
+    }
+}
+
+html {
+    font-size: 106.25%;
+}
+
+@supports (font: -apple-system-body) {
+    html {
+        font: -apple-system-body;
+    }
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+}
+
+body {
+    margin: 0;
+    overflow-wrap: anywhere;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.35;
+    -webkit-text-size-adjust: 100%;
+}
+
+main.phone {
+    --text-4: var(--text-3);
+    --side: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+    --safe-bottom: env(safe-area-inset-bottom);
+    --push: cubic-bezier(0.32, 0.72, 0, 1);
+    --out: cubic-bezier(0.4, 0, 1, 1);
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --push-in: 350ms;
+    --pop: 300ms;
+    --sheet-in: 420ms;
+    --sheet-out: 250ms;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) 0 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (display-mode: standalone) {
+    html,
+    body {
+        height: 100lvh;
+        overflow: hidden;
+    }
+
+    main.phone {
+        position: absolute;
+        inset: auto;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100lvh;
+    }
+}
+
+.phone .shimmer {
+    display: block;
+    border-radius: 7px;
+    background: linear-gradient(90deg, var(--hover) 30%, var(--sel) 50%, var(--hover) 70%) 0 0 / 300% 100%;
+    animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 100% 0;
+    }
+
+    to {
+        background-position: 0 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .phone .shimmer {
+        animation: none;
+    }
+}
+
+.phone .arriving {
+    position: relative;
+    animation: arrive-grow 380ms var(--push) both;
+    animation-delay: var(--arrive-delay, 0ms);
+}
+
+.phone .agent.arriving,
+.phone .turn-thought.arriving,
+.phone .question.arriving {
+    transform-origin: bottom left;
+}
+
+.phone .turn-card.arriving {
+    transform-origin: bottom center;
+}
+
+.phone .arriving > * {
+    animation: arrive-text 260ms ease-out both;
+    animation-delay: calc(var(--arrive-delay, 0ms) + 200ms);
+}
+
+.phone .arriving::after {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--hover) 30%, var(--sel) 50%, var(--hover) 70%) 0 0 / 300% 100% var(--raised);
+    content: "";
+    pointer-events: none;
+    animation: arrive-shimmer 520ms linear both;
+    animation-delay: var(--arrive-delay, 0ms);
+}
+
+@keyframes arrive-grow {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96, 0.7);
+    }
+
+    30% {
+        opacity: 1;
+    }
+}
+
+@keyframes arrive-text {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes arrive-shimmer {
+    from {
+        opacity: 1;
+        background-position: 100% 0;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        background-position: 0 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .phone .arriving {
+        animation: arrive-text 200ms ease-out both !important;
+    }
+
+    .phone .arriving > * {
+        animation: none !important;
+    }
+
+    .phone .arriving::after {
+        display: none;
+    }
+}
+
+.phone [data-flash] {
+    animation: flash 1.2s ease-out;
+}
+
+@keyframes flash {
+    from {
+        box-shadow: 0 0 0 3px var(--accent), 0 0 0 9px color-mix(in oklab, var(--accent) 30%, transparent);
+    }
+}
+
+.phone .home-feed {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.phone .home-feed :is(input, textarea) {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.keyboard-up .phone .tabs,
+.typing .phone .tabs {
+    display: none;
+}
+
+.typing .phone {
+    --safe-bottom: 0px;
+}
+
+.phone .screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.phone .screen-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 0 24px;
+}
+
+.phone .screen-foot {
+    flex: none;
+    margin: 0 calc(-1 * var(--side));
+    padding: 10px var(--side);
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+}
+
+.phone .pressing {
+    background: var(--hover);
+}
+
+.phone .spot {
+    position: relative;
+    z-index: 56;
+    border-radius: 14px;
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 55%);
+}
+
+.phone .spot::after {
+    content: "";
+    position: absolute;
+    inset: var(--spot-hidden, 0px) 0 0;
+    border: 3px solid var(--accent-text);
+    border-radius: 14px;
+    pointer-events: none;
+}
+
+.phone button {
+    -webkit-touch-callout: none;
+    transition: opacity 200ms ease-out, background-color 200ms ease-out;
+}
+
+.phone button:active:not(:disabled) {
+    opacity: 0.6;
+    transition-duration: 0ms;
+}
+
+.phone button.hold-backdrop:active,
+.phone button.viewer-zoom:active {
+    opacity: 1;
+}
+
+.phone-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.phone-centre {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 0 var(--side);
+    text-align: center;
+}
+
+.phone .btn {
+    min-height: 44px;
+    justify-content: center;
+    font-size: 0.882rem;
+}
+
+.phone img,
+.phone video {
+    max-width: 100%;
+    height: auto;
+}
+
+.phone code,
+.phone .md :not(pre) > code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.phone pre {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    white-space: pre;
+}
+
+.phone pre code {
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+.phone table {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    table-layout: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.phone .fade-right {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+.phone .fade-left {
+    -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+}
+
+.phone .fade-left.fade-right {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+
+.phone table th,
+.phone table td {
+    max-width: none;
+    white-space: nowrap;
+}
+
+.phone * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.phone-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.phone-words {
+    max-width: 340px;
+    margin: 0;
+    color: var(--text-2);
+    line-height: 1.4;
+}
+
+.phone-typed {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.phone-code-box {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    background: var(--raised);
+    color: var(--text);
+    font: 600 max(16px, 1.176rem)/1 var(--mono);
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.phone-typed-told {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.824rem;
+}
+
+.phone .row-pill {
+    white-space: nowrap;
+}
+
+.phone button.btn.large,
+.phone button.btn {
+    height: auto;
+    border-radius: 12px;
+    font-size: 1rem;
+}
+
+.phone .btn.ghost {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--accent-text);
+}
+
+.phone .btn.plain {
+    border-color: transparent;
+    background: none;
+    color: var(--text-2);
+}
+
+.phone :is(.tab, .reader-back, .viewer-back, .waiting, .home-newest, .compose-clip, .compose-send, .reader-size, .board-edit) .ico,
+.phone a .ico {
+    color: inherit;
+}
+
+.phone button.btn.primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .phone *,
+    .phone *::before,
+    .phone *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

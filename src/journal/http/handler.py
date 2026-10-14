@@ -7,6 +7,7 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.router import Router
 from journal.http.static_files import StaticFiles
+from journal.http.stream_response import StreamResponse
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -20,7 +21,8 @@ class Handler(BaseHTTPRequestHandler):
         request = self._request()
         if not request.path.startswith(("/api/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
             return self._file(*found)
-        self._reply(self.router.dispatch(request))
+        answer = self.router.dispatch(request)
+        self._stream(answer) if isinstance(answer, StreamResponse) else self._reply(answer)
 
     def do_POST(self) -> None:
         self._reply(self.router.dispatch(self._request()))
@@ -42,6 +44,19 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(body)
+
+    def _stream(self, response: StreamResponse) -> None:
+        self.send_response(response.status)
+        self.send_header("Content-Type", response.kind)
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        try:
+            for chunk in response.chunks:
+                self.wfile.write(chunk)
+                self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            return
 
     def _reply(self, response: Response) -> None:
         body = response.encoded()

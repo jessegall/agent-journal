@@ -1,0 +1,30 @@
+.chat-code-block {
+    margin: 6px 0;
+}
+
+.chat-code-block > pre.chat-code {
+    margin: 0;
+}
+
+.chat-code-copy {
+    display: block;
+    margin: 0 0 3px auto;
+    padding: 1px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.chat-code-copy:hover {
+    color: var(--text-2);
+}
+
+.chat-code-copy.copied {
+    border-color: color-mix(in srgb, var(--tone-good) 45%, var(--border-2));
+    color: var(--tone-good);
+}

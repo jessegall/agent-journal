@@ -1,0 +1,101 @@
+import {execFileSync, spawnSync} from "node:child_process";
+import {chromium} from "playwright-core";
+import {cpus, loadavg} from "node:os";
+import {dirname, join} from "node:path";
+
+const FIRST_CHOICE_WAIT = 8000;
+const LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
+
+const JOURNAL_WAIT = 60000;
+const RUNS_LOCALLY = new Set(["404", "409", "000", ""]);
+
+// A wait that ran out says so and says how busy the machine was, so a red run can be told from a regression.
+function failureOf(error) {
+    const words = String(error.message).split("\n").slice(0, 12).join(" ");
+    if (error.name !== "TimeoutError") return words;
+    const [load] = loadavg();
+    const busy = load > cpus().length ? "the machine was overloaded, so this may be the load: run it alone before believing it" : "the machine was not overloaded, so this is probably real";
+    return `TIMED OUT waiting (load ${load.toFixed(1)} on ${cpus().length} cores; ${busy}): ${words}`;
+}
+
+const isOutside = (address) => !LOCAL.test(address.href);
+
+export const reply = (route, body, status = 200) => route.fulfill({status, contentType: "application/json", body: JSON.stringify(body)});
+
+async function chooseVoice(browser, url) {
+    const page = await browser.newPage();
+    await page.route(isOutside, (route) => route.abort());
+    await page.goto(url);
+    const keep = page.getByRole("button", {name: "Keep Butler"});
+    if (await keep.waitFor({timeout: FIRST_CHOICE_WAIT}).then(() => true, () => false)) await keep.click();
+    await page.getByRole("dialog", {name: "How should the agent talk to you?"}).waitFor({state: "detached", timeout: FIRST_CHOICE_WAIT});
+    await page.close();
+}
+
+export const openBrowser = () => (process.env.JOURNAL_BROWSER ? chromium.connect(process.env.JOURNAL_BROWSER) : chromium.launch());
+
+export async function runScenarios(url, scenarios, {voice = true, device = {}} = {}) {
+    const browser = await openBrowser();
+    if (voice) await chooseVoice(browser, url);
+    const failures = {};
+    try {
+        for (const [name, scenario] of Object.entries(scenarios)) {
+            const context = await browser.newContext({viewport: {width: 1280, height: 900}, ...device});
+            const page = await context.newPage();
+            page.setDefaultTimeout(15000);
+            await page.route(isOutside, (route) => route.abort());
+            try {
+                await scenario(page, url);
+            } catch (error) {
+                const picture = join(scratchFolder(), `scenario-${Date.now()}.png`);
+                await page.screenshot({path: picture}).catch(() => {});
+                failures[name] = `${failureOf(error)} (the page at that moment: ${picture})`;
+            }
+            await page.unrouteAll({behavior: "ignoreErrors"});
+            await context.close();
+        }
+    } finally {
+        await browser.close();
+    }
+    console.log(JSON.stringify(failures));
+}
+
+export function journal(...words) {
+    const root = process.env.JOURNAL_SCRATCH_ROOT;
+    const endpoint = new URL("api/run", process.env.JOURNAL_SCRATCH_URL);
+    endpoint.searchParams.set("env", "main");
+    endpoint.searchParams.set("cwd", `${root}/..`);
+    const output = spawnSync("curl", ["-s", "-m", String(JOURNAL_WAIT / 1000), "-w", "\n%{http_code}", "-H", "Content-Type: text/plain", "--data-binary", "@-", endpoint.href], {
+        input: words.join("\0"),
+        encoding: "utf8",
+        timeout: JOURNAL_WAIT,
+    }).stdout;
+    const status = output.slice(output.lastIndexOf("\n") + 1);
+    const body = output.slice(0, output.lastIndexOf("\n"));
+    if (status === "200") return body;
+    if (!RUNS_LOCALLY.has(status)) throw new Error(`journal ${words.join(" ")} was refused with ${status}: ${body}`);
+    return execFileSync(process.env.JOURNAL_PYTHON, [`${root}/journal.py`, "--root", root, "--env", "main", ...words], {
+        cwd: `${root}/..`,
+        encoding: "utf8",
+        timeout: JOURNAL_WAIT,
+        env: {...process.env, AGENT_JOURNAL_BOOTSTRAPPED: "1"},
+    });
+}
+
+export const numberOf = (output) => Number(output.match(/^[a-z_]+ (\d+)$/m)[1]);
+
+// the project folder of the scratch journal, which the run that made it removes with it
+export const scratchFolder = () => dirname(process.env.JOURNAL_SCRATCH_ROOT);
+
+export const shot = (page, name) => (process.env.SHOT_DIR ? page.screenshot({path: `${process.env.SHOT_DIR}/${name}.png`}) : null);
+
+export async function drag(page, source, target) {
+    await source.scrollIntoViewIfNeeded();
+    const from = await source.boundingBox();
+    const to = await target.boundingBox();
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2 + 10, from.y + from.height / 2 + 10, {steps: 5});
+    await page.mouse.move(to.x + to.width / 2, to.y + Math.min(to.height / 2, 200), {steps: 15});
+    await page.mouse.up();
+}
