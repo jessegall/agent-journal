@@ -1,6 +1,6 @@
 # Stays a test: it drives the Sequences controller's actions and refusals, the shipped sequences, a real session binding and the real gate, which no registration reaches
 import features
-from controllers.types import CONTROLLERS, Agents
+from controllers.types import CONTROLLERS
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, nudges, report
