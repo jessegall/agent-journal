@@ -65,6 +65,7 @@ class Features(Controller):
         changed = SETTINGS_CHANGED.keyed().get(name)
         if changed:
             changed(self.record, self.actor)
+        self.record.emit("feature", 0, "updated", self.actor, setting=name)
         if self.actor == AGENT and self._held(name, key) != before:
             from controllers.types import Agents
             Agents(self.record, actor=self.actor).mark_primary(f"Changed {name}.{key} from {before} to {self._held(name, key)}", icon="settings")

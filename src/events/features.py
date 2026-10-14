@@ -14,6 +14,7 @@ class FeatureCreated(ResourceEvent):
 @dataclass(frozen=True)
 class FeatureUpdated(ResourceEvent):
     on: ClassVar[str] = "feature.updated"
+    setting: str = ""
 
 
 @dataclass(frozen=True)

@@ -26,6 +26,7 @@ def settings_changed(record, names, actor: str) -> None:
     for name in names:
         if name in FEATURES:
             FEATURES[name].settings_changed(record, actor)
+            record.emit("feature", 0, "updated", actor, setting=name)
 
 
 def switched(record, before: dict, after: dict, actor: str) -> None:
