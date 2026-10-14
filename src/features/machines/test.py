@@ -1,3 +1,4 @@
+# Stays a test: it leases numbers between two machines, hands environments over and syncs real record folders, which a Given cannot state.
 import re
 from pathlib import Path
 
@@ -17,7 +18,7 @@ from engine.outbox import Request
 from engine.record import Record
 from engine.sync import NEVER_TRAVELS_FIELDS, NEVER_TRAVELS_TYPES, PROTOCOL, Comparison, Hello, Release, Shape, Step, Welcome, connect, travelling, travels
 from features.machines.details import MachinesDetails
-from resources.base import AGENT, PROJECT, SYSTEM, USER, Stale
+from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
 
 
@@ -141,7 +142,7 @@ def test_two_people_pressing_the_same_row_with_the_machines_feature_on_the_secon
     invoked(Todos(record, actor=USER), "done", (row.n,), {"how": "first", "unchanged_since": seen})
     for word, args in (("update", {"title": "late"}), ("section", {"title": "part", "body": "late"}), ("reopen", {"why": "late"}),
                        ("delete", {"why": "late"})):
-        with pytest.raises(Stale):
+        with pytest.raises(Refused):
             invoked(Todos(record, actor=USER), word, (row.n,), {**args, "unchanged_since": seen})
     assert (todos.load(row.n).outcome, todos.load(row.n).title) == ("first", "second press"), "the first press stands and the late ones change nothing"
     invoked(Todos(record, actor=USER), "update", (row.n,), {"title": "fresh", "unchanged_since": todos.load(row.n).updated})

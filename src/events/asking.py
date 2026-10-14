@@ -112,3 +112,14 @@ class RowWriting(Asked):
     """Whether the write was forced: a refusal is then recorded on the row it overrides rather than stopping it."""
     fields: tuple[tuple[str, object], ...] = field(default_factory=tuple)
     session: str = ""
+
+
+@dataclass(frozen=True, kw_only=True)
+class RowSaving(Asked):
+    """A row pressed on a screen and about to be saved: when the person pressing it last saw it change, and when it changed last."""
+
+    reduces = FirstRefusalWins
+    type: str = ""
+    n: int = 0
+    updated: float = 0.0
+    unchanged_since: float = 0.0

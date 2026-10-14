@@ -35,8 +35,6 @@ SAVE_REWRITES = Extension()
 """What each feature rewrites in a row's text before it is saved, by the feature's name."""
 
 SAVE_MARKS = Extension()
-SAVE_CHECKS = Extension()
-"""What each feature checks of a row before it is saved, by the feature's name."""
 
 CARD_EXTRAS = Extension()
 """What each feature adds to a ticket's card, by the feature's name."""

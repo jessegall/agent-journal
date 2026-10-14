@@ -10,8 +10,8 @@ from functools import cache, partial
 
 from engine import bus
 from events.answers import Refused as Refusal
-from events.asking import RowWriting
-from declaring.registries import SAVE_CHECKS, SAVE_MARKS, SAVE_REWRITES
+from events.asking import RowSaving, RowWriting
+from declaring.registries import SAVE_MARKS, SAVE_REWRITES
 from resources.pressed import PRESSED, UNCHANGED_SINCE, Pressed  # noqa: F401
 from resources.fields import Loaded
 from resources.markers import plain
@@ -201,8 +201,7 @@ class Controller(Files, Links, Discussed, Buttons):
         """Checks the row, marks it and writes it, without announcing the change."""
         self._shipped(r, action)
         self._guarded(r, action)
-        for check in SAVE_CHECKS.each(self.record):
-            check(self, r)
+        self._unchanged_since_pressed(r)
         for mark in SAVE_MARKS.each(self.record):
             mark(self, r)
         r.rewrite(plain)
@@ -229,6 +228,15 @@ class Controller(Files, Links, Discussed, Buttons):
         if row.completed:
             raise Refused(f"{self.type} {n} is {ended}")
         return row
+
+    def _unchanged_since_pressed(self, r: Resource) -> None:
+        pressed = PRESSED.get()
+        if not pressed.is_row(self.type, r.n):
+            return
+        PRESSED.set(Pressed())
+        asked = bus.asked(RowSaving(type=self.type, n=r.n, updated=self.load(r.n).updated, unchanged_since=pressed.updated), self.record)
+        if isinstance(asked, Refusal):
+            self._refuse(asked.why)
 
     def _handled(self, action: str, /, **args) -> None:
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
