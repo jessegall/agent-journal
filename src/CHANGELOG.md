@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.1 — The critique dialog says when its templates did not load
+
+- When the journal is too busy to answer, the Ask for a critique dialog now says the templates did not load and offers to try again, where it showed only No template as if there were none.
+
 ## 3.1.0 — The avatar reads a book, and agents come in three new profiles
 
 - When the agent reads a file, the avatar takes out a book, opens it in both hands and reads, turning a page now and then; a search still brings out the magnifying glass. What it carries in its hands is put away while it reads.

@@ -25,10 +25,18 @@ const templateChoices = computed(() => [
     ...templates.value.map((t) => ({value: t.n, label: t.title, current: template.value === t.n})),
 ]);
 
-onMounted(async () => {
-    const rows = await scope.api.all("template").catch(() => []);
-    templates.value = critiqueTemplates(rows);
-});
+const unloaded = ref(false);
+
+async function loadTemplates() {
+    try {
+        templates.value = critiqueTemplates(await scope.api.all("template"));
+        unloaded.value = false;
+    } catch {
+        unloaded.value = true;
+    }
+}
+
+onMounted(loadTemplates);
 
 async function send() {
     sending.value = true;
@@ -51,6 +59,12 @@ async function send() {
         <ChoiceList :choices="choices(CRITIQUE_SIZES, size)" @pick="(v) => (size = v)" />
         <p class="label">Template</p>
         <ChoiceList :choices="templateChoices" @pick="(v) => (template = v)" />
+        <template v-if="unloaded">
+            <p class="guide">
+                The templates did not load.
+                <Btn small @click="loadTemplates">Try again</Btn>
+            </p>
+        </template>
         <template v-if="picked">
             <p class="guide">{{ picked.brief }}</p>
         </template>
