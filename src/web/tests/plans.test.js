@@ -109,10 +109,12 @@ test("a plan under review offers no Approve button until its review is in and it
     expect(planButton(made("ready"))).toEqual(["approve", "Approve"]);
 });
 
-test("a plan offers the choices of the review reports linked to it that wait on one, newest first", async () => {
+test("a plan asks only its latest review report's question, and only until it is answered", async () => {
     const {reviewChoices} = await import("../src/domain/plans.js");
     const choice = [{label: "Revise the plan", say: "Revise it", choice: "next"}, {label: "Keep it", say: "Keep it", choice: "next"}];
     const report = (n, extra = {}) => ({n, created: n, deleted: 0, refs: ["plan:35"], data: {buttons: choice}, ...extra});
     const reports = [report(125), report(126), report(124, {data: {buttons: choice, pressed: ["Keep it"]}}), report(127, {refs: ["plan:34"]})];
-    expect(reviewChoices({n: 35}, reports).map((r) => r.n)).toEqual([126, 125]);
+    expect(reviewChoices({n: 35}, reports).map((r) => r.n)).toEqual([126]);
+    // the latest review answered, no older review's question asks in its place
+    expect(reviewChoices({n: 35}, [...reports, report(128, {data: {buttons: choice, pressed: ["Revise the plan"]}})])).toEqual([]);
 });

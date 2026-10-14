@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.3.1 — A plan asks only its latest review's question
+
+- A plan's page shows the question of its latest review report only, and only until it is answered; an older review's question no longer asks beside it.
+
 ## 3.3.0 — The avatar lives on floors: it walks, hops and falls with what is under it
 
 - The avatar stands on floors read from the chat each frame: the chat box or the bars docked over it, the chat's bubbles, the page's tabs and the window's foot. When a report bar docks or goes, or the chat scrolls, it is carried, falls under gravity frame by frame, or is caught by a bubble on the way down, as it chooses fall by fall.

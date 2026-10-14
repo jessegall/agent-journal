@@ -1,5 +1,5 @@
 import {counted} from "../format/number.js";
-import {unanswered} from "./buttons.js";
+import {choiceGroups, unanswered} from "./buttons.js";
 
 export const NOT_STARTED = {
     building: "being written",
@@ -171,7 +171,9 @@ export function planProgress(resource) {
 }
 
 // the reports linked to a plan that still wait on a choice from their buttons, newest first, so the plan can offer the same choice
-export const reviewChoices = (plan, reports) =>
-    reports
-        .filter((r) => !r.deleted && r.refs.includes(`plan:${plan.n}`) && unanswered(r))
-        .sort((a, b) => b.created - a.created || b.n - a.n);
+export function reviewChoices(plan, reports) {
+    const latest = reports
+        .filter((r) => !r.deleted && r.refs.includes(`plan:${plan.n}`) && choiceGroups(r).length)
+        .sort((a, b) => b.created - a.created || b.n - a.n)[0];
+    return latest && unanswered(latest) ? [latest] : [];
+}
