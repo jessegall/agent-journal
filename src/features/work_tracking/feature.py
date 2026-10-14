@@ -19,7 +19,7 @@ from declaring.trigger import Mark
 from events.plans import PlanCompleted
 from events.works import WorkCompleted, WorkUpdated
 from resources.base import AGENT, USER
-from resources.types import AgentRow, Todo, Work
+from resources.types import AgentRow, Question, Todo, Work
 from framework.base import Feature
 from framework.watched import COUNT, FACTS, Fact, state_facts
 from declaring.registries import READINESS
@@ -68,6 +68,11 @@ FIRST = Todo(n=1, title="first")
 SECOND = Todo(n=2, title="second")
 STOPPED = (Reported("idle", "Stop"),)
 STOPS = AgentReported(agent=1, hook="Stop")
+WORKED = Reported("working", "PreToolUse")
+HELPING = AgentRow(n=1, title="claude-1", data={"status": "idle", "event": "Stop", "provider": "claude",
+                                                "subagent_rows": [{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "running": True}]})
+AWAITING = Work(n=2, title="the sweep", data={"awaiting": "the sweep"})
+SIX_IDLE_MINUTES = (Reported("idle", "Stop"), Waited(6))
 IDLE_ROW = AgentRow(n=1, title="claude-1", data={"status": "idle", "event": "Stop"})
 ran = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "ls", "at": 10.0, "done": 11.0}]})
 
@@ -113,16 +118,29 @@ class WorkFeature(Feature):
                     guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready.",
                     expects=(Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO) >> Told("next"),
                              Given(STOPS, rows=(IDLE_ROW, FIRST), settings={"features.work_tracking.auto": False}) >> Told("next", times=0),
-                             Given(STOPS, rows=(IDLE_ROW, FIRST, WORKING), settings=AUTO) >> Told("next", times=0))),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST, WORKING), settings=AUTO) >> Told("next", times=0),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO, earlier=(WORKED, Reported("idle", "Stop"), WORKED)) >> Told("next", times=1),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first", data={"blocked": "the release is not cut"})), settings=AUTO) >> Told("next", times=0),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first"), Question(n=1, title="which way", refs=["todo:1"])), settings=AUTO) >> Told("next", times=0),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="first"), Work(n=3, title="x", data={"todo": 1, "parked": "a subagent holds it"})), settings=AUTO) >> Told("next", times=0),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST, Work(n=3, title="the release", data={"awaiting": "the CI run on main"})), settings=AUTO) >> Told("next", times=0))),
               Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, cap=Cap(1),
                     guarantee="When the work in hand is waiting on something, the agent is offered the next ready to-do rather than sitting out the wait.",
                     expects=(Given(STOPS, rows=(IDLE_ROW, SECOND, WORKING), settings=AUTO) >> Told("next while waiting"),
                              Given(STOPS, rows=(IDLE_ROW, SECOND), settings=AUTO) >> Told("next while waiting", times=0))),
               Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, cap=Cap(1),
-                    guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),
+                    guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it.",
+                    expects=(Given(STOPS, rows=(HELPING, FIRST, AWAITING), settings=AUTO) >> Told("next while a helper works"),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST, AWAITING), settings=AUTO) >> Told("next while a helper works", times=0),
+                             Given(STOPS, rows=(HELPING, FIRST, AWAITING), settings=AUTO, earlier=(WORKED, Reported("idle", "Stop"), WORKED)) >> Told("next while a helper works", times=1))),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
                     guarantee="When the agent stops with work still in hand, it is asked once to carry on with it.",
                     expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6))) >> Told("carry on") & Nudged("carry on"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema")), earlier=SIX_IDLE_MINUTES) >> Told("carry on"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release", data={"awaiting": "the CI run on main"})), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release", data={"parked": "later"})), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema"),
+                                                              Question(n=1, title="Files or SQLite?", refs=["todo:1"])), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(4))) >> Told("carry on", times=0),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6), Ticked(), Waited(10))) >> Told("carry on"))),
               Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(1),
@@ -152,11 +170,13 @@ class WorkFeature(Feature):
             Given((Works,), rows=[WORKING]) >> Refused('say what was decided or done: journal work log <n> "<text>"'),
             Given((Works, "Chose the retry"), rows=[]) >> Refused('nothing is open: journal work start "<the work>" first'),
             Given((Works, "3", "Chose the retry"), rows=[PARKED]) >> Refused("work 3 is parked; the one in hand is what a log entry means"),
+            Given((Works, "3", "the number first"), rows=[WORKING]) >> Updated(Work(n=3), sections=LoggedAs("the number first")),
         ])
         journal.commands.add("work", ParkWork(), expects=[
             Given((Works, "the user asked for something first"), rows=[WAITING]) >> Updated(Work(n=3), parked="the user asked for something first", awaiting=""),
             Given((Works,), rows=[WORKING]) >> Refused('say why it waits: journal work park <n> "<why>"'),
             Given((Works, "later"), rows=[]) >> Refused('nothing is open: journal work start "<the work>" first'),
+            Given((Works, "3", "something else goes first"), rows=[WORKING]) >> Updated(Work(n=3), parked="something else goes first", awaiting=""),
         ])
         journal.commands.add("work", ResumeWork(), expects=[
             Given((Works, 3), rows=[PARKED]) >> Updated(Work(n=3), parked=""),
@@ -165,6 +185,7 @@ class WorkFeature(Feature):
         ])
         journal.commands.add("work", AwaitWork(), expects=[
             Given((Works, "the build"), rows=[WORKING]) >> Updated(Work(n=3), awaiting="the build"),
+            Given((Works, "3", "the build"), rows=[WORKING]) >> Updated(Work(n=3), awaiting="the build"),
             Given((Works, "the build"), rows=[]) >> Updated(Work(n=1), awaiting="the build"),
             Given((Works, "the user to answer"), rows=[WORKING]) >> Refused("waiting for the user is being idle, not waiting: a wait is for something that will happen on its own and let the work go on. Put the question on its row with journal todo ask and take the next ready row, or end your turn"),
             Given((Works,), rows=[WORKING]) >> Refused('say what you are waiting for: journal work await <n> "<what>"'),
@@ -351,5 +372,11 @@ class WorkFeature(Feature):
             Given(shell("until test -f done; do sleep 1; done")) >> Answered(Declined(WAIT_WAY)),
             Given(shell("sleep 30", run_in_background=True)) >> Answered(Allowed()),
             Given(shell("sleep 5; echo hi")) >> Answered(Allowed()),
+            Given(shell("while true; do sleep 2; done")) >> Answered(Declined(WAIT_WAY)),
+            Given(shell("sleep 1 && sleep 2")) >> Answered(Declined(WAIT_WAY)),
+            Given(shell("until grep -q done b.log; do sleep 5; done")) >> Answered(Declined(WAIT_WAY)),
+            Given(shell("sleep 1 && make check")) >> Answered(Allowed()),
+            Given(shell("until grep -q done b.log; do tail -1 b.log; sleep 5; done")) >> Answered(Allowed()),
+            Given(shell("python3 wait_for_it.py")) >> Answered(Allowed()),
             Given(shell("git status")) >> Answered(Allowed()),
         ])
