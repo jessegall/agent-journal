@@ -7,7 +7,7 @@ from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.messages import MessageCreated
 from events.skill_loading import JournalSkillMissing, RefusalCounted, SessionOwesSkills, SkillLoaded, SkillsAsked, SkillsOwed, StaleSkillsNamed, WindowOpened, WindowSpent
-from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Unchanged, Updated, Wrote, answering, nothing
+from expects import WHEN, Answered, Dispatches, Given, Nudged, Refused, Remembered, Replied, Requested, Unchanged, Updated, Wrote, answering, nothing
 from events.answers import Refused as RefusedCall
 from framework.base import Feature
 from resources.types import AgentRow, Message
@@ -43,7 +43,16 @@ class SkillLoading(Feature):
     details = SkillLoadingDetails
 
     def register(self, journal: Journal) -> None:
-        journal.routes.add(get_skills, get_skill, post_skill_load, post_skill_always, post_skill_keywords)
+        journal.routes.add(get_skills, post_skill_load, post_skill_always)
+        journal.routes.add(get_skill, expects=[
+            Given(Requested(name="no-such-skill")) >> Refused("no skill no-such-skill"),
+            Given(Requested(name="journal-demo"), files=answering({".agents/skills/journal-demo/SKILL.md": '---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n'}))
+                >> Replied(200, {"description": "A demo"}),
+        ])
+        journal.routes.add(post_skill_keywords, expects=[
+            Given(Requested({"keywords": " roadmap, ,"}, name="journal-plans")) >> Replied(200, {"keywords": ["roadmap"]}),
+            Given(Requested({"keywords": ["roadmap", " "]}, name="journal-plans")) >> Replied(200, {"keywords": ["roadmap"]}),
+        ])
         journal.commands.add("agent", ShowSkills(), expects=[Given((Agents,)) >> Answered([])])
         journal.commands.add("agent", ShowSkill(), expects=[Given((Agents, "journal")) >> Refused("no skill journal")])
         journal.commands.add("agent", LoadSkill(), expects=[

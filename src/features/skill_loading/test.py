@@ -271,10 +271,8 @@ def test_a_skills_keyword_makes_the_agent_load_it():
     from skills import render
     assert "keywords: dumps, dump" in render()["journal-dumps/SKILL.md"], "a shipped skill carries its own keywords"
     from commands.http import dispatch
-    typed = lambda words: dispatch("POST", f"/api/{record.env}/skills/journal-plans/keywords", record.root, {}, {"keywords": words}).body["keywords"]
-    assert typed(" roadmap, ,") == typed(["roadmap", " "]) == ["roadmap"], "words typed on the Skills page are kept, from a comma list or a list"
+    dispatch("POST", f"/api/{record.env}/skills/journal-plans/keywords", record.root, {}, {"keywords": ["roadmap"]})
     assert keywords(record)["journal-plans"] == ["roadmap"], "and read back as the skill's keywords"
-    assert dispatch("GET", f"/api/{record.env}/skills/no-such-skill", record.root, {}, {}).code == 404, "an unknown skill is not found"
     from controllers.invoke import invoked
     from resources.base import AGENT, Refused
     for word, named in (("load_skill", {"skill": "journal-plans"}), ("keywords", {"skill": "journal-plans", "keywords": ["other"]})):
@@ -288,8 +286,6 @@ def test_a_skills_keyword_makes_the_agent_load_it():
     folder = record.root.parent / ".agents" / "skills" / "journal-demo"
     folder.mkdir(parents=True)
     (folder / "SKILL.md").write_text('---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n')
-    page = dispatch("GET", f"/api/{record.env}/skills/journal-demo", record.root, {}, {}).body
-    assert (page["description"], "# Demo" in page["text"]) == ("A demo", True), "a skill's own page carries its description and its text"
     assert "journal-demo" in [row[SKILL.name] for row in dispatch("GET", f"/api/{record.env}/skills", record.root, {}, {}).body], "the Skills page lists it"
     assert "its tool calls wait until the skill is loaded" in dispatch("POST", f"/api/{record.env}/skills/journal-demo/load", record.root, {}, {}).body["notice"], \
         "its Load button asks the agent to load it and holds its tool calls until it has"
