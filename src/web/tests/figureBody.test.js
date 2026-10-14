@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {airborneFrame, fallingFrom} from "../src/domain/figureMotion.js";
+import {airborneFrame, fallingFrom, legEnded} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, kind = id === "home" ? "compose" : "bubble") => ({id, kind, left: 0, right: 1000, top, vy: 0});
 const FRAME_MS = 1000 / 60;
@@ -36,5 +36,14 @@ describe("a body in the air", () => {
         const floors = [floor("b1", 300), floor("home", 500)];
         expect(fallen(fallingFrom({x: 400, y: 200, posture: "stand"}, null, floors, 0, () => 0.1), floors).landed.spot.y).toBe(300);
         expect(fallen(fallingFrom({x: 400, y: 200, posture: "stand"}, null, floors, 0, () => 0.9), floors).landed.spot.y).toBe(500);
+    });
+});
+
+describe("a leg on the frame clock", () => {
+    it("ends on the first frame at or after its lead and its course, and not a frame before", () => {
+        const leg = {x: 0, y: 0, ms: 400, lead: 100, easing: "linear"};
+        expect(legEnded(leg, 1000, 1499)).toBe(false);
+        expect(legEnded(leg, 1000, 1500)).toBe(true);
+        expect(legEnded({...leg, ms: 0, lead: 0}, 1000, 1000)).toBe(true);
     });
 });

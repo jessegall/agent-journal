@@ -4,7 +4,7 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, legEnded, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors} from "../figure/floors.js";
 import {useFigureBody} from "../composables/figureBody.js";
 import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
@@ -55,7 +55,6 @@ let player = null;
 let clips = [];
 let frameTimer = 0;
 let lookTimer = 0;
-let legTimer = 0;
 const now = ref(Date.now() / 1000);
 const waitingSince = ref(0);
 // below the figure's feet in its picture, as a share of its height: the clips' ground row (figure.js GROUND)
@@ -258,7 +257,6 @@ function setOff() {
 
 // the trip waits for its next leg to set off (depart), or ends at its spot when no leg is left
 function nextLeg() {
-    clearTimeout(legTimer);
     const legs = body.trip.legs;
     const next = legs.find((each) => each.ms > 0);
     if (!next) {
@@ -274,21 +272,19 @@ function nextLeg() {
     step();
 }
 
-// the next leg carries the picture to its end, stepped each frame (watchFooting), and lands it when it hopped
+// the next leg carries the picture to its end, stepped each frame (watchFooting) until it has run its course (endLeg)
 function depart() {
     const [next, ...legs] = body.trip.legs;
     body.trip = {...body.trip, moves: true, legs};
-    body.walk = {from: {...body.at}, began: performance.now(), on: null};
+    const feet = feetOf(body.at);
+    body.walk = {from: {...body.at}, began: performance.now(), on: next.hopping ? null : floorAt(latestFloors().floors, feet.x, feet.y, KEPT_WITHIN)?.id ?? null};
     body.leg = next;
-    if (!next.hopping) {
-        const feet = feetOf(body.at);
-        body.walk.on = floorAt(latestFloors().floors, feet.x, feet.y, KEPT_WITHIN)?.id ?? null;
-        return void (legTimer = setTimeout(nextLeg, next.lead + next.ms));
-    }
-    legTimer = setTimeout(() => {
-        body.landing = Boolean(body.trip.hopping && body.trip.lands);
-        nextLeg();
-    }, next.lead + next.ms);
+}
+
+// a leg that has run its course hands on to the next, landing the figure when it hopped
+function endLeg() {
+    if (body.trip.hopping) body.landing = Boolean(body.trip.lands);
+    nextLeg();
 }
 
 function settle(spot, held = footingOn(spot)) {
@@ -302,7 +298,12 @@ function settle(spot, held = footingOn(spot)) {
 // ground at home and on to its place there
 function watchFooting() {
     if (body.airborne) return fallOn();
-    if (body.trip?.moves) return body.trip.hopping ? hopOn() : walkOn();
+    if (body.trip?.moves) {
+        if (body.trip.hopping) hopOn();
+        else walkOn();
+        if (body.trip?.moves && legEnded(body.leg, body.walk.began, performance.now())) endLeg();
+        return;
+    }
     if (!body.footing) return;
     sway();
     const ground = groundUnder(body.footing, body.place, figureSize());
@@ -340,7 +341,6 @@ function carryWalk(dx, dy) {
 // The figure falls from the line it rests on at `spot`, in its posture there, never from below the ground at home, and goes on to `to`
 // once it lands
 function fallFrom(spot, to) {
-    clearTimeout(legTimer);
     clearTimeout(slideTimer);
     body.sliding = false;
     body.airborne = fallingFrom(spot, to, latestFloors().floors, performance.now(), Math.random);
@@ -585,7 +585,6 @@ onMounted(() => {
 onUnmounted(() => {
     stopBody();
     cancelAnimationFrame(homeFrame);
-    clearTimeout(legTimer);
     clearTimeout(slideTimer);
     clearTimeout(frameTimer);
     clearTimeout(lookTimer);

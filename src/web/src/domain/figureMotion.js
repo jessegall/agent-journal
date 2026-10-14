@@ -51,6 +51,9 @@ export function eased(easing, share) {
     return along((low + high) / 2, y1, y2);
 }
 
+// Whether a leg that set off at `began` has run its lead and its course by `now`
+export const legEnded = (leg, began, now) => now - began >= leg.lead + leg.ms;
+
 // Where a leg under way has carried the picture `elapsed` milliseconds after it set off from `from`: still at the start through the
 // leg's lead, then along it by the leg's easing to its end; with motion kept `still`, a hop is at its end at once
 export function legAt(leg, from, elapsed, still = false) {
