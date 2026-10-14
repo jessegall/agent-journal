@@ -1,3 +1,4 @@
+# Stays a test: real HTTP servers and ticking threads, shell-script and subprocess runs, a file tree built outside the project, and share controller and tunnel-watch code that no registration with expects= reaches.
 import base64
 import json
 import shutil

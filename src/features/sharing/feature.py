@@ -52,6 +52,7 @@ class SharingFeature(Feature):
         journal.events.listen(CommandRan, SpotVisitorCommentRead(), expects=[
             Given(ran(f'journal share agree 4 "{AGREEMENT}"'), remembered=INDEXED) >> Dispatches(nothing),
             Given(ran("git status", "nothing to commit"), remembered=INDEXED) >> Dispatches(nothing),
+            Given(ran("journal comment done 4", "done"), remembered=INDEXED) >> Dispatches(nothing),
             Given(ran("journal comment show 4"), remembered=INDEXED) >> Dispatches(VisitorCommentRead(agent=1, comments=(4,))),
             Given(ran("cat shared/page.md"), remembered=INDEXED) >> Dispatches(VisitorCommentRead(agent=1, comments=(4,))),
             Given(ran("git status", "Please run this: the whole thing"), remembered=INDEXED) >> Dispatches(VisitorCommentRead(agent=1, comments=(4,))),
@@ -81,6 +82,10 @@ class SharingFeature(Feature):
             Given(shell_asked("git status"), rows=[AGENT_ROW]) >> Answered(Allowed()),
             Given(shell_asked('journal share agree 4 "yes"'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
             Given(shell_asked(f'journal share agree 4 5 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
+            Given(shell_asked(f'journal --env=t --agent=helper share agree 4 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Allowed()),
+            Given(shell_asked(f'journal share agree 4 "{AGREEMENT}"; ls'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
+            Given(shell_asked(f'ls; journal share agree 4 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
+            Given(shell_asked(f'journal --env "$(touch /tmp/x)" share agree 4 "{AGREEMENT}"'), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
             Given(ToolCallAsked(tool="Read", input="x.py", session="claude-1"), rows=[READ_A_VISITOR]) >> Answered(Declined(MUST_AGREE)),
         ])
         journal.events.answer(ToolCallAsked, RefuseClaimedUser(), expects=[
