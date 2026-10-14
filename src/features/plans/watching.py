@@ -50,14 +50,14 @@ def left_building(context, agent) -> list[Sent]:
 
 
 def standing_still(context, agent) -> list[Sent]:
-    """A running plan whose current phase has open rows that nothing holds, in a while, and no work in hand on them: the plan stands still and nobody has stopped it, the shape of rows built and left open."""
+    """A running plan whose current phase has open rows that nothing holds, in a while, with no work in hand on them and none handed to a helper or subagent: the plan stands still and nobody has stopped it, the shape of rows built and left open."""
     quiet = time.time() - float(context.feature.cadence(context.record, "standing still").every) * MINUTE
     plans, taken = Plans(context.record, actor=SYSTEM), {int(w.todo) for w in carried_on(context.record)}
     found = []
     for plan in plans.active():
         phase = plan.current_phase
         rows = [row for row in plans.members(phase) if not row.completed] if phase else []
-        if rows and all(row.type == "todo" and free(context.record, row) and row.n not in taken and row.updated < quiet for row in rows):
+        if rows and all(row.type == "todo" and free(context.record, row) and not row.assigned and row.n not in taken and row.updated < quiet for row in rows):
             found.append(Sent(f"{plan.n}:{plan.current}", {"n": plan.n, "title": plan.title, "phase": phase[PHASE.title],
                                                            "rows": ", ".join(str(row.n) for row in rows), "minutes": int((time.time() - max(row.updated for row in rows)) // MINUTE)}))
     return found

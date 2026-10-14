@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.7 — The avatar steps away for the dump window, and helpers' rows stop the plan reminder
+
+- The avatar is hidden while the dump window is open, and comes back with the chat.
+- A running plan whose open rows are handed to a helper or a subagent is no longer named to the agent every minute as standing still.
+
 ## 3.1.6 — The avatar stays on its floor when the floor moves
 
 - When a bar it stands on opens upward, the avatar now rises with its top every frame instead of trailing behind inside the bar.

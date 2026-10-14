@@ -111,6 +111,7 @@ STILL_CASES = (
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), done(4366), done(4367), AGENT_ROW]) >> Unchanged(),
     Given(ClockTicked(agent=1), rows=[plan("parked", phases=VISIBLE), row(4366), row(4367), AGENT_ROW]) >> Unchanged(),
     Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367)]) >> Unchanged(),
+    Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, assigned="helper:3"), row(4367), AGENT_ROW]) >> Unchanged(),
 )
 
 
