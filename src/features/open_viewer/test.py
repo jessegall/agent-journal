@@ -1,3 +1,4 @@
+# Stays a test: it starts a real viewer server on a socket, runs real git and binds real ports, and tests how the viewer finds a running tab, a free port, its own version and a request path directly, which no registration reaches.
 import re
 import json
 import time
@@ -42,39 +43,16 @@ def test_other_systems_and_a_missing_tab_leave_opening_to_the_normal_path():
         "a missing macOS tab leaves opening to the normal browser path"
 
 
-def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does(monkeypatch):
-    visible = []
-    up = {"url": "http://127.0.0.1:8422/"}
+def test_the_ports_are_probed_once_for_the_session_starts_within_a_few_seconds(monkeypatch):
     probes = []
-    monkeypatch.setattr(viewer, "running", lambda root: probes.append(root) or up["url"])
-    monkeypatch.setattr(viewer, "show", lambda url, env="": visible.append(f"{url}#/{env}"))
-
+    monkeypatch.setattr(viewer, "running", lambda root: probes.append(root) or "http://127.0.0.1:8422/")
+    monkeypatch.setattr(viewer, "show", lambda url, env="": None)
     record = fresh()
     viewer.RUNNING.clear()
     Agents(record, actor=SYSTEM).create("claude-1")
-    report(record, "working", "UserPromptSubmit")
-    assert visible == [], "no session start yet: the tab is left alone"
-
     report(record, "idle", "SessionStart")
-    assert visible == [f"http://127.0.0.1:8422/#/{record.env}"], "the session started: its viewer is shown on the session's environment"
-    report(record, "idle", "SessionStart")
-    report(record, "working", "PreToolUse")
-    assert len(visible) == 1, "a second start of the same session, a compaction or a clear, shows nothing more"
-
     report(record, "idle", "SessionStart", session="claude-2")
-    assert (len(visible), len(probes)) == (2, 1), "a new session shows the viewer again, and the ports are probed once for the starts within a few seconds"
-
-    up["url"] = ""
-    viewer.RUNNING.clear()
-    report(record, "idle", "SessionStart", session="claude-3")
-    up["url"] = "http://127.0.0.1:8424/"
-    viewer.RUNNING.clear()
-    report(record, "idle", "SessionStart", session="claude-3")
-    assert visible[2:] == [f"http://127.0.0.1:8424/#/{record.env}"], "no viewer: nothing; once one runs, the next start shows it"
-
-    Agents(record, actor=SYSTEM).create("child-1", parent="claude-1")
-    report(record, "idle", "SessionStart", session="child-1")
-    assert len(visible) == 3, "a subagent starting shows nothing"
+    assert len(probes) == 1, "the ports are probed once for the starts within a few seconds"
 
 
 def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, monkeypatch):
