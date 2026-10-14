@@ -44,15 +44,11 @@ describe("a report closed from the chat of another environment", () => {
 });
 
 describe("the report above the chat", () => {
-    const made = (extra = {}) => ({n: 1, created: 100, seen: [], completed: 0, deleted: 0, data: {}, ...extra});
+    const made = (extra = {}) => ({n: 1, created: 100, seen: [], completed: 0, deleted: 0, data: {docked: true}, ...extra});
 
-    test("stays until it is closed, read, or the person has written to the agent since it came", () => {
-        expect([dockedReport([made()]).n, dockedReport([made()], 99).n]).toEqual([1, 1]);
-        expect([dockedReport([made()], 100), dockedReport([made()], 200), dockedReport([made({seen: ["user"]})]), dockedReport([made({data: {dismissed: true}})])]).toEqual([null, null, null, null]);
-    });
-
-    test("docks a report finished after the person last wrote, though it was begun before, until one of its buttons is pressed", () => {
-        expect(dockedReport([made({updated: 300})], 200).n).toBe(1);
-        expect(dockedReport([made({updated: 300, data: {pressed: ["Start the fixes"]}})], 200)).toBe(null);
+    test("shows the newest report while the server keeps it docked, whatever the person has written since", () => {
+        expect(dockedReport([made()]).n).toBe(1);
+        expect([dockedReport([made({data: {docked: false}})]), dockedReport([made({completed: 200})])]).toEqual([null, null]);
+        expect(dockedReport([made(), made({n: 2, created: 300, data: {docked: false}})])).toBe(null);
     });
 });

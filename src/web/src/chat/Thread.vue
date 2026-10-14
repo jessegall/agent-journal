@@ -125,15 +125,7 @@ const {
     toggle: toggleWaiting,
 } = useWaiting(undefined, owner, () => rows("work"));
 const planCard = computed(() => cardPlan(rows("plan")));
-const lastWrittenAt = computed(() =>
-    Math.max(
-        0,
-        ...rows("message")
-            .filter((m) => !m.deleted && m.seen[0] === "user")
-            .map((m) => m.created)
-    )
-);
-const reportDock = computed(() => dockedReport(rows("report"), lastWrittenAt.value));
+const reportDock = computed(() => dockedReport(rows("report")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
 const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.value].filter(Boolean).length);
 const thought = computed(() => (owner.value && owner.value.data.thinking) || "");

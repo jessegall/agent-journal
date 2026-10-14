@@ -188,6 +188,7 @@ class Report(Shape, Resource):
         Field(NUMBER, 0, name="until"),
         Field(rows(section=TEXT, ref=TEXT, title=TEXT, note=TEXT), list, name="items"),
         Field(FLAG, False, name="dismissed"),
+        Field(FLAG, False, name="docked"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Report",

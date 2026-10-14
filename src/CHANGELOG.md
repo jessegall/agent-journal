@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.8 — A report stays above the chat until you deal with it
+
+- A report the agent writes now stays above the chat box until you open it, press one of its buttons or put it away. Before, it vanished on its own once you had written to the agent after it came. An update stays until you press a button or put it away, even after you have read it. Settings, Chat, can switch it off.
+- A plan under review no longer offers an Approve button; it can be approved once the review is in and the plan is ready again.
+
 ## 3.1.7 — The avatar steps away for the dump window, and helpers' rows stop the plan reminder
 
 - The avatar is hidden while the dump window is open, and comes back with the chat.
