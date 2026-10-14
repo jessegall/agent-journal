@@ -338,10 +338,10 @@ class Viewer(Asked):
 
 
 class Held:
-    """A shared state file the play keeps in memory: what the Given says it holds, changed as the real one is."""
+    """A shared state file the play keeps in memory: what the Given says it holds, changed as the real one is, and each change recorded as ("state", name, what it holds then)."""
 
-    def __init__(self, held: dict):
-        self.held = dict(held)
+    def __init__(self, held: dict, recording, name: str):
+        self.held, self.recording, self.name = dict(held), recording, name
 
     def get(self, key: str, default=None):
         return self.held.get(key, default)
@@ -349,6 +349,7 @@ class Held:
     @contextmanager
     def changing(self):
         yield self.held
+        self.recording.ran.append(("state", self.name, copy.deepcopy(self.held)))
 
 
 @dataclass
@@ -398,7 +399,7 @@ class JournalRoot(Asked):
         self.recording.ran.append(("write json", path, data))
 
     def shared_state(self, name: str):
-        return Held(self.named(("state", name), {}))
+        return Held(self.named(("state", name), {}), self.recording, name)
 
     def environments(self) -> list[str]:
         return self.named(("environments",), ["t"])

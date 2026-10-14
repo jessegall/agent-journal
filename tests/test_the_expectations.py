@@ -1202,8 +1202,6 @@ def test_a_stubbed_mailbox_is_read_only_as_the_given_names_it_and_never_shows_th
 # owed an expectation of what it does (to-do 4843), and comes off this list when it has one
 STATES_ONLY_NOTHING = {
     "heavy_runs/HoldHeavyRunsToOneAtATime",
-    "heavy_runs/LeaveTheQueue",
-    "plugins/SpotChangedManifests",
     "tickets/WakeTheTicketAgent",
 }
 
