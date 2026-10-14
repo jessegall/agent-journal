@@ -1,5 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
+from journal.models.actor import Actor
+
 from journal.console.command import Command
 from journal.engine.runtime import Runtime
 
@@ -13,4 +15,4 @@ class ServeCommand(Command):
 
     def arguments(self, parser: ArgumentParser) -> None: ...
 
-    def run(self, args: Namespace) -> int: ...
+    def run(self, args: Namespace, by: Actor) -> int: ...

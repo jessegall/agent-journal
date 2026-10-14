@@ -13,6 +13,14 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   `db/`, `hooks/`, `features/`, `http/`, `console/`. One concept lives in one file.
 - **Models are data only.** Frozen dataclasses. `Model` has id and timestamps; `Scoped(Model)`
   adds `environment_id`. Two levels of inheritance, no more.
+- **Every write names its actor.** `Actor` is system, agent (by session) or user (by id),
+  stored as one `kind:id` stamp. `Model` carries `created_by` and `updated_by`; `Entry`
+  carries `actor`; every `ModelEvent` carries `by`. `Repository.save(row, by)` and
+  `delete(row, by)` take it explicitly, so nothing is written anonymously. A `Request` knows
+  its actor (`http/identity.py` reads it: the hook's agent, the viewer's user token, or the one
+  local user), and a `Command.run(args, by)` gets it from the console (`JOURNAL_SESSION` means
+  the agent, else the local user). `User` is a model from the start, so a shared journal with
+  many users needs no change to the base.
 - **Repositories do the SQL.** `Repository[M]` for CRUD, `ScopedRepository[S]` adds `in_()`.
   A model's own repository adds only its own queries. No ActiveRecord, no global connection.
 - **One SQL funnel**: `db/connection.py`. Nothing else executes SQL.
@@ -134,6 +142,8 @@ Dropped: boards, kanban, tickets, hosting.
 - **Live updates to the viewer**: long-poll or server-sent events off the same threaded server.
 - **Context marks**: v3 nudged at 10/25/50/80% of the context window. Needs the context figure
   from the hook payload; decide whether it is a field on every agent event or its own event.
+- **Users on a shared journal**: how a user token is issued and checked, and whether
+  environments are shared per user. `Identity` is the one place to grow.
 - **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
 - **Where the database lives**: `.journal/journal.db`, and what else stays in `.journal/`
   (settings, runtime socket path, logs).
