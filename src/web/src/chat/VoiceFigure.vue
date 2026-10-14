@@ -287,9 +287,13 @@ function nextLeg() {
 // the next leg carries the picture to its end, stepped each frame (watchFooting) until it has run its course (endLeg)
 function depart() {
     const [next, ...legs] = body.trip.legs;
-    // the first walk of a trip sets off on its feet from the line the figure rests on, as from a seat it gets up first; every later leg
-    // sets off where the one before it ended
+    // the first walk of a trip sets off on its feet from the line the figure rests on: from a seat the picture first eases up onto them
+    // (slideOn), and the walk sets off once it is there; every later leg sets off where the one before it ended
     const from = next.hopping || body.trip.departed ? {...body.at} : placed(body.place, POSTURES[body.place.posture].travels);
+    if (Math.hypot(from.x - body.at.x, from.y - body.at.y) > 1) {
+        body.slide = {from: {...body.at}, to: from, began: performance.now()};
+        return void slideWaits.push(depart);
+    }
     body.trip = {...body.trip, moves: true, departed: true, legs};
     const feet = feetOf(from);
     body.walk = {from, began: performance.now(), on: next.hopping ? null : floorAt(latestFloors().floors, feet.x, feet.y, KEPT_WITHIN)?.id ?? null};
