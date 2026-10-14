@@ -5,6 +5,7 @@ from journal.console.standard_commands import StandardCommands
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.features.bus import Bus
+from journal.hooks.context_file import ContextFile
 from journal.http.router import Router
 from journal.http.routes import Routes
 from journal.http.server import Server
@@ -20,6 +21,7 @@ class App:
         self.container.instance(Container, self.container)
         self.container.instance(Config, config)
         self.container.instance(Bus, Bus())
+        self.container.bind(ContextFile, lambda: ContextFile(config.status_home))
         self.container.bind(Connection, self.connection)
         self.container.bind(Router, lambda: Routes(self.container).mount(Router()))
 

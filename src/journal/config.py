@@ -16,6 +16,11 @@ class Config:
         return self.home / "journal.db"
 
     @property
+    def status_home(self) -> Path:
+        """Where the statusline script keeps each session's context figure."""
+        return Path.home() / ".journal" / "status"
+
+    @property
     def port_file(self) -> Path:
         return self.home / "port"
 

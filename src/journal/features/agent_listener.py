@@ -12,4 +12,5 @@ class AgentListener(Listener[A]):
 
     blocking: ClassVar[bool] = False
 
-    def handle(self, event: A) -> Decision | None: ...
+    def handle(self, event: A) -> Decision | None:
+        return None
