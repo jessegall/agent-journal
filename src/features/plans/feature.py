@@ -36,7 +36,7 @@ from features.plans.listeners import (
 )
 from features.plans.answering import RefusePlanMode
 from features.plans.refusing import HoldWhilePlanned
-from features.plans.watching import STANDING_STILL, STILL_TIMES, blocked_plans, still_plans
+from features.plans.watching import STANDING_STILL, STILL_TIMES, blocked_plans, left_building, still_plans
 from events.asking import RowWriting, ToolCallAsked
 from events.answers import Allowed, Refused as Refusal
 from events.plans import (CheckpointPassed, PlanApproved, PlanBuildBegun, PlanBuildingGuided, PlanHandedToHelper, PlanMovedByUser, PlanRowReopened, PlansToAdvance,
@@ -124,6 +124,14 @@ class PlansFeature(Feature):
                     guarantee="When a running plan has not moved for a while, the agent is told, a few times."),
               Nudge("blocked", behaviour="blocked", about=blocked_plans,
                     guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."),
+              Nudge("left building", behaviour="left building", about=left_building, cap=Cap(STILL_TIMES),
+                    guarantee="When a plan is still being written and nothing has moved on it for a while, the agent is told to carry on writing it, a few times.",
+                    expects=(
+                        Given(ClockTicked(agent=1), rows=[plan("building", stage="todos", phases=VISIBLE), AGENT_ROW]) >> Nudged("left building", stage="todos"),
+                        Given(ClockTicked(agent=1), rows=[replace(plan("building", stage="todos", phases=VISIBLE), updated=WHEN - 60), AGENT_ROW]) >> Unchanged(),
+                        Given(ClockTicked(agent=1), rows=[plan("ready", stage="todos", phases=VISIBLE), AGENT_ROW]) >> Unchanged(),
+                        Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), AGENT_ROW]) >> Unchanged(),
+                    )),
               replace(STANDING_STILL, expects=STILL_CASES))
 
     def register(self, journal: Journal) -> None:

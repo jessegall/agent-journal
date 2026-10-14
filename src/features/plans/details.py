@@ -67,6 +67,11 @@ class PlansDetails(FeatureDetails):
             trigger=Trigger(every=1, unit=MINUTES),
         ),
         Behaviour(
+            name="left building",
+            title="Remind the agent to carry on writing a plan it left half built",
+            trigger=Trigger(every=5, unit=MINUTES),
+        ),
+        Behaviour(
             name="blocked",
             title="Recheck a running plan's blocked to-dos",
             trigger=Trigger(every=30, unit=MINUTES),
@@ -89,6 +94,15 @@ class PlansDetails(FeatureDetails):
             brief="""
                 to-dos {{rows}}, untouched for {{minutes}} minutes: journal todo start <n> to work one now, journal todo done <n>
                 --how "<what landed>" for one that is done, or journal todo block <n> "<why>" or journal todo ask <n> "<question>".
+            """,
+        ),
+        Line(
+            name="left building",
+            reply_kept=True,
+            title="plan {{n}}, {{title}}, is still being written and nothing has moved on it for {{minutes}} minutes",
+            brief="""
+                carry on writing it from its {{stage}} stage: journal plan show {{n}} says what it has, and a review report linked
+                to it says what to revise. When every phase has its rows, journal plan ready {{n}} hands it to the user.
             """,
         ),
         Line(

@@ -5,7 +5,7 @@ from declaring.trigger import MINUTE
 from framework.readiness import carried_on, free, named_rows, ready, waiting_rows
 from framework.sending import Nudge, Sent
 from resources.base import SYSTEM
-from resources.plans import PHASE
+from resources.plans import BUILDING, PHASE
 
 STILL_TIMES = 3
 
@@ -40,6 +40,13 @@ def blocked_plans(context, agent) -> list[Sent]:
         if held:
             found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": named_rows(held)}))
     return found
+
+
+def left_building(context, agent) -> list[Sent]:
+    """A plan still being written that nothing has been written to for a while: the agent is told to carry on writing it."""
+    quiet = time.time() - float(context.feature.cadence(context.record, "left building").every) * MINUTE
+    return [Sent(f"{plan.n}:{plan.updated}", {"n": plan.n, "title": plan.title, "stage": plan.stage or "phases", "minutes": int((time.time() - plan.updated) // MINUTE)})
+            for plan in Plans(context.record, actor=SYSTEM).rows.every() if plan.status == BUILDING and plan.updated < quiet]
 
 
 def standing_still(context, agent) -> list[Sent]:
