@@ -17,10 +17,10 @@ import pytest
 import commands.cli  # noqa: F401  wires the command line a tag runs its command through, as every process that runs the journal does
 import expects
 from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged, Released, Set, Whispered,
-                     Outcome, Outcomes, Printed, Ran, Refused, Removed, Unchanged, Updated, Wrote, answering, at, counting,
+                     Closed, Outcome, Outcomes, Printed, Ran, Refused, Removed, Reported, Stands, Told, Unchanged, Updated, Waited, Wrote, answering, at, counting,
                      exited, nothing)
 
-OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Released, Answered, Set, Whispered)
+OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Released, Answered, Set, Whispered, Told, Stands, Closed)
 GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "faults", "command_words", "viewer", "own_work")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work")
 
@@ -1135,3 +1135,44 @@ def test_a_feature_that_names_a_package_outside_its_boundary_is_refused_at_boot_
     with pytest.raises(ReachesOutside) as refusal:
         walked(copy, refusing=True)
     assert "facts" in str(refusal.value) and "engine.record" in str(refusal.value), "the refusal names the feature and what it reached for"
+
+
+def test_a_reported_step_reaches_another_features_receiver_on_the_lane_and_a_waited_step_moves_one_clock(tmp_path):
+    """A step is played through the journal's own funnel, so a receiver of some other feature hears it, and the minutes a Waited step passes are the same for time.time() and for the Fake clock."""
+    import time
+    from types import SimpleNamespace
+
+    from events import Fact
+    from events.agents import AgentReported
+    from framework.played import STEPS, at_the_givens_hour, played
+    from expects.playing import World
+    from framework.ticking import TICKING
+    from receiving import HANDLE, Handler, Registration
+
+    import features
+    features.load()
+    heard: list[tuple[str, float]] = []
+
+    class Hears(Handler[AgentReported]):
+        def handle(self, event: AgentReported) -> list[Fact]:
+            heard.append((event.hook, time.time()))
+            return []
+
+    registration = Registration.read(HANDLE, AgentReported, Hears(), ["an expectation"], "chat_etiquette")
+    TICKING.moved.add(registration)
+    TICKING.resolve()
+    promise = SimpleNamespace(kind="handler", feature=SimpleNamespace(name="chat_etiquette"))
+    try:
+        seen = played(promise, Given(Reported("idle", "Stop"), earlier=(Waited(5),)) >> Unchanged(), tmp_path)
+    finally:
+        TICKING.moved.forget(registration.kind, registration.feature, registration.name)
+        TICKING.resolve()
+    assert heard == [("Stop", expects.WHEN + 300)], f"the report reached the receiver, five minutes into the play: {heard}"
+    assert seen.told == (), "no nudge was made by it"
+
+    world = World.of(Given(Waited(2)))
+    with at_the_givens_hour(world.clock):
+        STEPS[Waited](None, Waited(2), Given(Waited(2)), None, world)
+        assert time.time() == world.clock.now() == expects.WHEN + 120, "time.time() and the Fake clock moved together"
+    assert Told("a line", times=0).holds(seen) == "" and Stands("a line").holds(seen) and Closed("a line").holds(seen), \
+        "a line never said is never told, and neither stands nor is closed"

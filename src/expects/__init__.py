@@ -20,6 +20,7 @@ __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Released", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
+           "Step", "Reported", "Ticked", "Acted", "Waited", "Happened", "Told", "Stands", "Closed",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
@@ -331,6 +332,110 @@ class Answered(Outcome):
         return "" if seen.answered == self.answer else f"it answered {seen.answered!r}, not {self.answer!r}"
 
 
+@dataclass(frozen=True)
+class Told(Outcome):
+    """A nudge line was said this many times over the whole play, seeded rows left out; with `to`, every one went to that session. Zero times says it was never said."""
+
+    line: str
+    times: int = 1
+    to: str | None = None
+
+    def holds(self, seen) -> str:
+        said = [one for one in seen.told if one.line == self.line]
+        if len(said) != self.times:
+            return f"it said {self.line!r} {len(said)} times, not {self.times}; it said {[one.line for one in seen.told] or 'nothing'}"
+        elsewhere = [one.session for one in said if self.to is not None and one.session != self.to]
+        return f"it said {self.line!r} to {elsewhere}, not to {self.to!r}" if elsewhere else ""
+
+
+@dataclass(frozen=True)
+class Stands(Outcome):
+    """A nudge line was said and is still open: nothing has answered it."""
+
+    line: str
+
+    def holds(self, seen) -> str:
+        said = [one for one in seen.told if one.line == self.line]
+        if not said:
+            return f"it did not say {self.line!r}; it said {[one.line for one in seen.told] or 'nothing'}"
+        return "" if any(not one.completed for one in said) else f"every {self.line!r} it said was closed"
+
+
+@dataclass(frozen=True)
+class Closed(Outcome):
+    """A nudge line was said and then closed, and the outcome it was closed with starts with `why` when that is stated."""
+
+    line: str
+    why: str = ""
+
+    def holds(self, seen) -> str:
+        said = [one for one in seen.told if one.line == self.line]
+        if not said:
+            return f"it did not say {self.line!r}; it said {[one.line for one in seen.told] or 'nothing'}"
+        if any(one.completed and one.outcome.startswith(self.why) for one in said):
+            return ""
+        return f"no {self.line!r} it said was closed with {self.why!r}; they stand as {[one.outcome or 'open' for one in said]}"
+
+
+class Step:
+    """One thing that happened before the event a Given is about, played through the funnel the journal itself uses, so a nudge's life can be told from its first line to its last."""
+
+
+@dataclass(frozen=True, init=False)
+class Reported(Step):
+    """The agent's hook reported this status at this moment of its life, as the hook report writes it."""
+
+    status: str
+    event: str
+    session: str
+    more: tuple[tuple[str, Any], ...]
+
+    def __init__(self, status: str, event: str, session: str = "claude-1", **more) -> None:
+        object.__setattr__(self, "status", status)
+        object.__setattr__(self, "event", event)
+        object.__setattr__(self, "session", session)
+        object.__setattr__(self, "more", tuple(sorted(more.items())))
+
+
+@dataclass(frozen=True)
+class Ticked(Step):
+    """The clock beat and ticked for this session, as the engine's clock does."""
+
+    session: str = "claude-1"
+
+
+@dataclass(frozen=True, init=False)
+class Acted(Step):
+    """A command by a named actor: the controller's own word, with its arguments and fields."""
+
+    controller: Any
+    word: str
+    arguments: tuple
+    by: Any
+    fields: tuple[tuple[str, Any], ...]
+
+    def __init__(self, controller, word: str, *arguments, by, **fields) -> None:
+        object.__setattr__(self, "controller", controller)
+        object.__setattr__(self, "word", word)
+        object.__setattr__(self, "arguments", arguments)
+        object.__setattr__(self, "by", by)
+        object.__setattr__(self, "fields", tuple(sorted(fields.items())))
+
+
+@dataclass(frozen=True)
+class Waited(Step):
+    """The clock moved on by these minutes, for everything that reads it."""
+
+    minutes: float
+
+
+@dataclass(frozen=True)
+class Happened(Step):
+    """A fact of another registration was dispatched on the lane, as a feature's own dispatch would."""
+
+    fact: Any
+
+
 WHEN = 1_767_225_600.0
 """The hour a Given is set at when it names no clock: a constant the run chooses, never the wall clock, so an expectation reads the same today and in a year."""
 
@@ -388,7 +493,7 @@ class Given:
 
     on: Any
     earlier: tuple = ()
-    """What the registration was already given, in order, before the event in on: a hold is set by one event and let go by another, and a cadence says the second time nothing happens. The outcomes judge the world after all of them."""
+    """What the registration was already given, in order, before the event in on: a hold is set by one event and let go by another, and a cadence says the second time nothing happens. Each is an event, or a Step - Reported, Ticked, Acted, Waited, Happened - played through the funnel the journal uses, which also may be the `on` itself. The outcomes judge the world after all of them."""
     rows: tuple = ()
     settings: Mapping[str, Any] = field(default_factory=dict)
     remembered: Mapping[str, Any] = field(default_factory=dict)

@@ -2,14 +2,13 @@ import json
 import os
 import subprocess
 import sys
-import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from controllers.types import Agents, Nudges
+from controllers.types import Nudges
 from engine.record import Record
-from resources.base import AGENT, SYSTEM
+from framework.played import reported as report  # noqa: F401
 from commands.cli import captured  # noqa: F401
 from commands.cli import run  # noqa: F401
 import commands.http  # noqa: F401
@@ -63,13 +62,6 @@ def bound_to_this_run(command: list[str], watched: int | None = None) -> list[st
 def appended(path: Path, *rows: dict) -> None:
     with path.open("a") as out:
         out.writelines(json.dumps(row) + "\n" for row in rows)
-
-
-def report(record, status, event, session="claude-1", **more):
-    agents = Agents(record, actor=SYSTEM)
-    row = agents.by_session(session)
-    uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
-    agents.saw(row.n, {"hook": event, "session": session, "cause": AGENT}, **{**row.data, "uses": uses, **more, "status": status, "event": event, "at": time.time()})
 
 
 def tick(record, session="claude-1"):

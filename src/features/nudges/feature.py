@@ -1,5 +1,7 @@
 from events.agents import ClockTicked
-from expects import WHEN, Dispatches, Given, Remembered, Updated, Wrote, nothing
+from controllers.types import Todos
+from expects import WHEN, Acted, Closed, Dispatches, Given, Remembered, Reported, Stands, Ticked, Told, Updated, Waited, Wrote, nothing
+from resources.base import AGENT
 from resources.types import AgentRow, Nudge, Todo
 from framework.base import Feature
 from framework.journal import Journal
@@ -14,6 +16,10 @@ from events.resources import RowChanged
 ON_TODO_7 = {"1": {"n": 1, "asks": "todos.unfinished", "until": ["todo.completed"], "rows": ["todo:7"], "session": None, "at": WHEN}}
 STANDING_ON_PLAN_32 = Nudge(n=1, title="plan 32 stands still", created=WHEN, data={"asks": "plans.standing_still", "until": ["plan.completed"], "rows": ["plan:32"]})
 STANDING_ON_TODO_7 = Nudge(n=1, title="todo 7 is unfinished", data={"asks": "todos.unfinished", "until": ["todo.completed"], "rows": ["todo:7"]})
+
+
+SCHEMA = Todo(n=1, title="the schema")
+OFFERED = (Reported("working", "PreToolUse"), Reported("idle", "Stop"), Ticked(), Reported("idle", "Stop"), Reported("idle", "Stop"), Ticked())
 
 
 class NudgesFeature(Feature):
@@ -55,6 +61,9 @@ class NudgesFeature(Feature):
             Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"status": "idle"}), STANDING_ON_TODO_7],
                   remembered={"nudges.standing": {"1": {**ON_TODO_7["1"], "session": "claude-1"}}})
                 >> Dispatches(StandingNudgesLost(elsewhere=(), gone=(1,), kept=())),
+            Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=OFFERED) >> Told("next", times=1) & Stands("next"),
+            Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Waited(6))) >> Told("next", times=2) & Stands("next") & Closed("next", why="replaced by nudge"),
+            Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "start", 1, by=AGENT), Waited(60))) >> Told("next", times=1),
         ])
         journal.events.handle(StandingNudgesLost, LetGoOfLostNudges(), expects=[
             Given(StandingNudgesLost(elsewhere=(1,), gone=(), kept=()), rows=[STANDING_ON_TODO_7], remembered={"nudges.standing": {"1": {**ON_TODO_7["1"], "session": "claude-0"}}})

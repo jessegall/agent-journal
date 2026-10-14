@@ -16,29 +16,6 @@ def numbered(record, title: str, completed: bool = False) -> list[int]:
     return [n.n for n in Nudges(record).all(completed=completed) if n.title == title]
 
 
-def test_an_offered_row_is_said_again_every_few_minutes_until_work_starts():
-    record = fresh()
-    Todos(record, actor=USER).create("the schema")
-    idle(record)
-    tick(record)
-    first = numbered(record, "todo 1 next")
-    assert len(first) == 1, "the ready row is offered once"
-    idle(record)
-    idle(record)
-    tick(record)
-    assert numbered(record, "todo 1 next", completed=True) == first, "more idle turns and a tick before the time is up say nothing again"
-    aged(record, 6)
-    tick(record)
-    assert len(numbered(record, "todo 1 next", completed=True)) == 2 and numbered(record, "todo 1 next") != first, \
-        "after five minutes it is said again, and the newer line takes the older one's place"
-    assert Nudges(record).load(first[0]).outcome.startswith("replaced by nudge"), "the older line is closed, replaced by the newer"
-    Todos(record, actor=AGENT).start(1)
-    assert numbered(record, "todo 1 next") == [], "starting work answers it"
-    aged(record, 60)
-    tick(record)
-    assert len(numbered(record, "todo 1 next", completed=True)) == 2, "and nothing is said again once it is answered"
-
-
 def test_a_line_about_named_rows_stands_until_every_one_of_them_is_answered():
     record = fresh()
     idle(record)

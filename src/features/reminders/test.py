@@ -21,30 +21,6 @@ def test_by_default_standing_reminders_are_left_to_the_start_block_and_a_chosen_
         "a cadence chosen in Settings says them"
 
 
-def test_on_worked_the_standing_reminders_are_said_once_per_idle_stretch_after_tool_use():
-    record = fresh()
-    record.set_setting("triggers", {"reminders": {"on": "worked"}})
-    Reminders(record, actor=USER).create("run the suites first")
-    Reminders(record, actor=USER).create("say which environment")
-    report(record, "working", "PreToolUse")
-    assert nudges(record) == [], "working: nothing is said"
-    report(record, "idle", "Stop")
-    assert nudges(record) == [("2 reminders standing, read them", "1. run the suites first; 2. say which environment")], \
-        "idle: one nudge naming every standing reminder"
-    report(record, "idle", "Stop")
-    assert len(nudges(record)) == 1, "the same idle stretch: not said again"
-    report(record, "working", "UserPromptSubmit")
-    report(record, "idle", "Stop")
-    assert len(nudges(record)) == 1, "a reply with no tool use between two stops: not said again"
-    report(record, "working", "PreToolUse")
-    report(record, "idle", "Stop")
-    assert len(nudges(record)) == 2, "the next idle after work: said again"
-    Reminders(record, actor=USER).complete(1, "done")
-    report(record, "working", "PreToolUse")
-    report(record, "idle", "Stop")
-    assert nudges(record)[-1] == ("1 reminder standing, read them", "2. say which environment"), "a retired reminder is not repeated"
-
-
 def test_configured_by_unit_every_2_tool_uses():
     record = fresh()
     record.set_setting("triggers", {"reminders": {"every": 2, "unit": "uses"}})

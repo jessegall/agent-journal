@@ -7,8 +7,8 @@ import re
 from dataclasses import fields, is_dataclass
 
 from events.answers import Allowed, Kept as Withheld, Refused as Declined, Rewritten
-from expects import (Answered, Changed, Dispatches, Expectation, File, Formats, Given, Held, Kept, Nudged, Nothing, Outcome, Printed, Ran, Refused, Remembered, Removed, Set,
-                     Unchanged, Updated, Whispered, Wrote)
+from expects import (Acted, Answered, Changed, Closed, Dispatches, Expectation, File, Formats, Given, Happened, Held, Kept, Nudged, Nothing, Outcome, Printed, Ran, Refused, Remembered,
+                     Removed, Reported, Set, Stands, Step, Ticked, Told, Unchanged, Updated, Waited, Whispered, Wrote)
 
 SHOWN = 90
 FIELDS = 4
@@ -45,7 +45,23 @@ def thing_words(thing) -> str:
     return f"{kind} ({carried})" if carried else kind
 
 
+def step_words(step: Step) -> str:
+    if isinstance(step, Reported):
+        return f"the agent reports {step.status} on {humanly(step.event)}"
+    if isinstance(step, Ticked):
+        return "the clock ticks"
+    if isinstance(step, Acted):
+        return f"{humanly(getattr(step.controller, '__name__', str(step.controller)))} {step.word}" + (f" {clipped(', '.join(map(str, step.arguments)))}" if step.arguments else "")
+    if isinstance(step, Waited):
+        return f"{step.minutes:g} minutes pass"
+    if isinstance(step, Happened):
+        return thing_words(step.fact)
+    return humanly(type(step).__name__)
+
+
 def on_words(on) -> str:
+    if isinstance(on, Step):
+        return step_words(on)
     if isinstance(on, str):
         return f"the text {quoted(on)}"
     if isinstance(on, tuple):
@@ -64,6 +80,9 @@ def rows_words(rows) -> str:
 
 def given_words(given: Given) -> str:
     parts = [on_words(given.on)]
+    steps = [step_words(one) for one in given.earlier if isinstance(one, Step)]
+    if steps:
+        parts.append(f"after {', '.join(steps[:FIELDS])}")
     if given.rows:
         parts.append(f"with {rows_words(given.rows)}")
     if given.settings:
@@ -108,6 +127,12 @@ def outcome_words(one: Outcome) -> str:
         return f"turns {quoted(one.text)} into {quoted(one.to)}"
     if isinstance(one, Nudged):
         return f"nudges the agent ({one.line})"
+    if isinstance(one, Told):
+        return f"tells the agent ({one.line})" if one.times else f"never tells the agent ({one.line})"
+    if isinstance(one, Stands):
+        return f"leaves the nudge ({one.line}) standing"
+    if isinstance(one, Closed):
+        return f"closes the nudge ({one.line})"
     if isinstance(one, Whispered):
         return f"whispers {quoted(one.words)} to the agent"
     if isinstance(one, Held):

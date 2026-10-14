@@ -179,8 +179,8 @@ def sent(text: str) -> AgentMessageSent:
     return AgentMessageSent(agent=1, text=text, turn="turn-1")
 
 
-def register_recital(journal, controller: type, mentioned_fact: type, standing_fact: type) -> None:
-    """The recital of one kind of standing row, as each of facts, rules and reminders registers it, with its own two facts."""
+def register_recital(journal, controller: type, mentioned_fact: type, standing_fact: type, cadence: tuple = ()) -> None:
+    """The recital of one kind of standing row, as each of facts, rules and reminders registers it, with its own two facts, and the expectations of the cadence it is said on when the kind has one."""
     resource, kind = controller.resource, controller.resource.type
     keyed = keyed_row(controller)
     whispered = mentioned_fact(agent=1, n=4, title=keyed.title).once(f"1|{kind}:4:{keyed.title}|{keyed.brief}")
@@ -216,4 +216,5 @@ def register_recital(journal, controller: type, mentioned_fact: type, standing_f
     ])
     journal.events.handle(standing_fact, bound(SayTheStanding, standing_fact)(), expects=[
         Given(standing_fact(agent=1, count=plural(1, kind), rows=f"4. {standing.title}"), rows=(WORKING,)) >> Nudged("standing", rows=f"4. {standing.title}"),
+        *cadence,
     ])

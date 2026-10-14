@@ -17,7 +17,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS, Nudges
 from resources.extension import Extension
 from engine.record import Record
-from expects import File, Given, Nudged, Updated, Wrote, contains, held, matches, named, stated
+from expects import File, Given, Nudged, Step, Updated, Wrote, contains, held, matches, named, stated
 from expects.playing import Seen, remembered_by
 from resources.base import SYSTEM
 
@@ -80,7 +80,7 @@ def fits(wanted: dict, live: dict, kind: str, kinds: dict, binding: Binding) -> 
 
 def satisfied(given: Given, event, record: Record, feature: str = "") -> Binding | None:
     """The binding by which the live world is the world this Given states, or nothing when it is not that world."""
-    if any(getattr(given, name) != DEFAULTS[name] for name in STAGED) or not is_dataclass(given.on):
+    if any(getattr(given, name) != DEFAULTS[name] for name in STAGED) or not is_dataclass(given.on) or any(isinstance(one, Step) for one in (given.on, *given.earlier)):
         return None
     if not isinstance(event, type(given.on)):
         return None
@@ -165,7 +165,7 @@ def already_held(outcome, record: Record) -> bool:
 
 def gained(record: Record, began: float) -> Seen:
     """What the record gained from the mark on, read from the events the writes left: the rows created, the rows changed and the nudges sent."""
-    wrote, updated, nudged = [], [], []
+    wrote, updated, nudged, told = [], [], [], []
     nudges = Nudges(record, actor=SYSTEM).type
     for event in record.event_log.events(where=lambda one: one.at >= began):
         if event.type not in CONTROLLERS:
@@ -182,7 +182,8 @@ def gained(record: Record, began: float) -> Seen:
         wrote.append(row)
         if event.type == nudges:
             nudged.append((row.line, row.title, row.brief))
-    return Seen(wrote=tuple(wrote), updated=tuple(updated), nudged=tuple(nudged))
+            told.append(row)
+    return Seen(wrote=tuple(wrote), updated=tuple(updated), nudged=tuple(nudged), told=tuple(told))
 
 
 @dataclass

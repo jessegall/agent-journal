@@ -47,6 +47,7 @@ class Seen:
     settings: dict = field(default_factory=dict)
     whispered: tuple = ()
     typed: tuple = ()
+    told: tuple = ()
 
     @property
     def is_unchanged(self) -> bool:
@@ -69,6 +70,7 @@ class Recording:
         self.files: dict = {}
         self.settings: dict = {}
         self.whispered, self.typed = [], []
+        self.told: list = []
 
     def forget(self) -> None:
         """Forgets what the earlier events of a Given did, so the outcomes judge what the last one did. What they left in the record stands."""
@@ -78,7 +80,7 @@ class Recording:
 
     def seen(self) -> Seen:
         return Seen(tuple(self.facts), tuple(self.said), tuple(self.nudged), tuple(self.ran), tuple(self.wrote), tuple(self.updated), self.refused, self.changed,
-                    self.kept, self.answered, self.held, self.before, self.after, self.remembered, self.files, self.settings, tuple(self.whispered), tuple(self.typed))
+                    self.kept, self.answered, self.held, self.before, self.after, self.remembered, self.files, self.settings, tuple(self.whispered), tuple(self.typed), tuple(self.told))
 
 
 @dataclass

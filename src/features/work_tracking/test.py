@@ -172,11 +172,6 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     assert (checking.tick(), len(typed)) == ("", 2), "and then only every fifteen minutes, not every five"
 
     from tests.kit import tick
-    stopped = fresh()
-    works = Works(stopped, actor=AGENT)
-    works.create("the release")
-    agents = Agents(stopped, actor=SYSTEM)
-
     def idle_for(minutes):
         report(stopped, "idle", "Stop")
         row = agents.by_session("claude-1")
@@ -184,9 +179,6 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
         tick(stopped)
         return [n for n in nudges(stopped) if n.startswith("you stopped")]
 
-    assert idle_for(4) == [], "four minutes after it stopped is not yet standing still"
-    assert idle_for(6) == ["you stopped with work 1, the release, in hand"], "five minutes after it stopped with work in hand it is told to carry on"
-    assert (len(idle_for(8)), len(idle_for(16)), len(idle_for(50))) == (1, 1, 1), "once: saying it again is the repeat's job"
     asking = fresh()
     row = Todos(asking, actor=AGENT).create("the schema")
     Todos(asking, actor=AGENT).start(row.n)

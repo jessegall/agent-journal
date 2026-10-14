@@ -14,20 +14,21 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from controllers.types import Messages, Nudges
+from controllers.types import Agents, Messages, Nudges
 from declaring.holds import Hold
+from engine import clock
 from engine.gates import HookCall, hold
 from engine.paths import SECRETS_FOLDER_VARIABLE as FOLDER_VARIABLE
 from engine.project_files import walk
 from engine.record import Record
-from expects import Given, Left
+from expects import Acted, At, Given, Happened, Left, Reported, Step, Ticked, Waited
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE
 from receiving.ticks import Services, Unserved
 import serving
 from framework.lanes import NobodyToSpeakTo, lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
-from resources.base import Refused, SYSTEM
+from resources.base import AGENT, Refused, SYSTEM
 
 FAKED_WHEN_STATED = (("processes", (serving.Processes, serving.ReadProcesses)), ("providers", (serving.Providers,)), ("git", (serving.Git, serving.ReadGit)),
                      ("journal_root", (serving.JournalRoot, serving.ReadJournalRoot)), ("faults", (serving.Faults,)), ("command_words", (serving.CommandWords,)),
@@ -135,10 +136,13 @@ def contexted(promise, given: Given, record: Record) -> Context:
 
 
 def what_was_said(record: Record) -> tuple[list, list]:
-    """What reached the chat and what was nudged, read from the rows the journal keeps rather than from anything the play says about itself."""
+    """What reached the chat and the nudge rows, read from the rows the journal keeps rather than from anything the play says about itself."""
     said = [row.brief or row.title for row in Messages(record, actor=SYSTEM).all(completed=True) if row.seen[:1] == ["agent"]]
-    nudged = [(row.line, row.title, row.brief) for row in Nudges(record, actor=SYSTEM).all(completed=True)]
-    return said, nudged
+    return said, list(Nudges(record, actor=SYSTEM).all(completed=True))
+
+
+def lines_of(rows) -> list:
+    return [(row.line, row.title, row.brief) for row in rows]
 
 
 def rows_now(record: Record) -> tuple:
@@ -253,6 +257,53 @@ ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepte
 """One entry per kind, and no kind with two, so the run and the engine cannot disagree about how a registration is reached. A route has none yet: it is reached through the server, which an expectation does not stand up."""
 
 
+def reported(record: Record, status: str, event: str, session: str = "claude-1", **more) -> None:
+    """The write a hook report ends in: the agent row sees the status, the moment and the time."""
+    agents = Agents(record, actor=SYSTEM)
+    row = agents.by_session(session)
+    uses = row.data.get("uses", 0) + (event == "PreToolUse")
+    agents.saw(row.n, {"hook": event, "session": session, "cause": AGENT}, **{**row.data, "uses": uses, **more, "status": status, "event": event, "at": time.time()})
+
+
+def stepped_report(promise, step: Reported, given: Given, record: Record, world: World) -> None:
+    reported(record, step.status, step.event, step.session, **dict(step.more))
+
+
+def stepped_tick(promise, step: Ticked, given: Given, record: Record, world: World) -> None:
+    agent = Agents(record, actor=SYSTEM).by_session(step.session).n
+    clock.beat(record, agent)
+    clock.tick(record, agent)
+
+
+def stepped_command(promise, step: Acted, given: Given, record: Record, world: World) -> None:
+    try:
+        world.recording.answered = step.controller(record, actor=step.by).action(step.word)(*step.arguments, **dict(step.fields))
+    except Refused as refusal:
+        world.recording.refused = str(refusal)
+
+
+def stepped_wait(promise, step: Waited, given: Given, record: Record, world: World) -> None:
+    world.clock.at = At(world.clock.now() + step.minutes * 60)
+
+
+def stepped_fact(promise, step: Happened, given: Given, record: Record, world: World) -> None:
+    from framework.ticking import TICKING
+    TICKING.later(step.fact, record)
+
+
+STEPS = {Reported: stepped_report, Ticked: stepped_tick, Acted: stepped_command, Waited: stepped_wait, Happened: stepped_fact}
+"""One player per step word, beside ENTRIES: a step is played through the funnel the journal itself uses, whatever kind of registration is under play."""
+
+
+def play_one(promise, given: Given, record: Record, world: World) -> None:
+    """One event or step of the play: a step by its own player, any other event by the entry of the registration's kind."""
+    if isinstance(given.on, Step):
+        return STEPS[type(given.on)](promise, given.on, given, record, world)
+    if promise.kind not in ENTRIES:
+        raise NoEntryForThisKind.of(promise.kind)
+    ENTRIES[promise.kind](promise, given, record, world)
+
+
 def stopped(event) -> bool:
     """Whether a handler stopped the thing it was handed. A sending event carries it in its own data, which is how the engine reads it too."""
     data = getattr(event, "data", None)
@@ -296,10 +347,10 @@ def held_against_the_agents(record: Record) -> str | None:
 
 
 @contextmanager
-def at_the_givens_hour(given: Given):
-    """Holds the clock at the hour the Given names, for everything the play touches. A 2.x handler reads time.time() itself rather than asking a service, so without this an expectation about anything aged would read differently tomorrow."""
+def at_the_givens_hour(world_clock):
+    """Holds the time at the play's clock, for everything the play touches, and moves with it when a step waits. A 2.x handler reads time.time() itself rather than asking a service, so without this an expectation about anything aged would read differently tomorrow."""
     was = time.time
-    time.time = lambda: given.clock.seconds
+    time.time = world_clock.now
     try:
         yield
     finally:
@@ -380,20 +431,22 @@ def settings_now(record) -> dict:
 
 def played(promise, expectation, inside: Path) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
-    if promise.kind not in ENTRIES:
-        raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
+    if not isinstance(given.on, Step) and promise.kind not in ENTRIES:
+        raise NoEntryForThisKind.of(promise.kind)
     record, world = scratch(given, inside, promise.feature.name), World.of(given)
-    with at_the_givens_hour(given), with_the_givens_programs(given), with_the_scratch_secrets(record):
+    seeded = len(what_was_said(record)[1])
+    with at_the_givens_hour(world.clock), with_the_givens_programs(given), with_the_scratch_secrets(record):
         for earlier in given.earlier:
-            ENTRIES[promise.kind](promise, replace(given, on=earlier, earlier=()), record, world)
+            play_one(promise, replace(given, on=earlier, earlier=()), record, world)
         world.recording.forget()
         already_said, already_nudged = what_was_said(record) if given.earlier else ([], [])
         world.recording.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
-        ENTRIES[promise.kind](promise, given, record, world)
+        play_one(promise, given, record, world)
     world.recording.after = rows_now(record)
-    said, nudged = what_was_said(record)
-    world.recording.said, world.recording.nudged = said[len(already_said):], nudged[len(already_nudged):]
+    said, nudges = what_was_said(record)
+    world.recording.said, world.recording.nudged = said[len(already_said):], lines_of(nudges[len(already_nudged):])
+    world.recording.told = nudges[seeded:]
     world.recording.remembered = remembered_by(record, promise.feature.name)
     world.recording.wrote, world.recording.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
     world.recording.held = held_against_the_agents(record)

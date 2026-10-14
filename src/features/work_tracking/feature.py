@@ -9,7 +9,7 @@ from resources.plans import Plan
 import json
 from dataclasses import asdict
 
-from expects import answering, Answered, Dispatches, Given, Held, Nudged, Refused, Remembered, Unchanged, Updated, WHEN, nothing
+from expects import answering, Answered, Dispatches, Given, Held, Nudged, Refused, Remembered, Reported, Told, Ticked, Unchanged, Updated, Waited, WHEN, nothing
 from events.answers import Allowed, Refused as Declined
 from events.asking import ToolCallAsked
 from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
@@ -110,7 +110,10 @@ class WorkFeature(Feature):
               Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, cap=Cap(1),
                     guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
-                    guarantee="When the agent stops with work still in hand, it is asked once to carry on with it."),
+                    guarantee="When the agent stops with work still in hand, it is asked once to carry on with it.",
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6))) >> Told("carry on") & Nudged("carry on"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(4))) >> Told("carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6), Ticked(), Waited(10))) >> Told("carry on"))),
               Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(1),
                     guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, and only once while every row waits."),
               Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(1),

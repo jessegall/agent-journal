@@ -4,7 +4,7 @@ from expects.words import humanly, said
 from framework.promises import PROMISED, Promise
 from receiving import REGISTERED
 
-AGENT_FACING = ("Nudged", "Whispered", "Held")
+AGENT_FACING = ("Nudged", "Whispered", "Held", "Told", "Stands", "Closed")
 """The outcomes that are about the agent: what it is told, and when its writes wait."""
 ASKS_ABOUT_THE_AGENT = ("ToolCallAsked", "AgentDispatching", "LongCommandMoving", "AgentMessageSending", "HookResponding")
 """The requests whose answer reaches the agent: a call refused, a dispatch refused, a long command kept in the foreground, a turn kept out of the chat, a text handed over."""
