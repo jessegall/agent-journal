@@ -12,3 +12,6 @@ export const figureVisible = (here) => figureStatus.value === "shown" && here &&
 // while it is idle or waits on the user
 const SHOWN_IN = {idle: ["idle", "asleep"], waiting: ["idle", "asleep", "waiting", "asking"]};
 export const shownIn = (when, state) => !SHOWN_IN[when] || SHOWN_IN[when].includes(state);
+
+// whether the floors the figure stands on are drawn over the chat, a switch in the developer settings
+export const floorsShown = () => Boolean(store.settings?.features?.figure_floors);

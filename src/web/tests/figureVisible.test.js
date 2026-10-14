@@ -18,3 +18,11 @@ test("the figure is in the chat always, only while the agent is idle, or while i
     expect(["idle", "asking", "waiting", "writing"].map((state) => shownIn("waiting", state))).toEqual([true, true, true, false]);
     expect(shownIn(undefined, "thinking")).toBe(true);
 });
+
+test("the avatar's floors are drawn only while the developer switch is on", async () => {
+    const {floorsShown} = await import("../src/composables/voiceFigure.js");
+    store.settings = {features: {}};
+    expect(floorsShown()).toBe(false);
+    store.settings = {features: {figure_floors: true}};
+    expect(floorsShown()).toBe(true);
+});
