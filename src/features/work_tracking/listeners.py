@@ -18,7 +18,6 @@ from serving import Clock, Providers, ReadElsewhere, ReadMarks, ReadRemembered, 
 
 NAME = "work_tracking"
 NAMED_PARKED = "named_parked"
-ASKED_AGAIN_AFTER = 60
 POLLED = 3
 OPEN_REMINDERS = 3
 
@@ -107,10 +106,25 @@ class SpotBlockedRows(Listener[TodoCompleted]):
         closed, agent = int(memory.get("closed", 0)) + 1, agents.primary_to_read()
         if not agent or closed % max(1, int(settings.ask_blocked_every)):
             return [ClosedCounted(closed=closed)]
-        asked_at, now = dict(memory.get("asked", {})), clock.now()
+        asked = dict(memory.get("asked", {}))
         questioned = {ref for q in questions.rows.standing() for ref in q.refs}
-        due = [r for r in todos.rows.standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER and r.ref not in questioned]
-        return [ClosedCounted(closed=closed), *(StillBlocked(agent=agent.n, n=r.n, title=r.title, why=r.blocked.rstrip("."), at=now) for r in due)]
+        due = [r for r in todos.rows.standing() if r.blocked and asked.get(str(r.n)) != reason(r) and r.ref not in questioned]
+        waits = {}
+        for r in due:
+            waits.setdefault(reason(r), []).append(r.n)
+        return [ClosedCounted(closed=closed), *(StillBlocked(agent=agent.n, rows=named_rows(ns), ns=tuple(ns), why=why) for why, ns in waits.items())]
+
+
+def reason(row: Todo) -> str:
+    """Why a row is blocked, as it is asked about: the agent is asked once for each reason a row has."""
+    return row.blocked.rstrip(".")
+
+
+def named_rows(ns: list[int]) -> str:
+    """Rows by number, as todo 8 or todos 7, 8 and 9."""
+    if len(ns) == 1:
+        return f"todo {ns[0]}"
+    return f"todos {', '.join(str(n) for n in ns[:-1])} and {ns[-1]}"
 
 
 class SpotWorkOfDoneTodo(Listener[TodoCompleted]):

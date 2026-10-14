@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.2.4 — Blocked to-dos are asked about once, in one short line
+
+- The reminder that a to-do is still blocked comes once for each reason it is blocked, not again after every to-do the agent closes; to-dos blocked for the same reason are named together in one line, with the commands given once. An agent closing rows quickly no longer gets the same wall of text after each one.
+
 ## 3.2.3 — A warm read of packed rows asks no disk in a running server
 
 - A server answers a request that reads packed rows, such as the dashboard, from the marks its watch loop keeps, as it already did for every folder and loose row; before, each request still looked at every pack index on disk.

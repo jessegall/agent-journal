@@ -147,10 +147,10 @@ class WorkDetails(FeatureDetails):
         Line(
             name="still blocked",
             reply_kept=True,
-            title="todo {{n}}, {{title}}, is still blocked - is it still?",
+            title="{{rows}} still blocked - is it still so?",
             brief="""
-                blocked because: {{why}}. Gone: journal todo unblock {{n}}. Waits on a decision: journal todo ask {{n}} "<question>"
-                --set options='[...]' --set pick=<n>. Otherwise say in the chat what it waits on and how to clear it.
+                blocked because: {{why}}. Gone: journal todo unblock <n>. Waits on a decision: journal todo ask <n> "<question>"
+                --set options='[...]' --set pick=<n>. Otherwise say once in the chat what they wait on and how to clear it.
             """,
         ),
         Line(

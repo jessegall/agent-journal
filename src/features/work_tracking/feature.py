@@ -284,7 +284,16 @@ class WorkFeature(Feature):
             Given(done(6), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 1}, earlier=(done(7),)) >> Told("still blocked", times=1),
             Given(done(6), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 1}, earlier=(done(7), Waited(2))) >> Told("still blocked", times=1),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1})
-                >> Dispatches(ClosedCounted(closed=1)) & Dispatches(StillBlocked(agent=1, n=8, title="Deploy", why="waiting on the key", at=WHEN)),
+                >> Dispatches(ClosedCounted(closed=1)) & Dispatches(StillBlocked(agent=1, rows="todo 8", ns=(8,), why="waiting on the key")),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "the deploy hold"}), Todo(n=9, title="Release", data={"blocked": "the deploy hold"}),
+                                            Todo(n=10, title="Sign", data={"blocked": "waiting on the key."}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1})
+                >> Dispatches(ClosedCounted(closed=1)) & Dispatches(StillBlocked(agent=1, rows="todos 8 and 9", ns=(8, 9), why="the deploy hold"))
+                & Dispatches(StillBlocked(agent=1, rows="todo 10", ns=(10,), why="waiting on the key")),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1},
+                  remembered={"work_tracking.asked": {"8": "waiting on the key"}}) >> Dispatches(ClosedCounted(closed=1)),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "the key came, the deploy hold stands"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1},
+                  remembered={"work_tracking.asked": {"8": "waiting on the key"}})
+                >> Dispatches(ClosedCounted(closed=1)) & Dispatches(StillBlocked(agent=1, rows="todo 8", ns=(8,), why="the key came, the deploy hold stands")),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 2})
                 >> Dispatches(ClosedCounted(closed=1)),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy"), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Dispatches(ClosedCounted(closed=1)),
@@ -394,7 +403,8 @@ class WorkFeature(Feature):
             Given(ClosedCounted(closed=4), rows=[AGENT_ROW]) >> Remembered("closed", 4),
         ])
         journal.events.handle(StillBlocked, AskStillBlockedRow(), expects=[
-            Given(StillBlocked(agent=1, n=8, title="Deploy", why="waiting on the key", at=WHEN), rows=[AGENT_ROW]) >> Nudged("still blocked") & Remembered("asked", {"8": WHEN}),
+            Given(StillBlocked(agent=1, rows="todos 8 and 9", ns=(8, 9), why="waiting on the key"), rows=[AGENT_ROW])
+                >> Nudged("still blocked", rows="todos 8 and 9", why="waiting on the key") & Remembered("asked", {"8": "waiting on the key", "9": "waiting on the key"}),
         ])
         journal.events.handle(EditedInWork, RecordEdit(), expects=[
             Given(EditedInWork(agent=1, work=3, path="a.py", kind="edited", before="x", after="x", added=3, removed=0), rows=[WORKING, MID_EDIT])
