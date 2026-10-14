@@ -1,3 +1,4 @@
+# Stays a test: it runs a real login server with sockets, files, a disk and a clock, which a Given cannot state.
 import base64
 import errno
 import json

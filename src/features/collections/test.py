@@ -1,3 +1,4 @@
+# Stays a test: a collection holds rows across environments and the files of a dump on disk, and registers nothing a Given could play.
 from controllers.types import CONTROLLERS, Docs, Messages, Todos
 from resources.base import AGENT, USER, Ref
 from tests.conftest import fresh, refused

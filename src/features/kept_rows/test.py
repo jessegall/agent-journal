@@ -1,3 +1,4 @@
+# Stays a test: it writes and reads the real snapshot file of pickled rows across a restart, and registers nothing a Given could play.
 import pickle
 
 from controllers import stored

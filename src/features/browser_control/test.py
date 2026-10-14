@@ -1,3 +1,4 @@
+# Stays a test: it drives real HTTP posts, an attached picture on disk and the extension's socket origin, which a Given cannot state.
 import features
 from commands.http import dispatch
 from controllers.browser_control import Asks

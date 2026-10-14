@@ -1,3 +1,4 @@
+# Stays a test: it records real frames, copies real transcripts and builds the demo from a running server, which a Given cannot state.
 import json
 import subprocess
 import sys
