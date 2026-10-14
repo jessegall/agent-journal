@@ -2,7 +2,7 @@
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
-import {figureStatus, figureVisible} from "../composables/voiceFigure.js";
+import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf, fallStep} from "../domain/falls.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
@@ -28,6 +28,7 @@ import {
 import {STILL, landedSwing, swung} from "../figure/pendulum.js";
 import "../figure/falls.css";
 import {rows} from "../sync/rows.js";
+import {store} from "../state/store.js";
 
 // The figure plays what the figure modules decide: what it does in figureState.js and reactions.js, where it goes in perches.js, and how
 // it stands and travels in places.js. This component holds only the drawing and the clock.
@@ -91,6 +92,8 @@ let drawn = "stand";
 const walking = ref(false);
 
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
+// whether the figure belongs in the chat now: its agent is here, in a state Settings shows it in
+const belongs = computed(() => Boolean(agent.value) && shownIn(store.settings?.avatar?.shown, held.value.state));
 // the stay the figure keeps while nothing calls it anywhere, and the box it was last clicked out of, kept clear of it (perches.js)
 let stay = {where: "seat", until: 0};
 let cleared = {until: 0};
@@ -528,7 +531,7 @@ async function load(name) {
         canvas.value.width = canvas.value.height = Math.round(SIZE * (window.devicePixelRatio || 1));
         player = new FigurePlayer(loaded, canvas.value);
         home();
-        here.value = Boolean(agent.value);
+        here.value = belongs.value;
         arriving.value = here.value;
         figureStatus.value = "shown";
         cancelAnimationFrame(footFrame);
@@ -542,7 +545,7 @@ async function load(name) {
 }
 
 watch(voice, load);
-watch(() => Boolean(agent.value), present);
+watch(belongs, present);
 onMounted(() => {
     document.addEventListener("visibilitychange", seen);
     document.addEventListener("input", onType, true);

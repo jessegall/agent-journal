@@ -7,3 +7,8 @@ export const figureStatus = ref("loading");
 
 // whether the figure is drawn now: ready, its agent here, and the chat on screen rather than the dump window over it
 export const figureVisible = (here) => figureStatus.value === "shown" && here && !store.dumping;
+
+// the agent's states in which the figure is in the chat, as Settings sets it under the avatar: always, only while the agent is idle, or
+// while it is idle or waits on the user
+const SHOWN_IN = {idle: ["idle", "asleep"], waiting: ["idle", "asleep", "waiting", "asking"]};
+export const shownIn = (when, state) => !SHOWN_IN[when] || SHOWN_IN[when].includes(state);
