@@ -1209,7 +1209,6 @@ STATES_ONLY_NOTHING = {
     "helper_worktrees/KeepCheckedTip",
     "helper_worktrees/SpotDriftedWorktree",
     "helper_worktrees/StayInYourCheckout",
-    "helpers/OfferKeptAgentsFirst",
     "helpers/SpotWatchedHelpers",
     "plugins/AskPluginsToCancel",
     "plugins/AskPluginsToRefuse",
