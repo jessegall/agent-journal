@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.3.0 — The avatar lives on floors: it walks, hops and falls with what is under it
+
+- The avatar stands on floors read from the chat each frame: the chat box or the bars docked over it, the chat's bubbles, the page's tabs and the window's foot. When a report bar docks or goes, or the chat scrolls, it is carried, falls under gravity frame by frame, or is caught by a bubble on the way down, as it chooses fall by fall.
+- Walks, hops and falls are stepped in code, so a walker whose floor drops falls from where it is, a hop follows its target as it moves, and a falling figure plays its fall before anything else and lands. A seated figure eases onto its feet before it walks off, and a hop into a hang ends on the hanging picture.
+- Settings, Developer: "Draw the floors the avatar stands on" shows every floor as a labelled line.
+- The chat no longer bounces past its ends, so the floors never lag the bubbles.
+- The avatar reads the page of its book, waits looking at you, yawns into sleep with drifting Zs, has a pastime for each voice, writes with its own pen, tidies papers while compacting, and blends between clips.
+- With reduced motion asked for, falls and hops land at once.
+
 ## 3.2.4 — Blocked to-dos are asked about once, in one short line
 
 - The reminder that a to-do is still blocked comes once for each reason it is blocked, not again after every to-do the agent closes; to-dos blocked for the same reason are named together in one line, with the commands given once. An agent closing rows quickly no longer gets the same wall of text after each one.
