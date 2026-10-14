@@ -636,6 +636,7 @@ const style = computed(() => ({
         :style="style"
         aria-hidden="true"
         :data-walking="walking"
+        :data-hopping="Boolean(moving?.moves && moving.hopping)"
         :data-trip="moving ? (moving.started ? 'walking' : 'waiting to set off') : arriving ? 'arriving' : ''"
         :data-clip="shownClip?.name"
     >
