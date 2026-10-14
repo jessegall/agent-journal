@@ -1,7 +1,7 @@
 from functools import cached_property
 
 from events.measured import Measured
-from expects import Dispatches, Given, Unchanged, Updated, Wrote, answering, nothing
+from expects import Dispatches, File, Given, Removed, Replied, Requested, Told, Unchanged, Updated, Wrote, answering, nothing
 from expects.watching import BROKEN
 from framework.base import Feature
 from framework.journal import Journal
@@ -11,13 +11,18 @@ from features.dev_faults.handlers import LiftOverdueHold, ReportSlow, RestartCou
 from features.dev_faults.listeners import SpotOverdueTodoClosed, SpotOverdueTodoFiled
 from events.todos import TodoCompleted
 from events.resources import ResourceCreated
-from resources.types import Notification, Todo
+from resources.types import AgentRow, Notification, Todo, Work
 from features.dev_faults.reports import Reporting
 from features.dev_faults.reports import OVER
 from features.dev_faults.routes import get_diagnostics, post_clear_diagnostics
 
 
 SLOW_TITLE = f"request /api/summary {OVER}"
+BREACH = Measured(root="/nowhere", env="t", kind="command", target="message all", took=400.0, working=400.0)
+BREACH_TITLE = f"command message all {OVER}"
+ENVIRONMENTS = answering({("environments",): ["t"]})
+ON = {".dev_faults": True}
+CLAUDE = AgentRow(n=1, title="claude-1")
 
 
 class DevFaults(Feature):
@@ -31,6 +36,14 @@ class DevFaults(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handle(Measured, ReportSlow(), expects=[
+            Given(Measured(root="/nowhere", env="t", kind="command", target="message all", took=40.0, working=40.0), settings={**ON, "dev_faults.budget.command": 10}, journal_root=ENVIRONMENTS)
+                >> Unchanged(),
+            Given(BREACH, settings={**ON, "dev_faults.budget.command": 0}, journal_root=ENVIRONMENTS) >> Unchanged(),
+            Given(BREACH, settings=ON, journal_root=answering({("environments",): ["t"], ("warming",): True})) >> Unchanged(),
+            Given(BREACH, settings=ON, rows=[CLAUDE, Work(n=1, title="the release", data={"awaiting": "the CI run"})], journal_root=ENVIRONMENTS)
+                >> Wrote(Notification(title=BREACH_TITLE)) & Told("fault", times=0),
+            Given(BREACH, settings=ON, rows=[CLAUDE, Work(n=1, title="the release", data={"awaiting": ""})], journal_root=ENVIRONMENTS)
+                >> Wrote(Notification(title=BREACH_TITLE)) & Told("fault"),
             Given(Measured(root="/nowhere", env="t", kind="request", target="/api/summary", took=4.0, working=3.0)) >> Unchanged(),
             Given(Measured(root="/nowhere", env="t", kind="command", target="check run", took=400.0, working=400.0), settings={".dev_faults": True},
                   journal_root=answering({("environments",): ["t"]}))
@@ -54,7 +67,13 @@ class DevFaults(Feature):
                 >> Updated(Notification(n=1), times=0),
             Given(OverdueTodoClosed(title="the header"), rows=[Notification(n=1, title=SLOW_TITLE, data={"times": 5})], journal_root=answering({("environments",): ["t"]})) >> Unchanged(),
         ])
-        journal.routes.add(get_diagnostics, post_clear_diagnostics)
+        journal.routes.add(get_diagnostics, expects=[
+            Given(Requested(query={"lines": "50"}), files=answering({".journal/runtime/diagnostics.log": "slow request GET /api/main/message 80ms"}))
+                >> Replied(200, {"log": "slow request GET /api/main/message 80ms"}),
+        ])
+        journal.routes.add(post_clear_diagnostics, expects=[
+            Given(Requested(), files=answering({".journal/runtime/diagnostics.log": "x"})) >> Replied(200, {"log": ""}) & Removed(File(".journal/runtime/diagnostics.log")),
+        ])
         BROKEN.add(self, self.reports.broken)
 
     @cached_property
