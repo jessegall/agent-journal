@@ -14,7 +14,7 @@ from resources.base import ACTORS, AGENT
 from engine.version import version
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.tidy import tidy
-from commands.queries import attached, attic_text, decided, demo, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
+from commands.queries import attached, attic_text, decided, demo, ended, halt, halted, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 argparse._ = str
 
@@ -113,6 +113,7 @@ def built(only: str) -> argparse.ArgumentParser:
               ("--back", {"type": int, "default": 1}))
     add_query(cmds, "user", "the user's own words, in full", lambda ctx: say(user(transcript(ctx["record"], ctx["session"]))))
     add_query(cmds, "nothing", "decide that nothing here needs pinning", lambda ctx: decided(ctx), ("why", {}))
+    add_query(cmds, "halt", "stop with work in hand, saying why: the nudge to carry on stays quiet until your next tool use or prompt", lambda ctx: halted(ctx), ("why", {}))
     add_query(cmds, "version", "the version", lambda ctx: version())
     add_query(cmds, "enable", "the journal is in force again: the hooks report, the gate holds", lambda ctx: switched(ctx, on=True))
     add_query(cmds, "disable", "the kill switch — the hooks stay wired but report nothing and hold nothing, until enable", lambda ctx: switched(ctx, on=False))

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.3.2 — Stopping with work in hand is told to carry on at once
+
+- With auto mode on, an agent that stops with work open is told at that stop that it has work to do and should not stop; before, the nudge came after five quiet minutes. A stop the user made with Escape is left alone.
+- `journal halt "<why>"` says the agent is truly stuck: the nudge stays quiet until its next tool use or prompt, which lift the halt. So the nudge never loops, and a real stop always gives its reason.
+
 ## 3.3.1 — A plan asks only its latest review's question
 
 - A plan's page shows the question of its latest review report only, and only until it is answered; an older review's question no longer asks beside it.

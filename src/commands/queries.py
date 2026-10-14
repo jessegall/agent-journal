@@ -289,11 +289,22 @@ def serve_forever(ctx) -> str:
     run(ctx["record"].root, ctx["port"] or free_from(SERVED_ON))
     return ""
 
-def decided(ctx) -> str:
+def noted_on_the_agent(ctx, **fields):
+    """Writes fields onto the row of the agent that ran the command, or the environment's primary one."""
     agents = Agents(ctx["record"], actor=SYSTEM)
     named = agents.rows.by_title(ctx["session"]) if ctx["session"] else None
     row = named if named is not None and named.at else agents.primary()
     if row is None:
         raise Refused("no agent session is running on this environment to note it on")
-    agents.update(row.n, **{**row.data, AgentRow.decided: ctx["why"]})
+    agents.update(row.n, **{**row.data, **fields})
+    return row
+
+
+def decided(ctx) -> str:
+    row = noted_on_the_agent(ctx, **{AgentRow.decided: ctx["why"]})
     return f"noted: {ctx['why']} - the checkpoint at {int(row.context)}% is released"
+
+
+def halted(ctx) -> str:
+    noted_on_the_agent(ctx, halted=ctx["why"])
+    return f"halted: {ctx['why']} - no nudge to carry on until your next tool use or prompt"

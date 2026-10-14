@@ -451,6 +451,7 @@ class AgentRow(Shape, Resource):
         Field(name="branch_url"),
         Field(default=0, name="active"),
         Field(name="decided"),
+        Field(default="", name="halted"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent",

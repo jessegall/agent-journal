@@ -53,6 +53,10 @@ class WorkDetails(FeatureDetails):
         or while loop around sleep, is refused: say journal work await and stop, and a message or a
         report wakes you.
 
+        Stopping with work in hand earns a nudge to carry on: with auto mode on at every stop the
+        user did not make, else after five quiet minutes. When you are truly stuck, journal halt
+        "<why>" says so and keeps the nudge quiet until your next tool use or prompt, which lift it.
+
         Auto mode is on by default: it is the user's word to work the list and decide without
         blocking questions, and switching it off stops the offers. The next ready row by priority is offered on idle
         while nothing is open. Stopping with work open while another row is ready earns the
@@ -221,10 +225,11 @@ class WorkDetails(FeatureDetails):
             reply_kept=True,
             until=MOVED,
             owed=still_stopped,
-            title="you stopped with work {{n}}, {{title}}, in hand",
+            title="you have work to do, work {{n}}, {{title}}: don't stop",
             brief="""
                 carry on now. Waits on the user: journal todo ask on its row, then the next ready row. Waits on something that
                 happens by itself: journal work await "<what>". Something else first: journal work park {{n}} "<why>".
+                Truly stuck: journal halt "<why>", which keeps this quiet until your next tool use or prompt.
             """,
         ),
         Line(

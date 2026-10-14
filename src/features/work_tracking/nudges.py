@@ -10,6 +10,7 @@ from controllers.types import Messages, Works
 from framework.parts import Context
 from framework.sending import Sent
 from resources.base import SYSTEM, USER
+from resources.types import IDLE
 from serving import SERVED, Providers
 
 FIRST_AFTER = 5
@@ -42,10 +43,21 @@ def next_while_helping(context, agent) -> list[Sent]:
     return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": work.n, "who": busy[0].name, "rows": [row.ref, work.ref]})]
 
 
+def stopped_by_the_person(agent) -> bool:
+    """Whether the person interrupted the agent's last turn themselves, which no nudge talks over."""
+    provider = SERVED.given(Providers).offers(agent.provider)
+    return provider is not None and bool(agent.transcript) and provider.interrupted_by_user(Path(agent.transcript))
+
+
 def stopped_with_work(context, agent) -> list[Sent]:
-    if agent.idle_for < FIRST_AFTER * MINUTE:
+    """An agent that stops with work in hand is told to carry on, unless it halted with a reason: with auto mode on at every stop the person did not make, else after a few quiet minutes."""
+    if agent.halted:
         return []
-    return [Sent(f"{work.n}:{work.updated}", {"n": work.n, "title": work.title, "rows": [work.ref]}) for work in carried_on(context.record)[:1]]
+    at_once = automatic(context.record) and agent.status == IDLE and not agent.subagent and not stopped_by_the_person(agent)
+    if not at_once and agent.idle_for < FIRST_AFTER * MINUTE:
+        return []
+    return [Sent(f"{work.n}|{agent.at}" if at_once else f"{work.n}:{work.updated}", {"n": work.n, "title": work.title, "rows": [work.ref]})
+            for work in carried_on(context.record)[:1]]
 
 
 def last_heard_from_the_user(context, agent) -> float:
@@ -62,12 +74,11 @@ def nothing_left(context) -> bool:
 def stopped_in_auto(context, agent) -> list[Sent]:
     """With auto mode on, an agent that stopped long after the person last spoke is told to carry on at each stop, or once per word from the person while no row is ready, unless the person stopped it themselves or the environment holds nothing to carry on with."""
     after = context.settings.carry_on_after * MINUTE
-    if not automatic(context.record) or agent.subagent or agent.paused or agent.idle_for < FIRST_AFTER * MINUTE or time.time() - last_heard_from_the_user(context, agent) < after:
+    if not automatic(context.record) or agent.halted or agent.subagent or agent.paused or agent.idle_for < FIRST_AFTER * MINUTE or time.time() - last_heard_from_the_user(context, agent) < after:
         return []
     if nothing_left(context):
         return []
-    provider = SERVED.given(Providers).offers(agent.provider)
-    if provider is not None and agent.transcript and provider.interrupted_by_user(Path(agent.transcript)):
+    if stopped_by_the_person(agent):
         return []
     stop = f"{agent.at}" if ready(context.record) else f"held|{last_heard_from_the_user(context, agent)}"
     return [Sent(stop, {"minutes": int(after // MINUTE)})]

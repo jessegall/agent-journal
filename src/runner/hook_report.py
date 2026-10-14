@@ -9,6 +9,8 @@ from payload import Hook, HookEvent, HookFacts, LoopCall, LoopEndCall
 from resources.base import AGENT, SYSTEM
 from resources.types import IDLE
 
+GOING_ON = (HookEvent.PRE_TOOL_USE, HookEvent.USER_PROMPT_SUBMIT)
+
 
 def report(provider, record: Record, hook: Hook) -> None:
     agents = Agents(record, actor=SYSTEM)
@@ -38,7 +40,7 @@ def merged(provider, row, hook: Hook, facts: HookFacts) -> dict:
             "inbox": facts.inbox or row.inbox or "", "model": facts.model or row.model or "", "effort": facts.effort, "started": row.started or hook.at,
             "context": row.context or 0 if facts.context is None else facts.context, "asking": facts.asking,
             "last_message": facts.last_message or row.last_message or "", "loops": loops_after(row, hook), "prompted": facts.prompted or row.prompted,
-            "person_at": hook.at if facts.prompted == PERSON else row.person_at}
+            "person_at": hook.at if facts.prompted == PERSON else row.person_at, "halted": "" if hook.event in GOING_ON else row.halted}
 
 
 def loops_after(row, hook: Hook) -> dict:

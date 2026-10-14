@@ -64,6 +64,7 @@ ON_TODO = Work(n=3, title="Fix the crash", data={"todo": 5})
 ENDED_ON_TODO = Work(n=3, title="Fix the crash", completed=2.0, data={"todo": 5})
 STARTED_TODO = Todo(n=5, title="Fix the crash", data={"status": "started"})
 AUTO = {"features.work_tracking.auto": True}
+MANUAL = {"features.work_tracking.auto": False}
 FIRST = Todo(n=1, title="first")
 SECOND = Todo(n=2, title="second")
 STOPPED = (Reported("idle", "Stop"),)
@@ -143,7 +144,7 @@ class WorkFeature(Feature):
                                  >> Nudged("next", taking="send a helper or subagent to do it"),
                              Given(STOPS, rows=(IDLE_ROW, FIRST), settings={**AUTO, "work_modes.mode": "solo"})
                                  >> Nudged("next", taking="there are no helpers or subagents here"),
-                             Given(STOPS, rows=(IDLE_ROW, FIRST, Environment(n=1, title="t", data={"owner": "ticket:3"})), settings={"features.work_tracking.auto": False}) >> Told("next"),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST, Environment(n=1, title="t", data={"owner": "ticket:3"})), settings=MANUAL) >> Told("next"),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a"), Todo(n=2, title="b", data={"priority": 200}), Todo(n=3, title="c", data={"priority": 150})), settings=AUTO) >> Nudged("next", n=2),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a", data={"priority": 50}), Todo(n=2, title="b")), settings=AUTO) >> Nudged("next", n=2),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a", data={"after": ["todo:2"]}), Todo(n=2, title="b", completed=1.0)), settings=AUTO) >> Nudged("next", n=1),
@@ -166,15 +167,21 @@ class WorkFeature(Feature):
                              Given(STOPS, rows=(IDLE_ROW, FIRST, AWAITING), settings=AUTO) >> Told("next while a helper works", times=0),
                              Given(STOPS, rows=(HELPING, FIRST, AWAITING), settings=AUTO, earlier=(WORKED, Reported("idle", "Stop"), WORKED)) >> Told("next while a helper works", times=1))),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
-                    guarantee="When the agent stops with work still in hand, it is asked once to carry on with it.",
-                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6))) >> Told("carry on") & Nudged("carry on"),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema")), earlier=SIX_IDLE_MINUTES) >> Told("carry on"),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release", data={"awaiting": "the CI run on main"})), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release", data={"parked": "later"})), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema"),
+                    guarantee="When the agent stops with work still in hand, it is asked once to carry on with it: at once with auto mode on, unless the person stopped it, else after five quiet minutes.",
+                    expects=(Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6))) >> Told("carry on") & Nudged("carry on"),
+                             Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema")), earlier=SIX_IDLE_MINUTES) >> Told("carry on"),
+                             Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the release", data={"awaiting": "the CI run on main"})), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
+                             Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the release", data={"parked": "later"})), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
+                             Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema"),
                                                               Question(n=1, title="Files or SQLite?", refs=["todo:1"])), earlier=SIX_IDLE_MINUTES) >> Told("carry on", times=0),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(4))) >> Told("carry on", times=0),
-                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6), Ticked(), Waited(10))) >> Told("carry on"))),
+                             Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(4))) >> Told("carry on", times=0),
+                             Given(ClockTicked(agent=1), settings=MANUAL, rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6), Ticked(), Waited(10))) >> Told("carry on"),
+                             Given(STOPS, rows=(IDLE_ROW, Work(n=1, title="the release")), settings=AUTO) >> Told("carry on"),
+                             Given(STOPS, rows=(AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "idle"}), Work(n=1, title="the release")), settings=AUTO, earlier=(Reported("idle", "Stop"),), transcript=INTERRUPTED) >> Told("carry on", times=0),
+                             Given(STOPS, rows=(IDLE_ROW, Work(n=1, title="the release")), settings=AUTO, earlier=(Reported("idle", "Stop"), Waited(1), WORKED, Reported("idle", "Stop"))) >> Told("carry on", times=2),
+                             Given(STOPS, rows=(AgentRow(n=1, title="claude-1", data={"status": "idle", "halted": "the key is not in this machine"}), Work(n=1, title="the release")), settings=AUTO)
+                                 >> Told("carry on", times=0),
+                             Given(STOPS, rows=(AgentRow(n=1, title="claude-1", data={"status": "idle", "at": WHEN}), Work(n=1, title="the release")), settings=MANUAL) >> Told("carry on", times=0))),
               Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(1),
                     expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=LATE) >> Told("auto carry on") & Nudged("auto carry on", minutes=15),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW,), settings=AUTO, earlier=LATE) >> Told("auto carry on", times=0),
