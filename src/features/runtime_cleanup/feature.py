@@ -23,10 +23,16 @@ AGENT_ROW = AgentRow(n=1, title="claude-1")
 DAY = 86400
 SESSION = f"{SESSIONS}/claude-9"
 LAUNCH = f"{RUNTIME}/launches/a.log"
+BUSY_LAUNCH = f".journal/{RUNTIME}/launches/main-busy-helper.log"
 STAGED = "plugins/.staging-x"
 ARCHIVE = "attic/old.tar.gz"
 OUTPUT = f"{RUNTIME}/outputs/output-1"
 ANNOUNCED = NotificationCreated(n=1, type="notification", action="created", actor=SYSTEM)
+
+
+def kept_session(modified: float) -> object:
+    return answering({("is dir", RUNTIME): True, ("glob", f"{SESSIONS}/*"): [SESSION], ("is dir", SESSION): True,
+                      ("glob", f"{SESSION}/*"): [f"{SESSION}/screen"], ("modified", f"{SESSION}/screen"): modified})
 
 
 class RuntimeCleanup(Feature):
@@ -42,13 +48,14 @@ class RuntimeCleanup(Feature):
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({CAPTURE: "old" * 100_000 + "THE END"})) >> Wrote(File(CAPTURE, "THE END", size=64 * 1024)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({CAPTURE: "short"})) >> Wrote(File(CAPTURE, "short", size=5)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({COMMANDS_LOG: "x" * (2 * 1024 * 1024) + "last line\n"})) >> Wrote(File(COMMANDS_LOG, "last line", size=1024 * 1024)),
-            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW],
-                  journal_root=answering({("is dir", RUNTIME): True, ("glob", f"{SESSIONS}/*"): [SESSION], ("is dir", SESSION): True,
-                                          ("glob", f"{SESSION}/*"): [f"{SESSION}/screen"], ("modified", f"{SESSION}/screen"): WHEN - 3 * DAY})) >> Ran(("remove", SESSION)),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], journal_root=kept_session(WHEN - 3 * DAY)) >> Ran(("remove", SESSION)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], journal_root=answering({("is dir", RUNTIME): True, ("glob", f"{RUNTIME}/launches/*.log"): [LAUNCH], ("modified", LAUNCH): WHEN - 3 * DAY}))
                 >> Ran(("remove", LAUNCH)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], journal_root=answering({("glob", "plugins/.staging-*"): [STAGED], ("is dir", STAGED): True, ("modified", STAGED): WHEN - 7200}))
                 >> Ran(("remove", STAGED)),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], files=answering({BUSY_LAUNCH: "x" * (2 * 1024 * 1024) + "still going\n"})) >> Wrote(File(BUSY_LAUNCH, "still going", size=1024 * 1024)),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], settings={"runtime_cleanup.days": 1}, journal_root=kept_session(WHEN - 1.5 * DAY)) >> Ran(("remove", SESSION)),
+            Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], journal_root=answering({("environments",): ["t"]})) >> Ran(("trim logs", 100)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], journal_root=answering({("glob", "attic/*.tar.gz"): [ARCHIVE], ("modified", ARCHIVE): WHEN - 100 * DAY})) >> Ran(("remove", ARCHIVE)),
             Given(RuntimeTidyDue(agent=1), rows=[AGENT_ROW], journal_root=answering({("glob", f"{RUNTIME}/outputs/output-*"): [OUTPUT], ("modified", OUTPUT): WHEN - 2 * DAY})) >> Ran(("remove", OUTPUT)),
         ])
