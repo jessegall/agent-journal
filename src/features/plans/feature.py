@@ -139,12 +139,14 @@ class PlansFeature(Feature):
         ROW_HOLDS.add(self, held)
         journal.events.listen(PlanChanged, SpotPlanBegun(), expects=[
             Given(changed("created", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["normal"])),
+            Given(changed("created", USER), rows=[plan("building", depth="thorough"), AGENT_ROW]) >> Dispatches(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["thorough"])),
             Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
             Given(changed("created", USER), rows=[plan("building")]) >> Dispatches(nothing),
             Given(changed("updated", USER), rows=[plan("building"), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(PlanBuildBegun, StartBuilding(), expects=[
             Given(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["normal"]), rows=[plan("building"), AGENT_ROW]) >> Nudged("started"),
+            Given(PlanBuildBegun(plan=1, title="Ship it", depth=DEPTHS["thorough"]), rows=[plan("building", depth="thorough"), AGENT_ROW]) >> Nudged("started", depth="file a to-do for every small thing"),
         ])
         journal.events.listen(TodoUpdated, SpotPlanOfHandedRow(), expects=[
             Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", data={"assigned": "helper:3"}), plan("active", phases=phases(5))])
