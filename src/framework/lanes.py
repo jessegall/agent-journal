@@ -17,6 +17,7 @@ from declaring.trigger import NOTICES
 from engine import bus, triggering
 from framework.auto_mode import automatic
 from framework.diagnostics import logged
+from contextvars import ContextVar
 from engine import project_files, runtime, seats, viewer, worktree
 from framework.connection.transport import HttpTransport, ServerKey
 from engine.developing import developing
@@ -511,6 +512,10 @@ def served(record, kind: type, feature: str):
     return Services(lane_services(record, lambda: None)).given(feature, feature, {"service": kind})["service"]
 
 
+PLAYED: ContextVar[dict[type, object]] = ContextVar("played", default={})
+"""The services an expectation under play answers for itself, by type, for everything the play runs, a command a step plays included."""
+
+
 def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
     """What a receiver is handed, by the service type it asks for, over this record: the same funnels a 2.x handler reached through its Context. The agent is looked up only when a receiver asks for the chat."""
     def speaking() -> object:
@@ -554,7 +559,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Holds: PerAsk(lambda feature, asked: AgentHolds(record, speaking())),
             Elsewhere: PerAsk(lambda feature, asked: TheEnvironments(FEATURES[feature], record)),
             ReadElsewhere: PerAsk(lambda feature, asked: TheEnvironments(FEATURES[feature], record)),
-            ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
+            ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
+            **PLAYED.get()}
 
 
 def agent_of(logged, record):

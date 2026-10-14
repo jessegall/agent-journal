@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import features
 import mcp_headers
 from controllers.features import Features, SettingsWrite
-from framework.integrations.client import IntegrationClient
+from framework.integrations.client import IntegrationClient, Posted
 from framework.integrations.state import IntegrationState, read_state, state_file, write_state
 from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, USER
@@ -66,16 +66,16 @@ def test_the_integration_client_sends_its_key_only_to_its_own_host_and_masks_it_
     record = fresh()
     ValuesFile(record.root).put("LINEAR_KEY", "lin_api_secret_value")
     client = IntegrationClient(record.root, "https://api.linear.app", "LINEAR_KEY")
-    assert "only to https://api.linear.app" in refused(lambda: client.post("https://example.com/graphql", {})), "another address is refused"
-    assert "only to https://api.linear.app" in refused(lambda: client.post("//example.com/graphql", {})), "and so is one that only looks like a path"
+    assert "only to https://api.linear.app" in refused(lambda: client.post("https://example.com/graphql", Posted(""))), "another address is refused"
+    assert "only to https://api.linear.app" in refused(lambda: client.post("//example.com/graphql", Posted(""))), "and so is one that only looks like a path"
     assert client.masker.masked_text("failed with lin_api_secret_value in it") == "failed with [secret LINEAR_KEY] in it", "an error never carries the key"
-    assert "no key is picked" in refused(lambda: IntegrationClient(record.root, "https://api.linear.app", "").post("/graphql", {})), \
+    assert "no key is picked" in refused(lambda: IntegrationClient(record.root, "https://api.linear.app", "").post("/graphql", Posted(""))), \
         "with no key picked nothing is sent"
     import socket
     with socket.socket() as closed:
         closed.bind(("127.0.0.1", 0))
         gone = closed.getsockname()[1]
-    why = refused(lambda: IntegrationClient(record.root, f"http://127.0.0.1:{gone}", "LINEAR_KEY", timeout=1).post("/graphql", {}))
+    why = refused(lambda: IntegrationClient(record.root, f"http://127.0.0.1:{gone}", "LINEAR_KEY", timeout=1).post("/graphql", Posted("")))
     assert (f"could not reach http://127.0.0.1:{gone}" in why, "lin_api_secret_value" in why) == (True, False), "a host nobody answers at is said so, without the key"
 
 

@@ -1,7 +1,7 @@
 import json
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from urllib.parse import urlsplit
 
 from controllers.integrations.opener import OPENER, TIMEOUT
@@ -19,6 +19,14 @@ class Answer:
     text: str
     remaining: int = -1
     reset: float = 0.0
+
+
+@dataclass(frozen=True)
+class Posted:
+    """What a service is sent: its query and the variables the query runs with."""
+
+    query: str
+    variables: dict = field(default_factory=dict)
 
 
 def number(value, kind, otherwise):
@@ -48,14 +56,14 @@ class IntegrationClient:
         if self.stamp() != self.seen:
             self.read_key()
 
-    def post(self, path: str, body: dict) -> Answer:
+    def post(self, path: str, body: Posted) -> Answer:
         """The service's answer, for the caller to read into its own typed values."""
         self.current()
         if not path.startswith("/") or urlsplit(path).netloc:
             raise Refused(f"this integration sends its key only to {self.origin}, not to {self.masker.masked_text(path)}")
         if not self.key:
             raise Refused("no key is picked, so nothing is sent")
-        request = urllib.request.Request(self.origin + path, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "Authorization": self.key})
+        request = urllib.request.Request(self.origin + path, data=json.dumps(asdict(body)).encode(), headers={"Content-Type": "application/json", "Authorization": self.key})
         try:
             with OPENER.open(request, timeout=self.timeout) as answer:
                 return Answer(answer.read().decode(), number(answer.headers.get(REMAINING), int, -1), number(answer.headers.get(RESET), float, 0.0))

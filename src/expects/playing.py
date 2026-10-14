@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
+from framework.integrations.client import Posted
 from resources.checkout import checkout_name
 from engine.machines import Lease, this_machine
 from engine.offline import Sent
@@ -494,8 +495,8 @@ class Outside(Asked):
         far, outside = copy.deepcopy(self.answer(("far side",))), self
 
         class Client:
-            def post(self, path: str, body: dict):
-                outside.recording.ran.append(("post", path, body.get("variables", {})))
+            def post(self, path: str, body: Posted):
+                outside.recording.ran.append(("post", path, body.variables))
                 return far.post(path, body)
 
         return Client()

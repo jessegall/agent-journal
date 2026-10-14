@@ -27,7 +27,7 @@ from expects import Acted, At, Given, Happened, Left, Reported, Step, Ticked, Wa
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE
 from receiving.ticks import Services, Unserved
 import serving
-from framework.lanes import NobodyToSpeakTo, TheOwnWork, lane_services
+from framework.lanes import PLAYED, NobodyToSpeakTo, TheOwnWork, lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from framework.routing import Request
@@ -203,8 +203,7 @@ def commanded(promise, given: Given, record: Record, world: World) -> None:
     """A command, through its own run: the controller it is on, then the arguments the Given states."""
     controller, *arguments = given.on
     try:
-        context = replace(Context.of(promise.feature, record), fakes={serving.Servers: world.server} if given.server.answers else {})
-        world.recording.answered = promise.part.run(context, controller(record, actor=SYSTEM), *arguments)
+        world.recording.answered = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
     except Refused as refusal:
         world.recording.refused = str(refusal)
 
@@ -460,6 +459,19 @@ def settings_now(record) -> dict:
     return {f"{part}.{key}": value for part, held in record.settings().items() if isinstance(held, dict) for key, value in held.items()}
 
 
+@contextmanager
+def the_givens_server(given: Given, world: World):
+    """The server the Given states answers everything the play runs, a command a step plays included, and nothing else is answered by a real one."""
+    if not given.server.answers:
+        yield
+        return
+    token = PLAYED.set({serving.Servers: world.server})
+    try:
+        yield
+    finally:
+        PLAYED.reset(token)
+
+
 def played(promise, expectation, inside: Path) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
     given = expectation.given
@@ -467,7 +479,7 @@ def played(promise, expectation, inside: Path) -> Seen:
         raise NoEntryForThisKind.of(promise.kind)
     record, world = scratch(given, inside, promise.feature.name), World.of(given)
     seeded = len(what_was_said(record)[1])
-    with at_the_givens_hour(world.clock), with_the_givens_programs(given), with_the_scratch_secrets(record):
+    with at_the_givens_hour(world.clock), with_the_givens_programs(given), with_the_scratch_secrets(record), the_givens_server(given, world):
         keeping_secrets(record, given)
         for earlier in given.earlier:
             play_one(promise, replace(given, on=earlier, earlier=()), record, world)

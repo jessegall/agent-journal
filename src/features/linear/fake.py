@@ -1,10 +1,10 @@
 import http.server
 import json
 import threading
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import ClassVar
 
-from framework.integrations.client import Answer
+from framework.integrations.client import Answer, Posted
 from resources.base import Refused
 from resources.fields import Loaded
 
@@ -95,9 +95,9 @@ class FakeLinear:
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         return f"http://127.0.0.1:{self.server.server_port}"
 
-    def post(self, path: str, body: dict) -> Answer:
+    def post(self, path: str, body: Posted) -> Answer:
         """The same answers without a socket, for a client that is handed this stand-in directly."""
-        asked = Asked.from_json(body)
+        asked = Asked.from_json(asdict(body))
         status, answer = self.answer(asked)
         if status != 200:
             raise Refused(f"https://api.linear.app answered {status}: {json.dumps(answer)[:200]}")

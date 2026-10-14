@@ -116,8 +116,6 @@ class Context:
     agent: Speaker | None = None
     provider: object = None
     hook: object = None
-    fakes: dict = field(default_factory=dict)
-    """The services a play answers for itself, by type, where a command would ask the journal's own."""
 
     @classmethod
     def of(cls, feature, record, row=None, provider=None, hook=None) -> "Context":
@@ -137,7 +135,7 @@ class Context:
     def service(self, kind: type):
         """A service of the journal, as a receiver of this feature is handed it."""
         from framework.lanes import served
-        return self.fakes[kind] if kind in self.fakes else served(self.record, kind, self.feature.name)
+        return served(self.record, kind, self.feature.name)
 
     def speaking_to(self, row) -> "AgentContext":
         return AgentContext.of(self.feature, self.record, row, self.provider, self.hook)
