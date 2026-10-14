@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.2.3 — A warm read of packed rows asks no disk in a running server
+
+- A server answers a request that reads packed rows, such as the dashboard, from the marks its watch loop keeps, as it already did for every folder and loose row; before, each request still looked at every pack index on disk.
+
 ## 3.2.2 — A Codex helper is dispatched on the newest models
 
 - The models a Codex helper may be dispatched on are only those of the newest generation Codex lists, newest first, so older generations no longer crowd the list. A helper dispatched with no model named runs on gpt-6.1-sol. The model picker in the status bar still lists every model Codex offers.

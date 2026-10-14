@@ -600,7 +600,7 @@ class RowStore:
 
     def packed(self) -> dict[int, Summary]:
         index = self.folder() / PACKED / INDEX
-        stamp = mtime(index)
+        stamp = mark_of(index)
         if not stamp:
             return {}
         return PACKS.get(str(index), stamp, lambda: {int(n): Summary.read(row, self.resource.indexed, stamp) for n, row in read_promised_json(index, dict, {}).items()})
