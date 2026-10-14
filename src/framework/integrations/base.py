@@ -50,6 +50,10 @@ class IntegrationFeature(Feature):
         """What one check of this service does against the far side the Given states, as expectations on its due check."""
         return []
 
+    def replies(self) -> list:
+        """What sending an approved answer does against the far side the Given states, as expectations on its sender."""
+        return []
+
     def client(self, record) -> IntegrationClient:
         """The one client of this project, built when first needed and again when its settings change."""
         home = str(record.home)
@@ -74,6 +78,7 @@ class IntegrationFeature(Feature):
         ])
         journal.events.handle(self.approved, sending_approved(self.approved), expects=[
             Given(self.approved(question=1, ticket=1, text="Thanks."), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "send_reply", 1, "Thanks.")),
+            *self.replies(),
         ])
         journal.commands.add("feature", SyncIntegration(self.name), expects=[
             Given((Features,)) >> Answered(f"{self.details.title} was not checked: {self.unkeyed}"),

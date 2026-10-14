@@ -39,6 +39,14 @@ class Gmail(GmailWork, IntegrationFeature):
                 >> Wrote(Notice(title="Gmail could not be reached")),
         ]
 
+    def replies(self) -> list:
+        crash = Ticket(n=1, title="Crash report", data={"source": "gmail", "gmail_from": "ana@example.com", "gmail_id": "<Hello@example.com>", "gmail_subject": "Hello"})
+        return [
+            Given(GmailReplyApproved(question=1, ticket=1, text="Thanks, it is fixed."), rows=[AgentRow(n=1, title="claude-1"), crash], settings=CHOSEN,
+                  secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {}}))
+                >> Ran(("sent", "ana@example.com", "Re: Hello", "Thanks, it is fixed.", "<Hello@example.com>")),
+        ]
+
     def register(self, journal: Journal) -> None:
         super().register(journal)
         journal.commands.add("ticket", ProposeReply(), expects=[
