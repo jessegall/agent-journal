@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {KEPT_WITHIN, aimedAt, catching, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
+import {KEPT_WITHIN, aimedAt, catching, chaseRoom, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
 const FRAME = 1 / 60;
@@ -118,5 +118,17 @@ describe("motion kept still", () => {
         const hop = {x: 0, y: 0, ms: 400, lead: 100, easing: "linear", hopping: true};
         expect(legAt(hop, {x: 0, y: 100}, 0, true)).toEqual({x: 0, y: 0});
         expect(legAt({...hop, hopping: false, lead: 0}, {x: 0, y: 100}, 200, true)).toEqual({x: 0, y: 50});
+    });
+});
+
+describe("the squire's chase", () => {
+    const world = {left: 0, right: 1000, top: 0, bottom: 900};
+    const picture = (x) => ({left: x - 56, right: x + 56});
+
+    it("runs out as far as it may along its floor, never past the floor's end or the world's edge, and not at all off a floor", () => {
+        expect(chaseRoom([floor("home", 500, 100, 900)], world, {x: 400, y: 500}, picture(400), 160)).toBe(160);
+        expect(chaseRoom([floor("home", 500, 100, 500)], world, {x: 400, y: 500}, picture(400), 160)).toBe(100);
+        expect(chaseRoom([floor("home", 500, 100, 1200)], world, {x: 900, y: 500}, picture(900), 160)).toBe(44);
+        expect(chaseRoom([floor("home", 600)], world, {x: 400, y: 500}, picture(400), 160)).toBe(0);
     });
 });

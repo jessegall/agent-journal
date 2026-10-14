@@ -4,7 +4,7 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {KEPT_WITHIN, ON_FLOOR, aimedAt, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
+import {KEPT_WITHIN, ON_FLOOR, aimedAt, catching, chaseRoom, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
@@ -643,6 +643,14 @@ const chasing = computed(() => shownClip.value?.name === "squire_chase");
 // during an entrance or exit what is below the edge the figure stands on is hidden, as the box it climbs over or drops past would hide it
 const passing = computed(() => ["enter", "exit"].includes(shownClip.value?.name));
 const chaseMs = computed(() => (chasing.value ? (shownClip.value.frames / shownClip.value.fps) * 1000 : 0));
+// the most the squire runs out after the bug, and how far it may run now, along the floor it stands on
+const CHASE_MOST = 160;
+const chaseRun = ref(0);
+watch(chasing, (now) => {
+    if (!now) return;
+    const {floors, world} = latestFloors();
+    chaseRun.value = world ? chaseRoom(floors, world, feetOf(at.value), boxAt(place.value, figureSize(), drawn), CHASE_MOST) : 0;
+});
 
 // how the picture moves with the bars under it, as the flat figure's did: down over the voice's fall, falling faster as it goes, or up
 // quickly, easing out
@@ -652,7 +660,7 @@ const actorStyle = computed(() => ({
     "--fall-ms": `${fall.value.ms}ms`,
     "--squash": fall.value.squash,
     "--bounce": `${fall.value.bounce}px`,
-    ...(chasing.value && {animationDuration: `${chaseMs.value}ms`}),
+    ...(chasing.value && {animationDuration: `${chaseMs.value}ms`, "--chase": `${chaseRun.value}px`}),
     ...(grip.value && {rotate: `${tilt.value}rad`, transformOrigin: `${grip.value.x * 100}% ${grip.value.y * 100}%`}),
 }));
 
@@ -784,7 +792,7 @@ const style = computed(() => ({
     }
 
     50% {
-        transform: translateX(160px);
+        transform: translateX(var(--chase));
     }
 }
 

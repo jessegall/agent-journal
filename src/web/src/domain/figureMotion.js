@@ -81,3 +81,11 @@ export function aimedAt(trip, leg, from, landed) {
     const under = leg.y === end;
     return {trip: {...trip, to: landed, legs: trip.legs.map(carried)}, leg: under ? carried(leg) : leg, from: under ? {...from, x: from.x + dx} : from};
 }
+
+// How far the squire's chase may run, out to its right and back: as far as `most` pixels along the floor under its feet, never past that
+// floor's right end or the right of its world, so it never runs into the air; nothing when it stands on no floor
+export function chaseRoom(floors, world, feet, picture, most) {
+    const floor = floorAt(floors, feet.x, feet.y, KEPT_WITHIN);
+    if (!floor) return 0;
+    return Math.max(0, Math.min(most, floor.right - feet.x, world.right - picture.right));
+}
