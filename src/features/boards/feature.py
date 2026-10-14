@@ -1,4 +1,4 @@
-from events.agents import ClockTicked
+from events.agents import AgentReported, ClockTicked
 from expects import WHEN, Dispatches, Given, Kept, Nudged, Refused, Reported, Told, Updated, nothing
 from framework.base import Feature
 from events.boards import BoardChanged
@@ -29,6 +29,7 @@ __all__ = ["Boards"]
 
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
+IDLE_ROW = AgentRow(n=1, title="claude-1", data={"status": "idle", "event": "Stop"})
 
 
 class StalledWhileDrafting:
@@ -76,10 +77,10 @@ class BoardsFeature(Feature):
     details = BoardsDetails
     nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas,
                     guarantee="When a board asks for ideas, the agent is told to think up what might be wanted on it.",
-                    expects=(Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t"}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas"),
-                             Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t", "ideas_at": WHEN}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas", times=0),
-                             Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "elsewhere"}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas", times=0),
-                             Given(ClockTicked(agent=1), rows=(Board(n=1, title="Launch", data={"environment": "t", "finished": WHEN}), AGENT_ROW), earlier=(Reported("idle", "Stop"),)) >> Told("ideas", times=0))),)
+                    expects=(Given(AgentReported(agent=1, hook="Stop"), rows=(Board(n=1, title="Launch", data={"environment": "t"}), IDLE_ROW)) >> Told("ideas") & Nudged("ideas", n=1),
+                             Given(AgentReported(agent=1, hook="Stop"), rows=(Board(n=1, title="Launch", data={"environment": "t", "ideas_at": WHEN}), IDLE_ROW)) >> Told("ideas", times=0),
+                             Given(AgentReported(agent=1, hook="Stop"), rows=(Board(n=1, title="Launch", data={"environment": "elsewhere"}), IDLE_ROW)) >> Told("ideas", times=0),
+                             Given(AgentReported(agent=1, hook="Stop"), rows=(Board(n=1, title="Launch", data={"environment": "t", "finished": WHEN}), IDLE_ROW)) >> Told("ideas", times=0))),)
     sequences = SEQUENCES
     agent_types = AGENT_TYPES
 

@@ -47,6 +47,7 @@ NOT_OFFERED = (
     "Status:\n- built the page\n- tested it\n\nDesign: https://claude.ai/design/p/abc?file=X",
 )
 CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
+IDLE_CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "idle", "event": "Stop"})
 BRANCH = Question(n=3, title="which branch?", completed=1.0, outcome="main")
 FILED_LINE = "asked in the journal - the user answers it in the viewer and the answer reaches you as an event; carry on with what does not depend on it"
 NO_PICK = ("question which branch? names no pick - label the option you would pick (Recommended) and ask again; "
@@ -87,9 +88,9 @@ class AskQuestions(Feature):
     details = AskQuestionsDetails
     nudges = (Nudge("settled", behaviour="settled", about=open_a_day,
                     guarantee="When a question has waited a day for an answer, the agent is told, so a question is not left hanging for ever.",
-                    expects=(Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 2 * 86400)), earlier=(Reported("idle", "Stop"),)) >> Told("settled"),
-                             Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 3600)), earlier=(Reported("idle", "Stop"),)) >> Told("settled", times=0),
-                             Given(ClockTicked(agent=1), rows=(CLAUDE, BRANCH), earlier=(Reported("idle", "Stop"),)) >> Told("settled", times=0))),)
+                    expects=(Given(AgentReported(agent=1, hook="Stop"), rows=(IDLE_CLAUDE, Question(n=3, title="which branch?", created=WHEN - 2 * 86400))) >> Told("settled") & Nudged("settled", n=3),
+                             Given(AgentReported(agent=1, hook="Stop"), rows=(IDLE_CLAUDE, Question(n=3, title="which branch?", created=WHEN - 3600))) >> Told("settled", times=0),
+                             Given(AgentReported(agent=1, hook="Stop"), rows=(IDLE_CLAUDE, BRANCH)) >> Told("settled", times=0))),)
 
     def register(self, journal: Journal) -> None:
         FACTS.register(self, *state_facts("question", "open", lambda context: [q for q in Questions(context.record, actor=SYSTEM).rows.standing() if not q.hidden]))
