@@ -28,6 +28,7 @@ ORGANIZED = answering({
     f"{ENGINEERING}/roles/lead/role.toml": 'title = "Engineering lead"\n',
     f"{ENGINEERING}/roles/developer/role.toml": 'title = "Developer"\ninputs = ["acceptance"]\noutputs = ["tests"]\nmodel = "sonnet"\n',
 })
+LOGIN = Todo(n=5, title="Fix the login")
 DEVELOPING = Todo(n=5, title="Build dark mode", data={"domain": "engineering", "role": "developer"})
 
 
@@ -49,9 +50,9 @@ class OrganizationFeature(Feature):
                 >> Wrote(Todo(title="Build dark mode", data={"domain": "engineering", "role": "developer"})),
         ])
         journal.commands.refuse(RowWriting, ReportCoversOutputs(), expects=[
-            Given(updating(title="A new title"), rows=[Todo(n=5, title="Fix the login")]) >> Kept(),
-            Given(updating(reported="not a record"), rows=[Todo(n=5, title="Fix the login")]) >> Kept(),
-            Given(updating(reported={"how": "Done and tested"}), rows=[Todo(n=5, title="Fix the login")]) >> Kept(),
+            Given(updating(title="A new title"), rows=[LOGIN]) >> Kept(),
+            Given(updating(reported="not a record"), rows=[LOGIN]) >> Kept(),
+            Given(updating(reported={"how": "Done and tested"}), rows=[LOGIN]) >> Kept(),
             Given(updating(reported={"how": "built it"}), rows=[DEVELOPING], files=ORGANIZED) >> Refused("developer's report covers tests; it does not mention tests"),
             Given(updating(reported={"how": "built it; tests pass"}), rows=[DEVELOPING], files=ORGANIZED) >> Kept(),
         ])
