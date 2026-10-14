@@ -650,6 +650,7 @@ watch(
         visibility 0s;
     overflow-y: auto;
     overflow-x: hidden;
+    overscroll-behavior: none;
     display: flex;
     flex-direction: column;
     gap: 7px;
