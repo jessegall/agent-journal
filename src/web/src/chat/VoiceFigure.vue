@@ -408,16 +408,12 @@ function hopOn() {
     at.value = legAt(leg.value, walk.from, performance.now() - walk.began, keptStill());
 }
 
-// The bars under the figure shrank, went, grew or came, and it falls with them or is lifted by them as the flat figure did, for twice the
-// voice's fall after the last change (domain/falls.js FALLS)
+// The figure landed or was launched, and its body squashes and bounces as the flat figure's did (falls.css) until that animation ends
+// (domain/falls.js FALLS)
 const moved = ref("");
-let movedTimer = 0;
 const fall = computed(() => fallOf(voice.value));
-function groundMoved(motion) {
-    clearTimeout(movedTimer);
-    moved.value = motion;
-    movedTimer = setTimeout(() => (moved.value = ""), fall.value.ms * 2);
-}
+const groundMoved = (motion) => (moved.value = motion);
+const squashed = (event) => event.target === event.currentTarget && (moved.value = "");
 
 // The figure hanging by a hand swings about it (pendulum.js): out the way its trip went as it lands, and with the hand as the ground under
 // it carries it sideways
@@ -684,7 +680,7 @@ const style = computed(() => ({
         :data-clip="shownClip?.name"
     >
         <div class="voice-figure-body" :style="bodyStyle" @mousedown.prevent @click="clicked" />
-        <div :class="['voice-figure-actor', moved, {chasing}]" :style="actorStyle">
+        <div :class="['voice-figure-actor', moved, {chasing}]" :style="actorStyle" @animationend="squashed">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
             <template v-if="sleeping">
                 <span class="voice-figure-sleep" :style="sleepStyle">
