@@ -59,6 +59,8 @@ const TABLET_TIP = 65;
 const TABLET_TOUCH = [-0.3, -0.22, 0.18];
 const LEVEL_ITEMS = new Set(["butler_towel", "colleague_mug"]);
 const BUSY_ITEMS = new Set([...LEVEL_ITEMS, "squire_shield", "coach_clipboard"]);
+// what a figure carries in its hands, put away while it holds a prop so it never holds two things
+const IN_HAND = new Set([...BUSY_ITEMS, "squire_quill"]);
 const BLINK_OPENNESS = [1.0, 0.5, 0.06, 0.5];
 const MIN_EYE_HEIGHT = 0.06;
 const HINGES = {forearm: new THREE.Vector3(0, 0, -1), shin: new THREE.Vector3(1, 0, 0)};
@@ -1407,7 +1409,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         voice,
         level: handsHolding(carried, LEVEL_ITEMS),
         busy,
-        carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
+        carried: handsHolding(carried, IN_HAND),
         free: new Set(Object.keys(SIDES).filter((side) => !busy.has(side))),
         tablet: handsHolding(tablet, new Set([TABLET])),
         cloth: handsHolding(cloth, new Set([CLOTH])),
@@ -1417,7 +1419,8 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     const glass = glassOf();
     scene.add(laptop, glass);
     const hulls = (shown) => shown.flatMap((mesh) => [mesh, mesh.userData.hull]);
-    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, tablet: hulls(tablet), cloth: hulls(cloth)};
+    const inHand = carried.filter((mesh) => IN_HAND.has(mesh.userData.item));
+    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, tablet: hulls(tablet), cloth: hulls(cloth), inHand: hulls(inHand)};
 }
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
@@ -1580,6 +1583,7 @@ function place(figure, pose, facing, blend) {
         figure.glass.matrixWorldNeedsUpdate = true;
     }
     for (const part of figure.tablet) part.visible = pose.tablet;
+    for (const part of figure.inHand) part.visible = !(pose.glass || pose.laptop);
     for (const part of figure.cloth) part.visible = pose.cloth;
     if (pose.laptop) {
         figure.laptop.matrix.copy(lapOf(world));
