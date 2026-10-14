@@ -76,7 +76,7 @@ def started(call: HookCall) -> dict:
 
 def handed_over(call: HookCall) -> str:
     """The text the swept features hand over on this hook's answer, asked as the engine's request."""
-    answer = bus.asked(HookResponding(event=call.hook.event, session=call.session, compacted=bool(call.provider.compacted(call.hook))), call.record)
+    answer = bus.asked(HookResponding(event=call.hook.event, session=call.session, compacted=bool(call.provider.compacted(call.hook)), resumed=bool(call.provider.resumed(call.hook))), call.record)
     return answer.text if isinstance(answer, Rewritten) else ""
 
 

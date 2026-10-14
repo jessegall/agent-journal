@@ -95,6 +95,7 @@ class HookResponding(Asked):
     event: str = ""
     session: str = ""
     compacted: bool = False
+    resumed: bool = False
 
 
 @dataclass(frozen=True, kw_only=True)

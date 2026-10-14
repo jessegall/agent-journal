@@ -86,11 +86,12 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     provider = PROVIDERS["claude"]()
 
     def start(source):
-        return handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1", "source": source})["hookSpecificOutput"]["additionalContext"]
+        answer = handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1", "source": source}) or {}
+        return answer.get("hookSpecificOutput", {}).get("additionalContext", "")
 
     assert start("startup") == plain, "a fresh start is handed the plain block"
     assert start("compact") == compacted, "a start after a compaction is handed the recovery steps first"
-    assert start("resume") == plain, "a resume is a fresh start"
+    assert start("resume") == "", "a resume keeps its whole conversation, so it is handed nothing again"
     from engine import bus
     start_file(record.root, record.env).unlink()
     with bus.held():

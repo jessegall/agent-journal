@@ -85,14 +85,14 @@ async function handOver() {
 
 watch(
     () => props.quote,
-    (text) => text && area.value && area.value.focus()
+    (text) => text && focusArea()
 );
 
 watch(
     () => props.preset,
     (text) => {
         draft.text = text;
-        area.value && area.value.focus();
+        focusArea();
     }
 );
 
@@ -136,7 +136,7 @@ function pasted(e) {
 function dropped(e) {
     draft.over = false;
     attached(Array.from(e.dataTransfer?.files || []));
-    area.value && area.value.focus();
+    focusArea();
 }
 
 function dragging(e) {
@@ -146,12 +146,19 @@ function dragging(e) {
 function picked(e) {
     attached(Array.from(e.target.files));
     e.target.value = "";
-    area.value && area.value.focus();
+    focusArea();
 }
 
 function unpick(i) {
     draft.files.splice(i, 1);
-    area.value && area.value.focus();
+    focusArea();
+}
+
+const focused = () => document.activeElement === area.value;
+
+// a box that already has focus keeps its cursor and its selection, so a paste lands where it was put
+function focusArea() {
+    if (area.value && !focused()) area.value.focus();
 }
 
 // a press anywhere in the box but on one of its controls, as on the empty row beside the attach button or above the first line of the text,
@@ -160,7 +167,7 @@ function unpick(i) {
 const CONTROLS = "button, a, input, textarea, select, label, [role=button]";
 const aboveTheText = (e) => e.target === area.value && e.offsetY < parseFloat(getComputedStyle(area.value).paddingTop);
 function focusText(e) {
-    if (e.target.closest(CONTROLS) && !aboveTheText(e)) return;
+    if (focused() || (e.target.closest(CONTROLS) && !aboveTheText(e))) return;
     e.preventDefault();
     area.value.focus();
     area.value.setSelectionRange(draft.text.length, draft.text.length);
@@ -180,7 +187,7 @@ async function go() {
         draft.text = draft.text || text;
         draft.files = draft.files.length ? draft.files : files;
     } finally {
-        area.value && area.value.focus();
+        focusArea();
     }
 }
 

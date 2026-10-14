@@ -19,14 +19,16 @@ def test_a_rules_keywords_are_a_field_read_as_a_list():
         "something that is no kind of list is refused"
 
 
-def test_standing_rules_are_said_at_each_session_start_and_a_struck_rule_drops_out():
+def test_standing_rules_are_said_on_a_chosen_cadence_and_a_struck_rule_drops_out():
     record = fresh()
     rules = Rules(record, actor=USER)
     rules.create("name the model on every dispatch", keywords="word")
     rules.create("a title never explains with a colon", keywords="word")
     for pct in (10, 25, 50, 80):
         report(record, "working", "PostToolUse", context=pct)
-    assert [n for n in nudges(record) if "in force" in n] == [], "the context filling says nothing"
+    report(record, "idle", "SessionStart")
+    assert [n for n in nudges(record) if "in force" in n] == [], "by default neither the context filling nor a start says them: the start block lists them"
+    record.set_setting("triggers", {"rules": {"unit": "start"}})
     report(record, "idle", "SessionStart")
     assert [n for n in nudges(record) if "in force" in n] == ["2 rules in force, read them"], "a start or a compaction says the standing rules by number"
     assert [n.brief for n in Nudges(record).all() if "in force" in n.title] == ["1. name the model on every dispatch; 2. a title never explains with a colon"], \

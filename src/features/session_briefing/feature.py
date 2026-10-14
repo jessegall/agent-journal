@@ -78,5 +78,6 @@ class SessionBriefing(Feature):
         journal.events.answer(HookResponding, BriefTheSession(), expects=[
             Given(HookResponding(event="SessionStart", session="claude-1"), rows=[CLAUDE]) >> Answered(Written()),
             Given(HookResponding(event="SessionStart", session="claude-1", compacted=True), rows=[CLAUDE]) >> Answered(Opening(COMPACTED)),
+            Given(HookResponding(event="SessionStart", session="claude-1", resumed=True), rows=[CLAUDE]) >> Answered(Allowed()),
             Given(HookResponding(event="PreToolUse", session="claude-1"), rows=[CLAUDE]) >> Answered(Allowed()),
         ])

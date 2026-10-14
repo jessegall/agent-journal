@@ -6,7 +6,7 @@ from tests.kit import nudges_with_briefs as nudges, report
 from tests.conftest import fresh
 
 
-def test_by_default_standing_reminders_are_said_at_a_session_start_not_as_context_fills():
+def test_by_default_standing_reminders_are_left_to_the_start_block_and_a_chosen_cadence_says_them():
     record = fresh()
     Reminders(record, actor=USER).create("run the suites first")
     report(record, "working", "PreToolUse")
@@ -14,8 +14,11 @@ def test_by_default_standing_reminders_are_said_at_a_session_start_not_as_contex
     report(record, "working", "PostToolUse", context=26)
     assert nudges(record) == [], "neither the idle nor a quarter of context says them"
     report(record, "idle", "SessionStart")
+    assert [n for n in nudges(record) if "standing" in n[0]] == [], "nor a start or a compaction, whose start block already lists them"
+    record.set_setting("triggers", {"reminders": {"unit": "start"}})
+    report(record, "idle", "SessionStart")
     assert [n for n in nudges(record) if "standing" in n[0]] == [("1 reminder standing, read them", "1. run the suites first")], \
-        "a start or a compaction says the standing reminders"
+        "a cadence chosen in Settings says them"
 
 
 def test_on_worked_the_standing_reminders_are_said_once_per_idle_stretch_after_tool_use():

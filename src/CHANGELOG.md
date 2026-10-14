@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.15 — A start hands the standing lists over once
+
+- The standing facts, rules and reminders reach the agent once, in the block a new session or a compacted one is handed, where 3.0.11 also sent them a second time as a separate line. Their keywords still bring one back when it comes up, and Settings can still give them a cadence of their own.
+- A resumed session, which keeps its whole conversation, is handed no start block at all.
+- The chat's text box takes focus only when it does not already have it, so a paste lands where you put it.
+
 ## 3.0.14 — The journal server holds far less memory
 
 - The server keeps at most four conversations in memory, the one read longest ago going first, where it kept every conversation it had opened for as long as it ran. A long conversation held up to 150MB, so a server that had opened a few long ones grew to about 900MB. A conversation let go of comes back from the copy kept on disk in under a second.

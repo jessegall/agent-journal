@@ -374,6 +374,9 @@ class Claude(Provider):
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
 
+    def resumed(self, hook: Hook) -> bool:
+        return hook.source == "resume"
+
     @classmethod
     def display_chunk(cls, raw: dict) -> Chunk | None:
         chunk = Chunk.from_json(raw)

@@ -987,7 +987,7 @@ def test_a_hook_answer_carries_what_an_answerer_of_the_hook_responding_request_h
     was = bus._dispatch.asks
     bus.answered_by(answering)
     try:
-        provider = SimpleNamespace(compacted=lambda hook: True)
+        provider = SimpleNamespace(compacted=lambda hook: True, resumed=lambda hook: False)
         call = HookCall(provider, SimpleNamespace(), SimpleNamespace(event="PreToolUse"), SimpleNamespace(title="claude-1"))
         assert handed_over(call) == "[journal] one line\n", "an answerer's text is the text handed over"
         assert handed_over(replace(call, hook=SimpleNamespace(event="SessionStart"))) == "", "and an answer nobody rewrote hands over nothing"

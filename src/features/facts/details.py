@@ -1,4 +1,3 @@
-from declaring.trigger import START, Trigger
 from declaring.details import FeatureDetails
 from framework.recital import LINES, whispering
 from declaring.groups import Group
@@ -30,7 +29,6 @@ class FactsDetails(FeatureDetails):
 
     aliases = ("pins",)
 
-    trigger = Trigger(unit=START)
 
     lines = LINES
 

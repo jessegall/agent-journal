@@ -1,4 +1,3 @@
-from declaring.trigger import START, Trigger
 from declaring.details import FeatureDetails
 from framework.recital import LINES, whispering
 from declaring.groups import Group
@@ -27,7 +26,6 @@ class RemindersDetails(FeatureDetails):
         no longer needed with journal reminder retire <n>.
     """
 
-    trigger = Trigger(unit=START)
 
     lines = LINES
 

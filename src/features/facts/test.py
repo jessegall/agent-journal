@@ -6,17 +6,19 @@ from tests.kit import nudges, report
 from tests.conftest import fresh
 
 
-def test_standing_pins_are_said_at_a_session_start_and_superseding_or_promoting_strikes_the_old():
+def test_standing_pins_are_said_on_a_chosen_cadence_and_superseding_or_promoting_strikes_the_old():
     record = fresh()
     pins = Facts(record, actor=AGENT)
     pins.create("the hook payload carries the parent's session id", keywords="word", brief="measured on 2026-09-01")
     pins.create("tests run bounded", keywords="word")
     report(record, "working", "PostToolUse", context=25)
-    assert nudges(record) == [], "the context filling says nothing"
+    report(record, "idle", "SessionStart")
+    assert [n for n in nudges(record) if "standing" in n] == [], "by default neither the context filling nor a start says them: the start block lists them"
+    record.set_setting("triggers", {"facts": {"unit": "start"}})
     report(record, "idle", "SessionStart")
     standing = lambda: [(n.title, n.brief) for n in Nudges(record).all(completed=True) if "standing" in n.title]
     assert standing() == [("2 facts standing, read them", "1. the hook payload carries the parent's session id; 2. tests run bounded")], \
-        "said at the start"
+        "said at the start once that cadence is chosen"
     report(record, "working", "PostToolUse", context=40)
     assert len(standing()) == 1, "not again while the session works"
 

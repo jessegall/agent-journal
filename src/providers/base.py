@@ -210,6 +210,10 @@ class Provider(ABC):
     def compacted(self, hook: Hook) -> bool:
         return False
 
+    def resumed(self, hook: Hook) -> bool:
+        """Whether the session came back with its whole conversation, so its context still holds what a start hands over."""
+        return False
+
     @classmethod
     def display_chunk(cls, raw: dict) -> Chunk | None:
         return None

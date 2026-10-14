@@ -8,5 +8,7 @@ from serving import ReadElsewhere, ReadJournalRoot
 
 class BriefTheSession(Answerer[HookResponding]):
     def answer(self, request: HookResponding, elsewhere: ReadElsewhere, journal_root: ReadJournalRoot) -> Answer:
-        text = briefing(elsewhere.here().record, journal_root, request.compacted) if request.event == HookEvent.SESSION_START else ""
+        if request.event != HookEvent.SESSION_START or request.resumed:
+            return Allowed()
+        text = briefing(elsewhere.here().record, journal_root, request.compacted)
         return Rewritten(text) if text else Allowed()

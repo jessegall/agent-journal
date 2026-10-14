@@ -1,4 +1,3 @@
-from declaring.trigger import START, Trigger
 from declaring.details import FeatureDetails, Line
 from framework.recital import LINES, WHISPER, whispering
 from declaring.groups import Group
@@ -33,7 +32,6 @@ class RulesDetails(FeatureDetails):
         file paths, searches and URLs included).
     """
 
-    trigger = Trigger(unit=START)
 
     lines = [
         *(line for line in LINES if line.name == WHISPER),
