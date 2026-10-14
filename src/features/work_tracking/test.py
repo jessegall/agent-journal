@@ -5,12 +5,9 @@ from resources.base import AGENT, USER
 from engine.gates import held
 from tests.kit import idle, nudges, nudges_with_briefs, report
 from tests.conftest import fresh, refused
-from controllers.types import Agents, Nudges, Questions, Todos, Works
+from controllers.types import Agents, Todos, Works
 from resources.base import SYSTEM
 from features.work_tracking.auto import QUIET_FOR, still_there
-from features.work_tracking.next import ready
-from resources.base import AGENT, USER
-from tests.kit import idle, nudges
 
 
 def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
