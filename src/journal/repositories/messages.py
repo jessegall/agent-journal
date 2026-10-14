@@ -1,5 +1,5 @@
 from journal.models.message import Message
-from journal.repositories.base import ScopedRepository
+from journal.repositories.scoped_repository import ScopedRepository
 
 
 class Messages(ScopedRepository[Message]):

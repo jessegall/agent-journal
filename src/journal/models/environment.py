@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.base import Model
+from journal.models.model import Model
 
 
 @dataclass(frozen=True)

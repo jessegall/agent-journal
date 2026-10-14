@@ -20,11 +20,16 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   No globals, no service locators in bodies.
 - **Task, not to-do.** A task carries its own state, start, finish and log lines (`TaskLog`
   rows). The old split between to-do and work is gone.
-- **Events** are an append-only table; hooks and commands both write to it. Features are
-  listeners on events and may add to the `Decision` sent back to the agent.
+- **Model events, Laravel style.** `journal/events/`: `Saving`, `Creating`/`Updating`, `Created`/
+  `Updated`, `Saved`, `Deleting`, `Deleted`, each carrying the model. The repository fires them
+  on the `Bus` at each step of a write; a `-ing` listener may refuse. Hooks arrive as
+  `HookReceived`; listeners answer with a `Decision` and the receiver folds them into one.
+- **Entries** are the append-only table of what happened (`Entry`, `Entries`); hooks and
+  commands both write to it. The in-process word is event, the stored word is entry.
 - **Supervisor** is its own package, `src/supervisor/`, stdlib only, never imports `journal`.
   It owns the agent's pty, keeps the journal server alive, and carries out instructions from
   a unix datagram socket: `Type`, `RestartAgent`, `RestartJournal`, `Stop`. Nothing else.
+- **One class per file**, named after the class in snake_case. Enums included.
 - Style: no clutter, small methods, no big if-chains (dispatch on type), docstrings one line
   and only for a non-obvious why.
 

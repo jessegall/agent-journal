@@ -1,5 +1,5 @@
 from journal.models.question import Question
-from journal.repositories.base import ScopedRepository
+from journal.repositories.scoped_repository import ScopedRepository
 
 
 class Questions(ScopedRepository[Question]):

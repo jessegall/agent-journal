@@ -1,22 +1,12 @@
-from typing import Generic, TypeVar
-
-from journal.hooks.decision import Decision
-from journal.models.event import Event
-
-E = TypeVar("E", bound=Event)
-
-
-class Listener(Generic[E]):
-    """Hears one kind of event and may add to the decision."""
-
-    kind: str
-
-    def hear(self, event: E, decision: Decision) -> Decision: ...
+from journal.events.event import Event
+from journal.features.listener import Listener
 
 
 class Bus:
     def __init__(self) -> None: ...
 
-    def listen(self, listener: Listener) -> None: ...
+    def listen(self, kind: type[Event], listener: Listener) -> None: ...
 
-    def tell(self, event: Event) -> Decision: ...
+    def dispatch(self, event: Event) -> list[object]:
+        """Every listener of this kind, in registration order; their answers, in that order."""
+        ...

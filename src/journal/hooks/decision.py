@@ -9,4 +9,6 @@ class Decision:
     reason: str = ""
     context: str = ""
 
+    def merged(self, other: "Decision") -> "Decision": ...
+
     def as_hook_output(self) -> dict: ...

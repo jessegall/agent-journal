@@ -14,10 +14,3 @@ class Model:
     def table(cls) -> str: ...
 
     def with_(self, **changes) -> "Model": ...
-
-
-@dataclass(frozen=True)
-class Scoped(Model):
-    """A row that belongs to one environment."""
-
-    environment_id: int = 0

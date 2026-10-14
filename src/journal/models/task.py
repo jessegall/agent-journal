@@ -1,14 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum
 
-from journal.models.base import Scoped
-
-
-class TaskState(StrEnum):
-    OPEN = "open"
-    STARTED = "started"
-    DONE = "done"
+from journal.models.scoped import Scoped
+from journal.models.task_state import TaskState
 
 
 @dataclass(frozen=True)
@@ -23,9 +17,3 @@ class Task(Scoped):
     def started(self, at: datetime) -> "Task": ...
 
     def finished(self, at: datetime, outcome: str) -> "Task": ...
-
-
-@dataclass(frozen=True)
-class TaskLog(Scoped):
-    task_id: int = 0
-    line: str = ""

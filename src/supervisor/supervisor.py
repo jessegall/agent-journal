@@ -1,5 +1,9 @@
 from supervisor.inbox import Inbox
-from supervisor.instruction import Instruction, RestartAgent, RestartJournal, Stop, Type
+from supervisor.instructions.instruction import Instruction
+from supervisor.instructions.restart_agent import RestartAgent
+from supervisor.instructions.restart_journal import RestartJournal
+from supervisor.instructions.stop import Stop
+from supervisor.instructions.type import Type
 from supervisor.journal_process import JournalProcess
 from supervisor.terminal import Terminal
 

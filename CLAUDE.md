@@ -1,5 +1,10 @@
 # agent-journal
 
+## Version 4 rules
+
+- **One class per file.** Every class, enum and dataclass has a file of its own, named after it in snake_case. A module never holds two classes.
+- NOTES.md at the root holds what is decided and what is still to settle; update it when either changes.
+
 ## Dispatching subagents
 
 Every Agent dispatch names its model: `haiku` for mechanical known-answer work, `sonnet`

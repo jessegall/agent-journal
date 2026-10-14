@@ -1,5 +1,5 @@
 from journal.models.environment import Environment
-from journal.repositories.base import Repository
+from journal.repositories.repository import Repository
 
 
 class Environments(Repository[Environment]):

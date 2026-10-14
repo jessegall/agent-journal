@@ -1,11 +1,6 @@
 from journal.db.connection import Connection
+from journal.db.migration import Migration
 from journal.db.schema import Schema
-
-
-class Migration:
-    number: int
-
-    def up(self, connection: Connection) -> None: ...
 
 
 class Migrator:

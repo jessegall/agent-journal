@@ -1,6 +1,8 @@
-from journal.http.controllers.base import Controller
-from journal.http.request import Request, Response
-from journal.repositories.tasks import TaskLogs, Tasks
+from journal.http.controllers.controller import Controller
+from journal.http.request import Request
+from journal.http.response import Response
+from journal.repositories.task_logs import TaskLogs
+from journal.repositories.tasks import Tasks
 
 
 class TaskController(Controller):

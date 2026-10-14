@@ -1,12 +1,7 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
-from journal.models.base import Scoped
-
-
-class Author(StrEnum):
-    USER = "user"
-    AGENT = "agent"
+from journal.models.author import Author
+from journal.models.scoped import Scoped
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 import socket
 from pathlib import Path
 
-from supervisor.instruction import Instruction
+from supervisor.instructions.instruction import Instruction
 
 
 class Inbox:

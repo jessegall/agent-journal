@@ -1,7 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from journal.console.command import Command
-from journal.repositories.tasks import TaskLogs, Tasks
+from journal.repositories.task_logs import TaskLogs
+from journal.repositories.tasks import Tasks
 
 
 class TaskCommand(Command):
