@@ -80,8 +80,12 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **A feature lives beside the states.** It owns its nudges (declared lines with templates),
   its state-free listeners and its settings. A state never owns a line: it names a feature's
   nudge in its `Transition` (`Tasks.CARRY_ON.about(task_id)`). A switched-off feature's nudges
-  are silent wherever a state names them, so no state checks a switch. A nudge is a row, so
-  the viewer shows it and a repeat is not sent twice.
+  are silent wherever a state names them, so no state checks a switch.
+- **A nudge is not a model.** It is a declaration on a feature (name, template) and, once
+  said, an `Entry` of kind `nudge` in the same timeline as the hook that caused it. The
+  `Nudger` in `engine/` renders it, queries the entries to drop a repeat, writes the entry
+  and delivers. Standing nudges are not stored: the state says them again and dedupe
+  decides. No nudge page, no nudge commands; wording is a feature setting if ever needed.
 - **Delivery**: a nudge born in a transition rides back in the hook's answer (context, or the
   Stop hook's carry-on); one born later (clock, deferred) is typed in through the supervisor.
 - **Not ported: boards, kanban, tickets, hosting.** The board is re-envisioned later.
