@@ -90,6 +90,9 @@ class Plans(Controller):
         r = self.load(n)
         if before and not 1 <= int(before) <= len(r.phases) + 1:
             raise Refused(f"plan {r.n} has no phase {before}")
+        named = [i for i, ph in enumerate(r.phases, 1) if ph[PHASE.title] == title]
+        if named:
+            raise Refused(f"plan {r.n} already has phase {named[0]}, {title}: journal plan rephrase {r.n} {named[0]} --when \"<complete when>\" rewords it")
         made = {PHASE.title: check_title(title), PHASE.when: check_title(when) if when is not None else "", PHASE.checkpoint: bool(checkpoint), PHASE.brief: brief, PHASE.todos: []}
         r.phases.insert(int(before) - 1 if before else len(r.phases), made)
         return self.save(r, "updated", phase=r.phases.index(made) + 1)
@@ -101,6 +104,20 @@ class Plans(Controller):
         for key, value in ((PHASE.title, title), (PHASE.when, when), (PHASE.checkpoint, checkpoint), (PHASE.brief, brief)):
             if value is not None:
                 phase[key] = check_title(value) if key in (PHASE.title, PHASE.when) and value else value
+        return self.save(r, "updated", phase=int(p))
+
+    @action
+    def drop(self, n: int, p: int):
+        """Removes a phase that holds no rows; refused for one the plan has reached."""
+        r = self.load(n)
+        phase = self._phase(r, p)
+        if any(phase.get(key) for key in PHASE_FIELDS.values()):
+            raise Refused(f"phase {p} of plan {r.n} still holds rows: journal plan todos {r.n} <another phase> <rows...> --move them first")
+        if r.status in RUNNING and int(p) <= r.current:
+            raise Refused(f"plan {r.n} has reached phase {p}, so it stays")
+        r.phases.pop(int(p) - 1)
+        if int(p) < r.current:
+            r.current -= 1
         return self.save(r, "updated", phase=int(p))
 
     @action
