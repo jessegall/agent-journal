@@ -10,9 +10,8 @@ ADDED = "added"
 QUIET_FILL = 90
 
 
-def uncovered(boards: ReadRows[Board], board) -> str:
-    missing = boards.uncovered(board) if board.done_when else []
-    return (" Name in the same line what the goal will miss without a card for it: " + "; ".join(missing) + ".") if missing else ""
+def missing(boards: ReadRows[Board], board) -> tuple[str, ...]:
+    return tuple(boards.uncovered(board)) if board.done_when else ()
 
 
 class SpotCardsAdded(Listener[BoardChanged]):
@@ -24,7 +23,7 @@ class SpotCardsAdded(Listener[BoardChanged]):
         if not added.get("tickets"):
             return []
         return [CardsAddedToBoard(board=board.n, title=board.title, count=len(added["tickets"]), tickets=", ".join(f"ticket {t}" for t in added["tickets"]),
-                                  uncovered=uncovered(boards, board)).once(f"{ADDED}|{board.n}:{added['at']}")]
+                                  missing=missing(boards, board)).once(f"{ADDED}|{board.n}:{added['at']}")]
 
 
 class SpotQuietFilling(Listener[ClockTicked]):

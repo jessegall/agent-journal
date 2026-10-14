@@ -875,7 +875,7 @@ def loaded() -> Package:
     from payload import LIBRARY
     from providers.base import HookCommand
     from skills import LINKED, publish
-    from features.boards.agent_types import written as agent_types
+    from framework.agent_types import written as agent_types
     from engine.record import Record
     from engine.runtime import default_env, mark_upgrade, restarting, upgrade_mark
     from framework import managed

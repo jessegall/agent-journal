@@ -67,7 +67,8 @@ class CardsAddedToBoard(Fact):
     title: str
     count: int
     tickets: str
-    uncovered: str
+    missing: tuple[str, ...]
+    """The goal's clauses no card covers yet."""
 
 
 @dataclass(frozen=True, kw_only=True)

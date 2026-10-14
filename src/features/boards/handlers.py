@@ -6,9 +6,16 @@ from resources.types import Board
 from serving import Chat, Rows
 
 
+def uncovered(missing: tuple[str, ...]) -> str:
+    """What the goal will miss without a card for it, as the line words it, and nothing when every clause has a card."""
+    if not missing:
+        return ""
+    return f" Name in the same line what the goal will miss without a card for it: {'; '.join(missing)}."
+
+
 class OfferToPlaceAddedCards(Handler[CardsAddedToBoard]):
     def handle(self, event: CardsAddedToBoard, chat: Chat) -> list[Fact]:
-        chat.say(ADDED, n=event.board, title=event.title, count=event.count, tickets=event.tickets, uncovered=event.uncovered)
+        chat.say(ADDED, n=event.board, title=event.title, count=event.count, tickets=event.tickets, uncovered=uncovered(event.missing))
         return []
 
 

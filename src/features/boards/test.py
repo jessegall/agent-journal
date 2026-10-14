@@ -13,6 +13,15 @@ from tests.conftest import fresh, refused
 from tests.kit import Nudges, nudges, report
 
 
+def working_record():
+    """A record with the shipped sequences, its agent at work."""
+    features.load()
+    record = fresh()
+    ship(record)
+    report(record, "working", "PreToolUse")
+    return record
+
+
 def test_a_board_question_is_seen_only_on_its_board():
     features.load()
     record = fresh()
@@ -33,10 +42,7 @@ def test_a_board_question_is_seen_only_on_its_board():
 
 
 def test_a_request_opens_a_session_that_cancel_closes():
-    features.load()
-    record = fresh()
-    ship(record)
-    report(record, "working", "PreToolUse")
+    record = working_record()
     boards = Boards(record, actor=USER)
     board = boards.create("Shared Journal")
     stale = Boards(record, actor=AGENT).ask(board.n, "An old question?", options=[{"title": "A"}])
@@ -127,10 +133,7 @@ def test_the_agent_says_how_many_drafts_are_coming():
 
 
 def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
-    features.load()
-    record = fresh()
-    ship(record)
-    report(record, "working", "PreToolUse")
+    record = working_record()
     boards = Boards(record, actor=USER)
     board = boards.create("roadmap", stages=[])
     assert "no document" in refused(lambda: boards.build(board.n)), "a board is built only from a document it holds"
@@ -160,10 +163,7 @@ def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
 
 
 def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
-    features.load()
-    record = fresh()
-    ship(record)
-    report(record, "working", "PreToolUse")
+    record = working_record()
     boards = Boards(record, actor=USER)
     board = boards.create("Product")
     assert "no file" in refused(lambda: boards.hand(board.n, "spec.md")), "only a document the board holds is handed over"
@@ -192,10 +192,7 @@ def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
 
 
 def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
-    features.load()
-    record = fresh()
-    ship(record)
-    report(record, "working", "PreToolUse")
+    record = working_record()
     boards = Boards(record, actor=USER)
     Boards(record, actor=USER).create("Old board")
     board = boards.create("Shared Journal")
@@ -209,10 +206,7 @@ def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
 
 
 def test_the_agent_answers_in_the_new_work_panel_with_board_say():
-    features.load()
-    record = fresh()
-    ship(record)
-    report(record, "working", "PreToolUse")
+    record = working_record()
     boards = Boards(record, actor=USER)
     board = boards.create("Shared Journal")
     made = boards.request(board.n, "I want to share")
@@ -245,10 +239,7 @@ def test_added_cards_make_the_agent_offer_to_place_them():
 
 
 def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
-    features.load()
-    record = fresh()
-    ship(record)
-    report(record, "working", "PreToolUse")
+    record = working_record()
     boards, agent = Boards(record, actor=USER), Boards(record, actor=AGENT)
     board = boards.create("Shared Journal")
     boards.request(board.n, "I want to share")
@@ -266,14 +257,14 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     assert boards.load(board.n).done_when[-1] == "Sessions expire after a day" and len(boards.load(board.n).done_when) == 3, \
         "a request on a started board adds clauses instead of replacing the goal"
     from tests.kit import handle
-    from features.boards.agent_types import written
+    from framework.agent_types import written
     from providers import PROVIDERS
     (record.root.parent / ".claude").mkdir(exist_ok=True)
     (record.root.parent / ".codex").mkdir(exist_ok=True)
     record.set_setting("boards", {"filler_model": {"claude": "haiku", "codex": "gpt-6-sol"}})
     profiles = written(record.root.parent, record)
     files = {f.stem: f.read_text() for f in profiles if f.suffix == ".md"}
-    assert set(files) == {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"} and "model: haiku" in files["board-filler"], \
+    assert {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"} <= set(files) and "model: haiku" in files["board-filler"], \
         "the four agent types are written for Claude, the filler with the model Settings chose"
     codex = {f.stem: f.read_text() for f in profiles if f.suffix == ".toml"}
     assert 'model = "gpt-6-sol"' in codex["board-filler"], "Codex's own profile names a Codex model, chosen beside Claude's"

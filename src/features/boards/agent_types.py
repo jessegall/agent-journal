@@ -1,17 +1,9 @@
-from dataclasses import dataclass
-from pathlib import Path
-
+from declaring.agent_types import AgentType
 from features.boards.exploration import FILLER
-from serving import SERVED, Providers
 
 
-@dataclass(frozen=True)
-class AgentType:
-    name: str
-    description: str
-    tools: str
-    setting: str
-    prompt: str
+class BoardAgentType(AgentType):
+    """A board's agent type, handed every sequence it follows written out, so it knows each step before the journal hands it over."""
 
     @property
     def instructions(self) -> str:
@@ -21,7 +13,7 @@ class AgentType:
 
 
 AGENT_TYPES = (
-    AgentType(FILLER, "Fills a board with the cards that reach the user's goal, following the board's sequences. Dispatch it for a New work "
+    BoardAgentType(FILLER, "Fills a board with the cards that reach the user's goal, following the board's sequences. Dispatch it for a New work "
               "request on a board.", "Bash, Read, Grep, Glob", "filler_model",
               "You fill one board and do nothing else. The journal command is on your PATH: run it as journal --agent board-filler "
               "<noun> <word>. Every sequence you follow is written out below, so you know each step before the journal hands it to "
@@ -29,25 +21,18 @@ AGENT_TYPES = (
               "already taken up: do it at once, without journal sequence follow. Look at the project's code with the Grep and Glob tools, never with shell commands. Use only the journal board and ticket commands the steps name; read an attached document with "
               "Read. Never load skills, write in the chat, start the board, move tickets, edit files or run git. When the last step is "
               "done, answer with one line: drafted <count> cards on board <n>."),
-    AgentType("ticket-reviewer", "Reviews a finished ticket before it is merged: runs its tests and checks its diff against each done-when "
+    BoardAgentType("ticket-reviewer", "Reviews a finished ticket before it is merged: runs its tests and checks its diff against each done-when "
               "clause of its card. Read-only.", "Read, Grep, Glob, Bash", "reviewer_model",
               "You review one ticket's finished work. Read the ticket (journal ticket show <n>), its diff against the board's branch and "
               "its tests' output. For every done-when clause of the card, answer pass or fail with the file and line that show it. "
               "Change nothing and write nothing to the journal."),
-    AgentType("plan-reviewer", "Reviews a ticket's plan against its card before it is approved. Read-only.", "Read, Grep, Glob, Bash",
+    BoardAgentType("plan-reviewer", "Reviews a ticket's plan against its card before it is approved. Read-only.", "Read, Grep, Glob, Bash",
               "reviewer_model",
               "You review one ticket's plan. Read the ticket's card and the plan it names. Say whether the plan does the ticket and "
               "nothing more, and list what must change if not. Change nothing and write nothing to the journal."),
-    AgentType("goal-verifier", "Checks a finished board's goal clause by clause on the board's branch. Read-only.", "Read, Grep, Glob, Bash",
+    BoardAgentType("goal-verifier", "Checks a finished board's goal clause by clause on the board's branch. Read-only.", "Read, Grep, Glob, Bash",
               "reviewer_model",
               "You check whether a board reached its goal. Read the board (journal board show <n>): its goal and numbered done-when "
               "clauses. Run the full tests on the board's branch, then check each clause for real: run it, open it, read it. Answer met "
               "or not met per clause, with evidence. Change nothing and write nothing to the journal."),
 )
-
-
-def written(project: Path, record) -> list[Path]:
-    from features.boards.details import BoardsDetails
-    values = BoardsDetails.values(record)
-    return [path for agent in SERVED.given(Providers).every() if agent.present(project)
-            for path in agent.agent_types(project, [(kind, getattr(values, kind.setting)[agent.name]) for kind in AGENT_TYPES])]

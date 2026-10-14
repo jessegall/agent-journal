@@ -49,6 +49,7 @@ class Feature(ABC):
     fixed: ClassVar[bool] = False
     nudges: ClassVar[tuple] = ()
     sequences: ClassVar[tuple] = ()
+    agent_types: ClassVar[tuple] = ()
     scope: ClassVar[str] = ENVIRONMENT
     commands_only: bool = False
 

@@ -9,7 +9,8 @@ from resources.types import AgentRow, Message
 from resources.base import SYSTEM
 from declaring.registries import SHIPPED
 from controllers.types import Boards
-from features.boards.agent_types import written
+from framework.agent_types import written
+from features.boards.agent_types import AGENT_TYPES
 from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards
 from features.boards.listeners import SpotCardsAdded, SpotQuietFilling
@@ -76,6 +77,7 @@ class BoardsFeature(Feature):
     nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas,
                     guarantee="When a board asks for ideas, the agent is told to think up what might be wanted on it."),)
     sequences = SEQUENCES
+    agent_types = AGENT_TYPES
 
     def settings_changed(self, record, actor: str) -> None:
         written(record.root.parent, record)
@@ -106,14 +108,14 @@ class BoardsFeature(Feature):
         journal.commands.refuse(RowWriting, FillerKeepsToTheBoard(), expects=FILLER_KEEPS)
         journal.events.listen(BoardChanged, SpotCardsAdded(), expects=[
             Given(added(), rows=[board(4, 5), AGENT_ROW])
-                >> Dispatches(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", uncovered="").once("added|1:10.0")),
+                >> Dispatches(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", missing=()).once("added|1:10.0")),
             Given(added(), rows=[board(), AGENT_ROW]) >> Dispatches(nothing),
             Given(added(), rows=[board(4, 5)]) >> Dispatches(nothing),
             Given(added(fields=("title",)), rows=[board(4, 5), AGENT_ROW]) >> Dispatches(nothing),
             Given(added(action="created"), rows=[board(4, 5), AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(CardsAddedToBoard, OfferToPlaceAddedCards(), expects=[
-            Given(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", uncovered=""), rows=[board(4, 5), AGENT_ROW]) >> Nudged("added", n=1, count=2),
+            Given(CardsAddedToBoard(board=1, title="Launch", count=2, tickets="ticket 4, ticket 5", missing=()), rows=[board(4, 5), AGENT_ROW]) >> Nudged("added", n=1, count=2),
         ])
         journal.events.listen(ClockTicked, SpotQuietFilling(), expects=[
             Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "drafting", "since": 1.0}}), AGENT_ROW])
