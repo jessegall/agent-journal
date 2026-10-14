@@ -63,6 +63,7 @@ class NudgesFeature(Feature):
                 >> Dispatches(StandingNudgesLost(elsewhere=(), gone=(1,), kept=())),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=OFFERED) >> Told("next", times=1) & Stands("next"),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Waited(6))) >> Told("next", times=2) & Stands("next") & Closed("next", why="replaced by nudge"),
+            Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], settings={"nudges.every": 0}, earlier=(*OFFERED, Waited(6))) >> Told("next", times=1),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "start", 1, by=AGENT), Waited(60))) >> Told("next", times=1),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "block", 1, "waits on the vendor", by=AGENT))) >> Closed("next"),
             Given(Ticked(), rows=[AgentRow(n=1, title="claude-1"), SCHEMA], earlier=(*OFFERED, Acted(Todos, "ask", 1, "Files or SQLite?", options=[{"title": "Files"}, {"title": "SQLite"}], pick=1, by=AGENT), Waited(60))) >> Closed("next"),
