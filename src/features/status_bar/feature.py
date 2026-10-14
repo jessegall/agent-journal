@@ -22,6 +22,10 @@ def edited(name: str, after: float = 0, **more) -> dict:
     return {"command": f"editing {name}", "tool": "Edit", "files": [name], "at": WHEN + after, "effect": "writes", **more}
 
 
+def counting(name: str, after: float = 0, added: int = 0, removed: int = 0) -> dict:
+    return edited(name, after, changed={"added": added, "removed": removed})
+
+
 def read(name: str, after: float = 0) -> dict:
     return {"command": f"reading {name}", "tool": "Read", "files": [name], "at": WHEN + after, "effect": "reads"}
 
@@ -51,6 +55,14 @@ def drawn(*commands: dict, **given) -> Given:
 
 def doing(*commands: dict, **given) -> Given:
     return Given(DoingStale(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"commands": list(commands)})], **given)
+
+
+def effecting(effect: str) -> Given:
+    return doing(ran("x", effect=effect, files=["a.py"]))
+
+
+def now_doing(text: str) -> Updated:
+    return Updated(AgentRow(n=1), doing=text)
 
 
 def rollout(resets: int) -> str:
@@ -88,10 +100,10 @@ class StatusLine(Feature):
                 said(0, "git tracking files", [verb("git"), rolling(["tracking", "committing", "pushing"]), rolling(["files", "changes", "changes"])], False, 1, 3.0)]}),
             drawn(ran("journal message read 601")) >> Remembered("bar", {"queue": [
                 said(0, "journalling reading message 601", [verb("journalling"), named("reading"), named("message"), named("601")], False, 0, 0.0)]}),
-            drawn(edited("a.py", changed={"added": 3, "removed": 1}), edited("a.py", 1, changed={"added": 2}), clock=at(WHEN + 2)) >> Remembered("bar", {"queue": [
+            drawn(counting("a.py", 0, 3, 1), counting("a.py", 1, 2), clock=at(WHEN + 2)) >> Remembered("bar", {"queue": [
                 said(0, "editing a.py", [verb("editing"), named("a.py"), {"value": 5, "prefix": "+", "increments": True, "color": "green"},
                                          {"value": 1, "prefix": "-", "increments": True, "color": "red"}], False, 1, 1.0)]}),
-            drawn(edited("a.py", changed={"added": 3}), edited("b.py", 1, changed={"removed": 2}), clock=at(WHEN + 2)) >> Remembered("bar", {"queue": [
+            drawn(counting("a.py", 0, 3), counting("b.py", 1, 0, 2), clock=at(WHEN + 2)) >> Remembered("bar", {"queue": [
                 said(0, "editing a.py", [verb("editing"), rolling(["a.py", "b.py"]), {"value": [3, 6], "prefix": "+", "increments": True, "color": "green", "duration": 1.0},
                                          {"value": [0, 2], "prefix": "-", "increments": True, "color": "red", "duration": 1.0}], False, 1, 2.0)]}),
             drawn(ran("x", effect="writes", files=["a.py"], made=["a.py"])) >> Remembered("bar", {"queue": [
@@ -103,25 +115,25 @@ class StatusLine(Feature):
             Given(AgentReported(agent=1), rows=[AgentRow(n=1)]) >> Dispatches(DoingStale(agent=1).spaced("doing|1", BAR_EVERY)),
         ])
         journal.events.handle(DoingStale, NoteWhatItDoes(), expects=[
-            Given(DoingStale(agent=1), rows=[AgentRow(n=1, data={"doing": "Reading orchestra.js"})]) >> Updated(AgentRow(n=1), doing=""),
+            Given(DoingStale(agent=1), rows=[AgentRow(n=1, data={"doing": "Reading orchestra.js"})]) >> now_doing(""),
             Given(DoingStale(agent=1), rows=[AgentRow(n=1)]) >> Unchanged(),
-            doing(edited("now.py", 1), clock=at(WHEN + 2)) >> Updated(AgentRow(n=1), doing="editing now.py"),
-            doing(edited("now.py", 1, changed={"added": 12, "removed": 3}), clock=at(WHEN + 2)) >> Updated(AgentRow(n=1), doing="editing now.py +12 -3"),
-            doing(ran("journal todo")) >> Updated(AgentRow(n=1), doing="journalling listing todos"),
-            doing(ran("python3 src/journal.py message read 601")) >> Updated(AgentRow(n=1), doing="journalling reading message 601"),
-            doing(ran("python3 tools/build.py")) >> Updated(AgentRow(n=1), doing="running python3 build.py"),
-            doing(read("a.png")) >> Updated(AgentRow(n=1), doing="viewing a.png"),
-            doing(read("b.mp4")) >> Updated(AgentRow(n=1), doing="watching b.mp4"),
-            doing(ran("journal nothing-known")) >> Updated(AgentRow(n=1), doing="journalling checking nothing-known"),
-            doing(ran("node")) >> Updated(AgentRow(n=1), doing="running node"),
-            doing(ran("bash <<EOF\necho\nEOF")) >> Updated(AgentRow(n=1), doing="running bash script"),
-            doing(ran("x", effect="writes", files=["a.py"])) >> Updated(AgentRow(n=1), doing="editing a.py"),
-            doing(ran("x", effect="reads", files=["a.py"])) >> Updated(AgentRow(n=1), doing="reading files"),
-            doing(ran("x", effect="deletes", files=["a.py"])) >> Updated(AgentRow(n=1), doing="deleting a.py"),
-            doing(ran("x", effect="tests", files=["a.py"])) >> Updated(AgentRow(n=1), doing="testing tests"),
-            doing(ran("x", effect="installs", files=["a.py"])) >> Updated(AgentRow(n=1), doing="installing dependencies"),
-            doing(ran("x", effect="builds", files=["a.py"])) >> Updated(AgentRow(n=1), doing="building x"),
-            doing(ran("x", effect="", files=["a.py"])) >> Updated(AgentRow(n=1), doing="running x"),
+            doing(edited("now.py", 1), clock=at(WHEN + 2)) >> now_doing("editing now.py"),
+            doing(counting("now.py", 1, 12, 3), clock=at(WHEN + 2)) >> now_doing("editing now.py +12 -3"),
+            doing(ran("journal todo")) >> now_doing("journalling listing todos"),
+            doing(ran("python3 src/journal.py message read 601")) >> now_doing("journalling reading message 601"),
+            doing(ran("python3 tools/build.py")) >> now_doing("running python3 build.py"),
+            doing(read("a.png")) >> now_doing("viewing a.png"),
+            doing(read("b.mp4")) >> now_doing("watching b.mp4"),
+            doing(ran("journal nothing-known")) >> now_doing("journalling checking nothing-known"),
+            doing(ran("node")) >> now_doing("running node"),
+            doing(ran("bash <<EOF\necho\nEOF")) >> now_doing("running bash script"),
+            effecting("writes") >> now_doing("editing a.py"),
+            effecting("reads") >> now_doing("reading files"),
+            effecting("deletes") >> now_doing("deleting a.py"),
+            effecting("tests") >> now_doing("testing tests"),
+            effecting("installs") >> now_doing("installing dependencies"),
+            effecting("builds") >> now_doing("building x"),
+            effecting("") >> now_doing("running x"),
         ])
         journal.events.listen(AgentReported, ReadUsage(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1)]) >> Dispatches(nothing),
