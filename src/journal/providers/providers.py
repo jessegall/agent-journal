@@ -11,3 +11,6 @@ class Providers:
 
     def named(self, name: str) -> Provider:
         return self._by_name[name]
+
+    def all(self) -> list[Provider]:
+        return list(self._by_name.values())
