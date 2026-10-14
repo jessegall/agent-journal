@@ -18,7 +18,7 @@ class NotAnOutcome(TypeError):
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
-           "Formats", "Nudged", "Held", "Answered", "Remembered", "Set", "Whispered",
+           "Formats", "Nudged", "Held", "Released", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
@@ -312,6 +312,14 @@ class Held(Outcome):
     why: str
     def holds(self, seen) -> str:
         return "" if seen.held == self.why else f"it held the writes with {seen.held!r}, not with {self.why!r}"
+
+
+@dataclass(frozen=True)
+class Released(Outcome):
+    """Every hold on the agents' writes was lifted."""
+
+    def holds(self, seen) -> str:
+        return "" if seen.held is None else f"it left the writes held with {seen.held!r}"
 
 
 @dataclass(frozen=True)

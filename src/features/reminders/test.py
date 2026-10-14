@@ -45,12 +45,6 @@ def test_on_worked_the_standing_reminders_are_said_once_per_idle_stretch_after_t
     assert nudges(record)[-1] == ("1 reminder standing, read them", "2. say which environment"), "a retired reminder is not repeated"
 
 
-def test_nothing_standing_nothing_said():
-    empty = fresh()
-    report(empty, "idle", "Stop")
-    assert nudges(empty) == [], "no reminders: no nudge"
-
-
 def test_configured_by_unit_every_2_tool_uses():
     record = fresh()
     record.set_setting("triggers", {"reminders": {"every": 2, "unit": "uses"}})

@@ -41,7 +41,7 @@ class NoEntryForThisKind(LookupError):
         return cls(f"there is no way to play a {kind!r} registration yet; the run plays {', '.join(sorted(ENTRIES))}")
 
 
-def scratch(given: Given, inside: Path) -> Record:
+def scratch(given: Given, inside: Path, holder: str = "expects") -> Record:
     """A record holding exactly what the Given states - its settings AND its rows - thrown away when the play ends. The caller says which folder it is built in, because only the caller knows what else is running beside it."""
     record = Record(Path(tempfile.mkdtemp(dir=inside)) / ".journal", "t")
     record.home.mkdir(parents=True)
@@ -61,7 +61,7 @@ def scratch(given: Given, inside: Path) -> Record:
     if given.transcript:
         speaking_from(record, given.transcript)
     if given.held:
-        holding(record, given.held)
+        holding(record, given.held, holder)
     return record
 
 
@@ -81,11 +81,11 @@ def speaking_from(record: Record, text: str) -> None:
         agents.update(row.n, transcript=str(path))
 
 
-def holding(record: Record, why: str) -> None:
-    """Leaves every agent's writes held, as a feature that held them would have, in the gate file the engine reads."""
+def holding(record: Record, why: str, holder: str) -> None:
+    """Leaves every agent's writes held by the feature under play, in the gate file the engine reads, so that feature can release its own hold."""
     from controllers.types import Agents
     for row in Agents(record, actor=SYSTEM).rows.standing():
-        hold(record, row.title, "expects", Hold(why=why))
+        hold(record, row.title, holder, Hold(why=why))
 
 
 def written(record: Record, row) -> None:
@@ -383,7 +383,7 @@ def played(promise, expectation, inside: Path) -> Seen:
     if promise.kind not in ENTRIES:
         raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
-    record, world = scratch(given, inside), World.of(given)
+    record, world = scratch(given, inside, promise.feature.name), World.of(given)
     with at_the_givens_hour(given), with_the_givens_programs(given), with_the_scratch_secrets(record):
         for earlier in given.earlier:
             ENTRIES[promise.kind](promise, replace(given, on=earlier, earlier=()), record, world)

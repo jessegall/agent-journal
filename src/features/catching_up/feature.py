@@ -3,7 +3,7 @@ import time
 from controllers.types import Messages
 from events.agents import AgentReported
 from events.catching_up import Compacting
-from expects import Answered, Dispatches, Given, Held, nothing
+from expects import Answered, Dispatches, Given, Held, Released, nothing
 from framework.base import Feature
 from features.catching_up.commands import Recent
 from features.catching_up.details import CatchingUpDetails
@@ -31,6 +31,14 @@ class CatchingUp(Feature):
             Given((Messages,), rows=[Message(n=5, title="one", seen=["user"], created=WRITTEN), Message(n=6, title="two", seen=["user"], created=WRITTEN)],
                   settings={"catching_up.count": 1})
                 >> Answered(f"message 6 · the user · {WHEN}\ntwo"),
+            Given((Messages,), rows=[Message(n=5, title="merge", brief="Merge the pull requests\ninto main, within the hour", seen=["user"], created=WRITTEN)])
+                >> Answered(f"message 5 · the user · {WHEN}\nMerge the pull requests\ninto main, within the hour"),
+            Given((Messages,), rows=[Message(n=5, title="an answered question", seen=["user"], created=WRITTEN, completed=WRITTEN),
+                                     Message(n=6, title="a message taken back", seen=["user"], created=WRITTEN, deleted=WRITTEN)])
+                >> Answered(f"message 5 · the user · {WHEN}\nan answered question"),
+            Given((Messages,), rows=[AgentRow(n=1, title="claude-1")], held=read_held(50)) >> Answered("no messages yet") & Released(),
+            Given((Messages,), rows=[AgentRow(n=1, title="claude-1"), Message(n=5, title="what you were doing", seen=["user"], created=WRITTEN)], held=read_held(50))
+                >> Answered(f"message 5 · the user · {WHEN}\nwhat you were doing") & Released(),
         ])
         journal.events.listen(AgentReported, SpotCompaction(), expects=[
             Given(AgentReported(agent=1, hook="PreCompact"), rows=[AgentRow(n=1)]) >> Dispatches(Compacting(agent=1)),
