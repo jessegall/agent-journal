@@ -148,7 +148,7 @@ function current() {
         arriving: body.arriving,
         trip: body.trip,
         landing: body.landing,
-        place: body.airborne ? {...place.value, posture: body.airborne.posture} : body.place,
+        place: body.airborne ? {...body.place, posture: body.airborne.posture} : body.place,
         beat,
         state: held.value.state,
         doing: doing(),
@@ -275,7 +275,7 @@ function setOff() {
     stopSwinging();
     body.footing = null;
     if (trip) {
-        body.trip = {...moving.value, ...trip};
+        body.trip = {...body.trip, ...trip};
         return nextLeg();
     }
     body.trip = null;
@@ -297,15 +297,15 @@ function nextLeg() {
         return step();
     }
     const left = legs.slice(legs.indexOf(next));
-    body.trip = {...moving.value, started: true, moves: false, hopping: Boolean(next.hopping), clip: next.clip, legs: left};
+    body.trip = {...body.trip, started: true, moves: false, hopping: Boolean(next.hopping), clip: next.clip, legs: left};
     step();
 }
 
 // the next leg carries the picture to its end, stepped each frame (watchFooting), and lands it when it hopped
 function depart() {
     const [next, ...legs] = body.trip.legs;
-    body.trip = {...moving.value, moves: true, legs};
-    body.walk = {from: {...at.value}, began: performance.now(), on: null};
+    body.trip = {...body.trip, moves: true, legs};
+    body.walk = {from: {...body.at}, began: performance.now(), on: null};
     body.leg = next;
     if (!next.hopping) {
         const feet = feetOf(body.at);
@@ -363,9 +363,9 @@ function walkOn() {
 
 function carryWalk(dx, dy) {
     const lifted = (each) => ({...each, x: each.x + dx, y: each.y + dy});
-    body.walk = {...walk, from: lifted(body.walk.from)};
+    body.walk = {...body.walk, from: lifted(body.walk.from)};
     body.leg = lifted(body.leg);
-    body.trip = {...moving.value, legs: body.trip.legs.map(lifted)};
+    body.trip = {...body.trip, legs: body.trip.legs.map(lifted)};
 }
 
 // The figure falls from the line it rests on at `spot`, in its posture there, never from below the ground at home, and goes on to `to`
@@ -386,7 +386,7 @@ function fallFrom(spot, to) {
 function fallOn() {
     const now = performance.now();
     const step = fallFrame(body.airborne, catching(latestFloors().floors, body.airborne.catches), (now - body.airborne.at) / 1000, fall.value, SIZE, keptStill());
-    body.airborne = {...airborne, ...step, at: now};
+    body.airborne = {...body.airborne, ...step, at: now};
     body.at = placed(step, body.airborne.posture);
     if (!step.landed) return;
     const {to, posture} = body.airborne;
@@ -409,7 +409,7 @@ function hopOn() {
     if (aimed.trip !== trip) {
         body.trip = aimed.trip;
         body.leg = aimed.leg;
-        body.walk = {...walk, from: aimed.from};
+        body.walk = {...body.walk, from: aimed.from};
     }
     body.at = legAt(body.leg, body.walk.from, performance.now() - body.walk.began, keptStill());
 }

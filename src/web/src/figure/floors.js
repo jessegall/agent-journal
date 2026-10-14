@@ -55,11 +55,20 @@ export function readFloors(prev = snapshot, at = performance.now()) {
     return Object.freeze({at, world, view, floors: Object.freeze(read.map((floor) => Object.freeze({...floor, vy: velocity(prev, floor, at)})))});
 }
 
+// who is handed each read the moment it is made, in the same frame, as the drawing of the floors is
+const readers = new Set();
+export function onFloors(read) {
+    readers.add(read);
+    return () => readers.delete(read);
+}
+
 export function startFloors() {
     stopFloors();
     const loop = () => {
         frame = requestAnimationFrame(loop);
-        if (!document.hidden) snapshot = readFloors(snapshot);
+        if (document.hidden) return;
+        snapshot = readFloors(snapshot);
+        readers.forEach((read) => read(snapshot));
     };
     loop();
 }

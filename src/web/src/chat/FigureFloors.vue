@@ -1,19 +1,15 @@
 <script setup>
 import {onMounted, onUnmounted, shallowRef} from "vue";
-import {latestFloors} from "../figure/floors.js";
+import {latestFloors, onFloors} from "../figure/floors.js";
 import FigureFloorLine from "./FigureFloorLine.vue";
 
-// the floors as the floors loop last read them, drawn on a frame of their own so the chat's state is never written sixty times a second
-const floors = shallowRef([]);
-let frame = 0;
+// the floors as the floors loop reads them, handed over in the frame they are read in so the lines never trail what they stand on, and
+// kept apart from the chat's state, which is never written sixty times a second
+const floors = shallowRef(latestFloors().floors);
+let stop = () => {};
 
-const draw = () => {
-    frame = requestAnimationFrame(draw);
-    floors.value = latestFloors().floors;
-};
-
-onMounted(draw);
-onUnmounted(() => cancelAnimationFrame(frame));
+onMounted(() => (stop = onFloors((read) => (floors.value = read.floors))));
+onUnmounted(() => stop());
 </script>
 
 <template>
