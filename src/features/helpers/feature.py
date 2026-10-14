@@ -43,6 +43,24 @@ HELPING_HERE = Environment(n=1, title="t", data={"kind": "helper", "owner": "hel
 ANSWERING = Helper(n=3, title="Rhea", data={"name": "Rhea", "answering": True})
 BY_AGENT = {"actor": AGENT}
 SUBAGENT_ROW = AgentRow(n=1, title="claude-1", data={"parent": "claude-0", "provider": "claude"})
+KEPT_TAIL = 'Or free a place: journal helper retire <n> --why "<reason>" for a helper, journal agent retire <id> for a subagent.'
+ADA = '- Ada (map the hooks): SendMessage({to: "a1", message: "<the new work>"})'
+ASKING = AgentDispatching(kind="explore", model="sonnet", model_supported=True, description="Ada: map the hooks", session="claude-1")
+
+
+def subagent(task: str, address: str, kind: str = "explore", **more) -> dict:
+    return {"id": f"toolu_{address}", "task": task, "type": kind, "session": address, **more}
+
+
+def crew(*subagents: dict) -> AgentRow:
+    return AgentRow(n=1, title="claude-1", data={"provider": "claude", "subagent_rows": list(subagents)})
+
+
+def at_limit(count: int, idle: int, kind: str, *offers: str) -> str:
+    return (f"{count} agents of this kind ({kind}) are kept for reuse, the most this project keeps of one kind, and {idle} of them wait for work. "
+            "Send this work to one that knows it instead of starting another:\n" + "\n".join(offers) + "\n" + KEPT_TAIL)
+
+
 NEVER_RUN_TESTS = ("Helpers and subagents write tests but never run them: write the test that proves your change, commit, and name it in your report so the agent that dispatched you runs it. "
                    "That agent can allow your runs with journal helper allow_suite.")
 KEPT_BY_ITS_HELPER = ("todo 5 is handed to helper 3: only it marks it done, and taking its work closes it; "
@@ -62,16 +80,17 @@ class HelpersFeature(Feature):
         ])
         journal.events.handle(HelperTurnFailed, TellAFailedTurn(), expects=[
             Given(HelperTurnFailed(failure="overloaded"), rows=[AGENT_ROW]) >> Unchanged(),
+            Given(HelperTurnFailed(failure="overloaded"), rows=[AGENT_ROW, HELPING_HERE, Helper(n=3, title="Rhea", data={"name": "Rhea", "report": "My turn ended in an error, so I stopped: overloaded"})]) >> Unchanged(),
             Given(HelperTurnFailed(failure="overloaded"), rows=[AGENT_ROW, HELPING_HERE, AT_WORK])
                 >> Updated(Helper(n=3), report="My turn ended in an error, so I stopped: overloaded", answering=False),
         ])
         journal.events.handle(HelperContinued, MarkTheHelperContinued(), expects=[
             Given(HelperContinued(n=4, type="helper", action="continued"), rows=[AGENT_ROW, Helper(n=4, title="Zed", data={"name": "Zed", "latest": "reading the log"})])
-                >> Updated(AgentRow(n=1), cards=[{"label": "Continued helper 4", "name": "Zed", "detail": "reading the log"}]),
+                >> Updated(AgentRow(n=1), cards=[{"label": "Continued helper 4", "name": "Zed", "detail": "reading the log", "icon": "bot", "kind": "helpers", "helper": 4}]),
         ])
         journal.events.handle(HelperBriefed, MarkTheHelperBriefed(), expects=[
             Given(HelperBriefed(n=4, type="helper", action="briefed"), rows=[AGENT_ROW, Helper(n=4, title="Zed", data={"name": "Zed", "latest": "reading the log"})])
-                >> Updated(AgentRow(n=1), cards=[{"label": "Briefed helper 4", "name": "Zed", "detail": "reading the log"}]),
+                >> Updated(AgentRow(n=1), cards=[{"label": "Briefed helper 4", "name": "Zed", "detail": "reading the log", "icon": "bot", "kind": "helpers", "helper": 4}]),
         ])
         journal.events.listen(ClockTicked, DueOnClock(HelpersWatchDue, "watch"), expects=[
             Given(ClockTicked(agent=1)) >> Dispatches(HelpersWatchDue(agent=1).due("watch")),
@@ -117,6 +136,10 @@ class HelpersFeature(Feature):
             Given(MessageCreated(n=2, type="message", actor="user"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done")]) >> Dispatches(nothing),
             Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done", seen=["agent"], data={"peer": "Zed"})])
                 >> Dispatches(nothing),
+            Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done", seen=["agent"], data={"idempotency": "turn-7"})])
+                >> Dispatches(nothing),
+            Given(MessageCreated(n=2, type="message", actor="agent"), rows=[AGENT_ROW, HELPING_HERE, ANSWERING, Message(n=2, title="done", brief="done", seen=["agent"], data={"from_main": True})])
+                >> Dispatches(nothing),
         ])
         journal.events.handle(AnswerToRelay, RelayAnswerToDispatcher(), expects=[
             Given(AnswerToRelay(message=2), rows=[AGENT_ROW, Message(n=2, title="done", brief="done", seen=["agent"])]) >> Unchanged(),
@@ -155,8 +178,17 @@ class HelpersFeature(Feature):
             Given(ToolCallAsked(tool="Bash", input=SUITE, command=SUITE, subagent=True, session="claude-1"), rows=[SUBAGENT_ROW]) >> Answered(Refusal(NEVER_RUN_TESTS)),
             Given(ToolCallAsked(tool="Bash", input="ls", command="ls", subagent=True, session="claude-1"), rows=[SUBAGENT_ROW]) >> Answered(Allowed()),
             Given(ToolCallAsked(tool="Bash", input=SUITE, command=SUITE, session="claude-1"), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(ToolCallAsked(tool="Bash", input=SUITE, command=SUITE, session="claude-1"), rows=[AGENT_ROW, HELPING_HERE, AT_WORK]) >> Answered(Refusal(NEVER_RUN_TESTS)),
+            Given(ToolCallAsked(tool="Bash", input=SUITE, command=SUITE, session="claude-1"), rows=[AGENT_ROW, HELPING_HERE, Helper(n=3, title="Rhea", data={"name": "Rhea", "whole_suite": True})])
+                >> Answered(Allowed()),
         ])
         journal.events.answer(AgentDispatching, OfferKeptAgentsFirst(), expects=[
             Given(AgentDispatching(kind="general-purpose", model="sonnet", model_supported=True, session="claude-1"), rows=[AGENT_ROW]) >> Answered(Allowed()),
             Given(AgentDispatching(kind="general-purpose", subagent=True, session="claude-1"), rows=[AGENT_ROW]) >> Answered(Allowed()),
+            Given(ASKING, rows=[crew(subagent("Ada: map the hooks", "a1"))], settings={"helpers.kept": 1}) >> Answered(Refusal(at_limit(1, 1, "explore", ADA))),
+            Given(AgentDispatching(kind="reviewer", model="sonnet", model_supported=True, description="Ada: map the hooks", session="claude-1"),
+                  rows=[crew(subagent("Ada: map the hooks", "a1"))], settings={"helpers.kept": 1}) >> Answered(Allowed()),
+            Given(ASKING, rows=[crew(subagent("Bea: draw it", "a2", "designer"))], settings={"helpers.kept": 1}) >> Answered(Allowed()),
+            Given(ASKING, rows=[crew(subagent("Ada: map the hooks", "a1", running=True), subagent("Bea: draw it", "a2", running=True))], settings={"helpers.working": 2})
+                >> Answered(Refusal("2 agents work at once, the most this project allows. Wait for one to report, or stop one, before you start another:\n- Ada (map the hooks)\n- Bea (draw it)")),
         ])

@@ -1,3 +1,4 @@
+# Stays a test: the helpers controller words no registration reaches (dispatch, say, stop, finish, done, report, peers) and the state and bus modules under them, run against a real git repo and worktrees (project_on), real process ids and session files, a timer thread and a child process.
 import io
 import os
 import re
@@ -329,22 +330,6 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Helpers(inside, actor=AGENT).report("Both measured")
     write("one more after the report")
     assert chat()[-1] == "Both measured", "once it has reported, its messages stay in its own chat again"
-
-
-def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):
-    features.load()
-    started(monkeypatch)
-    record = fresh()
-    Agents(record, actor=SYSTEM).create("claude-1")
-    Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-6-sol")
-    place = Record(record.root, f"{record.env}-rhea")
-    agents = Agents(place, actor=SYSTEM)
-    row = agents.create("codex-2")
-    for _ in range(2):
-        agents.update(row.n, status=IDLE, event=FAILED, failure="Your workspace is out of credits.")
-    relayed = [m for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
-    assert [m.brief for m in relayed] == ["My turn ended in an error, so I stopped: Your workspace is out of credits."], \
-        "the dispatcher hears the error once, as the helper's report"
 
 
 def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeypatch):
