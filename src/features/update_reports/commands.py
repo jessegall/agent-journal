@@ -31,13 +31,18 @@ def section_of(section: str) -> str:
     return section
 
 
+def gathered_since(context: Context, reports, now: float) -> tuple[float, list[dict]]:
+    """When the last update the user opened ended, and everything that happened from then until now."""
+    start = since(reports, now)
+    return start, gathered(context.record, context.service(Git), start)
+
+
 class Changes(Command):
     name = "changes"
 
     def run(self, context: Context, reports) -> list[str]:
-        start = since(reports, time.time())
-        return [f"since {clock(start)}", *[f"{i['section']} {i['ref']} {i['title']}" + (f" ({i['note']})" if i["note"] else "")
-                                            for i in gathered(context.record, context.service(Git), start)]]
+        start, found = gathered_since(context, reports, time.time())
+        return [f"since {clock(start)}", *[f"{i['section']} {i['ref']} {i['title']}" + (f" ({i['note']})" if i["note"] else "") for i in found]]
 
 
 class Recap(Command):
@@ -45,9 +50,9 @@ class Recap(Command):
 
     def run(self, context: Context, reports, summary: str):
         now = time.time()
-        start = since(reports, now)
+        start, found = gathered_since(context, reports, now)
         return reports.create(SINCE_LAST if opened_until(reports) else FIRST, abstract=summary, kind=UPDATE, number=len(updates(reports)) + 1,
-                              since=start, until=now, items=gathered(context.record, context.service(Git), start))
+                              since=start, until=now, items=found)
 
 
 class Note(Command):

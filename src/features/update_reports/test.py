@@ -1,37 +1,12 @@
 import features
-from controllers.types import Messages, Questions, Reports, Todos
+from controllers.types import Messages, Reports
 from resources.base import SYSTEM, USER
-from tests.conftest import fresh, refused
+from tests.conftest import fresh
 from tests.kit import nudges, report
 
 
 def recap(record, summary: str):
     return Reports(record, actor=SYSTEM).action("recap")(summary)
-
-
-def test_an_update_covers_what_happened_since_the_user_opened_the_last_one():
-    features.load()
-    record = fresh()
-    todos = Todos(record, actor=SYSTEM)
-    first, second = todos.create("Settings page made calmer"), todos.create("Files page redesign")
-    todos.complete(first.n, how="shipped")
-    asked = Questions(record, actor=SYSTEM).create("Should New work pick drafts for you?")
-    one = recap(record, "The settings page is calmer; one question waits on you.")
-    assert (one.title, one.data["number"], [(i["section"], i["ref"]) for i in one.data["items"]]) == (
-        "What happened in the last day", 1, [("need", f"question:{asked.n}"), ("done", f"todo:{first.n}")]), \
-        "the first update covers the last day, what waits on the user first"
-
-    Reports(record, actor=USER).read(one.n)
-    todos.complete(second.n, how="shipped")
-    two = recap(record, "The files page is redesigned.")
-    assert (two.title, two.data["number"], two.data["since"]) == ("What happened since your last update", 2, one.data["until"]), \
-        "the next starts where the last opened one ended"
-    assert [i["ref"] for i in two.data["items"] if i["section"] == "done"] == [f"todo:{second.n}"], "and lists only what is new"
-    third = todos.create("Wording pass")
-    todos.start(third.n)
-    lines = Reports(record, actor=SYSTEM).action("changes")()
-    assert lines[0].startswith("since ") and any(f"doing todo:{third.n} Wording pass" in line for line in lines), \
-        "what changed since the last update lists what is being done"
 
 
 def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_not():

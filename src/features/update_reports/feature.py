@@ -8,7 +8,7 @@ from features.update_reports.details import UpdateReportsDetails
 from features.update_reports.handlers import OFFER, HoldOfferBack, MarkFirstCommit, OfferAnUpdate
 from features.update_reports.listeners import SpotCommitToOffer
 from events.update_reports import CommitFirstSeen, OfferHeldBack, UpdateOffered
-from resources.types import AgentRow, Question, Report, Todo
+from resources.types import AgentRow, Question, Report, Todo, Work
 
 
 CLOSED = {"section": "done", "ref": "todo:4", "title": "Close the old to-do", "note": ""}
@@ -32,6 +32,9 @@ class Lists:
     def __eq__(self, listed: list) -> bool:
         return listed[0].startswith("since ") and all(any(part in line for line in listed) for part in self.parts)
 
+    def __repr__(self) -> str:
+        return f"a list that starts with 'since ' and holds lines with {', '.join(repr(part) for part in self.parts)}"
+
 
 ASKED = {"section": "need", "ref": "question:2", "title": "Should New work pick drafts for you?", "note": ""}
 SHIPPED = {"section": "done", "ref": "todo:1", "title": "Settings page made calmer", "note": ""}
@@ -45,7 +48,7 @@ class UpdateReports(Feature):
     def register(self, journal: Journal) -> None:
         journal.commands.add("report", Changes(), expects=[
             Given((Reports,)) >> Answered(StartsWith("since ")),
-            Given((Reports,), rows=[Todo(n=3, title="Wording pass", data={"status": "started"})]) >> Answered(Lists("doing todo:3 Wording pass")),
+            Given((Reports,), rows=[Todo(n=3, title="Wording pass"), Work(n=1, title="Wording it", data={"todo": 3})]) >> Answered(Lists("doing todo:3 Wording pass")),
         ])
         journal.commands.add("report", Recap(), expects=[
             Given((Reports, "Shipped the expectations")) >> Wrote(Report(title="What happened in the last day", abstract="Shipped the expectations")),
