@@ -5,7 +5,7 @@ import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
 import {ON_FLOOR, catching, fallFrame, floorAt, legAt, underWalker} from "../domain/figureMotion.js";
-import {footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
+import {footingNow, footingOn, groundUnder, landingOn, latestFloors, startFloors, stopFloors} from "../figure/floors.js";
 import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
@@ -275,7 +275,7 @@ function nextLeg() {
     step();
 }
 
-// the next leg carries the picture to its end, and lands it when it hopped
+// the next leg carries the picture to its end, stepped each frame (watchFooting), and lands it when it hopped
 function depart() {
     const [next, ...legs] = moving.value.legs;
     moving.value = {...moving.value, moves: true, legs};
@@ -286,7 +286,6 @@ function depart() {
         walk.on = floorAt(latestFloors().floors, feet.x, feet.y)?.id ?? null;
         return void (legTimer = setTimeout(nextLeg, next.lead + next.ms));
     }
-    at.value = {x: next.x, y: next.y};
     legTimer = setTimeout(() => {
         landing.value = Boolean(moving.value.hopping && moving.value.lands);
         nextLeg();
@@ -306,8 +305,7 @@ function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
     if (!here.value || document.hidden) return;
     if (airborne) return fallOn();
-    if (moving.value?.moves && !moving.value.hopping) return walkOn();
-    followTripGround();
+    if (moving.value?.moves) return moving.value.hopping ? hopOn() : walkOn();
     if (!footing) return;
     sway();
     const ground = groundUnder(footing, place.value, figureSize());
@@ -372,21 +370,25 @@ function fallOn() {
     if (to) moveTo(to);
 }
 
-// On its way, the figure keeps to the ground it is headed for as that moves: the legs that end on it, the one under way among them, are
-// carried with it, so a walk or a jump goes where the ground is now rather than landing where it was and sliding after
-function followTripGround() {
+// A hop is stepped here, frame by frame, toward the ground it is headed for as that moves: the legs that end on it, the one under way
+// among them, are carried with it, so it lands where the ground is now rather than where it was; and once that ground has gone it falls
+// from where it is in the air
+function hopOn() {
     const trip = moving.value;
-    if (!trip?.moves || !trip.footing) return;
-    const landed = landingOn(trip.to, trip.footing, figureSize());
+    if (trip.footing && !footingNow(trip.footing, figureSize())) return fallFrom({...feetOf(at.value), posture: "stand"}, null);
+    const landed = trip.footing ? landingOn(trip.to, trip.footing, figureSize()) : trip.to;
     const dx = landed.x - trip.to.x;
     const dy = landed.y - trip.to.y;
-    if (Math.hypot(dx, dy) <= 0.3) return;
-    const end = (trip.legs.at(-1) ?? leg.value).y;
-    const carried = (each) => (each.y === end ? {...each, x: each.x + dx, y: each.y + dy} : each);
-    moving.value = {...trip, to: landed, legs: trip.legs.map(carried)};
-    if (leg.value.y !== end) return;
-    leg.value = carried(leg.value);
-    at.value = {x: leg.value.x, y: leg.value.y};
+    if (Math.hypot(dx, dy) > 0.3) {
+        const end = (trip.legs.at(-1) ?? leg.value).y;
+        const carried = (each) => (each.y === end ? {...each, x: each.x + dx, y: each.y + dy} : each);
+        moving.value = {...trip, to: landed, legs: trip.legs.map(carried)};
+        if (leg.value.y === end) {
+            leg.value = carried(leg.value);
+            walk = {...walk, from: {...walk.from, x: walk.from.x + dx}};
+        }
+    }
+    at.value = legAt(leg.value, walk.from, performance.now() - walk.began);
 }
 
 // The bars under the figure shrank, went, grew or came, and it falls with them or is lifted by them as the flat figure did, for twice the
@@ -629,11 +631,7 @@ const style = computed(() => ({
     width: `${SIZE}px`,
     height: `${SIZE}px`,
     transform: `translate(${at.value.x}px, ${at.value.y}px)`,
-    transition: moving.value?.moves && moving.value.hopping
-        ? `transform ${leg.value.ms}ms ${leg.value.easing} ${leg.value.lead}ms`
-        : sliding.value
-          ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
-          : "none",
+    transition: sliding.value ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out` : "none",
 }));
 </script>
 

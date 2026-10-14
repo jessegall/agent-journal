@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {catching, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
+import {catching, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
 const FRAME = 1 / 60;
@@ -54,5 +54,18 @@ describe("a walking figure and the floor under it", () => {
         const floors = [floor("b1", 600, 0, 1000, "bubble"), floor("home", 800)];
         expect(fallTo({x: 400, y: 500}, catching(floors, true)).landed.id).toBe("b1");
         expect(fallTo({x: 400, y: 500}, catching(floors, false)).landed.id).toBe("home");
+    });
+});
+
+describe("a hop stepped in code", () => {
+    it("rises as the browser eased it, quick off the ground and slow at the top, and falls slow at first and quick at the end", () => {
+        const jump = {x: 0, y: 0, ms: 400, lead: 100, easing: "cubic-bezier(0.2, 0.7, 0.4, 1)"};
+        const from = {x: 0, y: 100};
+        expect(legAt(jump, from, 50).y).toBe(100);
+        expect(100 - legAt(jump, from, 300).y).toBeGreaterThan(70);
+        expect(legAt(jump, from, 600).y).toBe(0);
+        const fall = {...jump, y: 200, lead: 0, easing: "cubic-bezier(0.55, 0, 0.9, 0.6)"};
+        expect(legAt(fall, from, 200).y - 100).toBeLessThan(30);
+        expect(eased("linear", 0.25)).toBe(0.25);
     });
 });

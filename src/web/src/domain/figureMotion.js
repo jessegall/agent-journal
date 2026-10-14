@@ -28,10 +28,26 @@ export function underWalker(floors, id, x, y) {
 // up to the avatar, fall by fall)
 export const catching = (floors, bubblesCatch) => (bubblesCatch ? floors : floors.filter((floor) => HOME_FLOORS.includes(floor.kind)));
 
+// The share of the way a leg with `easing` has gone at `share` of its time: as the browser eases a transition, so a CSS cubic-bezier
+// steps the same in code; "linear" or any other easing goes at an even pace
+export function eased(easing, share) {
+    const curve = /^cubic-bezier\(([^)]*)\)$/.exec(easing ?? "");
+    if (!curve || share <= 0 || share >= 1) return Math.min(1, Math.max(0, share));
+    const [x1, y1, x2, y2] = curve[1].split(",").map(Number);
+    const along = (t, a, b) => 3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * b + t * t * t;
+    let [low, high] = [0, 1];
+    for (let step = 0; step < 30; step++) {
+        const t = (low + high) / 2;
+        if (along(t, x1, x2) < share) low = t;
+        else high = t;
+    }
+    return along((low + high) / 2, y1, y2);
+}
+
 // Where a leg under way has carried the picture `elapsed` milliseconds after it set off from `from`: still at the start through the
-// leg's lead, then at an even pace to its end
+// leg's lead, then along it by the leg's easing to its end
 export function legAt(leg, from, elapsed) {
-    const share = leg.ms > 0 ? Math.min(1, Math.max(0, (elapsed - leg.lead) / leg.ms)) : 1;
+    const share = eased(leg.easing, leg.ms > 0 ? (elapsed - leg.lead) / leg.ms : 1);
     return {x: from.x + (leg.x - from.x) * share, y: from.y + (leg.y - from.y) * share};
 }
 
