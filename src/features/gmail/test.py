@@ -93,7 +93,7 @@ def world(monkeypatch, tmp_path):
     record = fresh()
     server = Server(mails={1: raw("Hello", "Hi there")})
     gmail = features.FEATURES["gmail"]
-    monkeypatch.setattr("features.gmail.working.Mailbox", lambda account, password: Mailbox(account, password, server.imap, server.smtp))
+    monkeypatch.setattr("features.gmail.working.Mailbox", lambda account, password, *_: Mailbox(account, password, server.imap, server.smtp))
     board = Boards(record, actor=SYSTEM).create("Mail")
     ValuesFile(record.root).put("GMAIL_KEY", PASSWORD)
     apply(record, {"gmail": {"key": "GMAIL_KEY", "fetching": True, "account": "me@gmail.com", "search": "label:journal", "board": board.n}, "features": {"gmail": True}}, USER)

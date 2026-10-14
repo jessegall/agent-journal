@@ -1,5 +1,5 @@
 from events.integrations import LinearCheckDue, LinearReplyApproved, LinearStageMoved
-from expects import Answered, Dispatches, Given, Ran, Refused, Unchanged, Wrote, answering, nothing
+from expects import Answered, Dispatches, Given, Ran, Refused, Unchanged, Updated, Wrote, answering, nothing
 from framework.integrations.base import IntegrationFeature
 from framework.integrations.details import SEND
 from framework.journal import Journal
@@ -28,6 +28,9 @@ TEAMS = [{"id": "t1", "key": "ENG", "name": "Engineering"}]
 STATES = [{"id": "s1", "name": "Todo", "team": {"id": "t1"}}]
 
 
+WRAPPED = '<untrusted source="linear" author="Ana">ENG-1 Fix the login</untrusted>'
+
+
 def listed(n: int, updated: str) -> dict:
     return {"id": f"id-{n}", "identifier": f"ENG-{n}", "title": "Fix the login", "description": "The login fails.", "url": f"https://linear.app/x/issue/ENG-{n}", "updatedAt": updated,
             "archivedAt": None, "state": {"id": "s1"}, "team": {"id": "t1"}, "creator": {"name": "Ana"}, "assignee": {"isMe": True}, "mine": True, "comments": {"nodes": []}}
@@ -49,9 +52,9 @@ class Linear(LinearWork, IntegrationFeature):
         far = lambda **given: answering({("far side",): FakeLinear(teams=TEAMS, states=STATES, **given)})
         return [
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=secrets, outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")]))
-                >> Wrote(Ticket(title='<untrusted source="linear" author="Ana">ENG-1 Fix the login</untrusted>', data={"source": "linear", "source_id": "id-1", "board": 1, "linear_state": "s1"})),
+                >> Wrote(Ticket(title=WRAPPED, data={"source": "linear", "source_id": "id-1", "board": 1, "linear_state": "s1"})),
             Given(due, rows=[*SEEDED, Ticket(n=1, title="ENG-1", data={"source": "linear", "source_id": "id-1", "board": 1, "stage": "Doing", "linear_state": "s1", "linear_stage": "Doing"})], settings=CHOSEN, secrets=secrets,
-                  outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")])) >> Unchanged(),
+                  outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")])) >> Updated(Ticket(n=1, title=WRAPPED)),
             Given(due, rows=SEEDED, settings={**CHOSEN, "linear.fetching": False}, secrets=secrets, outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")])) >> Unchanged(),
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=secrets, outside=far(status=401)) >> Wrote(Notice(title="Linear refused the key")),
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=secrets, outside=far(status=500)) >> Wrote(Notice(title="Linear could not be reached")),
