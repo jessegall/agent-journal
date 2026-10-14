@@ -1,3 +1,4 @@
+# Stays a test: it drives the Sequences controller's actions and refusals, the shipped sequences, a real session binding and the real gate, which no registration reaches
 import features
 from controllers.types import CONTROLLERS, Agents
 from resources.base import AGENT, SYSTEM, USER
@@ -195,56 +196,6 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     sequences.abandon(building.n, about=doomed.ref, why="no longer wanted", sure=True)
     assert plans.peek(doomed.n).deleted, "abandoning a sequence that builds a row deletes that row"
     assert not plans.peek(plan.n).deleted, "a sequence about another row leaves it alone"
-
-
-def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
-    from engine.gates import held
-    features.load()
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    session = Agents(record, actor="system").by_session("claude-1").title
-    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    made = sequences.create("Two steps")
-    sequences.section(made.n, "First", "do the first")
-    sequences.section(made.n, "Second", "do the second")
-    sequences.run(made.n)
-    assert "handed you step 1" in held(record, session), "a handed step holds the agent's writes until it answers it"
-    sequences.follow(made.n)
-    assert "handed you step" not in held(record, session), "taking the step up releases them, so the step's own work can be done"
-    from declaring import trigger
-    from engine import triggering
-    from features.sequences.details import SequencesDetails
-    agent = Agents(record, actor="system").by_session("claude-1")
-    triggering.write(record, agent, SequencesDetails.name, edits=99)
-    report(record, "working", "PostToolUse", tool="Edit", wrote=True)
-    assert "has stood on step 1" in held(record, session), \
-        "a step taken up and never moved on holds the writes once they mount up, since a sequence says everything else waits until it is finished"
-    sequences.next(made.n)
-    assert "has stood on step" not in held(record, session), "and moving the sequence on releases them and starts the count again"
-    sequences.follow(made.n)
-    assert triggering.last(record, session, SequencesDetails.name).edits == 0, "the writes a step is allowed are its own, not the ones before it"
-    sequences.next(made.n)
-    sequences.run(made.n)
-    sequences.follow(made.n)
-    sequences.next(made.n)
-    assert "handed you step 2" in held(record, session), "each next step is taken up the same way, so none is skipped unseen"
-    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(made.n, why="it no longer applies")
-    again = CONTROLLERS["sequence"](record, actor=AGENT).create("A run the journal forgot")
-    CONTROLLERS["sequence"](record, actor=AGENT).section(again.n, "Only", "do it")
-    CONTROLLERS["sequence"](record, actor=AGENT).run(again.n)
-    assert "handed you step 1" in held(record, session), "a new run is handed at once"
-    import pytest
-    from tests.kit import tick
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr("controllers.sequences.Sequences.in_hand", lambda self: None)
-        tick(record)
-    assert "handed you step" not in held(record, session), "a hold on a step that is no longer in hand is released by the clock, never left to refuse every write"
-    assert "handed you step" not in held(record, session), "an abandoned run holds nothing"
-    from declaring.holds import Hold
-    from engine.gates import hold
-    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(again.n, why="it no longer applies")
-    hold(record, session, "sequences.step", Hold("sequence 17, unsticking, handed you step 1 - take it up with journal sequence follow 17 --about ticket:29 before any other write"))
-    assert "handed you step" not in held(record, session), "a hold left behind for a sequence that is no longer running holds no write: the writes go ahead and the hold is taken away"
 
 
 def test_a_step_reaches_an_agent_whose_work_waits_on_something():

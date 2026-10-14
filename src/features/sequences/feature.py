@@ -237,6 +237,14 @@ class SequencesFeature(Feature):
             Given(shell_asked("journal todo show 3"), rows=[release()]) >> Answered(Allowed()),
             Given(shell_asked("journal sequence next 4"), rows=[release()]) >> Answered(Allowed()),
             Given(shell_asked("git status"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("journal work start 'other work'"), rows=[release()]) >> Answered(Declined(HELD_TEXT)),
+            Given(shell_asked("journal sequence follow 4\n  journal work start 'other work'"), rows=[release()]) >> Answered(Declined(HELD_TEXT)),
+            Given(shell_asked("journal sequence follow 4; journal plan progress 3; journal todo all"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("journal message reply 3 'on it'"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("journal message reply 3 a#; journal work start 'other work'"), rows=[release()]) >> Answered(Declined(HELD_TEXT)),
+            Given(shell_asked("journal --env other todo create other"), rows=[release()]) >> Answered(Declined(HELD_TEXT)),
+            Given(shell_asked("journal upgrade"), rows=[release()]) >> Answered(Allowed()),
+            Given(shell_asked("journal heal"), rows=[release()]) >> Answered(Allowed()),
         ])
         journal.events.listen(ToolCallAnswered, SpotStepFollowed(), expects=[
             Given(shell_answered('journal todo create "Later"'), rows=[FILING]) >> Dispatches(StepFollowed(sequence=4, about=None)),
