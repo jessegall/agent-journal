@@ -142,6 +142,15 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     assert dispatch("GET", f"/api/{record.env}/diagnostics", record.root, {}, {}).body["log"] == "", "and clears it"
 
 
+def test_a_fast_request_is_never_reported():
+    features.load()
+    record = fresh()
+    turned(record, True)
+    with measured(record, "request", "GET /api/main/fact"):
+        pass
+    assert notified(record) == []
+
+
 def test_going_over_again_counts_but_tells_the_agent_once():
     features.load()
     record = fresh()
@@ -385,6 +394,24 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     from serve import environmental
     assert (environmental("/api/main/dashboard"), environmental("/api/identity")) == (True, False), \
         "a viewer request about an environment waits for the server's warm-up; a check that the server is up never does"
+
+
+def test_a_slow_request_waits_while_the_agent_waits():
+    from controllers.types import Works
+    from resources.base import AGENT
+    from tests.kit import nudges, report
+    features.load()
+    record, reports = fresh(), FEATURES["dev_faults"].reports
+    turned(record, True)
+    report(record, "working", "PreToolUse")
+    work = Works(record, actor=AGENT).create("the release")
+    Works(record, actor=AGENT).action("await")("the CI run")
+    reports.spent(record, record.env, "request", "GET /api/pages", 400, working=400)
+    assert not [n for n in nudges(record) if "slower than its budget" in n], "a wait hears only what needs the agent to act"
+    Works(record, actor=AGENT).update(work.n, awaiting="")
+    for _ in range(2):
+        reports.spent(record, record.env, "request", "GET /api/agents", 400, working=400)
+    assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
 
 
 def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(capsys, monkeypatch):
