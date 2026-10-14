@@ -9,10 +9,12 @@ class Nudge:
     name: str
     title: str
     brief: str = ""
+    repeat_after: float = 300.0
+    """Seconds before the same line may be said again to the same agent; 0 says it every time."""
 
     def about(self, **values) -> "Said":
         from journal.features.said import Said
-        return Said(self.feature, self.name, self.title, self.brief, values)
+        return Said(self.feature, self.name, self.title, self.brief, self.repeat_after, values)
 
     @property
     def key(self) -> str:

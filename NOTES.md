@@ -116,7 +116,24 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 
 - **Instructions files.** The journal injects its law and its briefing only into AGENTS.md,
   between its own markers; CLAUDE.md imports it with `@AGENTS.md` and carries the project's
-  own design philosophy, which the journal never writes. Nothing is written twice.
+  own design philosophy, which the journal never writes and never injects anywhere: it is
+  for developing the journal itself, not for any project the journal is installed in.
+
+## Skills (proposed, to confirm)
+
+A skill is a feature's teaching: each feature declares one `Skill` (name, body, keywords, the
+states it is needed in). The skills feature writes them from the registry into
+`.claude/skills/journal-<name>/SKILL.md` and `.agents/skills/` at install and upgrade, so the
+project never hand-holds them. Loading is forced by the engine, not left to the agent's loader:
+- `SessionStarted`: the `journal` skill is required, plus the skill of the state the agent is
+  in (resumed Working needs tasks).
+- Entering a state (Agent `Updated` with a new state): that state's feature's skill is
+  required if not loaded this window.
+- `PromptSubmitted` naming a skill's keyword: that skill is required.
+- Required means a `LoadingSkill` paused state: writes are held and the agent is told
+  "load X before anything else"; a `ToolFinished` that read that SKILL.md lifts it. Loaded
+  skills live on the agent row (`skills_loaded`, with the file hash) so a changed skill is
+  stale and required again, and a new window (compaction) clears the list.
 
 ## v3 features, sorted
 

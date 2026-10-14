@@ -12,4 +12,6 @@ class AtMark(Paused):
     name = "at_mark"
     mark: int = 0
 
-    def tool_starting(self, event: ToolStarting) -> Transition: ...
+    def tool_starting(self, event: ToolStarting) -> Transition:
+        from journal.features.memory.feature import Memory
+        return self.refuse(Memory.HELD.about()) if event.writes else self.stay()

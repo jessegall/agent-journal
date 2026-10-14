@@ -11,3 +11,5 @@ class Agent(Scoped):
     provider: str = ""
     state: str = "idle"
     data: dict | None = None
+    context_mark: int = 0
+    """The highest context mark the agent has been asked at, so no mark asks twice."""

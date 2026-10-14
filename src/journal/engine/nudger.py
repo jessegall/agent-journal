@@ -8,7 +8,6 @@ from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 
 NUDGE = "nudge"
-REPEAT_WITHIN = 300.0
 
 
 class Nudger:
@@ -26,5 +25,7 @@ class Nudger:
         return line
 
     def _repeat(self, agent: Agent, said: Said) -> bool:
-        since = time.time() - REPEAT_WITHIN
+        if not said.repeat_after:
+            return False
+        since = time.time() - said.repeat_after
         return any(e.data["session"] == agent.session and e.data["key"] == said.key and e.data["at"] > since for e in self.entries.of_kind(agent.environment_id, NUDGE))
