@@ -6,7 +6,7 @@ from journal.events.agent.turn_written import TurnWritten
 from journal.features.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink
 
-SHOP_TALK = re.compile(r"\bjournal (task|plan|message|question|fact|rule|reminder|sequence|worker|check|skill|halt|nothing)\b|\[journal\]", re.I)
+SHOP_TALK = re.compile(r"\bjournal (task|plan|message|question|fact|rule|reminder|sequence|worker|check|skill|halt|nothing) [a-z]+\b|\[journal\]", re.I)
 THIRD_PERSON = re.compile(r"\bthe user\b", re.I)
 
 

@@ -53,6 +53,7 @@ class Routes:
         router.get(f"{API}/entries/since", get(EntryController).since)
         router.get(f"{API}/settings", get(SettingController).index)
         router.post(f"{API}/settings", get(SettingController).store)
+        router.get(f"{API}/settings/voice", get(SettingController).voice)
         return router
 
     @staticmethod

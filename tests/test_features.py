@@ -322,3 +322,24 @@ def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
     assert 'created: plan 1 "release"' in console.run(["plan", "create", "release"], USER).out
     assert 'created: task 1 "write the notes", link 1' in console.run(["plan", "add", "1", "write the notes"], USER).out
+
+
+def test_the_skill_tool_loads_a_skill_too(skilled):
+    app = skilled
+    hook(app, "SessionStart")
+    hook(app, "PostToolUse", tool_name="Skill", tool_input={"skill": "journal"}, tool_response="")
+    assert app.container.get(Machine).current("s1").name == "idle"
+    assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+
+
+def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    console = app.console()
+    console.run(["voice", "me", "--title", "Sir", "--name", "Example"], USER)
+    text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "Talk like a good butler" in text and 'Address me as "Sir Example"' in text
+    console.run(["voice", "choose", "squire"], AGENT)
+    assert typed and "changed how you talk" in typed[-1] and 'Address me as "my liege"' in typed[-1]
+    assert "* squire" in console.run(["voice", "list"], USER).out

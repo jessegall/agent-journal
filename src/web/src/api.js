@@ -36,5 +36,6 @@ export const api = {
     entries: (limit = 100, before = null) => send("GET", `/entries?limit=${limit}${before ? `&before=${before}` : ""}`),
     since: (id) => send("GET", `/entries/since?since=${id}`),
     settings: () => send("GET", "/settings"),
+    voice: () => send("GET", "/settings/voice"),
     setSetting: (key, value) => send("POST", "/settings", {key, value}),
 };

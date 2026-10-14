@@ -7,7 +7,7 @@ from journal.repositories.agents import Agents
 
 
 class MarkLoaded(AgentListener[ToolFinished]):
-    """A read of one of our skill files is remembered on the agent, with the file's hash."""
+    """A read of one of our skill files, or the skill tool loading one, is remembered on the agent with the file's hash."""
 
     blocking = True
 
@@ -15,7 +15,7 @@ class MarkLoaded(AgentListener[ToolFinished]):
         self.machine, self.agents, self.files = machine, agents, files
 
     def handle(self, event: ToolFinished) -> None:
-        skill = self.files.skill_read(event.read_path) if event.read_path else None
+        skill = self.files.skill_read(event.read_path) if event.read_path else self.files.skill_in_folder(event.skill_loaded) if event.skill_loaded else None
         if skill is None:
             return
         agent = self.machine.agent(event.session, event.environment_id)

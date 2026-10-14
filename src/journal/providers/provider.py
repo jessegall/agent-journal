@@ -61,6 +61,10 @@ class Provider:
     def read_path(self, tool: str, input: dict) -> str:
         return input.get("file_path", "") or input.get("path", "") if tool == self.read_tool else ""
 
+    def skill_loaded(self, tool: str, input: dict) -> str:
+        """The skill folder a skill tool call loaded, or empty."""
+        return input.get("skill", "") if tool == "Skill" else ""
+
     def writes(self, tool: str) -> bool:
         return tool in self.write_tools
 

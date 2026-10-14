@@ -12,3 +12,5 @@ class ToolFinished(AgentEvent):
     output: str
     read_path: str = ""
     """The file this call read, when it was a read."""
+    skill_loaded: str = ""
+    """The skill folder this call loaded, when it was the skill tool."""

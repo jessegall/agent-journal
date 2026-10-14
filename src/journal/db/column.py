@@ -28,9 +28,18 @@ class Column:
             return "REAL"
         return "TEXT"
 
+    PLAIN = (bool, int, float, str, datetime, Actor, Ref)
+
+    @property
+    def is_json(self) -> bool:
+        """A column whose kind is not one SQL holds as is, such as a dict, a tuple or an untyped value: it always holds JSON, whatever the value is."""
+        return self.kind not in self.PLAIN and not (isinstance(self.kind, type) and issubclass(self.kind, Enum))
+
     def to_sql(self, value):
         if value is None:
             return None
+        if self.is_json:
+            return json.dumps(value)
         if isinstance(value, Actor):
             return value.stamp
         if isinstance(value, Ref):

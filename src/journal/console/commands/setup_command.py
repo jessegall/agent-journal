@@ -7,6 +7,7 @@ from journal.config import Config
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.laws.law_text import LawText
+from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.skills.skill_files import SkillFiles
 from journal.providers.providers import Providers
 
@@ -24,8 +25,8 @@ class SetupCommand(Command):
 
     noun = "setup"
 
-    def __init__(self, config: Config, providers: Providers, files: SkillFiles) -> None:
-        self.config, self.providers, self.files = config, providers, files
+    def __init__(self, config: Config, providers: Providers, files: SkillFiles, profiles: ProfileFiles) -> None:
+        self.config, self.providers, self.files, self.profiles = config, providers, files, profiles
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "here", "wire the hooks, write the skills and the law, put journal on the path")
@@ -36,6 +37,8 @@ class SetupCommand(Command):
         self.hooks(args, where)
         for path in self.files.write_all():
             print(f"skill   {path.relative_to(self.config.root)}")
+        for path in self.profiles.write_all():
+            print(f"profile {path.relative_to(self.config.root)}")
         print(f"law     {self.law().relative_to(self.config.root)}")
         print(f"imports {self.claude_md().relative_to(self.config.root)}")
         if shim := self.shim():
