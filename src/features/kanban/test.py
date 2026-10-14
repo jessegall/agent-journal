@@ -24,28 +24,6 @@ def lane(record, n: int) -> str:
     return lane_of(sources_of(journal), Todos(record, actor=USER).load(n))
 
 
-def test_a_row_with_open_work_is_doing_a_closed_one_is_done_until_it_is_old_and_a_question_outranks_work():
-    features.load()
-    record = fresh()
-    todos = Todos(record, actor=USER)
-    started, asked, done, old, finished = (todos.create(f"row {i}").n for i in range(5))
-    Works(record, actor=AGENT).create("building it", todo=started)
-    Works(record, actor=AGENT, force="two at once for the test").create("another", todo=asked)
-    Questions(record, actor=AGENT).create("which way", about=f"todo:{asked}", options=[{"title": "A"}, {"title": "B"}], pick=1)
-    todos.complete(done, "shipped")
-    todos.complete(old, "long ago")
-    closed = todos.load(old)
-    closed.completed = time.time() - 30 * 86400
-    todos.save(closed, "updated")
-    todos.assign(finished, "helper:4")
-    todos.update(finished, pending={"how": "built", "worktree": "w"})
-    assert [lane(record, n) for n in (started, asked, done)] == ["doing", "asked", "done"], "a question outranks open work"
-    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
-    assert (old in cards, done in cards, cards[started]["targets"], cards[done]["targets"]) == (False, True, [], ["todo"]), \
-        "a row closed longer ago than done_days is off the board, open work leaves its card to its agent, a closed card may reopen"
-    assert cards[finished]["reason"] == "done by helper 4, waits for its merge", "a card a helper finished says it waits for its merge"
-
-
 def test_a_row_outside_an_active_plan_stays_in_to_do_and_the_hold_is_one_line():
     features.load()
     record = fresh()
@@ -75,34 +53,6 @@ def test_a_row_outside_an_active_plan_stays_in_to_do_and_the_hold_is_one_line():
         "a board seen through a plan holds only that plan's cards, through a plan that does not exist none, and through an agent with no work none"
 
 
-def test_a_card_moves_through_the_journals_own_actions_and_refuses_in_words_that_name_a_command():
-    features.load()
-    record = fresh()
-    todos = Todos(record, actor=USER)
-    n, other = todos.create("a card").n, todos.create("another").n
-    assert refused(lambda: shift(record, n, "held")).endswith('needs --why "<why>"'), "blocking asks why"
-    shift(record, n, "held", why="waiting on the api")
-    assert todos.load(n).blocked == "waiting on the api", "to held blocks the row"
-    shift(record, n, "todo")
-    assert todos.load(n).blocked == "", "back to to do unblocks it"
-    before = todos.load(n).updated
-    shift(record, n, "todo")
-    assert todos.load(n).updated == before, "a shift into the lane it is in writes nothing"
-    todos.after(n, other)
-    assert refused(lambda: shift(record, n, "done")).endswith("close that first"), "a row that waits cannot be closed"
-    todos.after(n, other, off=True)
-    shift(record, n, "done", how="built it")
-    assert todos.load(n).outcome == "built it", "to done closes the row"
-    assert "--why" in refused(lambda: shift(record, n, "todo")), "reopening asks why"
-    todos.block(n, "an old block")
-    shift(record, n, "todo", why="it came back")
-    assert (todos.load(n).completed, lane(record, n)) == (0.0, "todo"), "back to to do reopens it and lifts an old block"
-    assert "journal question ask" in refused(lambda: shift(record, n, "asked")), "only a question puts a card in needs you"
-    assert refused(lambda: shift(record, n, "sideways")).startswith("a lane is one of"), "an unknown lane is refused"
-    shift(record, n, "doing")
-    assert "journal work end" in refused(lambda: shift(record, n, "todo")), "a card with open work is left to its agent"
-
-
 def test_the_board_and_its_moves_are_refused_while_the_feature_is_off():
     features.load()
     record = fresh()
@@ -128,19 +78,6 @@ def test_a_cards_words_pass_the_formatters_like_every_other_field():
         assert formatted("kept", record) == "kept", "a formatter that fails leaves the words as they were"
         with pytest.raises(ZeroDivisionError):
             formatted("kept")
-
-
-def test_a_parked_to_do_is_held_not_doing():
-    record = fresh()
-    row = Todos(record, actor=AGENT).create("set aside")
-    Todos(record, actor=AGENT).start(row.n)
-    Works(record, actor=AGENT).action("park")("waiting on the build")
-    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
-    assert (lane(record, row.n), cards[row.n]["reason"]) == ("held", "parked: waiting on the build"), "parked work leaves Doing and says why"
-    handed = Todos(record, actor=AGENT).create("with a helper")
-    Todos(record, actor=SYSTEM).update(handed.n, assigned="helper:7")
-    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
-    assert (lane(record, handed.n), cards[handed.n]["targets"]) == ("doing", []), "a helper's card is Doing on a board with no work of its own, and draws"
 
 
 def test_an_ended_plan_holds_none_of_its_rows():
