@@ -84,7 +84,6 @@ LATE = (Reported("idle", "Stop"), Waited(20))
 ASKED_BY_CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
 STUCK = (Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema", data={"status": "started"}), Question(n=1, title="Files or SQLite?", refs=["todo:1"]))
 INTERRUPTED = json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}}) + "\n"
-WENT_ON = json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "go on"}]}}) + "\n"
 SED = {"command": "sed -i s/a/b/ a.py", "tool": "Bash", "at": 5.0, "done": 6.0, "changed": {"added": 2}}
 READ = {"command": "a.py", "tool": "Read", "at": 5.0}
 MID_EDIT = AgentRow(n=1, title="claude-1", data={"running": {"command": "make check", "tool": "Bash", "at": 7.0, "before": SED}, "commands": [SED, READ]})
