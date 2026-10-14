@@ -3,7 +3,7 @@ from events.todos import TodoCompleted
 from framework.organization import AGENT as RUNS_AS_AGENT, Role
 from events.asking import RowWriting
 from events.organization import RoleAgentToStop, RoleTodoToStart
-from expects import Answered, Dispatches, Given, Kept, Ran, Refused, Updated, answering, nothing
+from expects import Answered, Dispatches, Given, Kept, Ran, Refused, Updated, Wrote, answering, nothing
 from features.organization.agents import kickoff
 from framework.base import Feature
 from controllers.types import Tickets
@@ -22,6 +22,15 @@ CLOSED = TodoCompleted(n=5, type="todo", action="completed", actor=USER)
 KICKOFF = kickoff("t", Role(name="developer", runs=RUNS_AS_AGENT), 6, "Fix the footer\n")
 
 
+ENGINEERING = "agentic-organization/domains/engineering"
+ORGANIZED = answering({
+    f"{ENGINEERING}/domain.toml": 'title = "Engineering"\nlead = "lead"\n',
+    f"{ENGINEERING}/roles/lead/role.toml": 'title = "Engineering lead"\n',
+    f"{ENGINEERING}/roles/developer/role.toml": 'title = "Developer"\ninputs = ["acceptance"]\noutputs = ["tests"]\nmodel = "sonnet"\n',
+})
+DEVELOPING = Todo(n=5, title="Build dark mode", data={"domain": "engineering", "role": "developer"})
+
+
 def updating(**fields) -> RowWriting:
     return RowWriting(type="todo", action="update", actor=AGENT, fields=(("n", 5), *fields.items()))
 
@@ -35,11 +44,16 @@ class OrganizationFeature(Feature):
         ])
         journal.commands.add("todo", Delegate(), expects=[
             Given((Todos, "Fix the login", "web")) >> Refused("the organization has no domain 'web'; it has none"),
+            Given((Todos, "Build dark mode", "engineering", "developer"), files=ORGANIZED) >> Refused("developer needs acceptance named in the task or --given"),
+            Given((Todos, "Build dark mode", "engineering", "developer", "acceptance: the toggle persists"), files=ORGANIZED)
+                >> Wrote(Todo(title="Build dark mode", data={"domain": "engineering", "role": "developer"})),
         ])
         journal.commands.refuse(RowWriting, ReportCoversOutputs(), expects=[
             Given(updating(title="A new title"), rows=[Todo(n=5, title="Fix the login")]) >> Kept(),
             Given(updating(reported="not a record"), rows=[Todo(n=5, title="Fix the login")]) >> Kept(),
             Given(updating(reported={"how": "Done and tested"}), rows=[Todo(n=5, title="Fix the login")]) >> Kept(),
+            Given(updating(reported={"how": "built it"}), rows=[DEVELOPING], files=ORGANIZED) >> Refused("developer's report covers tests; it does not mention tests"),
+            Given(updating(reported={"how": "built it; tests pass"}), rows=[DEVELOPING], files=ORGANIZED) >> Kept(),
         ])
         journal.events.listen(TodoCompleted, SpotRoleWorkToHandOn(), expects=[
             Given(CLOSED, rows=[Todo(n=5, title="Fix the login", completed=1.0)]) >> Dispatches(nothing),
