@@ -8,4 +8,6 @@ class HookKind(StrEnum):
     POST_TOOL_USE = "PostToolUse"
     PRE_COMPACT = "PreCompact"
     STOP = "Stop"
+    SUBAGENT_START = "SubagentStart"
+    SUBAGENT_STOP = "SubagentStop"
     SESSION_END = "SessionEnd"

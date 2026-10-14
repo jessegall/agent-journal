@@ -37,7 +37,12 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   `ThreadingHTTPServer`: each request on a thread. The hook is `hooks/hook.sh`, a curl to
   `/hooks/<agent>` with the body on stdin; it decides nothing and exits 0 when the server
   is away. The port is read from `.journal/port`.
-- **Hooks are deferred by default.** A feature's `HookListener` has `blocking = False`: the
+- **Events are two families.** `events/models/` are the Laravel model events. `events/agent/`
+  are what the agent did, one per hook kind: `SessionStarted`, `PromptSubmitted`,
+  `ToolStarting`, `ToolFinished`, `Compacting`, `Idle`, `SessionEnded`, `SubagentStarted`,
+  `SubagentEnded`. `hooks/translation.py` is the one table from hook kind to event. Features
+  listen to agent events, never to raw hooks.
+- **Hooks are deferred by default.** A feature's `AgentListener` has `blocking = False`: the
   server records the entry, replies to the agent, then runs it on the one `Deferred` worker
   thread. A listener that must answer before the agent goes on (the write gate, a hold)
   declares `blocking = True`, and only a blocking listener's `Decision` reaches the agent.
@@ -71,6 +76,8 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   by the agent posts to the server (consistent, one process) or opens the database itself
   (works with no server up). Leaning: post to the server, fall back to direct when it is away.
 - **Live updates to the viewer**: long-poll or server-sent events off the same threaded server.
+- **Context marks**: v3 nudged at 10/25/50/80% of the context window. Needs the context figure
+  from the hook payload; decide whether it is a field on every agent event or its own event.
 - **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
 - **Where the database lives**: `.journal/journal.db`, and what else stays in `.journal/`
   (settings, runtime socket path, logs).
