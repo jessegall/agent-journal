@@ -21,6 +21,9 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   local user), and a `Command.run(args, by)` gets it from the console (`JOURNAL_SESSION` means
   the agent, else the local user). `User` is a model from the start, so a shared journal with
   many users needs no change to the base.
+- **Relations are rows, never columns.** `Link` joins any two rows by `Ref` (type and id)
+  with a `kind` that says what it means. Models declare no relations. `Links` checks both
+  ends exist on save; `UnlinkDeleted` removes a deleted row's links.
 - **Repositories do the SQL.** `Repository[M]` for CRUD, `ScopedRepository[S]` adds `in_()`.
   A model's own repository adds only its own queries. No ActiveRecord, no global connection.
 - **One SQL funnel**: `db/connection.py`. Nothing else executes SQL.
@@ -129,15 +132,32 @@ Later: suggestions, templates, dumps, collections, attachment_descriptions, reco
 Viewer only: status_bar, open_viewer, family_tree, terminal, thinking, history_searches, report_dock, avatar, figure_floors, agent_profiles, organization, critique, session_recording, browser_control, dev_faults.
 Dropped: boards, kanban, tickets, hosting.
 
-## Roots, in order
+## The plan
 
-1. `Connection`, `Model`, `Repository`, `Schema`: fill them, with `Task` as the first table
-   end to end through the CLI.
-2. `Environment`, `Message`, `Question`, `Fact`, `Rule`, `Reminder`, `Report`, `Doc`, `Event`.
-3. Hooks: `Hook.parse`, `Receiver`, `Decision`, the hook shell script, the write gate.
-4. HTTP server and routes; then the viewer against it.
-5. Supervisor bodies.
-6. Features, one at a time, each as listeners.
+Each phase ends with something that runs. Bodies only; the layout is done.
+
+1. **Data.** `Connection`, `Schema`, `Migrator`, `Model`, `Repository`, `ScopedRepository`,
+   `Actor`, `Link`, `Links`. The model events fire. Proof: a test creates, links, updates and
+   deletes a task in a temp database and sees every event with its actor.
+2. **CLI.** `Container`, `Console`, `Command`, `TaskCommand`; `Environment`, `Message`,
+   `Question`, `Fact`, `Rule`, `Reminder`, `Report`, `Doc`, `Entry` and their repositories.
+   Proof: `journal task create/start/log/done/list` against `.journal/journal.db`.
+3. **Server.** `Server`, `Handler`, `Router`, `Request`, `Response`, `Identity`, the task
+   routes, `journal serve`. Proof: curl creates and lists tasks.
+4. **Hooks.** `hook.sh`, `Hook.parse`, `Translation`, `Receiver`, `Deferred`, `Decision`,
+   `Entries`. Proof: a posted PreToolUse lands as an entry and answers 200.
+5. **Engine.** `Machine`, `StatesCatalogue`, `Transition`, `Nudger`, `SupervisorLink`,
+   `Clock`, `Runtime`; the tasks feature's Idle and Working with their nudges. Proof: a
+   write in Idle answers 409 with DECLARE; after `task start`, Idle on Stop says CARRY_ON.
+6. **Supervisor.** `Terminal`, `Inbox`, `JournalProcess`, `Supervisor`, `Launch`; the four
+   instructions. Proof: `journal claude` runs Claude under it, a typed line arrives, a
+   restart resumes.
+7. **Features, one at a time**, each with its states, listeners and nudges, and the
+   settings page entry: briefing, memory, messages, questions, plans, sequences, helpers,
+   laws, skills, triggers, checks, commands, etiquette.
+8. **Viewer.** Read `v3.bak/src/web/src/api/client.js` for the endpoint list; serve the
+   viewer; add routes until it is whole; then the phone.
+9. **Install and upgrade**, docs, the generated skills, migrations from v3 if any.
 
 ## To settle later
 
