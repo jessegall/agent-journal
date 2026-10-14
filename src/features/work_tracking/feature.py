@@ -83,6 +83,7 @@ OPEN1 = Work(n=1, title="on it", updated=5.0)
 LATE = (Reported("idle", "Stop"), Waited(20))
 ASKED_BY_CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
 STUCK = (Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema", data={"status": "started"}), Question(n=1, title="Files or SQLite?", refs=["todo:1"]))
+WENT_ON = json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "go on"}]}}) + "\n"
 INTERRUPTED = json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}}) + "\n"
 SED = {"command": "sed -i s/a/b/ a.py", "tool": "Bash", "at": 5.0, "done": 6.0, "changed": {"added": 2}}
 READ = {"command": "a.py", "tool": "Read", "at": 5.0}
@@ -176,6 +177,7 @@ class WorkFeature(Feature):
                                  >> Told("auto carry on", times=0),
                              Given(ClockTicked(agent=1), rows=(AgentRow(n=1, title="claude-1", data={"person_at": WHEN + 1190.0}), FIRST), settings=AUTO, earlier=LATE) >> Told("auto carry on", times=0),
                              Given(ClockTicked(agent=1), rows=(ASKED_BY_CLAUDE, FIRST), settings=AUTO, earlier=LATE, transcript=INTERRUPTED) >> Told("auto carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(ASKED_BY_CLAUDE, FIRST), settings=AUTO, earlier=LATE, transcript=WENT_ON) >> Told("auto carry on"),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, *STUCK), settings=AUTO, earlier=(*LATE, Ticked(), WORKED, S, Waited(20))) >> Told("auto carry on", times=1)),
                     guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, and only once while every row waits."),
               Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(1),
@@ -274,6 +276,7 @@ class WorkFeature(Feature):
             Given(done(7), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 2}) >> Told("still blocked", times=0),
             Given(done(7), rows=[*CLOSING, Question(n=1, title="Which price?", refs=["todo:8"])], settings={"work_tracking.ask_blocked_every": 1}) >> Told("still blocked", times=0),
             Given(done(6), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 1}, earlier=(done(7),)) >> Told("still blocked", times=1),
+            Given(done(6), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 1}, earlier=(done(7), Waited(2))) >> Told("still blocked", times=1),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1})
                 >> Dispatches(ClosedCounted(closed=1)) & Dispatches(StillBlocked(agent=1, n=8, title="Deploy", why="waiting on the key", at=WHEN)),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 2})

@@ -24,8 +24,9 @@ PAUSE = 0.02
 
 
 def settled(provider, path: Path, agent) -> None:
-    until = time.time() + SETTLE
-    while agent.status == IDLE and provider.settling(path) and time.time() < until:
+    for _ in range(round(SETTLE / SETTLE_STEP)):
+        if agent.status != IDLE or not provider.settling(path):
+            return
         time.sleep(SETTLE_STEP)
 
 
