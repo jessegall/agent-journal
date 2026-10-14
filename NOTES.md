@@ -250,7 +250,16 @@ F2. **The built viewer is committed** in `src/web/dist`, so `journal setup` and 
 G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, the viewer in
    a browser, fix what breaks.
 
-## Where it stands (2026-10-15)
+## Where it stands (2026-10-15, later)
+
+Version 3's viewer runs whole on version 4's server, checked page by page in a browser with
+no console errors: Home (chat with replies as comments, commit badges, the status line, the
+avatar), Tasks, Plans, Documents, Sequences, Triggers, Checks, Code, Collections, Resources,
+Settings (version 3's full tree, feature switches live), Journals, Agents. A real Claude
+session through the hooks replied in the chosen voice, wrote, committed, and the chat showed
+it all. The boot menu is one question per screen in colour and opens the viewer.
+
+## Where it stood before the viewer decision
 
 Done and run for real: setup, the server, the hooks with a real Claude session (briefing, inbox,
 skill hold, gate, chat recorded with reply tags, task started from inside the agent), the
