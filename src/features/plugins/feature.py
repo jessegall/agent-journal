@@ -102,6 +102,8 @@ class Plugins(PluginsWork, Feature):
         ])
         journal.events.listen(ClockTicked, SpotChangedManifests(), expects=[
             Given(ClockTicked(agent=1), rows=[ON]) >> Dispatches(nothing),
+            Given(ClockTicked(agent=1), rows=[Plugin(n=1, title="Pulse linked", data={"enabled": True, "linked": True, "read_at": 1.0, "manifest": {"name": "pulse", "version": "1.0.0"}})],
+                  files=answering({".journal/plugins/pulse/.journal-plugin/plugin.json": "{}"})) >> Dispatches(PluginManifestChanged(plugin=1)),
         ])
         journal.events.handle(PluginManifestChanged, ReadLinkedManifests(), expects=[
             Given(PluginManifestChanged(plugin=1), rows=[ON]) >> Ran(("own work", "reread_manifest", 1)),

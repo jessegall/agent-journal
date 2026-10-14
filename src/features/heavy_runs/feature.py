@@ -3,7 +3,8 @@ from expects.calls import shell_asked
 from events.answers import Allowed
 from events.asking import ToolCallAsked
 from events.heavy_runs import HeavyRunHeld, HeavyRunStarted
-from expects import WHEN, Answered, Dispatches, Given, Nudged, nothing
+from expects import WHEN, Answered, Dispatches, Given, Nudged, Ran, answering, nothing
+from features.heavy_runs.holding import STATE_FILE
 from features.heavy_runs.answering import HoldHeavyRunsToOneAtATime
 from features.heavy_runs.details import HeavyRunsDetails
 from features.heavy_runs.handlers import LeaveTheQueue, QueueTheHeavyRun
@@ -40,4 +41,8 @@ class HeavyRuns(Feature):
         ])
         journal.events.handle(HeavyRunStarted, LeaveTheQueue(), expects=[
             Given(HeavyRunStarted(agent=1), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(HeavyRunStarted(agent=1), rows=[AGENT_ROW],
+                  journal_root=answering({("state", STATE_FILE): {"queue": [{"command": A_TEST_RUN, "environment": "t", "ticket": "", "at": WHEN},
+                                                                        {"command": A_TEST_RUN, "environment": "other", "ticket": "", "at": WHEN}]}}))
+                >> Ran(("state", STATE_FILE, {"queue": [{"command": A_TEST_RUN, "environment": "other", "ticket": "", "at": WHEN}]})),
         ])
