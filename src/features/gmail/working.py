@@ -1,4 +1,4 @@
-from features.gmail.mail import Mailbox
+from features.gmail.mail import Mailbox, Wires
 from features.gmail.sync import Choices, synced
 from framework.integrations.state import IntegrationState, read_state, write_state
 from controllers.types import Secrets
@@ -9,6 +9,7 @@ class GmailWork:
     """What the Gmail feature does, kept out of the feature itself: choosing, reading and answering."""
 
     unkeyed = "no app password is set"
+    wires = Wires
 
     def choices(self, record) -> Choices:
         values = self.values(record)
@@ -16,7 +17,7 @@ class GmailWork:
 
     def service(self, record) -> Mailbox:
         password = Secrets(record, actor=SYSTEM).value_of(str(self.values(record).key))
-        return Mailbox(self.choices(record).account, password)
+        return Mailbox(self.choices(record).account, password, self.wires.imap, self.wires.smtp)
 
     def deliver(self, mailbox: Mailbox, ticket, text: str) -> None:
         asked = ticket.data.get("gmail_subject", "")

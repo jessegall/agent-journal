@@ -46,6 +46,10 @@ class IntegrationFeature(Feature):
     unkeyed: str
     """What a sync says when the service's key is not set, in the words of that service's settings."""
 
+    def syncs(self) -> list:
+        """What one check of this service does against the far side the Given states, as expectations on its due check."""
+        return []
+
     def client(self, record) -> IntegrationClient:
         """The one client of this project, built when first needed and again when its settings change."""
         home = str(record.home)
@@ -60,6 +64,7 @@ class IntegrationFeature(Feature):
         ])
         journal.events.handle(self.due, checking_when_due(self.due), expects=[
             Given(self.due(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Ran(("own work", "ticked")),
+            *self.syncs(),
         ])
         journal.events.listen(QuestionCompleted, SpotApprovedReply(self.name, self.approved), expects=[
             Given(self.closed(), rows=[self.proposal(SEND)]) >> Dispatches(self.approved(question=1, ticket=1, text="Thanks.")),

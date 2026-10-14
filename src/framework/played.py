@@ -6,6 +6,7 @@ in for everything that is not the record: the clock, the ids, the commands, the 
 the providers. Each kind has one entry and no kind has two, so the run and the engine cannot disagree.
 """
 
+import copy
 import os
 from dataclasses import dataclass, replace
 import shutil
@@ -14,6 +15,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from controllers.secrets.values import ValuesFile
 from controllers.types import Agents, Messages, Nudges
 from declaring.holds import Hold
 from engine import clock
@@ -25,7 +27,7 @@ from expects import Acted, At, Given, Happened, Left, Reported, Step, Ticked, Wa
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE
 from receiving.ticks import Services, Unserved
 import serving
-from framework.lanes import NobodyToSpeakTo, lane_services
+from framework.lanes import NobodyToSpeakTo, TheOwnWork, lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import AGENT, Refused, SYSTEM
@@ -70,6 +72,12 @@ def staged(path: Path, text: str) -> None:
     """Puts one file the Given says exists on disk under the scratch project, where whatever reads it will find it."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
+
+
+def keeping_secrets(record: Record, given: Given) -> None:
+    """Puts the secret values the Given states where the journal reads them, in the scratch project's own secrets folder."""
+    for variable, value in given.secrets.answers.items():
+        ValuesFile(record.root).put(variable, value)
 
 
 def speaking_from(record: Record, text: str) -> None:
@@ -219,8 +227,17 @@ def play_services(promise, given: Given, record: Record, world: World) -> dict:
     for name, kinds in FAKED_WHEN_STATED:
         if getattr(given, name).answers:
             fakes |= dict.fromkeys(kinds, getattr(world, name))
+    if given.outside.answers:
+        fakes |= dict.fromkeys((serving.OwnWork, serving.ReadOwnWork), TheOwnWork(outside_of(promise.feature, world), record))
     services = Services({**lane_services(record, lambda: spoken_to(record, given)), **fakes})
     return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())
+
+
+def outside_of(feature, world: World):
+    """The feature as it works when the far side of its integration is the one the Given states."""
+    reaching = copy.copy(feature)
+    reaching.wires = world.outside
+    return reaching
 
 
 def listened(promise, given: Given, record: Record, world: World) -> None:
@@ -437,6 +454,7 @@ def played(promise, expectation, inside: Path) -> Seen:
     record, world = scratch(given, inside, promise.feature.name), World.of(given)
     seeded = len(what_was_said(record)[1])
     with at_the_givens_hour(world.clock), with_the_givens_programs(given), with_the_scratch_secrets(record):
+        keeping_secrets(record, given)
         for earlier in given.earlier:
             play_one(promise, replace(given, on=earlier, earlier=()), record, world)
         world.recording.forget()

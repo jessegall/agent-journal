@@ -402,6 +402,56 @@ class OwnWork(Asked):
 
 
 @dataclass
+class Outside(Asked):
+    """The service on the far side of an integration, as a mail server: it holds the mail the Given names by uid, refuses a sign-in with the words the Given gives, and remembers every sign-in, search and message sent as a run, the password never among them."""
+
+    service: ClassVar[str] = "outside"
+
+    def imap(self, host: str, timeout: float):
+        outside = self
+
+        class Connection:
+            def login(self, account: str, password: str) -> None:
+                outside.recording.ran.append(("login", host, account))
+                refusal = outside.answers.answers.get(("login",), "")
+                if refusal:
+                    raise OSError(f"{refusal} {password}")
+
+            def select(self, *_, **__):
+                return "OK", [b""]
+
+            def uid(self, command: str, *arguments):
+                mail = outside.answer(("mail",))
+                if command == "SEARCH":
+                    outside.recording.ran.append(("search", arguments[1]))
+                    return "OK", [" ".join(map(str, mail)).encode()]
+                return "OK", [(b"", mail[int(arguments[0])])]
+
+            def logout(self):
+                return "BYE", []
+
+        return Connection()
+
+    def smtp(self, host: str, timeout: float):
+        outside = self
+
+        class Connection:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def login(self, account: str, password: str) -> None:
+                outside.recording.ran.append(("login", host, account))
+
+            def send_message(self, message) -> None:
+                outside.recording.ran.append(("sent", message["To"], message["Subject"], message.get_content().strip(), message["In-Reply-To"] or ""))
+
+        return Connection()
+
+
+@dataclass
 class Terminal:
     """Keys pressed in the agent's terminal, which the play has none of: each press is remembered as a run."""
 
@@ -452,6 +502,7 @@ class World:
     command_words: CommandWords
     viewer: Viewer
     own_work: OwnWork
+    outside: Outside
     terminal: Terminal
     clock: Clock
     ids: Ids
@@ -460,7 +511,7 @@ class World:
     def of(cls, given: Given) -> "World":
         recording = Recording()
         return cls(recording, Commands(recording, given.commands), Files(recording, given.files),
-                   Processes(recording, given.processes), Providers(recording, given.providers), Git(recording, given.git), JournalRoot(recording, given.journal_root), Faults(recording, given.faults), CommandWords(recording, given.command_words), Viewer(recording, given.viewer), OwnWork(recording, given.own_work), Terminal(recording), Clock(given.clock), Ids(given.ids))
+                   Processes(recording, given.processes), Providers(recording, given.providers), Git(recording, given.git), JournalRoot(recording, given.journal_root), Faults(recording, given.faults), CommandWords(recording, given.command_words), Viewer(recording, given.viewer), OwnWork(recording, given.own_work), Outside(recording, given.outside), Terminal(recording), Clock(given.clock), Ids(given.ids))
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

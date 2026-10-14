@@ -100,16 +100,6 @@ def world(monkeypatch, tmp_path):
     return World(record, server, gmail)
 
 
-def test_gmail_reads_nothing_until_an_address_a_search_and_a_board_are_chosen(world):
-    record, server, gmail = world.record, world.server, world.gmail
-    apply(record, {"gmail": {**dict(gmail.values(record)), "search": ""}}, USER)
-    gmail.check(record)
-    assert server.logins == [], "with no search written, Gmail is not even logged in to"
-    apply(record, {"gmail": {**dict(gmail.values(record)), "search": "label:journal"}}, USER)
-    gmail.check(record)
-    assert server.logins[0] == ("imap.gmail.com", "me@gmail.com", PASSWORD) and server.searches[0][0] == "X-GM-RAW", "with all chosen it signs in to Google's own server and runs the search"
-
-
 def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it(world):
     from controllers.types import Messages, Todos
     from controllers.types import Tickets
@@ -188,13 +178,9 @@ def test_gmail_refuses_without_an_address_an_answer_on_a_ticket_not_from_gmail_a
     assert ("smtp.gmail.com refused" in why, PASSWORD in why) == (True, False), "a send the server refuses is said with the password masked"
 
 
-def test_gmail_reads_nothing_while_fetching_is_off_and_a_send_the_server_refuses_is_kept_not_raised(world):
+def test_a_send_the_server_refuses_is_kept_not_raised(world):
     from features.gmail.mail import Mailbox
     record, server, gmail = world.record, world.server, world.gmail
-    apply(record, {"gmail": {**dict(gmail.values(record)), "fetching": False}}, USER)
-    gmail.check(record)
-    assert server.logins == [], "with fetching switched off nothing is read"
-
     def refused_send(box: Mailbox) -> None:
         raise Refused("smtp.gmail.com refused: 554 message rejected")
     gmail.push(record, refused_send)

@@ -24,7 +24,7 @@ __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
-SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work")
+SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work", "secrets", "outside")
 """Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
 
 def stated(row) -> dict:
@@ -524,6 +524,10 @@ class Given:
     """Whether a viewer runs, and a Given that names none leaves the machine's own: ("running",) to the address it runs at. Every tab shown is remembered as a run."""
     own_work: Answering = Answering({})
     """What the asking feature's own work answers, by the method it was asked to do and its arguments: ("ticked",) to what that returned; every call is remembered as a run, as ("own work", method, *arguments), and an ask the Given does not name returns nothing."""
+    secrets: Answering = Answering({})
+    """The secret values the journal holds, by variable name to value, put where the journal reads them before the play and kept out of the user's own."""
+    outside: Answering = Answering({})
+    """The service on the far side of an integration, and a Given that names any makes the feature's own work run for real against it: ("mail",) to the messages its mailbox holds by uid, as the raw bytes; ("login",) to the words it answers a sign-in with when it refuses. Every sign-in, search and message sent is remembered as a run, never with a password in it."""
 
     @classmethod
     def of(cls, on, *rows, **more) -> "Given":

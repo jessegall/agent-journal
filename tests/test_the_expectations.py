@@ -21,8 +21,8 @@ from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given,
                      exited, nothing)
 
 OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Released, Answered, Set, Whispered, Told, Stands, Closed)
-GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "faults", "command_words", "viewer", "own_work")
-SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work")
+GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "faults", "command_words", "viewer", "own_work", "secrets", "outside")
+SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work", "secrets", "outside")
 
 
 def promised():
@@ -1176,3 +1176,23 @@ def test_a_reported_step_reaches_another_features_receiver_on_the_lane_and_a_wai
         assert time.time() == world.clock.now() == expects.WHEN + 120, "time.time() and the Fake clock moved together"
     assert Told("a line", times=0).holds(seen) == "" and Stands("a line").holds(seen) and Closed("a line").holds(seen), \
         "a line never said is never told, and neither stands nor is closed"
+
+
+def test_a_stubbed_mailbox_is_read_only_as_the_given_names_it_and_never_shows_the_password():
+    """The outside a Given states is the far side of an integration: mail the Given does not name is not read, and the password a sign-in carried is in no run it leaves."""
+    from dataclasses import replace
+    from events.integrations import GmailCheckDue
+    from expects.playing import NotAnswered
+    from framework.played import played
+    from framework.promises import Promise
+    from receiving import REGISTERED
+    from tests import isolation
+
+    import features
+    features.load()
+    promise, given = next((Promise.of(one), expectation.given) for one in REGISTERED.each if one.feature == "gmail" for expectation in one.expects
+                          if isinstance(expectation.given.on, GmailCheckDue) and expectation.given.outside.answers.get(("mail",)))
+    with pytest.raises(NotAnswered):
+        played(promise, Expectation(replace(given, outside=answering({("login",): ""})), Outcomes.of(Unchanged())), isolation.world())
+    seen = played(promise, Expectation(replace(given, outside=answering({("mail",): {}, ("login",): "AUTHENTICATIONFAILED"})), Outcomes.of(Unchanged())), isolation.world())
+    assert "abcd efgh" not in repr(seen.ran), "a refused sign-in leaves no run holding the password it carried"

@@ -46,6 +46,13 @@ def mail_of(uid: str, raw: bytes) -> Mail:
     return Mail(uid, str(message.get("Message-ID", "")), name or address, address, str(message.get("Subject", "")), body_of(message))
 
 
+class Wires:
+    """The connections to Google's two mail servers."""
+
+    imap = staticmethod(imaplib.IMAP4_SSL)
+    smtp = staticmethod(smtplib.SMTP_SSL)
+
+
 class Mailbox:
     """Reads and answers mail from the journal's own process: the app password goes only to Google's mail servers, never to a command line or an error."""
 
