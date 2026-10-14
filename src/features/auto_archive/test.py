@@ -1,3 +1,4 @@
+# Stays a test: it packs closed rows into real zip files on disk and reads, reopens and refuses damaged ones
 import time
 
 

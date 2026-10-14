@@ -1,3 +1,4 @@
+# Stays a test: it drives the Gmail client against a stand-in IMAP and SMTP server and its send and login paths directly, which no registration reaches
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 

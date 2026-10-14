@@ -139,6 +139,10 @@ class WorkFeature(Feature):
     nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, cap=Cap(1),
                     guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready.",
                     expects=(Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO) >> Told("next") & Nudged("next", taking="do the work yourself, or send a helper"),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST), settings={**AUTO, "work_modes.mode": "orchestrator"})
+                                 >> Nudged("next", taking="send a helper or subagent to do it"),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST), settings={**AUTO, "work_modes.mode": "solo"})
+                                 >> Nudged("next", taking="there are no helpers or subagents here"),
                              Given(STOPS, rows=(IDLE_ROW, FIRST, Environment(n=1, title="t", data={"owner": "ticket:3"})), settings={"features.work_tracking.auto": False}) >> Told("next"),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a"), Todo(n=2, title="b", data={"priority": 200}), Todo(n=3, title="c", data={"priority": 150})), settings=AUTO) >> Nudged("next", n=2),
                              Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a", data={"priority": 50}), Todo(n=2, title="b")), settings=AUTO) >> Nudged("next", n=2),

@@ -1,3 +1,4 @@
+# Stays a test: it samples a real video into frames and files real uploads on disk, and tests the sampling spacing directly
 import struct
 import subprocess
 import sys

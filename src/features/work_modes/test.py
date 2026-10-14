@@ -1,8 +1,9 @@
+# Stays a test: it reads the briefing files and the runtime start file that picking a mode writes to disk
 import features
 from controllers.types import Agents, Nudges
 from features.session_briefing.start import start_block
 from features.work_modes.details import MODES, NAME
-from features.work_modes.modes import choose_board, filing, mode_of, pick, taking
+from features.work_modes.modes import choose_board, filing, mode_of, pick
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh
 
@@ -59,16 +60,6 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
 
 def ran(at: float, edits: int) -> dict:
     return {"id": f"r{at}", "command": "Edit", "tool": "Edit", "at": at, "done": at, "changed": {"edited": edits}}
-
-
-def test_the_offer_of_the_next_row_is_worded_by_the_mode_the_agent_is_in():
-    features.load()
-    record = fresh()
-    assert taking(record) == MODES["builder"].taking, "builder: the agent does the work itself"
-    pick(record, "orchestrator", USER)
-    assert "send a helper or subagent to do it" in taking(record), "orchestrator: the agent sends the work out"
-    pick(record, "solo", USER)
-    assert "no helpers or subagents here" in taking(record), "solo: there is nobody to send it to"
 
 
 def test_starting_a_board_picks_orchestrator_and_rebuilds_the_start_file_after_the_moment():
