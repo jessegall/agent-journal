@@ -1,3 +1,4 @@
+# Stays a test: it runs real git worktrees, a process tree and threads that link at once, builds worktree and home folders outside the project, and tests the terminal seat and the Claude worktree flags directly, which no registration reaches.
 from pathlib import Path
 
 from framework.loaded import FEATURES

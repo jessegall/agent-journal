@@ -1,3 +1,4 @@
+# Stays a test: it cuts, rebases, takes and drops real git worktrees with real symlinks and a finished process, and tests the engine's unread-worktree line directly, which no registration reaches.
 from dataclasses import dataclass
 from pathlib import Path
 

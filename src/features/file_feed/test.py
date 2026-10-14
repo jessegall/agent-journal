@@ -1,3 +1,4 @@
+# Stays a test: it builds real git repositories, worktrees and symlinks in the scratch project and runs real threads, and tests how a test run is named from a shell command directly, which no registration reaches.
 import pytest
 import subprocess
 from dataclasses import dataclass

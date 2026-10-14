@@ -1,3 +1,4 @@
+# Stays a test: it tests the row store's parsed-row cache, its saved index and the row summary directly, the record lock under real threads and the profile sampler on a live thread, none of which a registration reaches.
 import json
 
 from tests.conftest import fresh
