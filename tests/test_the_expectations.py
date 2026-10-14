@@ -1220,7 +1220,6 @@ STATES_ONLY_NOTHING = {
     "skill_loading/AskPrimaryForSkills",
     "skill_loading/SpotStaleSkills",
     "status_bar/ReadUsage",
-    "thinking/FollowTheTranscript",
     "tickets/LookAfterTickets",
     "tickets/RaiseStuckTicket",
     "tickets/RaiseWaitingPlan",
