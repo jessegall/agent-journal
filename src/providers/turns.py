@@ -9,10 +9,12 @@ from engine.transcript import IDLE
 from controllers.types import Agents, environment_records
 from providers import PROVIDERS, search_folds, transcript_reader
 from providers.jsonl import WholeRead
+from providers.transcript_cache import CONVERSATIONS_HELD
+from resources.memo import Memo
 from resources.base import SYSTEM
 
 SETTLE, SETTLE_STEP = 1.5, 0.05
-TURNS: dict[str, tuple] = {}
+TURNS = Memo(CONVERSATIONS_HELD)
 READING: dict[str, threading.Lock] = {}
 READING_LOCK = threading.Lock()
 BUILDER: subprocess.Popen | None = None
@@ -66,12 +68,12 @@ def every_turn(agent, limit: LoadLimit | None = None) -> list:
         found = path.stat()
     except OSError:
         return []
-    if limit and agent.transcript not in TURNS and limit.spent():
+    if limit and not TURNS.contains(agent.transcript) and limit.spent():
         limit.left.append(agent.transcript)
         load_later(agent)
         return []
     with reading(agent.transcript):
-        held = TURNS.get(agent.transcript)
+        held = TURNS.kept(agent.transcript)
         whole = held[0] if held and held[1] == found.st_ino and held[0].end <= found.st_size else search_folds.restored(path, found.st_size)
         if whole is None:
             if found.st_size > FIRST_INLINE:
@@ -84,9 +86,9 @@ def every_turn(agent, limit: LoadLimit | None = None) -> list:
                 return whole.turns
             whole = provider.grown_turns(path, whole)
         else:
-            TURNS[agent.transcript] = (whole, found.st_ino)
+            TURNS.put(agent.transcript, found.st_ino, (whole, found.st_ino))
             return whole.turns
-        TURNS[agent.transcript] = (whole, found.st_ino)
+        TURNS.put(agent.transcript, found.st_ino, (whole, found.st_ino))
         search_folds.keep(path, whole)
         return whole.turns
 
@@ -172,7 +174,7 @@ AHEAD_PAUSE = 0.05
 def read_transcripts(root: Path) -> None:
     """Reads ahead the conversations of the agents that were heard from lately, one at a time with a pause between, so a start does not parse every conversation at once."""
     for record in environment_records(root):
-        for agent in Agents(record, actor=SYSTEM).rows.standing():
-            if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS and time.time() - float(agent.at) < AHEAD_WITHIN:
-                PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))
-                time.sleep(AHEAD_PAUSE)
+        heard_lately = (agent for agent in Agents(record, actor=SYSTEM).rows.standing() if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS and time.time() - float(agent.at) < AHEAD_WITHIN)
+        for agent in heard_lately:
+            PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))
+            time.sleep(AHEAD_PAUSE)

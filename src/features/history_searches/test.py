@@ -326,3 +326,5 @@ def test_only_the_last_few_conversations_read_stay_in_memory_and_the_rest_come_b
         cache.transcript(path, claude.extended)
     assert len(cache.transcripts.held) == transcript_cache.CONVERSATIONS_HELD, "the conversations read longest ago are let go"
     assert "question 0" in str(cache.transcript(paths[0], claude.extended)), "and one let go reads again whole"
+    from providers import turns
+    assert turns.TURNS.limit == transcript_cache.CONVERSATIONS_HELD, "a history search holds no more whole conversations than the transcript cache does"

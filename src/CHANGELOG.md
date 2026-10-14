@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.2 — A history search keeps only the last few conversations in memory
+
+- A history search held every conversation it ever read in memory for as long as the journal ran. It now keeps the last four, as the transcript cache does, and reads one it let go again from disk when it is searched.
+
 ## 3.1.1 — The critique dialog says when its templates did not load
 
 - When the journal is too busy to answer, the Ask for a critique dialog now says the templates did not load and offers to try again, where it showed only No template as if there were none.
