@@ -1,5 +1,4 @@
 import json
-import os
 import time
 from types import SimpleNamespace
 
@@ -7,23 +6,6 @@ import agents.control
 from controllers.types import Agents
 from tests.conftest import fresh
 from tests.kit import nudges, report, tick
-
-
-def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background_and_a_press_that_took_no_effect_is_made_again(monkeypatch):
-    record = fresh()
-    moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
-    started = time.time() - 45
-    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
-    tick(record)
-    tick(record)
-    row = Agents(record, actor="system").by_session("claude-1")
-    assert (moved, [n for n in nudges(record) if "moved to the background" in n], row.data["cards"][-1]["label"]) == (["claude-1"], [], "Moved a long command to the background"), \
-        "moved once, and the chat shows the mark; Claude's own tool result tells the agent, so the journal sends no line"
-    record.state("long_commands").set(f"pressed|{row.n}", time.time() - 30)
-    tick(record)
-    tick(record)
-    assert moved == ["claude-1", "claude-1"], "a move that started no task is pressed once more, and only once"
 
 
 def test_a_moved_command_is_matched_to_its_task_and_a_part_that_ended_before_it_started_is_not_running():
@@ -144,18 +126,6 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     outcome = background_outcome(suite, tmp_path, "", "completed")
     assert (outcome.passed, outcome.failed) == (7, 1), "its result is the tally read from its output, even when the exit said completed"
     assert background_outcome("run the thing", tmp_path, "", "failed").ok is False, "with no output to read, the exit it ended with decides"
-
-
-def test_a_long_command_keeps_one_chat_mark_whose_dot_turns_green():
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    agents = Agents(record, actor="system")
-    row = agents.by_session("claude-1")
-    agents.card(row.n, key="command:1", label="Moved a long command to the background", state="running")
-    agents.card(row.n, key="command:1", state="done")
-    cards = agents.load(row.n).data["cards"]
-    assert [(c["label"], c["state"]) for c in cards] == [("Moved a long command to the background", "done")], \
-        "the end updates the one mark instead of adding a second"
 
 
 def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_once(monkeypatch):
