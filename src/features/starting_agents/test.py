@@ -1,3 +1,4 @@
+# Stays a test: it drives code no registration reaches (the command-line words, the launch menu, the supervisor's terminal, the viewer's screen and appoint routes and the agent-binary lookup), and some of it needs a real pty with typing threads, a real executable file and the process's own PATH and folder.
 import os
 import time
 from resources.agent_starts import DetachedStart
@@ -9,26 +10,6 @@ from controllers.types import Agents, Environments, Messages
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh
-
-
-def test_a_message_wakes_nothing_while_a_running_session_holds_the_conversation(monkeypatch):
-    import os
-    from engine.sessions import Sessions
-    features.load()
-    started = []
-    monkeypatch.setattr("agents.terminal.detached",
-                        lambda root, start: started.append((start.environment, start.provider, start.conversation)) or 1)
-    record = fresh()
-    Environments(record, actor=SYSTEM).create(record.env)
-    Agents(record, actor=SYSTEM).create("bea86f27-last", event="SessionEnd", provider="codex", at=200.0)
-    record.set_setting("starting_agents", {"wake_on_message": True})
-    Sessions(record.root).write("claude-held", environment=record.env, pid=os.getpid())
-    Messages(record, actor=USER).create("are you still there?")
-    assert started == [], "a message while an agent holds the environment wakes nothing"
-    Sessions(record.root).write("claude-held", environment="elsewhere")
-    Sessions(record.root).write("bea86f27-last", environment="elsewhere", pid=os.getpid())
-    Messages(record, actor=USER).create("where did you go?")
-    assert started == [], "a conversation still running in another environment is never resumed a second time"
 
 
 def test_the_agents_command_is_found_where_it_installs_itself_or_refused_in_words(tmp_path, monkeypatch):
@@ -65,10 +46,6 @@ def test_an_agent_that_is_not_installed_is_refused_before_anything_is_changed(tm
     for given in (["--no-interaction"], None):
         assert "install" in refused(lambda: launch(record, "codex", given)), "the missing agent is refused in words"
     assert viewers == [] and moved(record) == [] and hooks.read_text() == before, "no viewer started and no hook set aside"
-    place = Environments(record, actor=USER).create("worktree-one")
-    assert "only the user starts an agent" in refused(lambda: Environments(record, actor=AGENT).action("launch")(place.n)), "an agent never starts another agent in an environment"
-    assert "no agent called 'gemini'" in refused(lambda: Environments(record, actor=USER).action("launch")(place.n, agent="gemini")), \
-        "an agent that is not one of the journal's is refused with the ones it has"
 
 
 def test_the_start_offers_to_carry_on_the_environments_last_session():
