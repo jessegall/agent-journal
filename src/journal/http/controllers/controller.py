@@ -17,8 +17,18 @@ class Controller(Generic[S]):
     repository: ScopedRepository[S]
     environments: Environments
 
+    PAGE = 50
+
     def index(self, request: Request) -> Response:
-        return Response.json(self.repository.in_(self.environment_id(request)))
+        """A page, newest first: ?limit= caps it and ?before=<id> asks for older rows."""
+        return Response.json(self.repository.page_in(self.environment_id(request), self.limit(request), self.before(request)))
+
+    def limit(self, request: Request) -> int:
+        return min(int(request.query.get("limit", self.PAGE)), 500)
+
+    @staticmethod
+    def before(request: Request) -> int | None:
+        return int(request.query["before"]) if request.query.get("before") else None
 
     def show(self, request: Request) -> Response:
         try:

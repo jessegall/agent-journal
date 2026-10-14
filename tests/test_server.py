@@ -40,12 +40,17 @@ def test_tasks_live_over_http(server):
     assert done["state"] == "done" and done["outcome"] == "merged"
     status, listed = call(server, "GET", "/api/tasks")
     assert [t["title"] for t in listed] == ["ship it"]
+    for n in range(3):
+        call(server, "POST", "/api/tasks", {"title": f"more {n}"})
+    page = call(server, "GET", "/api/tasks?limit=2")[1]
+    assert [t["title"] for t in page] == ["more 2", "more 1"], "newest first, capped"
+    assert [t["title"] for t in call(server, "GET", f"/api/tasks?limit=2&before={page[-1]['id']}")[1]] == ["more 0", "ship it"]
     assert call(server, "GET", "/api/tasks", env="other")[1] == []
 
 
 def test_a_missing_row_and_a_missing_route_say_so(server):
     assert call(server, "GET", "/api/tasks/9")[0] == 404
-    assert call(server, "GET", "/nothing")[0] == 404
+    assert call(server, "GET", "/api/nothing")[0] == 404
 
 
 def test_the_port_file_is_written_while_serving(server):
@@ -70,5 +75,6 @@ def test_the_viewer_api_lists_every_resource_and_answers_a_question(server):
     assert not next(f for f in call(server, "GET", "/api/settings")[1] if f["name"] == "tasks")["on"]
 
 
-def test_an_unknown_path_outside_the_api_is_the_viewer_or_404(server):
-    assert call(server, "GET", "/anything")[0] in (200, 404)
+def test_a_path_outside_the_api_is_the_viewer(server):
+    with urlopen(f"http://127.0.0.1:{server.port}/anything", timeout=5) as reply:
+        assert reply.status == 200 and b"<div id=\"app\">" in reply.read()

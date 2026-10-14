@@ -5,6 +5,7 @@ from journal.http.controllers.entries import EntryController
 from journal.http.controllers.environments import EnvironmentController
 from journal.http.controllers.hooks import HookController
 from journal.http.controllers.messages import MessageController
+from journal.http.controllers.plans import PlanController
 from journal.http.controllers.questions import QuestionController
 from journal.http.controllers.resource_controller import ResourceController
 from journal.http.controllers.settings import SettingController
@@ -13,7 +14,6 @@ from journal.http.router import Router
 from journal.repositories.docs import Docs
 from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
-from journal.repositories.plans import Plans
 from journal.repositories.reminders import Reminders
 from journal.repositories.reports import Reports
 from journal.repositories.workers import Workers
@@ -39,7 +39,10 @@ class Routes:
         router.post(f"{API}/messages/{{id}}/read", get(MessageController).read)
         self.resource(router, "questions", get(QuestionController))
         router.post(f"{API}/questions/{{id}}/answer", get(QuestionController).answer)
-        for name, repository in (("plans", Plans), ("facts", Facts), ("reminders", Reminders), ("reports", Reports), ("docs", Docs), ("workers", Workers)):
+        self.resource(router, "plans", get(PlanController))
+        router.get(f"{API}/plans/{{id}}/tasks", get(PlanController).tasks_of)
+        router.post(f"{API}/plans/{{id}}/tasks", get(PlanController).add_task)
+        for name, repository in (("facts", Facts), ("reminders", Reminders), ("reports", Reports), ("docs", Docs), ("workers", Workers)):
             self.resource(router, name, ResourceController(get(repository), get(Environments)))
         router.get(f"{API}/rules", lambda request: self.rules(request))
         router.get(f"{API}/agents", get(AgentController).index)
@@ -62,4 +65,4 @@ class Routes:
     def rules(self, request):
         from journal.http.response import Response
         from journal.repositories.rules import Rules
-        return Response.json(self.container.get(Rules).all())
+        return Response.json(self.container.get(Rules).page(500))

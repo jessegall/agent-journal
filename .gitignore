@@ -74,3 +74,6 @@ v3.bak/src/web/demo-check/
 .coverage
 .coverage.*
 live*.txt
+
+# the viewer builds from src/web; its dependencies are not the package
+src/web/node_modules/

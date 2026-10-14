@@ -44,6 +44,17 @@ class Repository(Generic[M]):
         params = tuple(self._column(name).to_sql(value) for name, value in fields.items())
         return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause} ORDER BY id", params)]
 
+    def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
+        """The newest rows first, at most limit of them, older than the id before when given; so a list never loads more than a screen."""
+        where = [f"{name} = ?" for name in fields]
+        params = [self._column(name).to_sql(value) for name, value in fields.items()]
+        if before is not None:
+            where.append("id < ?")
+            params.append(before)
+        clause = f" WHERE {' AND '.join(where)}" if where else ""
+        rows = self.connection.all(f"SELECT * FROM {self.table}{clause} ORDER BY id DESC LIMIT ?", (*params, limit))
+        return [self._load(row) for row in rows]
+
     def save(self, row: M, by: Actor) -> M:
         with self.connection.transaction():
             self.bus.dispatch(Saving(model=row, by=by))

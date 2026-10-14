@@ -15,7 +15,7 @@ class AgentController(Controller[Agent]):
         self.repository, self.environments, self.states, self.supervisor = agents, environments, states, supervisor
 
     def index(self, request: Request) -> Response:
-        return Response.json([self.described(agent) for agent in self.repository.in_(self.environment_id(request))])
+        return Response.json([self.described(agent) for agent in self.repository.page_in(self.environment_id(request), self.limit(request), self.before(request))])
 
     def type(self, request: Request) -> Response:
         self.supervisor.type(request.body.get("line", ""))

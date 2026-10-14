@@ -238,6 +238,11 @@ D2. **The boot menu**, re-envisioned small. `journal claude` asks three things i
    hooks or set them aside for this run (then `AGENT_JOURNAL_ACTIVE` is unset and the hook
    script exits at once). `--env`, `--new`, `--aside` and `--yes` answer it without asking.
    The supervisor stays stdlib-only: it asks `journal.py environments json` for the list.
+E2. **Pagination.** Every index endpoint answers a page, newest first: `?limit=` (default
+   50, at most 500) and `?before=<id>` for older rows. `Repository.page(limit, before,
+   **fields)` is the one query. The viewer asks for a page and offers "Older".
+F2. **The built viewer is committed** in `src/web/dist`, so `journal setup` and `journal serve`
+   work from a clone without node; `npm run build` in `src/web` refreshes it.
 G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, the viewer in
    a browser, fix what breaks.
 

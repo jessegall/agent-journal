@@ -11,3 +11,6 @@ class ScopedRepository(Repository[S]):
 
     def in_(self, environment_id: int) -> list[S]:
         return self.where(environment_id=environment_id)
+
+    def page_in(self, environment_id: int, limit: int, before: int | None = None) -> list[S]:
+        return self.page(limit, before, environment_id=environment_id)
