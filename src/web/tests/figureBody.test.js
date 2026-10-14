@@ -57,3 +57,20 @@ describe("the posture slide", () => {
         expect(slideAt(slide, 1600, 500)).toEqual({at: {x: 0, y: 40}, done: true});
     });
 });
+
+describe("letting go of a hang", () => {
+    it("lets go when the bubble it hangs from carries its feet down onto the floor at home, and lands standing on it", async () => {
+        const {floorOf, footingNow} = await import("../src/figure/floors.js");
+        const {boxAt} = await import("../src/figure/places.js");
+        const figure = {size: 112, below: 0.05};
+        const bubble = {};
+        const hanging = {id: floorOf(bubble), dx: 20, dy: 0, posture: "hang"};
+        const floorsWith = (top) => [{id: floorOf(bubble), kind: "bubble", element: bubble, left: 300, right: 600, top, vy: 0}, floor("home", 500)];
+        expect(footingNow(hanging, figure, floorsWith(300))).toEqual({x: 320, y: 300});
+        expect(footingNow(hanging, figure, floorsWith(460))).toBe(null);
+        const box = boxAt({x: 320, y: 460, posture: "hang"}, figure);
+        const feet = {x: 320, y: box.top + (1 - figure.below) * figure.size, posture: "stand"};
+        const {landed} = fallen(fallingFrom(feet, null, [floor("home", 500)], 0, () => 0.9), [floor("home", 500)]);
+        expect(landed).toMatchObject({spot: {x: 320, y: 500, posture: "stand"}, standing: true});
+    });
+});
