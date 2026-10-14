@@ -1,4 +1,4 @@
-from controllers.types import Works
+from controllers.types import Todos, Works
 from events.agents import AgentReported, ToolFinished
 from events.agents import ClockTicked
 from events.files import FileEdited
@@ -9,7 +9,7 @@ from resources.plans import Plan
 import json
 from dataclasses import asdict
 
-from expects import answering, Answered, Dispatches, Given, Held, Nudged, Refused, Released, Remembered, Reported, Told, Ticked, Unchanged, Updated, Waited, WHEN, nothing
+from expects import Acted, answering, Answered, Dispatches, Given, Held, Nudged, Refused, Released, Remembered, Reported, Told, Ticked, Unchanged, Updated, Waited, WHEN, nothing
 from events.answers import Allowed, Refused as Declined
 from events.asking import ToolCallAsked
 from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
@@ -19,7 +19,7 @@ from declaring.trigger import Mark
 from events.plans import PlanCompleted
 from events.works import WorkCompleted, WorkUpdated
 from resources.base import AGENT, USER
-from resources.types import AgentRow, Question, Todo, Work
+from resources.types import AgentRow, Environment, Message, Question, Todo, Work
 from framework.base import Feature
 from framework.watched import COUNT, FACTS, Fact, state_facts
 from declaring.registries import READINESS
@@ -73,6 +73,28 @@ HELPING = AgentRow(n=1, title="claude-1", data={"status": "idle", "event": "Stop
                                                 "subagent_rows": [{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "running": True}]})
 AWAITING = Work(n=2, title="the sweep", data={"awaiting": "the sweep"})
 SIX_IDLE_MINUTES = (Reported("idle", "Stop"), Waited(6))
+W = Reported("working", "PostToolUse", wrote=True)
+R = Reported("working", "PostToolUse", wrote=False)
+S = Reported("idle", "Stop")
+CYCLE = (WORKED, S)
+LOG3 = {"work_tracking.log_after": 3}
+LOG_HELD_TEXT = '3 edits since work 3 was last logged: journal work log "<what was decided or done, and why>" before any other write'
+OPEN1 = Work(n=1, title="on it", updated=5.0)
+LATE = (Reported("idle", "Stop"), Waited(20))
+ASKED_BY_CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
+STUCK = (Work(n=1, title="the schema", data={"todo": 1}), Todo(n=1, title="the schema", data={"status": "started"}), Question(n=1, title="Files or SQLite?", refs=["todo:1"]))
+INTERRUPTED = json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}}) + "\n"
+WENT_ON = json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "go on"}]}}) + "\n"
+SED = {"command": "sed -i s/a/b/ a.py", "tool": "Bash", "at": 5.0, "done": 6.0, "changed": {"added": 2}}
+READ = {"command": "a.py", "tool": "Read", "at": 5.0}
+MID_EDIT = AgentRow(n=1, title="claude-1", data={"running": {"command": "make check", "tool": "Bash", "at": 7.0, "before": SED}, "commands": [SED, READ]})
+CHECK = {"tool": "Bash", "command": "tail -3 build.log", "at": 1.0}
+TEXTLESS = {"tool": "Bash", "at": 1.0}
+CLOSING = [AGENT_ROW, Todo(n=6, title="a"), Todo(n=7, title="b"), Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"})]
+
+
+def done(n: int) -> Acted:
+    return Acted(Todos, "complete", n, "done", by=AGENT)
 IDLE_ROW = AgentRow(n=1, title="claude-1", data={"status": "idle", "event": "Stop"})
 ran = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "ls", "at": 10.0, "done": 11.0}]})
 
@@ -116,7 +138,12 @@ class WorkFeature(Feature):
     details = WorkDetails
     nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, cap=Cap(1),
                     guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready.",
-                    expects=(Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO) >> Told("next"),
+                    expects=(Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO) >> Told("next") & Nudged("next", taking="do the work yourself, or send a helper"),
+                             Given(STOPS, rows=(IDLE_ROW, FIRST, Environment(n=1, title="t", data={"owner": "ticket:3"})), settings={"features.work_tracking.auto": False}) >> Told("next"),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a"), Todo(n=2, title="b", data={"priority": 200}), Todo(n=3, title="c", data={"priority": 150})), settings=AUTO) >> Nudged("next", n=2),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a", data={"priority": 50}), Todo(n=2, title="b")), settings=AUTO) >> Nudged("next", n=2),
+                             Given(STOPS, rows=(IDLE_ROW, Todo(n=1, title="a", data={"after": ["todo:2"]}), Todo(n=2, title="b", completed=1.0)), settings=AUTO) >> Nudged("next", n=1),
+                             Given(ClockTicked(agent=1), rows=(AgentRow(n=1, title="claude-1", data={"status": "idle", "event": "PreToolUse"}), FIRST), settings=AUTO, earlier=(Ticked(),)) >> Told("next"),
                              Given(STOPS, rows=(IDLE_ROW, FIRST), settings={"features.work_tracking.auto": False}) >> Told("next", times=0),
                              Given(STOPS, rows=(IDLE_ROW, FIRST, WORKING), settings=AUTO) >> Told("next", times=0),
                              Given(STOPS, rows=(IDLE_ROW, FIRST), settings=AUTO, earlier=(WORKED, Reported("idle", "Stop"), WORKED)) >> Told("next", times=1),
@@ -144,6 +171,14 @@ class WorkFeature(Feature):
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(4))) >> Told("carry on", times=0),
                              Given(ClockTicked(agent=1), rows=(AGENT_ROW, Work(n=1, title="the release")), earlier=(Reported("idle", "Stop"), Waited(6), Ticked(), Waited(10))) >> Told("carry on"))),
               Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, cap=Cap(1),
+                    expects=(Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST), settings=AUTO, earlier=LATE) >> Told("auto carry on") & Nudged("auto carry on", minutes=15),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW,), settings=AUTO, earlier=LATE) >> Told("auto carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, FIRST, Message(n=1, title="carry on please", created=WHEN + 1140.0, seen=["user"])), settings=AUTO, earlier=LATE)
+                                 >> Told("auto carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(AgentRow(n=1, title="claude-1", data={"person_at": WHEN + 1190.0}), FIRST), settings=AUTO, earlier=LATE) >> Told("auto carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(ASKED_BY_CLAUDE, FIRST), settings=AUTO, earlier=LATE, transcript=INTERRUPTED) >> Told("auto carry on", times=0),
+                             Given(ClockTicked(agent=1), rows=(ASKED_BY_CLAUDE, FIRST), settings=AUTO, earlier=LATE, transcript=WENT_ON) >> Told("auto carry on"),
+                             Given(ClockTicked(agent=1), rows=(AGENT_ROW, *STUCK), settings=AUTO, earlier=(*LATE, Ticked(), WORKED, S, Waited(20))) >> Told("auto carry on", times=1)),
                     guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, and only once while every row waits."),
               Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, cap=Cap(1),
                     guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."),
@@ -180,6 +215,8 @@ class WorkFeature(Feature):
         ])
         journal.commands.add("work", ResumeWork(), expects=[
             Given((Works, 3), rows=[PARKED]) >> Updated(Work(n=3), parked=""),
+            Given((Works, 3), rows=[PARKED, Work(n=4, title="Fix the crash", data={"todo": 5}), Todo(n=5, title="Fix the crash")])
+                >> Refused('todo 5 is in hand as work 4: park it with journal work park "<why>", or finish it with journal todo done 5 --how "<how>", before starting another'),
             Given((Works, 3), rows=[WORKING]) >> Refused("work 3 is not parked"),
             Given((Works, 3), rows=[PARKED, Work(n=4, title="Something else")]) >> Refused('work 4 is open: end it with journal work end --how "<what landed>", or set it aside with journal work park "<why>", before starting another'),
         ])
@@ -235,6 +272,11 @@ class WorkFeature(Feature):
                 >> Dispatches(nothing),
         ])
         journal.events.listen(TodoCompleted, SpotBlockedRows(), expects=[
+            Given(done(7), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 2}, earlier=(done(6),)) >> Told("still blocked", times=1),
+            Given(done(7), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 2}) >> Told("still blocked", times=0),
+            Given(done(7), rows=[*CLOSING, Question(n=1, title="Which price?", refs=["todo:8"])], settings={"work_tracking.ask_blocked_every": 1}) >> Told("still blocked", times=0),
+            Given(done(6), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 1}, earlier=(done(7),)) >> Told("still blocked", times=1),
+            Given(done(6), rows=CLOSING, settings={"work_tracking.ask_blocked_every": 1}, earlier=(done(7), Waited(2))) >> Told("still blocked", times=2),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1})
                 >> Dispatches(ClosedCounted(closed=1)) & Dispatches(StillBlocked(agent=1, n=8, title="Deploy", why="waiting on the key", at=WHEN)),
             Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 2})
@@ -254,6 +296,11 @@ class WorkFeature(Feature):
             Given(edited("src/app.py", "a\n", "a\nb\n"), rows=[AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.listen(ToolFinished, SpotPolling(), expects=[
+            Given(ToolFinished(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"commands": [TEXTLESS] * 4})]) >> Dispatches(nothing),
+            Given(ToolFinished(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude", "commands": [CHECK] * 3})])
+                >> Dispatches(PollingNamed(agent=1, times=3, command="tail -3 build.log", wakes=True).once("1:tail -3 build.log")),
+            Given(ToolFinished(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"provider": "codex", "commands": [CHECK] * 3})])
+                >> Dispatches(PollingNamed(agent=1, times=3, command="tail -3 build.log", wakes=False).once("1:tail -3 build.log")),
             Given(ToolFinished(agent=1), rows=[polling]) >> Dispatches(PollingNamed(agent=1, times=3, command="git status", wakes=False).once("1:git status")),
             Given(ToolFinished(agent=1), rows=[varying]) >> Dispatches(nothing),
             Given(ToolFinished(agent=1), rows=[polling, WAITING]) >> Dispatches(nothing),
@@ -276,6 +323,11 @@ class WorkFeature(Feature):
             Given(ClockTicked(agent=1), rows=[AGENT_ROW], settings={"work_tracking.ask_awaiting_every": 5}) >> Dispatches(nothing),
         ])
         journal.events.listen(AgentReported, SpotOpenWork(), expects=[
+            Given(S, rows=[OPEN1, AGENT_ROW], earlier=(WORKED,)) >> Told("unlogged"),
+            Given(S, rows=[OPEN1, AGENT_ROW], earlier=(*CYCLE, *CYCLE, *CYCLE, *CYCLE, WORKED)) >> Told("unlogged", times=3),
+            Given(S, rows=[OPEN1, AGENT_ROW], earlier=(*CYCLE, *CYCLE, *CYCLE, Acted(Works, "log", "picked the approach", by=AGENT), WORKED)) >> Told("open", times=1),
+            Given(S, rows=[Work(n=3, title="the release", updated=5.0, data={"awaiting": "the CI run on main"}), AGENT_ROW], earlier=(WORKED,)) >> Told("unlogged", times=0) & Told("open", times=0),
+            Given(S, rows=[OPEN1, AGENT_ROW], files=answering({".journal/runtime/upgrading": "Installing the new files"}), earlier=(WORKED,)) >> Told("unlogged", times=0),
             Given(AgentReported(agent=1), rows=[OPEN, AGENT_ROW]) >> Dispatches(OpenWorkRemains(agent=1, work=3, updated=5.0, logged=False).due()),
             Given(AgentReported(agent=1), rows=[Work(n=3, title="Write the report", updated=5.0, sections=[{"title": "1", "body": "started"}]), AGENT_ROW])
                 >> Dispatches(OpenWorkRemains(agent=1, work=3, updated=5.0, logged=True).due()),
@@ -283,6 +335,11 @@ class WorkFeature(Feature):
             Given(AgentReported(agent=1), rows=[PARKED, AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.listen(ToolFinished, SpotEdits(), expects=[
+            Given(ToolFinished(agent=1), rows=[WORKING, typing], settings=LOG3, earlier=(W, W)) >> Dispatches(EditsCounted(agent=1, edits=3)) & Dispatches(LogOverdue(agent=1, work=3, edits=3)),
+            Given(W, rows=[WORKING, AGENT_ROW], settings=LOG3, earlier=(W, W)) >> Held(LOG_HELD_TEXT),
+            Given(R, rows=[WORKING, AGENT_ROW], settings=LOG3, earlier=(W, W)) >> Released(),
+            Given(W, rows=[WORKING, AGENT_ROW], settings=LOG3, earlier=(W, W, R)) >> Held(LOG_HELD_TEXT),
+            Given(R, rows=[WORKING, AGENT_ROW], settings=LOG3, earlier=(W, W, W, Acted(Works, "log", "Three edits in", by=AGENT), W, W)) >> Released(),
             Given(ToolFinished(agent=1), rows=[WORKING, typing], settings={"work_tracking.name_work_every": 1})
                 >> Dispatches(EditsCounted(agent=1, edits=1)) & Dispatches(WorkNamedInHand(agent=1, work=3, title="Write the report")),
             Given(ToolFinished(agent=1), rows=[WORKING, typing], settings={"work_tracking.name_work_every": 5}) >> Dispatches(EditsCounted(agent=1, edits=1)),
@@ -331,6 +388,8 @@ class WorkFeature(Feature):
             Given(StillBlocked(agent=1, n=8, title="Deploy", why="waiting on the key", at=WHEN), rows=[AGENT_ROW]) >> Nudged("still blocked") & Remembered("asked", {"8": WHEN}),
         ])
         journal.events.handle(EditedInWork, RecordEdit(), expects=[
+            Given(EditedInWork(agent=1, work=3, path="a.py", kind="edited", before="x", after="x", added=3, removed=0), rows=[WORKING, MID_EDIT])
+                >> Updated(AgentRow(n=1), running={"before": {"files": ["a.py"], "changed": {"added": 5}}}, commands=[{"files": ["a.py"], "changed": {"added": 5}}, {"tool": "Read"}]),
             Given(EditedInWork(agent=1, work=3, path="src/app.py", kind="edited", before="a\n", after="a\nb\n", added=1, removed=0), rows=[WORKING, AGENT_ROW])
                 >> Updated(Work(n=3), changed=ChangesOnly("src/app.py")),
             Given(EditedInWork(agent=1, work=3, path="src/app.py", kind="edited", before="a\n", after="a\n", added=0, removed=0), rows=[WORKING, AGENT_ROW]) >> Unchanged(),
