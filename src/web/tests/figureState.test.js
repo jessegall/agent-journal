@@ -238,3 +238,14 @@ test("a figure in the air on its feet falls before anything else, leaving includ
     expect(modeOf({airborne: null, landing: false, trip: {started: true}})).toBe(TRAVELLING);
     expect(modeOf({airborne: null, landing: false, trip: {started: false}})).toBe(GROUNDED);
 });
+
+test("the layers give way highest first: a fall beats a beat, a beat waits for the landing and the trip, and leaving waits until grounded", () => {
+    const beat = {clip: "cheer", facing: 0};
+    expect(clipFor(scene({mode: AIRBORNE, beat}), canDraw).clip).toBe("fall");
+    expect(clipFor(scene({mode: LANDING, landing: true, beat}), canDraw).clip).toBe("land");
+    const trip = {started: true, moves: true, hopping: false, way: 1, pace: 1};
+    expect(clipFor(scene({mode: TRAVELLING, trip, beat}), canDraw)).toMatchObject({clip: "think", posture: "walk"});
+    expect(clipFor(scene({beat}), canDraw)).toMatchObject({clip: "cheer", once: true});
+    expect(clipFor(scene({mode: AIRBORNE, leaving: true}), canDraw).clip).toBe("fall");
+    expect(clipFor(scene({mode: GROUNDED, leaving: true}), canDraw).clip).toBe("exit");
+});
