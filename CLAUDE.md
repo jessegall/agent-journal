@@ -28,7 +28,15 @@ the user asks or when a release is cut. What to run while working: the generated
 
 The default commands carry no hand-written tests. Seven generated runs cover them: `tests/test_every_action.py` loops over every registered resource type and every action on its controller, `tests/test_the_gate.py` loops over every provider, `tests/test_the_expectations.py` plays every expectation every registration carries, `tests/test_the_catalogue.py` walks every resource type and every moment it has, and `tests/test_the_layers.py` holds declaring and events to naming nothing above themselves (those two packages only, until to-do 4591 widens it). `test_it_boots.py` plays the installer and the upgrade and `test_the_viewer.py` plays the viewer; both are slow and run only when asked. Between them they cover create, read, update, complete and the rest for every type, and what each registration promises it does.
 
-A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
+**Every feature states what it does as expectations** (rule 90). Each registration — `journal.events.listen`, `handle` and `answer`, `journal.commands.add`, `refuse` and `intercept` — carries `expects=[Given(...) >> Outcome(...)]`, and `tests/test_the_expectations.py` plays them all. A Given states the rows, settings, files, clock and fakes a play starts from; its `earlier` steps (`Reported`, `Ticked`, `Acted`, `Waited`, `Happened`) play through the whole journal first. Outcomes include `Dispatches`, `Updated`, `Nudged`, `Answered`, `Held`, `Released`, `Told`, `Stands` and `Closed`. Write the expectation first, then break the line it covers once and see it fail, so no expectation passes by accident:
+
+```python
+journal.events.handle(Compacting, HoldUntilCaughtUp(), expects=[
+    Given(Compacting(agent=1), rows=[AgentRow(n=1)]) >> Held(read_held(50)),
+])
+```
+
+A feature keeps `src/features/<name>/test.py` only for what a Given cannot state — a real process, a real file tree, real git, a socket, a browser — with at most 10 tests, and the file's first line says why it is a test. A feature that only adds commands has none. The `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold the cap, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`).
 
 <!-- BEGIN: code-commandments skills (auto-generated, run `composer update`) -->
 @AGENTS.md
