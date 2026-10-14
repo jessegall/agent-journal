@@ -263,8 +263,8 @@ def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_
     named = [("gpt-6.1-sol", "GPT-6.1-Sol"), ("gpt-6-astra", "GPT-6-Astra"), ("gpt-5.6-terra", "GPT-5.6-Terra"), ("gpt-5.5", "GPT-5.5"), ("plain", "Plain Name")]
     cache.write_text(json.dumps({"models": [{**model, "display_name": model_name} for model, (_, model_name) in zip(codex_models(*[(slug, "low", ["low"]) for slug, _ in named]), named)]}))
     assert ([(choice["value"], choice["label"]) for choice in codex.control_options("")["groups"][0]["choices"]], list(codex().model_labels().values())) == \
-        ([("gpt-6.1-sol", "Sol 6.1"), ("gpt-6-astra", "Astra 6"), ("gpt-5.6-terra", "Terra 5.6"), ("gpt-5.5", "5.5"), ("plain", "Plain Name")], ["Sol 6.1", "Astra 6", "Terra 5.6", "5.5", "Plain Name"]), \
-        "a Codex model is labelled without GPT- and with its name first, and the id Codex is given stays as it is"
+        ([("gpt-6.1-sol", "Sol 6.1"), ("gpt-6-astra", "Astra 6"), ("gpt-5.6-terra", "Terra 5.6"), ("gpt-5.5", "5.5"), ("plain", "Plain Name")], ["Sol 6.1", "Astra 6", "Plain Name"]), \
+        "a Codex model is labelled without GPT- and with its name first, the id Codex is given stays as it is, and a helper is dispatched only on the newest generation"
     cache.write_text(json.dumps({"models": codex_models(("alpha", "medium", ["low", "medium", "high", "max", "ultra"]), ("beta", "high", ["low", "high"]), ("bare", "", []))}))
     assert codex.control_choice("effort", "low", "")["commands"] == ["/model", "", up], "an effort is one key press from the current one"
     assert codex.commands_for("effort", "max", "alpha") == ["/model", "", down, ""], "max is the row after the standard ones, which the picker lists beside them"
