@@ -3,7 +3,7 @@ from events.answers import Allowed, Refused as Declined
 from events.asking import ToolCallAsked
 from events.boards import BoardStarted
 from events.work_modes import BuilderHandedAway, DriftChecked, EditCounted, OrchestratorDrifted
-from expects import Answered, Dispatches, Given, Nudged, Refused, Remembered, Replied, Requested, Set, Told, Unchanged, nothing
+from expects import Answered, Dispatches, File, Given, Nudged, Refused, Remembered, Replied, Requested, Set, Told, Unchanged, Wrote, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from declaring.registries import MODE, START_PARTS
@@ -40,13 +40,15 @@ class WorkModes(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handle(BoardStarted, OrchestrateWhenABoardStarts(), expects=[
-            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=BUILDER) >> Set("work_modes.mode", "orchestrator"),
+            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=BUILDER) >> Set("work_modes.mode", "orchestrator") & Wrote(File("AGENTS.md", "You are the orchestrator here")),
             Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=ORCHESTRATOR) >> Unchanged(),
         ])
         journal.routes.add(post_mode, expects=[
             Given(Requested({"mode": "orchestrator"}), settings=BUILDER) >> Replied(200, {"mode": "orchestrator"}) & Set("work_modes.mode", "orchestrator"),
             Given(Requested({"mode": "orchestrator"}), settings=BUILDER, rows=[AgentRow(n=1, title="claude-1"), AgentRow(n=2, title="claude-2")])
                 >> Told(MODE_SET, times=2),
+            Given(Requested({"mode": "orchestrator"}), settings=BUILDER) >> Wrote(File("AGENTS.md", "You are the orchestrator here")),
+            Given(Requested({"mode": "builder"}), settings=ORCHESTRATOR) >> Wrote(File("AGENTS.md", "You are the builder here")),
             Given(Requested({"mode": "orchestrator"}), settings=ORCHESTRATOR, rows=[AgentRow(n=1, title="claude-1")])
                 >> Replied(200, {"mode": "orchestrator"}) & Told(MODE_SET, times=0),
             Given(Requested({"mode": "lazy"}), settings=BUILDER) >> Refused("the work mode is one of builder, orchestrator, solo, not 'lazy'") & Unchanged(),
