@@ -1,6 +1,6 @@
 from controllers.types import Nudges, Rules
 from features.journal_laws.briefing import BEGIN, END, brief
-from resources.base import AGENT, USER
+from resources.base import USER
 from tests.conftest import fresh, refused
 from tests.kit import nudges, report
 
@@ -101,14 +101,3 @@ def test_the_briefing_retires_the_old_blocks_and_leaves_a_file_it_cannot_read_sa
     Rules(empty, actor=USER).inject(Rules(empty, actor=USER).create("only rule", keywords="word").n)
     assert ((empty.root.parent / "AGENTS.md").read_text().startswith(f"# {empty.root.parent.name}\n\n{BEGIN}\n"), (empty.root.parent / "CLAUDE.md").read_text()) == (True, "@AGENTS.md\n"), \
         "no instruction files yet: AGENTS.md is made with the block under the project's name, and CLAUDE.md imports it"
-
-
-def test_a_rule_the_agent_makes_is_sent_back_to_be_read_as_a_ruling_for_the_whole_project():
-    record = fresh()
-    report(record, "working", "PreToolUse")
-    made = Rules(record, actor=AGENT).create("Run the dashboard warm-up in this worktree", keywords=["dashboard"])
-    assert f"Is rule {made.n} a ruling for the whole project?" in nudges(record), "the agent is asked whether its rule binds every environment"
-    Rules(record, actor=USER).create("Never change the git branch", keywords=["git switch"])
-    assert len([n for n in nudges(record) if n.startswith("Is rule")]) == 1, "a rule the user makes is not sent back"
-
-

@@ -34,6 +34,9 @@ NO_PICK = ("question which branch? names no pick - label the option you would pi
 PROSE_HELD = ("your last message offered the user choices in prose: ask them through journal question ask --set options=… --set pick=<n> "
               "before any other write")
 OPTIONS = [{"title": "main"}, {"title": "dev"}]
+RELEASE = [{"title": "Release now", "text": "Push and tag."}, {"title": "Fix first", "text": "Work the fault first."}]
+LISTED_AGAIN = ("the options already carry their own titles and text, so the question does not list them again: take the A/B/C or numbered option "
+                "lines, or the option names, out of its title, abstract and brief")
 ALONE = "ask a question as a command of its own, never chained or piped with others, so it goes out once and on purpose"
 ASKING = "journal question ask"
 ALONE_ASK = f"{ASKING} 'which?'"
@@ -138,8 +141,11 @@ class AskQuestions(Feature):
             Given(asking("Bash", "ls && pwd"), rows=[CLAUDE]) >> Answered(Allowed()),
         ])
         journal.commands.refuse(RowWriting, OptionsOnlyInTheirButtons(), expects=[
-            Given(writing(title="which branch?", brief="A) main\nB) dev", options=OPTIONS))
-                >> Refused("the options already carry their own titles and text, so the question does not list them again: take the A/B/C or numbered option lines, or the option names, out of its title, abstract and brief"),
+            Given(writing(title="which branch?", brief="A) main\nB) dev", options=OPTIONS)) >> Refused(LISTED_AGAIN),
+            Given(writing(title="Release now or later", brief="Two ways:\nA: release it now\nB: fix the fault first", options=RELEASE)) >> Refused(LISTED_AGAIN),
+            Given(writing(title="Release now or later", brief="The fault is open.\n- Release now: push and tag\n- Fix first: work the fault", options=RELEASE))
+                >> Refused(LISTED_AGAIN),
+            Given(writing(title="Release now or later", brief="The dashboard fault is still open; Release now ships it anyway.", options=RELEASE)) >> Kept(),
             Given(writing(title="which branch?", options=OPTIONS)) >> Kept(),
         ])
         journal.commands.refuse(RowWriting, NamesItsPick(), expects=[
