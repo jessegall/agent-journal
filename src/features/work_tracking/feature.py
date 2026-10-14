@@ -9,7 +9,7 @@ from resources.plans import Plan
 import json
 from dataclasses import asdict
 
-from expects import answering, Answered, Dispatches, Given, Held, Nudged, Refused, Remembered, Reported, Told, Ticked, Unchanged, Updated, Waited, WHEN, nothing
+from expects import answering, Answered, Dispatches, Given, Held, Nudged, Refused, Released, Remembered, Reported, Told, Ticked, Unchanged, Updated, Waited, WHEN, nothing
 from events.answers import Allowed, Refused as Declined
 from events.asking import ToolCallAsked
 from events.work_tracking import (ClosedCounted, EditedInWork, EditsCounted, LogOverdue, LogWritten, OpenWorkRemains, ParkedWorkStands, PollingNamed, RowUnblocked,
@@ -278,7 +278,7 @@ class WorkFeature(Feature):
             Given(WorkUndeclared(), rows=[AGENT_ROW]) >> Held(NOTHING_OPEN),
         ])
         journal.events.handle(WorkDeclared, ReleaseOnceDeclared(), expects=[
-            Given(WorkDeclared(), rows=[AGENT_ROW, WORKING], held=NOTHING_OPEN) >> Dispatches(nothing),
+            Given(WorkDeclared(), rows=[AGENT_ROW, WORKING], held=NOTHING_OPEN) >> Released(),
         ])
         journal.events.handle(WorkFilesLetGo, LetGoOfWorkFiles(), expects=[
             Given(WorkFilesLetGo(work=3), rows=[WORKING]) >> Dispatches(nothing),

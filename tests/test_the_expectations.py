@@ -1229,7 +1229,6 @@ STATES_ONLY_NOTHING = {
     "update_reports/MarkFirstCommit",
     "update_reports/SpotCommitToOffer",
     "work_tracking/LetGoOfWorkFiles",
-    "work_tracking/ReleaseOnceDeclared",
 }
 
 
