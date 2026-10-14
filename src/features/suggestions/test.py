@@ -1,3 +1,4 @@
+# Stays a test: it tests the Suggestions controller's accept, adjust, decline and take-back words directly, which no registration reaches
 from controllers.types import Agents, Todos
 from controllers.suggestions import CHANGE, NO, YES
 from controllers.types import Suggestions

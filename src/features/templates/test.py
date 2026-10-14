@@ -1,3 +1,4 @@
+# Stays a test: it tests the Templates and Docs controllers filling a document from a template directly, which no registration reaches
 import features
 from controllers.types import Docs, Plans
 from controllers.types import Templates

@@ -1,3 +1,4 @@
+# Stays a test: it tests the Docs controller's revision words (keep, cut, revision, revisions, draft) directly, which no registration reaches
 import time
 
 from controllers.types import Docs

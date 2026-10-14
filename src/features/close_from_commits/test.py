@@ -1,3 +1,4 @@
+# Stays a test: it makes real git commits with trailers and reads them back from the repository
 import subprocess
 
 
