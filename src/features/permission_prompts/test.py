@@ -102,10 +102,6 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     assert asker._taken(typed_note, 0) is False, "a note still sitting in the input box has not been taken, whatever status line is on screen"
     asker._screen_file().write_bytes("❯ [journal] ticket 5: build the plan\r\n✻ Thinking… (esc to interrupt)\r\n❯ \r\n".encode())
     assert asker._taken(typed_note, 0) is True, "a note after which the agent shows it is at work and the box is empty was taken, though its hook has not reported yet"
-    warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
-              "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
-    assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \
-        "Claude's development channels warning is answered with Enter while its menu is the last thing on screen, never once the prompt is back"
     from providers.dialogs import Menu
     sharing = Menu.on("Blender MCP wants to share data to improve the product. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel")
     trusting = Menu.on("Do you trust the files in this folder?\r\n❯ 1. Yes, I trust this folder\r\n  2. No, exit\r\nEnter to confirm · Esc to cancel")
@@ -221,7 +217,7 @@ def test_an_agents_controls_are_pressed_from_the_viewer_only_for_a_session_that_
     import time
     import features
     from commands.http import dispatch
-    from controllers.types import Agents, Notices
+    from controllers.types import Agents
     from engine import runtime
     from engine.stored import write_json
     from resources.base import SYSTEM

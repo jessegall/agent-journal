@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.0 — The avatar reads a book, and agents come in three new profiles
+
+- When the agent reads a file, the avatar takes out a book, opens it in both hands and reads, turning a page now and then; a search still brings out the magnifying glass. What it carries in its hands is put away while it reads.
+- The journal writes three agent profiles for Claude and for Codex: a researcher, a planner and a debugger. Each only reads and reports back to the agent that started it; their model is set under Sessions in Settings.
+- A feature's expectations can now play several steps through the whole journal — the agent reporting, the clock ticking, a command run by you or the agent, minutes passing — and check how often a line was said, whether it still stands and how it was closed. More of the journal's own tests become expectations this way.
+
 ## 3.0.19 — A repository nested in the project is no longer read as a branch switch
 
 - In a project that holds other repositories, the agent stepping into one of them no longer marks the chat with a branch switch: a nested repository is named by its own folder and keeps its own branch, where it was taken for the project's main checkout.
