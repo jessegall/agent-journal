@@ -7,6 +7,7 @@ const {
     SPRINT,
     boxAt,
     clearOf,
+    clickedBody,
     facingToward,
     footingNow,
     footingOn,
@@ -329,4 +330,11 @@ test("a figure carried by what it rests on loses its footing once that would tak
     // the thread scrolls the bubble up until the seated figure's head would leave the top of the chat window
     top = CHAT.top + 40;
     expect(footingNow(footing, FIGURE)).toBe(null);
+});
+
+test("a figure sitting on the chat box takes no press below its seat, so a click on the box's top edge reaches the box", () => {
+    const seated = clickedBody("sit", FIGURE.below);
+    expect(seated.bottom).toBeLessThanOrEqual(1 - FIGURE.below - POSTURES.sit.drop);
+    expect(clickedBody("stand", FIGURE.below).bottom).toBeLessThanOrEqual(1 - FIGURE.below);
+    expect(clickedBody("hang", FIGURE.below).bottom).toBeGreaterThan(seated.bottom);
 });

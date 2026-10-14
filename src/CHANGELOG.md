@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.1.5 — Typing and pasting in the chat box always land
+
+- The avatar sitting on the chat box's corner no longer takes clicks meant for the top of the box, which left the box without the cursor so typing and pasting went nowhere.
+- A paste that carries text beside a picture of it, as a copy from an office app does, now lands as text instead of a pasted image.
+- Spaces typed into the quick menu's chat box are no longer swallowed.
+- Finishing an edit no longer wipes words typed while it was being saved.
+- The question layer always closes, even when its fade is cut short, so it cannot stay over the chat box.
+
 ## 3.1.4 — A plan left half written is named to the agent until it carries on
 
 - A plan still being written that nothing has moved on for five minutes is now named to the agent, a few times, with the stage it stands at. Before, a plan whose review came back could sit in building with nothing said. Settings, Plans, sets the five minutes.

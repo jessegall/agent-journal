@@ -142,6 +142,13 @@ const BODY_YS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
 // the part of the picture the body is drawn in, as shares of its width and height, which is what the user can click
 export const BODY = {left: BODY_XS[0], right: BODY_XS.at(-1), top: BODY_YS[0], bottom: BODY_YS.at(-1)};
 
+// the part of the body that takes the click: above the line the figure rests on, as hiddenAt counts it, so a figure sitting on the chat
+// box never takes a press meant for the box below its seat
+export function clickedBody(posture, below) {
+    if (posture === "hang") return BODY;
+    return {...BODY, bottom: Math.min(BODY.bottom, 1 - below - POSTURES[posture].drop)};
+}
+
 // whether a word is drawn at this point of the page: the character the page has there holds ink, is drawn, and its box holds the point
 function onWord(x, y) {
     const caret = document.caretRangeFromPoint?.(x, y);

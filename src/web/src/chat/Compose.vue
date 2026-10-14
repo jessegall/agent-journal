@@ -88,10 +88,11 @@ watch(
     (text) => text && focusArea()
 );
 
+// a preset replaces only what the box still holds of the last one, never words typed since
 watch(
     () => props.preset,
-    (text) => {
-        draft.text = text;
+    (text, was) => {
+        if (text || draft.text === was) draft.text = text;
         focusArea();
     }
 );
@@ -126,9 +127,10 @@ function attached(files) {
     draft.error = [...oversized.map(overLimit), ...(refused.length ? [refusal(refused)] : [])].join(" ");
 }
 
+// a copy from an office app carries a picture of the selection beside its text: the text is what was meant
 function pasted(e) {
     const files = Array.from(e.clipboardData?.files || []);
-    if (!files.length) return;
+    if (!files.length || e.clipboardData.getData("text/plain").trim()) return;
     e.preventDefault();
     attached(files);
 }

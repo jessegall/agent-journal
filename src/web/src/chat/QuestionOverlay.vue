@@ -75,18 +75,24 @@ async function leave() {
     if (leaving.value) return;
     hold();
     leaving.value = true;
-    if (!still()) {
-        if (card.value)
-            await card.value.animate(
-                [
-                    {opacity: 1, transform: "none"},
-                    {opacity: 0, transform: "translateY(10px)"},
-                ],
-                {duration: 200, easing: "ease-in", fill: "forwards"}
-            ).finished;
-        await veil.value.animate([{opacity: 1}, {opacity: 0}], {duration: 260, easing: EASE, fill: "forwards"}).finished;
+    // a cancelled fade must still close the layer, or it stays over the thread and the chat box
+    try {
+        if (!still()) await fadeOut();
+    } finally {
+        closeQuestion();
     }
-    closeQuestion();
+}
+
+async function fadeOut() {
+    if (card.value)
+        await card.value.animate(
+            [
+                {opacity: 1, transform: "none"},
+                {opacity: 0, transform: "translateY(10px)"},
+            ],
+            {duration: 200, easing: "ease-in", fill: "forwards"}
+        ).finished;
+    if (veil.value) await veil.value.animate([{opacity: 1}, {opacity: 0}], {duration: 260, easing: EASE, fill: "forwards"}).finished;
 }
 
 watch(

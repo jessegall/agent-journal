@@ -106,16 +106,14 @@ const sawKeyMove = (e) => {
 const quickMenu = ref(null);
 function onSpace(e) {
     if (e.key !== " " || e.defaultPrevented) return;
+    const el = document.activeElement;
+    if (el && el !== document.body && (el.isContentEditable || el.matches("input,textarea,select"))) return;
     if (quick.value) {
         e.preventDefault();
         if (quickMenu.value) quickMenu.value.spaceAgain();
         return;
     }
-    const el = document.activeElement;
-    if (el && el !== document.body) {
-        if (el.isContentEditable || el.matches("input,textarea,select")) return;
-        if (el.matches("button,a[href],[role=button],[tabindex]") && !pointed) return;
-    }
+    if (el && el !== document.body && el.matches("button,a[href],[role=button],[tabindex]") && !pointed) return;
     e.preventDefault();
     quickOpening.value = "menu";
     quick.value = true;

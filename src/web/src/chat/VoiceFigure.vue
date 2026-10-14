@@ -9,7 +9,7 @@ import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
 import {
-    BODY,
+    clickedBody,
     CHANGE_SECONDS,
     HOME,
     POSTURES,
@@ -439,13 +439,16 @@ function clicked(event) {
     look();
 }
 
-// the part of the picture the body is drawn in, which takes the click
-const bodyStyle = {
-    left: `${BODY.left * 100}%`,
-    width: `${(BODY.right - BODY.left) * 100}%`,
-    top: `${BODY.top * 100}%`,
-    height: `${(BODY.bottom - BODY.top) * 100}%`,
-};
+// the part of the picture the body is drawn in above the line it rests on, which takes the click
+const bodyStyle = computed(() => {
+    const body = clickedBody(place.value.posture, below.value);
+    return {
+        left: `${body.left * 100}%`,
+        width: `${(body.right - body.left) * 100}%`,
+        top: `${body.top * 100}%`,
+        height: `${(body.bottom - body.top) * 100}%`,
+    };
+});
 
 const onType = (event) => {
     if (event.target.closest?.(HOME)) typed = true;
@@ -587,7 +590,7 @@ const style = computed(() => ({
         :data-trip="moving ? (moving.started ? 'walking' : 'waiting to set off') : arriving ? 'arriving' : ''"
         :data-clip="shownClip?.name"
     >
-        <div class="voice-figure-body" :style="bodyStyle" @click="clicked" />
+        <div class="voice-figure-body" :style="bodyStyle" @mousedown.prevent @click="clicked" />
         <div :class="['voice-figure-actor', moved, {chasing}]" :style="actorStyle">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
             <template v-if="chasing">
