@@ -37,6 +37,11 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   `ThreadingHTTPServer`: each request on a thread. The hook is `hooks/hook.sh`, a curl to
   `/hooks/<agent>` with the body on stdin; it decides nothing and exits 0 when the server
   is away. The port is read from `.journal/port`.
+- **Hooks are deferred by default.** A feature's `HookListener` has `blocking = False`: the
+  server records the entry, replies to the agent, then runs it on the one `Deferred` worker
+  thread. A listener that must answer before the agent goes on (the write gate, a hold)
+  declares `blocking = True`, and only a blocking listener's `Decision` reaches the agent.
+  Never the other way round: a deferred listener cannot refuse.
 - **Threads and SQLite**: WAL mode; one sqlite connection per thread for reads, one process
   lock for writes inside `Connection.transaction()`.
 
