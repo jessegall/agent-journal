@@ -1,3 +1,4 @@
+# Stays a test: the session code no registration reaches (runner engines, the seat, provider transcript readers, the pending-row store, the launcher's history question), and real processes and session files (the journal.py command line, sleep processes, live pids).
 import os
 import pytest
 import subprocess
@@ -329,20 +330,6 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
     finally:
         for process in running:
             process.kill()
-
-
-def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_words():
-    from controllers.types import Agents, Nudges
-    record = fresh()
-    report(record, "working", "PreToolUse", provider="claude")
-    agents = Agents(record, actor="user")
-    agent = agents.by_session("claude-1")
-    agents.stop_task(agent.n, "b7wu1410l", description="Poll production")
-    stop_nudges = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
-    assert [n.brief for n in stop_nudges] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"
-    agents.stamp(agent.n, status="stopped")
-    agents.stop_task(agent.n, "b8old", description="An old poll")
-    assert not [n for n in Nudges(record).all() if "An old poll" in n.title], "an agent whose session has stopped is never asked to stop a task, so no later session hears of it"
 
 
 def test_a_compaction_is_recorded_once_on_the_agent():

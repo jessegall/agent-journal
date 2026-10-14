@@ -62,8 +62,10 @@ class AgentSessions(Feature):
         ])
         journal.events.listen(AgentChanged, SpotStopAsked(), expects=[
             Given(AgentChanged(agent=1, action="updated"), rows=[STOPPING])
-                >> Dispatches(StopAsked(agent=1, task="t1", description="the build", how=SERVED.given(Providers).of("claude").stop_instruction("t1")).once("1:t1|5")),
+                >> Dispatches(StopAsked(agent=1, task="t1", description="the build", how="run TaskStop with task_id t1 now").once("1:t1|5")),
             Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "working"})]) >> Dispatches(nothing),
+            Given(AgentChanged(agent=1, action="updated"), rows=[AgentRow(n=1, title="claude-1", data={"provider": "claude", "status": "stopped", "stopping": {"task": "b8old", "at": 6, "description": "An old poll"}})])
+                >> Dispatches(nothing),
         ])
         journal.events.listen(ResourceCreated, SpotSubagentAlive(), expects=[
             Given(ResourceCreated(n=4, type="todo", actor="agent"), rows=[AgentRow(n=2, title="sub-1"), Todo(n=4, title="the build", data={"agent": "sub-1", "dispatcher": "claude-1"})])
@@ -105,9 +107,11 @@ class AgentSessions(Feature):
         ])
         journal.events.handle(StopAsked, AskToStop(), expects=[
             Given(StopAsked(agent=1, task="t1", description="the build", how="stop it"), rows=[STOPPING]) >> Nudged("stop", description="the build"),
+            Given(StopAsked(agent=1, task="b7wu1410l", description="Poll production", how="run TaskStop with task_id b7wu1410l now"), rows=[STOPPING])
+                >> Nudged("stop", description="Poll production", how="run TaskStop with task_id b7wu1410l now; then carry on with the work"),
         ])
         journal.events.handle(SubagentAlive, KeepSubagentAlive(), expects=[
-            Given(SubagentAlive(session="sub-1", dispatcher="claude-1", at=WHEN), rows=[AgentRow(n=2, title="sub-1")]) >> Updated(AgentRow(n=2), status="subagent", dispatcher="claude-1"),
+            Given(SubagentAlive(session="sub-1", dispatcher="claude-1", at=WHEN), rows=[AgentRow(n=2, title="sub-1")]) >> Updated(AgentRow(n=2), status="subagent", dispatcher="claude-1", active=WHEN),
         ])
         journal.events.handle(SubagentReportLinked, LinkReportToSubagent(), expects=[
             Given(SubagentReportLinked(agent=1, reports=(("a1", 5),)), rows=[ENDED_SUBAGENT]) >> Updated(AgentRow(n=1), subagent_reports={"a1": 5}),
@@ -120,5 +124,5 @@ class AgentSessions(Feature):
         ])
         journal.events.handle(AssignmentLapsed, ClearLapsedAssignment(), expects=[
             Given(AssignmentLapsed(agent=1, todo=4, who="sub-1", minutes=20), rows=[AgentRow(n=1, title="claude-1"), SUBAGENT, HELD])
-                >> Updated(Todo(n=4), assigned="") & Nudged("lapsed", who="sub-1", n=4),
+                >> Updated(Todo(n=4), assigned="", lapsed="sub-1") & Nudged("lapsed", who="sub-1", n=4, minutes=20),
         ])
