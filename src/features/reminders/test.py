@@ -1,3 +1,4 @@
+# Stays a test: it plays a cadence by percent, uses, minutes and notices through the trigger engine, which an expectation cannot state.
 
 from controllers.types import Reminders
 from features.session_briefing.start import start_block
