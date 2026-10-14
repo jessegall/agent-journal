@@ -11,7 +11,8 @@ from features.long_commands.watch import background_tasks_of, part_of
 from resources.work_modes import kept_mode
 from framework.command_effects import JOURNAL_CALL
 from receiving import Listener
-from resources.types import AgentRow
+from resources.base import AGENT
+from resources.types import AgentRow, Message
 from serving import Asking, Clock, Providers, ReadProcesses, ReadRemembered, ReadRows, ReadSessions, Settings
 
 SETTLE = 30.0
@@ -28,6 +29,13 @@ def wait_for(settings: Settings, command: str) -> float:
     if getattr(settings, background_switch(mode)) and not JOURNAL_CALL.match(command.strip()):
         return getattr(settings, background_after(mode))
     return settings.after_seconds
+
+
+def held_for(settings: Settings, command: str, messages: ReadRows[Message]) -> float:
+    """How long the command may hold the terminal now: no time at all while a message waits for the agent, unless it is a journal command, which may be the agent reading it."""
+    if messages.unread(AGENT) and not JOURNAL_CALL.match(command.strip()):
+        return 0.0
+    return wait_for(settings, command)
 
 
 def matching_task(tasks, command: str, pressed: float) -> str:
@@ -49,20 +57,20 @@ def open_calls(row: AgentRow, providers: Providers) -> tuple[list, list]:
 
 
 class SpotLongCommand(Listener[AgentBeat]):
-    def listen(self, event: AgentBeat, agents: ReadRows[AgentRow], settings: Settings, remembered: ReadRemembered, providers: Providers, clock: Clock,
-               asking: Asking) -> list[Fact]:
+    def listen(self, event: AgentBeat, agents: ReadRows[AgentRow], messages: ReadRows[Message], settings: Settings, remembered: ReadRemembered,
+               providers: Providers, clock: Clock, asking: Asking) -> list[Fact]:
         row, now = agents.peek(event.agent), clock.now()
         oldest = waiting_run(row)
         if not row.live or oldest is None or not providers.knows(row.provider):
             return []
-        if not providers.driver(row.provider).MOVE_TO_BACKGROUND or now - oldest.at < wait_for(settings, oldest.command):
+        if not providers.driver(row.provider).MOVE_TO_BACKGROUND or now - oldest.at < held_for(settings, oldest.command, messages):
             return []
         if remembered.get(memory("moved", event.agent)) == str(oldest.at):
             return []
         still, stale = open_calls(row, providers)
         last = still[0] if still else None
         lost = [CallsLost(agent=event.agent, gone=tuple((one.at, one.id) for one in stale))] if stale else []
-        if last is None or now - float(last.at) < wait_for(settings, last.command):
+        if last is None or now - float(last.at) < held_for(settings, last.command, messages):
             return lost
         answer = asking.ask(LongCommandMoving(session=row.title, command=last.command, seconds=int(now - float(last.at))))
         if isinstance(answer, Refused):

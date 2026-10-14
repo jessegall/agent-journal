@@ -10,7 +10,7 @@ from features.long_commands.watch import ended_runs, open_runs, stalled_runs
 from framework.base import Feature
 from framework.journal import Journal
 from framework.sending import Nudge
-from resources.types import AgentRow
+from resources.types import AgentRow, Message
 
 NOW = at(1_000.0)
 STARTED = 955.0
@@ -18,6 +18,7 @@ ORCHESTRATING = {"work_modes.mode": "orchestrator"}
 MOVED = {"long_commands.moved|1": "955.0"}
 PRESSED = {**MOVED, "long_commands.pressed|1": 975.0}
 TASKED = {**MOVED, "long_commands.task|1": "b1"}
+WAITING = Message(n=5, title="are you there?", seen=["user"])
 MARKED = {"key": "command:955.0", "label": "Moved a long command to the background", "state": "running", "command": "npm test"}
 
 
@@ -57,6 +58,9 @@ class LongCommands(Feature):
             Given(AgentBeat(agent=1), rows=[agent()], clock=NOW)
                 >> Dispatches(LongCommandHeld(agent=1, command="npm test", started="955.0", provider="claude").once("asked|1|955.0")),
             Given(AgentBeat(agent=1), rows=[agent(started=990.0)], clock=NOW) >> Dispatches(nothing),
+            Given(AgentBeat(agent=1), rows=[agent(started=999.0), WAITING], clock=NOW)
+                >> Dispatches(LongCommandHeld(agent=1, command="npm test", started="999.0", provider="claude").once("asked|1|999.0")),
+            Given(AgentBeat(agent=1), rows=[agent(command="journal message read 5", started=999.0), WAITING], clock=NOW) >> Dispatches(nothing),
             Given(AgentBeat(agent=1), rows=[agent(status="stopped")], clock=NOW) >> Dispatches(nothing),
             Given(AgentBeat(agent=1), rows=[agent()], clock=NOW, remembered=MOVED) >> Dispatches(nothing),
             Given(AgentBeat(agent=1), rows=[agent(provider="codex")], clock=NOW) >> Dispatches(nothing),

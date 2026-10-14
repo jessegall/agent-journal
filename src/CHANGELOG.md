@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.16 — A waiting message moves a running command to the background at once
+
+- While a message from you waits unread, a command running in the agent's foreground is moved to the background at once, so your message reaches the agent; otherwise it still waits the 30 seconds Settings sets. A journal command is left in the foreground, since it may be the agent reading that message.
+
 ## 3.0.15 — A start hands the standing lists over once
 
 - The standing facts, rules and reminders reach the agent once, in the block a new session or a compacted one is handed, where 3.0.11 also sent them a second time as a separate line. Their keywords still bring one back when it comes up, and Settings can still give them a cadence of their own.
