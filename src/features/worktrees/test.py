@@ -163,8 +163,8 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     state = tmp_path / "claude" / ".claude.json"
     trust = lambda folder: json.loads(state.read_text())["projects"].get(str(folder.resolve()))
     cwd, args = ClaudeDriver.placed(project, ["--dangerously-skip-permissions", "--worktree=feature-q", "--resume", "c1"])
-    assert trust(cwd) == {"hasTrustDialogAccepted": True, "enabledMcpjsonServers": ["journal"]}, \
-        "a new worktree is trusted with the journal's server approved, so Claude asks nothing at start, even with no state file yet"
+    assert trust(cwd) == {"hasTrustDialogAccepted": True}, \
+        "a new worktree is trusted, so Claude asks nothing at start, even with no state file yet"
     assert trust(project) is None, "the project itself is left to Claude"
     assert (cwd, args) == (project / ".claude" / "worktrees" / "feature-q", ["--dangerously-skip-permissions", "--resume", "c1"]), \
         "Claude starts inside the worktree without a worktree of its own to clean up"
@@ -186,8 +186,8 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     known["projects"][str((tmp_path / "hotfix").resolve())] = {"allowedTools": ["Bash"], "enabledMcpjsonServers": ["other"]}
     state.write_text(json.dumps(known))
     assert ClaudeDriver.placed(project, ["-w", "hotfix"])[0] == tmp_path / "hotfix", "a worktree made by hand is launched where it is"
-    assert (trust(tmp_path / "hotfix"), json.loads(state.read_text())["numStartups"], trust(cwd)["enabledMcpjsonServers"]) == \
-        ({"allowedTools": ["Bash"], "enabledMcpjsonServers": ["other", "journal"], "hasTrustDialogAccepted": True}, 7, ["journal"]), \
+    assert (trust(tmp_path / "hotfix"), json.loads(state.read_text())["numStartups"], trust(cwd)) == \
+        ({"allowedTools": ["Bash"], "enabledMcpjsonServers": ["other"], "hasTrustDialogAccepted": True}, 7, {"hasTrustDialogAccepted": True}), \
         "what Claude already keeps for the folder, its other servers and every other project stay as they were"
     before = (state.read_bytes(), state.stat().st_mtime_ns)
     assert ClaudeDriver.placed(project, ["-w", "feature-q"]) == (cwd, []), "an existing worktree is reused"
