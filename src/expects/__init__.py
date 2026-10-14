@@ -17,7 +17,7 @@ class NotAnOutcome(TypeError):
 
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
-           "Dispatches", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
+           "Dispatches", "DispatchesWith", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Released", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "Step", "Reported", "Ticked", "Acted", "Waited", "Happened", "Told", "Stands", "Closed", "Requested", "Replied",
@@ -111,6 +111,25 @@ class Dispatches(Outcome):
             if one == self.fact and (self.claimed is None or getattr(one, "claim", "") == self.claimed):
                 return ""
         return f"it did not dispatch {self.fact!r}; it dispatched {seen.facts!r}"
+
+
+@dataclass(frozen=True, init=False)
+class DispatchesWith(Outcome):
+    """A fact of this kind was dispatched, and the fields named hold those values; a field it does not name, such as the path of a file the play made in its scratch project, is not judged."""
+
+    kind: type
+    fields: tuple[tuple[str, Any], ...]
+
+    def __init__(self, kind: type, **fields) -> None:
+        object.__setattr__(self, "kind", kind)
+        object.__setattr__(self, "fields", tuple(sorted(fields.items())))
+
+    def holds(self, seen) -> str:
+        wanted = dict(self.fields)
+        for one in seen.facts:
+            if isinstance(one, self.kind) and all(hasattr(one, name) and getattr(one, name) == value for name, value in wanted.items()):
+                return ""
+        return f"it did not dispatch a {self.kind.__name__} holding {wanted}; it dispatched {seen.facts!r}"
 
 
 @dataclass(frozen=True)

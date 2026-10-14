@@ -16,11 +16,11 @@ import pytest
 
 import commands.cli  # noqa: F401  wires the command line a tag runs its command through, as every process that runs the journal does
 import expects
-from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged, Released, Set, Whispered,
+from expects import (Answered, Changed, Dispatches, DispatchesWith, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged, Released, Set, Whispered,
                      Closed, Outcome, Outcomes, Printed, Ran, Refused, Removed, Reported, Stands, Told, Unchanged, Updated, Waited, Wrote, answering, at, counting,
                      exited, nothing)
 
-OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Released, Answered, Set, Whispered, Told, Stands, Closed)
+OUTCOME_WORDS = (Dispatches, DispatchesWith, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Released, Answered, Set, Whispered, Told, Stands, Closed)
 GIVEN_ARGUMENTS = ("on", "earlier", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers", "git", "journal_root", "faults", "command_words", "viewer", "own_work", "secrets", "outside", "server")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands", "git", "journal root", "faults", "command words", "viewer", "own work", "secrets", "outside", "server")
 
