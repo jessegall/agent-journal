@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from journal.agent.agent_state import AgentState
-from journal.agent.permission import Permission
+from journal.engine.agent_state import AgentState
+from journal.engine.permission import Permission
 
 
 @dataclass(frozen=True)

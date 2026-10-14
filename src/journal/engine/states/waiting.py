@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from journal.agent.states.paused import Paused
-from journal.agent.transition import Transition
+from journal.engine.states.paused import Paused
+from journal.engine.transition import Transition
 from journal.events.agent.prompt_submitted import PromptSubmitted
 
 

@@ -46,10 +46,10 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   column and a `data` dict the state fills (task id, plan id, sequence and step). One flat
   state at a time, no substates; what two states share is inherited, one level
   (`FollowingPlan(Working)`, `RunningSequence(Working)`). A state is a frozen dataclass in
-  `agent/states/`, with a method per agent event named after it in snake_case; an event with
+  `engine/states/`, with a method per agent event named after it in snake_case; an event with
   no method changes nothing. Each state declares `allows`, the `Permission`s the agent has
   there. A method returns a `Transition`: the next state, nudges, an optional refusal.
-  `agent/machine.py` is the one blocking listener on every agent event; commands move the
+  `engine/machine.py` is the one blocking listener on every agent event; commands move the
   agent too (`task start` -> Working). Starting states: Idle, Working, FollowingPlan,
   RunningSequence, Awaiting, Waiting, Halted, CatchingUp, AtMark, Subagent, Ended. The last
   five extend `Paused`, which holds `resume` (the state it left, serialised) and goes back
@@ -57,7 +57,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Settings, not states**: auto mode and the work mode (hands-on, orchestrator, solo). They
   change what a state allows or says. Liveness (alive, compacting now) is not a state either;
   the viewer derives it from the last event's time.
-- **The runtime is the server process.** `agent/runtime.py` keeps three threads: HTTP, the
+- **The runtime is the server process.** `engine/runtime.py` keeps three threads: HTTP, the
   `Deferred` worker and the `Clock`, which tells `Ticked` for every live agent every few
   seconds so a state can act on time (five quiet minutes, helpers back). The machine holds
   nothing between events; the agent row is the state.

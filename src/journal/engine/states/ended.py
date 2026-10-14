@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.agent.agent_state import AgentState
+from journal.engine.agent_state import AgentState
 
 
 @dataclass(frozen=True)

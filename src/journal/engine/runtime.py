@@ -1,5 +1,5 @@
-from journal.agent.clock import Clock
-from journal.agent.machine import Machine
+from journal.engine.clock import Clock
+from journal.engine.machine import Machine
 from journal.features.bus import Bus
 from journal.hooks.deferred import Deferred
 from journal.http.server import Server

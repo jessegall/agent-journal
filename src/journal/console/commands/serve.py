@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from journal.console.command import Command
-from journal.agent.runtime import Runtime
+from journal.engine.runtime import Runtime
 
 
 class ServeCommand(Command):

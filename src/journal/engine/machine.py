@@ -1,5 +1,5 @@
-from journal.agent.states_catalogue import StatesCatalogue
-from journal.agent.transition import Transition
+from journal.engine.states_catalogue import StatesCatalogue
+from journal.engine.transition import Transition
 from journal.events.agent.agent_event import AgentEvent
 from journal.features.agent_listener import AgentListener
 from journal.repositories.agents import Agents

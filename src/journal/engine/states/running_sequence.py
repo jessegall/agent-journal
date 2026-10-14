@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from journal.agent.states.working import Working
-from journal.agent.transition import Transition
+from journal.engine.states.working import Working
+from journal.engine.transition import Transition
 from journal.events.agent.idle import Idle as AgentIdle
 
 

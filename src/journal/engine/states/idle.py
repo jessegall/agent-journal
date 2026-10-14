@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from journal.agent.agent_state import AgentState
-from journal.agent.transition import Transition
+from journal.engine.agent_state import AgentState
+from journal.engine.transition import Transition
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 

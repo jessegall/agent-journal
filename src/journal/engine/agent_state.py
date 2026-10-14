@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from journal.agent.permission import Permission
+from journal.engine.permission import Permission
 from journal.events.agent.agent_event import AgentEvent
 
 

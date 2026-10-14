@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from journal.agent.agent_state import AgentState
-from journal.agent.transition import Transition
+from journal.engine.agent_state import AgentState
+from journal.engine.transition import Transition
 
 
 @dataclass(frozen=True)

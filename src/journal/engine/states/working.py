@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from journal.agent.agent_state import AgentState
-from journal.agent.permission import Permission
-from journal.agent.transition import Transition
+from journal.engine.agent_state import AgentState
+from journal.engine.permission import Permission
+from journal.engine.transition import Transition
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.idle import Idle as AgentIdle
 from journal.events.agent.session_started import SessionStarted

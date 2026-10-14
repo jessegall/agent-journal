@@ -1,4 +1,4 @@
-from journal.agent.agent_state import AgentState
+from journal.engine.agent_state import AgentState
 
 
 class StatesCatalogue:
