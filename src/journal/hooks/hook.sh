@@ -4,6 +4,7 @@
 #   409  refused; the body's error is the reason, and exit 2 is how the agent is told to stop (or, on Stop, not to stop)
 #   anything else, or no server  go on, silently
 # Nothing is decided here, and a deferred handler never changes the status: the server replies before it runs.
+[ "$AGENT_JOURNAL_ACTIVE" = 1 ] || exit 0
 agent=$1
 root=$2
 port=$(cat "$root/.journal/port" 2>/dev/null) || exit 0

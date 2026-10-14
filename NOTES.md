@@ -231,6 +231,13 @@ F. **The viewer is rebuilt small.** Decision: the v3 viewer has 107 endpoints an
    (tokens.css, light.css, the kit's look) and has the pages the core has: Home (chat, agent
    state, questions), Tasks, Plans, Memory, Timeline (entries and nudges), Settings. Vue 3
    and Vite, built into `src/web/dist`. The phone and the hub come later.
+D2. **The boot menu**, re-envisioned small. `journal claude` asks three things in the terminal
+   before launching, each with a default so Enter alone is the common case: which environment
+   (the existing ones with when each was last used, or a new name); whether to continue that
+   environment's last conversation or start a new one; and whether to run with the journal's
+   hooks or set them aside for this run (then `AGENT_JOURNAL_ACTIVE` is unset and the hook
+   script exits at once). `--env`, `--new`, `--aside` and `--yes` answer it without asking.
+   The supervisor stays stdlib-only: it asks `journal.py environments json` for the list.
 G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, the viewer in
    a browser, fix what breaks.
 

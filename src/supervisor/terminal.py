@@ -1,31 +1,96 @@
+import fcntl
 import os
+import pty
+import signal
+import struct
+import termios
+import time
+
+LONGEST = 65536
 
 
 class Terminal:
     """The agent in a pty: the user's keys go in, its screen comes out, and the journal can type a line."""
 
-    def __init__(self, command: list[str], cwd: str, environ: dict[str, str]) -> None: ...
+    def __init__(self, command: list[str], cwd: str, environ: dict[str, str]) -> None:
+        self.command, self.cwd, self.environ = command, cwd, environ
+        self.fd, self.pid = -1, -1
+        self._pending = bytearray()
 
-    @property
-    def fd(self) -> int: ...
-
-    @property
-    def pid(self) -> int: ...
-
-    def start(self) -> None: ...
+    def start(self) -> None:
+        pid, fd = pty.fork()
+        if pid == 0:
+            os.chdir(self.cwd)
+            os.execvpe(self.command[0], self.command, self.environ)
+        self.pid, self.fd = pid, fd
+        self.resize(*self.size_of(0))
 
     def restart(self, resume: tuple[str, ...]) -> None:
         """Stops the agent and starts it again with the arguments that resume its conversation."""
-        ...
+        self.stop(3.0)
+        self.command = [self.command[0], *resume]
+        self.start()
 
-    def write(self, data: bytes) -> None: ...
+    def write(self, data: bytes) -> None:
+        self._pending += data
 
-    def read(self) -> bytes: ...
+    def feed(self) -> None:
+        """Writes what is pending without blocking; the rest waits for the next turn."""
+        if not self._pending:
+            return
+        flags = fcntl.fcntl(self.fd, fcntl.F_GETFL)
+        fcntl.fcntl(self.fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+        try:
+            sent = os.write(self.fd, bytes(self._pending))
+        except (BlockingIOError, InterruptedError):
+            sent = 0
+        finally:
+            fcntl.fcntl(self.fd, fcntl.F_SETFL, flags)
+        del self._pending[:sent]
 
-    def type(self, line: str) -> None: ...
+    @property
+    def has_pending(self) -> bool:
+        return bool(self._pending)
 
-    def resize(self, rows: int, columns: int) -> None: ...
+    def read(self) -> bytes:
+        try:
+            return os.read(self.fd, LONGEST)
+        except OSError:
+            return b""
 
-    def exited(self) -> int | None: ...
+    def type(self, line: str) -> None:
+        self.write(line.encode() + b"\r")
 
-    def stop(self, grace: float) -> int: ...
+    def resize(self, rows: int, columns: int) -> None:
+        if self.fd >= 0:
+            fcntl.ioctl(self.fd, termios.TIOCSWINSZ, struct.pack("HHHH", rows, columns, 0, 0))
+
+    @staticmethod
+    def size_of(fd: int) -> tuple[int, int]:
+        try:
+            rows, columns, _, _ = struct.unpack("HHHH", fcntl.ioctl(fd, termios.TIOCGWINSZ, b"\0" * 8))
+            return (rows or 40, columns or 120)
+        except OSError:
+            return (40, 120)
+
+    def exited(self) -> int | None:
+        if self.pid < 0:
+            return None
+        pid, status = os.waitpid(self.pid, os.WNOHANG)
+        return os.waitstatus_to_exitcode(status) if pid else None
+
+    def stop(self, grace: float) -> int:
+        if self.pid < 0:
+            return 0
+        try:
+            os.kill(self.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return 0
+        until = time.time() + grace
+        while time.time() < until:
+            pid, status = os.waitpid(self.pid, os.WNOHANG)
+            if pid:
+                return os.waitstatus_to_exitcode(status)
+            time.sleep(0.05)
+        os.kill(self.pid, signal.SIGKILL)
+        return os.waitstatus_to_exitcode(os.waitpid(self.pid, 0)[1])
