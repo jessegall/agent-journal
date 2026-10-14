@@ -68,6 +68,10 @@ def wanted(**more) -> Question:
     return Question(n=1, title="Is this step still wanted?", refs=["sequence:4"], **more)
 
 
+def unless_bot(row: Todo) -> Given:
+    return Given(todo("created"), rows=[on_creating("todo.created", unless={"assigned": "bot"}), row])
+
+
 def todo(action: str, actor: str = USER) -> AnyEvent:
     return AnyEvent(n=5, type="todo", action=action, actor=actor)
 
@@ -132,8 +136,8 @@ class SequencesFeature(Feature):
             Given(todo("renamed"), rows=[on_creating("todo.created")]) >> Dispatches(nothing),
             Given(todo("created"), rows=[on_creating("todo.created", started_by="user")]) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
             Given(todo("created", AGENT), rows=[on_creating("todo.created", started_by="user")]) >> Dispatches(nothing),
-            Given(todo("created"), rows=[on_creating("todo.created", unless={"assigned": "bot"}), Todo(n=5, title="assigned to a bot", data={"assigned": "bot"})]) >> Dispatches(nothing),
-            Given(todo("created"), rows=[on_creating("todo.created", unless={"assigned": "bot"}), Todo(n=5, title="free")]) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
+            unless_bot(Todo(n=5, title="assigned to a bot", data={"assigned": "bot"})) >> Dispatches(nothing),
+            unless_bot(Todo(n=5, title="free")) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
             Given(todo("created"), rows=[on_creating("todo.created", only_when_idle=True)]) >> Dispatches(SequenceStarts(sequence=4, about="todo:5")),
         ])
         journal.events.listen(TriggerFired, SpotSequenceToStartOnTrigger(), expects=[
