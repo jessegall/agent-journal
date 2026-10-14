@@ -42,6 +42,16 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   `ToolStarting`, `ToolFinished`, `Compacting`, `Idle`, `SessionEnded`, `SubagentStarted`,
   `SubagentEnded`. `hooks/translation.py` is the one table from hook kind to event. Features
   listen to agent events, never to raw hooks.
+- **The agent is a state machine, and the state is the truth.** `models/agent.py` has a `state`
+  column and a `data` dict the state fills (task id, plan id, sequence and step). One flat
+  state at a time, no substates; what two states share is inherited, one level
+  (`FollowingPlan(Working)`, `RunningSequence(Working)`). A state is a frozen dataclass in
+  `agent/states/`, with a method per agent event named after it in snake_case; an event with
+  no method changes nothing. Each state declares `allows`, the `Permission`s the agent has
+  there. A method returns a `Transition`: the next state, nudges, an optional refusal.
+  `agent/machine.py` is the one blocking listener on every agent event; commands move the
+  agent too (`task start` -> Working). Starting states: Idle, Working, FollowingPlan,
+  RunningSequence, Waiting, Subagent, Ended.
 - **Hooks are deferred by default.** A feature's `AgentListener` has `blocking = False`: the
   server records the entry, replies to the agent, then runs it on the one `Deferred` worker
   thread. A listener that must answer before the agent goes on (the write gate, a hold)
@@ -83,8 +93,11 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   (settings, runtime socket path, logs).
 - **Migrations from v3** records: do we import the old file rows at all, or start empty.
 - **Plans**: model shape (phases, checkpoints) once tasks stand.
-- **Agents as a model**: whether a running agent is a row (session id, state, context) or
-  only events.
+- **State method injection**: a state method asks for rows by type (`task: Task`); decide
+  whether the machine resolves them from the state's data before the call, or the state is
+  handed repositories. Leaning: the machine resolves, so states stay pure.
+- **Permissions vs the gate**: `allows` says what a state permits; the Idle refusal of a write
+  is the first use. Decide which tools count as a write per provider (one table).
 - **Viewer**: keep `v3.bak/src/web` as is and repoint its API client, or rebuild it smaller.
 - **Install and upgrade**: `install.sh`, `install.py`, the `.pyz` build and the self-update
   loop are all old; decide the new install path before touching them.
