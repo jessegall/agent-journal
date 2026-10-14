@@ -1,3 +1,4 @@
+# Stays a test: it cuts, ages and removes real runtime files, logs, archives and plugin checkouts on disk, and ends a stubborn server process
 import json
 import os
 import time

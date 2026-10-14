@@ -1,3 +1,4 @@
+# Stays a test: it tests the board's lanes and the Todos controller's shifts, listings and task lists directly, which no registration reaches
 import pytest
 import time
 

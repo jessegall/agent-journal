@@ -1,3 +1,4 @@
+# Stays a test: it times real requests, hooks and agent reports in a watched server against the work budget, and reads the budget log and settings files on disk
 import json
 from engine.record import Record
 from collections import Counter
