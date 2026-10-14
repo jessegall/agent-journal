@@ -1153,12 +1153,12 @@ def test_a_reported_step_reaches_another_features_receiver_on_the_lane_and_a_wai
     features.load()
     heard: list[tuple[str, float]] = []
 
-    class Hears(Handler[AgentReported]):
+    class Receives(Handler[AgentReported]):
         def handle(self, event: AgentReported) -> list[Fact]:
             heard.append((event.hook, time.time()))
             return []
 
-    registration = Registration.read(HANDLE, AgentReported, Hears(), ["an expectation"], "chat_etiquette")
+    registration = Registration.read(HANDLE, AgentReported, Receives(), ["an expectation"], "chat_etiquette")
     TICKING.moved.add(registration)
     TICKING.resolve()
     promise = SimpleNamespace(kind="handler", feature=SimpleNamespace(name="chat_etiquette"))
