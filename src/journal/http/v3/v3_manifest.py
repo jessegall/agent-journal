@@ -18,7 +18,10 @@ class V3Manifest:
         self.config, self.registry = config, registry
         self._fixture = json.loads(FIXTURE.read_text())
         for name, (title, abstract) in RENAMED.items():
-            self._fixture["types"][name].update(title=title, abstract=abstract)
+            meta = self._fixture["types"][name]
+            meta.update(title=title, abstract=abstract)
+            meta["event_labels"] = {key: label.replace("To-do", "Task").replace("Helper", "Worker").replace("helper", "worker") for key, label in meta.get("event_labels", {}).items()}
+            meta["help"] = meta.get("help", "").replace("to-do", "task").replace("helper", "worker")
 
     def for_environment(self, environment: str) -> dict:
         return {**self._fixture, "environment": environment, "project": self.config.root.name, "branch": "", "build": self.build(), "version": VERSION, "facts": {}}

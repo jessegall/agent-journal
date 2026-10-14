@@ -225,12 +225,16 @@ D. **Supervisor bodies** and `journal claude|codex [args]` in the entry point. T
 E. **API for the viewer** under `/api`: environments, agents (with state and context), tasks,
    plans, messages, questions (answer), facts, rules, reminders, entries (`?since=` for live
    updates), settings (feature switches), skills; the server serves the built viewer at `/`.
-F. **The viewer is rebuilt small.** Decision: the v3 viewer has 107 endpoints and v3's row
-   shapes (todo, work, `n`, `status`); wiring it faithfully means re-implementing v3's HTTP
-   layer, which is the redundancy v4 exists to drop. The new viewer keeps v3's look
-   (tokens.css, light.css, the kit's look) and has the pages the core has: Home (chat, agent
-   state, questions), Tasks, Plans, Memory, Timeline (entries and nudges), Settings. Vue 3
-   and Vite, built into `src/web/dist`. The phone and the hub come later.
+F. **The viewer is version 3's, whole** (the user's ruling on 2026-10-15, reversing the small
+   rebuild): `src/web` is version 3's viewer source and its built `dist`, untouched, with its
+   `node_modules` shared from `v3.bak` by a symlink. The server speaks version 3's API under
+   `/api` from version 4's rows (`src/journal/http/v3/`): a manifest and a settings tree
+   recorded from a live version 3 server (`manifest.json`, `settings.json`, with task and
+   worker names laid in), one shaper per type from a model to the row shape the viewer reads,
+   listings with its paging, the dashboard with counts, events and the event stream from the
+   entries (every row change is an entry now), the bar, the summary, identity, agents,
+   profiles, and the writes the viewer sends (`v3_actions.py`). The viewer's own code is the
+   one place to adapt if the contract ever moves; today nothing in it changed.
 D2. **The boot menu**, re-envisioned small. `journal claude` asks three things in the terminal
    before launching, each with a default so Enter alone is the common case: which environment
    (the existing ones with when each was last used, or a new name); whether to continue that
@@ -263,8 +267,11 @@ Still to do, in rough order:
   triggers; no hub of journals; no phone; no sharing; no plugins.
 - Memory keyword whispers and the rule review; put-off-work; closed-by-commit; auto mode and
   work mode settings; permission prompts routed to the viewer.
-- The avatar's reactions to chat marks (cards, test results, faces) read nothing yet; it walks,
-  sits, sleeps and points by the agent's state only.
+- Pages still served empty: file edits, terminal, code, collections, suggestions, dumps,
+  plugins, integrations, secrets, phone, sharing, the hub of journals. Each is a shaper or a
+  stub in `http/v3/` away.
+- Chat marks drawn today: commit badges (from the git feature's entries), replies as comments,
+  skills loaded; not yet: subagent marks, thoughts, whispers, test-run cards, reactions.
 - Install from a clone or a release (`install.sh`), upgrade and migrations; the `.pyz` build.
 - `v3.bak/` can go once nothing is left to read from it.
 

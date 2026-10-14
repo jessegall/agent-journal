@@ -47,7 +47,7 @@ With the server up, `journal` posts the command to it and prints the outcome; no
 ## Developing
 
     pytest                       # the suite, about five seconds, core only
-    cd src/web && npm install && npm run build   # the viewer, into src/web/dist
+    cd src/web && npm run build  # the viewer, into src/web/dist (node_modules is shared from v3.bak)
 
 `CLAUDE.md` holds the design philosophy and `NOTES.md` what is decided and what is still open.
 `v3.bak/` is version 3, kept as the guide for the rewrite and never imported.
