@@ -14,6 +14,8 @@ class Task(Scoped):
     finished_at: datetime | None = None
     outcome: str = ""
 
-    def started(self, at: datetime) -> "Task": ...
+    def started(self, at: datetime) -> "Task":
+        return self.with_(state=TaskState.STARTED, started_at=at)
 
-    def finished(self, at: datetime, outcome: str) -> "Task": ...
+    def finished(self, at: datetime, outcome: str) -> "Task":
+        return self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome)

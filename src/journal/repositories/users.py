@@ -1,8 +1,13 @@
 from journal.models.user import User
+from journal.repositories.not_found import NotFound
 from journal.repositories.repository import Repository
 
 
 class Users(Repository[User]):
     model = User
 
-    def by_email(self, email: str) -> User: ...
+    def by_email(self, email: str) -> User:
+        found = self.where(email=email)
+        if not found:
+            raise NotFound(self.table, email)
+        return found[0]

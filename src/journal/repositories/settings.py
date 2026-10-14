@@ -9,6 +9,10 @@ class Settings(ScopedRepository[Setting]):
 
     model = Setting
 
-    def get(self, environment_id: int, key: str, default: object = None) -> object: ...
+    def get(self, environment_id: int, key: str, default: object = None) -> object:
+        return self.merged(environment_id).get(key, default)
 
-    def merged(self, environment_id: int) -> dict: ...
+    def merged(self, environment_id: int) -> dict:
+        merged = {s.key: s.value for s in self.in_(environment_id)}
+        merged.update({s.key: s.value for s in self.in_(PROJECT)})
+        return merged

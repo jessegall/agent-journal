@@ -9,4 +9,5 @@ class Question(Scoped):
     options: tuple[str, ...] = ()
     answer: str | None = None
 
-    def answered(self, answer: str) -> "Question": ...
+    def answered(self, answer: str) -> "Question":
+        return self.with_(answer=answer)

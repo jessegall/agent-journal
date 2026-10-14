@@ -1,17 +1,28 @@
+import argparse
+
 from journal.console.command import Command
+from journal.console.where import Where
 from journal.container import Container
-from journal.models.actor import Actor
 
 
 class Console:
     """journal <noun> <verb> ...: finds the command and runs it."""
 
-    def __init__(self, container: Container) -> None: ...
+    def __init__(self, container: Container, where: Where) -> None:
+        self.container, self.where = container, where
+        self.commands: dict[str, Command] = {}
 
-    def add(self, command: type[Command]) -> None: ...
+    def add(self, command: type[Command]) -> None:
+        self.commands[command.noun] = self.container.get(command)
 
-    def run(self, argv: list[str]) -> int: ...
+    def parser(self) -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser(prog="journal")
+        nouns = parser.add_subparsers(dest="noun", required=True)
+        for noun, command in self.commands.items():
+            verbs = nouns.add_parser(noun).add_subparsers(dest="verb", required=True)
+            command.arguments(verbs)
+        return parser
 
-    def actor(self) -> Actor:
-        """The agent when JOURNAL_SESSION is set, else the local user."""
-        ...
+    def run(self, argv: list[str]) -> int:
+        args = self.parser().parse_args(argv)
+        return self.commands[args.noun].run(args, self.where.actor())
