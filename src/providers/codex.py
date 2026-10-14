@@ -118,6 +118,12 @@ class CodexModel:
         return f"{versioned[2]} {versioned[1]}" if versioned else bare_name
 
     @property
+    def generation(self) -> int:
+        """The model's major version, as 6 for gpt-6.1-sol; 0 for a model named without one."""
+        found = re.match(r"gpt-(\d+)", self.slug, flags=re.IGNORECASE)
+        return int(found[1]) if found else 0
+
+    @property
     def choice(self) -> dict:
         return {"value": self.slug, "label": self.label}
 
@@ -229,7 +235,7 @@ class ModelControls(TypedDict):
 class Codex(Provider):
     refusals = ("out of credits", "usage limit", "quota exceeded")
     name = "codex"
-    dispatch_default = "gpt-6-sol"
+    dispatch_default = "gpt-6.1-sol"
     follow_up = 'send_input({{id: "{id}", message: "<the new work>"}})'
     question_tools = frozenset({"request_user_input", "request_user_input_async"})
     tool_kinds = {**Provider.tool_kinds, **dict.fromkeys((*SHELL_TOOLS, "apply_patch"), CodexShell), "spawn_agent": AgentCall,
@@ -306,7 +312,10 @@ class Codex(Provider):
         return self.configuration().model or chosen
 
     def model_labels(self) -> dict[str, str]:
-        return {model.slug: model.label for model in self.catalog()}
+        """The models a helper is dispatched on: those of the newest generation Codex lists, in its order, and any named without a version."""
+        models = self.catalog()
+        newest = max((model.generation for model in models), default=0)
+        return {model.slug: model.label for model in models if model.generation in (0, newest)}
 
     @classmethod
     @cache

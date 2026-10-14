@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.2.2 — A Codex helper is dispatched on the newest models
+
+- The models a Codex helper may be dispatched on are only those of the newest generation Codex lists, newest first, so older generations no longer crowd the list. A helper dispatched with no model named runs on gpt-6.1-sol. The model picker in the status bar still lists every model Codex offers.
+
 ## 3.2.1 — Every feature states what it does as expectations
 
 - Each feature's behaviour is now stated as expectations on its own registrations and played by the generated runs; a feature's own test file keeps only what needs a real process, file, server or browser, and says why on its first line. A check refuses a test file that does not.
