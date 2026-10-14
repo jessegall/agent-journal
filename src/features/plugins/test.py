@@ -1,3 +1,4 @@
+# Stays a test: plugin guards, setup steps and services are real shell processes, unix sockets, an HTTP server and threads, plugins install from real git repositories, and the manifest, settings, queue, dashboard and skill code is reached by no registration.
 from pathlib import Path
 import json
 import os
