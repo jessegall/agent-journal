@@ -1,8 +1,9 @@
 import json
+import time
 
 from events.agents import AgentBeat, ClockTicked
 from events.long_commands import CallsLost, LongCommandHeld, LongCommandKept, MoveNotTaken, MovedCommandEnded, PartRunning, TaskFound
-from expects import Dispatches, Given, Nudged, Ran, Remembered, Updated, at, nothing
+from expects import Dispatches, Given, Nudged, Ran, Remembered, Told, Updated, at, nothing
 from features.long_commands.details import RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED, LongCommandsDetails
 from features.long_commands.handlers import CloseLostCalls, CloseTheMovedCommand, MoveToTheBackground, PressMoveAgain, SayLongCommandKept, ShowThePartRunning, KeepTheTask
 from features.long_commands.listeners import SpotLongCommand, SpotMovedCommand
@@ -40,6 +41,31 @@ BACKGROUNDED = {"type": "user", "timestamp": "1970-01-01T00:20:00Z",
                 "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": "Command running in background with ID: b1"}]}}
 
 
+def stamped(seconds: float) -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(seconds))
+
+
+def codex_exec(call: str, cmd: str, seconds: float, session: int) -> str:
+    return lost_in([
+        {"timestamp": stamped(seconds), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": call, "name": "exec",
+                                                                              "input": f'const r=await tools.exec_command({{cmd:"{cmd}",yield_time_ms:1000}});text(r);'}},
+        {"timestamp": stamped(seconds), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": call,
+                                                                              "output": [{"type": "input_text", "text": json.dumps({"chunk_id": "a", "session_id": session, "output": ""})}]}}])
+
+
+def codex_ended(process: str, status: str, seconds: float) -> str:
+    return lost_in([{"timestamp": stamped(seconds), "type": "event_msg", "payload": {
+        "type": "item_completed", "item": {"type": "CommandExecution", "process_id": process, "status": status}, "completed_at_ms": seconds * 1000}}])
+
+
+def codex_agent(status: str = "idle") -> AgentRow:
+    return AgentRow(n=1, title="claude-1", data={"status": status, "event": "Stop", "provider": "codex", "at": 940.0})
+
+
+def ticked_with(rows: list, transcript: str) -> Given:
+    return Given(ClockTicked(agent=1), rows=rows, clock=NOW, transcript=transcript)
+
+
 def finished(status: str) -> dict:
     return {"type": "user", "timestamp": "1970-01-01T00:21:40Z", "message": {"content": [{"type": "text", "text": f"<task-notification><task-id>b1</task-id><status>{status}</status></task-notification>"}]}}
 
@@ -47,11 +73,17 @@ def finished(status: str) -> dict:
 class LongCommands(Feature):
     details = LongCommandsDetails
     nudges = (Nudge(RUN_ENDED, behaviour=WATCHED, about=ended_runs, once=True,
-                    guarantee="When a command the agent left running finishes, it is told once, with how the command ended."),
+                    guarantee="When a command the agent left running finishes, it is told once, with how the command ended.",
+                    expects=(ticked_with([codex_agent()], codex_exec("c1", "make test", 300.0, 42) + codex_ended("42", "failed", 990.0))
+                                 >> Nudged(RUN_ENDED, outcome="failed", command="make test"),
+                             ticked_with([codex_agent()], codex_exec("c1", "make test", 300.0, 42) + codex_ended("42", "failed", 100.0)) >> Told(RUN_ENDED, times=0))),
               Nudge(RUN_STALLED, behaviour=WATCHED, about=stalled_runs, once=True,
-                    guarantee="A command the agent left running that has shown nothing new is named every five minutes it keeps running, whatever its provider, so a hung run is not waited on for ever."),
+                    guarantee="A command the agent left running that has shown nothing new is named every five minutes it keeps running, whatever its provider, so a hung run is not waited on for ever.",
+                    expects=(ticked_with([codex_agent()], codex_exec("c1", "make test", 300.0, 42)) >> Nudged(RUN_STALLED, minutes=11, command="make test"),)),
               Nudge(RUN_OPEN, behaviour=WATCHED, about=open_runs, once=True,
-                    guarantee="When the agent stops while a command it started is still running, it is told once, so nothing is left running unwatched."))
+                    guarantee="When the agent stops while a command it started is still running, it is told once, so nothing is left running unwatched.",
+                    expects=(ticked_with([codex_agent()], codex_exec("c1", "make test", 300.0, 42)) >> Nudged(RUN_OPEN, command="make test"),
+                             ticked_with([codex_agent("working")], codex_exec("c1", "make test", 300.0, 42)) >> Told(RUN_OPEN, times=0))))
 
     def register(self, journal: Journal) -> None:
         journal.events.listen(AgentBeat, SpotLongCommand(), expects=[
