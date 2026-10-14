@@ -1,3 +1,4 @@
+# Stays a test: nothing here is reached by a status_bar registration or it needs the real thing: shell.parsed, supervisor.typing, bus.spaced timing (real sleep), Engine.control (live session file), the pause gate, loops and test-run cards of the hook funnel, the Codex last message read by the hook report, and the claude and codex providers (a real sh subprocess, HOME trees outside the project).
 import time
 
 from features.status_bar.group import grouped, ran
@@ -52,36 +53,7 @@ TODO = [{"name": "todo", "title": "To-do", "names": {"create": "add"}}]
 WORK = [{"name": "work", "title": "Work", "names": {}}]
 
 
-def test_the_verb_is_the_root_and_the_only_unmuted_part():
-    assert coloured([used("mcp__x__y", "playwright · browser evaluate")])[0][:2] == [("using", "gray"), ("playwright", "muted")], \
-        "the verb is gray and everything else muted"
-    assert text([shell("git add -A"), shell("git commit -m x", NOW + 1, effect="writes", done=NOW + 2), shell("git push", NOW + 3)]) == \
-        [["git", ["tracking", "committing", "pushing"], ["files", "changes", "changes"]]], \
-        "a run of git commands is one message, rooted under git"
-    assert [text([{"command": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
-        ["viewing", "watching"], "a picture and a film have their own words"
-    from features.status_bar.spoken import spoken
-    assert (spoken(["todo"], [{"name": "todo", "names": {}}]), spoken(["nothing-known"], [])) == ("listing todos", "checking nothing-known"), \
-        "a noun with no word after it is a listing of its rows, and an unknown one is a check"
-    created = [shell("x", effect="writes", files=["a.py"], made=["a.py"])]
-    assert (text(created)[0][0], queue(created, NOW)[0]["hold"]) == ("creating", HOLD), \
-        "creating has its own word and holds its line like editing"
-    assert [text([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")] == \
-        ["editing", "reading", "deleting", "testing", "installing", "building", "running"], "every kind has its own verb"
-    assert text([shell("journal question answer 10"), shell("journal todo add 12", NOW + 1), shell("journal work log 12 x", NOW + 2)]) == \
-        [["journalling", ["answering", "adding", "logging"], ["question", "todo", "work"], ["10", "12", "12"]]], \
-        "a run of journal commands is one message whose every column rolls on its own"
-    assert coloured([shell("journal message read 601")])[0][:2] == [("journalling", "gray"), ("reading", "muted")], \
-        "a journal command is rooted under journalling and what it did there is muted"
-    assert coloured([shell("python3 src/journal.py message read 601")])[0][:2] == [("journalling", "gray"), ("reading", "muted")], \
-        "the journal run through python by its script is the same journal command"
-    assert [text([shell(command)]) for command in ("python3 tools/build.py", "node", "bash <<EOF\necho\nEOF")] == \
-        [[["running", "python3", "build.py"]], [["running", "node"]], [["running", "bash", "script"]]], \
-        "a program that runs a script is named with the script, and a typed-in script is only called one"
-    assert coloured([changed("a.py", added=3, removed=1), changed("a.py", NOW + 1, added=2)]) == \
-        [[("editing", "gray"), ("a.py", "muted"), (5, "green"), (1, "red")]], "edits of one file add up what was added and removed in green and red"
-    assert coloured([changed("a.py", added=3), changed("b.py", NOW + 1, removed=2)])[0][2:] == [([3, 6], "green"), ([0, 2], "red")], \
-        "edits of two files roll the running totals from one to the next"
+def test_a_command_is_named_by_what_a_wrapper_runs_and_a_quoted_separator_does_not_split_it():
     from features.status_bar.shell import parsed
     roots = lambda command: [(piece.root, piece.args) for piece in parsed(command)]
     assert roots("timeout 10 perl -e x git status") == [("git status", ())] and roots("env FOO=1 nice -n 5 git log") == [("git log", ())] \
@@ -96,15 +68,7 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
         "a command inside a capture, a group or a loop is found, and a filter after it is left out"
 
 
-def test_the_whole_bar_is_the_queue_and_nothing_else():
-    class Row:
-        commands = [read("before.py"), edit("now.py", NOW + 1)]
-
-    assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
-    assert (doing(Row(), NOW + 2), doing(type("Idle", (), {"commands": []})(), NOW)) == ("editing now.py", ""), \
-        "an agent's cell is given the bar's line for its latest activity, and nothing when it has done nothing"
-    counted_row = type("Counted", (), {"commands": [changed("now.py", NOW + 1, added=12, removed=3)]})()
-    assert doing(counted_row, NOW + 2) == "editing now.py +12 -3", "a line that counts what was added and removed is text, never a number the join chokes on"
+def test_a_codex_agents_cell_says_what_it_last_said_read_from_its_transcript():
     import json
     from controllers.types import Agents
     from providers import PROVIDERS
@@ -124,11 +88,7 @@ def test_a_terminal_answering_a_query_is_not_the_user_typing():
         "a version or colour reply comes in on the keyboard but holds nothing"
 
 
-def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place(monkeypatch):
-    record = fresh()
-    queue = [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": time.time(), "done": False}]
-    record.state("status_bar").set("bar", {"queue": queue})
-    assert current(record)["queue"] == current(record)["queue"] == queue, "no tab's reading moves another tab's place in the queue"
+def test_a_write_asked_for_within_the_second_waits_and_the_latest_waiting_one_is_written(monkeypatch):
     from engine import bus
     written = []
     with monkeypatch.context() as threaded:
