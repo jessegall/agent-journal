@@ -11,3 +11,5 @@ class Message(Scoped):
     text: str = ""
     reply_to: int | None = None
     read_at: datetime | None = None
+    idempotency: str = ""
+    """The key the sender gave it, so a message sent twice lands once and the viewer can match what it sent."""

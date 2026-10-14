@@ -39,7 +39,11 @@ class V3Actions:
             about = body.get("about", "")
             reply_to = int(about.split(":")[1]) if about.startswith("message:") else None
             text = f"{title}\n\n{brief}".strip() if title and brief and not brief.startswith(title) else (brief or title)
-            return self.messages.save(Message(environment_id=environment.id, author=Author.USER, text=text, reply_to=reply_to), by)
+            key = str(body.get("idempotency", ""))
+            already = [m for m in self.messages.in_(environment.id) if key and m.idempotency == key]
+            if already:
+                return already[0]
+            return self.messages.save(Message(environment_id=environment.id, author=Author.USER, text=text, reply_to=reply_to, idempotency=key), by)
         if type == "todo":
             return self.tasks.save(Task(environment_id=environment.id, title=title, brief=brief), by)
         if type == "question":
