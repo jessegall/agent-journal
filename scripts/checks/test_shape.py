@@ -5,6 +5,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HERE = ROOT / "src"
 TESTS = 10
+STAYS = "# Stays a test:"
+"""What a feature test.py opens with, followed by why a Given cannot state what it checks: a real process, a real file tree, real git, a socket or a browser."""
 GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py", "test_the_viewer.py",
              "test_the_expectations.py", "test_the_catalogue.py", "test_the_layers.py"}
 """The runs that play the code rather than describe a case of it. test_the_expectations.py is the run that
@@ -28,6 +30,8 @@ def problems() -> list[str]:
         count = len(re.findall(r"^def test_", tests[0].read_text(), re.M)) if tests else 0
         if count > TESTS:
             text.append(f"features/{feature.name}/{tests[0].name} has {count} tests, over {TESTS}; what needs more belongs in the generated runs")
+        if tests and not tests[0].read_text().startswith(STAYS):
+            text.append(f"features/{feature.name}/{tests[0].name} does not open with '{STAYS} <why a Given cannot state it>'; a test file justifies itself on its first line")
     for stray in sorted((ROOT / "tests").rglob("test*.py")):
         if stray.name not in GENERATED:
             text.append(f"{stray.relative_to(ROOT)} is a test outside the features; tests/ holds only the generated runs")
