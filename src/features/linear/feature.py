@@ -23,7 +23,7 @@ MOVED = TicketUpdated(n=1, type="ticket", action="updated", actor=USER)
 
 
 CHOSEN = {"linear.key": "LINEAR_KEY", "linear.fetching": True, "linear.board": 1, "linear.teams": "t1"}
-SEEDED = [AgentRow(n=1, title="claude-1"), Board(n=1, title="Linear issues")]
+SEEDED = [AgentRow(n=1, title="claude-1"), Board(n=1, title="Linear issues", data={"stages": ["Doing"]})]
 TEAMS = [{"id": "t1", "key": "ENG", "name": "Engineering"}]
 STATES = [{"id": "s1", "name": "Todo", "team": {"id": "t1"}}]
 
@@ -50,7 +50,7 @@ class Linear(LinearWork, IntegrationFeature):
         return [
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=secrets, outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")]))
                 >> Wrote(Ticket(title='<untrusted source="linear" author="Ana">ENG-1 Fix the login</untrusted>', data={"source": "linear", "source_id": "id-1", "board": 1, "linear_state": "s1"})),
-            Given(due, rows=[*SEEDED, Ticket(n=1, title="ENG-1", data={"source": "linear", "source_id": "id-1", "board": 1, "linear_state": "s1", "linear_stage": "Doing"})], settings=CHOSEN, secrets=secrets,
+            Given(due, rows=[*SEEDED, Ticket(n=1, title="ENG-1", data={"source": "linear", "source_id": "id-1", "board": 1, "stage": "Doing", "linear_state": "s1", "linear_stage": "Doing"})], settings=CHOSEN, secrets=secrets,
                   outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")])) >> Unchanged(),
             Given(due, rows=SEEDED, settings={**CHOSEN, "linear.fetching": False}, secrets=secrets, outside=far(issues=[listed(1, "2026-10-01T10:00:00Z")])) >> Unchanged(),
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=secrets, outside=far(status=401)) >> Wrote(Notice(title="Linear refused the key")),

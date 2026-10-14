@@ -14,7 +14,7 @@ from resources.types import AgentRow, Notice, Question
 
 PASSWORD = "abcd efgh ijkl mnop"
 CHOSEN = {"gmail.key": "GMAIL_KEY", "gmail.fetching": True, "gmail.account": "me@gmail.com", "gmail.search": "label:journal", "gmail.board": 1}
-SEEDED = [AgentRow(n=1, title="claude-1"), Board(n=1, title="Mail")]
+SEEDED = [AgentRow(n=1, title="claude-1"), Board(n=1, title="Mail", data={"stages": ["Doing"]})]
 HELLO = b"From: Ana <ana@example.com>\r\nSubject: Hello\r\nMessage-ID: <Hello@example.com>\r\n\r\nHi there\r\n"
 
 
@@ -31,7 +31,7 @@ class Gmail(GmailWork, IntegrationFeature):
                 >> Wrote(Ticket(title="Hello", data={"source": "gmail", "source_id": "1", "board": 1, "gmail_from": "ana@example.com", "gmail_id": "<Hello@example.com>"})) & Ran(("login", "imap.gmail.com", "me@gmail.com")) & Ran(("search", "label:journal")),
             Given(due, rows=SEEDED, settings={**CHOSEN, "gmail.search": ""}, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("login",): ""})) >> Unchanged(),
             Given(due, rows=SEEDED, settings={**CHOSEN, "gmail.fetching": False}, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("login",): ""})) >> Unchanged(),
-            Given(due, rows=[*SEEDED, Ticket(n=1, title="Hello", data={"source": "gmail", "source_id": "1", "board": 1})], settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {1: HELLO}}))
+            Given(due, rows=[*SEEDED, Ticket(n=1, title="Hello", data={"source": "gmail", "source_id": "1", "board": 1, "stage": "Doing"})], settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {1: HELLO}}))
                 >> Ran(("search", "label:journal")) & Unchanged(),
             Given(due, rows=SEEDED, settings=CHOSEN, secrets=answering({"GMAIL_KEY": PASSWORD}), outside=answering({("mail",): {}, ("login",): "AUTHENTICATIONFAILED"}))
                 >> Wrote(Notice(title="Gmail refused the app password")),

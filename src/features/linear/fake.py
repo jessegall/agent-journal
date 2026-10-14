@@ -98,8 +98,7 @@ class FakeLinear:
     def post(self, path: str, body: dict) -> Answer:
         """The same answers without a socket, for a client that is handed this stand-in directly."""
         asked = Asked.from_json(body)
-        self.requests.append(Seen(path, asked, "", json.dumps(body)))
-        status, answer = self.answer(asked, "")
+        status, answer = self.answer(asked)
         if status != 200:
             raise Refused(f"https://api.linear.app answered {status}: {json.dumps(answer)[:200]}")
         return Answer(json.dumps(answer), self.remaining, self.reset)
@@ -107,7 +106,7 @@ class FakeLinear:
     def stop(self) -> None:
         self.server.shutdown()
 
-    def answer(self, asked: Asked, key: str) -> tuple[int, dict]:
+    def answer(self, asked: Asked, key: str = "") -> tuple[int, dict]:
         if self.status != 200:
             return self.status, {"errors": [{"message": f"refused {key}" if self.echo_key else "refused"}]}
         variables = asked.variables
