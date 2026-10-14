@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from journal.engine.agent_state import AgentState
 from journal.engine.transition import Transition
+from journal.features.said import Said
 
 
 @dataclass(frozen=True)
@@ -10,7 +11,7 @@ class Paused(AgentState):
 
     resume: dict = field(default_factory=dict)
 
-    def back(self, *nudges: str) -> Transition: ...
+    def back(self, *says: Said) -> Transition: ...
 
     @classmethod
     def leaving(cls, state: AgentState, **data) -> "Paused": ...

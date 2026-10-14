@@ -77,8 +77,19 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Threads and SQLite**: WAL mode; one sqlite connection per thread for reads, one process
   lock for writes inside `Connection.transaction()`.
 
-- **A feature lives beside the states.** It owns its nudges (declared lines with templates),
-  its state-free listeners and its settings. A state never owns a line: it names a feature's
+- **Features register states; features depend on the engine, never the reverse.** The engine
+  holds `AgentState`, `Paused`, `Transition`, `Machine`, `Nudger`, the catalogue and the
+  generic `Ended` and `Subagent`. Every other state lives in its feature's `states/` folder:
+  tasks (Idle, Working, Halted), plans (FollowingPlan), sequences (RunningSequence), helpers
+  (Awaiting), questions (Waiting), memory (AtMark), briefing (CatchingUp). A feature off
+  takes its states out of the catalogue; an agent found in one goes back to Idle.
+- **A feature lives beside the states.** It owns its states, its nudges (declared `Nudge`
+  constants with templates), its state-free listeners, its commands and its settings.
+  `features/standard.py` lists what ships.
+- **Who decides a nudge**: the state decides when (naming a nudge in its `Transition`), the
+  feature decides what and whether (words and switch). A state-independent line is decided
+  by a listener. One line, one decider. A state talks to a feature only by naming its nudge;
+  a feature talks to the state only through `machine.move`. A state never owns a line: it names a feature's
   nudge in its `Transition` (`Tasks.CARRY_ON.about(task_id)`). A switched-off feature's nudges
   are silent wherever a state names them, so no state checks a switch.
 - **A nudge is not a model.** It is a declaration on a feature (name, template) and, once

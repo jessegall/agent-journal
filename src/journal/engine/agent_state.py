@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from journal.engine.permission import Permission
 from journal.events.agent.agent_event import AgentEvent
+from journal.features.said import Said
 
 
 @dataclass(frozen=True)
@@ -16,9 +17,9 @@ class AgentState:
         """Finds the method named after the event's class and calls it; the default stays put and says nothing."""
         ...
 
-    def stay(self, *nudges: str) -> "Transition": ...
+    def stay(self, *says: "Said") -> "Transition": ...
 
-    def go(self, to: "AgentState", *nudges: str) -> "Transition": ...
+    def go(self, to: "AgentState", *says: "Said") -> "Transition": ...
 
     def refuse(self, why: str) -> "Transition": ...
 
