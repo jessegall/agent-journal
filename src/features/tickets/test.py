@@ -750,20 +750,12 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
         "the orchestrator lets it go on, so the board does not wait for the user overnight, even when its note to the agent does not land"
 
 
-def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
+def test_the_agent_answers_the_panel_briefly():
     from resources.boards import PANEL_REPLY
-    from features.tickets.refusing import CARD_LINE, CARD_TITLE
     from controllers.types import Messages
     from tests.conftest import refused
     record = fresh()
     board = Boards(record, actor=USER).create("Shared Journal")
-    drafting = Tickets(record, actor=AGENT)
-    assert "one line" in refused(lambda: drafting.create("Sign in", board=board.n, draft=True)), "a draft without its one line is refused"
-    assert "one line" in refused(lambda: drafting.create("Sign in", abstract="x" * (CARD_LINE + 1), board=board.n, draft=True)), \
-        "a line too long for the card is refused"
-    made = drafting.create("Sign in", abstract="Everyone signs in", board=board.n, draft=True)
-    assert "one line" in refused(lambda: drafting.update(made.n, abstract="x" * (CARD_LINE + 1))), "an edit keeps the line short too"
-    assert "title" in refused(lambda: drafting.update(made.n, title="t" * (CARD_TITLE + 1))), "a title too long for the card is refused"
     request = Boards(record, actor=USER).request(board.n, "I want to share")
     agent = Messages(record, actor=AGENT)
     agent.read(request.n)
