@@ -113,7 +113,7 @@ export function workClip(random) {
 export function stretchClip(state, rolled, random) {
     const stretch = WORKING.has(state) ? "work" : state;
     const roll = rolled.stretch === stretch ? rolled : {stretch, clip: WORKING.has(state) ? workClip(random) : ""};
-    return {stretch: roll.stretch, clip: roll.clip, shows: roll.clip || clipOf(state)};
+    return {stretch: roll.stretch, clip: roll.clip, shows: state === "reading" ? clipOf(state) : roll.clip || clipOf(state)};
 }
 
 // The moments of the agent's work and of the user at the compose box at `now`: typing since the last look, and the end of a stretch of

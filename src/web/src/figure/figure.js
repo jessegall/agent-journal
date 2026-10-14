@@ -102,6 +102,7 @@ class Posing {
         this.tablet = false;
         this.cloth = false;
         this.glass = "";
+        this.book = null;
         this.posture = posture;
         this.sway = 0;
         this.stride = stride;
@@ -231,6 +232,10 @@ class Posing {
     // a magnifying glass, comically large, in the hand on `side`
     holdGlass(side) {
         this.glass = side;
+    }
+
+    holdBook(open, page, visible) {
+        this.book = {open, page, visible};
     }
 
     // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
@@ -950,6 +955,63 @@ function search(pose, stance, t) {
     eyesAs(pose, "reading");
 }
 
+const READING = {
+    intro: 12,
+    hold: 48,
+    outro: 12,
+    fps: 12,
+    ready: 3,
+    opens: 11,
+    pageEvery: 24,
+    pageFrom: 12,
+    pageTo: 20,
+    nod: 12,
+    lineNod: 0.8,
+    scan: 3,
+    lines: 4,
+    referenceArm: 0.985,
+    forward: 0.82,
+    drop: 0.16,
+    drawDrop: 0.18,
+    elbow: [0.8, 0.1, -0.2],
+    wristTurn: 90,
+};
+const READ_FRAMES = READING.intro + READING.hold + READING.outro;
+
+function read(pose, stance, t) {
+    const frame = Math.round(t * READ_FRAMES);
+    const held = frame >= READING.intro && frame < READING.intro + READING.hold;
+    const taking = frame < READING.intro ? frame : READ_FRAMES - 1 - frame;
+    const ready = held ? 1 : rise(taking, 0, READING.ready);
+    const open = held ? 1 : rise(taking, READING.ready, READING.opens);
+    const phase = held ? (frame - READING.intro) % READING.pageEvery : 0;
+    const page = held ? rise(phase, READING.pageFrom, READING.pageTo) : 0;
+    const scan = held ? (frame - READING.intro) / READING.hold : 0;
+    breathe(pose, 0);
+    trunk(pose, {nod: open * (READING.nod + READING.lineNod * waveOf(scan, READING.lines)), turn: open * READING.scan * waveOf(scan, READING.lines)});
+    armsAtRest(pose, stance);
+    const scale = Math.min(...Object.keys(SIDES).map((side) => {
+        const at = (name) => pose.rig.heads.get(`${name}_${side}`);
+        return at("upper_arm").distanceTo(at("forearm")) + at("forearm").distanceTo(at("hand"));
+    })) / READING.referenceArm;
+    const shoulders = Object.keys(SIDES).map((side) => pose.head(`upper_arm_${side}`, pose.standing(`upper_arm_${side}`)));
+    const middle = shoulders[0].clone().add(shoulders[1]).multiplyScalar(0.5);
+    const turn = bookTurn(open);
+    const grip = bookGrip("l", open).add(bookGrip("r", open)).multiplyScalar(0.5).applyMatrix4(turn);
+    const at = new THREE.Vector3(middle.x - grip.x * scale, middle.z - (READING.drop + READING.drawDrop * (1 - ready)) * scale - grip.y * scale, -middle.y + READING.forward * scale - grip.z * scale);
+    const matrix = new THREE.Matrix4().makeTranslation(at.x, at.y, at.z)
+        .multiply(turn)
+        .scale(new THREE.Vector3(scale, scale, scale));
+    for (const [side, sign] of Object.entries(SIDES)) {
+        const target = toBlender(bookGrip(side, open).applyMatrix4(matrix));
+        handTo(pose, side, 1, target, new THREE.Vector3(...READING.elbow));
+        const inward = THREE.MathUtils.radToDeg(Math.atan2(BOOK.closedGrip * (1 - open), BOOK.gripBack));
+        pose.face(`hand_${side}`, {z: -sign * (READING.wristTurn + inward)});
+    }
+    pose.holdBook(open, page, held || taking >= READING.ready);
+    eyesAs(pose, "reading", open);
+}
+
 // The butler draws his cloth from his pocket, polishes his visor in small circles, and tucks it away again
 const POCKET = [0.55, -0.35, 1.35];
 const VISOR = [0.3, -0.92, 2.22];
@@ -1204,6 +1266,7 @@ export const CLIPS = [
     {name: "enter", frames: 36, fps: 12, loops: false, postures: MOVE, pose: enter},
     {name: "exit", frames: 28, fps: 12, loops: false, postures: MOVE, pose: exit},
     {name: "search", frames: 12, fps: 10, loops: true, postures: GESTURE, pose: search},
+    {name: "read", frames: READ_FRAMES, fps: READING.fps, loops: true, intro: READING.intro, outro: READING.outro, leaves: READING.pageEvery, postures: GESTURE, pose: read},
     {name: "write", frames: 12, fps: 12, loops: true, postures: GESTURE, pose: write},
     {name: "work", frames: 8, fps: 10, loops: true, postures: GESTURE, pose: work},
     {name: "point", frames: 12, fps: 8, loops: true, postures: GESTURE, pose: point},
@@ -1417,10 +1480,11 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     };
     const laptop = laptopOf();
     const glass = glassOf();
-    scene.add(laptop, glass);
+    const book = bookOf();
+    scene.add(laptop, glass, book);
     const hulls = (shown) => shown.flatMap((mesh) => [mesh, mesh.userData.hull]);
     const inHand = carried.filter((mesh) => IN_HAND.has(mesh.userData.item));
-    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, tablet: hulls(tablet), cloth: hulls(cloth), inHand: hulls(inHand)};
+    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, book, tablet: hulls(tablet), cloth: hulls(cloth), inHand: hulls(inHand)};
 }
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
@@ -1485,6 +1549,150 @@ function glassOf() {
     glass.visible = false;
     glass.add(shaft, ring, lens);
     return glass;
+}
+
+export const BOOK = {
+    width: 0.82,
+    height: 0.9,
+    cover: 0.055,
+    pages: 0.06,
+    spine: 0.18,
+    inset: 0.035,
+    open: 160,
+    tilt: 8,
+    gripHeight: 0.02,
+    gripSide: 0.1,
+    closedGrip: 0.2,
+    gripBack: 0.6,
+    leaf: 0.004,
+    curl: 2,
+    pageSegments: 12,
+    pageBow: 0.24,
+    lines: 5,
+    lineWidth: 0.004,
+};
+const BOOK_COLOURS = {cover: 0x6366f1, spine: 0x35374b, pages: 0xf3eedf, paper: 0xfffbef, edge: 0x232532, rule: 0xc6beac};
+const bookAngle = (open) => radians((180 - BOOK.open * open) / 2);
+
+function bookContact(side, open) {
+    const sign = SIDES[side];
+    const reach = side === "l" ? 1 : open;
+    return new THREE.Vector3(sign * BOOK.width * reach, BOOK.gripHeight, BOOK.cover / 2)
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), sign * bookAngle(open))
+        .add(new THREE.Vector3(sign * BOOK.spine / 2, 0, 0));
+}
+
+function bookBasis(open) {
+    const across = bookContact("l", open).sub(bookContact("r", open)).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    return new THREE.Matrix4().makeBasis(across, up, across.clone().cross(up));
+}
+
+function bookTurn(open) {
+    return new THREE.Matrix4().makeRotationX(radians(BOOK.tilt)).multiply(bookBasis(open).invert());
+}
+
+function bookGrip(side, open) {
+    const basis = bookBasis(open);
+    const across = new THREE.Vector3().setFromMatrixColumn(basis, 0);
+    const forward = new THREE.Vector3().setFromMatrixColumn(basis, 2);
+    return bookContact(side, open).addScaledVector(across, SIDES[side] * (BOOK.gripSide + BOOK.closedGrip * (1 - open))).addScaledVector(forward, -BOOK.gripBack);
+}
+
+function bookOf() {
+    const flat = (geometry, colour) => {
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide}));
+        mesh.frustumCulled = false;
+        return mesh;
+    };
+    const slab = (name, colour, width, height, depth) => {
+        const mesh = flat(new THREE.BoxGeometry(width, height, depth), colour);
+        mesh.name = name;
+        mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), new THREE.LineBasicMaterial({color: BOOK_COLOURS.edge})));
+        return mesh;
+    };
+    const book = new THREE.Group();
+    book.name = "reading_book";
+    book.matrixAutoUpdate = false;
+    book.visible = false;
+    const spine = slab("book_spine", BOOK_COLOURS.spine, BOOK.spine, BOOK.height, BOOK.cover);
+    book.add(spine);
+    const hinges = {}, covers = {}, pages = {}, grips = {};
+    for (const [side, sign] of Object.entries(SIDES)) {
+        const hinge = new THREE.Group();
+        hinge.name = `book_hinge_${side}`;
+        hinge.position.x = sign * BOOK.spine / 2;
+        const cover = slab(`book_cover_${side}`, BOOK_COLOURS.cover, BOOK.width, BOOK.height, BOOK.cover);
+        cover.position.set(sign * BOOK.width / 2, 0, BOOK.cover / 2);
+        const block = slab(`book_pages_${side}`, BOOK_COLOURS.pages, BOOK.width - BOOK.inset, BOOK.height - BOOK.inset * 2, BOOK.pages);
+        block.position.set(sign * (BOOK.width - BOOK.inset) / 2, 0, -BOOK.pages / 2);
+        for (let line = 1; line <= BOOK.lines; line++) {
+            const rule = flat(new THREE.BoxGeometry(BOOK.width - BOOK.inset, BOOK.lineWidth, BOOK.lineWidth), BOOK_COLOURS.rule);
+            rule.position.set(block.position.x, -BOOK.height / 2 + BOOK.inset, -BOOK.pages * line / (BOOK.lines + 1));
+            hinge.add(rule);
+        }
+        hinge.add(cover, block);
+        book.add(hinge);
+        hinges[side] = hinge;
+        covers[side] = cover;
+        pages[side] = block;
+        const grip = new THREE.Object3D();
+        grip.name = `book_grip_${side}`;
+        book.add(grip);
+        grips[side] = grip;
+    }
+    const leaf = flat(new THREE.PlaneGeometry(BOOK.width - BOOK.inset, BOOK.height - BOOK.inset * 2, BOOK.pageSegments, 1), BOOK_COLOURS.paper);
+    leaf.geometry.translate(-(BOOK.width - BOOK.inset) / 2, 0, 0);
+    leaf.name = "book_turning_page";
+    const edge = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({color: BOOK_COLOURS.rule}));
+    edge.frustumCulled = false;
+    leaf.add(edge);
+    leaf.userData.edge = edge;
+    book.add(leaf);
+    book.userData = {hinges, covers, pages, grips, leaf};
+    return book;
+}
+
+function heldBookOf(world, open) {
+    const at = (name) => new THREE.Vector3().setFromMatrixPosition(world.get(name));
+    const left = at("hand_l"), right = at("hand_r");
+    const across = left.clone().sub(right).normalize();
+    const up = new THREE.Vector3(0, 1, 0).addScaledVector(across, -across.y).normalize();
+    const forward = across.clone().cross(up).normalize();
+    const turn = new THREE.Matrix4().makeBasis(across, up, forward).multiply(bookTurn(open));
+    const scale = left.distanceTo(right) / bookGrip("l", open).distanceTo(bookGrip("r", open));
+    const middle = bookGrip("l", open).add(bookGrip("r", open)).multiplyScalar(0.5).applyMatrix4(turn).multiplyScalar(scale);
+    return turn.scale(new THREE.Vector3(scale, scale, scale)).setPosition(left.add(right).multiplyScalar(0.5).sub(middle));
+}
+
+function openBook(book, open, page) {
+    const angle = bookAngle(open);
+    for (const [side, sign] of Object.entries(SIDES)) {
+        book.userData.hinges[side].rotation.y = sign * angle;
+        book.userData.grips[side].position.copy(bookGrip(side, open));
+    }
+    const leaf = book.userData.leaf;
+    const surface = BOOK.pages + BOOK.leaf;
+    leaf.position.set(mix(-BOOK.spine / 2 + surface * Math.sin(angle), BOOK.spine / 2 - surface * Math.sin(angle), page), 0, -surface * Math.cos(angle));
+    leaf.rotation.y = -angle - radians(BOOK.open * open) * page;
+    leaf.visible = open > 0;
+    const curl = BOOK.curl * Math.sin(Math.PI * page);
+    const width = BOOK.width - BOOK.inset;
+    const positions = leaf.geometry.attributes.position;
+    for (let row = 0; row < 2; row++) {
+        for (let column = 0; column <= BOOK.pageSegments; column++) {
+            const fraction = 1 - column / BOOK.pageSegments;
+            const at = row * (BOOK.pageSegments + 1) + column;
+            const bow = BOOK.pageBow * Math.sin(Math.PI * page) * fraction * fraction;
+            positions.setX(at, (curl ? -width * Math.sin(curl * fraction) / curl : -width * fraction) - Math.sin(leaf.rotation.y) * bow);
+            positions.setZ(at, (curl ? width * (1 - Math.cos(curl * fraction)) / curl : 0) + Math.cos(leaf.rotation.y) * bow);
+        }
+    }
+    positions.needsUpdate = true;
+    const rim = [];
+    for (let column = 0; column <= BOOK.pageSegments; column++) rim.push(new THREE.Vector3().fromBufferAttribute(positions, column));
+    for (let column = BOOK.pageSegments; column >= 0; column--) rim.push(new THREE.Vector3().fromBufferAttribute(positions, BOOK.pageSegments + 1 + column));
+    leaf.userData.edge.geometry.setFromPoints(rim);
 }
 
 // Where the glass is held: its handle in the hand on `side`, leaning forward of upright the way the body faces, its lens square to the body
@@ -1578,12 +1786,18 @@ function place(figure, pose, facing, blend) {
     }
     figure.laptop.visible = pose.laptop;
     figure.glass.visible = Boolean(pose.glass);
+    figure.book.visible = Boolean(pose.book?.visible);
+    if (figure.book.visible) {
+        openBook(figure.book, pose.book.open, pose.book.page);
+        figure.book.matrix.copy(heldBookOf(world, pose.book.open));
+        figure.book.matrixWorldNeedsUpdate = true;
+    }
     if (pose.glass) {
         figure.glass.matrix.copy(heldGlassOf(world, pose.glass));
         figure.glass.matrixWorldNeedsUpdate = true;
     }
     for (const part of figure.tablet) part.visible = pose.tablet;
-    for (const part of figure.inHand) part.visible = !(pose.glass || pose.laptop);
+    for (const part of figure.inHand) part.visible = !(pose.glass || pose.laptop || pose.book);
     for (const part of figure.cloth) part.visible = pose.cloth;
     if (pose.laptop) {
         figure.laptop.matrix.copy(lapOf(world));

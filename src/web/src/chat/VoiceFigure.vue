@@ -4,7 +4,7 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {beatsAfter, canSwitch, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
+import {beatsAfter, canSwitch, clipFor, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
@@ -81,7 +81,7 @@ const landing = ref(false);
 const leaving = ref(false);
 const here = ref(false);
 let seenAt = Date.now() / 1000;
-let playing = {name: "", started: 0, shown: null, index: 0};
+let playing = {name: "", started: 0, shown: null, index: 0, closing: null};
 // the clip on screen, so the page can draw what the rig has no bones for, such as the bug the squire chases
 const shownClip = ref(null);
 const shownFacing = ref(0);
@@ -142,7 +142,9 @@ const frameOf = (shown) => Math.floor(((performance.now() - playing.started) / 1
 
 // A clip plays out before another starts, or gives way at once when it is interruptible (figureState.js canSwitch). It is the one rule every
 // clip goes through, so no clip needs its own check.
-const playedOut = () => !playing.shown || canSwitch(playing.shown.clip, frameOf(playing.shown), playing.index);
+const playedOut = () => !playing.shown || (playing.closing !== null
+    ? frameOf(playing.shown) >= playing.closing + playing.shown.clip.outro
+    : canSwitch(playing.shown.clip, frameOf(playing.shown), playing.index));
 
 // how far through its step the walk under a clip on the move is, stepped as the walk's own frames are, `pace` times as quick
 function strideNow(pace) {
@@ -154,9 +156,18 @@ function step() {
     clearTimeout(frameTimer);
     if (!player || document.hidden) return;
     const wanted = current();
-    const shown = keyOf(wanted) === playing.name || playedOut() ? wanted : playing.shown;
+    if (playing.shown?.clip.outro && wanted.clip.name !== playing.shown.clip.name && playing.closing === null) {
+        playing.closing = closeAt(playing.shown.clip, frameOf(playing.shown));
+    }
+    if (playing.closing !== null && wanted.clip.name === playing.shown.clip.name && frameOf(playing.shown) < playing.closing) playing.closing = null;
+    const finished = playedOut();
+    const continuing = keyOf(wanted) === playing.name && playing.closing === null;
+    const shown = continuing || finished ? wanted : playing.shown;
     const key = keyOf(shown);
-    if (playing.name !== key) playing = {name: key, started: performance.now(), shown, index: 0};
+    if (playing.name !== key || (playing.closing !== null && finished)) {
+        const turning = shown.clip.intro && playing.shown?.clip.name === shown.clip.name && playing.closing === null;
+        playing = {name: key, started: turning ? playing.started : performance.now(), shown, index: 0, closing: null};
+    }
     shownClip.value = shown.clip;
     shownFacing.value = shown.facing;
     const index = frameOf(shown);
@@ -170,7 +181,7 @@ function step() {
         if (shown.arrival) arriving.value = false;
         else if (shown.landed) landing.value = false;
         else beats.value = beats.value.slice(1);
-        playing = {name: "", started: 0, shown: null, index: 0};
+        playing = {name: "", started: 0, shown: null, index: 0, closing: null};
         return step();
     }
     // the leg waiting for the clip it sets off with goes in the frame that clip goes on screen, so the walk is never drawn on the spot
@@ -182,7 +193,7 @@ function step() {
     const pace = shown.pace ?? 1;
     const stride = drawn === "walk" ? strideNow(pace) : null;
     walking.value = stride !== null || shown.clip.name === "walk";
-    player.show(shown.clip, shown.clip.loops ? index % shown.clip.frames : Math.min(index, shown.clip.frames - 1), shown.facing, {
+    player.show(shown.clip, frameIn(shown.clip, index, playing.closing), shown.facing, {
         posture: drawn,
         eyes: look.eyes,
         stride,
@@ -358,7 +369,7 @@ function uprooted() {
     footing = null;
     stay = stayAtHome(stay);
     clearTimeout(legTimer);
-    playing = {name: "", started: 0, shown: null, index: 0};
+    playing = {name: "", started: 0, shown: null, index: 0, closing: null};
     beats.value = [];
     landing.value = false;
     const spot = stayingAt(stay, figureSize(), place.value);

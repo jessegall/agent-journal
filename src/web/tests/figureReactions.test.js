@@ -182,3 +182,13 @@ test("the figure does something by itself only while it is calm: idle, not hangi
     expect(pastimeFor({...calm, place: {posture: "hang"}}, waited, new Map(), 0, () => 0, has)).toBe(null);
     expect(pastimeFor(calm, {...waited, state: "running"}, new Map(), 0, () => 0, has)).toBe(null);
 });
+
+
+test("reading shows the book even when the stretch rolled a laptop, without rerolling the stretch", () => {
+    const rolled = stretchClip("running", {stretch: "", clip: ""}, () => 0);
+    const noRoll = () => { throw new Error("the working stretch must keep its roll"); };
+    const reading = stretchClip("reading", rolled, noRoll);
+    expect(reading).toEqual({stretch: "work", clip: "type", shows: "read"});
+    expect(stretchClip("running", reading, noRoll).shows).toBe("type");
+    expect(workMoments("reading", false, 10, 20)).toEqual({moments: [], began: 10});
+});

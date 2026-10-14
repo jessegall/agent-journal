@@ -7,6 +7,7 @@ export const HELD = {
     asleep: "sleep",
     thinking: "think",
     searching: "search",
+    reading: "read",
     writing: "write",
     running: "work",
     waiting: "idle",
@@ -20,11 +21,11 @@ export const HELD = {
 export const RESTS = new Set(["asleep", "compacting", "paused", "stopped"]);
 
 // The states in which the agent is at work
-export const WORKING = new Set(["thinking", "searching", "writing", "running"]);
+export const WORKING = new Set(["thinking", "searching", "reading", "writing", "running"]);
 
 // A tool in flight says what the agent is doing with it; the providers report their own tools under these names.
 const TOOL_STATES = {
-    Read: "searching",
+    Read: "reading",
     Grep: "searching",
     Glob: "searching",
     WebSearch: "searching",
@@ -36,8 +37,7 @@ const TOOL_STATES = {
     Bash: "running",
 };
 
-// a shell command that only reads or searches is the agent looking something up, as a Read or a Grep is
-const LOOKING = new Set(["reads", "searches"]);
+const SHELL_STATES = {reads: "reading", searches: "searching"};
 
 const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compacting", waiting: "waiting", running: "waiting"};
 
@@ -56,7 +56,8 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
     // the pose says what the agent does, so it waits on the user only while it does nothing else; where it stands says what waits
     if (bar === "idle" && (waitingSince || agent?.data.asking)) return {state: "asking", since: waitingSince || since};
     if (bar === "idle") return {state: now - since >= ASLEEP_AFTER ? "asleep" : "idle", since};
-    const inFlight = agent?.data.event === "PreToolUse" && (LOOKING.has(agent.data.effect) ? "searching" : TOOL_STATES[agent.data.tool]);
+    const tool = agent?.data.tool;
+    const inFlight = agent?.data.event === "PreToolUse" && ((tool === "Bash" && SHELL_STATES[agent.data.effect]) || TOOL_STATES[tool]);
     return {state: inFlight || "thinking", since};
 }
 
@@ -92,6 +93,22 @@ function legClip(trip, doing, canDraw) {
     const facing = trip.way > 0 ? 90 : 270;
     const steps = trip.pace > 1 ? {pace: trip.pace} : {};
     return doing !== "idle" && canDraw(doing, "walk") ? {clip: doing, facing, posture: "walk", ...steps} : {clip: "walk", facing, ...steps};
+}
+
+// Intro and outro frames are not part of a held loop.
+export function frameIn(clip, index, closing = null) {
+    if (!clip.loops) return Math.min(index, clip.frames - 1);
+    const intro = clip.intro || 0;
+    const outro = clip.outro || 0;
+    if (closing !== null && index >= closing) return Math.min(clip.frames - outro + index - closing, clip.frames - 1);
+    return index < intro ? index : intro + ((index - intro) % (clip.frames - intro - outro));
+}
+
+// Close at a resting page, not halfway through a turn.
+export function closeAt(clip, index) {
+    const intro = clip.intro || 0;
+    const unit = clip.leaves || clip.frames - intro - (clip.outro || 0);
+    return intro + Math.ceil(Math.max(index - intro, 0) / unit) * unit;
 }
 
 // Whether the clip on screen gives way to another that is wanted: at once when it is interruptible (figure.js CLIPS), else once it has played

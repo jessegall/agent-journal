@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, canSwitch, clipFor, clipOf, eggFor, figureStateOf, waitingSinceAt} =
+const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, WORKING, beatsAfter, canSwitch, clipFor, clipOf, closeAt, eggFor, figureStateOf, frameIn, waitingSinceAt} =
     await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
 const {drawnIn, pointedView} = await import("../src/figure/places.js");
@@ -12,6 +12,7 @@ const agent = (data) => ({n: 1, title: "claude-1", data: {status: "working", at:
 const stateAt = (data, waitingSince = 0, now = NOW) => figureStateOf(agent(data), [], waitingSince, now).state;
 
 test("the figure does what the tool in flight says the agent does, and thinks between tools", () => {
+    expect(stateAt({event: "PreToolUse", tool: "Read"})).toBe("reading");
     expect(stateAt({event: "PreToolUse", tool: "Grep"})).toBe("searching");
     expect(stateAt({event: "PreToolUse", tool: "Edit"})).toBe("writing");
     expect(stateAt({event: "PreToolUse", tool: "Bash"})).toBe("running");
@@ -54,7 +55,7 @@ test("a beat fires only for what reached the row after it was last seen, oldest 
 });
 
 const VOICES = ["bare", "butler", "homie", "coach", "colleague", "squire"];
-const STATES = ["idle", "asleep", "thinking", "searching", "writing", "running", "waiting", "asking", "compacting", "paused", "stopped"];
+const STATES = ["idle", "asleep", "thinking", "searching", "reading", "writing", "running", "waiting", "asking", "compacting", "paused", "stopped"];
 // every moment the figure can meet: each beat, and each held state both fresh and long held
 const MOMENTS = [
     ...[...new Set(REACTIONS.map((each) => each.moment))].map((beat) => ({beat, at: 1})),
@@ -104,7 +105,7 @@ test("the walk plays only while the figure moves: no held state is the walk", ()
 
 test("a figure whose agent cannot act stays seated at home, and one that is idle, working or waiting roams", () => {
     for (const state of ["asleep", "compacting", "paused", "stopped"]) expect(RESTS.has(state), state).toBe(true);
-    for (const state of ["idle", "thinking", "searching", "writing", "running", "waiting", "asking"])
+    for (const state of ["idle", "thinking", "searching", "reading", "writing", "running", "waiting", "asking"])
         expect(RESTS.has(state), state).toBe(false);
 });
 
@@ -192,4 +193,38 @@ test("something waiting on the user is timed from when it began to wait, and not
     expect(waitingSinceAt({...none, question: 1}, 0, 50)).toBe(50);
     expect(waitingSinceAt({...none, waiting: 2}, 20, 50)).toBe(20);
     expect(waitingSinceAt(none, 20, 50)).toBe(0);
+});
+
+
+test("reads have their own working state; search tools and search-only shells keep the glass", () => {
+    expect(clipOf("reading")).toBe("read");
+    expect(WORKING.has("reading")).toBe(true);
+    expect(RESTS.has("reading")).toBe(false);
+    expect(stateAt({event: "PreToolUse", tool: "Bash", effect: "reads"})).toBe("reading");
+    expect(stateAt({event: "PreToolUse", tool: "Bash", effect: "searches"})).toBe("searching");
+    for (const tool of ["Grep", "Glob", "WebSearch", "WebFetch"]) {
+        expect(stateAt({event: "PreToolUse", tool}), tool).toBe("searching");
+    }
+    expect(stateAt({event: "PreToolUse", tool: "Write", effect: "reads"})).toBe("writing");
+    expect(stateAt({event: "PostToolUse", tool: "Read"})).toBe("thinking");
+    expect(stateAt({event: "PostToolUse", tool: "Bash", effect: "reads"})).toBe("thinking");
+});
+
+test("a book opens once, keeps reading across loops, and closes only when asked to finish", () => {
+    const clip = CLIPS.find((each) => each.name === "read");
+    const hold = clip.frames - clip.intro - clip.outro;
+    for (let index = 0; index < clip.intro; index++) expect(frameIn(clip, index)).toBe(index);
+    for (let index = clip.intro; index < clip.frames * 10; index++) {
+        expect(frameIn(clip, index)).toBe(clip.intro + (index - clip.intro) % hold);
+        expect(frameIn(clip, index)).toBeLessThan(clip.frames - clip.outro);
+    }
+    for (let index = 0; index < clip.frames * 3; index++) {
+        const closing = closeAt(clip, index);
+        expect(closing).toBeGreaterThanOrEqual(index);
+        expect((closing - clip.intro) % clip.leaves).toBe(0);
+        for (let frame = 0; frame < clip.outro; frame++) {
+            expect(frameIn(clip, closing + frame, closing)).toBe(clip.frames - clip.outro + frame);
+        }
+        expect(frameIn(clip, closing + clip.outro, closing)).toBe(clip.frames - 1);
+    }
 });
