@@ -527,12 +527,12 @@ function clicked(event) {
 
 // the part of the picture the body is drawn in above the line it rests on, which takes the click
 const bodyStyle = computed(() => {
-    const body = clickedBody(body.place.posture, below.value);
+    const clickable = clickedBody(body.place.posture, below.value);
     return {
-        left: `${body.left * 100}%`,
-        width: `${(body.right - body.left) * 100}%`,
-        top: `${body.top * 100}%`,
-        height: `${(body.bottom - body.top) * 100}%`,
+        left: `${clickable.left * 100}%`,
+        width: `${(clickable.right - clickable.left) * 100}%`,
+        top: `${clickable.top * 100}%`,
+        height: `${(clickable.bottom - clickable.top) * 100}%`,
     };
 });
 
