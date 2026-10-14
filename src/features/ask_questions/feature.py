@@ -1,3 +1,4 @@
+from events.agents import ClockTicked
 import json
 
 from expects.staged import in_a_transcript
@@ -8,7 +9,7 @@ from events.asking import RowWriting, ToolCallAsked
 from events.resources import AnyEvent
 from events.messages import MessageCreated
 from events.questions import AnswerGiven, AnswerOnScreen, AskingSettled, ProseOffersChoices, QuestionCompleted, QuestionCreated, QuestionSettled, QuestionsToFile
-from expects import Answered, Dispatches, Given, Held, Kept, Nudged, Ran, Refused, Updated, answering, exited, nothing
+from expects import WHEN, Answered, Dispatches, Given, Held, Kept, Nudged, Ran, Refused, Reported, Told, Updated, answering, exited, nothing
 from resources.base import AGENT, USER, Ref
 from resources.put_questions import PutQuestion
 from resources.types import AgentRow, Question, Todo
@@ -85,7 +86,10 @@ def blocking(actor: str, why: str) -> RowWriting:
 class AskQuestions(Feature):
     details = AskQuestionsDetails
     nudges = (Nudge("settled", behaviour="settled", about=open_a_day,
-                    guarantee="When a question has waited a day for an answer, the agent is told, so a question is not left hanging for ever."),)
+                    guarantee="When a question has waited a day for an answer, the agent is told, so a question is not left hanging for ever.",
+                    expects=(Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 2 * 86400)), earlier=(Reported("idle", "Stop"),)) >> Told("settled") & Nudged("settled", n=3),
+                             Given(ClockTicked(agent=1), rows=(CLAUDE, Question(n=3, title="which branch?", created=WHEN - 3600)), earlier=(Reported("idle", "Stop"),)) >> Told("settled", times=0),
+                             Given(ClockTicked(agent=1), rows=(CLAUDE, BRANCH), earlier=(Reported("idle", "Stop"),)) >> Told("settled", times=0))),)
 
     def register(self, journal: Journal) -> None:
         FACTS.register(self, *state_facts("question", "open", lambda context: [q for q in Questions(context.record, actor=SYSTEM).rows.standing() if not q.hidden]))
