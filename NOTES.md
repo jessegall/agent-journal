@@ -114,6 +114,10 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Context** comes from Claude's statusline (`hooks/status.sh` writes one file per session);
   `ContextFile` reads it and `Translation` puts it on every `AgentEvent.context`.
 
+- **Instructions files.** The journal injects its law and its briefing only into AGENTS.md,
+  between its own markers; CLAUDE.md imports it with `@AGENTS.md` and carries the project's
+  own design philosophy, which the journal never writes. Nothing is written twice.
+
 ## v3 features, sorted
 
 Became states: work_tracking (Idle, Working), awaited (Awaiting), catching_up (CatchingUp),
