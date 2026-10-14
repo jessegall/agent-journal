@@ -1,3 +1,4 @@
+# Stays a test: it reads transcripts as real files outside the project on the transcript cache's real background threads, and tests the cache, the conversation, user and search commands, the agent transcript routes and the provider turn parsers directly, which no registration reaches.
 import pytest
 
 import features
