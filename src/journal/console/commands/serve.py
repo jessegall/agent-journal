@@ -1,8 +1,7 @@
-from argparse import ArgumentParser, Namespace
-
-from journal.models.actor import Actor
+from argparse import Namespace
 
 from journal.console.command import Command
+from journal.console.where import Where
 from journal.engine.runtime import Runtime
 
 
@@ -11,8 +10,12 @@ class ServeCommand(Command):
 
     noun = "serve"
 
-    def __init__(self, runtime: Runtime) -> None: ...
+    def __init__(self, runtime: Runtime) -> None:
+        self.runtime = runtime
 
-    def arguments(self, parser: ArgumentParser) -> None: ...
+    def arguments(self, verbs) -> None:
+        self.verb(verbs, "run", "serve until stopped")
 
-    def run(self, args: Namespace, by: Actor) -> int: ...
+    def run(self, args: Namespace, where: Where) -> int:
+        self.runtime.run()
+        return 0

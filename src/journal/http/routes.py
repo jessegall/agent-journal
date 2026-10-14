@@ -1,4 +1,5 @@
 from journal.container import Container
+from journal.http.controllers.cli import CliController
 from journal.http.controllers.hooks import HookController
 from journal.http.controllers.tasks import TaskController
 from journal.http.router import Router
@@ -13,6 +14,8 @@ class Routes:
     def mount(self, router: Router) -> Router:
         tasks = self.container.get(TaskController)
         hooks = self.container.get(HookController)
+        cli = self.container.get(CliController)
+        router.post("/cli", cli.run)
         router.post("/hooks/{agent}", hooks.receive)
         router.get("/tasks", tasks.index)
         router.get("/tasks/{id}", tasks.show)

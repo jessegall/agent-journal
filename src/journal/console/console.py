@@ -1,28 +1,44 @@
 import argparse
+import contextlib
+import io
 
 from journal.console.command import Command
+from journal.console.outcome import Outcome
 from journal.console.where import Where
 from journal.container import Container
 
 
-class Console:
-    """journal <noun> <verb> ...: finds the command and runs it."""
 
-    def __init__(self, container: Container, where: Where) -> None:
-        self.container, self.where = container, where
+class Console:
+    """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
+
+    def __init__(self, container: Container) -> None:
+        self.container = container
         self.commands: dict[str, Command] = {}
+        self._parser: argparse.ArgumentParser | None = None
 
     def add(self, command: type[Command]) -> None:
         self.commands[command.noun] = self.container.get(command)
+        self._parser = None
 
     def parser(self) -> argparse.ArgumentParser:
-        parser = argparse.ArgumentParser(prog="journal")
-        nouns = parser.add_subparsers(dest="noun", required=True)
-        for noun, command in self.commands.items():
-            verbs = nouns.add_parser(noun).add_subparsers(dest="verb", required=True)
-            command.arguments(verbs)
-        return parser
+        if self._parser is None:
+            self._parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
+            nouns = self._parser.add_subparsers(dest="noun", required=True)
+            for noun, command in self.commands.items():
+                verbs = nouns.add_parser(noun).add_subparsers(dest="verb", required=True)
+                command.arguments(verbs)
+        return self._parser
 
-    def run(self, argv: list[str]) -> int:
-        args = self.parser().parse_args(argv)
-        return self.commands[args.noun].run(args, self.where.actor())
+    def run(self, argv: list[str], where: Where) -> Outcome:
+        """Runs one command with its output captured, so the same call serves the terminal and the server."""
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                args = self.parser().parse_args(argv)
+                code = self.commands[args.noun].run(args, where)
+            except (argparse.ArgumentError, SystemExit) as refused:
+                self.parser().print_usage(err)
+                print(refused, file=err)
+                code = 2
+        return Outcome(code, out.getvalue(), err.getvalue())

@@ -24,6 +24,7 @@ class App:
         self.container.bind(ContextFile, lambda: ContextFile(config.status_home))
         self.container.bind(Connection, self.connection)
         self.container.bind(Router, lambda: Routes(self.container).mount(Router()))
+        self.container.bind(Console, self._console)
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)
@@ -35,7 +36,10 @@ class App:
         return self.container.get(Server)
 
     def console(self) -> Console:
-        console = self.container.get(Console)
+        return self.container.get(Console)
+
+    def _console(self) -> Console:
+        console = Console(self.container)
         for command in StandardCommands.COMMANDS:
             console.add(command)
         return console

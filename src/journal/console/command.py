@@ -1,11 +1,11 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
-from journal.models.actor import Actor
+from journal.console.where import Where
 
 
 class Command:
-    """One noun; each verb is a method named after it, taking the parsed arguments and who ran it."""
+    """One noun; each verb is a method named after it, taking the parsed arguments and where and by whom it runs."""
 
     noun: ClassVar[str]
 
@@ -13,8 +13,8 @@ class Command:
         """Adds a parser per verb to the noun's subparsers."""
         ...
 
-    def run(self, args: Namespace, by: Actor) -> int:
-        return getattr(self, args.verb)(args, by)
+    def run(self, args: Namespace, where: Where) -> int:
+        return getattr(self, args.verb)(args, where)
 
     @staticmethod
     def verb(verbs, name: str, help: str) -> ArgumentParser:

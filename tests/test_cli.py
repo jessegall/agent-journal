@@ -1,4 +1,4 @@
-"""Phase two: journal task create, start, log, done and list run against a real .journal/journal.db through the console."""
+"""Phase two: journal task create, start, log, done and list run against a real .journal/journal.db through the console, from the terminal and through the server."""
 
 from pathlib import Path
 
@@ -6,27 +6,28 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.console.where import Where
 from journal.models.actor import Actor
 from journal.models.task_state import TaskState
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
 
+MAIN = Where("main")
+
+
 @pytest.fixture
-def app(tmp_path: Path, monkeypatch) -> App:
-    monkeypatch.delenv("JOURNAL_SESSION", raising=False)
-    monkeypatch.setenv("JOURNAL_ENV", "main")
-    return App(Config.at(tmp_path))
+def app(tmp_path: Path) -> App:
+    return App(Config(tmp_path, port=0))
 
 
-def test_a_task_lives_through_the_cli(app, capsys):
+def test_a_task_lives_through_the_cli(app):
     console = app.console()
-    assert console.run(["task", "create", "write the notes", "--brief", "what and where"]) == 0
-    assert console.run(["task", "start", "1"]) == 0
-    assert console.run(["task", "log", "1", "half done"]) == 0
-    assert console.run(["task", "list"]) == 0
-    assert "started  write the notes" in capsys.readouterr().out
-    assert console.run(["task", "done", "1", "--how", "published"]) == 0
+    assert console.run(["task", "create", "write the notes", "--brief", "what and where"], MAIN).code == 0
+    assert console.run(["task", "start", "1"], MAIN).code == 0
+    assert console.run(["task", "log", "1", "half done"], MAIN).code == 0
+    assert "started  write the notes" in console.run(["task", "list"], MAIN).out
+    assert console.run(["task", "done", "1", "--how", "published"], MAIN).code == 0
     tasks = app.container.get(Tasks)
     task = tasks.find(1)
     assert task.state == TaskState.DONE and task.outcome == "published" and task.started_at is not None
@@ -35,12 +36,31 @@ def test_a_task_lives_through_the_cli(app, capsys):
     assert (app.config.database).is_file()
 
 
-def test_the_agent_is_the_actor_when_its_session_is_set(app, monkeypatch):
-    monkeypatch.setenv("JOURNAL_SESSION", "s-1")
-    app.console().run(["task", "create", "t", "--start"])
+def test_the_agent_is_the_actor_when_its_session_is_set(app):
+    app.console().run(["task", "create", "t", "--start"], Where("main", "s-1"))
     assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-1")
 
 
 def test_the_environment_is_made_on_first_use(app):
-    app.console().run(["task", "create", "t"])
+    app.console().run(["task", "create", "t"], Where("other"))
     assert app.container.get(Tasks).find(1).environment_id == 1
+
+
+def test_bad_arguments_answer_with_usage_not_an_exit(app):
+    outcome = app.console().run(["task", "nope"], MAIN)
+    assert outcome.code == 2 and "usage" in outcome.err
+
+
+def test_the_server_runs_the_same_console_for_the_shim(app):
+    import json
+    from urllib.request import Request as HttpRequest, urlopen
+    server = app.server()
+    server.start()
+    try:
+        body = json.dumps({"argv": ["task", "create", "over http"], "env": "main", "session": "s-9"}).encode()
+        with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/cli", data=body, method="POST", headers={"Content-Type": "application/json"}), timeout=5) as reply:
+            outcome = json.loads(reply.read())
+    finally:
+        server.stop()
+    assert outcome["code"] == 0 and "task 1 open: over http" in outcome["out"]
+    assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-9")

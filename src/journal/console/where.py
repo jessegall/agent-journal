@@ -1,21 +1,22 @@
-import os
+from dataclasses import dataclass
 
 from journal.models.actor import Actor
-from journal.models.environment import Environment
-from journal.repositories.environments import Environments
 
 LOCAL_USER = 1
 
 
+@dataclass(frozen=True)
 class Where:
-    """Where a command runs and who runs it, read from the environment the supervisor sets: JOURNAL_ENV names the environment, JOURNAL_SESSION the agent."""
+    """Where a command runs and who runs it: the environment's name, and the agent's session when an agent ran it."""
 
-    def __init__(self, environments: Environments) -> None:
-        self.environments = environments
+    environment: str = "main"
+    session: str = ""
 
-    def environment(self) -> Environment:
-        return self.environments.named(os.environ.get("JOURNAL_ENV", "main"))
-
+    @property
     def actor(self) -> Actor:
-        session = os.environ.get("JOURNAL_SESSION", "")
-        return Actor.agent(session) if session else Actor.user(LOCAL_USER)
+        return Actor.agent(self.session) if self.session else Actor.user(LOCAL_USER)
+
+    @classmethod
+    def from_environ(cls, environ: dict) -> "Where":
+        """What the supervisor sets for the agent: JOURNAL_ENV and JOURNAL_SESSION."""
+        return cls(environ.get("JOURNAL_ENV", "main"), environ.get("JOURNAL_SESSION", ""))
