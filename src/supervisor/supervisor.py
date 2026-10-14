@@ -1,0 +1,26 @@
+from supervisor.inbox import Inbox
+from supervisor.instruction import Instruction, RestartAgent, RestartJournal, Stop, Type
+from supervisor.journal_process import JournalProcess
+from supervisor.terminal import Terminal
+
+
+class Supervisor:
+    """One loop: stdin to the agent, the agent to stdout, the inbox's instructions carried out, the journal kept running."""
+
+    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess) -> None: ...
+
+    def run(self) -> int: ...
+
+    def relay_once(self, timeout: float) -> None: ...
+
+    def carry_out(self, instruction: Instruction) -> None:
+        """Dispatches on the instruction's type to one of the four below."""
+        ...
+
+    def type(self, instruction: Type) -> None: ...
+
+    def restart_agent(self, instruction: RestartAgent) -> None: ...
+
+    def restart_journal(self, instruction: RestartJournal) -> None: ...
+
+    def stop(self, instruction: Stop | None = None) -> None: ...

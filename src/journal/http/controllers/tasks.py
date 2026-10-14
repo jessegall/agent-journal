@@ -1,0 +1,13 @@
+from journal.http.controllers.base import Controller
+from journal.http.request import Request, Response
+from journal.repositories.tasks import TaskLogs, Tasks
+
+
+class TaskController(Controller):
+    def __init__(self, tasks: Tasks, logs: TaskLogs) -> None: ...
+
+    def start(self, request: Request) -> Response: ...
+
+    def finish(self, request: Request) -> Response: ...
+
+    def log(self, request: Request) -> Response: ...
