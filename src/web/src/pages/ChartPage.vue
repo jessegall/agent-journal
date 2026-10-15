@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, reactive, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
@@ -122,6 +122,8 @@ async function load() {
     else loaded.value = true;
 }
 onMounted(load);
+onMounted(() => window.addEventListener("resize", fit));
+onUnmounted(() => window.removeEventListener("resize", fit));
 
 // every change goes on the draft, kept apart from what the server holds until Save; Undo steps the draft back
 function remember() {

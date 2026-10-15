@@ -8,6 +8,7 @@ import PhoneJournals from "./places/PhoneJournals.vue";
 import PhoneOrganization from "./places/PhoneOrganization.vue";
 import PhoneProjectFile from "./places/PhoneProjectFile.vue";
 import PhoneProjectFiles from "./places/PhoneProjectFiles.vue";
+import PhoneWorkflows from "./places/PhoneWorkflows.vue";
 import PhoneTimeline from "./PhoneTimeline.vue";
 
 import {AGENT_SCREENS} from "./agent/screens.js";
@@ -22,6 +23,7 @@ export const SCREENS = {
     files: PhoneProjectFiles,
     file: PhoneProjectFile,
     attached: PhoneAttachedFiles,
+    workflows: PhoneWorkflows,
     timeline: PhoneTimeline,
     commit: PhoneCommit,
     dump: PhoneDump,

@@ -44,6 +44,7 @@ export const GROUPS = [
         places: [
             ...["skill", "tool", "template", "profile"].map(kind),
             place("organization", "Organization", "Domains, their roles and who fills them", "family", "organization:"),
+            place("workflows", "Workflows", "What the journal does when the agent does something", "bolt", "workflows:"),
         ],
     },
     {
