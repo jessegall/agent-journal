@@ -821,3 +821,36 @@ def test_a_journal_command_chained_with_anything_else_is_refused(app):
     assert status == 409 and "a journal command runs on its own" in body["error"]
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task log 1 'x'; journal message unread"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "python3 -m pytest -q && git commit -m x"})[0] == 200
+
+
+def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_removed_with_the_agents_restarted(app, monkeypatch, tmp_path):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    from journal.features.mcp.health import Health
+    from journal.features.mcp.keys import Keys
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
+    monkeypatch.setattr(Health, "of_all", lambda self: {"github": ("connected", ""), "linear": ("needs_auth", "Needs authentication")})
+    hook(app, "SessionStart")
+    port = app.server().port
+    def post(path, body):
+        with urlopen(R(f"http://127.0.0.1:{port}{path}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            return j.loads(r.read())
+    installed = post("/journal/mcp/install", {"name": "github"})
+    assert installed["state"] == "needs_key" and installed["has_key"] is False and sent[-1]["type"] == "RestartAgent" and sent[-1]["resume"] == ["--resume", "s1"]
+    claude = j.loads((app.config.root / ".mcp.json").read_text())["mcpServers"]["github"]
+    assert claude["command"] == "npx" and claude["env"] == {"GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"}
+    assert '[mcp_servers.github]' in (app.config.root / ".codex" / "config.toml").read_text()
+    keyed = post("/journal/mcp/github/key", {"value": "ghp_secret"})
+    assert keyed["has_key"] is True and keyed["state"] == "installed" and j.loads((tmp_path / "keys.json").read_text()) == {"GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_secret"}
+    assert "ghp_secret" not in (app.config.root / ".mcp.json").read_text(), "a key is never written into the project"
+    post("/journal/mcp/install", {"name": "linear"})
+    states = {s["name"]: s["state"] for s in post("/journal/mcp/check", {})["servers"]}
+    assert states == {"github": "connected", "linear": "needs_auth"}
+    page = j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))
+    assert [s["name"] for s in page["servers"]] == ["github", "linear"] and next(s for s in page["suggested"] if s["name"] == "github")["installed"] is True
+    assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
+    assert app.console().run(["mcp", "list"], USER).out.startswith("linear")

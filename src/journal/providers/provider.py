@@ -23,6 +23,8 @@ class Provider:
     write_tools: ClassVar[frozenset[str]]
     read_tool: ClassVar[str]
     shell_tool: ClassVar[str] = "Bash"
+    settings_extras: ClassVar[dict] = {}
+    """What else the program's settings file must say for the journal's sake, such as taking the project's MCP servers without asking."""
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
@@ -64,7 +66,7 @@ class Provider:
         for kind, blocks in self.hook_block(command).items():
             hooks[kind] = [*hooks.get(kind, []), *blocks]
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({**settings, "hooks": {k: v for k, v in hooks.items() if v}}, indent=2) + "\n")
+        path.write_text(json.dumps({**settings, **self.settings_extras, "hooks": {k: v for k, v in hooks.items() if v}}, indent=2) + "\n")
         return path
 
     @staticmethod

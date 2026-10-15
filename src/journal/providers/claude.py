@@ -15,6 +15,7 @@ class Claude(Provider):
     settings_file = "settings.json"
     write_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
     read_tool = "Read"
+    settings_extras = {"enableAllProjectMcpServers": True}
     controls = {
         "groups": [
             {"key": "model", "label": "Model", "choices": [{"value": v, "label": l, "command": f"/model {v}"} for v, l in (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))]},

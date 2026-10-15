@@ -4,6 +4,7 @@ from journal.http.controllers.cli import CliController
 from journal.http.controllers.entries import EntryController
 from journal.http.controllers.environments import EnvironmentController
 from journal.http.controllers.hooks import HookController
+from journal.http.controllers.mcp import McpController
 from journal.http.controllers.messages import MessageController
 from journal.http.controllers.plans import PlanController
 from journal.http.controllers.questions import QuestionController
@@ -46,6 +47,11 @@ class Routes:
         router.post(f"{API}/plans/{{id}}/tasks", get(PlanController).add_task)
         for name, repository in (("facts", Facts), ("reminders", Reminders), ("reports", Reports), ("docs", Docs), ("workers", Workers)):
             self.resource(router, name, ResourceController(get(repository), get(Environments)))
+        router.get(f"{API}/mcp", get(McpController).index)
+        router.post(f"{API}/mcp/install", get(McpController).install)
+        router.post(f"{API}/mcp/check", get(McpController).check)
+        router.post(f"{API}/mcp/{{name}}/key", get(McpController).key)
+        router.post(f"{API}/mcp/{{name}}/remove", get(McpController).remove)
         router.get(f"{API}/rules", lambda request: self.rules(request))
         router.get(f"{API}/agents", get(AgentController).index)
         router.post(f"{API}/agents/type", get(AgentController).type)

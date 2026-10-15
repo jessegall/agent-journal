@@ -5,6 +5,7 @@ from journal.models.entry import Entry
 from journal.models.environment import Environment
 from journal.models.fact import Fact
 from journal.models.link import Link
+from journal.models.mcp_server import McpServer
 from journal.models.message import Message
 from journal.models.plan import Plan
 from journal.models.question import Question
@@ -25,5 +26,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Message, Reaction, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, McpServer, Message, Reaction, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

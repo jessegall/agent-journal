@@ -1,4 +1,7 @@
+import json
 import os
+from datetime import datetime
+import traceback
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -70,20 +73,39 @@ class Launch:
     def environ(self, choice: Choice) -> dict[str, str]:
         path = os.pathsep.join([str(self.root / ".journal" / "bin"), os.environ.get("PATH", "")])
         runner = self.package / "journal" / "hooks" / "run.sh"
-        return {**os.environ, "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1", "CLAUDE_CODE_SHELL_PREFIX": str(runner)}
+        return {**os.environ, **self.keys(), "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1", "CLAUDE_CODE_SHELL_PREFIX": str(runner)}
+
+    def keys(self) -> dict[str, str]:
+        """The keys the project's MCP servers sign in with, kept by the journal in the home folder and handed to the agent as environment variables."""
+        path = Path.home() / ".journal" / "keys" / f"{str(self.root.resolve()).strip('/').replace('/', '-')}.json"
+        return {k: str(v) for k, v in json.loads(path.read_text()).items()} if path.is_file() else {}
 
     def run(self) -> int:
-        """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends."""
-        ProjectCommand(self.root, self.package / "journal.sh").write()
-        others = OtherHooks(self.root, self.agent)
-        others.put_back()
-        choice = self.choice()
-        if choice.hooks_aside:
-            others.set_aside()
+        """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends. What happened is written to .journal/runtime/supervisor.log, so a launch that ends at once can be read back."""
+        self.log(f"launch: {' '.join(self.agent_command(Choice(self.env or 'main', '', self.aside, self.skip)))}")
         try:
-            return self.supervisor(choice).run()
-        finally:
+            ProjectCommand(self.root, self.package / "journal.sh").write()
+            others = OtherHooks(self.root, self.agent)
             others.put_back()
+            choice = self.choice()
+            self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.hooks_aside}")
+            if choice.hooks_aside:
+                others.set_aside()
+            try:
+                code = self.supervisor(choice).run()
+            finally:
+                others.put_back()
+            self.log(f"ended: the agent exited with {code}")
+            return code
+        except BaseException as failed:
+            self.log(f"failed: {traceback.format_exc() if not isinstance(failed, KeyboardInterrupt) else 'interrupted'}")
+            raise
+
+    def log(self, line: str) -> None:
+        path = self.root / ".journal" / "runtime" / "supervisor.log"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a") as out:
+            out.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {line}\n")
 
     def supervisor(self, choice: Choice) -> Supervisor:
         environ = self.environ(choice)
