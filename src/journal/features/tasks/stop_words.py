@@ -13,14 +13,20 @@ AUTO = "tasks.auto"
 """With auto on, the agent works the list: a stop with a task open is answered with the next one, and only the user stops it."""
 
 
+LOG_STALE = 10 * 60
+"""Seconds since the last log after which a stop asks for one."""
+
+
 class StopWords:
     """What the journal says when an agent stops: carry on with the task in hand; the parked tasks, in any mode; or in auto mode the next open task and whether the agent means to stop."""
 
     @staticmethod
     def carry_on(state: Working) -> Said:
+        """A stop with work in hand is told to carry on; a log is asked for only when the last one is stale, never at every stop."""
         from journal.features.tasks.feature import Tasks as TasksFeature
         logged = f"last logged {ago(state.logged_at)}" if state.logged_at else "nothing logged yet"
-        return TasksFeature.CARRY_ON.about(name=state.named(), logged=logged)
+        stale = not state.logged_at or time.time() - state.logged_at > LOG_STALE
+        return (TasksFeature.CARRY_ON_LOG if stale else TasksFeature.CARRY_ON).about(name=state.named(), logged=logged)
 
     def __init__(self, tasks: Tasks, plans: Plans, settings: Settings) -> None:
         self.tasks, self.plans, self.settings = tasks, plans, settings
