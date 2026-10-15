@@ -10,6 +10,7 @@ from supervisor.option import Option
 BOLD, DIM, ACCENT, GOOD, BADGE, RESET = "\x1b[1m", "\x1b[2m", "\x1b[38;5;111m", "\x1b[38;5;114m", "\x1b[38;5;176m", "\x1b[0m"
 SAVE_CURSOR, BACK_TO_SAVED, HIDE_CURSOR, SHOW_CURSOR = "\x1b7", "\x1b8\x1b[J", "\x1b[?25l", "\x1b[?25h"
 HINT = "↑ ↓ to move · Enter to pick · a number to jump · Esc to leave"
+ACTION_HINTS = {"x": "x to delete"}
 
 
 class Screen:
@@ -35,10 +36,14 @@ class Screen:
 
     def pick(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
         """The index of the option picked; the one at `default` is where the cursor starts."""
+        return self.pick_or(heading, notes, options, default, ())[0]
+
+    def pick_or(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
+        """The index under the cursor and the key that ended the question: empty for Enter, or one of `actions`, such as x. Typed, an action is the letter before the number: x2."""
         self._fresh()
         if self.interactive:
-            return self._pick_with_keys(heading, notes, options, default)
-        return self._pick_by_number(heading, notes, options, default)
+            return self._pick_with_keys(heading, notes, options, default, actions)
+        return self._pick_by_number(heading, notes, options, default, actions)
 
     def ask(self, prompt: str) -> str:
         """A free-text answer, such as the name of a new environment."""
@@ -61,17 +66,19 @@ class Screen:
         """Clears the space under the banner, so each question has the screen to itself."""
         self.out.write(BACK_TO_SAVED if self.interactive else "\n")
 
-    def _lines(self, heading: str, notes: list[str], options: list[Option], at: int) -> list[str]:
+    def _lines(self, heading: str, notes: list[str], options: list[Option], at: int, actions: tuple[str, ...]) -> list[str]:
         width = max(len(option.label) for option in options)
         lines = [f"  {self.paint(ACCENT, '?')} {self.paint(BOLD, heading)}", ""]
         lines += [f"    {self.paint(DIM, note)}" for note in notes] + ([""] if notes else [])
         for i, option in enumerate(options):
             badges = "".join(f"  {self.paint(BADGE, '[' + badge + ']')}" for badge in option.badges)
             label = f"{option.label:<{width}}"
+            lines += [""] if option.apart and i else []
             lines.append(f"  {self.paint(ACCENT, '❯')} {self.paint(BOLD, label)}{badges}" if i == at else f"    {label}{badges}")
-        return [*lines, "", f"  {self.paint(DIM, HINT)}"]
+        hint = " · ".join([HINT, *(ACTION_HINTS[key] for key in actions)])
+        return [*lines, "", f"  {self.paint(DIM, hint)}"]
 
-    def _pick_with_keys(self, heading: str, notes: list[str], options: list[Option], at: int) -> int:
+    def _pick_with_keys(self, heading: str, notes: list[str], options: list[Option], at: int, actions: tuple[str, ...]) -> tuple[int, str]:
         fd = sys.stdin.fileno()
         saved = termios.tcgetattr(fd)
         drawn = 0
@@ -79,13 +86,15 @@ class Screen:
             tty.setcbreak(fd)
             self.out.write(HIDE_CURSOR)
             while True:
-                lines = self._lines(heading, notes, options, at)
+                lines = self._lines(heading, notes, options, at, actions)
                 self.out.write((f"\x1b[{drawn}F\x1b[J" if drawn else "") + "\n".join(lines) + "\n")
                 self.out.flush()
                 drawn = len(lines)
                 for key in self.keys.read():
                     if key in Keys.ENTER:
-                        return at
+                        return at, ""
+                    if key in actions:
+                        return at, key
                     if key == Keys.ESCAPE:
                         raise SystemExit("journal: left without starting")
                     at = self._moved(at, key, len(options))
@@ -104,16 +113,17 @@ class Screen:
             return int(key) - 1
         return at
 
-    def _pick_by_number(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
+    def _pick_by_number(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
         self.out.write(f"\n  {heading}\n  {'─' * len(heading)}\n")
         for note in notes:
             self.out.write(f"    {note}\n")
         self.out.write("\n")
         for i, option in enumerate(options, 1):
             badges = "".join(f"  [{badge}]" for badge in option.badges)
-            self.out.write(f"    {i}  {option.label}{badges}{'   ← Enter' if i - 1 == default else ''}\n")
+            self.out.write(("\n" if option.apart and i > 1 else "") + f"    {i}  {option.label}{badges}{'   ← Enter' if i - 1 == default else ''}\n")
         while True:
             answer = self.ask(">") or str(default + 1)
-            if answer.isdigit() and 1 <= int(answer) <= len(options):
-                return int(answer) - 1
+            action, number = (answer[0], answer[1:].strip()) if answer[:1] in actions else ("", answer)
+            if number.isdigit() and 1 <= int(number) <= len(options):
+                return int(number) - 1, action
             self.out.write(f"    A number from 1 to {len(options)}.\n")

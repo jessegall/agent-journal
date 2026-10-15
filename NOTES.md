@@ -253,8 +253,8 @@ D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then 
    key back when the agent exits, keeping edits made to the rest of the file meanwhile; a run
    that died is put back at the next launch). The journal's own hooks always run. The answers
    to the last two are remembered in `.journal/launch.json` as the next defaults. The
-   environment screen also has "Manage environments": pick one to delete, confirm, and it goes
-   with everything recorded in it (`journal environment delete <name>`, which is
+   environment screen deletes with x: on the environment under the cursor, after a confirmation,
+   it goes with everything recorded in it (`journal environment delete <name>`, which is
    `Environments.wipe`: every scoped table's rows in one transaction, then the row); one an
    agent is working stays. `--env`, `--new`, `--skip`, `--aside`, `--yes` and `--no-open`
    answer it without asking; without a terminal the same questions are numbered lines. The

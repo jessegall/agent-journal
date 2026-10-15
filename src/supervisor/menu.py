@@ -50,28 +50,23 @@ class Menu:
         return choice
 
     def _environment(self, agent: str, rows: list[dict]) -> str:
-        options = [Option(row["name"], self._badges(row)) for row in rows] + [Option("A new environment"), Option("Manage environments")]
-        picked = self.screen.pick("Which environment", ["An environment is one line of work with a record of its own."], options, 0)
+        """Enter picks the environment under the cursor; x deletes it after a confirmation, and the list is asked again."""
+        options = [Option(row["name"], self._badges(row)) for row in rows] + [Option("A new environment", apart=True)]
+        picked, key = self.screen.pick_or("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
+        if key == "x" and picked < len(rows):
+            self._delete(rows[picked])
+            return self._environment(agent, self.environments())
         if picked < len(rows):
             return rows[picked]["name"]
-        if picked == len(rows):
-            return self.screen.ask("Name:") or "main"
-        self._manage(rows)
-        return self._environment(agent, self.environments())
+        return self.screen.ask("Name:") or "main"
 
-    def _manage(self, rows: list[dict]) -> None:
-        """Deletes environments one at a time until Back is picked; the one an agent is working stays."""
-        while rows:
-            options = [Option(row["name"], self._badges(row)) for row in rows] + [Option("Back")]
-            picked = self.screen.pick("Delete an environment", ["Everything recorded in it goes with it: tasks, messages, plans, memory, the record."], options, len(rows))
-            if picked == len(rows):
-                return
-            if rows[picked].get("working"):
-                self.screen.pick(f"{rows[picked]['name']} has an agent working", ["Stop that agent first."], [Option("Back")], 0)
-                continue
-            if self.screen.pick(f"Delete {rows[picked]['name']}?", ["This cannot be undone."], [Option("No, keep it"), Option("Yes, delete it")], 0) == 1:
-                self.journal("environment", "delete", rows[picked]["name"])
-                rows = self.environments()
+    def _delete(self, row: dict) -> None:
+        if row.get("working"):
+            self.screen.pick(f"{row['name']} has an agent working", ["Stop that agent first."], [Option("Back")], 0)
+            return
+        notes = ["Everything recorded in it goes with it: tasks, messages, plans, memory, the record. This cannot be undone."]
+        if self.screen.pick(f"Delete {row['name']}?", notes, [Option("No, keep it"), Option("Yes, delete it")], 0) == 1:
+            self.journal("environment", "delete", row["name"])
 
     @staticmethod
     def _badges(row: dict) -> tuple[str, ...]:

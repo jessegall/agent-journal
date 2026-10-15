@@ -90,9 +90,9 @@ def test_without_other_hooks_the_hooks_question_is_not_asked(tmp_path: Path, mon
     assert menu.choose("claude", aside=True, yes=True).hooks_aside is False, "nothing to set aside"
 
 
-def test_the_manage_screen_deletes_an_environment_that_no_agent_works(tmp_path: Path, monkeypatch):
+def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_agent_works(tmp_path: Path, monkeypatch):
     deleted = []
-    menu = menu_answering(tmp_path, monkeypatch, ["4", "2", "2", "1", "1", "3", "1", "2", "2"])
+    menu = menu_answering(tmp_path, monkeypatch, ["x1", "1", "x2", "2", "1", "2", "2"])
     menu.journal = lambda *argv: deleted.append(argv) or ""
     assert menu.choose("claude").environment == "main"
     assert deleted == [("environment", "delete", "spike")]
@@ -117,7 +117,7 @@ def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_pa
 def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path):
     from supervisor.option import Option
     from supervisor.screen import Screen as Picker
-    assert Picker._moved(0, "\x1b[B", 3) == 1 and Picker._moved(0, "\x1b[A", 3) == 2 and Picker._moved(0, "3", 3) == 2 and Picker._moved(1, "x", 3) == 1
+    assert Picker._moved(0, "\x1b[B", 3) == 1 and Picker._moved(0, "\x1b[A", 3) == 2 and Picker._moved(0, "3", 3) == 2 and Picker._moved(1, "q", 3) == 1
 
 
 def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):

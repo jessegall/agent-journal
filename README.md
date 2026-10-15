@@ -18,7 +18,7 @@ From the root of your project, with `python3`, `git` and `curl` on the path:
 `setup here` makes `.journal/`, wires Claude's hooks (and Codex's where `.codex/` exists), writes the
 journal's skills and the agent profiles, puts the journal's law into AGENTS.md, imports it from
 CLAUDE.md, and installs a `journal` command in `~/.local/bin`. `journal claude` asks, one question at a
-time with ↑ ↓ and Enter, which environment (or manage them: delete one with all it recorded), whether
+time with ↑ ↓ and Enter, which environment (x on one deletes it, after a confirmation, with all it recorded), whether
 to carry on its last conversation, whether to skip the permission prompts and, when the settings hold
 hooks that are not the journal's, whether to set those aside for the run, then runs Claude under the
 supervisor with the server beside it and opens the viewer in your browser. `--env <name>`, `--new`,
