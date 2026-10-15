@@ -382,7 +382,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   hook; Claude's Stop hook needs `{"decision": "block", "reason": ...}` to make the agent
   carry on, and PreToolUse context is shown to the user, not the agent. The provider should
   shape `Decision.as_hook_output` per hook kind.
-- **Permissions**: `allows` is declared on every state but only Idle's write refusal uses it.
+- **Permissions**: `allows` is declared on every state; since the work command went (2026-10-16) nothing refuses a write for lack of a task, and `allows` has no user.
   The gate should read `allows` generically (a tool that writes needs WRITE_FILES) so a new
   state cannot forget to refuse.
 - **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
