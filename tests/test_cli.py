@@ -76,3 +76,15 @@ def test_deleting_an_environment_takes_everything_recorded_in_it(app):
     assert [e.name for e in app.container.get(Environments).all()] == ["main"]
     assert [t.title for t in app.container.get(Tasks).all()] == ["kept"]
     assert app.console().run(["environment", "delete", "spike"], MAIN).code == 1
+
+
+def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_from(app):
+    from journal.console.where import Where
+    from journal.repositories.reactions import Reactions
+    from journal.models.actor import Actor
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
+    app.console().run(["message", "send", "hi"], Where("main"))
+    app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
+    assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"

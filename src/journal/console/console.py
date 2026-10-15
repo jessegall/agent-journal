@@ -8,6 +8,8 @@ from journal.console.outcome import Outcome
 from journal.features.refused import Refused
 from journal.repositories.not_found import NotFound
 from journal.console.where import Where
+from journal.repositories.agents import Agents
+from journal.repositories.environments import Environments
 from journal.container import Container
 
 
@@ -24,6 +26,13 @@ class Console:
         self.commands[command.noun] = self.container.get(command)
         self._parser = None
 
+    def attributed(self, where: Where) -> Where:
+        """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from."""
+        if not where.from_agent_shell or where.session:
+            return where
+        live = self.container.get(Agents).live(self.container.get(Environments).named(where.environment).id)
+        return where.as_(live.session) if live else where
+
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:
             self._parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
@@ -35,6 +44,7 @@ class Console:
 
     def run(self, argv: list[str], where: Where) -> Outcome:
         """Runs one command with its output captured, so the same call serves the terminal and the server."""
+        where = self.attributed(where)
         out, err = io.StringIO(), io.StringIO()
         made = Creations.begin()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):

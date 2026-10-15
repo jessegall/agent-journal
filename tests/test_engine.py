@@ -87,10 +87,12 @@ def test_a_feature_switched_off_takes_its_gate_with_it(app):
     assert hook(app, "Stop")[1] == {}
 
 
-def test_the_session_end_ends_the_agent(app):
+def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revives_it(app):
     hook(app, "SessionStart")
     hook(app, "SessionEnd")
     assert app.container.get(Machine).current("s1").name == "ended"
+    hook(app, "SessionStart")
+    assert app.container.get(Machine).current("s1").name == "idle"
 
 
 def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
