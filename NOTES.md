@@ -474,4 +474,11 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   older than a day are swept at each run.
 - Open: each part costs two shim calls (about 0.1 s each); run.sh could post straight to the server. A worker or
   subagent started from the agent's shell inherits the prefix, so its commands are recorded under the live agent.
-- The runner's process test is `tests/runner_process.py`, not in the default run.
+- The runner's process tests are in `tests/runner_process.py`, not in the default run: the chain and the move to
+  the background as a real process, and a corpus of sixty lines each run whole by zsh and in parts by the runner,
+  compared on output and exit code. Add a line there for every new corner.
+- Zsh's own answers, tested on 2026-10-15: only `for`, `select` and `repeat` have the short form whose body is the
+  next command with its `&&` chain; `if`, `while` and `until` read on to `then` or `do`. A part before `&&` runs
+  guarded so `set -e` does not end the shell on its failure, as in the shell. Known differences left: an alias
+  defined in one part applies to the next (the shell parses the line first); a failed glob in zsh aborts only its
+  own part, not the rest of the line.
