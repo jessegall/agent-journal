@@ -1374,3 +1374,24 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
         urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/nothing/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5)
     except HTTPError as error:
         assert error.code == 404
+
+
+def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    assert "sequence give me an update" in console.run(["trigger", "list"], AGENT).out, "the update words are a shipped trigger"
+    console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER)
+    console.run(["trigger", "create", "ship it", "release", "--do", "sequence"], USER)
+    body = hook(app, "UserPromptSubmit", prompt="ok, ship it now")[1]
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "running_sequence" and "step 1: bump" in json.dumps(body), "a prompt's words start the sequence and its first step rides on the answer"
+    for _ in range(2):
+        console.run(["sequence", "next"], AGENT)
+    console.run(["message", "send", "could you give me an update?"], USER)
+    app.runtime().deferred.drain()
+    assert machine.current("s1").name == "running_sequence" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, typed to the agent"

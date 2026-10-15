@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from journal.models.model import Model
@@ -13,5 +14,6 @@ class Trigger(Model):
     text: str = ""
 
     def met_by(self, text: str) -> bool:
-        lowered = f" {text.lower()} "
-        return any(f" {word.lower()} " in lowered or word.lower() in lowered.split() for word in self.words)
+        """The words as a phrase in the text, punctuation and case aside: update? meets update."""
+        lowered = f" {' '.join(re.findall(r'[\w;/-]+', text.lower()))} "
+        return any(f" {' '.join(re.findall(r'[\w;/-]+', word.lower()))} " in lowered for word in self.words)

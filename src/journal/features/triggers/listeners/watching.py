@@ -1,12 +1,9 @@
 from typing import TypeVar
 
-from journal.engine.machine import Machine
-from journal.engine.cards import Cards
-from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.features.agent_listener import AgentListener
+from journal.features.triggers.firing import Firing
 from journal.hooks.decision import Decision
-from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.triggers import Triggers
 
@@ -18,8 +15,8 @@ class Watching(AgentListener[A]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, triggers: Triggers, cards: Cards) -> None:
-        self.machine, self.nudger, self.triggers, self.cards = machine, nudger, triggers, cards
+    def __init__(self, triggers: Triggers, firing: Firing) -> None:
+        self.triggers, self.firing = triggers, firing
 
     def text_of(self, event: A) -> str:
         raise NotImplementedError
@@ -35,13 +32,5 @@ class Watching(AgentListener[A]):
         denied = [t for t in met if t.action == TriggerAction.DENY]
         if denied and self.can_deny():
             return Decision.refuse(TriggersFeature.DENIED.about(title=denied[0].text).rendered())
-        agent = self.machine.agent(event.session, event.environment_id)
-        for trigger in met:
-            self.cards.show(event.environment_id, event.session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"trigger:{trigger.id}")
-        lines = [line for trigger in met if (line := self.nudger.say(agent, self.said(trigger)))]
+        lines = self.firing.lines(met, event.session, event.environment_id)
         return Decision.tell("\n".join(lines)) if lines else None
-
-    @staticmethod
-    def said(trigger: Trigger):
-        from journal.features.triggers.feature import Triggers as TriggersFeature
-        return (TriggersFeature.INSTRUCT if trigger.action == TriggerAction.INSTRUCT else TriggersFeature.NUDGE).about(title=trigger.text)
