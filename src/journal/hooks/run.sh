@@ -54,7 +54,7 @@ while :; do
     [ -f "$folder/done" ] && exit "$(cat "$folder/done")"
     if [ $((SECONDS - began)) -ge "$limit" ]; then
         touch "$folder/moved"
-        running=$(grep "^R" "$folder/parts" | sed -n "$((shown + 1))p" | cut -f2-)
+        running=$(sed -n "$((shown + 1))p" "$folder/parts" | cut -f2-)
         sh "$journal" shell moved "$id" "$running" --file "$folder"
         exit 0
     fi

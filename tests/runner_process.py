@@ -34,11 +34,11 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         urlopen(Request(f"http://127.0.0.1:{port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         env = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
         runner, cwd = str(tmp_path / ".journal" / "src" / "journal" / "hooks" / "run.sh"), tmp_path / "cwd"
-        run = subprocess.run([runner, wrapped(f"cd {tmp_path} && echo one && false && echo three", cwd)], env=env, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped(f"cd {tmp_path} && echo one && false && echo three", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert run.stdout.strip() == "one" and run.returncode == 1 and not cwd.exists(), run.stderr
         settings.save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
-        run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, capture_output=True, text=True, timeout=20)
-        assert "fast" in run.stdout and "moved to the background" in run.stdout and run.returncode == 0, run.stderr
+        run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        assert "fast" in run.stdout and "moved to the background: sleep 3" in run.stdout and run.returncode == 0, run.stderr
         entries = app.container.get(Entries)
         for _ in range(100):
             if entries.of_kind(1, "ended", 5):
