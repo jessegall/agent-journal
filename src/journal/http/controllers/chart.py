@@ -1,6 +1,7 @@
 from dataclasses import asdict
 
 from journal.features.chart.catalogue import Catalogue
+from journal.features.chart.validation import Validation
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.repositories.charts import Charts
@@ -9,8 +10,8 @@ from journal.repositories.charts import Charts
 class ChartController:
     """The chart page: the one chart with its nodes, lines and catalogue, read whole and saved whole as the user."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue) -> None:
-        self.charts, self.catalogue = charts, catalogue
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation) -> None:
+        self.charts, self.catalogue, self.validation = charts, catalogue, validation
 
     def index(self, request: Request) -> Response:
         return Response.json(self.drawn())
@@ -19,6 +20,9 @@ class ChartController:
         chart = self.charts.the()
         if int(request.body.get("revision", -1)) != chart.revision:
             return Response.refused(f"the chart changed since you read it: it is at revision {chart.revision}, read it again")
+        faults = self.validation.faults(request.body.get("nodes", []), request.body.get("lines", []))
+        if faults:
+            return Response.refused("the chart is not saved: " + "; ".join(faults))
         self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)
         return Response.json(self.drawn())
 

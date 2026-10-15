@@ -58,6 +58,9 @@ class Catalogue:
     def all(self) -> list[Entry]:
         return self.triggers() + self.checks() + self.actions()
 
+    def has(self, kind: str, key: str) -> bool:
+        return any(entry.kind == kind and entry.key == key for entry in self.all())
+
     def entry(self, kind: NodeKind, key: str) -> Entry:
         for entry in self.all():
             if entry.kind == kind and entry.key == key:

@@ -3,6 +3,8 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.chart.catalogue import Catalogue
+from journal.features.chart.validation import Validation
+from journal.refused import Refused
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import PORTS, THEN, Charts
@@ -11,8 +13,8 @@ from journal.repositories.charts import PORTS, THEN, Charts
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: Catalogue) -> None:
-        self.charts, self.entries = charts, catalogue
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation) -> None:
+        self.charts, self.entries, self.validation = charts, catalogue, validation
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "the chart: its nodes and lines")
@@ -50,6 +52,9 @@ class ChartCommand(Command):
 
     def line(self, args: Namespace, where: Where) -> int:
         source, target = self.charts.nodes.find(args.source), self.charts.nodes.find(args.target)
+        fault = self.validation.port_fault({"id": source.id, "kind": source.kind}, {"id": target.id, "kind": target.kind}, args.port)
+        if fault:
+            raise Refused(fault[0])
         self.charts.connect(source, target, args.port, where.actor)
         print(f"line {source.id} --{args.port}--> {target.id}")
         return 0

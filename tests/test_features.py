@@ -1139,8 +1139,32 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
         except HTTPError as error:
             return error.code, j.loads(error.read())
     nodes = [{"id": 1, "kind": "trigger", "key": "idle", "x": 10, "y": 10}, {"id": 2, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
-    lines = [{"from": 1, "to": 2}, {"from": 2, "to": "new", "port": "no"}]
+    lines = [{"from": 1, "to": 2}, {"from": 2, "to": "new", "port": "yes"}, {"from": 2, "to": "new", "port": "no"}]
     status, saved = post({"revision": 0, "nodes": nodes, "lines": lines})
     assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["idle", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10
-    assert [(l["from"], l["port"]) for l in saved["lines"]] == [(1, "then"), (2, "no")], "lines drawn anew, the removed node gone"
+    assert [(l["from"], l["port"]) for l in saved["lines"]] == [(1, "then"), (2, "yes"), (2, "no")], "lines drawn anew, the removed node gone"
     assert post({"revision": 0, "nodes": nodes, "lines": []})[0] == 409, "a stale revision is refused"
+
+
+def test_a_wrong_chart_is_refused_with_its_faults(app):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    port = app.server().port
+    def post(body):
+        try:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+                return r.status, j.loads(r.read())
+        except HTTPError as error:
+            return error.code, j.loads(error.read())
+    nodes = [{"id": "t", "kind": "trigger", "key": "idle"}, {"id": "c", "kind": "check", "key": "open_tasks"}, {"id": "a", "kind": "action", "key": "say", "text": "hi"}, {"id": "x", "kind": "check", "key": "flying"}]
+    status, body = post({"revision": 0, "nodes": nodes, "lines": [{"from": "t", "to": "c"}, {"from": "c", "to": "a", "port": "yes"}, {"from": "a", "to": "t"}, {"from": "c", "to": "gone", "port": "no"}, {"from": "a", "to": "c", "port": "yes"}]})
+    assert status == 409
+    for fault in ("names no catalogue entry: check flying", "leads to or from no node", "leads into trigger t", "action a leaves by then, not yes", "check x lacks its yes line", "loop back"):
+        assert fault in body["error"], fault
+    good = [{"from": "t", "to": "c"}, {"from": "c", "to": "a", "port": "yes"}, {"from": "c", "to": "a", "port": "no"}]
+    assert post({"revision": 0, "nodes": nodes[:3], "lines": good})[0] == 200
+    console = app.console()
+    assert "leaves by yes or no, not then" in console.run(["chart", "line", "2", "3"], AGENT).err
+    assert "leads into trigger 1" in console.run(["chart", "line", "3", "1"], AGENT).err
