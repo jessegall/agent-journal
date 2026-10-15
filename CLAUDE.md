@@ -57,7 +57,7 @@ be ordered. No `try/except` that swallows. No `X | None` on a value the design a
 No boolean parameter that selects a behaviour: write two methods. A method body is short
 enough to read at a glance, and a function with a big `if` is two functions.
 
-**Tests are fast and few.** The suite runs in about a second, against a temp database and a
+**Tests are fast and few.** The suite runs in a dozen seconds, against a temp database and a
 real server on a free port, with no mocks and no subprocesses. It covers the core, not every
 model and feature. A test that needs a process, a browser or the network goes in a file that
 says so on its first line and is not in the default run.
@@ -70,7 +70,7 @@ when either changes, so the next session starts from the record and not from rec
 
 ## Tests
 
-`pytest` runs `tests/` in about a second: one file per phase of the rewrite, a temp database,
+`pytest` runs `tests/` in a dozen seconds: one file per phase of the rewrite, a temp database,
 real HTTP on a free port, no mocks and no subprocesses. Tests cover the core only: data,
 CLI, server, hooks, engine. No tests on single models or features until the core stands.
 Run the whole suite after every change; it is cheap.

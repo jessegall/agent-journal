@@ -1,6 +1,7 @@
 import fcntl
 import os
 import pty
+import select
 import signal
 import struct
 import termios
@@ -101,20 +102,26 @@ class Terminal:
         return os.waitstatus_to_exitcode(status)
 
     def stop(self, grace: float) -> int:
-        """Asks the agent to end, then makes it; the exit code, with the process reaped once."""
+        """Asks the agent to end, then makes it; the exit code, with the process reaped once. The terminal is drained all the while: an agent that is ending still writes to it, and a full pty would hold its exit forever."""
         if self.pid < 0:
             return 0
         try:
             os.kill(self.pid, signal.SIGTERM)
         except ProcessLookupError:
             return self.exited() or 0
-        until = time.time() + grace
+        code = self.ended_within(grace)
+        if code is None:
+            os.kill(self.pid, signal.SIGKILL)
+            code = self.ended_within(grace)
+        return 0 if code is None else code
+
+    def ended_within(self, seconds: float) -> int | None:
+        until = time.time() + seconds
         while time.time() < until:
             code = self.exited()
             if code is not None:
                 return code
-            time.sleep(0.05)
-        os.kill(self.pid, signal.SIGKILL)
-        pid, status = os.waitpid(self.pid, 0)
-        self.pid = -1
-        return os.waitstatus_to_exitcode(status)
+            readable, _, _ = select.select([self.fd], [], [], 0.05)
+            if readable:
+                self.read()
+        return None
