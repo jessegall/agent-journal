@@ -117,3 +117,15 @@ def test_a_column_a_model_gained_is_added_to_a_table_made_before_it(tmp_path):
     Schema(old, AllModels.MODELS).create()
     names = {row["name"] for row in old.execute("PRAGMA table_info(messages)").fetchall()}
     assert "idempotency" in names and "text" in names
+
+
+def test_a_thread_returns_its_connection_to_the_pool(connection):
+    import threading
+    def work():
+        connection.all("SELECT 1")
+        connection.release()
+    for _ in range(30):
+        t = threading.Thread(target=work)
+        t.start()
+        t.join()
+    assert len(connection._open) <= 2

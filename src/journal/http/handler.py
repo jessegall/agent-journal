@@ -2,6 +2,7 @@ import json
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
+from journal.db.connection import Connection
 from journal.http.identity import Identity
 from journal.http.request import Request
 from journal.http.response import Response
@@ -16,6 +17,14 @@ class Handler(BaseHTTPRequestHandler):
     router: Router
     identity: Identity
     static: StaticFiles
+    database: Connection
+
+    def finish(self) -> None:
+        """The response is written: the thread's database connection goes back to the pool before the thread ends."""
+        try:
+            super().finish()
+        finally:
+            self.database.release()
 
     def do_GET(self) -> None:
         request = self._request()

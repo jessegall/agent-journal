@@ -2,6 +2,7 @@ import threading
 from http.server import ThreadingHTTPServer
 
 from journal.config import Config
+from journal.db.connection import Connection
 from journal.http.handler import Handler
 from journal.http.identity import Identity
 from journal.http.router import Router
@@ -11,8 +12,8 @@ from journal.http.static_files import StaticFiles
 class Server:
     """One process, one port; every request is answered on a thread of its own. The port it got is written where the hook script reads it."""
 
-    def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles) -> None:
-        self.config, self.router, self.identity, self.static = config, router, identity, static
+    def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles, database: Connection) -> None:
+        self.config, self.router, self.identity, self.static, self.database = config, router, identity, static, database
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -40,7 +41,7 @@ class Server:
             self.config.port_file.unlink(missing_ok=True)
 
     def _build(self) -> ThreadingHTTPServer:
-        bound = type("BoundHandler", (Handler,), {"router": self.router, "identity": self.identity, "static": self.static})
+        bound = type("BoundHandler", (Handler,), {"router": self.router, "identity": self.identity, "static": self.static, "database": self.database})
         server = self._bind(bound)
         server.daemon_threads = True
         return server

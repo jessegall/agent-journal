@@ -121,3 +121,11 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
         assert '"task": "review the login"' in agents and '"type": "reviewer"' in agents and '"status": "done"' in agents
     finally:
         app.runtime().stop()
+
+
+def test_request_threads_leave_no_connection_behind(server):
+    from journal.db.connection import Connection
+    database = server.database
+    for _ in range(40):
+        call(server, "GET", "/api/main/dashboard")
+    assert len(database._open) <= 3, f"{len(database._open)} connections open after 40 requests: threads must return theirs to the pool"

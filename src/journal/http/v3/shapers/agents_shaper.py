@@ -7,7 +7,9 @@ from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 
-STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "working", "ToolStarting": "working", "ToolFinished": "working", "TurnWritten": "working", "SubagentStarted": "working", "SubagentEnded": "working"}
+STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "TurnWritten": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
+WORKING = frozenset({"working", "following_plan"})
+"""The states in which the agent has declared its work: only then is it working, as version 3 had it; an agent merely running is busy."""
 EVENT = {"ToolStarting": "PreToolUse", "ToolFinished": "PostToolUse", "PromptSubmitted": "UserPromptSubmit", "Idle": "Stop", "SessionStarted": "SessionStart", "SessionEnded": "SessionEnd", "Compacting": "PreCompact"}
 PAUSED = frozenset({"waiting", "awaiting", "halted", "at_mark", "loading_skill"})
 COMMITTED = re.compile(r"\[([^\s\]]+) ([0-9a-f]{7,})\] (.+)")
@@ -41,7 +43,7 @@ class AgentsShaper(Shaper):
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted", "commit")]
         last = hooks[-1] if hooks else None
         kind = last.kind if last else ""
-        status = "stopped" if a.state == "ended" else STATUS.get(kind, "idle")
+        status = "stopped" if a.state == "ended" else "working" if a.state in WORKING and STATUS.get(kind, "idle") == "busy" else STATUS.get(kind, "idle")
         at = seconds(last.created_at) if last else seconds(a.updated_at)
         state = self.states.named(a.state, a.data)
         data = {
