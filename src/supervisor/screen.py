@@ -27,7 +27,7 @@ class Screen:
 
     def banner(self, agent: str, project: str) -> None:
         width = max(40, shutil.get_terminal_size().columns - 4) if self.interactive else 60
-        lines = [f"agent-journal", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "", "A question or two first: move with ↑ ↓ and pick with Enter."]
+        lines = [f"agent-journal", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "", "Move with ↑ ↓ and pick with Enter."]
         rule = "─" * width
         body = "\n".join(f"│ {line:<{width - 2}} │" for line in lines)
         clear = "\x1b[2J\x1b[H" if self.interactive else ""
