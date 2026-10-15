@@ -54,9 +54,9 @@ class Chain:
             if c in "\"'":
                 quote, current, i = c, current + c, i + 1
                 continue
-            if c == "(" or (c == "{" and line[i + 1:i + 2] in (" ", "\t")):
+            if c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t") or line[i - 1:i] == "$")) or line.startswith("[[", i):
                 depth += 1
-            elif c in ")}" and depth:
+            elif (c in ")}" or line.startswith("]]", i)) and depth:
                 depth -= 1
             found = "&&" if line.startswith("&&", i) else ";" if c == ";" and not line.startswith(";;", i) else ""
             if found and not depth:

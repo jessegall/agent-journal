@@ -38,6 +38,8 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         assert run.stdout.strip() == "one" and run.returncode == 1 and not cwd.exists(), run.stderr
         run = subprocess.run([runner, wrapped("echo before; [ -f /nonexistent ] || exit 3; echo after", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert run.stdout.strip() == "before" and run.returncode == 3 and not cwd.exists(), run.stderr
+        run = subprocess.run([runner, wrapped("echo first && exec echo replaced; echo never", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        assert run.stdout.split() == ["first", "replaced"] and run.returncode == 0 and "No such file" not in run.stderr, run.stderr
         settings.save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
         run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "fast" in run.stdout and "moved to the background: sleep 3" in run.stdout and run.returncode == 0, run.stderr

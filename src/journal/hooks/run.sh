@@ -13,7 +13,7 @@ root=$(cd "$here/../../.." && pwd)
 finish() {
     code=$1
     [ -f "$folder/done" ] && return
-    if [ ! -f "$folder/$i.status" ]; then
+    if [ -f "$folder/$i.part" ] && [ ! -f "$folder/$i.status" ]; then
         [ "$kind" = "R" ] && sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out" 2>/dev/null)" >/dev/null 2>&1
         echo "$code" > "$folder/$i.status"
     fi
@@ -35,8 +35,10 @@ if [ "$1" = "--chain" ]; then
         part=$(cat "$folder/$i.part")
         [ "$kind" = "R" ] && sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1
         began=$SECONDS
-        eval "$part" > "$folder/$i.out" 2>&1
-        code=$?
+        case "$part" in
+            exec\ *) (eval "$part") > "$folder/$i.out" 2>&1; code=$?; echo "$code" > "$folder/$i.status"; break ;;
+            *) eval "$part" > "$folder/$i.out" 2>&1; code=$? ;;
+        esac
         [ "$kind" = "R" ] && sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out")" >/dev/null 2>&1
         echo "$code" > "$folder/$i.status"
         [ "$code" -eq 0 ] || break
@@ -56,6 +58,7 @@ printf '%s' "$1" > "$folder/line"
 sh "$journal" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$journal" shell limit 2>/dev/null); limit=${limit:-30}
+trap 'touch "$folder/moved"; exit 143' TERM INT HUP
 shown=0
 tick=0
 began=$SECONDS
