@@ -378,8 +378,8 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
 def test_a_turn_streamed_in_parts_lands_once_whole(app):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
-    hook(app, "MessageDisplay", delta="Good ", message_id="m1", final=False)
-    hook(app, "MessageDisplay", delta="evening.", message_id="m1", final=True)
+    hook(app, "MessageDisplay", delta="Good ", message_id="m1", index=0, final=False)
+    hook(app, "MessageDisplay", delta="evening.", message_id="m1", index=1, final=True)
     app.runtime().deferred.drain()
     assert [m.text for m in app.container.get(Messages).in_(1) if m.author == "agent"] == ["Good evening."]
 
@@ -532,17 +532,23 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
 
-def test_a_message_read_and_unanswered_holds_every_tool_call_after_ten_uses_but_a_journal_command(app):
+def test_a_message_read_and_unanswered_is_nudged_after_ten_uses_held_after_fifteen_and_any_word_in_the_chat_answers_it(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "can you look?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
-    answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(11)]
-    assert all(status == 200 for status, _ in answers[:10]) and "answer message 1 before you do anything else" in json.dumps(answers[0][1])
-    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert status == 409 and "your tool calls are held: answer message 1 first" in body["error"]
+    answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(15)]
+    assert all(status == 200 and "answer message" not in json.dumps(body) for status, body in answers[:9]), "nothing is pressed for at first"
+    assert "answer message 1 before you do anything else" in json.dumps(answers[9][1]), "the tenth use is nudged"
+    assert all(status == 200 for status, _ in answers[:14]) and answers[14][0] == 409 and "your tool calls are held: answer message 1 first" in answers[14][1]["error"]
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 1"})[0] == 200, "a journal command goes through"
-    app.console().run(["message", "react", "1", "👍"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200
+    hook(app, "MessageDisplay", message="Looking at it now.")
+    app.runtime().deferred.drain()
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200, "a word in the chat after the read is an answer"
+    app.container.get(Settings).save(Setting(environment_id=0, key="messages.hold_after", value=2), Actor.system())
+    app.console().run(["message", "send", "and this?"], USER)
+    app.console().run(["message", "read", "3"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200 and hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 409, "the numbers are settings"
 
 
 def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app):
@@ -641,7 +647,7 @@ def test_a_reply_naming_several_messages_answers_each_and_a_journal_command_afte
     assert app.container.get(Messages).unanswered(1) == []
     app.console().run(["message", "send", "three"], USER)
     app.console().run(["message", "read", "4"], AGENT)
-    for _ in range(11):
+    for _ in range(15):
         hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /tmp && journal message react 4 \"👍\""})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})[0] == 409
@@ -754,3 +760,17 @@ def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking
     app.runtime().deferred.drain()
     assert json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent", timeout=5))["rows"][-1]["data"]["thinking"] == ""
     assert "no journal is running" in console.run(["setup", "restart"], USER).out
+
+
+def test_a_turns_parts_landing_out_of_order_are_put_back_before_the_turn_is_read(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "is it fixed?"], USER)
+    app.console().run(["message", "read", "1"], AGENT)
+    hook(app, "MessageDisplay", delta="It is.", turn_id="t9", index=1, final=True)
+    app.runtime().deferred.drain()
+    assert app.container.get(Messages).unanswered(1), "the final part alone is not the turn"
+    hook(app, "MessageDisplay", delta="[!reply:1]\n", turn_id="t9", index=0, final=False)
+    app.runtime().deferred.drain()
+    reply = app.container.get(Messages).all()[-1]
+    assert reply.reply_to == 1 and reply.text == "It is."

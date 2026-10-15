@@ -95,7 +95,7 @@ export function ending(status, at) {
 }
 
 export function named(w) {
-    return w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title;
+    return w.data.todo ? `task ${w.data.todo} · ${w.title}` : w.title;
 }
 
 export function queued(todos, auto, questions = []) {
@@ -122,7 +122,7 @@ export function lineOf(agent, works, auto = false, helpers = [], helping = 0) {
     if (current) return named(current);
     if (state === "idle" && helping) return `Helpers: ${helping}`;
     if (state === "idle") return phrase(auto ? "auto" : "idle");
-    return phrase("bearings");
+    return agent.doing || phrase("bearings");
 }
 
 const PHRASES = {

@@ -45,6 +45,10 @@ class Hook:
         return self.body.get("message_id", "") or self.body.get("turn_id", "")
 
     @property
+    def index(self) -> int:
+        return int(self.body.get("index", 0) or 0)
+
+    @property
     def final(self) -> bool:
         return bool(self.body.get("final", True))
 

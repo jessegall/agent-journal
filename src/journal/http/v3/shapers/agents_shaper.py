@@ -1,6 +1,8 @@
 import re
 
+from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
+from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.thinking.thoughts import Thoughts
 from journal.hooks.context_file import ContextFile
 from journal.http.v3.project_files import ProjectFiles
@@ -17,6 +19,7 @@ EVENT = {"ToolStarting": "PreToolUse", "ToolFinished": "PostToolUse", "PromptSub
 PAUSED = frozenset({"waiting", "awaiting", "halted", "at_mark", "loading_skill"})
 COMMITTED = re.compile(r"\[([^\s\]]+) ([0-9a-f]{7,})\] (.+)")
 KEPT = 400
+TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
 
 
 class AgentsShaper(Shaper):
@@ -58,7 +61,7 @@ class AgentsShaper(Shaper):
         data = {
             "status": status, "event": EVENT.get(kind, kind), "tool": last.data.get("tool_name", "") if last and kind == "ToolStarting" else "", "file": "", "at": at,
             "provider": a.provider, "model": self.context.model(a.session), "effort": self.context.effort(a.session), "usage": {"windows": self.context.usage(a.session)}, "branch": self.files.branch(), "context": round((self.context.of(a.session) or 0) * 100), "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
-            "doing": self.doing(a, state), "thinking": self.thoughts.latest(a.session), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
+            "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thoughts.latest(a.session), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "cards": sorted([*self.commit_cards(entries), *self.feature_cards(entries)], key=lambda c: c["at"]), "whispers": self.whispers(entries), "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
             "subagent_rows": self.subagent_rows(hooks), "subagents": len(self.subagent_rows(hooks)), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "halted": a.data.get("why", "") if a.state == "halted" else "", "state": a.state,
         }
@@ -81,10 +84,14 @@ class AgentsShaper(Shaper):
         return rows
 
     @staticmethod
-    def doing(a, state) -> str:
-        if a.state == "working" or a.state == "following_plan":
-            return f"task {a.data.get('task_id', '')}"
-        return a.state.replace("_", " ") if a.state != "idle" else ""
+    def doing(a, state, hooks) -> str:
+        """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state awaits."""
+        last = hooks[-1] if hooks else None
+        if last and last.kind == RUNNING:
+            return last.data["doing"]
+        if last and last.kind == "ToolStarting":
+            return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
+        return state.awaiting()[0] if isinstance(state, Paused) else ""
 
     @staticmethod
     def cards(hooks) -> list[dict]:

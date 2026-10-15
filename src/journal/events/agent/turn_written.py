@@ -10,7 +10,11 @@ class TurnWritten(AgentEvent):
     text: str
     delta: str = ""
     turn_id: str = ""
+    index: int = 0
     final: bool = True
 
     def with_text(self, whole: str) -> "TurnWritten":
         return replace(self, text=whole)
+
+    def with_final(self, final: bool) -> "TurnWritten":
+        return replace(self, final=final)

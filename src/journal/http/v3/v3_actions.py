@@ -171,6 +171,10 @@ class V3Actions:
     def report_archive(self, n: int, body: dict, by):
         return self.reports.find(n)
 
+    def comment_react(self, n: int, body: dict, by):
+        """A reply is a message row drawn as a comment: a face on it is a face on that message."""
+        return self.message_react(n, body, by)
+
     def message_react(self, n: int, body: dict, by):
         made = self.reactions.toggle(self.messages.find(n), body.get("face", ""), Author.USER, by)
         return made if made else {}

@@ -27,6 +27,7 @@ class TaskCommand(Command):
         create.add_argument("title")
         create.add_argument("--brief", default="")
         create.add_argument("--start", action="store_true", help="start it at once")
+        create.add_argument("--from", dest="message", type=int, default=0, help="the user's message it was filed from")
         self.verb(verbs, "start", "take a task in hand").add_argument("n", type=int)
         log = self.verb(verbs, "log", "note where a task stands")
         log.add_argument("n", type=int)
@@ -45,9 +46,11 @@ class TaskCommand(Command):
 
     def create(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(Task(environment_id=self.environments.named(where.environment).id, title=args.title, brief=args.brief), where.actor)
+        if args.message:
+            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=ABOUT), where.actor)
         if args.start:
             task = self._start(task, where)
-        print(f"task {task.id} {task.state}: {task.title}")
+        print(f"task {task.id} {task.state}: {task.title}" + (f" (from message {args.message})" if args.message else ""))
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:

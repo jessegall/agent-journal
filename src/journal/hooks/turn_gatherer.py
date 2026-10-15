@@ -3,18 +3,24 @@ from journal.events.agent.turn_written import TurnWritten
 
 
 class TurnGatherer:
-    """Claude streams a turn in deltas; every listener wants the whole. The parts are kept here by session and turn until the final one, and each event carries the text so far."""
+    """Claude streams a turn in parts, and their hooks can land out of order; every listener wants the whole. The parts are kept here by session and turn, by index, and the whole goes out once the final part and every part before it are in."""
 
     def __init__(self) -> None:
-        self._parts: dict[str, str] = {}
+        self._parts: dict[str, dict[int, str]] = {}
+        self._last: dict[str, int] = {}
 
     def fold(self, event: AgentEvent) -> AgentEvent:
         if not isinstance(event, TurnWritten):
             return event
         key = f"{event.session}:{event.turn_id}"
-        whole = self._parts.get(key, "") + event.delta
+        parts = self._parts.setdefault(key, {})
+        parts[event.index] = event.delta
         if event.final:
-            self._parts.pop(key, None)
-        else:
-            self._parts[key] = whole
-        return event.with_text(whole)
+            self._last[key] = event.index
+        last = self._last.get(key)
+        if last is None or any(i not in parts for i in range(last + 1)):
+            return event.with_text("").with_final(False)
+        whole = "".join(parts[i] for i in range(last + 1))
+        self._parts.pop(key, None)
+        self._last.pop(key, None)
+        return event.with_text(whole).with_final(True)
