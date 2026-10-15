@@ -1072,7 +1072,7 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp
     out = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).out
     assert out.startswith("report 1: Critique of plan 1, about plans:1")
     rows = app.container.get(Shapers).named("report").rows(app.container.get(Environments).named("main"))
-    assert [s["title"] for s in rows[0].sections] == ["Phase 1", "Phase 2"] and "plans:1" in rows[0].refs
+    assert [s["title"] for s in rows[0].sections] == ["Phase 1", "Phase 2"] and rows[0].refs == ["plan:1"], "the viewer names a plan plan:1"
 
 
 def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(app):

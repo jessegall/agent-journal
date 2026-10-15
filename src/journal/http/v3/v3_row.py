@@ -3,12 +3,21 @@ from datetime import datetime
 
 from journal.models.actor import Actor
 from journal.models.model import Model
+from journal.models.ref import Ref
 
 USER, AGENT, SYSTEM = "user", "agent", "system"
 
 
 def seconds(at: datetime | None) -> float:
     return at.timestamp() if at else 0.0
+
+
+VIEWER_TYPES = {"tasks": "todo", "docs": "doc", "plans": "plan", "reports": "report", "questions": "question", "facts": "fact", "rules": "rule", "reminders": "reminder", "messages": "message"}
+
+
+def viewer_ref(ref: Ref) -> str:
+    """A link's end as the viewer names rows: tasks:12 is todo:12."""
+    return f"{VIEWER_TYPES.get(ref.type, ref.type.rstrip('s'))}:{ref.id}"
 
 
 def who(actor: Actor | None) -> str:
