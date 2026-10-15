@@ -94,11 +94,18 @@ class Chain:
         return [(s, p) for s, p in parts if p]
 
     @staticmethod
+    def command_words(part: str) -> list[str]:
+        """The part's words from its last command position: the start, or the word after a pipe, where a keyword counts."""
+        words = part.split()
+        starts = [i + 1 for i, w in enumerate(words) if w in ("|", "|&")]
+        return words[starts[-1]:] if starts and starts[-1] < len(words) and words[starts[-1]] in OPENS else words
+
+    @staticmethod
     def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
         """A loop, an if or a case is one command from its opening word to its closing one, or in zsh's short form to the end of the next command's && chain; the separators inside are put back."""
         joined, closers, short = [], [], False
         for separator, part in parts:
-            words = part.split()
+            words = Chain.command_words(part)
             if short and separator != "&&":
                 closers.pop()
                 short = False

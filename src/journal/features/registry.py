@@ -34,4 +34,5 @@ class Registry:
         return self._by_name[nudge.feature]
 
     def silenced(self, nudge: Nudge, environment_id: int) -> bool:
-        return not self.is_on(self.owner_of(nudge), environment_id)
+        """A feature's nudge is silenced with its feature; the engine's own, with no feature, never are."""
+        return bool(nudge.feature) and not self.is_on(self.owner_of(nudge), environment_id)

@@ -146,6 +146,7 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     app.console().run(["message", "send", "first"], USER)
     app.console().run(["message", "send", "second"], USER)
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     hook(app, "MessageDisplay", message="Good evening. At your service.\n\n[!reply:1]")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).in_(1)
@@ -364,6 +365,7 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
     app.console().run(["message", "send", "nobody is here yet"], USER)
     assert typed == [], "no live agent, nothing to type to"
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "send", "hello?"], USER)
     assert typed == ["[journal] new message 2", "[journal] new message 3"]
@@ -688,6 +690,7 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     assert Chain.split("echo `echo a; echo b` && cat <<EOF && echo x\nbody; with && stuff\nEOF") == ["echo `echo a; echo b`", "cat <<EOF && echo x\nbody; with && stuff\nEOF"]
     assert Chain.split('[[ -n a && -n b ]] && echo ok; echo "${x:-a;b}" && (( 1 && 1 ))') == ["[[ -n a && -n b ]]", "echo ok", 'echo "${x:-a;b}"', "(( 1 && 1 ))"]
     assert Chain.split("for x in a b; echo $x && echo y; echo z; repeat 2 echo r && echo s; echo t") == ["for x in a b; echo $x && echo y", "echo z", "repeat 2 echo r && echo s", "echo t"]
+    assert Chain.split("seq 2 | while read -r n; do echo $n; done; echo after") == ["seq 2 | while read -r n; do echo $n; done", "echo after"]
     assert Chain.split("for i in 1; do echo done; done; echo fi && case a in a) echo one;& b) echo two;; esac") == ["for i in 1; do echo done; done", "echo fi", "case a in a) echo one;& b) echo two;; esac"]
     assert Chain.split("echo a # not && split; here\necho b && echo '#not a comment' && echo c#neither") == ["echo a # not && split; here\necho b", "echo '#not a comment'", "echo c#neither"]
     wrapped = "source /s 2>/dev/null || true && { \\builtin unalias -- 'x'; } >/dev/null 2>&1 || true && eval 'cd src && git commit -m '\"'\"'a; b'\"'\"'' < /dev/null && pwd -P >| /tmp/cwd"

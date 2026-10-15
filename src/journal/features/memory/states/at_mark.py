@@ -10,6 +10,7 @@ class AtMark(Paused):
     """At a mark of the context window: writes are held until the agent records a fact, a rule or nothing, which takes it back."""
 
     name = "at_mark"
+    owed_by_agent = True
     mark: int = 0
 
     def awaiting(self) -> tuple[str, str]:

@@ -146,3 +146,10 @@ def test_twenty_edits_with_nothing_logged_hold_the_next_write_and_every_tenth_na
     assert status == 409 and "20 edits since task 1 was last logged" in body["error"]
     app.console().run(["task", "log", "1", "halfway"], AGENT)
     assert write(app)[0] == 200
+
+
+def test_a_stop_in_a_paused_state_says_what_the_journal_awaits_once(app):
+    status, body = hook(app, "SessionStart")
+    status, body = hook(app, "Stop")
+    assert status == 409 and "you stopped while the journal awaits a look at what is in flight here" in body["error"]
+    assert hook(app, "Stop", stop_hook_active=True)[0] == 200

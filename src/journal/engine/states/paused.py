@@ -1,9 +1,16 @@
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from journal.engine.agent_state import AgentState
 from journal.engine.resume import Resume
+from journal.events.agent.idle import Idle
+from journal.features.nudge import Nudge
 from journal.engine.transition import Transition
 from journal.features.said import Said
+
+
+AWAITING = Nudge("", "awaiting", "you stopped while the journal awaits {{what}}", "do that first, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
+"""Said once at a stop in any paused state; the next stop goes through."""
 
 
 @dataclass(frozen=True)
@@ -11,10 +18,15 @@ class Paused(AgentState):
     """A state the agent goes back from: it holds the state it left, serialised, and back() returns there. What two pauses share lives here."""
 
     resume: dict = field(default_factory=dict)
+    owed_by_agent: ClassVar[bool] = False
+    """True when what the state awaits is the agent's own doing, a read or a decision: a stop then says so once. A wait on the user, a worker or a halt lets the stop pass."""
 
     def awaiting(self) -> tuple[str, str]:
         """What the agent waits for while paused here, in words, and the rows it waits on as refs; the viewer's status line reads both."""
         return "", ""
+
+    def idle(self, event: Idle) -> Transition:
+        return self.refuse(AWAITING.about(what=self.awaiting()[0])) if self.owed_by_agent and not event.again else self.stay()
 
     def back(self, *says: Said) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)

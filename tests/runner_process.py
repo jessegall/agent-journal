@@ -111,6 +111,7 @@ CORPUS = [
     "{ echo a } always { echo b }; echo c",
     "f() echo in-f && echo also; f; echo out",
     "i=7; for i in 1 2; do :; done; echo $i; code=9; echo $code",
+    "printf '1\\n2\\n' | while read -r n; do echo \"n=$n\"; done; echo after",
     "set -e; false && echo x; echo y",
     "set -e; echo a; false; echo b",
     "set -e; false || echo recovered; echo c",
