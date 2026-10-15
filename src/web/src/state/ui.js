@@ -18,6 +18,7 @@ export const ui = reactive({
     away: {open: false, since: 0, back: 0, left: 0, hidden: false},
     flash: {at: Date.now()},
     prefill: "",
+    drafts: {},
     litCard: 0,
     stopsOpen: 0,
 });

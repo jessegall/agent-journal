@@ -1,5 +1,6 @@
 <script setup>
 import {ui} from "../state/ui.js";
+import {route} from "../route.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
@@ -28,7 +29,15 @@ const props = defineProps({
     figureHome: {type: Boolean, default: false},
 });
 const emit = defineEmits(["unquote", "typing", "waiting-list"]);
-const draft = reactive({text: "", files: [], error: "", over: false});
+// the words typed survive the box being redrawn or taken off the page: they live in the ui state, by what the box is for
+const draftKey = computed(() => `${route.value.env || ""}:${props.placeholder}`);
+const draft = reactive({text: ui.drafts[draftKey.value] || "", files: [], error: "", over: false});
+watch(
+    () => draft.text,
+    (text) => {
+        ui.drafts[draftKey.value] = text;
+    }
+);
 const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => {
     store.drafting += is ? 1 : -1;
@@ -38,7 +47,7 @@ onUnmounted(() => writing.value && (store.drafting -= 1));
 watch(
     () => ui.prefill,
     (text, was) => {
-        if (text || was) draft.text = text;
+        if ((text && !draft.text.trim()) || (was && draft.text === was)) draft.text = text;
     },
     {immediate: true}
 );
@@ -92,7 +101,7 @@ watch(
 watch(
     () => props.preset,
     (text, was) => {
-        if (text || draft.text === was) draft.text = text;
+        if ((text && !draft.text.trim()) || draft.text === was) draft.text = text;
         focusArea();
     }
 );
