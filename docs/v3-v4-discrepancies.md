@@ -27,7 +27,7 @@ described here; the companion `docs/messaging-and-chat-marks.md` holds the exact
 | Eviction: a second session on a busy environment waits in one of its own and the user is asked to take over; the evicted session's writes are held. | **Missing.** Several sessions on one environment; the most recent is "the" agent. |
 | Only the user starts an agent; `wake_on_message` can start one when a message arrives and none runs. | Missing: no starting from the viewer, no wake on message. |
 | Put-off work: "later" in words without a to-do is pointed out once. | Missing. |
-| Long commands: moved to the background after 30 seconds, told when they end, told when they show nothing new for five minutes. | Missing. |
+| Long commands: moved to the background after 30 seconds, told when they end, told when they show nothing new for five minutes. | Built as the shell runner: every chained command is run part by part, each recorded with its output and duration; a part past 30 s (10 s while a message waits) moves the rest of the chain to the background and the agent is told when it ends. No five-minute quiet notice. |
 | Heavy runs: one queue of test runs per project. | Missing. |
 | Polling guard: the same check run again and again is pointed out. | Partly: the same command three times is named. |
 
@@ -151,7 +151,7 @@ the generic acts, plans finished, environments removed, checks run, sequences ed
 skills page, starting and stopping agents from the viewer with one inbox per environment.
 
 Left, by choice, for a later round: eviction and take-over of a held environment; work modes and the drift
-nudges; long commands moved to the background and heavy-run queues; the weekly rule reread; choices offered
+nudges; heavy-run queues; the weekly rule reread; choices offered
 in prose turned into a question; bare numbers named; plans with phases, checkpoints and approval; sequences
 abandoned or started by a trigger; instruction checks and gates; triggers that post a message or start a
 sequence; helpers said to and finished with caps; the tasks board with lanes; document revisions; the report

@@ -316,20 +316,6 @@ def test_a_due_check_runs_on_the_clock(app):
     assert app.container.get(Checks).find(1).last_passed is True
 
 
-def test_a_command_that_took_a_minute_is_sent_to_the_background_next_time(app):
-    from journal.features.long_runs.listeners.time_runs import TimeRuns
-    timing = app.container.get(TimeRuns)
-    clock = [1000.0]
-    timing.now = lambda: clock[0]
-    hook(app, "SessionStart")
-    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest"})
-    clock[0] += 90
-    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "pytest"}, tool_response="ok")
-    body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest"})[1]
-    assert "pytest took 90s last time" in body["hookSpecificOutput"]["additionalContext"]
-    assert "took" not in hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest", "run_in_background": True})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
-
-
 def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
@@ -676,3 +662,48 @@ def test_a_message_read_through_a_pipe_is_refused(app):
     assert status == 409 and "read the user's message whole" in body["error"]
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /x && journal message read 3"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list | head -5"})[0] == 200, "only the user's words are protected"
+
+
+def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
+    from journal.features.shell.chain import Chain
+    from journal.features.shell.doing import Doing
+    assert Chain.split('a $(b; c) && (d; e) || f; g "h && i" | tail -1') == ["a $(b; c)", "(d; e) || f", 'g "h && i" | tail -1']
+    wrapped = "source /s 2>/dev/null || true && { \\builtin unalias -- 'x'; } >/dev/null 2>&1 || true && eval 'cd src && git commit -m '\"'\"'a; b'\"'\"'' < /dev/null && pwd -P >| /tmp/cwd"
+    parts = Chain.parts(wrapped)
+    assert [p.text for p in parts if p.recorded] == ["cd src", "git commit -m 'a; b'"]
+    assert parts[0].text.startswith("source") and parts[-1].text.startswith("pwd -P") and not parts[0].recorded and not parts[-1].recorded
+    assert [Doing.of(c) for c in ("git commit -m x", "python3 -m pytest -q | tail -2", "cd src", "npm run build", "foo --bar")] == ["committing", "testing", "moving", "running a script", "running foo"]
+
+
+def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app):
+    console = app.console()
+    assert console.run(["shell", "limit"], AGENT).out.strip() == "30"
+    console.run(["message", "send", "are you there?"], USER)
+    assert console.run(["shell", "limit"], AGENT).out.strip() == "10"
+    console.run(["message", "read", "1"], AGENT)
+    app.container.get(Settings).save(Setting(environment_id=0, key="shell.foreground", value=5), Actor.system())
+    assert console.run(["shell", "limit"], AGENT).out.strip() == "5"
+
+
+def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app, monkeypatch):
+    from urllib.request import urlopen
+    from journal.engine.cards import CARD
+    from journal.repositories.entries import Entries
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    console, port = app.console(), app.server().port
+    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'done'"], AGENT).out == "R\tcd src\nR\tpytest -q | tail -1\nR\tgit commit -m 'done'\n"
+    console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
+    bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"]
+    assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
+    console.run(["shell", "ran", "git commit -m done", "--chain", "c1", "--status", "0", "--seconds", "2", "--output", "[main 1a2b3c4] done"], AGENT)
+    assert json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"][-1]["done"] is True
+    line = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/agent/1/terminal", timeout=5))["lines"][-1]
+    assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
+    moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
+    assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
+    console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
+    assert "failed with code 1" in typed[-1] and "2 failed" in typed[-1]
+    assert len(app.container.get(Entries).of_kind(1, CARD, 10)) == 2

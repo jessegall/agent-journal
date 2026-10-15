@@ -222,7 +222,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(tmp_path / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
         edit = call(server, "GET", "/api/main/agent/1/edits")[1]["edits"][0]
         assert [r["kind"] for r in edit["rows"]] == ["ctx", "del", "add", "ctx"] and edit["first_line"] == 7 and edit["last_line"] == 9
-        hook("PostToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_response={"stdout": "1 t", "stderr": ""})
+        call(server, "POST", "/cli", {"argv": ["shell", "ran", "journal task list", "--chain", "c1", "--status", "0", "--output", "1 t"], "env": "main", "session": "s1", "agent": True})
         assert call(server, "GET", "/api/main/agent/1/terminal")[1]["lines"][-1]["tool"] == "Journal"
         assert call(server, "POST", "/api/main/agent/s1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
         doc = call(server, "POST", "/api/main/doc", {"title": "Design", "brief": "Intro\n\n## Goals\n\nShip it"})[1]

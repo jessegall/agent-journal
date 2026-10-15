@@ -9,7 +9,7 @@ from journal.repositories.settings import PROJECT, Settings
 FIXTURE = Path(__file__).with_name("settings.json")
 STORED = "v3.settings"
 FEATURES = {"messages": "messages", "ask_questions": "questions", "facts": "memory", "memory_checkpoints": "memory", "rules": "memory", "reminders": "memory", "skill_loading": "skills",
-            "triggers": "triggers", "checks": "checks", "long_commands": "long_runs", "chat_etiquette": "etiquette", "form_of_address": "voices", "agent_profiles": "profiles",
+            "triggers": "triggers", "checks": "checks", "long_commands": "shell", "chat_etiquette": "etiquette", "form_of_address": "voices", "agent_profiles": "profiles",
             "helpers": "workers", "plans": "plans", "sequences": "sequences", "journal_laws": "laws", "session_briefing": "briefing", "work_tracking": "tasks", "avatar": "voices"}
 
 

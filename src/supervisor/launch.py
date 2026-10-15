@@ -69,7 +69,8 @@ class Launch:
 
     def environ(self, choice: Choice) -> dict[str, str]:
         path = os.pathsep.join([str(self.root / ".journal" / "bin"), os.environ.get("PATH", "")])
-        return {**os.environ, "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1"}
+        runner = self.package / "journal" / "hooks" / "run.sh"
+        return {**os.environ, "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1", "CLAUDE_CODE_SHELL_PREFIX": str(runner)}
 
     def run(self) -> int:
         """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends."""

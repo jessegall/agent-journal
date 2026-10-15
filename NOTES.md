@@ -158,7 +158,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   events caused; `Creations` is a bus listener with a per-run list.
 - A command's dispatcher is `perform`, so a verb may be any word, `run` included. A state's
   fields never shadow its methods (`on` is the method; Awaiting holds `workers`).
-- Skills, triggers, checks, long runs and etiquette are built; the feature table is complete.
+- Skills, triggers, checks, the shell runner and etiquette are built; the feature table is complete.
   A check runs `subprocess` in the project root with a ten-minute cap, on demand or on the
   clock; the clock also dispatches a journal-wide `ClockTicked`.
 
@@ -456,3 +456,17 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   session and nowhere else. Ruled 2026-10-15 after a dogfood setup overwrote the global `journal` of
   version 3 on this machine (restored from version 3's own shim template). Nothing of version 4 is
   published: origin holds `main` only, the last tag is v3.3.2.
+
+## The shell runner (2026-10-15)
+
+- Every shell command of the agent runs through `hooks/run.sh`, set as Claude Code's shell prefix at launch. The
+  line is taken apart at `&&` and `;` (`Chain`); a pipe is one pipeline. Claude's own wrapping (`source`, `setopt`,
+  `eval '…' < /dev/null`, `pwd -P >| file`) is run in silence; the parts inside the eval are the agent's and are
+  recorded, each with what it is doing (`Doing`), its output and its duration (`running` and `ran` entries).
+- A worker in the agent's own shell runs the parts in order and stops where the shell would; the foreground
+  process shows each part's output as it lands. Past the limit it returns at once with the output file and the
+  chain goes on in the background; the journal types one line when it ends. The limit is `shell.foreground`
+  (30 s) or `shell.foreground_while_waiting` (10 s) while a message of the user's is unread.
+- The bar and the terminal pane read the parts, not the tool call; a Bash call as a whole adds nothing to either.
+- Open: each part costs two shim calls (about 0.15 s each); run.sh could post straight to the server.
+- The runner's process test is `tests/runner_process.py`, not in the default run.

@@ -24,9 +24,11 @@ from journal.http.v3.shapers.shapers import Shapers
 from journal.http.v3.v3_actions import V3Actions
 from journal.http.v3.v3_events import V3Events
 from journal.http.v3.v3_manifest import VERSION, V3Manifest
+from journal.features.shell.commands.shell_command import RAN
+from journal.http.v3.bar_row import BarRow
 from journal.http.v3.v3_row import seconds
 from journal.http.v3.v3_settings import V3Settings
-from journal.hooks.hook import Hook
+from journal.models.entry import Entry
 from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
@@ -39,7 +41,6 @@ from journal.repositories.tasks import Tasks
 COLOR = "#5e64c9"
 BEAT = 15.0
 STARTED = time.time()
-LINGERS = 10.0
 
 
 SILENT_AFTER = 900.0
@@ -118,23 +119,19 @@ class V3Controller:
     # the bar: what the live agent is doing, from its latest tool calls
 
     def get_bar(self, request: Request) -> Response:
+        """The status bar's queue: each tool call and each shell part the live agent ran, as it opened and as it closed."""
         environment = self.environment_of(request)
         live = self.agents.live(environment.id)
         if not live:
             return Response.json({"queue": []})
-        recent = [e for e in reversed(self.entries.of_kind_in(environment.id, 60)) if e.actor and e.actor.id == live.session and e.kind in ("ToolStarting", "ToolFinished")]
+        recent = [e for e in reversed(self.entries.of_kind_in(environment.id, 60)) if e.actor and e.actor.id == live.session and BarRow.shows(e)]
         queue, open_ = [], {}
-        for e in recent:
-            tool = e.data.get("tool_name", "")
-            command = e.data.get("tool_input", {}).get("command", "") if tool == "Bash" else e.data.get("tool_input", {}).get("file_path", "")
-            key = f"{tool} {command}".strip()
-            at = seconds(e.created_at)
-            if e.kind == "ToolStarting":
-                item = {"id": at, "key": key, "parts": [{"value": tool.lower() or "working", "color": "gray"}, *([{"value": command[:80], "color": "muted"}] if command else [])], "at": at, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": LINGERS}
-                queue.append(item)
-                open_[key] = item
-            elif key in open_:
-                open_[key].update(done=True, **{"for": max(0.0, at - open_[key]["at"])})
+        for row in map(BarRow.of, recent):
+            if not row.ended:
+                open_[row.key] = row.item()
+                queue.append(open_[row.key])
+            elif row.key in open_:
+                open_[row.key].update(done=True, **{"for": max(0.0, row.at - open_[row.key]["at"])})
         return Response.json({"queue": queue[-8:]})
 
     # settings
@@ -349,20 +346,21 @@ class V3Controller:
         return Response.json({"path": path, "text": file.read_text(errors="replace")[:200000]})
 
     def get_agent_terminal(self, request: Request) -> Response:
-        """The shell commands the agent ran, with what they printed, as the terminal pane shows them."""
+        """The shell commands the agent ran, part by part, with what each printed and how long it took, as the terminal pane shows them."""
         environment = self.environment_of(request)
         n = int(request.params["n"])
         agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
         if agent is None:
             return Response.json({"lines": []})
         after = float(request.query.get("after", 0) or 0)
-        lines = []
-        for e in reversed(self.entries.of_kind_in(environment.id, 400)):
-            if e.kind != "ToolFinished" or e.data.get("tool_name") != "Bash" or not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= after:
-                continue
-            command = e.data.get("tool_input", {}).get("command", "")
-            lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Journal" if command.lstrip().split(" ")[0].endswith("journal") else "Bash", "command": command, "output": Hook.printed(e.data.get("tool_response", "")), "stepped": False, "level": "everything"})
-        return Response.json({"lines": lines[-200:]})
+        ran = [e for e in reversed(self.entries.of_kind(environment.id, RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["at"] > after]
+        return Response.json({"lines": [self.terminal_line(n, e) for e in ran][-200:]})
+
+    @staticmethod
+    def terminal_line(n: int, entry: Entry) -> dict:
+        part = entry.data["part"]
+        tool = "Journal" if part.split(" ")[0].endswith("journal") else "Bash"
+        return {"agent": n, "at": entry.data["at"], "tool": tool, "command": part, "output": entry.data["output"], "seconds": entry.data["seconds"], "status": entry.data["status"], "stepped": False, "level": "everything"}
 
     def post_agent_shell(self, request: Request) -> Response:
         """A command typed in the terminal pane goes to the agent's own terminal, as the user would type it."""
