@@ -535,3 +535,20 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   range is refused.
 - Still open: the avatar that keeps jumping at a perch (task 38, parked with a finding), the behaviour tree (plan 1,
   ready for approval).
+
+## The chart (2026-10-16, plan 1)
+
+- One `Chart` per journal; `Node` rows of three kinds (trigger, check, action) naming a catalogue entry, with a
+  text and a place; lines are links of kind then, yes or no; nodes are linked to the chart by `node_of`.
+- The catalogue: a trigger per agent event and per row event of every model; the checks the journal answers
+  from the rows, plain and counter ones (a number or a setting's name in the text); the actions say, hold,
+  block the stop, type, start a sequence; each entry marks the providers it works for.
+- The walk (`features/chart/walk.py`): read fresh per event; agent events blocking after the machine, row events
+  deferred; one path per trigger node, fifty steps at most; a trace entry per walk; `Actions` go through the
+  nudger, the decision, the supervisor and `Running`; `Fillers` fill placeholders from the rows.
+- Saved whole over `POST /journal/chart` with a revision, refused with every fault named (`Validation`); reset to
+  the shipped chart; a dry run (`Trial`) for an agent event. `journal chart show|catalogue|node|line|remove|reset|try`.
+- The shipped chart carries the stop rules that were `AnswerStop` and `StopWords.for_`; those are gone. The
+  counter rules (unread, unanswered, log cadence) stay as listeners until their lines move over; docs/the-rules.md.
+- The Conduct page: canvas with pan and zoom, palette, lines dragged from ports, text in place, draft with undo,
+  list form for a phone or a keyboard, Try it dry. No release yet: version 4 is still a branch.

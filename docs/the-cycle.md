@@ -4,6 +4,15 @@ How the journal speaks to the agent, from A to Z, as version 4 runs it on 2026-1
 Claude Code's hooks or one journal command; every quoted line is typed into the agent's terminal or handed
 back in a hook's answer. A 409 is a hook answered "no": the agent reads why and goes on.
 
+## 0. The chart comes first
+
+Since 2026-10-16 the journal's conduct at a stop, and anything the user draws, is a chart: one per journal,
+edited on the Conduct page, read afresh at every event. An agent event is walked before its hook is answered,
+right after the machine, so a hold or a blocked stop from the chart reaches the agent and a said line rides on
+the answer; a row event is walked on the worker thread and can only say or type. What the chart does not carry
+the states and listeners below still do; the-rules.md lists which is which, and the-chart.md says how the
+chart is read and edited. The shipped chart carries the parked-tasks line and the next-open-task hold at a stop.
+
 ## 1. One session, start to stop
 
 ```
