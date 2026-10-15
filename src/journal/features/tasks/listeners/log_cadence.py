@@ -6,13 +6,13 @@ from journal.features.tasks.states.working import Working
 from journal.hooks.decision import Decision
 from journal.repositories.settings import PROJECT, Settings
 
-NUDGE_AFTER, HOLD_AFTER = "tasks.log_nudge_after", "tasks.log_hold_after"
-"""The settings: tool uses with nothing logged before the agent is asked to log, ten unless set, and before the next write waits for a log, twenty unless set."""
-DEFAULTS = {NUDGE_AFTER: 10, HOLD_AFTER: 20}
+FIRST_AFTER, NAME_EVERY, LOG_AFTER = "work.first_nudge_after", "work.name_every", "work.log_after"
+"""The settings, in edits with nothing logged: the first ask to log, five unless set; how often the work in hand is named back, ten unless set; and when the next write waits for a log, twenty unless set."""
+DEFAULTS = {FIRST_AFTER: 5, NAME_EVERY: 10, LOG_AFTER: 20}
 
 
 class LogCadence(AgentListener[ToolStarting]):
-    """Work in hand is logged as it goes: after ten tool uses with nothing logged the agent is asked to, and after twenty the next write waits for the log line."""
+    """Work is logged as it goes, counted in edits as version 3 counted it: the first ask after five, the work named back every ten so drift is noticed, and at twenty the next write waits for the log line."""
 
     blocking = True
 
@@ -21,17 +21,22 @@ class LogCadence(AgentListener[ToolStarting]):
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.tasks.feature import Tasks
+        if not event.writes:
+            return None
         agent = self.machine.agent(event.session, event.environment_id)
         state = self.machine.states.named(agent.state, agent.data)
         if not isinstance(state, Working):
             return None
-        # the machine counted this use already; what matters is how many came before it
-        before = state.uses - 1
-        if before >= self.after(HOLD_AFTER) and event.writes:
-            return Decision.refuse(Tasks.LOG_OVERDUE.about(name=state.named(), uses=before, log=self.log_of(state)).rendered())
-        if before < self.after(NUDGE_AFTER):
-            return None
-        line = self.nudger.say(agent, Tasks.LOG_SOON.about(name=state.named(), uses=before, log=self.log_of(state)))
+        # the machine counted this write already; what matters is how many came before it
+        before = state.edits - 1
+        if before >= self.after(LOG_AFTER):
+            return Decision.refuse(Tasks.LOG_OVERDUE.about(name=state.named(), edits=before, log=self.log_of(state)).rendered())
+        said = None
+        if before == self.after(FIRST_AFTER):
+            said = Tasks.LOG_SOON.about(name=state.named(), edits=before, log=self.log_of(state))
+        elif before and before % self.after(NAME_EVERY) == 0:
+            said = Tasks.IN_HAND.about(name=state.named(), edits=before)
+        line = self.nudger.say(agent, said) if said else None
         return Decision.tell(line) if line else None
 
     @staticmethod

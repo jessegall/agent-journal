@@ -170,7 +170,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
     assert hook(app, "Stop")[1] == {}, "idle while waiting is fine"
     assert "Which name?  [alpha / beta]" in console.run(["question", "list"], USER).out
     console.run(["question", "answer", "1", "beta"], USER)
-    assert machine.current("s1") == Working(task_id=1)
+    assert machine.current("s1").task_id == 1
     assert console.run(["question", "list"], USER).out == ""
 
 
@@ -200,7 +200,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
-    assert app.container.get(Machine).current("s1") == Working(task_id=1)
+    assert app.container.get(Machine).current("s1").task_id == 1
 
 
 def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
@@ -218,7 +218,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
     assert machine.current("s1").name == "awaiting" and typed == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
     console.run(["worker", "stop", "2"], USER)
-    assert machine.current("s1") == Working(task_id=1)
+    assert machine.current("s1").task_id == 1
     assert typed[-1] == "[journal] what you waited on came back: carry on"
 
 
@@ -275,7 +275,7 @@ def test_entering_a_state_requires_its_feature_skill_in_the_command_output(skill
     machine = app.container.get(Machine)
     assert isinstance(machine.current("s1"), LoadingSkill) and machine.current("s1").skill == "tasks"
     read_skill(app, "journal-tasks")
-    assert machine.current("s1") == Working(task_id=1)
+    assert machine.current("s1").task_id == 1
     hook(app, "PreCompact")
     assert "journal skill" in hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"], "a compaction owes them again"
 

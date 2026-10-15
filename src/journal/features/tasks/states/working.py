@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from journal.engine.agent_state import AgentState
 from journal.engine.permission import Permission
@@ -9,6 +9,8 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 
 QUIET_AFTER = 900.0
+REMINDERS = 3
+"""Stops at which one version of the work is named back; a log line starts a new version."""
 
 
 @dataclass(frozen=True)
@@ -20,20 +22,30 @@ class Working(AgentState):
     task_id: int = 0
     what: str = ""
     """Work declared without a task: what the agent said it is doing."""
-    uses: int = 0
+    edits: int = 0
+    """Writes since the last log line."""
+    logged_at: float = 0.0
+    """When the work was last logged, or started; the version a stop's reminders count against."""
+    reminders: int = 0
+    """Stops at which this version of the work was named back; three at most."""
 
     def named(self) -> str:
         return f"task {self.task_id}" if self.task_id else f"the work in hand, {self.what}"
 
-    def tool_starting(self, event: ToolStarting) -> Transition:
-        return self.go(Working(task_id=self.task_id, what=self.what, uses=self.uses + 1))
+    def reminded(self) -> "Working":
+        return replace(self, reminders=self.reminders + 1)
 
-    def logged(self) -> "Working":
-        return Working(task_id=self.task_id, what=self.what, uses=0)
+    def tool_starting(self, event: ToolStarting) -> Transition:
+        return self.go(replace(self, edits=self.edits + 1)) if event.writes else self.stay()
+
+    def logged(self, at: float) -> "Working":
+        return replace(self, edits=0, logged_at=at, reminders=0)
 
     def idle(self, event: AgentIdle) -> Transition:
-        from journal.features.tasks.feature import Tasks
-        return self.stay() if event.again else self.stay(Tasks.CARRY_ON.about(name=self.named()))
+        from journal.features.tasks.stop_words import StopWords
+        if event.again or self.reminders >= REMINDERS:
+            return self.stay()
+        return self.go(self.reminded(), StopWords.carry_on(self))
 
     def session_started(self, event: SessionStarted) -> Transition:
         """A session resumed with a task in hand is told which."""

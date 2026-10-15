@@ -25,7 +25,7 @@ class Tasks(Feature):
     listeners = (SpotPolling, AskAfterParked, AnswerStop, TypeAtHeldStop, LogCadence, CheckIn)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
-    CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck", repeat_after=0)
+    CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck", repeat_after=0)
     OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
     NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
@@ -33,12 +33,13 @@ class Tasks(Feature):
     DEFERRED = Nudge(name, "deferred", "work deferred in words, not filed: journal task create it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     POLLING = Nudge(name, "polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")
-    LOG_SOON = Nudge(name, "log_soon", "it has been a while since you logged {{name}}: {{uses}} tool uses", "{{log}} \"<where it stands>\"", repeat_after=120)
-    LOG_OVERDUE = Nudge(name, "log_overdue", "{{uses}} tool uses since you logged {{name}}", "{{log}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
+    LOG_SOON = Nudge(name, "log_soon", "{{edits}} edits since you logged {{name}}: say where it stands", "{{log}} \"<where it stands>\"", repeat_after=0)
+    LOG_OVERDUE = Nudge(name, "log_overdue", "{{edits}} edits since you logged {{name}}", "{{log}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
+    IN_HAND = Nudge(name, "in_hand", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal task await again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for {{minutes}} minutes: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
-    nudges = (DECLARE, CARRY_ON, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
+    nudges = (DECLARE, CARRY_ON, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
@@ -59,8 +60,10 @@ Taking a task up is work too. File a task for work that is an item of its own, o
   `journal task unblock <n>` opens it again when what it waited on came.
 - Waiting on something outside your hands, a run or a person: `journal task await <n> "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
-- Log as you go: after ten tool uses with nothing logged you are asked to, and after twenty the next write waits for
-  the log line (both are settings, tasks.log_nudge_after and tasks.log_hold_after).
+- Log as you go, counted in edits: after five with nothing logged you are asked to, every ten the work in hand is named
+  back so drift is noticed, and at twenty the next write waits for the log line (settings work.first_nudge_after,
+  work.name_every and work.log_after). A log line starts a new version.
+- A stop with work in hand names it back with when it was last logged, three times a version; then the stop passes.
 - A commit whose message carries `Journal: tasks done <n>` on a line of its own finishes task n.
 - Auto mode (the setting tasks.auto, on by default) means you work the list: a stop with tasks open is answered with the next
   one, and only the user stops you. A stop with parked tasks names them, in auto mode or not: parked is still open.

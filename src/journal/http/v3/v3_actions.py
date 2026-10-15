@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
@@ -204,7 +205,7 @@ class V3Actions:
         task = self.tasks.save(self.tasks.find(n).started(self._now()), by)
         live = self.agents.live(task.environment_id)
         if live:
-            self.machine.move(live.session, task.environment_id, Working(task_id=task.id))
+            self.machine.move(live.session, task.environment_id, Working(task_id=task.id, logged_at=time.time()))
         return task
 
     def todo_done(self, n: int, body: dict, by):

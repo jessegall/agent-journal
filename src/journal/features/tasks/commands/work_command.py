@@ -1,3 +1,4 @@
+import time
 from argparse import Namespace
 
 from journal.console.command import Command
@@ -29,7 +30,7 @@ class WorkCommand(Command):
         current = self.in_hand(where)
         if current and current.task_id:
             raise Refused(f"task {current.task_id} is in hand: finish it or park it before other work")
-        self.machine.move(where.session, self.environment(where), Working(what=args.what))
+        self.machine.move(where.session, self.environment(where), Working(what=args.what, logged_at=time.time()))
         print(f"work started: {args.what}")
         return 0
 
@@ -38,7 +39,7 @@ class WorkCommand(Command):
         if not current:
             raise Refused("no work in hand: journal work start \"<what>\" first")
         self.logs.save(TaskLog(environment_id=self.environment(where), task_id=current.task_id, line=args.line), where.actor)
-        self.machine.move(where.session, self.environment(where), current.logged())
+        self.machine.move(where.session, self.environment(where), current.logged(time.time()))
         print("work logged")
         return 0
 

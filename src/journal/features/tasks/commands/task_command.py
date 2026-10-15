@@ -1,3 +1,4 @@
+import time
 from argparse import Namespace
 from datetime import datetime, timezone
 
@@ -71,7 +72,7 @@ class TaskCommand(Command):
         self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=args.line), where.actor)
         current = self._in_hand(where)
         if current and current.task_id == task.id:
-            self.machine.move(where.session, task.environment_id, current.logged())
+            self.machine.move(where.session, task.environment_id, current.logged(time.time()))
         print(f"task {task.id} logged")
         return 0
 
@@ -130,7 +131,7 @@ class TaskCommand(Command):
             raise Refused(f"task {current.task_id} is in hand: finish it or park it before you start task {task.id}")
         started = self.tasks.save(task.started(self._now()), where.actor)
         if where.session:
-            self.machine.move(where.session, started.environment_id, Working(task_id=started.id))
+            self.machine.move(where.session, started.environment_id, Working(task_id=started.id, logged_at=time.time()))
         return started
 
     def _in_hand(self, where: Where) -> Working | None:
