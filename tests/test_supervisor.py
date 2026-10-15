@@ -12,6 +12,7 @@ from supervisor.launch import Launch
 from supervisor.choice import Choice
 from supervisor.menu import Menu
 from supervisor.screen import Screen
+from supervisor.status_line import StatusLine
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
@@ -29,7 +30,7 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
     terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
     inbox = Inbox.for_(tmp_path, "main")
     journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
-    supervisor = Supervisor(terminal, inbox, journal, stdin=in_r, stdout=out_w)
+    supervisor = Supervisor(terminal, inbox, journal, StatusLine("p", "main", tmp_path), stdin=in_r, stdout=out_w)
     inbox.open()
     journal.start()
     terminal.start()
@@ -96,17 +97,13 @@ def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
     assert OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
 
-def test_the_header_fits_the_width_and_moves_the_agents_clears_under_it():
-    from supervisor.header import Header
-    header = Header("agent-journal", "main")
-    header.rows, header.columns = 10, 60
-    text = header.line().decode()
-    assert text.startswith("\x1b[H") and "agent-journal" in text and text.rstrip("\x1b[0m").endswith("journal starting…")
-    header.url = "http://127.0.0.1:8420/"
-    assert "http://127.0.0.1:8420/" in header.line().decode() and header.agent_rows == 9
-    assert header.shield(b"a\x1b[2Jb\x1b[Hc") == b"a\x1b[2;1H\x1b[Jb\x1b[2;1Hc" + header.restored(), "a clear redraws the line and the region"
-    assert header.shield(b"plain text\x1b[2K") == b"plain text\x1b[2K", "ordinary output leaves the line alone"
-    assert header.shield(b"x\x1b[r").endswith(header.restored()), "a scroll-region reset is undone"
+def test_the_status_line_names_the_project_the_environment_and_the_url_in_a_file_claude_reads(tmp_path):
+    status = StatusLine("agent-journal", "main", tmp_path)
+    status.begin()
+    assert status.path.read_text() == "agent-journal · agent-journal · main · journal starting…"
+    status.set_url("http://127.0.0.1:8420/")
+    assert status.path.read_text().endswith("http://127.0.0.1:8420/")
+    assert json.loads(status.settings())["statusLine"]["command"] == f"cat '{status.path}'"
 
 
 def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_agent_works(tmp_path: Path, monkeypatch):
@@ -142,8 +139,9 @@ def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path
 def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     launch = Launch.parse(["claude", "--env", "spike", "--aside", "--", "--model", "x"], tmp_path)
     assert launch.env == "spike" and launch.aside and launch.args == ("--model", "x")
-    assert launch.agent_command(Choice("spike", "s-1", True)) == ["claude", "--resume", "s-1", "--model", "x"]
-    assert launch.agent_command(Choice("spike", "", True, skip_prompts=True)) == ["claude", "--dangerously-skip-permissions", "--model", "x"]
+    status = StatusLine("p", "spike", tmp_path)
+    assert launch.agent_command(Choice("spike", "s-1", True), status) == ["claude", "--resume", "s-1", "--settings", status.settings(), "--model", "x"]
+    assert launch.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["claude", "--dangerously-skip-permissions", "--settings", status.settings(), "--model", "x"]
     environ = launch.environ(Choice("spike", "", True))
     assert environ["AGENT_JOURNAL_ACTIVE"] == "1" and environ["JOURNAL_ENV"] == "spike", "the journal's own hooks always run"
     assert environ["PATH"].startswith(str(tmp_path / ".journal" / "bin")), "the project's own journal command is on the agent's PATH, and nowhere else"
@@ -176,15 +174,14 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
 def test_the_supervisor_notices_the_journal_when_it_answers(tmp_path: Path, monkeypatch):
     from journal.app import App
     from journal.config import Config
-    from supervisor.header import Header
     app = App(Config(tmp_path, port=0))
     app.server().start()
     try:
-        header = Header("p", "main", stdout=os.open(os.devnull, os.O_WRONLY))
-        supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox.for_(tmp_path, "main"), JournalProcess(tmp_path, ["true"], {}, tmp_path / "log"), header)
+        status = StatusLine("p", "main", tmp_path)
+        supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox.for_(tmp_path, "main"), JournalProcess(tmp_path, ["true"], {}, tmp_path / "log"), status)
         supervisor._started_at = time.time()
         supervisor.notice_journal_once()
-        assert header.url == f"http://127.0.0.1:{app.server().port}/"
+        assert status.url == f"http://127.0.0.1:{app.server().port}/"
     finally:
         app.server().stop()
 
@@ -195,7 +192,7 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
     terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
     inbox = Inbox.for_(tmp_path, "main")
     journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
-    supervisor = Supervisor(terminal, inbox, journal, stdin=in_r, stdout=out_w)
+    supervisor = Supervisor(terminal, inbox, journal, StatusLine("p", "main", tmp_path), stdin=in_r, stdout=out_w)
     inbox.open()
     journal.start()
     terminal.start()
@@ -219,7 +216,7 @@ def test_a_stop_instruction_ends_the_supervisor_and_takes_its_inbox_down(tmp_pat
     terminal = Terminal(["sh", "-c", "trap '' TERM; while true; do sleep 1; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
     inbox = Inbox.for_(tmp_path, "main")
     journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
-    supervisor = Supervisor(terminal, inbox, journal, stdin=None, stdout=out_w)
+    supervisor = Supervisor(terminal, inbox, journal, StatusLine("p", "main", tmp_path), stdin=None, stdout=out_w)
     inbox.open()
     journal.start()
     terminal.start()

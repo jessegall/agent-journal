@@ -8,7 +8,7 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
-from supervisor.header import Header
+from supervisor.status_line import StatusLine
 from supervisor.inbox import Inbox
 from supervisor.instructions.instruction import Instruction
 from supervisor.instructions.restart_agent import RestartAgent
@@ -22,13 +22,11 @@ LONGEST = 65536
 
 
 class Supervisor:
-    """One loop: stdin to the agent, the agent to stdout under the header line, the inbox's instructions carried out, the journal kept running."""
+    """One loop: stdin to the agent, the agent to stdout, the inbox's instructions carried out, the journal kept running, the status line kept current."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, header: Header | None = None, stdin: int | None = 0, stdout: int = 1, viewer: str = "") -> None:
-        self.terminal, self.inbox, self.journal, self.stdin, self.stdout = terminal, inbox, journal, stdin, stdout
+    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, status: StatusLine, stdin: int | None = 0, stdout: int = 1, viewer: str = "") -> None:
+        self.terminal, self.inbox, self.journal, self.status, self.stdin, self.stdout = terminal, inbox, journal, status, stdin, stdout
         """stdin is None for a supervisor started by the journal, with nobody at a keyboard."""
-        self.header = header
-        """The line kept at the top of the screen; none when the output is not a terminal."""
         self.viewer = viewer
         """A page to open in the browser once the journal is up, as #/<environment>; empty opens nothing."""
         self._stopping = False
@@ -53,18 +51,14 @@ class Supervisor:
         finally:
             self.journal.stop()
             self.inbox.close()
-            if self.header:
-                self.header.end()
             if saved is not None and self.stdin is not None:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
         return self._code
 
     def fit(self) -> None:
-        """Gives the agent the terminal's size, less the header's line when there is one."""
+        """Gives the agent the terminal's whole size and the status line its first words."""
         rows, columns = Terminal.size_of(self.stdin) if self.stdin is not None else (40, 120)
-        if self.header:
-            self.header.resize(rows, columns)
-            rows = self.header.agent_rows
+        self.status.begin()
         self.terminal.resize(rows, columns)
 
     def relay_once(self, timeout: float) -> None:
@@ -82,7 +76,7 @@ class Supervisor:
             if not data:
                 self._ended()
                 return
-            os.write(self.stdout, self.header.shield(data) if self.header else data)
+            os.write(self.stdout, data)
         if self.stdin is not None and self.stdin in readable:
             data = os.read(self.stdin, LONGEST)
             if not data:
@@ -93,7 +87,7 @@ class Supervisor:
             self._code = code
 
     def notice_journal_once(self) -> None:
-        """The first time the port in the port file answers: the header shows the URL and the viewer opens in the browser; a port file left by a dead journal answers nothing."""
+        """The first time the port in the port file answers: the status line shows the URL and the viewer opens in the browser; a port file left by a dead journal answers nothing."""
         if self._noticed:
             return
         if time.time() - self._started_at > 30:
@@ -104,8 +98,7 @@ class Supervisor:
         if not url or not self._answers(url):
             return
         self._noticed = True
-        if self.header:
-            self.header.set_url(url)
+        self.status.set_url(url)
         if self.viewer:
             webbrowser.open(url + self.viewer, new=2)
 

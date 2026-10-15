@@ -10,7 +10,7 @@ from pathlib import Path
 from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
 from supervisor.choice import Choice
-from supervisor.header import Header
+from supervisor.status_line import StatusLine
 from supervisor.menu import Menu
 from supervisor.no_journal import NoJournal
 from supervisor.other_hooks import OtherHooks
@@ -20,6 +20,7 @@ from supervisor.terminal import Terminal
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
 SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
+STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
 
 
@@ -62,10 +63,10 @@ class Launch:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         return Menu(self.root, self.package / "journal.py").choose(self.agent, self.env, self.new, self.aside, self.skip, self.yes)
 
-    def agent_command(self, choice: Choice) -> list[str]:
+    def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
         resume = RESUME[self.agent](choice.resume) if choice.resume else []
         skip = [flag for flag in SKIP[self.agent] if choice.skip_prompts and flag not in self.args]
-        return [self.agent, *resume, *skip, *self.args]
+        return [self.agent, *resume, *skip, *STATUS[self.agent](status), *self.args]
 
     def journal_command(self) -> list[str]:
         return [sys.executable, str(self.package / "journal.py"), "serve"]
@@ -82,7 +83,7 @@ class Launch:
 
     def run(self) -> int:
         """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends. What happened is written to .journal/runtime/supervisor.log, so a launch that ends at once can be read back."""
-        self.log(f"launch: {' '.join(self.agent_command(Choice(self.env or 'main', '', self.aside, self.skip)))}")
+        self.log(f"launch: {' '.join([self.agent, *self.args])}")
         try:
             ProjectCommand(self.root, self.package / "journal.sh").write()
             others = OtherHooks(self.root, self.agent)
@@ -109,7 +110,7 @@ class Launch:
 
     def supervisor(self, choice: Choice) -> Supervisor:
         environ = self.environ(choice)
-        terminal = Terminal(self.agent_command(choice), str(self.root), environ)
+        status = StatusLine(self.root.name, choice.environment, self.root)
+        terminal = Terminal(self.agent_command(choice, status), str(self.root), environ)
         journal = NoJournal(self.root) if self.no_journal else JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
-        header = Header(self.root.name, choice.environment) if sys.stdout.isatty() else None
-        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), journal, header, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}")
+        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), journal, status, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}")
