@@ -13,6 +13,7 @@ from journal.features.sequences.feature import Sequences
 from journal.features.shell.feature import Shell
 from journal.features.skills.feature import Skills
 from journal.features.tasks.feature import Tasks
+from journal.features.thinking.feature import Thinking
 from journal.features.triggers.feature import Triggers
 from journal.features.voices.feature import Voices
 
@@ -20,7 +21,7 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Etiquette, Voices, Profiles, Git)
+    FEATURES = (Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Thinking, Etiquette, Voices, Profiles, Git)
 
     @classmethod
     def registry(cls) -> Registry: ...

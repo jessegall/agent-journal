@@ -5,7 +5,7 @@ from pathlib import Path
 from journal.providers.provider import Provider
 
 
-TAIL = 2_000_000
+TAIL = 400_000
 """How much of the transcript's end is read for the thoughts of one turn."""
 
 

@@ -55,7 +55,9 @@ does not.
     or a reply that asks you something always reaches the chat.
 16. Under a sequence step that talks in the sequence, the turn goes to the sequence, not the chat.
 17. The agent's live thinking stands in the working bubble while it works, each thought replacing the last; a
-    visible message or the next turn clears it. Thinking never becomes a message.
+    visible message or the next turn clears it. Thinking never becomes a message, with one exception ruled on
+    2026-10-15: a thought that opens with a reply tag for a message still unanswered is the reply the agent meant
+    to say and is posted as such, since the user never sees thinking.
 
 ## 4. Tags
 

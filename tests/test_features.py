@@ -718,24 +718,29 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert len(app.container.get(Entries).of_kind(1, CARD, 10)) == 2
 
 
-def test_a_reply_written_in_thinking_is_said_out_loud_and_setup_restart_names_the_journals(app, monkeypatch, tmp_path):
+def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
     import json as j
+    from urllib.request import urlopen
     from journal.providers.claude import Claude
-    from journal.supervisor_link import SupervisorLink
-    typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    from journal.repositories.messages import Messages
     transcript = tmp_path / "s1.jsonl"
     rows = [{"type": "user", "message": {"content": "hello?"}},
             {"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": "[!reply:1]\nYes, hello."}]}},
             {"type": "user", "message": {"content": [{"type": "tool_result", "content": "ok"}]}},
-            {"type": "assistant", "message": {"content": [{"type": "text", "text": "Checking."}]}}]
+            {"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": "Now the next step."}]}}]
     transcript.write_text("\n".join(j.dumps(r) for r in rows) + "\n")
     monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["message", "send", "hello?"], USER)
     console.run(["message", "read", "1"], AGENT)
-    hook(app, "Stop")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.runtime().deferred.drain()
-    assert any("your reply to message 1 was in your thinking" in line for line in typed), typed
+    agent = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent", timeout=5))["rows"][-1]["data"]
+    assert agent["thinking"] == "Now the next step."
+    reply = app.container.get(Messages).all()[-1]
+    assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered(1) == []
+    hook(app, "MessageDisplay", message="Done.")
+    app.runtime().deferred.drain()
+    assert json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent", timeout=5))["rows"][-1]["data"]["thinking"] == ""
     assert "no journal is running" in console.run(["setup", "restart"], USER).out

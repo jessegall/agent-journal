@@ -482,3 +482,12 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   guarded so `set -e` does not end the shell on its failure, as in the shell. Known differences left: an alias
   defined in one part applies to the next (the shell parses the line first); a failed glob in zsh aborts only its
   own part, not the rest of the line.
+
+## Thinking (2026-10-15)
+
+- Claude writes its thinking to the transcript; the display hook never carries it. `Claude.thoughts_this_turn`
+  reads the transcript's tail for the thinking blocks since the last prompt. Before each tool use the latest is
+  kept in memory (`Thoughts`) for the working bubble, and a visible message clears it.
+- Found by dogfooding: a reply written mid-turn can land in thinking instead of in words, and the chat never sees
+  it. A thought opening with `[!reply:N]` for a message still unanswered is dispatched as that turn, so the reply
+  is posted and the message answered.
