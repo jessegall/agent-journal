@@ -2,6 +2,7 @@ from journal.db.connection import Connection
 from journal.features.bus import Bus
 from journal.models.phase import Phase
 from journal.models.plan import Plan
+from journal.models.plan_state import PlanState
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
@@ -37,6 +38,13 @@ class Plans(ScopedRepository[Plan]):
         phased = [t for phase in self.phases_of(plan) for t in self.tasks_in(phase)]
         ids = {t.id for t in phased}
         return phased + [t for t in self.tasks_of(plan) if t.id not in ids]
+
+    def free(self, environment_id: int) -> list[Task]:
+        """The open tasks an agent may take up on its own: a plan not yet started hands out its own, so those wait."""
+        return [t for t in self.tasks.in_state(environment_id, TaskState.OPEN) if not self.held_back(t)]
+
+    def held_back(self, task: Task) -> bool:
+        return any(self.find(ref.id).state != PlanState.STARTED for ref in self.links.targets(task, IN_PLAN))
 
     def next_task(self, plan: Plan) -> Task | None:
         return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN), None)

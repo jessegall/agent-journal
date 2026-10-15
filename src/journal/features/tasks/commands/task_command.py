@@ -21,14 +21,15 @@ from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
+from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 
 
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments, machine: Machine, messages: Messages, links: Links) -> None:
-        self.tasks, self.logs, self.environments, self.machine, self.messages, self.links = tasks, logs, environments, machine, messages, links
+    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments, machine: Machine, messages: Messages, links: Links, plans: Plans) -> None:
+        self.tasks, self.logs, self.environments, self.machine, self.messages, self.links, self.plans = tasks, logs, environments, machine, messages, links, plans
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -123,7 +124,7 @@ class TaskCommand(Command):
 
     def _name_next(self, done: Task) -> None:
         from journal.features.tasks.feature import Tasks
-        open_ = [t for t in self.tasks.in_state(done.environment_id, TaskState.OPEN)]
+        open_ = self.plans.free(done.environment_id)
         if open_:
             print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())
 

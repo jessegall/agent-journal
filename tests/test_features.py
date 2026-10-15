@@ -1036,3 +1036,14 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     console.run(["task", "done", "1"], AGENT)
     app.runtime().deferred.drain()
     assert app.container.get(Machine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"
+
+
+def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "g"], USER)
+    console.run(["plan", "add", "1", "planned work"], USER)
+    assert hook(app, "Stop")[1] == {}, "a plan's task waits for the plan"
+    console.run(["task", "create", "free work"], USER)
+    assert "task 2 next: free work" in hook(app, "Stop")[1]["reason"]
