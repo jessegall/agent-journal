@@ -20,7 +20,6 @@ CHECKS = (
     ("plain_idle", "At rest?", "the agent's state is plain idle: nothing in hand, nothing awaited, not stuck"),
     ("open_tasks", "Open tasks?", "the environment has open tasks the agent may take up, outside a plan not yet started"),
     ("task_in_hand", "A task in hand?", "the agent has a task started"),
-    ("work_declared", "Work declared?", "the agent declared work without a task"),
     ("parked_tasks", "Parked tasks?", "a task is parked"),
     ("blocked_tasks", "Blocked tasks?", "a task waits on something outside"),
     ("unread_messages", "Unread messages?", "the user left a message the agent has not read"),

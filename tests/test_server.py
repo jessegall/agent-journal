@@ -232,7 +232,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         assert [s["title"] for s in doc["sections"]] == ["Goals", "Risks"]
         assert call(server, "POST", f"/api/main/doc/{doc['n']}/update", {"title": "Design v2", "brief": doc["brief"]})[1]["title"] == "Design v2"
         app.console().run(["task", "create", "later", "--start"], Where("main", "s1"))
-        app.console().run(["work", "park", "waiting"], Where("main", "s1"))
+        app.console().run(["task", "park", "2", "waiting"], Where("main", "s1"))
         assert call(server, "GET", "/api/main/todo/2")[1]["data"]["status"] == "parked"
     finally:
         app.runtime().stop()

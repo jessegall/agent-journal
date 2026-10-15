@@ -44,13 +44,6 @@ def write(app):
     return hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
 
 
-def test_a_write_with_no_work_declared_is_refused_and_a_read_is_not(app):
-    status, body = write(app)
-    assert status == 409 and "no work declared" in body["error"] and "journal task start" in body["error"]
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200
-    assert isinstance(app.container.get(Machine).current("s1"), Idle)
-
-
 def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "ship it", "--start"], AGENT)
@@ -127,10 +120,10 @@ def test_one_task_in_hand_park_resume_and_await(app):
     console.run(["task", "create", "second"], AGENT)
     refused = console.run(["task", "start", "2"], AGENT)
     assert refused.code == 1 and "task 1 is in progress" in refused.err
-    console.run(["work", "park", "waiting for the designer"], AGENT)
-    assert isinstance(app.container.get(Machine).current("s1"), Idle) and write(app)[0] == 409, "parked: nothing in hand, writes wait again"
-    assert console.run(["work", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
-    assert console.run(["work", "await", "the deploy to finish"], AGENT).code == 0
+    console.run(["task", "park", "1", "waiting for the designer"], AGENT)
+    assert isinstance(app.container.get(Machine).current("s1"), Idle), "parked: nothing in hand"
+    assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
+    assert console.run(["task", "await", "1", "the deploy to finish"], AGENT).code == 0
     assert app.container.get(Machine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert app.container.get(Machine).current("s1").task_id == 1, "working again lifts the wait"
@@ -193,17 +186,7 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN
 
 
-def test_work_declared_without_a_task_opens_the_write_gate_and_ends_on_its_own(app):
+def test_a_write_needs_no_task(app):
     hook(app, "SessionStart")
-    console = app.console()
-    console.run(["environment", "here"], AGENT)
-    assert write(app)[0] == 409
-    assert console.run(["work", "start", "fix the footer's typo"], AGENT).out.strip() == "work started: fix the footer's typo"
-    assert write(app)[0] == 200
-    assert "the work in hand, fix the footer's typo is in hand, last logged just now: carry on" in hook(app, "Stop")[1]["reason"]
-    assert console.run(["work", "log", "typo found in the footer"], AGENT).code == 0
-    assert console.run(["task", "create", "bigger", "--start"], AGENT).code == 0, "a task may be taken up over free work"
-    console.run(["task", "done", "1", "--how", "x"], AGENT)
-    console.run(["work", "start", "another"], AGENT)
-    assert "work ended: another (done)" in console.run(["work", "end", "--how", "done"], AGENT).out
-    assert app.container.get(Machine).current("s1").name == "idle"
+    app.console().run(["environment", "here"], AGENT)
+    assert write(app)[0] == 200, "a quick edit is the agent's own; a task is for work worth tracking"

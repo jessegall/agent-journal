@@ -80,10 +80,6 @@ class Checks:
         state = self.state(ctx)
         return isinstance(state, Working) and bool(state.task_id)
 
-    def work_declared(self, ctx: Context) -> bool:
-        state = self.state(ctx)
-        return isinstance(state, Working) and bool(state.what)
-
     def parked_tasks(self, ctx: Context) -> bool:
         return bool(self.tasks.in_state(ctx.environment_id, TaskState.PARKED))
 

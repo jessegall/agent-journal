@@ -30,7 +30,6 @@ catalogue could carry it once a check or an action it needs exists.
 ## Kept by a state or a listener, by design
 
 - The task in hand at a stop: carry on, a log when stale (the Working state).
-- A write with no work declared refused (the Idle state).
 - A session's start: the briefing, the hold until the journal skill and `journal environment here` (briefing, skills).
 - Skills owed on entering a state and after a compaction (skills).
 - The context mark: decide what survives, held there (memory/hold_at_mark); a new rule questioned once (memory/review_new_rule).

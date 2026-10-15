@@ -791,11 +791,11 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     console.run(["environment", "here"], AGENT)
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["work", "park", "the header first"], AGENT)
+    console.run(["task", "park", "1", "the header first"], AGENT)
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["reason"]
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "told once, the second stop goes through"
-    console.run(["work", "resume", "1"], AGENT)
+    console.run(["task", "resume", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "shipped"], AGENT)
     console.run(["task", "create", "the menu"], USER)
     assert hook(app, "Stop")[1].get("decision") != "block", "open tasks are not pressed for outside auto mode"
@@ -814,9 +814,10 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     assert [Writes.of(c) for c in ("sed -i '' s/a/b/ f.py", "cat f.py | head -3", "echo hi > /dev/null", "echo hi > out.txt", "git status; git log", "git checkout -- f.py", "journal task create x", "python3 - <<'EOF'\nfrom pathlib import Path\nPath('x').write_text('y')\nEOF", "python3 -c 'print(1)'", "grep -rn 'a > b' src | tee found.txt", 'echo "a > b"')] == [True, False, False, True, False, True, False, True, False, True, False]
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})
-    assert status == 409 and "no work declared" in body["error"]
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
+    assert app.container.get(Machine).current("s1").edits == 1, "a shell line that writes counts as an edit toward the log; a read does not"
 
 
 def test_a_journal_command_chained_with_anything_else_is_refused(app):
@@ -949,20 +950,8 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
     hook(app, "SessionStart", session_id="s2")
     refused = app.console().run(["task", "start", "2"], Where("main", "s2"))
     assert refused.code == 1 and "task 1 is in progress" in refused.err, "another session cannot start a second"
-    app.console().run(["work", "park", "later"], AGENT)
+    app.console().run(["task", "park", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
-
-
-def test_the_bar_names_the_work_declared_without_a_task_even_while_the_agent_is_held(app):
-    from journal.http.v3.shapers.agents_shaper import AgentsShaper
-    hook(app, "SessionStart")
-    app.console().run(["work", "start", "tidying the notes"], AGENT)
-    shaper = app.container.get(AgentsShaper)
-    machine = app.container.get(Machine)
-    assert shaper.described(machine.current("s1")) == "tidying the notes"
-    from journal.engine.states.paused import Paused
-    held = Paused(resume={"state": "working", "data": {"what": "tidying the notes"}})
-    assert shaper.described(held) == "tidying the notes", "a pause that names nothing shows the work underneath"
 
 
 def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkeypatch):
@@ -1257,7 +1246,7 @@ def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     assert hook(app, "Stop")[1] == {}, "auto off: an open task says nothing"
     console.run(["task", "start", "1"], AGENT)
-    console.run(["work", "park", "after lunch"], AGENT)
+    console.run(["task", "park", "1", "after lunch"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     body = hook(app, "Stop")[1]
     assert "parked tasks, still open: 1 free work (parked because: after lunch)" in body["reason"], "parked tasks in any mode, through the chart"
@@ -1483,22 +1472,3 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     assert rows[0].title == "The Workflows design" and rows[0].data["link"] == "https://design.example/p/1" and rows[0].data["label"] == "Open the design" and not rows[0].completed
     console.run(["notice", "close", "1"], AGENT)
     assert app.container.get(Shapers).named("notice").rows(env)[0].completed, "closed, it leaves the strip"
-
-
-def test_a_task_is_done_in_pieces_of_work_each_a_line_of_its_log(app):
-    from journal.repositories.task_logs import TaskLogs
-    hook(app, "SessionStart")
-    console = app.console()
-    console.run(["environment", "here"], AGENT)
-    console.run(["task", "create", "the login", "--start"], AGENT)
-    assert "work started on task 1: pull the repository" in console.run(["work", "start", "pull the repository"], AGENT).out
-    machine = app.container.get(Machine)
-    assert machine.current("s1").task_id == 1 and machine.current("s1").what == "pull the repository"
-    console.run(["work", "log", "cloned, on the main branch"], AGENT)
-    assert "work ended on task 1: pull the repository (clean clone)" in console.run(["work", "end", "--how", "clean clone"], AGENT).out
-    assert machine.current("s1").task_id == 1 and machine.current("s1").what == "", "the task stays in hand for its next piece"
-    console.run(["work", "start", "write the code"], AGENT)
-    from journal.repositories.tasks import Tasks as TasksRepo
-    lines = [log.line for log in app.container.get(TaskLogs).of(app.container.get(TasksRepo).find(1))]
-    assert lines == ["started: pull the repository", "cloned, on the main branch", "done: pull the repository (clean clone)", "started: write the code"]
-    assert "no piece of work in hand" in console.run(["work", "end"], Where("main", "s2")).err

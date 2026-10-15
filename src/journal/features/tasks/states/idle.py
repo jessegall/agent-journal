@@ -14,6 +14,5 @@ class Idle(AgentState):
     allows = frozenset({Permission.RUN_COMMANDS})
 
     def tool_starting(self, event: ToolStarting) -> Transition:
-        """A write with no work declared is refused and told how to declare it."""
-        from journal.features.tasks.feature import Tasks
-        return self.refuse(Tasks.DECLARE.about()) if event.writes else self.stay()
+        """A write needs no task: a quick edit is the agent's own; a task is for work worth tracking."""
+        return self.stay()

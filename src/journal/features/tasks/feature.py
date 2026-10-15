@@ -1,7 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
-from journal.features.tasks.commands.work_command import WorkCommand
 from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
 from journal.features.tasks.listeners.check_in import CheckIn
 from journal.features.tasks.listeners.log_cadence import LogCadence
@@ -20,10 +19,9 @@ class Tasks(Feature):
     title = "Tasks"
     help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
     states = (Idle, Working, Stuck, Expecting)
-    commands = (TaskCommand, WorkCommand, StuckCommand)
+    commands = (TaskCommand, StuckCommand)
     listeners = (SpotPolling, AskAfterParked, TypeAtHeldStop, LogCadence, CheckIn)
 
-    DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     CARRY_ON_LOG = Nudge(name, "carry_on_log", "{{name}} is in hand, {{logged}}: carry on", "log where it stands first, then continue; journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
@@ -35,31 +33,27 @@ class Tasks(Feature):
     LOG_SOON = Nudge(name, "log_soon", "{{edits}} edits since you logged {{name}}: say where it stands", "{{log}} \"<where it stands>\"", repeat_after=0)
     LOG_OVERDUE = Nudge(name, "log_overdue", "{{edits}} edits since you logged {{name}}", "{{log}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
     IN_HAND = Nudge(name, "in_hand", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
-    PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal work resume {{n}} picks it up again", repeat_after=900)
+    PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal task await again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for {{minutes}} minutes: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
-    nudges = (DECLARE, CARRY_ON, CARRY_ON_LOG, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
+    nudges = (CARRY_ON, CARRY_ON_LOG, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
 
-A task is one unit of work with a life: open, started, done. Only one is in hand at a time. A file write
-needs work declared, and that need not be a task: `journal work start "<what>"` declares a small change in a
-sentence, `journal work log "<line>"` says where it stands, `journal work end --how "<outcome>"` closes it.
-Taking a task up is work too. File a task for work that is an item of its own, or that waits.
+A task is one unit of work with a life: open, started, done. Only one is in hand at a time. A quick edit
+needs no task; file one for work that is an item of its own, that waits, or that the user should see tracked.
 
 - `journal task create "<title>" --brief "<what and where to start>"` files one; add `--start` to take it at once.
 - `journal task start <n>` takes a task in hand. `journal task list` shows every task here.
 - `journal task log <n> "<where it stands>"` after each step that matters; before a compaction, always.
 - `journal task done <n> --how "<outcome>"` finishes it. The output names the next open task.
-- One task in hand at a time: a second start is refused until the first is done or parked. `journal work park "<why>"`
-  sets the work in hand aside for something else first; `journal work resume <n>` picks it up. Park for choice, never for being stuck.
+- One task in hand at a time: a second start is refused until the first is done or parked. `journal task park <n> "<why>"`
+  sets it aside for something else first; `journal task resume <n>` picks it up. Park for choice, never for being stuck.
 - A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
   `journal task unblock <n>` opens it again when what it waited on came.
-- A task is done in pieces: `journal work start "<the next piece>"` names each, pulling the repository, then writing the
-  code; `journal work end --how "<what landed>"` closes the piece and the task stays in hand. Each is a line of the task's log.
-- Waiting on something outside your hands, a run or a person: `journal work await "<what you wait for>"` and end
+- Waiting on something outside your hands, a run or a person: `journal task await <n> "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
 - Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named
   back so drift is noticed, and at fifty the next write waits for the log line (settings work.first_nudge_after,

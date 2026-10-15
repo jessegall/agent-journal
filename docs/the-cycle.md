@@ -31,8 +31,6 @@ chart is read and edited. The shipped chart carries the parked-tasks line and th
                      ┌──────────────────────── WORK LOOP ─────────────────────────┐
                      │                                                             │
                      │  PreToolUse ──► blocking listeners answer: 200 go, 409 no   │
-                     │      • no task started and the tool writes ─► refused:      │
-                     │        "no work declared: start a task before you write"    │
                      │      • unread messages: named every 3rd use; after 5        │
                      │        reminders the next write waits                       │
                      │      • a message read and unanswered: nudged after 10 uses, │
