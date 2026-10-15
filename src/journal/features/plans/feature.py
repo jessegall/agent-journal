@@ -24,7 +24,8 @@ class Plans(Feature):
 
 A plan is ordered tasks. Following it means finishing one and starting the next until the last.
 
-- `journal plan create "<title>" --brief "<goal>"` drafts it; `journal plan add <n> "<task title>"` adds tasks in order.
+- `journal plan create "<title>" --brief "<goal>"` drafts it; `journal plan brief <n> "<goal>"` resets the goal;
+  `journal plan add <n> "<task title>"` adds tasks in order.
 - `journal plan start <n>` starts its first open task and follows the plan: `journal task done` on the task in
   hand starts the next one and names it; the last one ends the plan.
 - `journal plan show <n>` lists its tasks and their states; `journal plan park <n>` puts it aside.

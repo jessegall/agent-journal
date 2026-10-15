@@ -1,4 +1,5 @@
 from argparse import Namespace
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
@@ -29,6 +30,9 @@ class PlanCommand(Command):
         add.add_argument("n", type=int)
         add.add_argument("title")
         add.add_argument("--brief", default="")
+        brief = self.verb(verbs, "brief", "set a plan's goal, what is true when it is done")
+        brief.add_argument("n", type=int)
+        brief.add_argument("text")
         self.verb(verbs, "start", "follow a plan: its first open task is started").add_argument("n", type=int)
         self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
         self.verb(verbs, "show", "a plan and its tasks").add_argument("n", type=int)
@@ -62,6 +66,11 @@ class PlanCommand(Command):
     def park(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(self.plans.find(args.n).parked(), where.actor)
         print(f"plan {plan.id} parked")
+        return 0
+
+    def brief(self, args: Namespace, where: Where) -> int:
+        plan = self.plans.save(replace(self.plans.find(args.n), brief=args.text), where.actor)
+        print(f"plan {plan.id} brief set: {plan.title}")
         return 0
 
     def show(self, args: Namespace, where: Where) -> int:

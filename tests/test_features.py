@@ -982,3 +982,11 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkey
     for _ in range(4):
         app.console().run(["sequence", "next"], AGENT)
     assert machine.current("s1").name == "idle", "the last step goes back to what the agent was doing"
+
+
+def test_a_plans_goal_can_be_reset(app):
+    hook(app, "SessionStart")
+    app.console().run(["plan", "create", "p", "--brief", "first"], USER)
+    assert app.console().run(["plan", "brief", "1", "the goal, settled"], USER).code == 0
+    from journal.repositories.plans import Plans
+    assert app.container.get(Plans).find(1).brief == "the goal, settled"
