@@ -2,6 +2,7 @@ from journal.features.mcp.catalogue import Catalogue
 from journal.features.mcp.health import Health
 from journal.features.mcp.installing import Installing
 from journal.features.mcp.keys import Keys
+from journal.features.mcp.pending_restarts import PendingRestarts
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.repositories.mcp_servers import McpServers
@@ -11,8 +12,8 @@ from journal.repositories.not_found import NotFound
 class McpController:
     """The integrations page: the project's MCP servers and how they stand, the suggestions, and the acts on them."""
 
-    def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing, health: Health) -> None:
-        self.servers, self.catalogue, self.keys, self.installing, self.health = servers, catalogue, keys, installing, health
+    def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing, health: Health, pending: PendingRestarts) -> None:
+        self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending
 
     def index(self, request: Request) -> Response:
         """The journal's own servers and, after them, the ones the program has from elsewhere: shown with their state, not managed from here."""
@@ -21,6 +22,7 @@ class McpController:
         present = [*own, *elsewhere]
         return Response.json({
             "servers": present,
+            "restart_pending": self.pending.sessions(),
             "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
         })
 

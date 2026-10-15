@@ -841,7 +841,14 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
         with urlopen(R(f"http://127.0.0.1:{port}{path}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
             return j.loads(r.read())
     installed = post("/journal/mcp/install", {"name": "github"})
-    assert installed["state"] == "needs_key" and installed["has_key"] is False and sent[-1]["type"] == "RestartAgent" and sent[-1]["resume"] == ["--resume", "s1"]
+    assert installed["state"] == "needs_key" and installed["has_key"] is False and sent[-1]["type"] == "RestartAgent" and sent[-1]["resume"] == ["--resume", "s1"], "an idle agent restarts at once"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    sent.clear()
+    post("/journal/mcp/github/key", {"value": "first"})
+    assert sent == [] and j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))["restart_pending"] == ["s1"], "an agent at work is not cut off"
+    hook(app, "Stop")
+    app.runtime().deferred.drain()
+    assert sent and sent[-1]["type"] == "RestartAgent", "the restart comes the moment its turn ends"
     claude = j.loads((app.config.root / ".mcp.json").read_text())["mcpServers"]["github"]
     assert claude["command"] == "npx" and claude["env"] == {"GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"}
     assert '[mcp_servers.github]' in (app.config.root / ".codex" / "config.toml").read_text()

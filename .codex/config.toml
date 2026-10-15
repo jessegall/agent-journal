@@ -1,0 +1,4 @@
+# Written by the journal: the project's MCP servers. Edit them on the viewer's Integrations page.
+
+[mcp_servers.linear]
+url = "https://mcp.linear.app/mcp"

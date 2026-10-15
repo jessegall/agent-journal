@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {agent, agentOnline} from "../composables/leadAgent.js";
 import Btn from "../kit/Btn.vue";
@@ -9,6 +9,7 @@ import SkeletonLine from "../kit/SkeletonLine.vue";
 
 const servers = ref([]);
 const suggested = ref([]);
+const restartPending = ref([]);
 const loaded = ref(false);
 const busy = ref("");
 const notice = ref("");
@@ -28,9 +29,16 @@ async function reload() {
     const got = await api.mcp();
     servers.value = got.servers;
     suggested.value = got.suggested;
+    restartPending.value = got.restart_pending || [];
     loaded.value = true;
 }
 onMounted(reload);
+let waiting = 0;
+watch(restartPending, (sessions) => {
+    clearInterval(waiting);
+    if (sessions.length) waiting = setInterval(reload, 3000);
+});
+onUnmounted(() => clearInterval(waiting));
 
 async function act(name, work) {
     busy.value = name;
@@ -69,6 +77,7 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
         </header>
 
         <p v-if="notice" class="integrations-notice">{{ notice }}</p>
+        <p v-if="restartPending.length" class="integrations-pending"><span class="integrations-spinner" /> The agent restarts as soon as it finishes what it is doing; the change applies then.</p>
 
         <ul v-if="!loaded" class="integrations-list" aria-label="Loading the integrations">
             <li v-for="n in 3" :key="n" class="integration">
@@ -161,6 +170,29 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
 .integrations-none {
     margin: 0;
     color: var(--text-dim, #9aa0a6);
+}
+
+.integrations-pending {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim, #9aa0a6);
+}
+
+.integrations-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--line, #2a2d33);
+    border-top-color: var(--accent, #7b86f5);
+    border-radius: 50%;
+    animation: integrations-spin 0.9s linear infinite;
+}
+
+@keyframes integrations-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .integrations-notice {
