@@ -3,6 +3,7 @@ from journal.features.tasks.commands.halt_command import HaltCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
 from journal.features.tasks.listeners.check_in import CheckIn
+from journal.features.tasks.listeners.name_parked_at_stop import NameParkedAtStop
 from journal.features.tasks.listeners.offer_next import OfferNext
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.features.nudge import Nudge
@@ -19,13 +20,14 @@ class Tasks(Feature):
     help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
     states = (Idle, Working, Halted, Expecting)
     commands = (TaskCommand, HaltCommand)
-    listeners = (SpotPolling, AskAfterParked, OfferNext, CheckIn)
+    listeners = (SpotPolling, AskAfterParked, NameParkedAtStop, OfferNext, CheckIn)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
     CARRY_ON = Nudge(name, "carry_on", "task {{n}} is in hand: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck")
     OPEN = Nudge(name, "open", "task {{n}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
-    NEXT = Nudge(name, "next", "task {{n}} next: {{title}}", repeat_after=0)
+    NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
+    PARKED_AT_STOP = Nudge(name, "parked_at_stop", "parked tasks, still open: {{rows}}", "journal task resume <n> picks one up; leave them parked only on purpose", repeat_after=0)
     DEFERRED = Nudge(name, "deferred", "work deferred in words, not filed: journal task create it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     POLLING = Nudge(name, "polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")
@@ -53,7 +55,7 @@ write with none started is refused.
 - Twenty edits with nothing logged hold the next write until you log; every ten the task in hand is named back to you.
 - A commit whose message carries `Journal: tasks done <n>` on a line of its own finishes task n.
 - Auto mode (the setting tasks.auto, on by default) means you work the list: a stop with tasks open is answered with the next
-  one, and only the user stops you.
+  one, and only the user stops you. A stop with parked tasks names them, in auto mode or not: parked is still open.
 - Work you put off in words is work lost: file it as a task instead.
 - Stopping with a task in hand is told to carry on. Truly stuck: `journal halt now "<why>"`.
 """, keywords=('task', 'tasks', 'todo'), required_in=('working', 'halted', 'expecting'))

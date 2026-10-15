@@ -774,3 +774,19 @@ def test_a_turns_parts_landing_out_of_order_are_put_back_before_the_turn_is_read
     app.runtime().deferred.drain()
     reply = app.container.get(Messages).all()[-1]
     assert reply.reply_to == 1 and reply.text == "It is."
+
+
+def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "park", "1", "the header first"], AGENT)
+    status, body = hook(app, "Stop")
+    assert status == 409 and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["error"]
+    assert hook(app, "Stop", stop_hook_active=True)[0] == 200, "told once, the second stop goes through"
+    console.run(["task", "resume", "1"], AGENT)
+    console.run(["task", "done", "1", "--how", "shipped"], AGENT)
+    console.run(["task", "create", "the menu"], USER)
+    assert hook(app, "Stop")[0] == 200, "open tasks are not pressed for outside auto mode"
