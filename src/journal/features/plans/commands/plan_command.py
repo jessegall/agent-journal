@@ -30,6 +30,7 @@ class PlanCommand(Command):
         add.add_argument("n", type=int)
         add.add_argument("title")
         add.add_argument("--brief", default="")
+        add.add_argument("--first", action="store_true", help="put it before the tasks the plan has")
         brief = self.verb(verbs, "brief", "set a plan's goal, what is true when it is done")
         brief.add_argument("n", type=int)
         brief.add_argument("text")
@@ -45,10 +46,19 @@ class PlanCommand(Command):
 
     def add(self, args: Namespace, where: Where) -> int:
         plan = self.plans.find(args.n)
+        before = self.plans.tasks_of(plan) if args.first else []
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=args.title, brief=args.brief), where.actor)
         self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
-        print(f"task {task.id} added to plan {plan.id}: {task.title}")
+        for other in before:
+            self.relink(other, plan, where)
+        print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}: {task.title}")
         return 0
+
+    def relink(self, task: Task, plan: Plan, where: Where) -> None:
+        """A plan's tasks stand in the order their links were made: a task linked again goes to the end."""
+        for link in self.links.between(task, plan):
+            self.links.delete(link, where.actor)
+        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
 
     def start(self, args: Namespace, where: Where) -> int:
         from journal.features.plans.feature import Plans as PlansFeature

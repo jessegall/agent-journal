@@ -990,3 +990,14 @@ def test_a_plans_goal_can_be_reset(app):
     assert app.console().run(["plan", "brief", "1", "the goal, settled"], USER).code == 0
     from journal.repositories.plans import Plans
     assert app.container.get(Plans).find(1).brief == "the goal, settled"
+
+
+def test_a_task_added_first_goes_before_the_plans_tasks(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["plan", "create", "p"], USER)
+    console.run(["plan", "add", "1", "second"], USER)
+    console.run(["plan", "add", "1", "third"], USER)
+    console.run(["plan", "add", "1", "first", "--first"], USER)
+    shown = console.run(["plan", "show", "1"], USER).out.splitlines()[1:]
+    assert [line.split(maxsplit=2)[2] for line in shown] == ["first", "second", "third"]
