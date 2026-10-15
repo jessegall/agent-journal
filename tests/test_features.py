@@ -1445,3 +1445,16 @@ def test_a_workflow_holds_one_trigger(app):
         urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": []}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5)
     except HTTPError as error:
         assert error.code == 409 and "holds one trigger; this one has 2" in j.loads(error.read())["error"]
+
+
+def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app):
+    from journal.http.v3.shapers.agents_shaper import AgentsShaper
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Herr Gropius draws", "model": "opus", "subagent_type": "designer", "prompt": "draw"})
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Herr Gropius draws"}, tool_response={"isAsync": True, "agentId": "g1"})
+    for _ in range(60):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
+        hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"}, tool_response="x")
+    rows = app.container.get(AgentsShaper).rows(app.container.get(Environments).named("main"))[0].data["subagent_rows"]
+    assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["running"] is True

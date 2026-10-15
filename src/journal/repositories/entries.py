@@ -23,6 +23,14 @@ class Entries(ScopedRepository[Entry]):
         row = self.connection.one(f"SELECT MAX(id) AS id FROM {self.table} WHERE environment_id = ?", (environment_id,))
         return row["id"] or 0
 
+    def dispatches(self, environment_id: int, session: str) -> list[Entry]:
+        """Every dispatch of a subagent in a session, however long ago: the Agent tool's starts and finishes and the subagents' own stops, oldest first."""
+        rows = self.connection.all(
+            f"SELECT * FROM {self.table} WHERE environment_id = ? AND json_extract(data, '$.session_id') = ? "
+            "AND (kind = 'SubagentEnded' OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task'))) ORDER BY id",
+            (environment_id, session))
+        return [self._load(row) for row in rows]
+
     def since(self, environment_id: int, id: int) -> list[Entry]:
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND id > ? ORDER BY id", (environment_id, id))
         return [self._load(row) for row in rows]
