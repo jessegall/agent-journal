@@ -20,6 +20,10 @@ const targetOf = (node, port) => props.lines.find((l) => String(l.from) === Stri
 const named = (node) => `${numberOf(node)} · ${props.entryOf(node).title}`;
 const choices = (node) => [{key: "", label: END}, ...props.nodes.filter((n) => n.id !== node.id && n.kind !== "trigger").map((n) => ({key: String(n.id), label: named(n)}))];
 const picked = (node, port) => (targetOf(node, port) ? String(targetOf(node, port).to) : "");
+const described = (node) => {
+    const about = props.entryOf(node).about;
+    return about ? about.charAt(0).toUpperCase() + about.slice(1) : "";
+};
 const label = (node, port) => {
     const line = targetOf(node, port);
     const target = line && props.nodes.find((n) => String(n.id) === String(line.to));
@@ -41,7 +45,7 @@ function pick(node, port, key) {
                 <Btn kind="ghost" small @click="emit('remove', node)">Delete node</Btn>
             </div>
             <strong class="chart-list-title">{{ entryOf(node).title }}</strong>
-            <p v-if="entryOf(node).about" class="chart-list-about">{{ entryOf(node).about }}</p>
+            <p v-if="entryOf(node).about" class="chart-list-about">{{ described(node) }}</p>
             <template v-if="entryOf(node).takes_text">
                 <textarea
                     class="chart-list-text"

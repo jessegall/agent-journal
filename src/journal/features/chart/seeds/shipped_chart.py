@@ -29,7 +29,7 @@ class ShippedChart(Seed):
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         self.draw(chart)
-        return self.charts.save(chart.saved_again(), by)
+        return self.charts.save(chart.saved_again().with_(title=TITLE), by)
 
     def draw(self, chart: Chart) -> None:
         by = Actor.system()
