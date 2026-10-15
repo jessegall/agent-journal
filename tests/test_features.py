@@ -1335,3 +1335,18 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 3, 4, 6, 7, 8" in out
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
+
+
+def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():
+    from journal.features.messages.mentions import Mentions
+    assert Mentions.in_("Please have 2 agents give plan 1 a normal read, following template 3 (Find what is missing), then task 12 and Task 12 again, doc #4") == ["plan:1", "template:3", "todo:12", "doc:4"]
+    assert Mentions.in_("the plan is ready; 3 agents; version 4") == []
+
+
+def test_a_messages_mentions_reach_the_viewer_as_refs(app):
+    from journal.http.v3.shapers.shapers import Shapers
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "look at plan 1 and task 2"], USER)
+    rows = app.container.get(Shapers).named("message").rows(app.container.get(Environments).named("main"))
+    assert rows[-1].refs == ["plan:1", "todo:2"]
