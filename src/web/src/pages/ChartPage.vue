@@ -6,7 +6,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import ChartList from "./ChartList.vue";
 
-const CARD = {width: 220, height: 92};
+const CARD = {width: 220, height: 96};
 const KINDS = [
     {kind: "trigger", title: "Triggers", about: "An event that starts a path"},
     {kind: "check", title: "Checks", about: "A yes or no question about the rows"},
@@ -132,16 +132,17 @@ function setText(node, text) {
     });
 }
 
+// the flow reads down the page: a line leaves a box by its bottom edge and enters the next by its top; a check's yes and no sit side by side
 const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
 const portAt = (node, port) => {
     const slots = ports(node);
     const i = slots.indexOf(port);
-    return {x: node.x + CARD.width, y: node.y + (CARD.height * (i + 1)) / (slots.length + 1)};
+    return {x: node.x + (CARD.width * (i + 1)) / (slots.length + 1), y: node.y + CARD.height};
 };
-const inAt = (node) => ({x: node.x, y: node.y + CARD.height / 2});
+const inAt = (node) => ({x: node.x + CARD.width / 2, y: node.y});
 const path = (from, to) => {
-    const bow = Math.max(40, Math.abs(to.x - from.x) / 2);
-    return `M ${from.x} ${from.y} C ${from.x + bow} ${from.y}, ${to.x - bow} ${to.y}, ${to.x} ${to.y}`;
+    const bow = Math.max(40, Math.abs(to.y - from.y) / 2);
+    return `M ${from.x} ${from.y} C ${from.x} ${from.y + bow}, ${to.x} ${to.y - bow}, ${to.x} ${to.y}`;
 };
 const wires = computed(() =>
     lines.value
@@ -299,7 +300,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
                         :key="node.id"
                         :data-node="node.id"
                         :class="['chart-node', node.kind, {selected: selected === node.id, lit: onPath(node), edited: !node.shipped}]"
-                        :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, minHeight: `${CARD.height}px`}"
+                        :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${CARD.height}px`}"
                         @pointerdown="dragNode(node, $event)"
                     >
                         <div class="chart-node-head">
@@ -317,12 +318,12 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
                             @input="setText(node, $event.target.value)"
                         />
                         <p v-else class="chart-node-about">{{ entryOf(node).about }}</p>
-                        <span v-if="node.shipped" class="chart-node-shipped">shipped</span>
+                        <span class="chart-in" />
                         <span
                             v-for="port in ports(node)"
                             :key="port"
                             :class="['chart-port', port]"
-                            :style="{top: `${(CARD.height * (ports(node).indexOf(port) + 1)) / (ports(node).length + 1)}px`}"
+                            :style="{left: `${(100 * (ports(node).indexOf(port) + 1)) / (ports(node).length + 1)}%`}"
                             :title="`Drag a line from ${port}`"
                             @pointerdown="dragLine(node, port, $event)"
                         >{{ port }}</span>
@@ -601,19 +602,36 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     margin: 0;
     font-size: 12px;
     color: var(--text-dim, #9aa0a6);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
-.chart-node-shipped {
-    font-size: 10px;
-    color: var(--text-dim, #9aa0a6);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+.chart-node-text {
+    max-height: 48px;
+}
+
+.chart-in {
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: var(--line, #2a2d33);
+    border: 1px solid var(--text-dim, #9aa0a6);
+}
+
+.chart-node.trigger .chart-in {
+    display: none;
 }
 
 .chart-port {
     position: absolute;
-    right: -14px;
-    transform: translateY(-50%);
+    bottom: -10px;
+    transform: translateX(-50%);
     padding: 1px 6px;
     border-radius: 10px;
     font-size: 10px;
