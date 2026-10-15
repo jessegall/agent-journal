@@ -550,5 +550,5 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   the shipped chart; a dry run (`Trial`) for an agent event. `journal chart show|catalogue|node|line|remove|reset|try`.
 - The shipped chart carries the stop rules that were `AnswerStop` and `StopWords.for_`; those are gone. The
   counter rules (unread, unanswered, log cadence) stay as listeners until their lines move over; docs/the-rules.md.
-- The Conduct page: canvas with pan and zoom, palette, lines dragged from ports, text in place, draft with undo,
+- The Workflow page: canvas with pan and zoom, palette, lines dragged from ports, text in place, draft with undo,
   list form for a phone or a keyboard, Try it dry. No release yet: version 4 is still a branch.

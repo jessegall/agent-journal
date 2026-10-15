@@ -1,6 +1,6 @@
 # The chart: the journal's conduct, drawn
 
-The Conduct page shows how the journal treats the agent as a flowchart, and lets you change it. There is one
+The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. There is one
 chart per journal. The journal ships it with today's conduct, so nothing changes until you edit it.
 
 ## Three kinds of box

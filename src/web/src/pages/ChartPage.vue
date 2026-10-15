@@ -254,9 +254,9 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     <section class="chart">
         <header class="chart-head">
             <div>
-                <h1>Conduct</h1>
+                <h1>Workflow</h1>
                 <p class="chart-lead">
-                    How the journal treats the agent, as a chart. A trigger is an event, a check a yes or no question, an action what the journal
+                    How the journal treats the agent, as a flowchart. A trigger is an event, a check a yes or no question, an action what the journal
                     does. Drag a line from a port to a box. Nothing changes until you save.
                 </p>
             </div>
