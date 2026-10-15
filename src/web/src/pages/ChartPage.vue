@@ -17,6 +17,11 @@ const KINDS = [
 const AGENT_TRIGGERS = ["idle", "tool_starting", "tool_finished", "prompt_submitted", "session_started", "turn_written", "subagent_started", "subagent_ended", "compacting", "session_ended", "ticked"];
 
 const loaded = ref(false);
+const workflows = ref([]);
+const current = ref(0);
+const shipped = ref(false);
+const naming = ref(false);
+const newTitle = ref("");
 const title = ref("");
 const revision = ref(0);
 const catalogue = ref([]);
@@ -93,6 +98,10 @@ function undo() {
 }
 
 function add(entry) {
+    if (entry.kind === "trigger" && nodes.value.some((n) => n.kind === "trigger")) {
+        notice.value = "This workflow already has a trigger. A workflow has one; create another workflow for a second.";
+        return;
+    }
     change(() => {
         fresh += 1;
         const at = {x: Math.round((plane.value?.clientWidth / 2 - camera.x) / camera.scale) || 120, y: Math.round((plane.value?.clientHeight / 2 - camera.y) / camera.scale) || 120};
@@ -242,8 +251,17 @@ async function act(name, work) {
         busy.value = "";
     }
 }
-const save = () => act("save", async () => take(await api.chartSave({revision: revision.value, nodes: nodes.value, lines: lines.value})));
-const reset = () => act("reset", async () => take(await api.chartReset()));
+const save = () =>
+    act("save", async () => {
+        take(await api.chartSave(current.value, {revision: revision.value, nodes: nodes.value, lines: lines.value}));
+        await list();
+    });
+const reset = () => act("reset", async () => take(await api.chartReset(current.value)));
+const removeWorkflow = () =>
+    act("remove", async () => {
+        await api.chartRemove(current.value);
+        await load();
+    });
 const tryIt = () =>
     act("try", async () => {
         const ran = await api.chartTry(trial.trigger, route.value.env);
@@ -260,25 +278,37 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     <section class="chart">
         <header class="chart-head">
             <div>
-                <h1>Workflow</h1>
+                <h1>Workflows</h1>
                 <p class="chart-lead">
-                    How the journal treats the agent, as a flowchart. A trigger is an event, a check a yes or no question, an action what the journal
-                    does. Drag a line from a port to a box. Nothing changes until you save.
+                    How the journal treats the agent. A trigger is an event, a check a yes or no question, an action what the journal does.
+                    Connect nodes by dragging from a port. Changes apply when you save.
                 </p>
             </div>
             <div class="chart-acts">
-                <Btn kind="ghost" small class="chart-add" @click="paletteOpen = !paletteOpen">{{ paletteOpen ? "Hide the palette" : "Add a box" }}</Btn>
-                <Btn kind="ghost" small @click="asList = !asList">{{ asList ? "As a drawing" : "As a list" }}</Btn>
+                <Btn kind="ghost" small class="chart-add" @click="paletteOpen = !paletteOpen">{{ paletteOpen ? "Hide nodes" : "Add node" }}</Btn>
+                <Btn kind="ghost" small @click="asList = !asList">{{ asList ? "Canvas" : "List" }}</Btn>
                 <Btn kind="ghost" small :disabled="!past.length" @click="undo">Undo</Btn>
-                <Btn kind="ghost" small :busy="busy === 'reset'" @click="reset">Back to the shipped chart</Btn>
+                <Btn v-if="dirty" kind="ghost" small @click="discard">Discard changes</Btn>
                 <Btn kind="primary" small :busy="busy === 'save'" :disabled="!dirty" @click="save">Save</Btn>
             </div>
         </header>
+        <div class="chart-bar">
+            <DropList :label="title || 'Workflow'" :items="workflowItems" :picked="String(current)" :menu-width="260" @pick="open(Number($event.key))" />
+            <template v-if="naming">
+                <input v-model="newTitle" class="chart-name" type="text" placeholder="Workflow name" @keydown.enter="create" @keydown.esc="naming = false" />
+                <Btn kind="primary" small @click="create">Create</Btn>
+                <Btn kind="ghost" small @click="naming = false">Cancel</Btn>
+            </template>
+            <Btn v-else kind="ghost" small @click="naming = true">New workflow</Btn>
+            <span class="chart-grow" />
+            <Btn v-if="shipped" kind="ghost" small :busy="busy === 'reset'" @click="reset">Reset to default</Btn>
+            <Btn v-else kind="ghost" small :busy="busy === 'remove'" @click="removeWorkflow">Delete workflow</Btn>
+        </div>
         <p v-if="notice" class="chart-notice">{{ notice }}</p>
 
         <div class="chart-body">
             <aside v-if="paletteOpen" class="chart-palette">
-                <input v-model="search" class="chart-search" type="search" placeholder="Find a trigger, check or action" />
+                <input v-model="search" class="chart-search" type="search" placeholder="Search nodes" />
                 <div v-for="group in offered" :key="group.kind" class="chart-group">
                     <h3>{{ group.title }}</h3>
                     <p class="chart-group-about">{{ group.about }}</p>
@@ -296,7 +326,7 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
                         <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
                             <path :class="['chart-wire', wire.line.port]" :d="wire.d" />
                             <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
-                                <title>Click to take this line out</title>
+                                <title>Click to delete this connection</title>
                             </path>
                         </g>
                         <path v-if="drawing" class="chart-wire drafting" :d="drawingPath" />
@@ -314,7 +344,7 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
                             <span v-if="onPath(node)" class="chart-node-step">{{ stepOf(node) }}</span>
                             <Icon v-else :name="node.kind === 'trigger' ? 'bolt' : node.kind === 'check' ? 'question' : 'play'" :size="12" />
                             <span class="chart-node-title">{{ entryOf(node).title }}</span>
-                            <button type="button" class="chart-node-x" title="Take this box out" @pointerdown.stop @click.stop="remove(node)">×</button>
+                            <button type="button" class="chart-node-x" title="Delete node" @pointerdown.stop @click.stop="remove(node)">×</button>
                         </div>
                         <input
                             v-if="entryOf(node).takes_text"
@@ -330,14 +360,14 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
                             :key="port"
                             :class="['chart-port', port, {hooked: hooked(node, port)}]"
                             :style="{left: `${PORT_AT[port]}%`}"
-                            :title="`Drag a line from ${port}`"
+                            :title="`Drag to connect ${port}`"
                             @pointerdown="dragLine(node, port, $event)"
                         >{{ port }}</span>
                     </div>
                 </div>
                 <aside v-if="trial.ran" class="chart-try-panel">
                     <div class="chart-try-panel-head">
-                        <strong>What would happen</strong>
+                        <strong>Test result</strong>
                         <button type="button" class="chart-node-x" title="Close" @click="trial.ran = false">×</button>
                     </div>
                     <ol v-if="trial.nodes.length" class="chart-try-steps">
@@ -346,16 +376,16 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
                             <span>{{ byId[String(id)] ? entryOf(byId[String(id)]).title : id }}</span>
                         </li>
                     </ol>
-                    <p v-else class="chart-try-none">No box starts on this event: nothing would happen.</p>
+                    <p v-else class="chart-try-none">No trigger for this event. Nothing happens.</p>
                     <p v-for="line in trial.would" :key="line" class="chart-try-would">{{ line }}</p>
                 </aside>
             </div>
         </div>
 
         <footer class="chart-try">
-            <span class="chart-try-label">Try it dry</span>
+            <span class="chart-try-label">Test with event</span>
             <DropList :label="entries[`trigger:${trial.trigger}`]?.title || trial.trigger" :items="triggerItems" :picked="trial.trigger" :menu-width="240" @pick="trial.trigger = $event.key" />
-            <Btn kind="ghost" small :busy="busy === 'try'" @click="tryIt">Run</Btn>
+            <Btn kind="ghost" small :busy="busy === 'try'" @click="tryIt">Test</Btn>
         </footer>
     </section>
 </template>

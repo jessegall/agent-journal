@@ -12,7 +12,7 @@ const PAGES = {
     about: "About",
     plugins: "Plugins",
     integrations: "Integrations",
-    chart: "Workflow",
+    chart: "Workflows",
     secrets: "Secrets",
     page: "Plugin",
     hub: "Journals",

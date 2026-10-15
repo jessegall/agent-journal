@@ -7,7 +7,7 @@ TEXT_LIMIT = 500
 
 
 class Validation:
-    """What makes a chart wrong, found before it is saved: a node the catalogue does not know, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
+    """What makes a workflow wrong, found before it is saved: a node the catalogue does not know, more than one trigger, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
 
     def __init__(self, catalogue: Catalogue) -> None:
         self.catalogue = catalogue
@@ -16,6 +16,9 @@ class Validation:
         by_id = {str(n.get("id", "")): n for n in nodes}
         faults = [f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}" for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
         faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
+        triggers = [n for n in nodes if n.get("kind") == NodeKind.TRIGGER]
+        if len(triggers) > 1:
+            faults.append(f"a workflow holds one trigger; this one has {len(triggers)}")
         for line in lines:
             source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
             if not source or not target:

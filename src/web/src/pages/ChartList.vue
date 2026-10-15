@@ -26,7 +26,7 @@ function pick(node, port, value) {
                 <span class="chart-list-kind">{{ node.kind }}</span>
                 <strong>{{ entryOf(node).title }}</strong>
                 <span class="chart-list-grow" />
-                <Btn kind="ghost" small @click="emit('remove', node)">Take out</Btn>
+                <Btn kind="ghost" small @click="emit('remove', node)">Delete</Btn>
             </div>
             <p class="chart-list-about">{{ entryOf(node).about }}</p>
             <textarea
@@ -40,7 +40,7 @@ function pick(node, port, value) {
             <label v-for="port in ports(node)" :key="port" class="chart-list-port">
                 <span :class="['chart-list-port-name', port]">{{ port }}</span>
                 <select :value="targetOf(node, port) ? String(targetOf(node, port).to) : ''" class="chart-list-pick" @change="pick(node, port, $event.target.value)">
-                    <option value="">the path ends</option>
+                    <option value="">Not connected</option>
                     <option v-for="t in targets(node)" :key="t.id" :value="String(t.id)">{{ label(t) }}</option>
                 </select>
             </label>

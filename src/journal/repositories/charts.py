@@ -23,8 +23,13 @@ class Charts(Repository[Chart]):
         self.links, self.nodes = links, nodes
 
     def the(self) -> Chart:
-        """The one chart of the journal."""
+        """The shipped workflow: the first the journal made."""
         return self.all()[0]
+
+    def remove(self, chart: Chart, by: Actor) -> None:
+        for node in self.nodes_of(chart):
+            self.remove_node(node, by)
+        self.delete(chart, by)
 
     def nodes_of(self, chart: Chart) -> list[Node]:
         return [self.nodes.find(ref.id) for ref in self.links.sources(chart, NODE_OF)]

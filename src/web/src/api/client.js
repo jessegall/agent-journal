@@ -130,12 +130,24 @@ export class ApiClient {
         return transport.request("GET", this.own("/chart"));
     }
 
-    chartSave(body) {
-        return transport.request("POST", this.own("/chart"), body);
+    chartOne(id) {
+        return transport.request("GET", this.own(`/chart/${id}`));
     }
 
-    chartReset() {
-        return transport.request("POST", this.own("/chart/reset"), {});
+    chartNew(title) {
+        return transport.request("POST", this.own("/chart"), {title});
+    }
+
+    chartSave(id, body) {
+        return transport.request("POST", this.own(`/chart/${id}`), body);
+    }
+
+    chartRemove(id) {
+        return transport.request("POST", this.own(`/chart/${id}/remove`), {});
+    }
+
+    chartReset(id) {
+        return transport.request("POST", this.own(`/chart/${id}/reset`), {});
     }
 
     chartTry(trigger, environment) {

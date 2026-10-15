@@ -46,7 +46,7 @@ class Provider:
         """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say holds the stop in the form the program shows as feedback, not as an error, since that is how the program is told to go on, and a stop already refused once is let through."""
         kind = hook.kind
         if kind == HookKind.STOP and (not decision.allowed or decision.context):
-            return Response(200, {"decision": "block", "reason": decision.reason or decision.context})
+            return Response(200, {"decision": "block", "reason": "\n".join(part for part in (decision.reason, decision.context) if part)})
         if not decision.allowed:
             return Response(409, {"error": decision.reason})
         if not decision.context:

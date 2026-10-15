@@ -8,6 +8,7 @@ from journal.features.chart.trial import Trial
 from journal.repositories.environments import Environments
 from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
+from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import PORTS, THEN, Charts
@@ -20,12 +21,16 @@ class ChartCommand(Command):
         self.charts, self.entries, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "show", "the chart: its nodes and lines")
+        self.verb(verbs, "show", "every workflow: its nodes and lines")
         self.verb(verbs, "catalogue", "everything a node may be")
+        new = self.verb(verbs, "new", "a new, empty workflow")
+        new.add_argument("title")
+        self.verb(verbs, "drop", "take a workflow out, with its nodes").add_argument("n", type=int)
         node = self.verb(verbs, "node", "add a node naming a catalogue entry")
         node.add_argument("kind", choices=[k.value for k in NodeKind])
         node.add_argument("key")
         node.add_argument("--text", default="", help="the line an action says, holds with, blocks with or types, or the sequence it starts")
+        node.add_argument("--in", dest="chart", type=int, default=0, help="the workflow by its number; the shipped one unless given")
         line = self.verb(verbs, "line", "draw a line from one node to another")
         line.add_argument("source", type=int)
         line.add_argument("target", type=int)
@@ -35,12 +40,23 @@ class ChartCommand(Command):
         self.verb(verbs, "try", "a dry run for an agent event here: the path and what it would do, nothing done").add_argument("trigger")
 
     def show(self, args: Namespace, where: Where) -> int:
-        chart = self.charts.the()
-        print(f"chart {chart.id}, revision {chart.revision}: {chart.title}")
-        for node in self.charts.nodes_of(chart):
-            print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
-        for line in self.charts.lines_of(chart):
-            print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
+        for chart in self.charts.all():
+            print(f"workflow {chart.id}, revision {chart.revision}: {chart.title}")
+            for node in self.charts.nodes_of(chart):
+                print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
+            for line in self.charts.lines_of(chart):
+                print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
+        return 0
+
+    def new(self, args: Namespace, where: Where) -> int:
+        chart = self.charts.save(Chart(title=args.title), where.actor)
+        print(f"workflow {chart.id}: {chart.title}")
+        return 0
+
+    def drop(self, args: Namespace, where: Where) -> int:
+        chart = self.charts.find(args.n)
+        self.charts.remove(chart, where.actor)
+        print(f"workflow {chart.id} taken out: {chart.title}")
         return 0
 
     def catalogue(self, args: Namespace, where: Where) -> int:
@@ -53,7 +69,10 @@ class ChartCommand(Command):
         entry = self.entries.entry(kind, args.key)
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
-        node = self.charts.add_node(self.charts.the(), Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
+        chart = self.charts.find(args.chart) if args.chart else self.charts.the()
+        if kind == NodeKind.TRIGGER and any(n.kind == NodeKind.TRIGGER for n in self.charts.nodes_of(chart)):
+            raise Refused(f"workflow {chart.id} already has its trigger: a workflow holds one; journal chart new \"<title>\" for another")
+        node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
         print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))
         return 0
 

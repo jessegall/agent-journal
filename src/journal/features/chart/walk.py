@@ -21,7 +21,7 @@ WALKED = "walk"
 
 
 class Walk:
-    """The engine walking the chart for one event: every trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The chart is read fresh each time, so an edit applies at the next event."""
+    """The engine walking every workflow for one event: each trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The workflows are read fresh each time, so an edit applies at the next event."""
 
     def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries) -> None:
         self.charts, self.checks, self.actions, self.entries = charts, checks, actions, entries
@@ -35,17 +35,14 @@ class Walk:
 
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
         """The walk, with the nodes it passes written into the list given."""
-        charts = self.charts.all()
-        if not charts:
-            return Decision()
-        key, chart = self.trigger_key(ctx.event), charts[0]
-        nodes = {node.id: node for node in self.charts.nodes_of(chart)}
-        after = {}
-        for line in self.charts.lines_of(chart):
-            after.setdefault((line.source.id, line.kind), []).append(line.target.id)
-        decision = Decision()
-        for start in [n for n in nodes.values() if n.kind == NodeKind.TRIGGER and n.key == key]:
-            decision = decision.merged(self.follow(start, nodes, after, ctx, passed))
+        key, decision = self.trigger_key(ctx.event), Decision()
+        for chart in self.charts.all():
+            nodes = {node.id: node for node in self.charts.nodes_of(chart)}
+            after = {}
+            for line in self.charts.lines_of(chart):
+                after.setdefault((line.source.id, line.kind), []).append(line.target.id)
+            for start in [n for n in nodes.values() if n.kind == NodeKind.TRIGGER and n.key == key]:
+                decision = decision.merged(self.follow(start, nodes, after, ctx, passed))
         if passed and not isinstance(self.actions, DryActions):
             self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision

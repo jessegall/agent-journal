@@ -1122,19 +1122,20 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     listed = console.run(["chart", "catalogue"], AGENT).out
     assert "trigger  idle" in listed and "action   say" in listed and "trigger  plans.created" in listed
     assert "has no check named flying" in console.run(["chart", "node", "check", "flying"], AGENT).err
-    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text], AGENT).out.split()[1].rstrip(":"))
-    shipped = len(j.load(urlopen(f"http://127.0.0.1:{app.server().port}/journal/chart", timeout=5))["nodes"])
+    wf = int(console.run(["chart", "new", "a test"], AGENT).out.split()[1].rstrip(":"))
+    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
+    shipped = 0
     t, c, a = add("trigger", "idle"), add("check", "open_tasks"), add("action", "block_stop", "--text", "tasks are open: carry on")
     console.run(["chart", "line", str(t), str(c)], AGENT)
     console.run(["chart", "line", str(c), str(a), "--port", "yes"], AGENT)
     shown = console.run(["chart", "show"], AGENT).out
     assert f"{t} --then--> {c}" in shown and f"{c} --yes--> {a}" in shown and "block_stop: tasks are open" in shown
     port = app.server().port
-    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/{wf}", timeout=5))
     assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["idle", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{wf}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1154,7 +1155,7 @@ def test_a_wrong_chart_is_refused_with_its_faults(app):
     port = app.server().port
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1178,12 +1179,12 @@ def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     port = app.server().port
-    catalogue = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))["catalogue"]
+    catalogue = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/1", timeout=5))["catalogue"]
     by_key = {e["key"]: e for e in catalogue}
     assert by_key["turn_written"]["providers"] == ["claude"] and by_key["idle"]["providers"] == ["claude", "codex"]
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1207,7 +1208,9 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     assert hook(app, "Stop")[1] == {}, "auto off: the states say nothing about open tasks"
-    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text], AGENT).out.split()[1].rstrip(":"))
+    wf = [int(console.run(["chart", "new", f"test {i}"], AGENT).out.split()[1].rstrip(":")) for i in range(3)]
+    at = [wf[0]]
+    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(at[0])], AGENT).out.split()[1].rstrip(":"))
     line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], AGENT)
     stop, open_, hold_stop, rest = add("trigger", "idle"), add("check", "open_tasks"), add("action", "block_stop", "--text", "the chart says: tasks are open, carry on"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(stop, open_)
@@ -1222,14 +1225,16 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     status, body = hook(app, "Stop")
     assert "the chart says: nothing is open, rest" in body["reason"], "the no line is followed; a line said at a fresh stop holds the stop once, as any line does"
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "the same stop again goes through"
-    tool, writes, hold = add("trigger", "tool_starting"), add("check", "tool_writes"), add("action", "hold", "--text", "no writes today")
+    at[0] = wf[1]
+    tool, writes, hold, calm = add("trigger", "tool_starting"), add("check", "tool_writes"), add("action", "hold", "--text", "no writes today"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(tool, writes)
     line(writes, hold, "yes")
-    line(writes, rest, "no")
+    line(writes, calm, "no")
     console.run(["task", "create", "u", "--start"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})
     assert status == 409 and body["error"] == "no writes today", "a hold refuses the tool use"
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[0] == 200
+    at[0] = wf[2]
     filed, typed = add("trigger", "tasks.created"), add("action", "type", "--text", "a task was filed")
     line(filed, typed)
     console.run(["task", "create", "filed by the user"], USER)
@@ -1281,17 +1286,17 @@ def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(a
     console = app.console()
     console.run(["environment", "here"], AGENT)
     port = app.server().port
-    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/1", timeout=5))
     assert all(n["shipped"] for n in read["nodes"])
     nodes = read["nodes"]
     nodes[-1]["text"] = "my own words"
     nodes[0]["x"] = 99
-    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         saved = j.loads(r.read())
     assert saved["nodes"][-1]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
     assert "(edited)" in console.run(["chart", "show"], AGENT).out
     assert "reset to the shipped one, revision 2" in console.run(["chart", "reset"], AGENT).out
-    again = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    again = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/1", timeout=5))
     assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
 
 
@@ -1301,7 +1306,8 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text], AGENT).out.split()[1].rstrip(":"))
+    wf = int(console.run(["chart", "new", "counters"], AGENT).out.split()[1].rstrip(":"))
+    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
     line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], AGENT)
     tool = add("trigger", "tool_starting")
     every = add("check", "tool_uses_since_unread_every", "--text", "3")
@@ -1395,3 +1401,47 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     console.run(["message", "send", "could you give me an update?"], USER)
     app.runtime().deferred.drain()
     assert machine.current("s1").name == "running_sequence" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, typed to the agent"
+
+
+def test_a_journal_holds_several_workflows_and_the_engine_walks_them_all(app):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    port = app.server().port
+    listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    assert [w["title"] for w in listed["workflows"]] == ["The journal's conduct"] and listed["catalogue"]
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+        made = j.loads(r.read())
+    assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
+    second = made["id"]
+    console.run(["chart", "node", "trigger", "idle", "--in", str(second)], AGENT)
+    stop = int(console.run(["chart", "show"], AGENT).out.split("workflow 2")[1].split()[4])
+    say = int(console.run(["chart", "node", "action", "say", "--text", "the second workflow says hello", "--in", str(second)], AGENT).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(stop), str(say)], AGENT)
+    console.run(["task", "create", "free work"], USER)
+    body = hook(app, "Stop")[1]
+    assert "the second workflow says hello" in body["reason"] and "tasks are open" in body["reason"], "both workflows speak at one stop"
+    try:
+        urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5)
+    except HTTPError as error:
+        assert error.code == 409, "the shipped workflow stays"
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{second}/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+        assert j.loads(r.read()) == {"removed": second}
+    assert "Greetings" not in console.run(["chart", "show"], AGENT).out
+
+
+def test_a_workflow_holds_one_trigger(app):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    assert "already has its trigger" in console.run(["chart", "node", "trigger", "tool_starting"], AGENT).err
+    port = app.server().port
+    nodes = [{"id": "a", "kind": "trigger", "key": "idle"}, {"id": "b", "kind": "trigger", "key": "ticked"}]
+    try:
+        urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": []}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5)
+    except HTTPError as error:
+        assert error.code == 409 and "holds one trigger; this one has 2" in j.loads(error.read())["error"]
