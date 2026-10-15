@@ -128,7 +128,7 @@ Missing or wrong:
   turn in the dogfood run and the journal accepted it.
 - 7, 8 (reactions, processing), 9, 10, 11, 12 (transcript fallback and the fault), 14, 15, 16, 19 beyond
   `reply`, 21, 22, 24, 25, 27 beyond commits, 28, 29, 30, 33, 34: not built.
-- In the dogfood run of 2026-10-15 12:24 the agent's reply never reached the chat: the journal recorded no
-  display-hook turn for that session at all, while the server log holds 356 "unable to open database file" errors
-  from a server whose database had been removed under it earlier. The first thing to settle is whether the
-  display hook reaches the server at all, with a log line per hook received.
+- Found behind the dogfood run of 2026-10-15 12:24: one failing piece of deferred work killed the server's
+  deferred worker, and every later deferred listener, the turn recorder among them, waited in its queue for good
+  with nothing logged. The worker now logs the failure to the server log and goes on. The run's own entries were
+  wiped with the environment it ran in, so that run cannot be read back.

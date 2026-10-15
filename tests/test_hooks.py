@@ -82,3 +82,16 @@ def test_every_hook_kind_translates(app):
     for kind in ["SessionStart", "UserPromptSubmit", "PostToolUse", "PreCompact", "Stop", "SubagentStart", "SubagentStop", "MessageDisplay", "SessionEnd"]:
         assert post_hook(app, {"hook_event_name": kind, "session_id": "s1"})[0] == 200
     assert len(app.container.get(Entries).in_(1)) == 9
+
+
+
+def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
+    from journal.hooks.deferred import Deferred
+    ran = []
+    deferred = Deferred()
+    deferred.start()
+    deferred.add(lambda: 1 / 0)
+    deferred.add(lambda: ran.append("after"))
+    deferred.drain()
+    deferred.stop()
+    assert ran == ["after"] and "ZeroDivisionError" in capsys.readouterr().err

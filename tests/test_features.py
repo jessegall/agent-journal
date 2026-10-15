@@ -138,6 +138,26 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
 
 
+def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
+    from journal.repositories.messages import Messages
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    app.console().run(["message", "send", "first"], USER)
+    app.console().run(["message", "send", "second"], USER)
+    hook(app, "SessionStart")
+    hook(app, "MessageDisplay", message="Good evening. At your service.\n\n[!reply:1]")
+    app.runtime().deferred.drain()
+    messages = app.container.get(Messages).in_(1)
+    assert messages[-1].author == "agent" and messages[-1].reply_to == 1 and messages[-1].text == "Good evening. At your service."
+    hook(app, "MessageDisplay", message="Both done, see below [!reply:2]")
+    app.runtime().deferred.drain()
+    messages = app.container.get(Messages).in_(1)
+    assert messages[-1].reply_to is None and "[!reply:2]" in messages[-1].text, "a tag inside a line is text"
+    assert typed[-1].endswith("the [!reply:2] tag must open a line of your turn; message 2 is still unanswered")
+    assert "new message 2" in hook(app, "Stop")[1]["error"]
+
+
 def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
     from journal.features.questions.states.waiting import Waiting
     console = app.console()

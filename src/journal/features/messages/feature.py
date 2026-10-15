@@ -39,8 +39,8 @@ The user leaves messages; you answer them before anything else.
 - The journal names a message by its number, never its words: `new message 4`, `new messages 4, 5, 6`, or past three
   `7 messages unread: journal message unread`. `journal message read N` shows one and marks it read; `journal message unread`
   shows every unread one and marks them read.
-- Answer each in your next turn with the tag `[!reply:N]` at the start of the paragraph that answers message N; that posts
-  the reply. `journal message send "<text>" --reply-to N` answers from a command; `journal message list` shows the thread,
+- Answer each in your next turn with the tag `[!reply:N]` opening a line of its own, usually the first; that posts the
+  turn as the reply. A tag inside a line is only text. `journal message send "<text>" --reply-to N` answers from a command; `journal message list` shows the thread,
   unread ones marked with `*`.
 - Everything you write for the user reaches the chat as a message; keep it about the work, never about the
   journal's own commands.

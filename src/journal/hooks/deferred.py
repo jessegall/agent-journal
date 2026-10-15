@@ -1,5 +1,7 @@
 import queue
+import sys
 import threading
+import traceback
 from typing import Callable
 
 
@@ -30,9 +32,12 @@ class Deferred:
         self._queue.join()
 
     def _work(self) -> None:
+        """A piece of work that fails is written to the server's log and the next one runs: the worker never dies with the queue behind it."""
         while (work := self._queue.get()) is not self.STOP:
             try:
                 work()
+            except Exception:
+                sys.stderr.write(f"deferred work failed:\n{traceback.format_exc()}")
             finally:
                 self._queue.task_done()
         self._queue.task_done()
