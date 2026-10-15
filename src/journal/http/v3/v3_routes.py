@@ -46,6 +46,8 @@ class V3Routes:
         router.get(f"{API}/{{env}}/{{type}}/{{n}}", c.get_one)
         router.get(f"{API}/{{env}}/{{type}}/{{n}}/choices", c.get_choices)
         router.post(f"{API}/{{env}}/{{type}}/read-all", c.post_read_all)
+        router.post(f"{API}/{{env}}/{{type}}/{{n}}/upload", c.post_upload)
+        router.get(f"{API}/{{env}}/{{type}}/{{n}}/files/{{name}}", c.get_attached_file)
         router.post(f"{API}/{{env}}/{{type}}/{{n}}/{{action}}", c.post_act)
         router.post(f"{API}/{{env}}/{{type}}/{{action}}", c.post_type_action)
         return router

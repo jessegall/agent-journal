@@ -30,4 +30,4 @@ class MessagesShaper(Shaper):
         closed = read if (author == USER and answered) or (author == AGENT and read) else 0.0
         return V3Row.of("message", m, title=(m.text[:TITLE - 1] + "…") if len(m.text) > TITLE else m.text, brief=m.text,
                         seen=[author, other] if read else [author], refs=[*([f"message:{m.reply_to}"] if m.reply_to else []), *filed],
-                        data={"idempotency": m.idempotency or f"v4:{m.id}", "acknowledgement": m.acknowledgement, "delivered": bool(read)}, completed=closed, outcome="answered" if closed and author == USER else "")
+                        data={"idempotency": m.idempotency or f"v4:{m.id}", "acknowledgement": m.acknowledgement, "delivered": bool(read), "files": {name: "" for name in m.files}}, completed=closed, outcome="answered" if closed and author == USER else "")

@@ -14,4 +14,6 @@ class Message(Scoped):
     idempotency: str = ""
     """The key the sender gave it, so a message sent twice lands once and the viewer can match what it sent."""
     acknowledgement: bool = False
+    files: tuple[str, ...] = ()
+    """The names of the files attached, kept under the journal's files folder."""
     """An agent's turn that only answered a journal line and changed nothing: kept, and left out of the chat unless shown."""

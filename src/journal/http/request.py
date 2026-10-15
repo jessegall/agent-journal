@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 from journal.models.actor import Actor
 
@@ -13,6 +13,8 @@ class Request:
     headers: dict
     actor: Actor
     """Who sent it: the user the viewer is signed in as, or the one local user; a hook names its own agent in its body."""
+    files: dict = field(default_factory=dict)
+    """The files a multipart request carried, by name."""
 
     def with_params(self, params: dict) -> "Request":
         return replace(self, params=params)

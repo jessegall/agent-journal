@@ -265,3 +265,15 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
         assert call(server, "GET", "/api/summary")[1]["environments"][0]["silent"] is False
     finally:
         app.runtime().stop()
+
+
+def test_a_file_attached_to_a_message_is_stored_and_served(server):
+    n = call(server, "POST", "/api/main/message", {"brief": "see the picture", "idempotency": "f1"})[1]["n"]
+    boundary = "b0undary"
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"note.txt\"\r\nContent-Type: text/plain\r\n\r\nhello there\r\n--{boundary}--\r\n").encode()
+    request = HttpRequest(f"http://127.0.0.1:{server.port}/api/main/message/{n}/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    with urlopen(request, timeout=5) as reply:
+        row = json.loads(reply.read())
+    assert row["data"]["files"] == {"note.txt": ""}
+    with urlopen(f"http://127.0.0.1:{server.port}/api/main/message/{n}/files/note.txt", timeout=5) as reply:
+        assert reply.read() == b"hello there" and reply.headers["Content-Type"].startswith("text/plain")

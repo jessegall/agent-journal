@@ -11,6 +11,7 @@ from journal.features.voices.calling import Calling
 from journal.features.voices.chosen_voice import ChosenVoice
 from journal.features.voices.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
 from journal.http.request import Request
+from journal.http.file_response import FileResponse
 from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
 from journal.http.v3.current_work import CurrentWork
@@ -198,6 +199,21 @@ class V3Controller:
         if done is None:
             return Response.refused(f"{action} is not something the viewer can do to a {type_} here")
         return Response.json(self.row_of(type_, n, environment) or {})
+
+    def post_upload(self, request: Request) -> Response:
+        environment = self.environment_of(request)
+        type_, n = request.params["type"], int(request.params["n"])
+        try:
+            done = self.actions.upload(type_, n, request)
+        except NotFound as missing:
+            return Response.not_found(str(missing))
+        if done is None:
+            return Response.refused(f"a {type_} takes no files here")
+        return Response.json(self.row_of(type_, n, environment) or {})
+
+    def get_attached_file(self, request: Request):
+        found = self.actions.attachments.read(request.params["type"], int(request.params["n"]), request.params["name"])
+        return FileResponse(*found) if found else Response.not_found("no such file")
 
     def post_read_all(self, request: Request) -> Response:
         self.actions.read_all(request.params["type"], [int(n) for n in request.body.get("numbers", [])], request.actor)

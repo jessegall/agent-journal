@@ -3,7 +3,9 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
 from journal.db.connection import Connection
+from journal.http.file_response import FileResponse
 from journal.http.identity import Identity
+from journal.http.multipart import Multipart
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.router import Router
@@ -30,11 +32,17 @@ class Handler(BaseHTTPRequestHandler):
         request = self._request()
         if not request.path.startswith(("/api/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
             return self._file(*found)
-        answer = self.router.dispatch(request)
-        self._stream(answer) if isinstance(answer, StreamResponse) else self._reply(answer)
+        self._answer(self.router.dispatch(request))
 
     def do_POST(self) -> None:
-        self._reply(self.router.dispatch(self._request()))
+        self._answer(self.router.dispatch(self._request()))
+
+    def _answer(self, answer) -> None:
+        if isinstance(answer, StreamResponse):
+            return self._stream(answer)
+        if isinstance(answer, FileResponse):
+            return self._file(answer.status, answer.kind, answer.body)
+        self._reply(answer)
 
     def log_message(self, format, *args) -> None:
         return None
@@ -44,7 +52,11 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         raw = self.rfile.read(length) if length else b""
         headers = {name.lower(): value for name, value in self.headers.items()}
-        return Request(self.command, url.path, {k: v[-1] for k, v in parse_qs(url.query).items()}, json.loads(raw) if raw else {}, {}, headers, self.identity.of(headers))
+        query = {k: v[-1] for k, v in parse_qs(url.query).items()}
+        if headers.get("content-type", "").startswith("multipart/form-data"):
+            form = Multipart(headers["content-type"], raw)
+            return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.of(headers), form.files())
+        return Request(self.command, url.path, query, json.loads(raw) if raw else {}, {}, headers, self.identity.of(headers))
 
     def _file(self, status: int, kind: str, body: bytes) -> None:
         self.send_response(status)
