@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from journal.models.agent import Agent
 from journal.repositories.not_found import NotFound
 from journal.repositories.scoped_repository import ScopedRepository
@@ -19,3 +21,7 @@ class Agents(ScopedRepository[Agent]):
         if not found:
             raise NotFound(self.table, session)
         return found[0]
+
+    def others_lately(self, environment_id: int, session: str, since: datetime) -> list[Agent]:
+        """The other sessions that worked here since: a launch that ended within a minute of starting did no work and is not one."""
+        return [a for a in self.in_(environment_id) if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]

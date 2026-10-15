@@ -43,7 +43,7 @@ class AgentsShaper(Shaper):
     @staticmethod
     def whispers(entries) -> list[dict]:
         """A fact, rule or reminder recalled by one of its words, as the chat draws it."""
-        return [{"at": e.data["at"], "title": e.data["detail"], "ref": e.data["row"], "words": "", "shows": "rules"} for e in entries if e.kind == "card" and e.data["key"].startswith("whisper:")]
+        return [{"at": e.data["at"], "title": e.data["label"], "ref": e.data["row"], "words": "", "shows": "rules"} for e in entries if e.kind == "card" and e.data["key"].startswith("whisper:")]
 
     @staticmethod
     def feature_cards(entries) -> list[dict]:

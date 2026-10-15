@@ -61,10 +61,10 @@ class EnvironmentCommand(Command):
     def in_flight(self, environment_id: int, session: str) -> list[str]:
         """What an agent must know here, one line a kind; nothing in flight says so."""
         since = datetime.now(timezone.utc) - TAKEN_OVER_WITHIN
-        others = [a for a in self.agents.in_(environment_id) if a.session != session and a.updated_at >= since]
+        others = self.agents.others_lately(environment_id, session, since)
         held = self.tasks.in_state(environment_id, TaskState.STARTED)
         lines = [
-            f"taken over from another agent, last seen {others[-1].updated_at.strftime('%H:%M')}" if others else "",
+            f"taken over from another agent, last seen {others[-1].updated_at.astimezone().strftime('%H:%M')}" if others else "",
             self.named("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
             self.named("open tasks", [f"{t.id} {t.title}" for t in self.tasks.in_state(environment_id, TaskState.OPEN)]),
             self.named("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.in_state(environment_id, TaskState.PARKED)]),

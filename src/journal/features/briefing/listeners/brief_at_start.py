@@ -50,7 +50,7 @@ class BriefAtStart(AgentListener[SessionStarted]):
         if event.source == "compact":
             return None
         since = datetime.now(timezone.utc) - TAKEN_OVER_WITHIN
-        others = [a for a in self.agents.in_(event.environment_id) if a.session != event.session and a.updated_at >= since]
+        others = self.agents.others_lately(event.environment_id, event.session, since)
         return Briefing.TAKEOVER.about(at=others[-1].updated_at.astimezone().strftime("%H:%M")) if others else None
 
     def waiting(self, event: SessionStarted):

@@ -179,11 +179,14 @@ textarea {
 
 [data-busy] {
     position: relative;
-    color: transparent !important;
     pointer-events: none;
 }
 
-[data-busy] > * {
+[data-busy]:not(.busy) {
+    color: transparent !important;
+}
+
+[data-busy]:not(.busy) > * {
     visibility: hidden;
 }
 
