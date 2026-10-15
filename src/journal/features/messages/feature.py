@@ -19,9 +19,9 @@ class Messages(Feature):
     commands = (MessageCommand,)
     listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, RecordTurn, RunTags, TellReaction)
 
-    NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0)
-    SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60)
-    MANY = Nudge(name, "many", "{{count}} messages unread: journal message unread", repeat_after=60)
+    NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)
+    SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)
+    MANY = Nudge(name, "many", "{{count}} messages unread: journal message unread", repeat_after=60, answered_in_chat=True)
     REACTED = Nudge(name, "reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_after=0)
     ONLY_A_FACE = Nudge(name, "only_a_face", "your turn was only {{face}}, so it was not posted", "a face on its own is a reaction: journal message react <n> \"{{face}}\" puts it on the message it answers; write words when there is something to say", repeat_after=0)
     nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE)

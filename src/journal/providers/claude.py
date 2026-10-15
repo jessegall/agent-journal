@@ -19,10 +19,10 @@ class Claude(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 
-    def wire_hooks(self, project: Path, command: str) -> Path:
-        path = super().wire_hooks(project, command)
+    def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
+        path = super().wire_hooks(project, script, command)
         settings = json.loads(path.read_text())
-        status = shlex.join(["sh", str(Path(shlex.split(command)[1]).with_name("status.sh"))])
+        status = shlex.join(["sh", str(script.with_name("status.sh"))])
         if settings.get("statusLine", {}).get("command") != status:
             settings["statusLine"] = {"type": "command", "command": status, "padding": 0}
             path.write_text(json.dumps(settings, indent=2) + "\n")

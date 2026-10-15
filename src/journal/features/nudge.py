@@ -11,10 +11,12 @@ class Nudge:
     brief: str = ""
     repeat_after: float = 300.0
     """Seconds before the same line may be said again to the same agent; 0 says it every time."""
+    answered_in_chat: bool = False
+    """Whether the agent's answer to this line is for the user and belongs in the chat, as an introduction or a reply does; otherwise a turn that only acknowledges the line is kept out of it."""
 
     def about(self, **values) -> "Said":
         from journal.features.said import Said
-        return Said(self.feature, self.name, self.title, self.brief, self.repeat_after, values)
+        return Said(feature=self.feature, name=self.name, title=self.title, brief=self.brief, repeat_after=self.repeat_after, answered_in_chat=self.answered_in_chat, values=values)
 
     @property
     def key(self) -> str:

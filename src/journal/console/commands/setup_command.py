@@ -39,12 +39,13 @@ class SetupCommand(Command):
         return 0
 
     def hooks(self, args: Namespace, where: Where) -> int:
+        """Each hook first tests that its script is still there, so a package moved away fails silent instead of in the chat."""
         script = self.package / "hooks" / "hook.sh"
         for provider in self.providers.all():
             if provider.name != "claude" and not (self.config.root / provider.home).is_dir():
                 continue
-            command = shlex.join(["sh", str(script), provider.name, str(self.config.root)])
-            print(f"hooks   {provider.wire_hooks(self.config.root, command).relative_to(self.config.root)}")
+            command = f"test -f {shlex.quote(str(script))} && exec {shlex.join(['sh', str(script), provider.name, str(self.config.root)])}; exit 0"
+            print(f"hooks   {provider.wire_hooks(self.config.root, script, command).relative_to(self.config.root)}")
         return 0
 
     def law(self) -> Path:

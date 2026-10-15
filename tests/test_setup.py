@@ -23,7 +23,7 @@ def test_setup_wires_hooks_skills_and_the_law(app):
     settings = json.loads((root / ".claude/settings.json").read_text())
     assert "SessionStart" in settings["hooks"] and "MessageDisplay" in settings["hooks"]
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
-    assert command.endswith(f"hook.sh claude {root}") and settings["statusLine"]["command"].endswith("status.sh")
+    assert command.startswith("test -f ") and f"hook.sh claude {root}; exit 0" in command and settings["statusLine"]["command"].endswith("status.sh")
     assert (root / ".claude/skills/journal/SKILL.md").is_file() and (root / ".agents/skills/journal-tasks/SKILL.md").is_file()
     assert (root / ".claude/agents/researcher.md").read_text().startswith("---\nname: researcher")
     agents = (root / "AGENTS.md").read_text()

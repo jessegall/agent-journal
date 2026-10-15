@@ -419,11 +419,17 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
     assert typed[-1].startswith("[journal] your turn was only 👍, so it was not posted")
 
 
-def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app):
+def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monkeypatch):
     from journal.repositories.messages import Messages
-    hook(app, "SessionStart")
-    hook(app, "UserPromptSubmit", prompt="[journal] new message 9")
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: sent.append(instruction["line"]))
+    hook(app, "SessionStart", source="startup")
+    hook(app, "UserPromptSubmit", prompt="[journal] the journal is ready on main")
     hook(app, "MessageDisplay", message="Noted.")
+    app.runtime().deferred.drain()
+    hook(app, "UserPromptSubmit", prompt=sent[-1])
+    hook(app, "MessageDisplay", message="Good day. I am your butler; what shall I attend to?")
     app.runtime().deferred.drain()
     hook(app, "UserPromptSubmit", prompt="[journal] carry on")
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
@@ -435,7 +441,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app):
     hook(app, "UserPromptSubmit", prompt="please fix the footer")
     hook(app, "MessageDisplay", message="On it.")
     app.runtime().deferred.drain()
-    assert [(m.text, m.acknowledgement) for m in app.container.get(Messages).in_(1) if m.author == "agent"] == [("Noted.", True), ("Still nothing changed.", True), ("Fixed the login.", False), ("On it.", False)]
+    assert [(m.text, m.acknowledgement) for m in app.container.get(Messages).in_(1) if m.author == "agent"] == [("Noted.", True), ("Good day. I am your butler; what shall I attend to?", False), ("Still nothing changed.", True), ("Fixed the login.", False), ("On it.", False)], "an introduction asked for by the journal is for the user"
 
 
 def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch):

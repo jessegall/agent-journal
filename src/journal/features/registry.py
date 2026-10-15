@@ -27,6 +27,9 @@ class Registry:
     def skill_named(self, name: str) -> Skill | None:
         return next((skill for skill in self.skills() if skill.name == name), None)
 
+    def nudge_keyed(self, key: str) -> Nudge | None:
+        return next((nudge for feature in self.features for nudge in feature.nudges if nudge.key == key), None)
+
     def owner_of(self, nudge: Nudge) -> type[Feature]:
         return self._by_name[nudge.feature]
 

@@ -43,7 +43,7 @@ class Provider:
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"hooks": [{"type": "command", "command": command}]}] for kind in self.hook_kinds}
 
-    def wire_hooks(self, project: Path, command: str) -> Path:
+    def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         """Writes the journal's hook into the program's settings file, replacing any older block of ours and keeping everything else."""
         path = project / self.home / self.settings_file
         settings = json.loads(path.read_text()) if path.is_file() else {}
