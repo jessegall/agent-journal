@@ -134,8 +134,8 @@ export class ApiClient {
         return transport.request("GET", this.own(`/chart/${id}`));
     }
 
-    chartNew(title) {
-        return transport.request("POST", this.own("/chart"), {title});
+    chartNew(body) {
+        return transport.request("POST", this.own("/chart"), body);
     }
 
     chartSave(id, body) {

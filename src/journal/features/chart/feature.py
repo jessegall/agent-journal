@@ -9,7 +9,7 @@ from journal.features.skill import Skill
 
 class ChartFeature(Feature):
     name = "chart"
-    title = "Chart"
+    title = "Workflows"
     help = "The journal's conduct toward the agent as a flowchart the user edits: triggers, checks and actions joined by lines."
     commands = (ChartCommand,)
     seeds = (ShippedChart,)

@@ -7,6 +7,8 @@ from journal.features.chart.validation import Validation
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.chart import Chart
+from journal.models.node_kind import NodeKind
+from journal.models.node import Node
 from journal.repositories.charts import Charts
 from journal.repositories.not_found import NotFound
 from journal.repositories.environments import Environments
@@ -28,8 +30,13 @@ class ChartController:
             return Response.not_found(str(missing))
 
     def create(self, request: Request) -> Response:
-        title = request.body.get("title", "").strip() or "A workflow"
-        return Response.json(self.drawn(self.charts.save(Chart(title=title), request.actor)), 201)
+        """A workflow is born with its trigger: the event it starts at, named by its key, and a title that is the event's unless given."""
+        trigger = next((e for e in self.catalogue.all() if e.kind == NodeKind.TRIGGER and e.key == request.body.get("trigger", "")), None)
+        title = request.body.get("title", "").strip() or (trigger.title if trigger else "A workflow")
+        chart = self.charts.save(Chart(title=title), request.actor)
+        if trigger:
+            self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=trigger.key, x=400, y=0), request.actor)
+        return Response.json(self.drawn(chart), 201)
 
     def remove(self, request: Request) -> Response:
         chart = self.charts.find(int(request.params["id"]))

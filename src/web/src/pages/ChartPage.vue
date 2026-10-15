@@ -3,90 +3,134 @@ import {computed, nextTick, onMounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
-import Icon from "../kit/Icon.vue";
+import Dialog from "../kit/Dialog.vue";
 import DropList from "../kit/DropList.vue";
+import EmptyState from "../kit/EmptyState.vue";
+import Icon from "../kit/Icon.vue";
+import MenuItem from "../kit/MenuItem.vue";
+import MenuLabel from "../kit/MenuLabel.vue";
+import MenuPanel from "../kit/MenuPanel.vue";
+import PageBar from "../kit/PageBar.vue";
+import Segmented from "../kit/Segmented.vue";
+import SidePanel from "../kit/SidePanel.vue";
+import TextInput from "../kit/TextInput.vue";
 import ChartList from "./ChartList.vue";
 
-const CARD = {width: 208, height: 44, tall: 76};
+const CARD = {width: 208, plain: 48, text: 84, open: 124};
 const PORT_AT = {then: 50, yes: 30, no: 70};
-const KINDS = [
-    {kind: "trigger", title: "Triggers", about: "An event that starts a path"},
-    {kind: "check", title: "Checks", about: "A yes or no question about the rows"},
-    {kind: "action", title: "Actions", about: "What the journal does"},
+const WORD = {then: "Next", yes: "Yes", no: "No"};
+const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
+const HELP = "{{name}}";
+const LEAD = "Workflows control what happens when the agent does something. Each starts at a trigger (an event), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
+const VIEWS = [
+    {key: "canvas", label: "Canvas"},
+    {key: "list", label: "List"},
 ];
-const AGENT_TRIGGERS = ["idle", "tool_starting", "tool_finished", "prompt_submitted", "session_started", "turn_written", "subagent_started", "subagent_ended", "compacting", "session_ended", "ticked"];
 
 const loaded = ref(false);
 const workflows = ref([]);
 const current = ref(0);
 const shipped = ref(false);
-const naming = ref(false);
-const newTitle = ref("");
 const title = ref("");
 const revision = ref(0);
 const catalogue = ref([]);
 const nodes = ref([]);
 const lines = ref([]);
 const past = ref([]);
-const dirty = ref(false);
 const busy = ref("");
 const notice = ref("");
 const selected = ref(null);
-const search = ref("");
+const hovered = ref(null);
 const camera = reactive({x: 40, y: 40, scale: 1});
 const plane = ref(null);
 const drawing = ref(null);
-const asList = ref(window.innerWidth < 720);
-const paletteOpen = ref(window.innerWidth >= 720);
-const trial = reactive({trigger: "idle", nodes: [], would: [], ran: false});
+const view = ref(window.innerWidth < 720 ? "list" : "canvas");
+const adding = ref(null);
+const addButton = ref(null);
+const dropMark = ref(null);
+const search = ref("");
+const naming = ref(null);
+const confirming = ref("");
+const trial = reactive({nodes: [], would: [], ran: false});
 let fresh = 0;
 
 const entries = computed(() => Object.fromEntries(catalogue.value.map((e) => [`${e.kind}:${e.key}`, e])));
 const entryOf = (node) => entries.value[`${node.kind}:${node.key}`] || {title: node.key, about: "", takes_text: false, providers: []};
 const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.id), n])));
-const offered = computed(() =>
-    KINDS.map((group) => ({
-        ...group,
-        entries: catalogue.value.filter((e) => e.kind === group.kind && (!search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase()))),
-    }))
-);
+const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
+const selectedNode = computed(() => (selected.value ? byId.value[String(selected.value)] || null : null));
+const dirty = computed(() => past.value.length > 0);
+const workflowItems = computed(() => workflows.value.map((w) => ({key: String(w.id), label: w.title, note: w.shipped ? "Default" : ""})));
+const eventItems = computed(() => catalogue.value.filter((e) => e.kind === "trigger").map((e) => ({key: e.key, label: e.title})));
+const matches = (e) => !search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase());
+const offeredChecks = computed(() => catalogue.value.filter((e) => e.kind === "check" && matches(e)));
+const offeredActions = computed(() => catalogue.value.filter((e) => e.kind === "action" && matches(e)));
+const offeredTriggers = computed(() => (trigger.value ? [] : catalogue.value.filter((e) => e.kind === "trigger" && matches(e))));
+
+// where a node added from the menu lands: under the node a dragged line came from, else under the selected node, on its first free output
+const landing = computed(() => {
+    if (adding.value && adding.value.from) return adding.value.from;
+    const node = selectedNode.value;
+    if (!node) return null;
+    const port = ports(node).find((p) => !hooked(node, p));
+    return port ? {node, port} : null;
+});
+const landingWords = computed(() => (landing.value ? `Added below ${entryOf(landing.value.node).title} and connected to its ${WORD[landing.value.port]} output.` : "Added to the canvas, unconnected: drag a port onto it."));
 
 function take(got) {
+    current.value = got.id;
+    shipped.value = got.shipped;
     title.value = got.title;
     revision.value = got.revision;
-    catalogue.value = got.catalogue;
     nodes.value = got.nodes.map((n) => ({...n}));
     lines.value = got.lines.map((l) => ({...l}));
-    dirty.value = false;
     past.value = [];
+    selected.value = null;
+    trial.ran = false;
     loaded.value = true;
 }
 
-// the whole chart in view at first, as large as the canvas allows
+// the whole workflow in view at first, as large as the canvas allows and never larger than life
 function fit() {
     if (!plane.value || !nodes.value.length) return;
     const left = Math.min(...nodes.value.map((n) => n.x)) - 40;
-    const top = Math.min(...nodes.value.map((n) => n.y)) - 40;
+    const top = Math.min(...nodes.value.map((n) => n.y)) - 32;
     const right = Math.max(...nodes.value.map((n) => n.x + CARD.width)) + 40;
     const bottom = Math.max(...nodes.value.map((n) => n.y + heightOf(n))) + 40;
     const scale = Math.min(1, plane.value.clientWidth / (right - left), plane.value.clientHeight / (bottom - top));
     camera.scale = Math.max(0.4, scale);
     camera.x = (plane.value.clientWidth - (right - left) * camera.scale) / 2 - left * camera.scale;
-    camera.y = (plane.value.clientHeight - (bottom - top) * camera.scale) / 2 - top * camera.scale;
+    camera.y = 24 - top * camera.scale;
+}
+
+async function refreshList() {
+    workflows.value = (await api.chart()).workflows;
+}
+
+async function open(id) {
+    take(await api.chartOne(id));
+    await nextTick();
+    fit();
 }
 
 async function load() {
-    take(await api.chart());
-    await nextTick();
-    fit();
+    const got = await api.chart();
+    workflows.value = got.workflows;
+    catalogue.value = got.catalogue;
+    const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
+    if (first) await open(first.id);
+    else loaded.value = true;
 }
 onMounted(load);
 
 // every change goes on the draft, kept apart from what the server holds until Save; Undo steps the draft back
+function remember() {
+    past.value = [...past.value.slice(-39), {nodes: nodes.value.map((n) => ({...n})), lines: lines.value.map((l) => ({...l}))}];
+}
+
 function change(work) {
-    past.value = [...past.value.slice(-19), {nodes: nodes.value.map((n) => ({...n})), lines: lines.value.map((l) => ({...l}))}];
+    remember();
     work();
-    dirty.value = true;
 }
 
 function undo() {
@@ -94,19 +138,37 @@ function undo() {
     if (!last) return;
     nodes.value = last.nodes;
     lines.value = last.lines;
-    dirty.value = past.value.length > 0 || true;
 }
 
+function discard() {
+    if (!past.value.length) return;
+    const first = past.value[0];
+    nodes.value = first.nodes;
+    lines.value = first.lines;
+    past.value = [];
+}
+
+function openAdd(from) {
+    search.value = "";
+    adding.value = {from: from || null};
+}
+
+// a new node lands where the menu said: under the node it hangs from, connected, or at the point a line was dropped
 function add(entry) {
-    if (entry.kind === "trigger" && nodes.value.some((n) => n.kind === "trigger")) {
-        notice.value = "This workflow already has a trigger. A workflow has one; create another workflow for a second.";
-        return;
-    }
+    const from = landing.value;
+    const at = adding.value && adding.value.at;
+    adding.value = null;
     change(() => {
         fresh += 1;
-        const at = {x: Math.round((plane.value?.clientWidth / 2 - camera.x) / camera.scale) || 120, y: Math.round((plane.value?.clientHeight / 2 - camera.y) / camera.scale) || 120};
-        const node = {id: `new-${fresh}`, kind: entry.kind, key: entry.key, text: "", x: at.x + ((fresh * 24) % 120), y: at.y + ((fresh * 24) % 120), shipped: false};
+        const below = from ? {x: from.node.x + (from.port === "no" ? 240 : from.port === "yes" ? -240 : 0), y: from.node.y + heightOf(from.node) + 44} : null;
+        const middle = {x: Math.round((plane.value?.clientWidth / 2 - camera.x) / camera.scale - CARD.width / 2) || 120, y: Math.round((plane.value?.clientHeight / 2 - camera.y) / camera.scale) || 120};
+        const spot = at || below || middle;
+        const node = {id: `new-${fresh}`, kind: entry.kind, key: entry.key, text: "", x: Math.round(spot.x), y: Math.round(spot.y), shipped: false};
         nodes.value.push(node);
+        if (from && node.kind !== "trigger") {
+            lines.value = lines.value.filter((l) => !(String(l.from) === String(from.node.id) && l.port === from.port));
+            lines.value.push({from: from.node.id, to: node.id, port: from.port});
+        }
         selected.value = node.id;
     });
 }
@@ -144,9 +206,9 @@ function setText(node, text) {
     });
 }
 
-// the flow reads down the page: a line leaves a box by its bottom edge and enters the next by its top; a check's yes and no sit side by side
+// the flow reads down the page: a line leaves a card by its bottom edge and enters the next by its top; a check's Yes and No sit side by side
 const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
-const heightOf = (node) => (entryOf(node).takes_text ? CARD.tall : CARD.height);
+const heightOf = (node) => (entryOf(node).takes_text ? (selected.value === node.id && node.kind === "action" ? CARD.open : CARD.text) : CARD.plain);
 const portAt = (node, port) => ({x: node.x + (CARD.width * PORT_AT[port]) / 100, y: node.y + heightOf(node)});
 const inAt = (node) => ({x: node.x + CARD.width / 2, y: node.y});
 const path = (from, to) => {
@@ -154,20 +216,29 @@ const path = (from, to) => {
     return `M ${from.x} ${from.y} C ${from.x} ${from.y + bow}, ${to.x} ${to.y - bow}, ${to.x} ${to.y}`;
 };
 const hooked = (node, port) => lines.value.some((l) => String(l.from) === String(node.id) && l.port === port);
+const lineOf = (node, port) => lines.value.find((l) => String(l.from) === String(node.id) && l.port === port);
 const wires = computed(() =>
     lines.value
         .filter((l) => byId.value[String(l.from)] && byId.value[String(l.to)])
         .map((l) => ({line: l, d: path(portAt(byId.value[String(l.from)], l.port), inAt(byId.value[String(l.to)]))}))
 );
+const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
+const stepOf = (node) => trial.nodes.indexOf(node.id) + 1;
+const wireOnPath = (line) => {
+    const at = trial.nodes.indexOf(line.from);
+    return at >= 0 && trial.nodes[at + 1] === line.to;
+};
+const isHover = (node, port) => hovered.value && hovered.value.node === node.id && hovered.value.port === port;
+const isDrawingFrom = (node, port) => drawing.value && String(drawing.value.from) === String(node.id) && drawing.value.port === port;
 
-// the plane: panning by dragging the empty canvas, zooming with the wheel, nodes dragged by their head, lines dragged from a port
+// the plane: panning by dragging the empty canvas, zooming with the wheel, cards dragged by their body, lines dragged from a port
 function planePoint(event) {
     const box = plane.value.getBoundingClientRect();
     return {x: (event.clientX - box.left - camera.x) / camera.scale, y: (event.clientY - box.top - camera.y) / camera.scale};
 }
 
 function pan(event) {
-    if (event.target !== plane.value && !event.target.classList.contains("chart-wires")) return;
+    if (event.target !== plane.value && !event.target.classList.contains("chart-wires") && !event.target.classList.contains("chart-camera")) return;
     const start = {x: event.clientX, y: event.clientY, cx: camera.x, cy: camera.y};
     const move = (e) => {
         camera.x = start.cx + e.clientX - start.x;
@@ -202,11 +273,10 @@ function dragNode(node, event) {
     const move = (e) => {
         if (!moved) {
             moved = true;
-            past.value = [...past.value.slice(-19), {nodes: nodes.value.map((n) => ({...n})), lines: lines.value.map((l) => ({...l}))}];
+            remember();
         }
         node.x = Math.round(start.nx + (e.clientX - start.x) / camera.scale);
         node.y = Math.round(start.ny + (e.clientY - start.y) / camera.scale);
-        dirty.value = true;
     };
     const up = () => {
         window.removeEventListener("pointermove", move);
@@ -216,29 +286,42 @@ function dragNode(node, event) {
     window.addEventListener("pointerup", up);
 }
 
+// a line dropped on a card connects to it; dropped on empty canvas, it offers a new node where it fell
 function dragLine(node, port, event) {
     event.stopPropagation();
-    drawing.value = {from: node.id, port, to: planePoint(event)};
+    hovered.value = null;
+    drawing.value = {from: node.id, port, to: planePoint(event), target: null};
     const move = (e) => {
-        drawing.value = {...drawing.value, to: planePoint(e)};
-    };
-    const up = (e) => {
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", up);
         const card = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-node]");
         const target = card && byId.value[card.dataset.node];
-        if (target && target.id !== node.id && target.kind !== "trigger") {
-            change(() => {
-                lines.value = lines.value.filter((l) => !(String(l.from) === String(node.id) && l.port === port && String(l.to) === String(target.id)));
-                lines.value.push({from: node.id, to: target.id, port});
-            });
-        }
+        drawing.value = {...drawing.value, to: planePoint(e), target: target && target.id !== node.id && target.kind !== "trigger" ? target : null};
+    };
+    const up = async (e) => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        const target = drawing.value.target;
+        const at = drawing.value.to;
         drawing.value = null;
+        if (target) {
+            connect(node, port, target);
+            return;
+        }
+        const card = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-node]");
+        if (card || !plane.value.contains(e.target)) return;
+        adding.value = {from: {node, port}, at: {x: at.x - CARD.width / 2, y: at.y}};
+        search.value = "";
+        await nextTick();
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
 }
-const drawingPath = computed(() => (drawing.value ? path(portAt(byId.value[String(drawing.value.from)], drawing.value.port), drawing.value.to) : ""));
+const drawingPath = computed(() => {
+    if (!drawing.value) return "";
+    const from = portAt(byId.value[String(drawing.value.from)], drawing.value.port);
+    return path(from, drawing.value.target ? inAt(drawing.value.target) : drawing.value.to);
+});
+const dropAnchor = computed(() => (adding.value && adding.value.at && dropMark.value) || addButton.value?.$el || addButton.value || null);
+const markStyle = computed(() => (adding.value && adding.value.at ? {left: `${camera.x + (adding.value.at.x + CARD.width / 2) * camera.scale}px`, top: `${camera.y + adding.value.at.y * camera.scale}px`} : null));
 
 async function act(name, work) {
     busy.value = name;
@@ -254,77 +337,122 @@ async function act(name, work) {
 const save = () =>
     act("save", async () => {
         take(await api.chartSave(current.value, {revision: revision.value, nodes: nodes.value, lines: lines.value}));
-        await list();
+        await refreshList();
     });
-const reset = () => act("reset", async () => take(await api.chartReset(current.value)));
+const reset = () =>
+    act("reset", async () => {
+        confirming.value = "";
+        take(await api.chartReset(current.value));
+        await nextTick();
+        fit();
+    });
 const removeWorkflow = () =>
     act("remove", async () => {
+        confirming.value = "";
         await api.chartRemove(current.value);
         await load();
     });
+const create = () =>
+    act("create", async () => {
+        const made = await api.chartNew({title: naming.value.title.trim(), trigger: naming.value.trigger});
+        naming.value = null;
+        await refreshList();
+        await open(made.id);
+    });
+const startNaming = () => {
+    naming.value = {trigger: "idle", title: ""};
+};
+const namingLabel = computed(() => (naming.value ? entries.value[`trigger:${naming.value.trigger}`]?.title || naming.value.trigger : ""));
 const tryIt = () =>
     act("try", async () => {
-        const ran = await api.chartTry(trial.trigger, route.value.env);
+        const ran = await api.chartTry(trigger.value ? trigger.value.key : "idle", route.value.env);
         trial.nodes = ran.nodes;
         trial.would = ran.would;
         trial.ran = true;
     });
-const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
-const stepOf = (node) => trial.nodes.indexOf(node.id) + 1;
-const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: entries.value[`trigger:${key}`]?.title || key})));
+
+// the test's steps: each node on the path with how it was left, Yes or No for a check, its kind otherwise
+const steps = computed(() =>
+    trial.nodes.map((id, i) => {
+        const node = byId.value[String(id)];
+        const next = trial.nodes[i + 1];
+        const line = node && next !== undefined ? lines.value.find((l) => String(l.from) === String(id) && String(l.to) === String(next)) : null;
+        const answer = node && node.kind === "check" ? (line ? WORD[line.port] : "") : node ? KIND[node.kind] : "";
+        return {id, title: node ? entryOf(node).title : String(id), answer, tone: node && node.kind === "check" ? (line ? line.port : "") : "kind"};
+    })
+);
+const skipped = computed(() => {
+    const checks = steps.value.filter((s) => s.tone === "yes" || s.tone === "no");
+    return checks
+        .map((s) => {
+            const node = byId.value[String(s.id)];
+            const other = lineOf(node, s.tone === "yes" ? "no" : "yes");
+            const target = other && byId.value[String(other.to)];
+            return target && target.kind === "action" ? `${s.title} was ${s.answer}, so ${entryOf(target).title} was skipped.` : "";
+        })
+        .filter(Boolean);
+});
+const triggerTitle = computed(() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet"));
+const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting's name" : "Message to the agent");
 </script>
 
 <template>
     <section class="chart">
-        <header class="chart-head">
-            <div>
-                <h1>Workflows</h1>
-                <p class="chart-lead">
-                    How the journal treats the agent. A trigger is an event, a check a yes or no question, an action what the journal does.
-                    Connect nodes by dragging from a port. Changes apply when you save.
-                </p>
-            </div>
-            <div class="chart-acts">
-                <Btn kind="ghost" small class="chart-add" @click="paletteOpen = !paletteOpen">{{ paletteOpen ? "Hide nodes" : "Add node" }}</Btn>
-                <Btn kind="ghost" small @click="asList = !asList">{{ asList ? "Canvas" : "List" }}</Btn>
-                <Btn kind="ghost" small :disabled="!past.length" @click="undo">Undo</Btn>
-                <Btn v-if="dirty" kind="ghost" small @click="discard">Discard changes</Btn>
-                <Btn kind="primary" small :busy="busy === 'save'" :disabled="!dirty" @click="save">Save</Btn>
-            </div>
-        </header>
-        <div class="chart-bar">
-            <DropList :label="title || 'Workflow'" :items="workflowItems" :picked="String(current)" :menu-width="260" @pick="open(Number($event.key))" />
+        <PageBar class="chart-bar">
             <template v-if="naming">
-                <input v-model="newTitle" class="chart-name" type="text" placeholder="Workflow name" @keydown.enter="create" @keydown.esc="naming = false" />
-                <Btn kind="primary" small @click="create">Create</Btn>
-                <Btn kind="ghost" small @click="naming = false">Cancel</Btn>
+                <DropList :label="namingLabel" icon="bolt" :items="eventItems" :picked="naming.trigger" :menu-width="260" @pick="naming.trigger = $event.key" />
+                <TextInput
+                    class="chart-name"
+                    :value="naming.title"
+                    :placeholder="namingLabel"
+                    aria-label="Workflow name"
+                    @input="naming.title = $event.target.value"
+                    @keydown.enter="create"
+                    @keydown.esc="naming = null"
+                />
+                <Btn kind="primary" small :busy="busy === 'create'" @click="create">Create workflow</Btn>
+                <Btn kind="ghost" small @click="naming = null">Cancel</Btn>
             </template>
-            <Btn v-else kind="ghost" small @click="naming = true">New workflow</Btn>
+            <template v-else>
+                <DropList :label="title || 'Workflow'" icon="bolt" :items="workflowItems" :picked="String(current)" :menu-width="260" @pick="open(Number($event.key))" />
+                <Btn kind="ghost" small @click="startNaming">New workflow</Btn>
+                <Btn
+                    kind="danger"
+                    small
+                    :disabled="!shipped"
+                    :title="shipped ? 'Replace this workflow with the version the journal ships' : 'Only the default workflow has a version to reset to'"
+                    @click="confirming = 'reset'"
+                >
+                    Reset to default
+                </Btn>
+                <Btn kind="danger" small :disabled="shipped" :title="shipped ? 'The default workflow can be reset, not deleted' : ''" @click="confirming = 'remove'">Delete workflow</Btn>
+            </template>
             <span class="chart-grow" />
-            <Btn v-if="shipped" kind="ghost" small :busy="busy === 'reset'" @click="reset">Reset to default</Btn>
-            <Btn v-else kind="ghost" small :busy="busy === 'remove'" @click="removeWorkflow">Delete workflow</Btn>
-        </div>
-        <p v-if="notice" class="chart-notice">{{ notice }}</p>
+            <span v-if="dirty" class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
+            <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
+            <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
+            <Btn kind="primary" small :busy="busy === 'save'" :disabled="!dirty" title="Takes effect at the agent's next event" @click="save">Save</Btn>
+        </PageBar>
 
-        <div class="chart-body">
-            <aside v-if="paletteOpen" class="chart-palette">
-                <input v-model="search" class="chart-search" type="search" placeholder="Search nodes" />
-                <div v-for="group in offered" :key="group.kind" class="chart-group">
-                    <h3>{{ group.title }}</h3>
-                    <p class="chart-group-about">{{ group.about }}</p>
-                    <button v-for="entry in group.entries" :key="entry.key" type="button" :class="['chart-entry', entry.kind]" :title="entry.about" @click="add(entry)">
-                        <span>{{ entry.title }}</span>
-                        <small v-if="entry.providers.length === 1">{{ entry.providers[0] }} only</small>
-                    </button>
+        <div class="chart-page">
+            <header class="chart-head">
+                <div>
+                    <h1>Workflows</h1>
+                    <p class="chart-lead">{{ LEAD }}</p>
                 </div>
-            </aside>
+                <div class="chart-acts">
+                    <Btn ref="addButton" kind="ghost" small :class="{on: adding && !adding.at}" @click.stop="openAdd(null)">Add node</Btn>
+                    <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
+                </div>
+            </header>
+            <p v-if="notice" class="chart-notice">{{ notice }}</p>
 
-            <ChartList v-if="asList" :nodes="nodes" :lines="lines" :entry-of="entryOf" @text="setText" @line="connect" @unline="disconnect" @remove="remove" />
+            <ChartList v-if="view === 'list'" :nodes="nodes" :lines="lines" :entry-of="entryOf" @text="setText" @line="connect" @unline="disconnect" @remove="remove" />
             <div v-else ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
                 <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
                     <svg class="chart-wires" overflow="visible">
                         <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
-                            <path :class="['chart-wire', wire.line.port]" :d="wire.d" />
+                            <path :class="['chart-wire', wire.line.port, {dim: trial.ran && !wireOnPath(wire.line)}]" :d="wire.d" />
                             <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
                                 <title>Click to delete this connection</title>
                             </path>
@@ -335,58 +463,147 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
                         v-for="node in nodes"
                         :key="node.id"
                         :data-node="node.id"
-                        :class="['chart-node', node.kind, {selected: selected === node.id, lit: onPath(node), edited: !node.shipped}]"
+                        :class="['chart-node', node.kind, {selected: selected === node.id, lit: onPath(node), dim: trial.ran && !onPath(node), target: drawing && drawing.target && drawing.target.id === node.id}]"
                         :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
-                        :title="entryOf(node).about"
                         @pointerdown="dragNode(node, $event)"
                     >
-                        <div class="chart-node-head">
-                            <span v-if="onPath(node)" class="chart-node-step">{{ stepOf(node) }}</span>
-                            <Icon v-else :name="node.kind === 'trigger' ? 'bolt' : node.kind === 'check' ? 'question' : 'play'" :size="12" />
-                            <span class="chart-node-title">{{ entryOf(node).title }}</span>
-                            <button type="button" class="chart-node-x" title="Delete node" @pointerdown.stop @click.stop="remove(node)">×</button>
+                        <div class="chart-node-kind">
+                            <span v-if="onPath(node)" class="chart-step">{{ stepOf(node) }}</span>
+                            <span v-else :class="['chart-glyph', node.kind]" />
+                            <span>{{ KIND[node.kind] }}</span>
+                            <button v-if="selected === node.id" type="button" class="chart-node-x" title="Delete node" @pointerdown.stop @click.stop="remove(node)">
+                                <Icon name="close" :size="12" />
+                            </button>
                         </div>
-                        <input
-                            v-if="entryOf(node).takes_text"
-                            class="chart-node-text"
-                            :value="node.text"
-                            :placeholder="node.kind === 'check' ? 'a number, or a setting\'s name' : 'the line, with {{next_task}} and the like'"
-                            @pointerdown.stop
-                            @input="setText(node, $event.target.value)"
-                        />
-                        <span class="chart-in" />
-                        <span
-                            v-for="port in ports(node)"
-                            :key="port"
-                            :class="['chart-port', port, {hooked: hooked(node, port)}]"
-                            :style="{left: `${PORT_AT[port]}%`}"
-                            :title="`Drag to connect ${port}`"
-                            @pointerdown="dragLine(node, port, $event)"
-                        >{{ port }}</span>
+                        <div class="chart-node-title" :title="entryOf(node).about">{{ entryOf(node).title }}</div>
+                        <template v-if="entryOf(node).takes_text">
+                            <textarea
+                                v-if="selected === node.id && node.kind === 'action'"
+                                class="chart-node-text open"
+                                :value="node.text"
+                                :placeholder="placeholderOf(node)"
+                                rows="2"
+                                @pointerdown.stop
+                                @input="setText(node, $event.target.value)"
+                            />
+                            <input
+                                v-else
+                                class="chart-node-text"
+                                :value="node.text"
+                                :placeholder="placeholderOf(node)"
+                                @pointerdown.stop
+                                @focus="selected = node.id"
+                                @input="setText(node, $event.target.value)"
+                            />
+                            <span v-if="selected === node.id && node.kind === 'action'" class="chart-node-help">Insert values with {{ HELP }}</span>
+                        </template>
+                        <span v-if="node.kind !== 'trigger'" :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]" />
+                        <template v-for="port in ports(node)" :key="port">
+                            <span
+                                :class="['chart-port', port, {on: hooked(node, port), hover: isHover(node, port) && !drawing, dragging: isDrawingFrom(node, port)}]"
+                                :style="{left: `${PORT_AT[port]}%`}"
+                                :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
+                                @pointerdown="dragLine(node, port, $event)"
+                                @pointerenter="hovered = {node: node.id, port}"
+                                @pointerleave="hovered = null"
+                            >
+                                <Icon v-if="isHover(node, port) && !drawing && !hooked(node, port)" name="plus" :size="11" />
+                            </span>
+                            <span v-if="port !== 'then'" :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]" :style="{left: `${PORT_AT[port]}%`}">{{ WORD[port] }}</span>
+                        </template>
                     </div>
+                    <span v-if="drawing && drawing.target" class="chart-tip" :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}">
+                        Release to connect <b>{{ WORD[drawing.port] }}</b> to {{ entryOf(drawing.target).title }}
+                    </span>
                 </div>
-                <aside v-if="trial.ran" class="chart-try-panel">
-                    <div class="chart-try-panel-head">
-                        <strong>Test result</strong>
-                        <button type="button" class="chart-node-x" title="Close" @click="trial.ran = false">×</button>
+                <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
+
+                <div class="chart-test">
+                    <span class="chart-test-label">Test with event</span>
+                    <span class="chart-test-event"><span class="chart-glyph trigger" />{{ triggerTitle }}</span>
+                    <span class="chart-test-note">Changes nothing</span>
+                    <Btn kind="ghost" small :busy="busy === 'try'" :disabled="!trigger" @click="tryIt">Test</Btn>
+                </div>
+
+                <template v-if="loaded && !nodes.length">
+                    <EmptyState class="chart-empty" title="No nodes yet">
+                        Start with a trigger: the event that starts this workflow.
+                        <br />
+                        <Btn class="chart-empty-add" @click.stop="openAdd(null)">Add node</Btn>
+                    </EmptyState>
+                </template>
+                <template v-else-if="loaded && nodes.length === 1 && trigger">
+                    <div class="chart-hint">
+                        <p class="chart-hint-title">Nothing follows the trigger yet</p>
+                        <p class="chart-hint-text">Add node puts a check or an action below the selected node and connects it.</p>
+                        <Btn @click.stop="(selected = trigger.id), openAdd(null)">Add node</Btn>
                     </div>
-                    <ol v-if="trial.nodes.length" class="chart-try-steps">
-                        <li v-for="(id, i) in trial.nodes" :key="`${id}-${i}`">
-                            <span class="chart-node-step">{{ i + 1 }}</span>
-                            <span>{{ byId[String(id)] ? entryOf(byId[String(id)]).title : id }}</span>
-                        </li>
-                    </ol>
-                    <p v-else class="chart-try-none">No trigger for this event. Nothing happens.</p>
-                    <p v-for="line in trial.would" :key="line" class="chart-try-would">{{ line }}</p>
-                </aside>
+                </template>
             </div>
         </div>
 
-        <footer class="chart-try">
-            <span class="chart-try-label">Test with event</span>
-            <DropList :label="entries[`trigger:${trial.trigger}`]?.title || trial.trigger" :items="triggerItems" :picked="trial.trigger" :menu-width="240" @pick="trial.trigger = $event.key" />
-            <Btn kind="ghost" small :busy="busy === 'try'" @click="tryIt">Test</Btn>
-        </footer>
+        <template v-if="adding">
+            <MenuPanel :anchor="dropAnchor" align="right" :min-width="320" :max-width="340" :max-height="520" @click.stop @close="adding = null">
+                <TextInput class="chart-search" icon="search" :value="search" placeholder="Search nodes" autofocus @input="search = $event.target.value" />
+                <p class="chart-landing">{{ landingWords }}</p>
+                <MenuLabel>Triggers</MenuLabel>
+                <p v-if="trigger" class="chart-menu-about">This workflow has its trigger: {{ triggerTitle }}. For another event, create a new workflow.</p>
+                <template v-for="entry in offeredTriggers" :key="`trigger:${entry.key}`">
+                    <MenuItem :description="entry.about" @click="add(entry)"><span class="chart-glyph trigger" />{{ entry.title }}</MenuItem>
+                </template>
+                <MenuLabel>Checks <span class="chart-label-note">— a yes or no question</span></MenuLabel>
+                <template v-for="entry in offeredChecks" :key="`check:${entry.key}`">
+                    <MenuItem :description="entry.about" @click="add(entry)"><span class="chart-glyph check" />{{ entry.title }}</MenuItem>
+                </template>
+                <MenuLabel>Actions <span class="chart-label-note">— something the workflow does</span></MenuLabel>
+                <template v-for="entry in offeredActions" :key="`action:${entry.key}`">
+                    <MenuItem :description="entry.about" @click="add(entry)"><span class="chart-glyph action" />{{ entry.title }}</MenuItem>
+                </template>
+            </MenuPanel>
+        </template>
+
+        <template v-if="trial.ran">
+            <SidePanel title="Test result" abstract="Run against current data. Nothing was changed." @close="trial.ran = false">
+                <MenuLabel>Steps</MenuLabel>
+                <ol v-if="steps.length" class="chart-steps">
+                    <li v-for="(step, i) in steps" :key="`${step.id}-${i}`">
+                        <span class="chart-step">{{ i + 1 }}</span>
+                        <span class="chart-step-title">{{ step.title }}</span>
+                        <span :class="['chart-step-answer', step.tone]">{{ step.answer }}</span>
+                    </li>
+                </ol>
+                <p v-else class="chart-result">No trigger for this event. Nothing happens.</p>
+                <MenuLabel>Result</MenuLabel>
+                <p v-if="!trial.would.length" class="chart-result">Nothing is done: the path ends without an action.</p>
+                <p v-for="line in trial.would" :key="line" class="chart-result-line">{{ line }}</p>
+                <p v-for="line in skipped" :key="line" class="chart-skipped">{{ line }}</p>
+                <template #foot>
+                    <span class="chart-test-label">Test with event</span>
+                    <span class="chart-test-event"><span class="chart-glyph trigger" />{{ triggerTitle }}</span>
+                    <span class="chart-grow" />
+                    <Btn kind="ghost" small :busy="busy === 'try'" @click="tryIt">Test</Btn>
+                </template>
+            </SidePanel>
+        </template>
+
+        <template v-if="confirming === 'reset'">
+            <Dialog :title="`Replace ‘${title}’ with the default version?`" fits @close="confirming = ''">
+                <p class="chart-dialog-text">Your edits to this workflow are lost. The other workflows stay as they are.</p>
+                <template #foot>
+                    <Btn @click="confirming = ''">Cancel</Btn>
+                    <Btn kind="danger" :busy="busy === 'reset'" @click="reset">Reset to default</Btn>
+                </template>
+            </Dialog>
+        </template>
+        <template v-if="confirming === 'remove'">
+            <Dialog :title="`Delete ‘${title}’?`" fits @close="confirming = ''">
+                <p class="chart-dialog-text">The workflow and its nodes are deleted. The other workflows stay as they are.</p>
+                <template #foot>
+                    <Btn @click="confirming = ''">Cancel</Btn>
+                    <Btn kind="danger" :busy="busy === 'remove'" @click="removeWorkflow">Delete workflow</Btn>
+                </template>
+            </Dialog>
+        </template>
     </section>
 </template>
 
@@ -394,10 +611,35 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
 .chart {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 24px;
     height: 100%;
     min-height: 0;
+}
+
+.chart-bar :deep(.page-bar-inner),
+.chart-bar {
+    gap: 8px;
+}
+
+.chart-grow {
+    flex: 1;
+}
+
+.chart-unsaved {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.chart-name {
+    width: 220px;
+}
+
+.chart-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+    padding: 24px;
 }
 
 .chart-head {
@@ -413,152 +655,58 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
 }
 
 .chart-lead {
-    margin: 0;
-    color: var(--text-3);
     max-width: 640px;
+    margin: 0;
+    color: var(--text-dim, #9aa0a6);
 }
 
 .chart-acts {
     display: flex;
-    gap: 8px;
     flex: none;
+    align-items: center;
+    gap: 8px;
 }
 
 .chart-notice {
-    margin: 0;
-    color: var(--blocking);
-}
-
-.chart-body {
-    display: flex;
-    gap: 16px;
-    flex: 1;
-    min-height: 0;
-    height: calc(100vh - 330px);
-    position: relative;
-}
-
-.chart-body > .chart-list {
-    flex: 1;
-}
-
-@media (max-width: 720px) {
-    .chart {
-        padding: 16px;
-    }
-
-    .chart-body {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .chart-palette {
-        width: auto;
-        max-height: 240px;
-    }
-
-    .chart-try-panel {
-        position: static;
-        width: auto;
-    }
-}
-
-@media (min-width: 721px) {
-    .chart-add {
-        display: none;
-    }
-}
-
-.chart-palette {
-    width: 240px;
-    flex: none;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-right: 4px;
-}
-
-.chart-search {
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: var(--raised);
-    color: inherit;
-}
-
-.chart-group h3 {
-    margin: 0;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--text-3);
-}
-
-.chart-group-about {
-    margin: 2px 0 6px;
-    font-size: 12px;
-    color: var(--text-3);
-}
-
-.chart-entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 6px 8px;
-    margin-bottom: 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: var(--raised);
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.chart-entry small {
-    color: var(--text-3);
-}
-
-.chart-entry:hover {
-    border-color: var(--text-3);
+    margin: -8px 0 0;
+    color: var(--danger-soft);
+    font-size: 12.5px;
 }
 
 .chart-plane {
-    flex: 1;
     position: relative;
-    background-size: 16px 16px;
+    flex: 1;
+    min-height: 320px;
     overflow: hidden;
     border: 1px solid var(--border-2);
     border-radius: 10px;
-    background: var(--raised);
+    background-color: var(--bg-2);
     background-image: radial-gradient(var(--line) 1px, transparent 1px);
+    background-size: 16px 16px;
     cursor: grab;
+    user-select: none;
 }
 
 .chart-camera {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     transform-origin: 0 0;
 }
 
 .chart-wires {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
     overflow: visible;
 }
 
 .chart-wire {
     fill: none;
-    stroke: var(--border-2);
-    stroke-width: 1.5;
-}
-
-.chart-wire.then {
     stroke: var(--text-3);
+    stroke-width: 1.5;
 }
 
 .chart-wire.yes {
@@ -569,8 +717,12 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     stroke: var(--danger-soft);
 }
 
+.chart-wire.dim {
+    opacity: 0.22;
+}
+
 .chart-wire.drafting {
-    stroke: var(--accent);
+    stroke: var(--accent-text);
     stroke-dasharray: 4 4;
 }
 
@@ -578,41 +730,24 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     fill: none;
     stroke: transparent;
     stroke-width: 12;
-    pointer-events: stroke;
     cursor: pointer;
+}
+
+.chart-wire-grip:hover + .chart-wire,
+g:hover .chart-wire {
+    stroke-width: 2.5;
 }
 
 .chart-node {
     position: absolute;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-    padding: 6px 10px;
+    gap: 3px;
+    padding: 7px 12px;
     border: 1px solid var(--border-2);
-    border-radius: 7px;
+    border-radius: 10px;
     background: var(--raised);
-    cursor: move;
-    user-select: none;
-    box-sizing: border-box;
-}
-
-.chart-node .ico {
-    color: var(--text-3);
-}
-
-.chart-node-step {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--bg-2);
-    font-size: 10px;
-    font-weight: 600;
-    flex: none;
+    cursor: grab;
 }
 
 .chart-node.selected,
@@ -620,148 +755,444 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     border-color: var(--accent);
 }
 
-.chart-node-head {
+.chart-node.dim {
+    opacity: 0.4;
+}
+
+.chart-node.target {
+    border-color: var(--border-3);
+    background: var(--hover);
+}
+
+.chart-node-kind {
     display: flex;
     align-items: center;
     gap: 6px;
-}
-
-.chart-node-title {
-    flex: 1;
+    height: 14px;
+    color: var(--text-3);
+    font-size: 10.5px;
     font-weight: 600;
-    font-size: 12.5px;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .chart-node-x {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin: -3px -6px 0 auto;
     border: 0;
+    border-radius: 5px;
     background: none;
     color: var(--text-3);
     cursor: pointer;
-    font-size: 14px;
+}
+
+.chart-node-x:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.chart-node-title {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .chart-node-text {
     width: 100%;
-    font: inherit;
-    font-size: 12px;
-    padding: 3px 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
+    margin-top: 5px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     background: var(--bg-2);
     color: var(--text-2);
-    cursor: text;
-    user-select: text;
-    box-sizing: border-box;
+    font: inherit;
+    font-size: 12px;
+    line-height: 16px;
+    outline: none;
+    text-overflow: ellipsis;
+}
+
+.chart-node-text::placeholder {
+    color: var(--text-4);
+}
+
+.chart-node-text.open,
+.chart-node-text:focus {
+    border-color: var(--accent);
+    color: var(--text);
+}
+
+.chart-node-text.open {
+    resize: none;
+    white-space: normal;
+}
+
+.chart-node-help {
+    color: var(--text-4);
+    font-size: 11px;
+}
+
+.chart-glyph {
+    display: inline-block;
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.chart-glyph.check {
+    width: 6px;
+    height: 6px;
+    margin: 0 0.5px;
+    border-radius: 1px;
+    transform: rotate(45deg);
+}
+
+.chart-glyph.action {
+    width: 6px;
+    height: 6px;
+    margin: 0 0.5px;
+    border-radius: 1.5px;
+}
+
+.chart-step {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.chart-in,
+.chart-port {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    border: 1.5px solid var(--border-3);
+    border-radius: 50%;
+    background: var(--bg-2);
 }
 
 .chart-in {
-    position: absolute;
-    top: -4px;
+    top: -6.5px;
     left: 50%;
-    width: 7px;
-    height: 7px;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: var(--raised);
-    border: 1px solid var(--border-2);
 }
 
-.chart-node.trigger .chart-in {
-    display: none;
+.chart-in.ready {
+    top: -8.5px;
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    border-color: var(--accent-text);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .chart-port {
-    position: absolute;
-    bottom: -9px;
-    transform: translateX(-50%);
-    padding: 0 6px;
-    border-radius: 9px;
-    font-size: 10px;
-    line-height: 16px;
-    border: 1px solid var(--border-2);
-    background: var(--raised);
-    color: var(--text-3);
+    bottom: -6.5px;
     cursor: crosshair;
+    --c: var(--text-3);
 }
 
-.chart-port.hooked {
-    border-color: var(--text-3);
-    background: var(--text-3);
-    color: var(--bg-2);
+.chart-port.yes {
+    --c: var(--tone-good);
 }
 
-.chart-port.yes.hooked {
-    border-color: var(--tone-good);
-    background: var(--tone-good);
+.chart-port.no {
+    --c: var(--danger-soft);
 }
 
-.chart-port.no.hooked {
-    border-color: var(--danger-soft);
-    background: var(--danger-soft);
+.chart-port.on {
+    border-color: var(--c);
+    background: var(--c);
 }
 
-.chart-try {
+.chart-port.hover {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    justify-content: center;
+    bottom: -9.5px;
+    width: 18px;
+    height: 18px;
+    margin-left: -9px;
+    border-color: var(--accent-text);
+    background: var(--raised);
+    color: var(--accent-text);
 }
 
-.chart-try-label {
-    font-weight: 600;
+.chart-port.hover.on {
+    background: var(--c);
+    border-color: var(--c);
 }
 
-.chart-try-panel {
+.chart-port.dragging {
+    border-color: var(--accent-text);
+    background: var(--accent-text);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.chart-port-word {
+    position: absolute;
+    top: calc(100% + 6px);
+    color: var(--text-4);
+    font-size: 10.5px;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.chart-port-word.yes {
+    transform: translateX(calc(-100% - 10px));
+}
+
+.chart-port-word.no {
+    transform: translateX(10px);
+}
+
+.chart-port-word.on.yes {
+    color: var(--tone-good);
+}
+
+.chart-port-word.on.no {
+    color: var(--danger-soft);
+}
+
+.chart-tip {
+    position: absolute;
+    z-index: 5;
+    padding: 5px 9px;
+    border: 1px solid var(--border-3);
+    border-radius: 7px;
+    background: var(--sel);
+    box-shadow: var(--tip-shadow);
+    color: var(--text);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.chart-tip b {
+    color: var(--danger-soft);
+    font-weight: 500;
+}
+
+.chart-drop-mark {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+}
+
+.chart-test {
     position: absolute;
     top: 12px;
     right: 12px;
-    bottom: 12px;
-    width: 260px;
-    overflow: auto;
-    padding: 12px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 5px 5px 12px;
     border: 1px solid var(--border-2);
-    border-radius: 7px;
+    border-radius: 9px;
     background: var(--raised);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.chart-test-label {
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.chart-test-event {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 5px;
+    color: var(--text);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.chart-test-note {
+    color: var(--text-4);
+    font-size: 11.5px;
+    white-space: nowrap;
+}
+
+.chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.chart-empty-add {
+    margin-top: 10px;
+}
+
+.chart-hint {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    top: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 24px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.chart-hint :deep(.btn) {
+    pointer-events: auto;
+}
+
+.chart-hint-title {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.chart-hint-text {
+    max-width: 300px;
+    margin: 0 0 6px;
+    color: var(--text-4);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.chart-search {
+    margin: 2px 2px 6px;
+}
+
+.chart-landing {
+    margin: 0 2px 4px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--bg-2);
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.chart-menu-about {
+    margin: 0;
+    padding: 0 8px 4px;
+    color: var(--text-4);
+    font-size: 11.5px;
+}
+
+.chart-label-note {
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.chart-steps {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.chart-steps li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.chart-steps .chart-step {
+    width: 18px;
+    height: 18px;
+    font-size: 10.5px;
+}
+
+.chart-step-title {
+    flex: 1;
+}
+
+.chart-step-answer {
+    font-size: 12px;
+}
+
+.chart-step-answer.yes {
+    color: var(--tone-good);
+}
+
+.chart-step-answer.no {
+    color: var(--danger-soft);
+}
+
+.chart-step-answer.kind {
+    color: var(--text-4);
+}
+
+.chart-result {
+    margin: 0 0 8px;
+    color: var(--text-2);
+    font-size: 13px;
+}
+
+.chart-result-line {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    color: var(--text);
+    font-size: 13px;
+    white-space: pre-wrap;
+}
+
+.chart-skipped {
+    margin: 0 0 6px;
+    color: var(--text-3);
     font-size: 12.5px;
 }
 
-.chart-try-panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.chart-try-steps {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.chart-try-steps li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.chart-try-none,
-.chart-try-would {
+.chart-dialog-text {
     margin: 0;
     color: var(--text-2);
 }
 
-.chart-try-would {
-    padding: 6px 8px;
-    border-radius: 5px;
-    background: var(--bg-2);
+@media (max-width: 720px) {
+    .chart-page {
+        padding: 16px;
+    }
+
+    .chart-head {
+        flex-direction: column;
+    }
+
+    .chart-test {
+        right: 8px;
+        left: 8px;
+        flex-wrap: wrap;
+    }
 }
 </style>
