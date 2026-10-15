@@ -1168,3 +1168,27 @@ def test_a_wrong_chart_is_refused_with_its_faults(app):
     console = app.console()
     assert "leaves by yes or no, not then" in console.run(["chart", "line", "2", "3"], AGENT).err
     assert "leads into trigger 1" in console.run(["chart", "line", "3", "1"], AGENT).err
+
+
+def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    port = app.server().port
+    catalogue = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))["catalogue"]
+    by_key = {e["key"]: e for e in catalogue}
+    assert by_key["turn_written"]["providers"] == ["claude"] and by_key["idle"]["providers"] == ["claude", "codex"]
+    def post(body):
+        try:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+                return r.status, j.loads(r.read())
+        except HTTPError as error:
+            return error.code, j.loads(error.read())
+    nodes = [{"id": "t", "kind": "trigger", "key": "idle"}, {"id": "a", "kind": "action", "key": "say", "text": "x" * 501}]
+    status, body = post({"revision": 0, "nodes": nodes, "lines": [{"from": "t", "to": "a"}]})
+    assert status == 409 and "text is longer than 500 characters" in body["error"]
+    nodes[1]["text"] = "say\x07 this\n and\x1b that "
+    status, body = post({"revision": 0, "nodes": nodes, "lines": [{"from": "t", "to": "a"}]})
+    assert status == 200 and body["nodes"][1]["text"] == "say this and that", "control characters and line breaks are stripped"
+    assert "at most 500 characters" in app.console().run(["chart", "node", "action", "say", "--text", "y" * 501], AGENT).err

@@ -13,3 +13,7 @@ class Node(Model):
     text: str = ""
     x: int = 0
     y: int = 0
+
+    def cleaned(self) -> "Node":
+        """The text as it may reach a prompt or a terminal: printable characters and spaces only, one line."""
+        return self.with_(text="".join(ch for ch in self.text if ch.isprintable()).strip())

@@ -51,7 +51,7 @@ class Charts(Repository[Chart]):
         for given in nodes:
             own = present.pop(int(given["id"]) if str(given.get("id", "")).isdigit() else 0, None)
             fields = {"kind": given["kind"], "key": given["key"], "text": given.get("text", ""), "x": int(given.get("x", 0)), "y": int(given.get("y", 0))}
-            kept[str(given.get("id", ""))] = self.nodes.save(own.with_(**fields), by) if own else self.add_node(chart, Node(**fields), by)
+            kept[str(given.get("id", ""))] = self.nodes.save(own.with_(**fields).cleaned(), by) if own else self.add_node(chart, Node(**fields).cleaned(), by)
         for gone in present.values():
             self.remove_node(gone, by)
         for line in self.lines_of(chart):

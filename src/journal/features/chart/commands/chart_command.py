@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.validation import Validation
+from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
@@ -46,7 +46,9 @@ class ChartCommand(Command):
     def node(self, args: Namespace, where: Where) -> int:
         kind = NodeKind(args.kind)
         entry = self.entries.entry(kind, args.key)
-        node = self.charts.add_node(self.charts.the(), Node(kind=kind, key=args.key, text=args.text), where.actor)
+        if len(args.text) > TEXT_LIMIT:
+            raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
+        node = self.charts.add_node(self.charts.the(), Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
         print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))
         return 0
 

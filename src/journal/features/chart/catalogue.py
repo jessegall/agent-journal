@@ -9,7 +9,7 @@ AGENT_EVENTS = (
     ("tool_starting", "A tool is about to run", "before a read, a write, a command or a dispatch; the moment a hold or a deny is possible"),
     ("tool_finished", "A tool finished", "after a tool ran, with its result"),
     ("idle", "The agent stops", "the agent ends its turn; the moment a stop can be blocked and the journal speaks"),
-    ("turn_written", "The agent wrote for the user", "a turn of the agent's reaches the chat"),
+    ("turn_written", "The agent wrote for the user", "a turn of the agent's reaches the chat; Claude only"),
     ("subagent_started", "A subagent starts", "the agent dispatched a subagent"),
     ("subagent_ended", "A subagent ends", "a subagent reported back"),
     ("compacting", "The context compacts", "the conversation is about to be summarised"),
@@ -44,7 +44,7 @@ class Catalogue:
     """Everything a node may be: a trigger for each agent event and each row event, the checks the journal can answer, and the actions it can take."""
 
     def triggers(self) -> list[Entry]:
-        agent = [Entry(NodeKind.TRIGGER, key, title, about) for key, title, about in AGENT_EVENTS]
+        agent = [Entry(NodeKind.TRIGGER, key, title, about, providers=("claude",) if key == "turn_written" else ("claude", "codex")) for key, title, about in AGENT_EVENTS]
         rows = [Entry(NodeKind.TRIGGER, f"{model.table()}.{moment}", f"A {model.__name__.lower()} is {moment}", f"a row of {model.table()} is {moment} by anyone")
                 for model in AllModels.MODELS for moment in ("created", "updated", "deleted")]
         return agent + rows

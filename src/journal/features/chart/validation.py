@@ -2,6 +2,9 @@ from journal.features.chart.catalogue import Catalogue
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES
 
+TEXT_LIMIT = 500
+"""A node's text becomes a prompt or a typed line: this many characters at most."""
+
 
 class Validation:
     """What makes a chart wrong, found before it is saved: a node the catalogue does not know, a line to nowhere or into a trigger, a check without both its yes and its no, a port that does not fit the node it leaves, a cycle of checks."""
@@ -12,6 +15,7 @@ class Validation:
     def faults(self, nodes: list[dict], lines: list[dict]) -> list[str]:
         by_id = {str(n.get("id", "")): n for n in nodes}
         faults = [f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}" for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
+        faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
         for line in lines:
             source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
             if not source or not target:

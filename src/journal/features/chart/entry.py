@@ -12,3 +12,5 @@ class Entry:
     title: str
     about: str
     takes_text: bool = False
+    providers: tuple[str, ...] = ("claude", "codex")
+    """The agents it works for: Codex delivers no MessageDisplay hook, so a turn written is Claude's alone."""
