@@ -19,7 +19,7 @@ finish() {
     fi
     echo "$code" > "$folder/done"
     if [ -f "$folder/moved" ]; then
-        sh "$journal" shell ended "$id" --status "$code" --file "$folder" --last "$(tail -n 5 "$folder/$i.out" 2>/dev/null)" >/dev/null 2>&1
+        sh "$journal" shell ended "$id" --status "$code" --file "$folder" --last "$(tail -n 5 "$folder/$lastr.out" 2>/dev/null)" >/dev/null 2>&1
     fi
 }
 if [ "$1" = "--chain" ]; then
@@ -29,11 +29,12 @@ if [ "$1" = "--chain" ]; then
     code=0
     kind=S
     part=""
+    lastr=0
     began=$SECONDS
     trap 'finish $?' EXIT
     while read -r kind; do
         part=$(cat "$folder/$i.part")
-        [ "$kind" = "R" ] && sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1
+        [ "$kind" = "R" ] && lastr=$i && sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1
         began=$SECONDS
         case "$part" in
             exec\ *) (eval "$part") > "$folder/$i.out" 2>&1; code=$?; echo "$code" > "$folder/$i.status"; break ;;

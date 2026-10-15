@@ -90,7 +90,7 @@ class ShellCommand(Command):
     def ended(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
         environment = self.environments.named(where.environment).id
-        self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file})
+        self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         outcome = "ended" if args.status == 0 else f"failed with code {args.status}"
         self.cards.show(environment, where.session, f"Background command {outcome}", "terminal", "good" if args.status == 0 else "bad", args.last, key=f"chain:{args.chain}")
         live = self.agents.live(environment)

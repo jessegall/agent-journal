@@ -48,7 +48,8 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
             if entries.of_kind(1, "ended", 5):
                 break
             time.sleep(0.1)
-        assert entries.of_kind(1, "ended", 5)[0].data["status"] == 0
+        ended = entries.of_kind(1, "ended", 5)[0]
+        assert ended.data["status"] == 0 and "slow" in ended.data["last"], ended.data
         assert [e.data["part"] for e in reversed(entries.of_kind(1, "ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
         assert cwd.read_text().strip() == str(tmp_path.resolve())
     finally:
