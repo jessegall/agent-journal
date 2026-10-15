@@ -176,3 +176,11 @@ test("a click sends the figure out of the box it was in, to a spot at home clear
         expect(overlaps(boxAt(targetFor(roams).spot, FIGURE), cleared.box), `roll ${roll}`).toBe(false);
     }
 });
+
+test("a hang whose feet would reach the ground at home is no perch, since the figure would let go the moment it landed and roll it again", () => {
+    const low = at(560);
+    const home = {id: "home", kind: "home", element: {}, left: 250, right: 700, top: 600, bottom: 660};
+    expect(perchSpot({floor: low.id, kind: HANGS, side: "right", grip: "r", face: 0}, floorsOf(low, home), FIGURE)).toBe(null);
+    expect(perchSpot({floor: low.id, kind: SITS, side: "right", grip: ""}, floorsOf(low, home), FIGURE)).toMatchObject({posture: "sit"});
+    expect(perchSpot({floor: low.id, kind: HANGS, side: "right", grip: "r", face: 0}, floorsOf(low), FIGURE)).toMatchObject({posture: "hang"});
+});

@@ -1,6 +1,6 @@
 import {RESTS} from "../domain/figureState.js";
-import {latestFloors} from "./floors.js";
-import {boxAt, clearOf, hiddenAt, inWorld, openTabs, overlaps, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
+import {holds, latestFloors} from "./floors.js";
+import {boxAt, clearOf, hiddenAt, openTabs, overlaps, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
 import {letsGoFor} from "./reactions.js";
 
 // Where a figure perches on a message bubble now and then, instead of the compose box's edge: on top of it with its legs over the side,
@@ -74,7 +74,7 @@ export function perchSpot(perch, floors, figure) {
     const floor = floors.floors.find((each) => each.id === perch.floor);
     if (!floor || !inView(floor, floors.view, figure)) return null;
     const spot = spotOn(perch, floor, figure);
-    return inWorld(spot, figure) && !hiddenAt(spot, figure) ? spot : null;
+    return holds(spot, figure, floors.floors) && !hiddenAt(spot, figure) ? spot : null;
 }
 
 function spotOn(perch, floor, figure) {

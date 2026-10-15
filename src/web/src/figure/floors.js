@@ -102,9 +102,15 @@ export function footingNow({id, dx, dy, posture}, figure, floors = latestFloors(
     const floor = floorNamed(floors, id);
     if (!floor) return null;
     const spot = {x: floor.left + dx, y: floor.top + dy, posture};
+    return holds(spot, figure, floors) ? {x: spot.x, y: spot.y} : null;
+}
+
+// Whether a figure resting at `spot` is held there: inside its world, and, hanging, with its feet clear of the ground at home, where a
+// hanging figure lets go and stands. The one rule for choosing a perch and for keeping it, so a perch chosen is a perch that holds.
+export function holds(spot, figure, floors = latestFloors().floors) {
     const home = floorNamed(floors, "home");
-    if (posture === "hang" && home && boxAt(spot, figure).bottom >= home.top) return null;
-    return inWorld(spot, figure) ? {x: spot.x, y: spot.y} : null;
+    if (spot.posture === "hang" && home && boxAt(spot, figure).bottom >= home.top) return false;
+    return inWorld(spot, figure);
 }
 
 // Where a figure resting at `spot` by `footing` is now, at the moment `at`, with the footing it keeps and how it got there, or null once its
