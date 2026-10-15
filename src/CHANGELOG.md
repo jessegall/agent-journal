@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.3.3 — Auto-update stays on version 3
+
+- The update check now looks only at releases of the installed major line: a journal on 3.x is told of 3.x releases and installs those, whatever the auto-update setting says. A move to version 4 happens only when you name it: `journal upgrade 4.0.0`. Before, a 4.0.0 tag would have been installed by itself.
+
 ## 3.3.2 — Stopping with work in hand is told to carry on at once
 
 - With auto mode on, an agent that stops with work open is told at that stop that it has work to do and should not stop; before, the nudge came after five quiet minutes. A stop the user made with Escape is left alone.

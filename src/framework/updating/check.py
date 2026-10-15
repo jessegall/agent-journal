@@ -21,7 +21,8 @@ INSTALL_WAIT = 600
 REFETCH_WAIT = 10
 
 
-KEPT_PARTS = {"patches": 2, "minor versions": 1, "major versions": 0, "always": 0}
+KEPT_PARTS = {"patches": 2, "minor versions": 1, "major versions": 1, "always": 1}
+"""How many leading parts the version installed by itself must share with the installed one. No choice goes below one: a new major line, such as 4.0.0 over 3.x, is offered on Home and installed only when named, since it changes what a journal is."""
 
 
 def within(installed: str, latest: str, installs: str) -> bool:

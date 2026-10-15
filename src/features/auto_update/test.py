@@ -58,9 +58,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     check.checked_at = 0.0
     assert check.tick() == "told of 2.250.0" and sent[-1].startswith("journal 2.250.0 is out"), "a minor version waits for the user"
     record.set_setting("auto_update", {"installs": "sometimes"})
+    monkeypatch.setattr(updates, "upstream", lambda root: "2.251.0")
+    check.checked_at = 0.0
+    assert check.tick() == "installing 2.251.0", "a value that is not one of the choices reads as the default, always"
     monkeypatch.setattr(updates, "upstream", lambda root: "3.0.0")
     check.checked_at = 0.0
-    assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
+    assert check.tick() == "told of 3.0.0" and sent[-1].startswith("journal 3.0.0 is out"), "a new major line waits for the user whatever the choice"
     from controllers.types import Notices
     from framework.loaded import FEATURES
     monkeypatch.setattr(updates, "installed", lambda root, yes, version: "package not refreshed: the network was down")
@@ -464,7 +467,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     record = fresh()
     ran = []
     monkeypatch.delenv(launch.TRIED, raising=False)
-    monkeypatch.setattr(launch, "fetched", lambda cache: cache.parent.mkdir(parents=True, exist_ok=True) or cache.write_text("99.0.0"))
+    monkeypatch.setattr(launch, "fetched", lambda cache: cache.parent.mkdir(parents=True, exist_ok=True) or cache.write_text("3.99.0"))
     monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or ["package refreshed"])
     monkeypatch.setattr(launch, "took", lambda root, latest: True)
     monkeypatch.setattr(launch.os, "execv", lambda python, argv: ran.append("started again"))
@@ -477,7 +480,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     ran.clear()
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
-    monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("99.0.0"))
+    monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("3.99.0"))
     monkeypatch.delenv(launch.TRIED, raising=False)
     monkeypatch.setattr("install.upgrade", lambda project, root: ["! the package could not be fetched"])
     monkeypatch.setattr(launch, "failure_in", lambda lines: lines[0])
@@ -487,7 +490,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr(launch, "failure_in", lambda lines: "")
     monkeypatch.setattr(launch, "took", lambda root, latest: False)
     ran.clear()
-    assert (launch.latest_first(record), ran) == (f"99.0.0 was not installed: {held}", ["upgrade"]), \
+    assert (launch.latest_first(record), ran) == (f"3.99.0 was not installed: {held}", ["upgrade"]), \
         "an upgrade that held back, or did not put the version in place, is said plainly and the launch goes on, never started again to loop on it"
     from framework import managed
     (record.root / "src").mkdir(exist_ok=True)
@@ -515,7 +518,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     assert check.installed(record.root, False, "") == "", "an upgrade that says nothing is wrong has not failed"
     updating = check.UpdateCheck(SimpleNamespace(record=record))
     updating.installing.acquire()
-    assert updating.install(None, "99.0.0") is None, "an install already running is not started a second time"
+    assert updating.install(None, "3.99.0") is None, "an install already running is not started a second time"
     assert [check.first_refusal(record.root, "9.9.9"), check.first_refusal(record.root, "9.9.9")] == [True, False], "a refused version is told once"
     from tests.conftest import refused
     feature = features.FEATURES["auto_update"]
@@ -1005,3 +1008,10 @@ def test_a_newer_major_is_offered_but_installs_at_start_only_when_majors_are_cho
     monkeypatch.setattr("install.upgrade", lambda project, root: upgrading.append(root) or [])
     launching.latest_first(record)
     assert upgrading == [], "a start on patches does not install the newer major it was offered"
+
+
+def test_a_new_major_line_is_never_installed_by_itself():
+    """3.x stays on 3.x whatever the setting says: 4.0.0 is offered on Home and installed only when named."""
+    from framework.updating.check import within
+    assert within("3.3.2", "3.3.3", "patches") and within("3.3.2", "3.4.0", "minor versions") and within("3.3.2", "3.9.0", "always")
+    assert not within("3.3.2", "4.0.0", "major versions") and not within("3.3.2", "4.0.0", "always")

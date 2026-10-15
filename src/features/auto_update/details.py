@@ -29,7 +29,9 @@ class AutoUpdateDetails(FeatureDetails):
         With auto-update on, the newest release is installed in the background, one install per
         journal at a time, and the session reloads itself. The setting chooses how big a step
         installs by itself: patches (2.249.4 to 2.249.5), minor versions (to 2.250.0), major versions
-        (to 3.0.0) or always, which also tries a failed install again every 30 minutes; a bigger one waits on Home. A failed install is filed as a notice
+        or always, which also tries a failed install again every 30 minutes; a bigger one waits on Home. A new major line
+        (3.x to 4.0.0) is never installed by itself, whatever the choice: it waits on Home and installs when you name it,
+        with journal upgrade 4.0.0. A failed install is filed as a notice
         and tried again after 30 minutes, then 2 hours, then 6. With it off, Home shows a banner
         when a newer release is out, with Update and Update and turn on auto-update, and the agent
         is told to run journal upgrade. The journal's own repository never installs itself.
@@ -73,8 +75,8 @@ class AutoUpdateDetails(FeatureDetails):
             examples=(
                 ("patches", "2.249.5 installs by itself. 2.250.0 and 3.0.0 wait for you on Home, with an Update button."),
                 ("minor versions", "2.249.5 and 2.250.0 install by themselves. 3.0.0 waits for you on Home, with an Update button."),
-                ("major versions", "2.249.5, 2.250.0 and 3.0.0 all install by themselves. A failed install is tried again after 30 minutes, then 2 hours, then 6."),
-                ("always", "Every new release installs by itself, whatever its number. A failed install is tried again every 30 minutes."),
+                ("major versions", "2.249.5 and 2.250.0 install by themselves; 3.0.0 still waits for you on Home. A failed install is tried again after 30 minutes, then 2 hours, then 6."),
+                ("always", "Every new release of this major line installs by itself; the next major waits for you on Home. A failed install is tried again every 30 minutes."),
             ),
         ),
     ]
