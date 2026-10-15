@@ -25,7 +25,8 @@ class Nudger:
         return line
 
     def _repeat(self, agent: Agent, said: Said) -> bool:
+        """The same words to the same agent within the window: not again."""
         if not said.repeat_after:
             return False
-        since = time.time() - said.repeat_after
-        return any(e.data["session"] == agent.session and e.data["key"] == said.key and e.data["at"] > since for e in self.entries.of_kind(agent.environment_id, NUDGE))
+        since, line = time.time() - said.repeat_after, said.rendered()
+        return any(e.data["session"] == agent.session and e.data["key"] == said.key and e.data["line"] == line and e.data["at"] > since for e in self.entries.of_kind(agent.environment_id, NUDGE))

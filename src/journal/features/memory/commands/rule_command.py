@@ -18,4 +18,4 @@ class RuleCommand(MemoryCommand):
         self.repository = rules
 
     def new(self, args: Namespace, environment_id: int) -> Rule:
-        return Rule(text=args.text, reason=args.reason)
+        return Rule(text=args.text, reason=args.reason, keywords=self.keywords(args))

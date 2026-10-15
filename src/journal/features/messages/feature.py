@@ -7,6 +7,7 @@ from journal.features.messages.listeners.hold_after_compaction import HoldAfterC
 from journal.features.messages.listeners.hold_unanswered import HoldUnanswered
 from journal.features.messages.listeners.hold_unread import HoldUnread
 from journal.features.messages.listeners.inbox_on_arrival import InboxOnArrival
+from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.run_tags import RunTags
 from journal.features.messages.listeners.tell_reaction import TellReaction
@@ -22,7 +23,7 @@ class Messages(Feature):
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
     states = (CatchingUp,)
-    listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, HoldAfterCompaction, RecordTurn, RunTags, TellReaction)
+    listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, HoldAfterCompaction, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
 
     NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)
     SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)

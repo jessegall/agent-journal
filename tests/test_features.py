@@ -572,3 +572,39 @@ def test_a_session_silent_for_an_hour_is_ended(app):
     hook(app, "SessionStart")
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=3601.0))
     assert app.container.get(Machine).current("s1").name == "ended"
+
+
+def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    app.console().run(["fact", "create", "the login uses the old session store", "--keywords", "login,session"], USER)
+    hook(app, "MessageDisplay", message="I will look at the login next.")
+    hook(app, "MessageDisplay", message="Still on the login.")
+    app.runtime().deferred.drain()
+    whispers = [line for line in typed if "fact 1: the login uses the old session store" in line]
+    assert len(whispers) == 1, "whispered once per row per agent"
+    app.console().run(["rule", "create", "Always run the suite before a commit"], AGENT)
+    assert typed[-1].startswith("[journal] is rule 1 a ruling for the whole project?")
+
+
+def test_auto_mode_answers_a_stop_with_the_next_task(app):
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "the footer"], USER)
+    status, body = hook(app, "Stop")
+    assert status == 409 and "task 1 next: the footer" in body["error"]
+    from journal.models.actor import Actor as A
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), A.user(1))
+    assert hook(app, "Stop")[1] == {}, "with auto off a stop is a stop"
+
+
+def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "the footer is broken"], USER)
+    app.console().run(["task", "create", "Fix the footer"], AGENT)
+    hook(app, "MessageDisplay", message="[!reply:1]\nFiled task 1 for it.")
+    app.runtime().deferred.drain()
+    rows = app.container.get(__import__("journal.http.v3.shapers.messages_shaper", fromlist=["MessagesShaper"]).MessagesShaper).rows(app.container.get(__import__("journal.repositories.environments", fromlist=["Environments"]).Environments).find(1))
+    assert "todo:1" in rows[0].refs

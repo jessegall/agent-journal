@@ -9,3 +9,5 @@ class Rule(Model):
 
     text: str = ""
     reason: str = ""
+    keywords: tuple[str, ...] = ()
+    """Words that, when the agent writes one, bring the rule back to it as a whisper."""

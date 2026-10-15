@@ -4,9 +4,15 @@ from journal.features.memory.commands.nothing_command import NothingCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
 from journal.features.memory.commands.rule_command import RuleCommand
 from journal.features.memory.listeners.hold_at_mark import HoldAtMark
+from journal.features.memory.listeners.review_new_rule import ReviewNewRule
+from journal.features.memory.listeners.whisper import Whisper
 from journal.features.memory.states.at_mark import AtMark
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
+
+
+ONCE = 365 * 86400.0
+"""A whisper is said once per row per agent; in practice, not within a year."""
 
 
 class Memory(Feature):
@@ -14,7 +20,7 @@ class Memory(Feature):
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     states = (AtMark,)
-    listeners = (HoldAtMark,)
+    listeners = (HoldAtMark, Whisper, ReviewNewRule)
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
     MARKS = (25, 50, 80)
@@ -23,7 +29,8 @@ class Memory(Feature):
     DECIDE = Nudge(name, "decide", "context {{percent}}% full: record what must survive it", "journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do", repeat_after=0)
     HELD = Nudge(name, "held", "writes wait until you decide what survives the context", "journal fact create, journal rule create, or journal nothing \"<why>\"")
     RULE_REVIEW = Nudge(name, "rule_review", "is rule {{n}} a ruling for the whole project?", "keep it only as Always or Never for every environment; otherwise strike it and file a fact or a reminder here")
-    nudges = (DECIDE, HELD, RULE_REVIEW)
+    WHISPER = Nudge(name, "whisper", "{{noun}} {{n}}: {{text}}", repeat_after=ONCE)
+    nudges = (DECIDE, HELD, RULE_REVIEW, WHISPER)
 
     skill = Skill("memory", 'Decide what survives the context window: a fact, a rule or a reminder; load it at a context mark', """
 # Memory
@@ -35,5 +42,6 @@ At a mark of the context window, writes wait until you decide what must survive 
   Only the user makes one; right after, read it again as one.
 - A **reminder** is what to keep doing here: `journal reminder create "<do this>"`.
 - Nothing worth keeping: `journal nothing survives "<why>"`.
+- `--keywords a,b` on any of them: when you write or run one of those words, the row is whispered back to you.
 - Facts, rules and reminders are handed to you at every session start.
 """, keywords=('fact', 'facts', 'rule', 'rules', 'reminder', 'remember', 'memory'), required_in=('at_mark',))

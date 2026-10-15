@@ -22,6 +22,7 @@ class MemoryCommand(Command):
         create = self.verb(verbs, "create", f"record a {self.noun}")
         create.add_argument("text")
         create.add_argument("--reason", default="")
+        create.add_argument("--keywords", default="", help="words that bring it back when you write one, comma-separated")
         self.verb(verbs, "list", f"every {self.noun} here")
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
 
@@ -43,7 +44,11 @@ class MemoryCommand(Command):
         return 0
 
     def new(self, args: Namespace, environment_id: int):
-        return self.repository.model(environment_id=environment_id, text=args.text)
+        return self.repository.model(environment_id=environment_id, text=args.text, keywords=self.keywords(args))
+
+    @staticmethod
+    def keywords(args: Namespace) -> tuple[str, ...]:
+        return tuple(word.strip().lower() for word in args.keywords.split(",") if word.strip())
 
     def decided(self, where: Where) -> None:
         """An agent held at a mark has decided; it goes back to what it was doing."""

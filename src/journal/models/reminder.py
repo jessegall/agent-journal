@@ -6,3 +6,5 @@ from journal.models.scoped import Scoped
 @dataclass(frozen=True)
 class Reminder(Scoped):
     text: str = ""
+    keywords: tuple[str, ...] = ()
+    """Words that, when the agent writes one, bring the row back to it as a whisper."""

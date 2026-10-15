@@ -2,6 +2,8 @@ from journal.features.feature import Feature
 from journal.features.tasks.commands.halt_command import HaltCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
+from journal.features.tasks.listeners.check_in import CheckIn
+from journal.features.tasks.listeners.offer_next import OfferNext
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
@@ -17,7 +19,7 @@ class Tasks(Feature):
     help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
     states = (Idle, Working, Halted, Expecting)
     commands = (TaskCommand, HaltCommand)
-    listeners = (SpotPolling, AskAfterParked)
+    listeners = (SpotPolling, AskAfterParked, OfferNext, CheckIn)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
     CARRY_ON = Nudge(name, "carry_on", "task {{n}} is in hand: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck")
@@ -31,7 +33,8 @@ class Tasks(Feature):
     IN_HAND = Nudge(name, "in_hand", "task {{n}} in hand", "if this is not what you are doing, finish it or park it and start the task you are on", repeat_after=0)
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal task await again. Done or failed: log what came of it and take the next step", repeat_after=300)
-    nudges = (DECLARE, CARRY_ON, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED)
+    CHECK_IN = Nudge(name, "check_in", "nothing has happened for {{minutes}} minutes: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
+    nudges = (DECLARE, CARRY_ON, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
@@ -49,6 +52,8 @@ write with none started is refused.
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
 - Twenty edits with nothing logged hold the next write until you log; every ten the task in hand is named back to you.
 - A commit whose message carries `Journal: tasks done <n>` on a line of its own finishes task n.
+- Auto mode (the setting tasks.auto, on by default) means you work the list: a stop with tasks open is answered with the next
+  one, and only the user stops you.
 - Work you put off in words is work lost: file it as a task instead.
 - Stopping with a task in hand is told to carry on. Truly stuck: `journal halt now "<why>"`.
 """, keywords=('task', 'tasks', 'todo'), required_in=('working', 'halted', 'expecting'))
