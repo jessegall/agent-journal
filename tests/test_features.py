@@ -863,6 +863,10 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
     assert app.console().run(["mcp", "list"], USER).out.startswith("linear")
+    post("/journal/mcp/install", {"name": "linear"})
+    sent.clear()
+    assert post("/journal/mcp/linear/sign-in", {})["asked"] == "linear"
+    assert sent[-1]["type"] == "Type" and "mcp__linear__authenticate" in sent[-1]["line"], "the agent is asked to sign in through the server's own tool"
 
 
 def test_a_task_finished_while_a_skill_is_owed_is_let_go_of_under_the_pause(skilled):

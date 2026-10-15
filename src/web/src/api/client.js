@@ -138,6 +138,10 @@ export class ApiClient {
         return transport.request("POST", this.own(`/mcp/${encoded(name)}/key`), {value});
     }
 
+    mcpSignIn(name) {
+        return transport.request("POST", this.own(`/mcp/${encoded(name)}/sign-in`), {});
+    }
+
     mcpRemove(name) {
         return transport.request("POST", this.own(`/mcp/${encoded(name)}/remove`), {});
     }

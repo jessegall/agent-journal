@@ -52,6 +52,7 @@ class Routes:
         router.post(f"{API}/mcp/check", get(McpController).check)
         router.post(f"{API}/mcp/{{name}}/key", get(McpController).key)
         router.post(f"{API}/mcp/{{name}}/remove", get(McpController).remove)
+        router.post(f"{API}/mcp/{{name}}/sign-in", get(McpController).sign_in)
         router.get(f"{API}/rules", lambda request: self.rules(request))
         router.get(f"{API}/agents", get(AgentController).index)
         router.post(f"{API}/agents/type", get(AgentController).type)

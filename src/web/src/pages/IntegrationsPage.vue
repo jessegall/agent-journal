@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {agent, agentOnline} from "../composables/leadAgent.js";
+import {agentOnline} from "../composables/leadAgent.js";
 import Btn from "../kit/Btn.vue";
 import StateDot from "../kit/StateDot.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -60,7 +60,7 @@ const saveKey = (s) =>
         await api.mcpKey(s.name, keys.value[s.name] || "");
         keys.value[s.name] = "";
     });
-const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"));
+const signIn = (s) => act(s.name, () => api.mcpSignIn(s.name));
 </script>
 
 <template>
@@ -110,7 +110,7 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
                     </Btn>
                 </div>
                 <div v-else-if="s.managed && s.auth === 'oauth'" class="integration-key">
-                    <span class="integration-note">Signs in from the agent's terminal: a browser window opens there.</span>
+                    <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>
                     <Btn kind="primary" small :busy="busy === s.name" :disabled="!agentOnline" @click="signIn(s)">Sign in</Btn>
                 </div>
             </li>

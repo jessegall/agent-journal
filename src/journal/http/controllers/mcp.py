@@ -66,5 +66,14 @@ class McpController:
         self.installing.remove(server, request.actor)
         return Response.json({"removed": server.name})
 
+    def sign_in(self, request: Request) -> Response:
+        try:
+            server = self.servers.named(request.params["name"])
+        except NotFound as missing:
+            return Response.not_found(str(missing))
+        if not self.installing.sign_in(server):
+            return Response.refused("no agent is running to sign in: start one first")
+        return Response.json({"asked": server.name})
+
     def check(self, request: Request) -> Response:
         return Response.json({"servers": [self.row(s) for s in self.installing.checked(request.actor)]})

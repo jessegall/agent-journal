@@ -2,6 +2,7 @@ from journal.features.mcp.health import Health
 from journal.features.mcp.pending_restarts import PendingRestarts
 from journal.features.mcp.keys import Keys
 from journal.features.mcp.provider_config import ProviderConfig
+from journal.engine.nudger import Nudger
 from journal.models.actor import Actor
 from journal.models.mcp_server import McpServer
 from journal.providers.providers import Providers
@@ -17,9 +18,9 @@ MOVES = ("Idle", "SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinis
 class Installing:
     """The one way a server is added, keyed, removed or checked: the row, the configuration the agents read, and a restart of the agents running, so it applies at once."""
 
-    def __init__(self, servers: McpServers, config_files: ProviderConfig, keys: Keys, health: Health, agents: Agents, providers: Providers, supervisor: SupervisorLink, entries: Entries, pending: PendingRestarts) -> None:
+    def __init__(self, servers: McpServers, config_files: ProviderConfig, keys: Keys, health: Health, agents: Agents, providers: Providers, supervisor: SupervisorLink, entries: Entries, pending: PendingRestarts, nudger: Nudger) -> None:
         self.servers, self.config_files, self.keys, self.health = servers, config_files, keys, health
-        self.agents, self.providers, self.supervisor, self.entries, self.pending = agents, providers, supervisor, entries, pending
+        self.agents, self.providers, self.supervisor, self.entries, self.pending, self.nudger = agents, providers, supervisor, entries, pending, nudger
 
     def add(self, server: McpServer, by: Actor) -> McpServer:
         saved = self.servers.save(server, by)
@@ -47,12 +48,23 @@ class Installing:
             checked.append(self.servers.save(server.checked(state, words if state == "failed" else ""), by))
         return checked
 
+    def sign_in(self, server: McpServer) -> bool:
+        """The first running agent is asked to sign in to the server through its own authenticate tool: the browser opens from its terminal."""
+        from journal.features.mcp.feature import Mcp
+        for agent in self.running():
+            line = self.nudger.say(agent, Mcp.SIGN_IN.about(name=server.name, title=server.title))
+            if line:
+                self.supervisor.type(agent.environment_id, line)
+                return True
+        return False
+
+    def running(self):
+        return [a for a in self.agents.all() if a.state != "ended" and self.supervisor.inbox_of(a.environment_id)]
+
     def applied(self) -> None:
         """The configuration written and every running agent restarted on its own conversation: at once when it sits idle, else the moment its turn ends."""
         self.config_files.write()
-        for agent in self.agents.all():
-            if agent.state == "ended" or not self.supervisor.inbox_of(agent.environment_id):
-                continue
+        for agent in self.running():
             resume = self.providers.named(agent.provider or "claude").resume(agent.session)
             if self.idle(agent):
                 self.supervisor.restart_agent(agent.environment_id, resume)
