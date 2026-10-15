@@ -429,6 +429,14 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 - **A deferred failure never stops the worker.** `Deferred._work` logs a failing piece of work to the
   server log and runs the next; before, one exception ended the thread and every later deferred listener
   waited in the queue for good, silently. Found 2026-10-15 behind a reply that never reached the chat.
+- **Install is one command, as version 3's (2026-10-15, later).** `install.sh` copies `src` into
+  `<project>/.journal/src` (from the checkout it is run from, or a clone of `AGENT_JOURNAL_REPO` at
+  `AGENT_JOURNAL_REF`) and runs `journal setup here` from the copy. Setup also writes the dispatcher at
+  `~/.local/bin/journal` (`supervisor/dispatcher.py`): it finds the project's `.journal` walking up and
+  hands over to `.journal/src/journal.sh` (version 4) or `.journal/journal` (version 3's launcher), so one
+  command serves both versions and nothing of the journal lives outside a project. Setup adds `/.journal`
+  to the project's `.gitignore`. A wired hook first tests that its script exists. A dogfood checkout
+  therefore runs from its own `.journal/src` copy: re-run `sh install.sh` after a change to try it live.
 - **The command is the project's.** `journal setup` writes `.journal/bin/journal` and nothing outside the
   project; the supervisor puts that folder first on the agent's PATH, so `journal …` resolves inside a
   session and nowhere else. Ruled 2026-10-15 after a dogfood setup overwrote the global `journal` of

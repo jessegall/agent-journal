@@ -13,6 +13,8 @@ from journal.console.where import Where
 
 @pytest.fixture
 def app(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    (tmp_path / "home" / ".local" / "bin").mkdir(parents=True)
     return App(Config(tmp_path, port=0))
 
 
@@ -31,6 +33,9 @@ def test_setup_wires_hooks_skills_and_the_law(app):
     assert (root / "CLAUDE.md").read_text().strip() == "@AGENTS.md"
     assert "hooks   .claude/settings.json" in out
     assert not (root / ".codex").exists(), "Codex is wired only where its folder exists"
+    assert (root / ".journal/bin/journal").is_file() and "/.journal" in (root / ".gitignore").read_text().splitlines()
+    dispatcher = (root / "home/.local/bin/journal").read_text()
+    assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
 
 
 def test_setup_is_idempotent_and_keeps_other_hooks(app):

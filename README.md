@@ -15,16 +15,37 @@ From the root of your project, with `python3`, `git` and `curl` on the path:
     sh /path/to/agent-journal/src/journal.sh setup here
     journal claude
 
-`setup here` makes `.journal/`, wires Claude's hooks (and Codex's where `.codex/` exists), writes the
-journal's skills and the agent profiles, puts the journal's law into AGENTS.md, imports it from
-CLAUDE.md, and writes the project's own command at `.journal/bin/journal`; nothing is installed outside the project, and inside a session that folder is on the agent's PATH so `journal …` works there. `.journal/bin/journal claude` asks, one question at a
-time with ↑ ↓ and Enter, which environment (x on one deletes it, after a confirmation, with all it recorded), whether
-to carry on its last conversation, whether to skip the permission prompts and whether to set aside the
-hooks that are not the journal's for the run (they are put back when it ends), then clears the screen
-and runs Claude under the supervisor with one line kept at the top showing the project and the viewer's
-URL, with the server beside it, and opens the viewer in your browser. `--env <name>`, `--new`,
-`--skip`, `--aside`, `--yes` and `--no-open` answer the menu from the command line. The viewer is at the port in
-`.journal/port`: the first free one from 8420, or `JOURNAL_PORT`.
+## Install
+
+From the root of your project, with `python3` 3.11 or newer available:
+
+    curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
+
+From a checkout on this machine, the same from the project root:
+
+    sh /path/to/agent-journal/install.sh
+
+The installer copies the package into `.journal/src`, apart from the project's own record, then runs
+`journal setup here`: it wires Claude's hooks (and Codex's where `.codex/` exists), writes the journal's
+skills and the agent profiles, puts the journal's law into AGENTS.md, imports it from CLAUDE.md, writes
+the project's own command at `.journal/bin/journal`, keeps `.journal` out of git, and puts one dispatcher
+at `~/.local/bin/journal`. The dispatcher holds no journal: it finds the project by its `.journal` folder
+and hands over to the version that project holds, version 4 or version 3. Running the installer again
+upgrades.
+
+## Start Claude or Codex
+
+    journal claude
+    journal codex
+
+The boot menu asks, one question at a time with ↑ ↓ and Enter, which environment (x on one deletes it,
+after a confirmation, with all it recorded), whether to carry on its last conversation, whether to skip
+the permission prompts and whether to set aside the hooks that are not the journal's for the run (they
+are put back when it ends), then clears the screen and runs the agent under the supervisor with one line
+kept at the top showing the project and the viewer's URL, with the server beside it, and opens the viewer
+in your browser. `--env <name>`, `--new`, `--skip`, `--aside`, `--yes` and `--no-open` answer the menu
+from the command line. The viewer is at the port in `.journal/port`: the first free one from 8420, or
+`JOURNAL_PORT`.
 
 The viewer is version 3's, unchanged: the server answers its API from the new database.
 

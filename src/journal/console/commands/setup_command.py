@@ -10,6 +10,7 @@ from journal.features.laws.law_text import LawText
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.skills.skill_files import SkillFiles
 from journal.providers.providers import Providers
+from supervisor.dispatcher import Dispatcher
 from supervisor.project_command import ProjectCommand
 
 
@@ -36,6 +37,9 @@ class SetupCommand(Command):
         print(f"law     {self.law().relative_to(self.config.root)}")
         print(f"imports {self.claude_md().relative_to(self.config.root)}")
         print(f"command {self.shim()}")
+        if dispatcher := Dispatcher(Path.home()).write():
+            print(f"journal {dispatcher}")
+        print(f"ignored {self.ignored().relative_to(self.config.root)}")
         return 0
 
     def hooks(self, args: Namespace, where: Where) -> int:
@@ -61,6 +65,14 @@ class SetupCommand(Command):
         had = path.read_text() if path.is_file() else ""
         if "@AGENTS.md" not in had:
             path.write_text((had.rstrip("\n") + "\n\n" if had.strip() else "") + "@AGENTS.md\n")
+        return path
+
+    def ignored(self) -> Path:
+        """The project's .gitignore keeps the journal's own folder out of the repository."""
+        path = self.config.root / ".gitignore"
+        had = path.read_text() if path.is_file() else ""
+        if "/.journal" not in had.splitlines() and ".journal" not in had.splitlines() and ".journal/" not in had.splitlines():
+            path.write_text((had.rstrip("\n") + "\n" if had.strip() else "") + "/.journal\n")
         return path
 
     def shim(self) -> Path:
