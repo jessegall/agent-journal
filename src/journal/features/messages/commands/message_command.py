@@ -38,6 +38,7 @@ class MessageCommand(Command):
         return 0
 
     def read(self, args: Namespace, where: Where) -> int:
-        self.messages.mark_read(self.messages.find(args.n), where.actor)
-        print(f"message {args.n} read")
+        """Shows the message's words and marks it read: the words reach the agent here, once it opens the message."""
+        message = self.messages.mark_read(self.messages.find(args.n), where.actor)
+        print(f"message {message.id} from the {message.author}: {message.text}")
         return 0

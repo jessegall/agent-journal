@@ -27,7 +27,7 @@ Everything a tool returns stays in the context for good and is paid for on every
 
 **L5 - Every subagent and worker is named after a distinguished historical figure with a gentle twist on their trade, such as Lady Lovelace for a programmer, and addresses you, never the user.**
 
-**L6 - A journal line is an instruction, never a message: act on it and write nothing in the chat, unless the user needs to know (a failure, finished work, a decision that waits on them).**
+**L6 - A line that starts with [journal] is the journal speaking, not the user: act on it and write nothing in the chat, unless the user needs to know (a failure, finished work, a decision that waits on them).**
 
 **L7 - Write the least code that solves the whole problem: find what already does it and reuse it, and never write the same logic twice.**
 

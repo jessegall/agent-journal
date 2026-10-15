@@ -182,7 +182,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
 def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "t", "--start"], AGENT)
@@ -192,10 +192,10 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     machine = app.container.get(Machine)
     assert machine.current("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
-    assert machine.current("s1").name == "awaiting" and typed == ["worker 1, Lady Lovelace, reported in the chat"]
+    assert machine.current("s1").name == "awaiting" and typed == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
     console.run(["worker", "stop", "2"], USER)
     assert machine.current("s1") == Working(task_id=1)
-    assert typed[-1] == "what you waited on came back: carry on"
+    assert typed[-1] == "[journal] what you waited on came back: carry on"
 
 
 def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
@@ -274,7 +274,7 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["check", "create", "it is fine", "--command", "true"], USER)
@@ -311,7 +311,7 @@ def test_a_command_that_took_a_minute_is_sent_to_the_background_next_time(app):
 def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="I ran journal task start 3 because the user wants it.")
     app.runtime().deferred.drain()
@@ -335,7 +335,7 @@ def test_the_skill_tool_loads_a_skill_too(skilled):
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
     console = app.console()
     console.run(["voice", "me", "--title", "Sir", "--name", "Example"], USER)
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
@@ -348,11 +348,13 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
     app.console().run(["message", "send", "nobody is here yet"], USER)
     assert typed == [], "no live agent, nothing to type to"
     hook(app, "SessionStart")
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "send", "hello?"], USER)
-    assert typed == ["the user left message 2: are you there?. answer it before anything else, with [!reply:2] in your turn",
-                     "the user left message 3: hello?. answer it before anything else, with [!reply:3] in your turn"]
+    assert typed == ["[journal] there is a new message in your inbox, 2. journal message read 2 takes it in; answer it before anything else",
+                     "[journal] there is a new message in your inbox, 3. journal message read 3 takes it in; answer it before anything else"]
+    outcome = app.console().run(["message", "read", "2"], AGENT)
+    assert "are you there?" in outcome.out, "reading a message shows its words"

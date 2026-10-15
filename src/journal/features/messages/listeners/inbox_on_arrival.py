@@ -8,7 +8,7 @@ from journal.supervisor_link import SupervisorLink
 
 
 class InboxOnArrival(Listener[Created]):
-    """A message the user leaves while the agent sits at its prompt is typed to it through the supervisor, so it is read at once and not at the next hook."""
+    """A message the user leaves while the agent sits at its prompt is named to it by number through the supervisor, so it is taken in at once and not at the next hook; the words reach it when it reads the message."""
 
     def __init__(self, nudger: Nudger, agents: Agents, supervisor: SupervisorLink) -> None:
         self.nudger, self.agents, self.supervisor = nudger, agents, supervisor
@@ -21,6 +21,6 @@ class InboxOnArrival(Listener[Created]):
         agent = self.agents.live(message.environment_id)
         if agent is None:
             return
-        line = self.nudger.say(agent, MessagesFeature.ARRIVED.about(n=message.id, text=message.text))
+        line = self.nudger.say(agent, MessagesFeature.ARRIVED.about(n=message.id))
         if line:
             self.supervisor.type(line)

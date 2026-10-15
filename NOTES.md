@@ -277,9 +277,12 @@ G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, 
 
 ## Where it stands (2026-10-15, later)
 
-A message the user leaves while the agent sits at its prompt is typed to it through the
-supervisor (`InboxOnArrival`, nudge `messages.arrived`, said every time), since no hook fires
+A message the user leaves while the agent sits at its prompt is named to it by number through
+the supervisor (`InboxOnArrival`, nudge `messages.arrived`, said every time), as version 3 did:
+never its words, which reach the agent when it runs `journal message read <n>`. No hook fires
 at a prompt that is not being used; the start, prompt and stop listeners still list the unread.
+Every line the journal types starts with `[journal] `, put on in `SupervisorLink.type`, the one
+funnel, and law L6 says what the mark means.
 Seen on the first dogfood run: two messages from the chat reached the journal and nobody told
 the terminal.
 
