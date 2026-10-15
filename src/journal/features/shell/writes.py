@@ -1,0 +1,45 @@
+import re
+
+from journal.features.shell.chain import Chain
+
+COMMANDS = {"sed": ("-i",), "tee": (), "cp": (), "mv": (), "rm": (), "mkdir": (), "touch": (), "rsync": (), "ln": (), "chmod": (), "chown": (), "truncate": (), "dd": (), "patch": (), "install": (), "rmdir": ()}
+"""Commands that change files, with the flag that makes them do so when one is needed."""
+GIT = {"checkout", "restore", "apply", "merge", "rebase", "pull", "stash", "reset", "clean", "switch", "cherry-pick", "revert", "mv", "rm"}
+"""Git verbs that move the working tree."""
+INTERPRETERS = {"python", "python3", "node", "ruby", "perl", "php", "bash", "sh", "zsh"}
+MARKERS = re.compile(r"write_text|write_bytes|open\([^)]*[\"'][wax]|\.write\(|unlink|os\.remove|shutil\.|os\.rename|\.rename\(|mkdir|writeFileSync|writeFile\(|fs\.write|File\.(write|open|delete)|rm_rf|\.truncate\(")
+"""What a script says when it writes."""
+REDIRECT = re.compile(r"(?<![<>&\d])(?:\d?>>?)\s*(?!&|/dev/null)\S")
+"""A redirection into a file, not into a descriptor or the void."""
+PREFIXES = {"sudo", "env", "nohup", "time", "nice", "command", "exec", "xargs"}
+
+
+class Writes:
+    """Whether a shell line changes files, read from its text before it runs, as the editor's own tools are known to: the write gates apply to a script as much as to an edit."""
+
+    @classmethod
+    def of(cls, line: str) -> bool:
+        return any(cls.part(p.text) for p in Chain.parts(line) if p.recorded)
+
+    @classmethod
+    def part(cls, text: str) -> bool:
+        words = [w for w in cls.unquoted(text).split() if "=" not in w or w.startswith("-")]
+        while words and words[0] in PREFIXES:
+            words = words[1:]
+        if not words or words[0].endswith("journal"):
+            return False
+        if REDIRECT.search(cls.unquoted(text)):
+            return True
+        name = words[0].rsplit("/", 1)[-1]
+        if name in COMMANDS:
+            return all(flag in words for flag in COMMANDS[name])
+        if name == "git":
+            return len(words) > 1 and words[1] in GIT
+        if name in INTERPRETERS:
+            return bool(MARKERS.search(text))
+        return any(cls.part(piped) for piped in cls.unquoted(text).split("|")[1:])
+
+    @staticmethod
+    def unquoted(text: str) -> str:
+        """The text with its quoted stretches blanked, so a > inside quotes is not a redirection."""
+        return re.sub(r"'[^']*'|\"(?:\\\\.|[^\"\\\\])*\"", " ", text)

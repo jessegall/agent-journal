@@ -22,6 +22,7 @@ def wrapped(command: str, cwd_file: Path) -> str:
 
 
 def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_background(tmp_path: Path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     (tmp_path / ".journal").mkdir()
     (tmp_path / ".journal" / "src").symlink_to(SRC)
     app = App(Config(tmp_path, port=0))
@@ -54,6 +55,9 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         ended = entries.of_kind(1, "ended", 5)[0]
         assert ended.data["status"] == 0 and "slow" in ended.data["last"], ended.data
         assert [e.data["part"] for e in reversed(entries.of_kind(1, "ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
+        run = subprocess.run([runner, wrapped("printf 'a\\nb\\n' > made.txt && echo untouched", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        changed = [e.data["changed"] for e in reversed(entries.of_kind(1, "ran", 20))][-2:]
+        assert changed == [[{"added": 2, "removed": 0, "path": "made.txt"}], []], changed
         assert cwd.read_text().strip() == str(tmp_path.resolve())
     finally:
         app.runtime().stop()

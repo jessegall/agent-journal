@@ -795,3 +795,21 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     console.run(["task", "done", "1", "--how", "shipped"], AGENT)
     console.run(["task", "create", "the menu"], USER)
     assert hook(app, "Stop")[0] == 200, "open tasks are not pressed for outside auto mode"
+
+
+def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
+    from urllib.request import urlopen
+    hook(app, "SessionStart")
+    app.console().run(["shell", "ran", "sed -i '' s/a/b/ notes.md", "--chain", "c2", "--status", "0", "--changed", "3\t1\tnotes.md\n0\t0\tsame.md"], AGENT)
+    edits = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent/1/edits", timeout=5))["edits"]
+    assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 1), ("same.md", 0, 0)] and edits[0]["command"].startswith("sed")
+
+
+def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
+    from journal.features.shell.writes import Writes
+    assert [Writes.of(c) for c in ("sed -i '' s/a/b/ f.py", "cat f.py | head -3", "echo hi > /dev/null", "echo hi > out.txt", "git status; git log", "git checkout -- f.py", "journal task create x", "python3 - <<'EOF'\nfrom pathlib import Path\nPath('x').write_text('y')\nEOF", "python3 -c 'print(1)'", "grep -rn 'a > b' src | tee found.txt", 'echo "a > b"')] == [True, False, False, True, False, True, False, True, False, True, False]
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})
+    assert status == 409 and "no work declared" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200

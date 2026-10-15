@@ -46,6 +46,7 @@ class ShellCommand(Command):
         ran.add_argument("--status", type=int, required=True)
         ran.add_argument("--seconds", type=float, default=0.0)
         ran.add_argument("--output", default="")
+        ran.add_argument("--changed", default="", help="the files the part changed, one a line: added, removed, path, tab-separated")
         moved = self.verb(verbs, "moved", "a chain went to the background")
         moved.add_argument("chain")
         moved.add_argument("part")
@@ -76,7 +77,8 @@ class ShellCommand(Command):
         return 0
 
     def ran(self, args: Namespace, where: Where) -> int:
-        self.record(where, RAN, {"chain": args.chain, "part": args.part, "doing": Doing.of(args.part), "status": args.status, "seconds": args.seconds, "output": args.output[-TAIL:]})
+        changed = [{"added": int(a) if a.isdigit() else 0, "removed": int(r) if r.isdigit() else 0, "path": path} for a, r, path in (line.split("\t", 2) for line in args.changed.splitlines() if line.count("\t") == 2)]
+        self.record(where, RAN, {"chain": args.chain, "part": args.part, "doing": Doing.of(args.part), "status": args.status, "seconds": args.seconds, "output": args.output[-TAIL:], "changed": changed})
         return 0
 
     def moved(self, args: Namespace, where: Where) -> int:

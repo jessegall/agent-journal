@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from typing import ClassVar
 
+from journal.features.shell.writes import Writes
 from journal.hooks.decision import Decision
 from journal.hooks.hook import Hook
 from journal.hooks.hook_kind import HookKind
@@ -21,6 +22,7 @@ class Provider:
     """The file in that folder that holds the hooks."""
     write_tools: ClassVar[frozenset[str]]
     read_tool: ClassVar[str]
+    shell_tool: ClassVar[str] = "Bash"
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
@@ -77,8 +79,9 @@ class Provider:
         """The skill folder a skill tool call loaded, or empty."""
         return input.get("skill", "") if tool == "Skill" else ""
 
-    def writes(self, tool: str) -> bool:
-        return tool in self.write_tools
+    def writes(self, tool: str, input: dict) -> bool:
+        """Whether this tool use changes files: the editor's writing tools, or a shell line that writes."""
+        return tool in self.write_tools or (tool == self.shell_tool and Writes.of(input.get("command", "")))
 
     @staticmethod
     def folder_name(project: Path) -> str:

@@ -296,12 +296,20 @@ class V3Controller:
         edits = []
         for e in reversed(self.entries.of_kind_in(environment.id, 400)):
             tool = e.data.get("tool_name", "")
-            if e.kind != "ToolFinished" or tool not in ("Edit", "Write", "MultiEdit") or not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= since:
+            if not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= since:
                 continue
-            edit = self.edit_of(e, tool)
-            if edit:
+            if e.kind == RAN:
+                edits += self.edits_of_part(e)
+            elif e.kind == "ToolFinished" and tool in ("Edit", "Write", "MultiEdit") and (edit := self.edit_of(e, tool)):
                 edits.append(edit)
         return Response.json({"cursor": time.time(), "edits": edits[-50:], "older": False})
+
+    @staticmethod
+    def edits_of_part(entry) -> list[dict]:
+        """The files a shell part changed, as the tree moved while it ran: counted, not shown line by line."""
+        at = entry.data["at"]
+        return [{"id": f"{c['path']}@{at}", "path": c["path"], "kind": "edit", "at": at, "added": c["added"], "removed": c["removed"], "first_line": 1, "last_line": 1, "rows": [], "image": False, "command": entry.data["part"][:80]}
+                for c in entry.data.get("changed", [])]
 
     def edit_of(self, entry, tool: str) -> dict | None:
         input_ = entry.data.get("tool_input", {})
