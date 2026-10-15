@@ -18,6 +18,7 @@ class EnvironmentCommand(Command):
         self.verb(verbs, "list", "every environment and when it was last used")
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")
+        self.verb(verbs, "delete", "an environment and everything recorded in it").add_argument("name")
 
     def rows(self) -> list[dict]:
         rows = []
@@ -40,6 +41,15 @@ class EnvironmentCommand(Command):
     def create(self, args: Namespace, where: Where) -> int:
         environment = self.environments.named(args.name)
         print(f"environment {environment.id}: {environment.name}")
+        return 0
+
+    def delete(self, args: Namespace, where: Where) -> int:
+        found = self.environments.where(name=args.name)
+        if not found:
+            print(f"no environment named {args.name}")
+            return 1
+        self.environments.wipe(found[0], where.actor)
+        print(f"deleted environment {found[0].id}: {found[0].name}, with everything recorded in it")
         return 0
 
     @staticmethod

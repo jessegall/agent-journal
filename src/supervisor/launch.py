@@ -8,6 +8,7 @@ from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
 from supervisor.choice import Choice
 from supervisor.menu import Menu
+from supervisor.other_hooks import OtherHooks
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
@@ -62,14 +63,21 @@ class Launch:
         return [sys.executable, str(self.package / "journal.py"), "serve"]
 
     def environ(self, choice: Choice) -> dict[str, str]:
-        shared = {**os.environ, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "JOURNAL_INBOX": str(Inbox.path_for(self.root))}
-        if choice.hooks_aside:
-            shared.pop("AGENT_JOURNAL_ACTIVE", None)
-            return shared
-        return {**shared, "AGENT_JOURNAL_ACTIVE": "1"}
+        return {**os.environ, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "JOURNAL_INBOX": str(Inbox.path_for(self.root)), "AGENT_JOURNAL_ACTIVE": "1"}
 
-    def supervisor(self) -> Supervisor:
+    def run(self) -> int:
+        """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends."""
+        others = OtherHooks(self.root, self.agent)
+        others.put_back()
         choice = self.choice()
+        if choice.hooks_aside:
+            others.set_aside()
+        try:
+            return self.supervisor(choice).run()
+        finally:
+            others.put_back()
+
+    def supervisor(self, choice: Choice) -> Supervisor:
         environ = self.environ(choice)
         terminal = Terminal(self.agent_command(choice), str(self.root), environ)
         journal = JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")

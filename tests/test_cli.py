@@ -64,3 +64,15 @@ def test_the_server_runs_the_same_console_for_the_shim(app):
         server.stop()
     assert outcome["code"] == 0 and "task 1 open: over http" in outcome["out"]
     assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-9")
+
+
+def test_deleting_an_environment_takes_everything_recorded_in_it(app):
+    from journal.repositories.environments import Environments
+    from journal.repositories.tasks import Tasks
+    app.console().run(["task", "create", "t"], Where("spike"))
+    app.console().run(["task", "create", "kept"], MAIN)
+    outcome = app.console().run(["environment", "delete", "spike"], MAIN)
+    assert "deleted environment" in outcome.out and outcome.code == 0
+    assert [e.name for e in app.container.get(Environments).all()] == ["main"]
+    assert [t.title for t in app.container.get(Tasks).all()] == ["kept"]
+    assert app.console().run(["environment", "delete", "spike"], MAIN).code == 1

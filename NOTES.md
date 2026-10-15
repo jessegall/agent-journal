@@ -247,14 +247,20 @@ D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then 
    environment (badges: agent working, last used; or a new name), whether to carry on the last
    conversation (then the other questions take last time's answers, as version 3 did), whether
    to run without permission prompts (`--dangerously-skip-permissions` for Claude, the bypass
-   flag for Codex) and whether to run with the journal's hooks or set them aside (then
-   `AGENT_JOURNAL_ACTIVE` is unset and the hook script exits at once). The answers to the last
-   two are remembered in `.journal/launch.json` as the next defaults. `--env`, `--new`,
-   `--skip`, `--aside`, `--yes` and `--no-open` answer it without asking; without a terminal
-   the same questions are numbered lines. The supervisor stays stdlib-only: it asks
-   `journal.py environment json` for the list. Not carried over from version 3: taking over an
-   environment another agent holds (version 4 has no eviction), filling the chat from an unseen
-   conversation's transcript, and setting aside other tools' hooks (clean slate).
+   flag for Codex) and, only when the agent's settings hold hooks that are not the journal's,
+   whether to set those aside for the run (version 3's clean slate: `OtherHooks` copies each
+   file to `.journal/runtime/set-aside`, leaves only the journal's blocks, and puts the hooks
+   key back when the agent exits, keeping edits made to the rest of the file meanwhile; a run
+   that died is put back at the next launch). The journal's own hooks always run. The answers
+   to the last two are remembered in `.journal/launch.json` as the next defaults. The
+   environment screen also has "Manage environments": pick one to delete, confirm, and it goes
+   with everything recorded in it (`journal environment delete <name>`, which is
+   `Environments.wipe`: every scoped table's rows in one transaction, then the row); one an
+   agent is working stays. `--env`, `--new`, `--skip`, `--aside`, `--yes` and `--no-open`
+   answer it without asking; without a terminal the same questions are numbered lines. The
+   supervisor stays stdlib-only: it asks `journal.py environment json` for the list. Not carried
+   over from version 3: taking over an environment another agent holds (version 4 has no
+   eviction) and filling the chat from an unseen conversation's transcript.
 E2. **Pagination.** Every index endpoint answers a page, newest first: `?limit=` (default
    50, at most 500) and `?before=<id>` for older rows. `Repository.page(limit, before,
    **fields)` is the one query. The viewer asks for a page and offers "Older".
@@ -364,6 +370,8 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 - **Hook timeout**: 5s in `hook.sh`; what a refusal looks like when the server is slow.
 - **Where the database lives**: `.journal/journal.db`, and what else stays in `.journal/`
   (settings, runtime socket path, logs).
+- **Links left by a wiped environment**: `Environments.wipe` deletes the scoped rows but a link
+  whose refs pointed at them is only removed if the link row itself was in the environment.
 - **Migrations from v3** records: do we import the old file rows at all, or start empty.
 - **Plans**: model shape (phases, checkpoints) once tasks stand.
 - **State method injection**: a state method asks for rows by type (`task: Task`); decide

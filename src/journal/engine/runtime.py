@@ -1,3 +1,4 @@
+import os
 from journal.engine.clock import Clock
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
@@ -37,9 +38,12 @@ class Runtime:
         self.server.start()
 
     def run(self) -> None:
-        """Blocks until stop()."""
+        """Blocks until stop(), or until the process that started it is gone, so a journal never outlives its supervisor."""
         self.start()
-        self.server._thread.join()
+        parent = os.getppid()
+        while self.server._thread.is_alive() and os.getppid() == parent:
+            self.server._thread.join(1.0)
+        self.stop()
 
     def stop(self) -> None:
         self.server.stop()
