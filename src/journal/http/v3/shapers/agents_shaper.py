@@ -92,7 +92,7 @@ class AgentsShaper(Shaper):
             return last.data["doing"]
         if last and last.kind == "ToolStarting":
             return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
-        return self.described(state)
+        return self.described(state) or ("at work" if hooks else "")
 
     def described(self, state) -> str:
         """The work a state names: what a pause awaits, else the work it holds underneath, else the work declared without a task."""
