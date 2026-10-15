@@ -15,12 +15,12 @@ class SettingController:
         self.settings, self.registry, self.environments, self.chosen = settings, registry, environments, chosen
 
     def index(self, request: Request) -> Response:
-        environment = self.environments.named(request.environment).id
+        environment = self.environments.existing(request.environment).id
         return Response.json([{"name": f.name, "title": f.title, "help": f.help, "on": self.registry.is_on(f, environment), "nudges": [n.title for n in f.nudges], "states": [s.name for s in f.states]} for f in self.registry.features])
 
     def values(self, request: Request) -> Response:
         """Every setting as the environment sees it, project values laid over."""
-        return Response.json(self.settings.merged(self.environments.named(request.environment).id))
+        return Response.json(self.settings.merged(self.environments.existing(request.environment).id))
 
     def voice(self, request: Request) -> Response:
         return Response.json({"chosen": self.chosen.voice().name, "title": self.chosen.title(), "name": self.chosen.first_name(),

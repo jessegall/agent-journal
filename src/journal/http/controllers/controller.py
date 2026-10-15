@@ -48,7 +48,7 @@ class Controller(Generic[S]):
         return Response.json(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor))
 
     def environment_id(self, request: Request) -> int:
-        return self.environments.named(request.environment).id
+        return self.environments.existing(request.environment).id
 
     def fields_of(self, body: dict) -> dict:
         """Only the model's own fields, never its id or its stamps."""

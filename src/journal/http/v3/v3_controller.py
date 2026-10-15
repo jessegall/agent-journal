@@ -35,7 +35,6 @@ from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.supervisor_link import SupervisorLink
 from journal.repositories.environments import Environments
-from journal.repositories.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
 COLOR = "#5e64c9"
@@ -422,11 +421,7 @@ class V3Controller:
 
     def environment_of(self, request: Request) -> Environment:
         """The environment the request names; a read never makes one, so a stray address is answered not found."""
-        name = request.params.get("env") or request.environment
-        found = self.environments.where(name=name)
-        if not found:
-            raise NotFound("environment", name)
-        return found[0]
+        return self.environments.existing(request.params.get("env") or request.environment)
 
     def first_environment(self) -> Environment:
         return (self.environments.all() or [self.environments.named("main")])[0]

@@ -47,6 +47,8 @@ def test_tasks_live_over_http(server):
     page = call(server, "GET", "/journal/tasks?limit=2")[1]
     assert [t["title"] for t in page] == ["more 2", "more 1"], "newest first, capped"
     assert [t["title"] for t in call(server, "GET", f"/journal/tasks?limit=2&before={page[-1]['id']}")[1]] == ["more 0", "ship it"]
+    assert call(server, "GET", "/journal/tasks", env="other")[0] == 404, "an environment nobody made is not found, never made by a read"
+    call(server, "POST", "/journal/environments", {"name": "other"})
     assert call(server, "GET", "/journal/tasks", env="other")[1] == []
 
 
