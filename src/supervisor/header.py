@@ -35,8 +35,8 @@ class Header:
         left, middle, right = "agent-journal", f"{self.project} · {self.environment}", self.url or "journal starting…"
         gap = self.columns - len(left) - len(right)
         centred = middle.center(gap) if len(middle) <= gap else middle[: max(gap, 0)]
-        text = f"{left}{centred}{right}"[: self.columns].ljust(self.columns)
-        return f"\x1b[H{ACCENT_BAR}{BOLD}{text}{RESET}".encode()
+        text = f"{left}{centred}{right}"[: self.columns]
+        return f"\x1b[H{ACCENT_BAR}{BOLD}\x1b[K{text}{RESET}".encode()
 
     @staticmethod
     def shield(data: bytes) -> bytes:
