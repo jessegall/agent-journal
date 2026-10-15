@@ -1,8 +1,6 @@
 <script setup>
 import SettingGroup from "../kit/SettingGroup.vue";
 import AgentVoice from "./AgentVoice.vue";
-import SettingsConnection from "./SettingsConnection.vue";
-import SettingsTunnel from "./SettingsTunnel.vue";
 
 defineProps({group: {type: Object, default: null}, tab: {type: String, required: true}});
 const emit = defineEmits(["change", "timing", "act"]);
@@ -18,14 +16,10 @@ const emit = defineEmits(["change", "timing", "act"]);
                 @timing="(row, next) => emit('timing', row, next)"
                 @act="(row, key) => emit('act', row, key)"
             >
-                <template v-if="group.key === 'voice'" #before>
+                <template v-if="group.key === 'voices'" #before>
                     <AgentVoice />
                 </template>
             </SettingGroup>
-        </template>
-        <template v-if="tab === 'sharing'">
-            <SettingsTunnel />
-            <SettingsConnection />
         </template>
     </div>
 </template>

@@ -22,7 +22,7 @@ defineEmits(["change", "timing", "act"]);
                 @timing="(row, next) => $emit('timing', row, next)"
                 @act="(row, key) => $emit('act', row, key)"
             >
-                <template v-if="group.key === 'voice'" #before>
+                <template v-if="group.key === 'voices'" #before>
                     <AgentVoice />
                 </template>
             </SettingGroup>
