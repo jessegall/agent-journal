@@ -8,13 +8,14 @@ here=$(cd "$(dirname "$0")" && pwd)
 journal="$here/../../journal.sh"
 root=$(cd "$here/../../.." && pwd)
 
-# The worker. A part that exits the shell, such as a bare exit 3, ends the chain through the trap: the part's
+# The worker. A part after && is skipped while the part before it failed, a part after ; runs whatever came before,
+# as in the shell; a part that exits the shell, such as a bare exit 3, ends the chain through the trap: the part's
 # status and the chain's end are written all the same, so the foreground and the journal both learn of it.
 finish() {
     code=$1
     [ -f "$folder/done" ] && return
     if [ -f "$folder/$i.part" ] && [ ! -f "$folder/$i.status" ]; then
-        [ "$kind" = "R" ] && sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out" 2>/dev/null)" >/dev/null 2>&1
+        case "$kind" in R*) sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out" 2>/dev/null)" >/dev/null 2>&1 ;; esac
         echo "$code" > "$folder/$i.status"
     fi
     echo "$code" > "$folder/done"
@@ -34,15 +35,17 @@ if [ "$1" = "--chain" ]; then
     trap 'finish $?' EXIT
     while read -r kind; do
         part=$(cat "$folder/$i.part")
-        [ "$kind" = "R" ] && lastr=$i && sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1
+        case "$kind" in
+            *'&') if [ "$code" -ne 0 ]; then : > "$folder/$i.out"; echo "$code" > "$folder/$i.status"; i=$((i + 1)); continue; fi ;;
+        esac
+        case "$kind" in R*) lastr=$i; sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1 ;; esac
         began=$SECONDS
         case "$part" in
             exec\ *) (eval "$part") > "$folder/$i.out" 2>&1; code=$?; echo "$code" > "$folder/$i.status"; break ;;
             *) eval "$part" > "$folder/$i.out" 2>&1; code=$? ;;
         esac
-        [ "$kind" = "R" ] && sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out")" >/dev/null 2>&1
+        case "$kind" in R*) sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out")" >/dev/null 2>&1 ;; esac
         echo "$code" > "$folder/$i.status"
-        [ "$code" -eq 0 ] || break
         i=$((i + 1))
     done < "$folder/parts"
     finish "$code"
@@ -67,9 +70,7 @@ began=$SECONDS
 while :; do
     while [ -f "$folder/$shown.status" ]; do
         cat "$folder/$shown.out"
-        code=$(cat "$folder/$shown.status")
         shown=$((shown + 1))
-        [ "$code" -eq 0 ] || exit "$code"
     done
     [ -f "$folder/done" ] && exit "$(cat "$folder/done")"
     if [ $((SECONDS - began)) -ge "$limit" ]; then

@@ -15,23 +15,26 @@ class Chain:
     @classmethod
     def parts(cls, line: str) -> list[Part]:
         """The chain's commands in order: the agent's own recorded, the shell's wrapping around them silent."""
-        parts = cls.split(line)
-        if not any(WRAPPED.match(p) for p in parts):
-            return [Part(p) for p in parts]
-        return [part for p in parts for part in cls.of(p)]
+        chained = cls.chained(line)
+        if not any(WRAPPED.match(p) for _, p in chained):
+            return [Part(p, always=s != "&&") for s, p in chained]
+        return [part for s, p in chained for part in cls.of(s, p)]
 
     @classmethod
-    def of(cls, part: str) -> list[Part]:
-        inner = cls.unwrapped(part)
-        return [Part(p) for p in inner] if inner is not None else [Part(part, recorded=False)]
-
-    @classmethod
-    def unwrapped(cls, part: str) -> list[str] | None:
+    def of(cls, separator: str, part: str) -> list[Part]:
         wrapped = WRAPPED.match(part)
-        return cls.split(wrapped.group(1).replace(QUOTE, "'")) if wrapped else None
+        if not wrapped:
+            return [Part(part, recorded=False, always=separator != "&&")]
+        inner = cls.chained(wrapped.group(1).replace(QUOTE, "'"))
+        return [Part(p, always=(s or separator) != "&&") for s, p in inner]
 
     @classmethod
     def split(cls, line: str) -> list[str]:
+        return [p for _, p in cls.chained(line)]
+
+    @classmethod
+    def chained(cls, line: str) -> list[tuple[str, str]]:
+        """Each command with the separator before it: nothing for the first, && or ; after that."""
         return cls.compound(cls.simple(line))
 
     @staticmethod
@@ -70,15 +73,15 @@ class Chain:
         return [(s, p) for s, p in parts if p]
 
     @staticmethod
-    def compound(parts: list[tuple[str, str]]) -> list[str]:
+    def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
         """A loop, an if or a case is one command from its opening word to its closing one; the separators inside are put back."""
         joined, closers = [], []
         for separator, part in parts:
             words = part.split()
             if closers:
-                joined[-1] += f"{separator} {part}"
+                joined[-1] = (joined[-1][0], f"{joined[-1][1]}{separator} {part}")
             else:
-                joined.append(part)
+                joined.append((separator, part))
             if words and words[0] in OPENS:
                 closers.append(OPENS[words[0]])
             if closers and words and closers[-1] in (words[0], words[-1]):
