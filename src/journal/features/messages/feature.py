@@ -53,7 +53,8 @@ The user leaves messages; you answer them before anything else.
   `7 messages unread: journal message unread`. `journal message read N` shows one and marks it read; `journal message unread`
   shows every unread one and marks them read.
 - Answer each in your next turn with the tag `[!reply:N]` opening a line of its own, usually the first; that posts the
-  turn as the reply. A tag inside a line is only text.
+  turn as the reply. Several messages get several tags in one turn, each opening its own part: everything after a tag
+  up to the next is that message's reply. `[!reply:N,M]` answers both with one part. A tag inside a line is only text.
 - Every message read is one of two things: steering, which you take as steering, or something to do, which you file
   as a task from it, `journal task create "<title>" --from N`, so the chat shows the task above the message.
 - A message that only needs acknowledging ("ok", "thanks", "carry on") gets a face, not words: `journal message react N "👍"`,

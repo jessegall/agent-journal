@@ -1073,3 +1073,16 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp
     assert out.startswith("report 1: Critique of plan 1, about plans:1")
     rows = app.container.get(Shapers).named("report").rows(app.container.get(Environments).named("main"))
     assert [s["title"] for s in rows[0].sections] == ["Phase 1", "Phase 2"] and "plans:1" in rows[0].refs
+
+
+def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(app):
+    from journal.repositories.messages import Messages
+    console = app.console()
+    console.run(["message", "send", "first?"], USER)
+    console.run(["message", "send", "second?"], USER)
+    console.run(["message", "read", "1"], AGENT)
+    console.run(["message", "read", "2"], AGENT)
+    hook(app, "MessageDisplay", message="Two answers.\n\n[!reply:1]\nThe first is fine.\n\n[!reply:2]\nThe second waits.")
+    app.runtime().deferred.drain()
+    replies = [m for m in app.container.get(Messages).in_(1) if m.author == "agent"]
+    assert [(m.reply_to, m.text) for m in replies] == [(1, "Two answers.\n\nThe first is fine."), (2, "The second waits.")]

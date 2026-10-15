@@ -42,19 +42,34 @@ class RecordTurn(AgentListener[TurnWritten]):
 
     def _record(self, event: TurnWritten, whole: str) -> None:
         by = Actor.agent(event.session)
-        answered = [int(n) for tag in REPLY_TAG.finditer(whole) for n in tag.group(1).split(",")]
-        text = Tags.visible(whole)
-        quiet = Tags.kept_out(whole) and not answered
-        acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
-        if text and not quiet:
-            reply = self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
-            for n in answered[1:]:
-                self._also_answers(reply, n, by)
-        for n in answered:
-            self._mark_read(n, by)
-        stray = STRAY_TAG.search(text)
+        for answered, part in self.sections(whole):
+            text = Tags.visible(part)
+            quiet = Tags.kept_out(part) and not answered
+            acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
+            if text and not quiet:
+                reply = self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+                for n in answered[1:]:
+                    self._also_answers(reply, n, by)
+            for n in answered:
+                self._mark_read(n, by)
+        stray = STRAY_TAG.search(Tags.visible(whole))
         if stray:
             self.supervisor.type(event.environment_id, f"the [!reply:{stray.group(1)}] tag must open a line of your turn; message {stray.group(1)} is still unanswered")
+
+    @staticmethod
+    def sections(whole: str) -> list[tuple[list[int], str]]:
+        """One part per reply tag, the text after the tag up to the next one; what comes before the first tag belongs to the first part. A turn with one tag or none is one part."""
+        tags = list(REPLY_TAG.finditer(whole))
+        numbers = lambda tag: [int(n) for n in tag.group(1).split(",")]
+        if len(tags) <= 1:
+            return [([n for tag in tags for n in numbers(tag)], whole)]
+        parts = []
+        for i, tag in enumerate(tags):
+            end = tags[i + 1].start() if i + 1 < len(tags) else len(whole)
+            lead = whole[: tag.start()].strip() if i == 0 else ""
+            rest = whole[tag.end():end].strip()
+            parts.append((numbers(tag), f"{lead}\n\n{rest}" if lead else rest))
+        return parts
 
     def _answers_a_journal_line(self, event: TurnWritten) -> bool:
         """The turn's prompt was a line the journal typed whose answer is not for the user, and no file changed since: nothing in it is news."""
