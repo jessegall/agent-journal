@@ -137,6 +137,27 @@ answers it.
 | "Give me these rows" (`n=1,2,3`) and `by=updated`; `closed=1` means closed too; a catch-up page since an id includes deleted rows so the viewer can drop them. | **`n=` is ignored** (a normal page comes back), `by=updated` ignored, deleted rows never sent, so a deleted row lingers on a page holding more than 25 rows until a reload. |
 | Actions on an agent are keyed by its session id. | **A server error**: the route parses the session as a number. |
 
+## Where it stands after the drain (2026-10-15, night)
+
+Done from the lists above, agent side: one task in hand with park, resume and await; the log-overdue hold and
+the task named every ten edits; the unread, unanswered and after-compaction holds; silent sessions ended
+after an hour; the start block with the quiet rule, the laws, a takeover notice and what waits; auto mode's
+next task at a stop and the check-in; keyword whispers; the fresh-rule question; a task named in a reply
+linked to its message; commit trailers finishing tasks; the provider's own question tool refused; the
+etiquette reminder every fifty lines; workers that run and report. Viewer side: every item of the
+fix-first list through nine, attachments, the Code page, labelled activity, model and branch on the agent,
+real line numbers in the edits pane, typing into the terminal pane, parked tasks, documents with sections,
+the generic acts, plans finished, environments removed, checks run, sequences edited, triggers edited, the
+skills page, starting and stopping agents from the viewer with one inbox per environment.
+
+Left, by choice, for a later round: eviction and take-over of a held environment; work modes and the drift
+nudges; long commands moved to the background and heavy-run queues; the weekly rule reread; choices offered
+in prose turned into a question; bare numbers named; plans with phases, checkpoints and approval; sequences
+abandoned or started by a trigger; instruction checks and gates; triggers that post a message or start a
+sequence; helpers said to and finished with caps; the tasks board with lanes; document revisions; the report
+dock; collections; the transcript pane; the phone app and sharing. Thoughts in the working bubble cannot be
+had: Claude Code omits its thinking from the transcript.
+
 ## What to fix first
 
 In the order that unblocks the most of your day to day use:

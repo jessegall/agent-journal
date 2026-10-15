@@ -437,6 +437,12 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   command serves both versions and nothing of the journal lives outside a project. Setup adds `/.journal`
   to the project's `.gitignore`. A wired hook first tests that its script exists. A dogfood checkout
   therefore runs from its own `.journal/src` copy: re-run `sh install.sh` after a change to try it live.
+- **The drain of the discrepancy list (2026-10-15, night).** `docs/v3-v4-discrepancies.md` ends with
+  what landed and what is left by choice. Workers run through `WorkerRunner`: the provider's
+  `worker_command` headless on the brief, a worktree under `.journal/worktrees` when asked, the journal's
+  hooks off for it, its output filed by `WorkerReports` as its report. A question through the provider's
+  own tool is refused. Version 4's own API moved under `/journal`, since `/api/agents` shadowed the
+  viewer's online list.
 - **One inbox per environment (2026-10-15, evening).** A supervisor's inbox socket is named for the
   project and the environment, and while it runs it announces its path at
   `.journal/runtime/inboxes/<environment>`. `SupervisorLink` takes the environment id on every call
