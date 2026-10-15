@@ -1086,3 +1086,19 @@ def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(a
     app.runtime().deferred.drain()
     replies = [m for m in app.container.get(Messages).in_(1) if m.author == "agent"]
     assert [(m.reply_to, m.text) for m in replies] == [(1, "Two answers.\n\nThe first is fine."), (2, "The second waits.")]
+
+
+def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app):
+    from journal.http.v3.shapers.agents_shaper import AgentsShaper
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    rows = lambda: app.container.get(AgentsShaper).rows(app.container.get(Environments).named("main"))[0].data["subagent_rows"]
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "sonnet", "subagent_type": "researcher", "prompt": "read"})
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a1"})
+    assert rows()[0]["running"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
+    hook(app, "SubagentStop", agent_id="a1", agent_type="researcher")
+    row = rows()[0]
+    assert row["running"] is False and row["status"] == "done" and row["ended"] >= row["at"]
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "a quick one", "model": "haiku", "prompt": "x"})
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "a quick one"}, tool_response="the finished work")
+    assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"

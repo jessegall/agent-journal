@@ -1,3 +1,4 @@
+import json
 import re
 
 from journal.engine.states.paused import Paused
@@ -71,19 +72,38 @@ class AgentsShaper(Shaper):
 
     @staticmethod
     def subagent_rows(hooks) -> list[dict]:
-        """Each dispatch of a subagent, from the Agent tool's start and finish, as the chat draws its start and end marks."""
-        rows, open_ = [], []
+        """Each dispatch of a subagent: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook."""
+        rows, open_, background = [], [], {}
         for e in hooks:
+            if e.kind == "SubagentEnded":
+                row = background.pop(e.data.get("agent_id", ""), None)
+                if row:
+                    row.update(status="done", running=False, ended=seconds(e.created_at))
+                continue
             if e.data.get("tool_name") not in ("Agent", "Task"):
                 continue
             given = e.data.get("tool_input", {})
             if e.kind == "ToolStarting":
-                rows.append({"id": f"sub:{e.id}", "at": seconds(e.created_at), "task": given.get("description", "") or given.get("prompt", "")[:80], "type": given.get("subagent_type", "") or "subagent", "model": given.get("model", ""), "session": "", "status": "running", "ended": 0, "refusal": ""})
+                rows.append({"id": f"sub:{e.id}", "at": seconds(e.created_at), "task": given.get("description", "") or given.get("prompt", "")[:80], "type": given.get("subagent_type", "") or "subagent", "model": given.get("model", ""), "session": "", "status": "running", "running": True})
                 open_.append(rows[-1])
             elif e.kind == "ToolFinished" and open_:
                 done = open_.pop(0)
-                done.update(status="done", ended=seconds(e.created_at))
+                launched = AgentsShaper.launched(e.data.get("tool_response"))
+                if launched:
+                    background[launched] = done
+                else:
+                    done.update(status="done", running=False, ended=seconds(e.created_at))
         return rows
+
+    @staticmethod
+    def launched(response) -> str:
+        """The id of a subagent the Agent tool launched in the background, from its answer; empty when the answer is the finished work."""
+        if isinstance(response, str):
+            try:
+                response = json.loads(response)
+            except ValueError:
+                return ""
+        return response.get("agentId", "") if isinstance(response, dict) and response.get("isAsync") else ""
 
     def doing(self, a, state, hooks) -> str:
         """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state says."""
