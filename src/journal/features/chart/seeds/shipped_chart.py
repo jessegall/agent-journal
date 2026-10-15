@@ -21,8 +21,19 @@ class ShippedChart(Seed):
         chart = charts[0] if charts else self.charts.save(Chart(title=TITLE), Actor.system())
         if self.charts.nodes_of(chart):
             return
+        self.draw(chart)
+
+    def reset(self, by: Actor) -> Chart:
+        """The chart as shipped again: every node and line gone, the shipped ones drawn anew, one more revision."""
+        chart = self.charts.the()
+        for node in self.charts.nodes_of(chart):
+            self.charts.remove_node(node, by)
+        self.draw(chart)
+        return self.charts.save(chart.saved_again(), by)
+
+    def draw(self, chart: Chart) -> None:
         by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y), by)
+        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
         stop = node(NodeKind.TRIGGER, "idle", x=40, y=40)
         at_rest = node(NodeKind.CHECK, "plain_idle", x=40, y=160)
         again = node(NodeKind.CHECK, "same_stop_again", x=40, y=280)

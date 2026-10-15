@@ -13,6 +13,8 @@ class Node(Model):
     text: str = ""
     x: int = 0
     y: int = 0
+    shipped: bool = False
+    """True for a node the journal shipped and the user has not touched; an edit makes it the user's, so a later release knows which rules are still its own."""
 
     def cleaned(self) -> "Node":
         """The text as it may reach a prompt or a terminal: printable characters and spaces only, one line."""

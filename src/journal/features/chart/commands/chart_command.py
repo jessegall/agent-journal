@@ -3,6 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.chart.catalogue import Catalogue
+from journal.features.chart.seeds.shipped_chart import ShippedChart
 from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
 from journal.models.node import Node
@@ -13,8 +14,8 @@ from journal.repositories.charts import PORTS, THEN, Charts
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation) -> None:
-        self.charts, self.entries, self.validation = charts, catalogue, validation
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart) -> None:
+        self.charts, self.entries, self.validation, self.shipped = charts, catalogue, validation, shipped
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "the chart: its nodes and lines")
@@ -28,12 +29,13 @@ class ChartCommand(Command):
         line.add_argument("target", type=int)
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
         self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
+        self.verb(verbs, "reset", "the chart as shipped again: every edit gone")
 
     def show(self, args: Namespace, where: Where) -> int:
         chart = self.charts.the()
         print(f"chart {chart.id}, revision {chart.revision}: {chart.title}")
         for node in self.charts.nodes_of(chart):
-            print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else ""))
+            print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
         for line in self.charts.lines_of(chart):
             print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
         return 0
@@ -59,6 +61,11 @@ class ChartCommand(Command):
             raise Refused(fault[0])
         self.charts.connect(source, target, args.port, where.actor)
         print(f"line {source.id} --{args.port}--> {target.id}")
+        return 0
+
+    def reset(self, args: Namespace, where: Where) -> int:
+        chart = self.shipped.reset(where.actor)
+        print(f"chart {chart.id} reset to the shipped one, revision {chart.revision}")
         return 0
 
     def remove(self, args: Namespace, where: Where) -> int:

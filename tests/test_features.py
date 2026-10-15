@@ -1272,3 +1272,24 @@ def test_the_shipped_chart_fills_an_empty_chart_at_boot_and_leaves_an_edited_one
         charts.remove_node(node, Actor.system())
     app.container.get(ShippedChart).run()
     assert len(charts.nodes_of(charts.the())) == 1, "a chart with any node is the user's: never overwritten"
+
+
+def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(app):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    port = app.server().port
+    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    assert all(n["shipped"] for n in read["nodes"])
+    nodes = read["nodes"]
+    nodes[-1]["text"] = "my own words"
+    nodes[0]["x"] = 99
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+        saved = j.loads(r.read())
+    assert saved["nodes"][-1]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
+    assert "(edited)" in console.run(["chart", "show"], AGENT).out
+    assert "reset to the shipped one, revision 2" in console.run(["chart", "reset"], AGENT).out
+    again = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
