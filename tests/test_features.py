@@ -947,3 +947,15 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
     assert refused.code == 1 and "task 1 is in progress" in refused.err, "another session cannot start a second"
     app.console().run(["task", "park", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
+
+
+def test_the_bar_names_the_work_declared_without_a_task_even_while_the_agent_is_held(app):
+    from journal.http.v3.shapers.agents_shaper import AgentsShaper
+    hook(app, "SessionStart")
+    app.console().run(["work", "start", "tidying the notes"], AGENT)
+    shaper = app.container.get(AgentsShaper)
+    machine = app.container.get(Machine)
+    assert shaper.described(machine.current("s1")) == "tidying the notes"
+    from journal.engine.states.paused import Paused
+    held = Paused(resume={"state": "working", "data": {"what": "tidying the notes"}})
+    assert shaper.described(held) == "tidying the notes", "a pause that names nothing shows the work underneath"

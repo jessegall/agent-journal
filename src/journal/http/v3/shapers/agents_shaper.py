@@ -85,17 +85,20 @@ class AgentsShaper(Shaper):
                 done.update(status="done", ended=seconds(e.created_at))
         return rows
 
-    @staticmethod
-    def doing(a, state, hooks) -> str:
-        """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state awaits."""
+    def doing(self, a, state, hooks) -> str:
+        """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state says."""
         last = hooks[-1] if hooks else None
         if last and last.kind == RUNNING:
             return last.data["doing"]
         if last and last.kind == "ToolStarting":
             return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
-        if isinstance(state, Working) and state.what:
-            return state.what
-        return state.awaiting()[0] if isinstance(state, Paused) else ""
+        return self.described(state)
+
+    def described(self, state) -> str:
+        """The work a state names: what a pause awaits, else the work it holds underneath, else the work declared without a task."""
+        if isinstance(state, Paused):
+            return state.awaiting()[0] or (self.described(self.states.named(state.resume["state"], state.resume["data"])) if state.resume else "")
+        return state.what if isinstance(state, Working) else ""
 
     @staticmethod
     def cards(hooks) -> list[dict]:
