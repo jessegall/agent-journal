@@ -20,8 +20,13 @@ class Health:
         self._at = 0.0
 
     def of_all(self) -> dict[str, Known]:
+        """The answer of the last minute, else a fresh one."""
         if time.time() - self._at < FRESH_FOR:
             return self._found
+        return self.fresh()
+
+    def fresh(self) -> dict[str, Known]:
+        """Asked anew, whatever the last answer: what a check from the page wants."""
         self._found, self._at = self.asked(), time.time()
         return self._found
 

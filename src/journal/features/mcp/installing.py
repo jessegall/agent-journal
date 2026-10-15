@@ -37,7 +37,7 @@ class Installing:
         self.applied()
 
     def checked(self, by: Actor) -> list[McpServer]:
-        found = self.health.of_all()
+        found = self.health.fresh()
         checked = []
         for server in self.servers.all():
             known = found.get(server.name) or found.get("*")

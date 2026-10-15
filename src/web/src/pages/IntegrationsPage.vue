@@ -130,7 +130,7 @@ onUnmounted(() => clearInterval(checking));
                     </Btn>
                 </div>
                 <div v-else-if="s.managed && s.auth === 'oauth' && signingIn === s.name" class="integration-key">
-                    <span class="integration-note integrations-pending"><span class="integrations-spinner" /> Signing in: approve it in the browser window the agent opened. This checks every ten seconds.</span>
+                    <span class="integration-note integrations-pending"><span class="integrations-spinner" /> Signing in: approve it in the browser window the agent opened.</span>
                 </div>
                 <div v-else-if="s.managed && s.auth === 'oauth'" class="integration-key">
                     <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>

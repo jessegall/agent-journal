@@ -834,7 +834,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
     from journal.features.mcp.known import Known
-    monkeypatch.setattr(Health, "of_all", lambda self: {"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")})
+    monkeypatch.setattr(Health, "asked", lambda self: {"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")})
     hook(app, "SessionStart")
     port = app.server().port
     def post(path, body):
