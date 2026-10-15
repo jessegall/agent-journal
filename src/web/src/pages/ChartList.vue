@@ -69,18 +69,6 @@ function pick(node, port, value) {
     background: var(--raised);
 }
 
-.chart-list-row.trigger {
-    border-left: 3px solid var(--accent-text);
-}
-
-.chart-list-row.check {
-    border-left: 3px solid var(--blocking);
-}
-
-.chart-list-row.action {
-    border-left: 3px solid var(--tone-commit);
-}
-
 .chart-list-head {
     display: flex;
     align-items: center;

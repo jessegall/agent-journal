@@ -144,6 +144,7 @@ const path = (from, to) => {
     const bow = Math.max(40, Math.abs(to.y - from.y) / 2);
     return `M ${from.x} ${from.y} C ${from.x} ${from.y + bow}, ${to.x} ${to.y - bow}, ${to.x} ${to.y}`;
 };
+const hooked = (node, port) => lines.value.some((l) => String(l.from) === String(node.id) && l.port === port);
 const wires = computed(() =>
     lines.value
         .filter((l) => byId.value[String(l.from)] && byId.value[String(l.to)])
@@ -172,11 +173,13 @@ function pan(event) {
     selected.value = null;
 }
 
+// a wheel or a pinch zooms by a little per unit scrolled, so a trackpad's long stream of small deltas is gentle and a mouse's notches are too
 function zoom(event) {
     event.preventDefault();
     const box = plane.value.getBoundingClientRect();
     const at = {x: event.clientX - box.left, y: event.clientY - box.top};
-    const next = Math.min(2, Math.max(0.4, camera.scale * (event.deltaY < 0 ? 1.1 : 0.9)));
+    const delta = Math.max(-40, Math.min(40, event.deltaY));
+    const next = Math.min(2, Math.max(0.4, camera.scale * Math.exp(-delta * (event.ctrlKey ? 0.01 : 0.0025))));
     camera.x = at.x - ((at.x - camera.x) * next) / camera.scale;
     camera.y = at.y - ((at.y - camera.y) * next) / camera.scale;
     camera.scale = next;
@@ -325,7 +328,7 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
                         <span
                             v-for="port in ports(node)"
                             :key="port"
-                            :class="['chart-port', port]"
+                            :class="['chart-port', port, {hooked: hooked(node, port)}]"
                             :style="{left: `${PORT_AT[port]}%`}"
                             :title="`Drag a line from ${port}`"
                             @pointerdown="dragLine(node, port, $event)"
@@ -488,16 +491,8 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     color: var(--text-3);
 }
 
-.chart-entry.trigger {
-    border-left: 3px solid var(--accent-text);
-}
-
-.chart-entry.check {
-    border-left: 3px solid var(--blocking);
-}
-
-.chart-entry.action {
-    border-left: 3px solid var(--tone-commit);
+.chart-entry:hover {
+    border-color: var(--text-3);
 }
 
 .chart-plane {
@@ -528,8 +523,12 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
 
 .chart-wire {
     fill: none;
-    stroke: var(--text-3);
+    stroke: var(--border-2);
     stroke-width: 1.5;
+}
+
+.chart-wire.then {
+    stroke: var(--text-3);
 }
 
 .chart-wire.yes {
@@ -568,16 +567,8 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     box-sizing: border-box;
 }
 
-.chart-node.trigger {
-    color: var(--accent-text);
-}
-
-.chart-node.check {
-    color: var(--blocking);
-}
-
-.chart-node.action {
-    color: var(--tone-commit);
+.chart-node .ico {
+    color: var(--text-3);
 }
 
 .chart-node-step {
@@ -594,13 +585,9 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
     flex: none;
 }
 
-.chart-node.selected {
-    outline: 2px solid var(--accent);
-}
-
+.chart-node.selected,
 .chart-node.lit {
     border-color: var(--accent);
-    background: var(--accent-dim);
 }
 
 .chart-node-head {
@@ -643,14 +630,14 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
 
 .chart-in {
     position: absolute;
-    top: -5px;
+    top: -4px;
     left: 50%;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     transform: translateX(-50%);
     border-radius: 50%;
-    background: var(--border-2);
-    border: 1px solid var(--text-3);
+    background: var(--raised);
+    border: 1px solid var(--border-2);
 }
 
 .chart-node.trigger .chart-in {
@@ -659,21 +646,31 @@ const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: en
 
 .chart-port {
     position: absolute;
-    bottom: -10px;
+    bottom: -9px;
     transform: translateX(-50%);
-    padding: 1px 6px;
-    border-radius: 10px;
+    padding: 0 6px;
+    border-radius: 9px;
     font-size: 10px;
-    background: var(--text-3);
-    color: var(--bg-2);
+    line-height: 16px;
+    border: 1px solid var(--border-2);
+    background: var(--raised);
+    color: var(--text-3);
     cursor: crosshair;
 }
 
-.chart-port.yes {
+.chart-port.hooked {
+    border-color: var(--text-3);
+    background: var(--text-3);
+    color: var(--bg-2);
+}
+
+.chart-port.yes.hooked {
+    border-color: var(--tone-good);
     background: var(--tone-good);
 }
 
-.chart-port.no {
+.chart-port.no.hooked {
+    border-color: var(--danger-soft);
     background: var(--danger-soft);
 }
 
