@@ -668,3 +668,11 @@ def test_reading_a_message_names_its_files_links_and_captions(app):
     assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).out
     console.run(["message", "react", "1", "👍"], USER)
     assert "reacts" in console.run(["message", "read", "1"], AGENT).out
+
+
+def test_a_message_read_through_a_pipe_is_refused(app):
+    hook(app, "SessionStart")
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 3 | head -3"})
+    assert status == 409 and "read the user's message whole" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /x && journal message read 3"})[0] == 200
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list | head -5"})[0] == 200, "only the user's words are protected"
