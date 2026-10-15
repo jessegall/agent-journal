@@ -14,6 +14,9 @@ class LoadingSkill(Paused):
     skill: str = ""
     path: str = ""
 
+    def awaiting(self) -> tuple[str, str]:
+        return f"the {self.skill} skill to be read", ""
+
     def tool_starting(self, event: ToolStarting) -> Transition:
         from journal.features.skills.feature import Skills
         return self.refuse(Skills.REQUIRED.about(skill=self.skill, path=self.path)) if event.writes else self.stay()

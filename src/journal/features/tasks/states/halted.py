@@ -13,6 +13,9 @@ class Halted(Paused):
     name = "halted"
     why: str = ""
 
+    def awaiting(self) -> tuple[str, str]:
+        return self.why, ""
+
     def tool_starting(self, event: ToolStarting) -> Transition:
         return self.back()
 

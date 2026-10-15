@@ -171,3 +171,25 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         assert [r["n"] for r in listed] == [n]
     finally:
         app.runtime().stop()
+
+
+def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode()
+        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        app.console().run(["task", "create", "the footer", "--start"], Where("main", "s1"))
+        work = call(server, "GET", "/api/main/work")[1]["rows"][0]
+        assert work["title"] == "the footer" and work["data"]["awaiting"] == "" and work["data"]["todo"] == 1
+        app.console().run(["halt", "now", "stuck on the login"], Where("main", "s1"))
+        work = call(server, "GET", "/api/main/work")[1]["rows"][0]
+        assert work["data"]["awaiting"] == "stuck on the login" and work["data"]["awaiting_since"] > 0
+        assert call(server, "GET", "/api/summary")[1]["environments"][0]["work"]["awaiting"] == "stuck on the login"
+    finally:
+        app.runtime().stop()

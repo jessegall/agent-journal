@@ -11,3 +11,6 @@ class Awaiting(Paused):
     name = "awaiting"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     workers: tuple[int, ...] = ()
+
+    def awaiting(self) -> tuple[str, str]:
+        return f"workers {", ".join(str(n) for n in self.workers)}", ",".join(f"helper:{n}" for n in self.workers)

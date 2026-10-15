@@ -12,5 +12,8 @@ class Waiting(Paused):
     name = "waiting"
     question_id: int = 0
 
+    def awaiting(self) -> tuple[str, str]:
+        return f"your answer to question {self.question_id}", f"question:{self.question_id}"
+
     def prompt_submitted(self, event: PromptSubmitted) -> Transition:
         return self.back()

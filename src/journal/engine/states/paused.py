@@ -12,6 +12,10 @@ class Paused(AgentState):
 
     resume: dict = field(default_factory=dict)
 
+    def awaiting(self) -> tuple[str, str]:
+        """What the agent waits for while paused here, in words, and the rows it waits on as refs; the viewer's status line reads both."""
+        return "", ""
+
     def back(self, *says: Said) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)
 

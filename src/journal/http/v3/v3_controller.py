@@ -7,13 +7,13 @@ from typing import Iterator
 
 from journal.config import Config
 from journal.engine.machine import Machine
-from journal.features.tasks.states.working import Working
 from journal.features.voices.calling import Calling
 from journal.features.voices.chosen_voice import ChosenVoice
 from journal.features.voices.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
+from journal.http.v3.current_work import CurrentWork
 from journal.http.v3.listing import Listing
 from journal.http.v3.project_files import ProjectFiles
 from journal.http.v3.shapers.shapers import Shapers
@@ -40,9 +40,9 @@ LINGERS = 10.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
-        self.messages, self.files = messages, files
+        self.messages, self.files, self.current = messages, files, current
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
 
     # the journal
@@ -70,13 +70,8 @@ class V3Controller:
             row = self.shapers.named("agent").row(live, list(reversed(self.entries.of_kind_in(environment.id, 200))))
             d = row.data
             agent = {"status": d["status"], "provider": live.provider or "claude", "model": "", "context": live.context_mark, "uses": 0, "started": d["started"], "at": d["at"], "tool": d["tool"], "file": "", "asking": bool(d["asking"]), "background_run": "", "says": d["last_message"], "doing": d["doing"]}
-            state = self.machine.states.named(live.state, live.data)
-            if isinstance(state, Working):
-                try:
-                    task = self.tasks.find(state.task_id)
-                    work = {"n": task.id, "title": task.title, "todo": task.id, "parked": False, "awaiting": ""}
-                except NotFound:
-                    work = None
+            held = self.current.of(live)
+            work = {"n": held.task.id, "title": held.task.title, "todo": held.task.id, "parked": False, "awaiting": held.awaiting} if held else None
         counts = {"questions": self.open_count("question", environment), "messages": len(self.messages.unread(environment.id)), "suggestions": 0, "todos": self.open_count("todo", environment), "prompts": 0, "routed": 0}
         return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": counts}
 

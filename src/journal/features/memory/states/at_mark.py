@@ -12,6 +12,9 @@ class AtMark(Paused):
     name = "at_mark"
     mark: int = 0
 
+    def awaiting(self) -> tuple[str, str]:
+        return f"a decision at the context mark, {self.mark}% full", ""
+
     def tool_starting(self, event: ToolStarting) -> Transition:
         from journal.features.memory.feature import Memory
         return self.refuse(Memory.HELD.about()) if event.writes else self.stay()
