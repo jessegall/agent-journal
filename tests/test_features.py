@@ -207,9 +207,16 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
 
 
 def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
-    typed = []
+    import threading
+    import traceback
+    typed, stacks = [], []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+
+    def sent(self, environment_id, instruction):
+        typed.append(instruction["line"])
+        stacks.append(f"--- {threading.current_thread().name}\n" + "".join(traceback.format_stack(limit=14)))
+
+    monkeypatch.setattr(SupervisorLink, "_send", sent)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "t", "--start"], AGENT)
@@ -219,7 +226,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     machine = app.container.get(Machine)
     assert machine.current("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
-    assert machine.current("s1").name == "awaiting" and typed == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
+    assert machine.current("s1").name == "awaiting" and typed == ["[journal] worker 1, Lady Lovelace, reported in the chat"], "\n".join(stacks)
     console.run(["worker", "stop", "2"], USER)
     assert machine.current("s1").task_id == 1
     assert typed[-1] == "[journal] what you waited on came back: carry on"
