@@ -9,6 +9,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.console.where import Where
 
 
 @pytest.fixture
@@ -129,3 +130,44 @@ def test_request_threads_leave_no_connection_behind(server):
     for _ in range(40):
         call(server, "GET", "/api/main/dashboard")
     assert len(database._open) <= 3, f"{len(database._open)} connections open after 40 requests: threads must return theirs to the pool"
+
+
+def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
+    """Settings answer with the whole tree, a read message is read and not closed, a running plan is active, a check carries its last run, a sequence its steps, the hub its counts, the Code page its files."""
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        status, tree = call(server, "POST", "/api/main/settings", {"features": {"thinking": False}})
+        assert status == 200 and tree["features"]["thinking"] is False and len(tree["features"]) > 10 and "viewer" in tree
+        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k1"})[1]["n"]
+        call(server, "POST", f"/api/main/message/{n}/read", {})
+        row = call(server, "GET", f"/api/main/message/{n}")[1]
+        assert row["seen"] == ["user", "agent"] and row["completed"] == 0 and row["data"]["delivered"] is True, "read, delivered, not closed"
+        call(server, "POST", f"/api/main/message/{n}/react", {"face": "👍"})
+        app.console().run(["message", "react", str(n), "🎉"], Where("main", "s1"))
+        assert call(server, "GET", f"/api/main/message/{n}")[1]["completed"] > 0, "a face from the agent answers it"
+        app.console().run(["plan", "create", "p"], Where("main"))
+        app.console().run(["plan", "start", "1"], Where("main", "s1"))
+        assert call(server, "GET", "/api/main/plan/1")[1]["data"]["status"] == "active"
+        app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
+        app.console().run(["check", "run", "1"], Where("main"))
+        check = call(server, "GET", "/api/main/check/1")[1]
+        assert check["data"]["last"]["ok"] is True and "runs" in check["data"]
+        app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main"))
+        assert [s["title"] for s in call(server, "GET", "/api/main/sequence/1")[1]["sections"]] == ["tag", "push"]
+        counts = call(server, "GET", "/api/summary")[1]["environments"][0]["counts"]
+        assert {"messages", "suggestions", "todos", "questions"} <= set(counts)
+        (tmp_path / "hello.py").write_text("print('hi')\n")
+        assert call(server, "GET", "/api/main/file?path=hello.py")[1]["lines"] == 1
+        assert "diff" in call(server, "GET", "/api/main/diff?path=hello.py")[1]
+        assert call(server, "GET", "/api/main/project-files/find?q=hello")[1][0]["name"] == "hello.py"
+        assert call(server, "POST", "/api/main/agent/s1/pause", {})[0] == 409, "an act by session is refused, not a server error"
+        listed = call(server, "GET", f"/api/main/message?n={n}")[1]["rows"]
+        assert [r["n"] for r in listed] == [n]
+    finally:
+        app.runtime().stop()

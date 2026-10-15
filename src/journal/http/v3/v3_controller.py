@@ -15,6 +15,7 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
 from journal.http.v3.listing import Listing
+from journal.http.v3.project_files import ProjectFiles
 from journal.http.v3.shapers.shapers import Shapers
 from journal.http.v3.v3_actions import V3Actions
 from journal.http.v3.v3_events import V3Events
@@ -25,6 +26,7 @@ from journal.hooks.hook import Hook
 from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
+from journal.repositories.messages import Messages
 from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
 from journal.repositories.tasks import Tasks
@@ -38,8 +40,9 @@ LINGERS = 10.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
+        self.messages, self.files = messages, files
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
 
     # the journal
@@ -74,8 +77,11 @@ class V3Controller:
                     work = {"n": task.id, "title": task.title, "todo": task.id, "parked": False, "awaiting": ""}
                 except NotFound:
                     work = None
-        open_questions = len([q for q in self.shapers.named("question").rows(environment) if q.is_open])
-        return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": {"questions": open_questions, "prompts": 0, "routed": 0}}
+        counts = {"questions": self.open_count("question", environment), "messages": len(self.messages.unread(environment.id)), "suggestions": 0, "todos": self.open_count("todo", environment), "prompts": 0, "routed": 0}
+        return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": counts}
+
+    def open_count(self, type_: str, environment: Environment) -> int:
+        return len([r for r in self.shapers.named(type_).rows(environment) if r.is_open])
 
     def get_agents(self, request: Request) -> Response:
         online = []
@@ -131,7 +137,9 @@ class V3Controller:
         return Response.json(self.settings.tree(self.environment_of(request).id))
 
     def post_settings(self, request: Request) -> Response:
-        return Response.json(self.settings.save(request.body, request.actor))
+        """The viewer keeps the answer as its whole settings tree, so a toggle answers with all of it."""
+        self.settings.save(request.body, request.actor)
+        return Response.json(self.settings.tree(self.environment_of(request).id))
 
     # rows
 
@@ -176,7 +184,10 @@ class V3Controller:
 
     def post_act(self, request: Request) -> Response:
         environment = self.environment_of(request)
-        type_, n, action = request.params["type"], int(request.params["n"]), request.params["action"]
+        type_, action = request.params["type"], request.params["action"]
+        if not request.params["n"].isdigit():
+            return Response.refused(f"{action} on a {type_} by its session is not something the viewer can do here yet")
+        n = int(request.params["n"])
         try:
             done = self.actions.act(type_, n, action, request.body, request)
         except NotFound as missing:
@@ -207,13 +218,17 @@ class V3Controller:
         return Response.refused(f"{action} on {type_} is not something the viewer can do here")
 
     def get_project_files(self, request: Request) -> Response:
-        """One folder of the project, folders first, as the Code page lists it."""
-        folder = request.query.get("folder", "").strip("/")
-        root = (self.config.root / folder).resolve()
-        if not str(root).startswith(str(self.config.root.resolve())) or not root.is_dir():
-            return Response.json([])
-        entries = sorted(root.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
-        return Response.json([{"path": str(p.relative_to(self.config.root)), "name": p.name, "folder": p.is_dir()} for p in entries if not p.name.startswith(".") and p.name != "node_modules"])
+        return Response.json(self.files.folder(request.query.get("folder", "")))
+
+    def get_file(self, request: Request) -> Response:
+        found = self.files.file(request.query.get("path", ""))
+        return Response.json(found) if found else Response.not_found("no such file")
+
+    def get_diff(self, request: Request) -> Response:
+        return Response.json({"diff": self.files.diff(request.query.get("path", ""))})
+
+    def get_project_files_find(self, request: Request) -> Response:
+        return Response.json(self.files.find(request.query.get("q", "")))
 
     def post_console(self, request: Request) -> Response:
         return Response.json({"queued": False})

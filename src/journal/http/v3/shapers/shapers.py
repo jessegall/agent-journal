@@ -10,6 +10,7 @@ from journal.http.v3.shapers.questions_shaper import QuestionsShaper
 from journal.http.v3.shapers.reactions_shaper import ReactionsShaper
 from journal.http.v3.shapers.rules_shaper import RulesShaper
 from journal.http.v3.shapers.shaper import Shaper
+from journal.http.v3.v3_row import seconds
 from journal.http.v3.shapers.simple_shaper import SimpleShaper
 from journal.http.v3.shapers.todos_shaper import TodosShaper
 from journal.http.v3.shapers.workers_shaper import WorkersShaper
@@ -38,9 +39,9 @@ class Shapers:
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
             WritingShaper(get(Docs), "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),
-            SimpleShaper(get(Sequences), "sequence", lambda r: r.title, lambda r: "\n".join(f"{i + 1}. {s}" for i, s in enumerate(r.steps)), lambda r: {"steps": [{"text": s} for s in r.steps], "starts_on": ""}),
+            SimpleShaper(get(Sequences), "sequence", lambda r: r.title, lambda r: "", lambda r: {"runs": {}, "system": False, "starts_on": ""}, sections=lambda r: [{"title": s, "body": ""} for s in r.steps]),
             SimpleShaper(get(Triggers), "trigger", lambda r: ", ".join(r.words), lambda r: r.text, lambda r: {"words": list(r.words), "action": r.action.value}),
-            SimpleShaper(get(Checks), "check", lambda r: r.title, lambda r: r.command, lambda r: {"command": r.command, "every": r.every, "state": "failed" if r.last_passed is False else "passed" if r.last_passed else "", "output": r.last_output}),
+            SimpleShaper(get(Checks), "check", lambda r: r.title, lambda r: r.command, lambda r: {"command": r.command, "every": r.every, "runs": [], **({"last": {"at": seconds(r.last_ran_at), "ok": bool(r.last_passed), "took": 0, "output": r.last_output}} if r.last_ran_at else {})}),
         ]
         self._by_type: dict[str, Shaper] = {shaper.type: shaper for shaper in own}
         for name in EMPTY:

@@ -19,16 +19,17 @@ class Listing:
     @classmethod
     def from_query(cls, query: dict) -> "Listing":
         flag = lambda key: str(query.get(key, "")).lower() in ("1", "true", "yes")
-        only = tuple(int(n) for n in str(query.get("only", "")).split(",") if n.strip().isdigit())
+        only = tuple(int(n) for n in str(query.get("n", query.get("only", ""))).split(",") if n.strip().isdigit())
         return cls(int(query.get("last", PAGE) or PAGE), flag("completed"), flag("closed"), int(query.get("before", 0) or 0), float(query.get("since", 0) or 0), only)
 
     def listed(self, rows: list[V3Row]) -> dict:
-        """{rows, more}, rows in order of their number."""
-        rows = sorted((r for r in rows if not r.deleted), key=lambda r: r.n)
+        """{rows, more}, rows in order of their number. A catch-up page since a time keeps deleted rows, so the viewer can drop them."""
+        rows = sorted(rows, key=lambda r: r.n)
         if self.only:
-            return {"rows": [r.to_json() for r in rows if r.n in self.only], "more": False}
+            return {"rows": [r.to_json() for r in rows if r.n in self.only and not r.deleted], "more": False}
         if self.since:
             return {"rows": [r.to_json() for r in rows if r.updated > self.since], "more": False}
+        rows = [r for r in rows if not r.deleted]
         if self.closed:
             closed = [r for r in rows if r.completed and (not self.before or r.n < self.before)]
             return {"rows": [r.to_json() for r in closed[-self.last:]], "more": len(closed) > self.last}
