@@ -1,5 +1,7 @@
 from urllib.parse import unquote
 
+from journal.refused import Refused
+from journal.repositories.not_found import NotFound
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.route import Handler, Route
@@ -19,5 +21,10 @@ class Router:
         for route in self.routes:
             params = route.params(request.method, request.path)
             if params is not None:
-                return route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
+                try:
+                    return route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
+                except Refused as refused:
+                    return Response.refused(str(refused))
+                except NotFound as missing:
+                    return Response.not_found(str(missing))
         return Response.not_found(f"{request.method} {request.path}")

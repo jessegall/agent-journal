@@ -5,7 +5,7 @@ import io
 from journal.console.command import Command
 from journal.console.creations import Creations
 from journal.console.outcome import Outcome
-from journal.features.refused import Refused
+from journal.refused import Refused
 from journal.repositories.not_found import NotFound
 from journal.console.where import Where
 from journal.repositories.agents import Agents

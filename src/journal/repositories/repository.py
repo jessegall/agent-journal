@@ -15,6 +15,7 @@ from journal.events.models.updating import Updating
 from journal.features.bus import Bus
 from journal.models.actor import Actor
 from journal.models.model import Model
+from journal.models.title import Title
 from journal.repositories.not_found import NotFound
 
 M = TypeVar("M", bound=Model)
@@ -69,6 +70,7 @@ class Repository(Generic[M]):
             self.bus.dispatch(Deleted(model=row, by=by))
 
     def _insert(self, row: M, by: Actor) -> M:
+        Title.check_on(row)
         now = self._now()
         stamped = row.with_(created_at=now, created_by=by, updated_at=now, updated_by=by)
         self.bus.dispatch(Creating(model=stamped, by=by))
@@ -82,6 +84,7 @@ class Repository(Generic[M]):
     def _update(self, row: M, by: Actor) -> M:
         stamped = row.with_(updated_at=self._now(), updated_by=by)
         was = self.find(row.id)
+        Title.check_on(row, was)
         self.bus.dispatch(Updating(model=stamped, by=by))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")

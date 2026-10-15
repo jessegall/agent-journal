@@ -14,7 +14,7 @@ from journal.events.models.updated import Updated
 from journal.events.models.updating import Updating
 from journal.features.listener import Listener
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
-from journal.features.refused import Refused
+from journal.refused import Refused
 from journal.models.actor import Actor
 from journal.models.link import Link
 from journal.models.ref import Ref
@@ -147,3 +147,17 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     bus = Bus()
     message = Messages(old, bus, Reactions(old, bus, Links(old, bus)), Links(old, bus)).find(1)
     assert message.files == () and message.acknowledgement is False and message.idempotency == "" and message.read_at is None
+
+
+def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one_is_left_alone(connection, bus):
+    from journal.models.actor import Actor
+    from journal.models.task import Task
+    from journal.refused import Refused
+    from journal.repositories.tasks import Tasks
+    tasks = Tasks(connection, bus)
+    with pytest.raises(Refused, match="at most 80 characters"):
+        tasks.save(Task(environment_id=1, title="x" * 81), Actor.system())
+    with pytest.raises(Refused, match="no colon"):
+        tasks.save(Task(environment_id=1, title="Titles: the rule"), Actor.system())
+    short = tasks.save(Task(environment_id=1, title="The title rule", brief="x" * 500), Actor.system())
+    assert tasks.save(short.with_(brief="changed"), Actor.system()).brief == "changed", "a row saved again with the title it had is left alone"

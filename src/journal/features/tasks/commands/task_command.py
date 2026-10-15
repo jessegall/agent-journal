@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
-from journal.features.refused import Refused
+from journal.refused import Refused
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.working import Working
 from journal.models.link import Link
