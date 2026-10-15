@@ -37,7 +37,7 @@ described here; the companion `docs/messaging-and-chat-marks.md` holds the exact
 | --- | --- |
 | One piece of work at a time: `work start`, `work log`, `work end --how`, `work park`, `work resume`, `work await`; `todo start`/`todo done` on rows. A second start is refused until the first is ended or parked. | Partly: `task create --start`, `task start`, `task log`, `task done --how` carry the base. **No park, no resume, no await, no second-start refusal.** |
 | Holds, each with its exact line: no work declared; log overdue after 20 edits; after compaction read the latest messages; skill not loaded; context mark; unread messages after five reminders; unanswered message after ten tool uses (every tool call); choices offered in prose; a sequence step handed; a trigger hold or deny; eviction. | Partly: no work declared, skill not loaded, context mark, sequence step and trigger deny are there. **Missing: log overdue, read after compaction, unread and unanswered holds, prose choices.** |
-| `journal halt "<why>"` quiets the carry-on nudge until the next tool use or prompt. | Same. |
+| `journal stuck "<why>"` quiets the carry-on nudge until the next tool use or prompt. | Same. |
 | Laws refuse a subagent without a model, without a job, or one that can write; a whole read of a long file is refused. | Partly: no model and no job are refused; **a writing subagent is not refused; a long whole read is named, not refused.** |
 | Work lines: "work N is still open" at a stop, "work N in hand" every ten edits, parked work asked after, awaited things asked after every five minutes, blocked rows re-asked. | Partly: a stop with work in hand is told to carry on. The rest is missing. |
 

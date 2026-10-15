@@ -70,7 +70,7 @@ chart is read and edited. The shipped chart carries the parked-tasks line and th
                      │        stopped while the journal awaits <what>"     (409,   │
                      │        once)                                                │
                      │  waiting on the user (question), on workers, on an awaited  │
-                     │        run, or halted with a reason ──► the stop passes     │
+                     │        run, or stuck with a reason ──► the stop passes     │
                      │  idle, nothing open ──► the stop passes                     │
                      └────────────────────────────┬────────────────────────────────┘
                                                   ▼
@@ -115,5 +115,5 @@ the user; the agent acts on it and says nothing about it in the chat.
               │ something else must happen now           │ resume
               ▼                                          │
             park, with why ──────────────────────────────┘
-   a stop with the task in hand: "carry on"   ·   truly stuck: journal halt now "<why>", and the stop passes
+   a stop with the task in hand: "carry on"   ·   truly stuck: journal stuck "<why>", and the stop passes
 ```

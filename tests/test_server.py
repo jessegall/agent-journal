@@ -188,7 +188,7 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
         app.console().run(["task", "create", "the footer", "--start"], Where("main", "s1"))
         work = call(server, "GET", "/api/main/work")[1]["rows"][0]
         assert work["title"] == "the footer" and work["data"]["awaiting"] == "" and work["data"]["todo"] == 1
-        app.console().run(["halt", "now", "stuck on the login"], Where("main", "s1"))
+        app.console().run(["stuck", "stuck on the login"], Where("main", "s1"))
         work = call(server, "GET", "/api/main/work")[1]["rows"][0]
         assert work["data"]["awaiting"] == "stuck on the login" and work["data"]["awaiting_since"] > 0
         assert call(server, "GET", "/api/summary")[1]["environments"][0]["work"]["awaiting"] == "stuck on the login"

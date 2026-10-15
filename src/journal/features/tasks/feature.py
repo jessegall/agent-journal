@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.tasks.commands.halt_command import HaltCommand
+from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.commands.work_command import WorkCommand
 from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
@@ -10,7 +10,7 @@ from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
 from journal.features.tasks.states.expecting import Expecting
-from journal.features.tasks.states.halted import Halted
+from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 
@@ -19,16 +19,16 @@ class Tasks(Feature):
     name = "tasks"
     title = "Tasks"
     help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
-    states = (Idle, Working, Halted, Expecting)
-    commands = (TaskCommand, WorkCommand, HaltCommand)
+    states = (Idle, Working, Stuck, Expecting)
+    commands = (TaskCommand, WorkCommand, StuckCommand)
     listeners = (SpotPolling, AskAfterParked, TypeAtHeldStop, LogCadence, CheckIn)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
-    CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal halt \"<why>\" if you are truly stuck", repeat_after=0)
-    CARRY_ON_LOG = Nudge(name, "carry_on_log", "{{name}} is in hand, {{logged}}: carry on", "log where it stands first, then continue; journal halt \"<why>\" if you are truly stuck", repeat_after=0)
+    CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
+    CARRY_ON_LOG = Nudge(name, "carry_on_log", "{{name}} is in hand, {{logged}}: carry on", "log where it stands first, then continue; journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
-    NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
+    NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     DEFERRED = Nudge(name, "deferred", "work deferred in words, not filed: journal task create it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     POLLING = Nudge(name, "polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")
@@ -67,5 +67,5 @@ Taking a task up is work too. File a task for work that is an item of its own, o
 - Auto mode (the setting tasks.auto, on by default) means you work the list: a stop with tasks open is answered with the next
   one, and only the user stops you. A stop with parked tasks names them, in auto mode or not: parked is still open.
 - Work you put off in words is work lost: file it as a task instead.
-- Stopping with a task in hand is told to carry on. Truly stuck: `journal halt now "<why>"`.
-""", keywords=('task', 'tasks', 'todo'), required_in=('working', 'halted', 'expecting'))
+- Stopping with a task in hand is told to carry on. Truly stuck: `journal stuck "<why>"`.
+""", keywords=('task', 'tasks', 'todo'), required_in=('working', 'stuck', 'expecting'))

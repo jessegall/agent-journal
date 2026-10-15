@@ -17,7 +17,7 @@ AGENT_EVENTS = (
     ("ticked", "The clock ticks", "every few seconds for each live agent"),
 )
 CHECKS = (
-    ("plain_idle", "At rest?", "the agent's state is plain idle: nothing in hand, nothing awaited, not halted"),
+    ("plain_idle", "At rest?", "the agent's state is plain idle: nothing in hand, nothing awaited, not stuck"),
     ("open_tasks", "Open tasks?", "the environment has open tasks the agent may take up, outside a plan not yet started"),
     ("task_in_hand", "A task in hand?", "the agent has a task started"),
     ("work_declared", "Work declared?", "the agent declared work without a task"),

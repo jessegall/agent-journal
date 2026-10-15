@@ -1,4 +1,4 @@
-"""Phase five: the machine. A write in Idle is refused with how to declare work; after task start a stop says carry on, once; done makes the agent idle again; halt pauses and a tool use lifts it; the state survives a new server."""
+"""Phase five: the machine. A write in Idle is refused with how to declare work; after task start a stop says carry on, once; done makes the agent idle again; stuck pauses and a tool use lifts it; the state survives a new server."""
 
 import json
 from pathlib import Path
@@ -11,7 +11,7 @@ from journal.app import App
 from journal.config import Config
 from journal.console.where import Where
 from journal.engine.machine import Machine
-from journal.features.tasks.states.halted import Halted
+from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 from journal.models.setting import Setting
@@ -58,7 +58,7 @@ def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app)
     assert write(app)[0] == 200
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "task 1 is in hand, last logged just now: carry on" in body["reason"], "a stop with work in hand is held, which is how Claude is told to go on"
-    assert hook(app, "Stop")[1].get("decision") == "block", "every fresh stop with work in hand is held, until a halt"
+    assert hook(app, "Stop")[1].get("decision") == "block", "every fresh stop with work in hand is held, until a stuck"
     assert hook(app, "PreCompact")[1] == {}, "a compaction hook carries nothing to the agent; the marks said it"
 
 
@@ -70,12 +70,12 @@ def test_done_makes_the_agent_idle_again(app):
     assert hook(app, "Stop")[1] == {}
 
 
-def test_halt_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
+def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    app.console().run(["halt", "now", "stuck on the login"], AGENT)
+    app.console().run(["stuck", "stuck on the login"], AGENT)
     machine = app.container.get(Machine)
-    assert isinstance(machine.current("s1"), Halted) and machine.current("s1").why == "stuck on the login"
+    assert isinstance(machine.current("s1"), Stuck) and machine.current("s1").why == "stuck on the login"
     assert hook(app, "Stop")[1] == {}
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert machine.current("s1").task_id == 1

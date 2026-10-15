@@ -68,7 +68,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   there. A method returns a `Transition`: the next state, nudges, an optional refusal.
   `engine/machine.py` is the one blocking listener on every agent event; commands move the
   agent too (`task start` -> Working). Starting states: Idle, Working, FollowingPlan,
-  RunningSequence, Awaiting, Waiting, Halted, CatchingUp, AtMark, Subagent, Ended. The last
+  RunningSequence, Awaiting, Waiting, Stuck, CatchingUp, AtMark, Subagent, Ended. The last
   five extend `Paused`, which holds `resume` (the state it left, serialised) and goes back
   with `back()`; a pause inside a pause nests in the data, so no stack is kept anywhere.
 - **Settings, not states**: auto mode and the work mode (hands-on, orchestrator, solo). They
@@ -89,7 +89,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Features register states; features depend on the engine, never the reverse.** The engine
   holds `AgentState`, `Paused`, `Transition`, `Machine`, `Nudger`, the catalogue and the
   generic `Ended` and `Subagent`. Every other state lives in its feature's `states/` folder:
-  tasks (Idle, Working, Halted), plans (FollowingPlan), sequences (RunningSequence), helpers
+  tasks (Idle, Working, Stuck), plans (FollowingPlan), sequences (RunningSequence), helpers
   (Awaiting), questions (Waiting), memory (AtMark), briefing (CatchingUp). A feature off
   takes its states out of the catalogue; an agent found in one goes back to Idle.
 - **A feature lives beside the states.** It owns its states, its nudges (declared `Nudge`
@@ -127,7 +127,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 
 ## Done so far, beyond the core
 
-- tasks: Idle, Working, Halted; task and halt commands; still-open after a quiet quarter hour;
+- tasks: Idle, Working, Stuck; task and halt commands; still-open after a quiet quarter hour;
   the same check three times; done names the next open task.
 - plans: Plan with tasks linked `in_plan`; plan create/add/start/park/show/list;
   FollowingPlan starts the next task when one is done and ends the plan after the last.
@@ -182,7 +182,7 @@ project never hand-holds them. Loading is forced by the engine, not left to the 
 
 Became states: work_tracking (Idle, Working), awaited (Awaiting), catching_up (CatchingUp),
 memory_checkpoints (AtMark), plans' flow (FollowingPlan), sequences' flow (RunningSequence),
-ask_questions' hold (Waiting), halt (Halted), subagent tracking (Subagent).
+ask_questions' hold (Waiting), halt (Stuck), subagent tracking (Subagent).
 
 Features to port first, with what they fold in and what they say:
 - briefing: session_briefing, recital, skill_loading required. Ready on env, rules in force, facts, reminders, load these skills.

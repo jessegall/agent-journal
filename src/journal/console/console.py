@@ -50,7 +50,14 @@ class Console:
         with self._capture:
             return self.captured(argv, where, out, err)
 
+    def with_verb(self, argv: list[str]) -> list[str]:
+        """A noun with a default verb takes it when the line names none."""
+        command = self.commands.get(argv[0]) if argv else None
+        verb = getattr(command, "default_verb", "")
+        return [argv[0], verb, *argv[1:]] if verb and argv[1:2] != [verb] else argv
+
     def captured(self, argv: list[str], where: Where, out: io.StringIO, err: io.StringIO) -> Outcome:
+        argv = self.with_verb(argv)
         made = Creations.begin()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             try:

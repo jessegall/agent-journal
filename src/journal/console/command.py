@@ -8,6 +8,8 @@ class Command:
     """One noun; each verb is a method named after it, taking the parsed arguments and where and by whom it runs."""
 
     noun: ClassVar[str]
+    default_verb: ClassVar[str] = ""
+    """The verb taken when the line names none, so journal stuck "<why>" needs no verb; empty for a noun whose verbs must be named."""
 
     def arguments(self, verbs) -> None:
         """Adds a parser per verb to the noun's subparsers."""

@@ -9,7 +9,7 @@ from journal.engine.transition import Transition
 from journal.features.said import Said
 
 
-AWAITING = Nudge("", "awaiting", "you stopped while the journal awaits {{what}}", "do that first, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
+AWAITING = Nudge("", "awaiting", "you stopped while the journal awaits {{what}}", "do that first, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
 """Said once at a stop in any paused state; the next stop goes through."""
 
 

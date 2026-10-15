@@ -39,7 +39,7 @@ lists the verbs.
 - **fact**, **rule**, **reminder**: what must survive the context window. At a context mark, writes wait
   until you record one or say `journal nothing survives "<why>"`.
 - **sequence**, **worker**, **skill**: steps to follow, agents that write for you, and these files.
-- `journal halt now "<why>"` when you are truly stuck: the journal stays quiet until your next tool use.
+- `journal stuck "<why>"` when you are truly stuck: the journal stays quiet until your next tool use.
 
 A line from the journal is an instruction, never a message: act on it, and write nothing about it in the chat.
 """)

@@ -89,11 +89,11 @@ def test_pauses_nest_and_each_back_pops_one(app):
     app.console().run(["task", "create", "t", "--start"], AGENT)
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    app.console().run(["halt", "now", "stuck"], AGENT)
+    app.console().run(["stuck", "stuck"], AGENT)
     machine = app.container.get(Machine)
-    assert machine.current("s1").name == "halted"
+    assert machine.current("s1").name == "stuck"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert isinstance(machine.current("s1"), AtMark), "the halt went back to the mark it left"
+    assert isinstance(machine.current("s1"), AtMark), "being stuck went back to the mark it left"
     app.console().run(["nothing", "survives", "fine"], AGENT)
     assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1, "the mark went back to the task"
 
@@ -477,9 +477,9 @@ def test_notable_moments_are_cards_on_the_agents_timeline(app):
     from journal.repositories.entries import Entries
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    app.console().run(["halt", "now", "stuck on the login"], AGENT)
+    app.console().run(["stuck", "stuck on the login"], AGENT)
     cards = [e.data for e in app.container.get(Entries).of_kind(1, "card")]
-    assert [c["label"] for c in cards] == ["Agent halted"] and cards[0]["detail"] == "stuck on the login" and cards[0]["tone"] == "bad"
+    assert [c["label"] for c in cards] == ["Agent stuck"] and cards[0]["detail"] == "stuck on the login" and cards[0]["tone"] == "bad"
 
 
 def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_not(app, monkeypatch):
