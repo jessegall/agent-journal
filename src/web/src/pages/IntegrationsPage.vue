@@ -10,6 +10,7 @@ import SkeletonLine from "../kit/SkeletonLine.vue";
 const servers = ref([]);
 const suggested = ref([]);
 const restartPending = ref([]);
+const signingIn = ref("");
 const loaded = ref(false);
 const busy = ref("");
 const notice = ref("");
@@ -60,7 +61,26 @@ const saveKey = (s) =>
         await api.mcpKey(s.name, keys.value[s.name] || "");
         keys.value[s.name] = "";
     });
-const signIn = (s) => act(s.name, () => api.mcpSignIn(s.name));
+const signIn = (s) =>
+    act(s.name, async () => {
+        await api.mcpSignIn(s.name);
+        signingIn.value = s.name;
+    });
+let checking = 0;
+let checks = 0;
+watch(signingIn, (name) => {
+    clearInterval(checking);
+    checks = 0;
+    if (!name) return;
+    checking = setInterval(async () => {
+        const got = await api.mcpCheck();
+        servers.value = got.servers;
+        const server = got.servers.find((s) => s.name === name);
+        checks += 1;
+        if (!server || server.state === "connected" || checks >= 18) signingIn.value = "";
+    }, 10000);
+});
+onUnmounted(() => clearInterval(checking));
 </script>
 
 <template>
@@ -108,6 +128,9 @@ const signIn = (s) => act(s.name, () => api.mcpSignIn(s.name));
                     <Btn kind="primary" small :busy="busy === s.name" :disabled="!(keys[s.name] || '').trim()" @click="saveKey(s)">
                         {{ s.has_key ? "Replace key" : "Save key" }}
                     </Btn>
+                </div>
+                <div v-else-if="s.managed && s.auth === 'oauth' && signingIn === s.name" class="integration-key">
+                    <span class="integration-note integrations-pending"><span class="integrations-spinner" /> Signing in: approve it in the browser window the agent opened. This checks every ten seconds.</span>
                 </div>
                 <div v-else-if="s.managed && s.auth === 'oauth'" class="integration-key">
                     <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>
