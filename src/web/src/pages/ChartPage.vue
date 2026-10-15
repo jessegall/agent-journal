@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import ChartList from "./ChartList.vue";
 
 const CARD = {width: 220, height: 92};
 const KINDS = [
@@ -28,6 +29,7 @@ const search = ref("");
 const camera = reactive({x: 40, y: 40, scale: 1});
 const plane = ref(null);
 const drawing = ref(null);
+const asList = ref(window.innerWidth < 720);
 const trial = reactive({trigger: "idle", nodes: [], would: [], ran: false});
 let fresh = 0;
 
@@ -108,6 +110,19 @@ function remove(node) {
 function cut(line) {
     change(() => {
         lines.value = lines.value.filter((l) => l !== line);
+    });
+}
+
+function connect(node, port, target) {
+    change(() => {
+        lines.value = lines.value.filter((l) => !(String(l.from) === String(node.id) && l.port === port));
+        lines.value.push({from: node.id, to: target.id, port});
+    });
+}
+
+function disconnect(node, port) {
+    change(() => {
+        lines.value = lines.value.filter((l) => !(String(l.from) === String(node.id) && l.port === port));
     });
 }
 
@@ -246,6 +261,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
                 </p>
             </div>
             <div class="chart-acts">
+                <Btn kind="ghost" small @click="asList = !asList">{{ asList ? "As a drawing" : "As a list" }}</Btn>
                 <Btn kind="ghost" small :disabled="!past.length" @click="undo">Undo</Btn>
                 <Btn kind="ghost" small :busy="busy === 'reset'" @click="reset">Back to the shipped chart</Btn>
                 <Btn kind="primary" small :busy="busy === 'save'" :disabled="!dirty" @click="save">Save</Btn>
@@ -266,7 +282,8 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
                 </div>
             </aside>
 
-            <div ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
+            <ChartList v-if="asList" :nodes="nodes" :lines="lines" :entry-of="entryOf" @text="setText" @line="connect" @unline="disconnect" @remove="remove" />
+            <div v-else ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
                 <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
                     <svg class="chart-wires" overflow="visible">
                         <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
@@ -373,6 +390,26 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     flex: 1;
     min-height: 0;
     height: calc(100vh - 330px);
+}
+
+.chart-body > .chart-list {
+    flex: 1;
+}
+
+@media (max-width: 720px) {
+    .chart {
+        padding: 16px;
+    }
+
+    .chart-body {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .chart-palette {
+        width: auto;
+        max-height: 240px;
+    }
 }
 
 .chart-palette {
