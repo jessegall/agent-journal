@@ -1,62 +1,223 @@
 <script setup>
-import {computed} from "vue";
-import {integrationsIn} from "../domain/integrations.js";
-import {route} from "../route.js";
-import {store} from "../state/store.js";
-import IntegrationCard from "./IntegrationCard.vue";
-import IntegrationSettings from "./IntegrationSettings.vue";
+import {onMounted, ref} from "vue";
+import {api} from "../api/client.js";
+import {agent, agentOnline} from "../composables/leadAgent.js";
+import Btn from "../kit/Btn.vue";
+import EmptyState from "../kit/EmptyState.vue";
+import StateDot from "../kit/StateDot.vue";
+import TextInput from "../kit/TextInput.vue";
 
-const integrations = computed(() => integrationsIn(store.spec?.features));
-const opened = computed(() => integrations.value.find((feature) => feature.name === route.value.sub));
+const servers = ref([]);
+const suggested = ref([]);
+const loaded = ref(false);
+const busy = ref("");
+const notice = ref("");
+const keys = ref({});
+
+const DOTS = {connected: "done", failed: "failed", needs_key: "queued", needs_auth: "queued", installed: "draft"};
+const WORDS = {
+    connected: "Connected",
+    failed: "Could not connect",
+    needs_key: "Needs its key",
+    needs_auth: "Needs signing in",
+    installed: "Installed, not checked yet",
+};
+
+async function reload() {
+    const got = await api.mcp();
+    servers.value = got.servers;
+    suggested.value = got.suggested;
+    loaded.value = true;
+}
+onMounted(reload);
+
+async function act(name, work) {
+    busy.value = name;
+    notice.value = "";
+    try {
+        await work();
+        await reload();
+    } catch (e) {
+        notice.value = e.message;
+    } finally {
+        busy.value = "";
+    }
+}
+const install = (s) => act(s.name, () => api.mcpInstall(s.name));
+const remove = (s) => act(s.name, () => api.mcpRemove(s.name));
+const check = () => act("check", () => api.mcpCheck());
+const saveKey = (s) =>
+    act(s.name, async () => {
+        await api.mcpKey(s.name, keys.value[s.name] || "");
+        keys.value[s.name] = "";
+    });
+const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"));
 </script>
 
 <template>
     <section class="integrations">
-        <template v-if="opened">
-            <IntegrationSettings :feature="opened" />
-        </template>
-        <template v-else>
-            <div class="body">
-                <p class="lead">Outside services the journal can reach for you.</p>
-                <div class="cards">
-                    <template v-for="feature in integrations" :key="feature.name">
-                        <IntegrationCard :feature="feature" />
-                    </template>
-                </div>
+        <header class="integrations-head">
+            <div>
+                <h1>Integrations</h1>
+                <p class="integrations-lead">
+                    An integration is an MCP server the agents are given. Installing one restarts the running agents, so it
+                    applies at once. A key is kept outside the project and never written into it.
+                </p>
             </div>
-        </template>
+            <Btn kind="ghost" :busy="busy === 'check'" :disabled="!servers.length" @click="check">Check all</Btn>
+        </header>
+
+        <p v-if="notice" class="integrations-notice">{{ notice }}</p>
+
+        <EmptyState v-if="loaded && !servers.length" title="No integration yet">Install one of the suggestions below.</EmptyState>
+
+        <ul v-else class="integrations-list">
+            <li v-for="s in servers" :key="s.name" class="integration">
+                <div class="integration-row">
+                    <StateDot :state="DOTS[s.state] || 'draft'" />
+                    <strong>{{ s.title }}</strong>
+                    <span class="integration-state">{{ WORDS[s.state] || s.state }}<template v-if="s.last_error">: {{ s.last_error }}</template></span>
+                    <span class="integration-grow" />
+                    <Btn kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
+                </div>
+                <code class="integration-how">{{ s.url || s.command }}</code>
+                <div v-if="s.auth === 'key'" class="integration-key">
+                    <TextInput
+                        v-model="keys[s.name]"
+                        type="password"
+                        :placeholder="s.has_key ? `${s.key_var} is set; paste a new one to replace it` : `Paste the ${s.key_var}`"
+                        @keydown.enter="saveKey(s)"
+                    />
+                    <Btn kind="primary" small :busy="busy === s.name" :disabled="!(keys[s.name] || '').trim()" @click="saveKey(s)">
+                        {{ s.has_key ? "Replace key" : "Save key" }}
+                    </Btn>
+                </div>
+                <div v-else-if="s.auth === 'oauth'" class="integration-key">
+                    <span class="integration-note">Signs in from the agent's terminal: a browser window opens there.</span>
+                    <Btn kind="primary" small :busy="busy === s.name" :disabled="!agentOnline" @click="signIn(s)">Sign in</Btn>
+                </div>
+            </li>
+        </ul>
+
+        <h2 class="integrations-sub">Suggested</h2>
+        <ul class="integrations-grid">
+            <li v-for="s in suggested" :key="s.name" class="suggestion">
+                <strong>{{ s.title }}</strong>
+                <p>{{ s.about }}</p>
+                <span class="integration-note">
+                    <template v-if="s.auth === 'key'">Needs a key ({{ s.key_var }}).</template>
+                    <template v-else-if="s.auth === 'oauth'">Signs in on its own.</template>
+                    <template v-else>Needs no key.</template>
+                </span>
+                <Btn kind="primary" small :busy="busy === s.name" :disabled="s.installed" @click="install(s)">
+                    {{ s.installed ? "Installed" : "Install" }}
+                </Btn>
+            </li>
+        </ul>
     </section>
 </template>
 
 <style scoped>
 .integrations {
-    height: 100%;
-    overflow: auto;
-}
-
-.body {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 18px 20px;
+    gap: 20px;
+    padding: 24px;
+    max-width: 920px;
 }
 
-.lead {
+.integrations-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.integrations-head h1 {
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+.integrations-lead {
     margin: 0;
-    color: var(--text-2);
+    color: var(--text-dim, #9aa0a6);
+    max-width: 640px;
 }
 
-.cards {
+.integrations-notice {
+    margin: 0;
+    color: var(--warn, #e0a848);
+}
+
+.integrations-list,
+.integrations-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
+    gap: 12px;
 }
 
-@media (max-width: 640px) {
-    .cards {
-        grid-template-columns: 1fr;
-    }
+.integrations-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.integration,
+.suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--line, #2a2d33);
+    border-radius: 10px;
+    background: var(--panel, #16181c);
+}
+
+.integration-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.integration-grow {
+    flex: 1;
+}
+
+.integration-state {
+    color: var(--text-dim, #9aa0a6);
+    font-size: 13px;
+}
+
+.integration-how {
+    font-size: 12px;
+    color: var(--text-dim, #9aa0a6);
+    overflow-wrap: anywhere;
+}
+
+.integration-key {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.integration-key > :first-child {
+    flex: 1;
+}
+
+.integration-note {
+    font-size: 12px;
+    color: var(--text-dim, #9aa0a6);
+}
+
+.integrations-sub {
+    margin: 8px 0 0;
+    font-size: 15px;
+}
+
+.suggestion p {
+    margin: 0;
+    color: var(--text-dim, #9aa0a6);
+    font-size: 13px;
+    flex: 1;
 }
 </style>

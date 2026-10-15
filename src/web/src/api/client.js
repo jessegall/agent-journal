@@ -122,6 +122,30 @@ export class ApiClient {
         return this.get("/journals");
     }
 
+    own(path) {
+        return `${this.base}/journal${path}`;
+    }
+
+    mcp() {
+        return transport.request("GET", this.own("/mcp"));
+    }
+
+    mcpInstall(name) {
+        return transport.request("POST", this.own("/mcp/install"), {name});
+    }
+
+    mcpKey(name, value) {
+        return transport.request("POST", this.own(`/mcp/${encoded(name)}/key`), {value});
+    }
+
+    mcpRemove(name) {
+        return transport.request("POST", this.own(`/mcp/${encoded(name)}/remove`), {});
+    }
+
+    mcpCheck() {
+        return transport.request("POST", this.own("/mcp/check"), {}, LONG_WAIT_MS);
+    }
+
     startJournal(root, agent) {
         return this.post("/journals/start", {root, agent});
     }
