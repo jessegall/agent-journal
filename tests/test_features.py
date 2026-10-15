@@ -1458,3 +1458,28 @@ def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app
         hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"}, tool_response="x")
     rows = app.container.get(AgentsShaper).rows(app.container.get(Environments).named("main"))[0].data["subagent_rows"]
     assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["running"] is True
+
+
+def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, monkeypatch):
+    from journal.http.v3.shapers.shapers import Shapers
+    from journal.repositories.environments import Environments
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    hook(app, "SessionStart")
+    console = app.console()
+    hook(app, "MessageDisplay", message="The design is at https://design.example/p/1 and the docs at http://127.0.0.1:8420/#/x.")
+    app.runtime().deferred.drain()
+    reminders = [line for line in sent if "is not pinned" in line]
+    assert len(reminders) == 1 and "https://design.example/p/1" in reminders[0] and "127.0.0.1" not in reminders[0], "one reminder per outside link; the journal's own links pin themselves"
+    hook(app, "MessageDisplay", message="Again: https://design.example/p/1")
+    app.runtime().deferred.drain()
+    assert len([line for line in sent if "is not pinned" in line]) == 1, "told once"
+    out = console.run(["notice", "create", "The Workflows design", "--link", "https://design.example/p/1", "--label", "Open the design"], AGENT).out
+    assert out.startswith("notice 1 pinned")
+    env = app.container.get(Environments).named("main")
+    rows = app.container.get(Shapers).named("notice").rows(env)
+    assert rows[0].title == "The Workflows design" and rows[0].data["link"] == "https://design.example/p/1" and rows[0].data["label"] == "Open the design" and not rows[0].completed
+    console.run(["notice", "close", "1"], AGENT)
+    assert app.container.get(Shapers).named("notice").rows(env)[0].completed, "closed, it leaves the strip"

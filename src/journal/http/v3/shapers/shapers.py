@@ -15,6 +15,7 @@ from journal.http.v3.shapers.simple_shaper import SimpleShaper
 from journal.http.v3.shapers.todos_shaper import TodosShaper
 from journal.http.v3.shapers.workers_shaper import WorkersShaper
 from journal.http.v3.shapers.works_shaper import WorksShaper
+from journal.http.v3.shapers.notices_shaper import NoticesShaper
 from journal.http.v3.shapers.writing_shaper import WritingShaper
 from journal.container import Container
 from journal.repositories.checks import Checks
@@ -27,7 +28,7 @@ from journal.repositories.sequences import Sequences
 from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 
-EMPTY = ("notification", "notice", "suggestion", "tool", "plugin", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "share", "secret", "phone")
+EMPTY = ("notification", "suggestion", "tool", "plugin", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "share", "secret", "phone")
 
 
 class Shapers:
@@ -36,7 +37,7 @@ class Shapers:
     def __init__(self, container: Container) -> None:
         get = container.get
         own = [
-            get(MessagesShaper), get(CommentsShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
+            get(MessagesShaper), get(CommentsShaper), get(NoticesShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
             get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper),
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports), get(Links), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),

@@ -33,6 +33,7 @@ from journal.models.trigger_action import TriggerAction
 from journal.repositories.checks import Checks
 from journal.repositories.docs import Docs
 from journal.repositories.reactions import Reactions
+from journal.repositories.notices import Notices
 from journal.repositories.reports import Reports
 from journal.repositories.sequences import Sequences
 from journal.repositories.triggers import Triggers
@@ -45,10 +46,11 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
+        self.notices = notices
         self.launcher = launcher
 
     def create(self, type: str, environment: Environment, body: dict, request: Request):
@@ -135,6 +137,10 @@ class V3Actions:
 
     def report_dismiss(self, n: int, body: dict, by):
         return self.reports.find(n)
+
+    def notice_close(self, n: int, body: dict, by):
+        from datetime import datetime, timezone
+        return self.notices.save(self.notices.find(n).closed(datetime.now(timezone.utc)), by)
 
     def plan_finish(self, n: int, body: dict, by):
         return self.plans.save(self.plans.find(n).done(), by)
