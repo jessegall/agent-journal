@@ -10,6 +10,8 @@ from journal.features.laws.law_text import LawText
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.skills.skill_files import SkillFiles
 from journal.providers.providers import Providers
+from journal.repositories.environments import Environments
+from journal.supervisor_link import SupervisorLink
 from supervisor.dispatcher import Dispatcher
 from supervisor.project_command import ProjectCommand
 
@@ -20,8 +22,8 @@ class SetupCommand(Command):
 
     noun = "setup"
 
-    def __init__(self, config: Config, providers: Providers, files: SkillFiles, profiles: ProfileFiles) -> None:
-        self.config, self.providers, self.files, self.profiles = config, providers, files, profiles
+    def __init__(self, config: Config, providers: Providers, files: SkillFiles, profiles: ProfileFiles, environments: Environments, supervisor: SupervisorLink) -> None:
+        self.config, self.providers, self.files, self.profiles, self.environments, self.supervisor = config, providers, files, profiles, environments, supervisor
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "here", "wire the hooks, write the skills and the law, put journal on the path")
@@ -40,7 +42,17 @@ class SetupCommand(Command):
         if dispatcher := Dispatcher(Path.home()).write():
             print(f"journal {dispatcher}")
         print(f"ignored {self.ignored().relative_to(self.config.root)}")
+        for name in self.restarted():
+            print(f"restart {name}: the journal of that environment runs the new code")
         return 0
+
+    def restarted(self) -> list[str]:
+        """Every environment with an agent running is told to restart its journal, so an install is live at once."""
+        names = [e.name for e in self.environments.all() if self.supervisor.inbox_of(e.id)]
+        for environment in self.environments.all():
+            if environment.name in names:
+                self.supervisor.restart_journal(environment.id)
+        return names
 
     def hooks(self, args: Namespace, where: Where) -> int:
         """Each hook first tests that its script is still there, so a package moved away fails silent instead of in the chat."""
