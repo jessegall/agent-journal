@@ -22,6 +22,6 @@ export const FILTERED = {
     off: {title: "Off", line: "Everything that is switched off now."},
 };
 
-export const TAB_OF = {agent: "agent", features: "features", system: "system", developer: "developer"};
+export const TAB_OF = {agent: "agent", features: "features", system: "system"};
 
 export const regionOf = (key) => REGIONS.find((one) => one.key === key) || {key, title: FILTERED[key]?.title || key, line: FILTERED[key]?.line || ""};
