@@ -30,6 +30,8 @@ class Working(AgentState):
     """Stops at which this version of the work was named back; three at most."""
 
     def named(self) -> str:
+        if self.task_id and self.what:
+            return f"task {self.task_id}, {self.what}"
         return f"task {self.task_id}" if self.task_id else f"the work in hand, {self.what}"
 
     def reminded(self) -> "Working":

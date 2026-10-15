@@ -7,8 +7,8 @@ from journal.hooks.decision import Decision
 from journal.repositories.settings import PROJECT, Settings
 
 FIRST_AFTER, NAME_EVERY, LOG_AFTER = "work.first_nudge_after", "work.name_every", "work.log_after"
-"""The settings, in edits with nothing logged: the first ask to log, five unless set; how often the work in hand is named back, ten unless set; and when the next write waits for a log, twenty unless set."""
-DEFAULTS = {FIRST_AFTER: 5, NAME_EVERY: 10, LOG_AFTER: 20}
+"""The settings, in edits with nothing logged: the first ask to log, twenty-five unless set; how often the work in hand is named back, ten unless set; and when the next write waits for a log, twenty unless set."""
+DEFAULTS = {FIRST_AFTER: 25, NAME_EVERY: 25, LOG_AFTER: 50}
 
 
 class LogCadence(AgentListener[ToolStarting]):

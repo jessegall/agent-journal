@@ -15,7 +15,7 @@ catalogue could carry it once a check or an action it needs exists.
 - The unread inbox named every third tool use, and the write held after five reminders (messages/hold_unread): the
   counter checks exist; the chart needs the inbox line's wording with its numbers.
 - A message read and unanswered: nudged after ten tool uses, every call held after fifteen (messages/hold_unanswered).
-- The work in hand: a log asked after five edits, named every ten, the write held at twenty (tasks/log_cadence).
+- The work in hand: a log asked after twenty-five edits, named every twenty-five, the write held at fifty (tasks/log_cadence).
 - An idle agent with a parked task asked, now and then, whether it can go on (tasks/ask_after_parked).
 - In auto mode, an agent idle for half an hour asked whether anything is left (tasks/check_in): needs a "quiet for" check.
 - Unread messages named at a prompt, a start and a stop (messages/inbox_at_prompt, inbox_at_start, inbox_at_stop).

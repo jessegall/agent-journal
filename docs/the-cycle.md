@@ -38,7 +38,7 @@ chart is read and edited. The shipped chart carries the parked-tasks line and th
                      │      • a message read and unanswered: nudged after 10 uses, │
                      │        every tool call held after 15 (both settings);        │
                      │        a journal command always passes                      │
-                     │      • 20 unlogged edits ─► the next write waits for a log  │
+                     │      • 50 unlogged edits ─► the next write waits for a log  │
                      │      • every 10th use names the task in hand                │
                      │      • a shell command runs through run.sh: each part        │
                      │        recorded; past 30 s (10 s with a message waiting)     │

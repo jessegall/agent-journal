@@ -57,10 +57,12 @@ Taking a task up is work too. File a task for work that is an item of its own, o
 - A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
   `journal task unblock <n>` opens it again when what it waited on came.
+- A task is done in pieces: `journal work start "<the next piece>"` names each, pulling the repository, then writing the
+  code; `journal work end --how "<what landed>"` closes the piece and the task stays in hand. Each is a line of the task's log.
 - Waiting on something outside your hands, a run or a person: `journal work await "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
-- Log as you go, counted in edits: after five with nothing logged you are asked to, every ten the work in hand is named
-  back so drift is noticed, and at twenty the next write waits for the log line (settings work.first_nudge_after,
+- Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named
+  back so drift is noticed, and at fifty the next write waits for the log line (settings work.first_nudge_after,
   work.name_every and work.log_after). A log line starts a new version.
 - A stop with work in hand names it back with when it was last logged, three times a version; then the stop passes.
 - A commit whose message carries `Journal: tasks done <n>` on a line of its own finishes task n.

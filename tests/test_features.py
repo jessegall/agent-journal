@@ -1483,3 +1483,22 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     assert rows[0].title == "The Workflows design" and rows[0].data["link"] == "https://design.example/p/1" and rows[0].data["label"] == "Open the design" and not rows[0].completed
     console.run(["notice", "close", "1"], AGENT)
     assert app.container.get(Shapers).named("notice").rows(env)[0].completed, "closed, it leaves the strip"
+
+
+def test_a_task_is_done_in_pieces_of_work_each_a_line_of_its_log(app):
+    from journal.repositories.task_logs import TaskLogs
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the login", "--start"], AGENT)
+    assert "work started on task 1: pull the repository" in console.run(["work", "start", "pull the repository"], AGENT).out
+    machine = app.container.get(Machine)
+    assert machine.current("s1").task_id == 1 and machine.current("s1").what == "pull the repository"
+    console.run(["work", "log", "cloned, on the main branch"], AGENT)
+    assert "work ended on task 1: pull the repository (clean clone)" in console.run(["work", "end", "--how", "clean clone"], AGENT).out
+    assert machine.current("s1").task_id == 1 and machine.current("s1").what == "", "the task stays in hand for its next piece"
+    console.run(["work", "start", "write the code"], AGENT)
+    from journal.repositories.tasks import Tasks as TasksRepo
+    lines = [log.line for log in app.container.get(TaskLogs).of(app.container.get(TasksRepo).find(1))]
+    assert lines == ["started: pull the repository", "cloned, on the main branch", "done: pull the repository (clean clone)", "started: write the code"]
+    assert "no piece of work in hand" in console.run(["work", "end"], Where("main", "s2")).err

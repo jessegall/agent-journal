@@ -136,7 +136,12 @@ def test_one_task_in_hand_park_resume_and_await(app):
     assert app.container.get(Machine).current("s1").task_id == 1, "working again lifts the wait"
 
 
-def test_edits_with_nothing_logged_are_asked_after_five_named_every_ten_and_held_at_twenty(app):
+def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(app):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    for key, value in (("work.first_nudge_after", 5), ("work.name_every", 10), ("work.log_after", 20)):
+        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
