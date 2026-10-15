@@ -57,3 +57,70 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         assert cwd.read_text().strip() == str(tmp_path.resolve())
     finally:
         app.runtime().stop()
+
+
+CORPUS = [
+    "echo a; echo b",
+    "false; echo still; false && echo no; echo yes",
+    "true && echo one && false || echo two",
+    "f() { echo f1; echo f2; }; f; f && f",
+    "for i in 1 2; do echo $i; done; for j in a; do echo $j; done && echo end",
+    "if true; then echo y; else echo n; fi; if false; then echo y; fi; echo after",
+    "case x in x) echo matched;; *) echo no;; esac && echo c",
+    "x=1; echo $x && x=2; echo $x",
+    "cd /tmp && pwd; cd / && pwd",
+    "echo \"a; b && c\" && echo 'd; e' && echo $'f;g'",
+    "echo $(echo a; echo b) && echo `echo c; echo d`",
+    "(echo sub; false) || echo recovered",
+    "{ echo g1; echo g2; } && echo g3",
+    "echo one # c1; c2 && c3\necho two",
+    "cat <<EOF\nx; y && z\nEOF\necho after",
+    "cat <<EOF && echo chained\nbody\nEOF",
+    "[[ -n a && -n b ]] && echo db; (( 1 && 0 )) || echo arith",
+    "x=; echo \"${x:-a;b}\"; echo ${x:-c}; x='a;b'; echo ${x//;/X}",
+    "echo a | tr a b; printf '%s\\n' 'p;q' | wc -l",
+    "set -o pipefail; false | true; echo $?",
+    "false; echo $?; true; echo $?",
+    "echo start; sleep 0.1 & wait; echo bg",
+    "repeat 2 echo r; for i in 1 2; echo short$i",
+    "echo 'it'\"'\"'s' && echo \"q\\\"q\"",
+    "echo a; exit 3; echo b",
+    "echo before; exec echo replaced; echo never",
+    "true && { echo in; false; } || echo or",
+    "while read -r l; do echo \"l=$l\"; done <<< $'1\\n2' && echo w",
+    "echo a \\\n b; echo c",
+    "echo a;echo b&&echo c",
+    "cd /nonexistent 2>/dev/null || echo nocd; pwd",
+    "printf 'x'; printf 'y\\n'",
+    "echo \; && echo \\&\\&",
+    "a=(1 2); echo ${a[2]}; echo ${#a}",
+    "false || { echo h1; echo h2; }",
+    "if [ 1 -eq 1 ] && [ 2 -eq 2 ]; then echo both; fi",
+    "echo $((1 + 2)); echo $(( 3 && 4 ))",
+    "until false; do echo once; break; done; echo u",
+    "x=5; while [ $x -gt 3 ]; do x=$((x - 1)); done; echo $x",
+]
+
+
+def test_the_runner_agrees_with_the_shell_on_every_line_of_the_corpus(tmp_path: Path):
+    """Each line run whole by zsh and run in parts by the runner prints the same and ends with the same code."""
+    (tmp_path / ".journal").mkdir()
+    (tmp_path / ".journal" / "src").symlink_to(SRC)
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    try:
+        port = app.server().port
+        (tmp_path / ".journal" / "port").write_text(str(port))
+        urlopen(Request(f"http://127.0.0.1:{port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        env = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
+        runner, cwd = str(tmp_path / ".journal" / "src" / "journal" / "hooks" / "run.sh"), tmp_path / "cwd"
+        differences = []
+        for line in CORPUS:
+            whole = subprocess.run(["/bin/zsh", "-c", line], cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            parts = subprocess.run([runner, wrapped(line, cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            if (whole.stdout, whole.returncode) != (parts.stdout, parts.returncode):
+                differences.append((line, whole.stdout, whole.returncode, parts.stdout, parts.returncode, parts.stderr[-200:]))
+        assert not differences, "\n".join(repr(d) for d in differences)
+    finally:
+        app.runtime().stop()
