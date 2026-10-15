@@ -11,12 +11,9 @@ from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.skills.skill_files import SkillFiles
 from journal.providers.providers import Providers
 
-SHIM = """#!/bin/sh
-# The journal command: finds the project by its .journal folder, then runs the journal's own shim there.
-root=$PWD
-while [ "$root" != "/" ] && [ ! -d "$root/.journal" ]; do root=$(dirname "$root"); done
-[ -d "$root/.journal" ] || root=$PWD
-JOURNAL_ROOT=$root exec sh {shim} "$@"
+COMMAND = """#!/bin/sh
+# This project's journal command: nothing is installed outside the project. The supervisor puts this folder on the agent's PATH.
+JOURNAL_ROOT={root} exec sh {shim} "$@"
 """
 
 
@@ -41,8 +38,7 @@ class SetupCommand(Command):
             print(f"profile {path.relative_to(self.config.root)}")
         print(f"law     {self.law().relative_to(self.config.root)}")
         print(f"imports {self.claude_md().relative_to(self.config.root)}")
-        if shim := self.shim():
-            print(f"command {shim}")
+        print(f"command {self.shim()}")
         return 0
 
     def hooks(self, args: Namespace, where: Where) -> int:
@@ -69,12 +65,11 @@ class SetupCommand(Command):
             path.write_text((had.rstrip("\n") + "\n\n" if had.strip() else "") + "@AGENTS.md\n")
         return path
 
-    def shim(self) -> Path | None:
-        bin_ = Path.home() / ".local" / "bin"
-        if not bin_.is_dir():
-            return None
-        shim = bin_ / "journal"
-        text = SHIM.format(shim=shlex.quote(str(self.package.parent / "journal.sh")))
+    def shim(self) -> Path:
+        """The command, written inside the project at .journal/bin/journal and nowhere else."""
+        shim = self.config.home / "bin" / "journal"
+        shim.parent.mkdir(parents=True, exist_ok=True)
+        text = COMMAND.format(root=shlex.quote(str(self.config.root)), shim=shlex.quote(str(self.package.parent / "journal.sh")))
         if not shim.is_file() or shim.read_text() != text:
             shim.write_text(text)
             shim.chmod(0o755)

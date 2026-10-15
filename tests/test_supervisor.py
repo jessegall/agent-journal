@@ -144,6 +144,7 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     assert launch.agent_command(Choice("spike", "", True, skip_prompts=True)) == ["claude", "--dangerously-skip-permissions", "--model", "x"]
     environ = launch.environ(Choice("spike", "", True))
     assert environ["AGENT_JOURNAL_ACTIVE"] == "1" and environ["JOURNAL_ENV"] == "spike", "the journal's own hooks always run"
+    assert environ["PATH"].startswith(str(tmp_path / ".journal" / "bin")), "the project's own journal command is on the agent's PATH, and nowhere else"
     assert launch.journal_command()[-1] == "serve"
 
 

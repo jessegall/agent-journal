@@ -17,7 +17,7 @@ From the root of your project, with `python3`, `git` and `curl` on the path:
 
 `setup here` makes `.journal/`, wires Claude's hooks (and Codex's where `.codex/` exists), writes the
 journal's skills and the agent profiles, puts the journal's law into AGENTS.md, imports it from
-CLAUDE.md, and installs a `journal` command in `~/.local/bin`. `journal claude` asks, one question at a
+CLAUDE.md, and writes the project's own command at `.journal/bin/journal`; nothing is installed outside the project, and inside a session that folder is on the agent's PATH so `journal …` works there. `.journal/bin/journal claude` asks, one question at a
 time with ↑ ↓ and Enter, which environment (x on one deletes it, after a confirmation, with all it recorded), whether
 to carry on its last conversation, whether to skip the permission prompts and whether to set aside the
 hooks that are not the journal's for the run (they are put back when it ends), then clears the screen

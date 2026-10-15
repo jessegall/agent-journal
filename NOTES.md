@@ -406,3 +406,8 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   `conftest.py`, `.coveragerc`, `plugins.json`, `.githooks/`, `.codex/agents/`.
 
 - **docs/messaging-and-chat-marks.md** holds the requirements for the chat, read from version 3 on 2026-10-15: your messages, the agent's words, tags, replies, reactions, marks, etiquette, and what version 4 still lacks.
+- **The command is the project's.** `journal setup` writes `.journal/bin/journal` and nothing outside the
+  project; the supervisor puts that folder first on the agent's PATH, so `journal …` resolves inside a
+  session and nowhere else. Ruled 2026-10-15 after a dogfood setup overwrote the global `journal` of
+  version 3 on this machine (restored from version 3's own shim template). Nothing of version 4 is
+  published: origin holds `main` only, the last tag is v3.3.2.

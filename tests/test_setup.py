@@ -1,4 +1,4 @@
-"""journal setup wires a project: hooks for Claude, the skills, the law in AGENTS.md, the import in CLAUDE.md. Real files in a temp root; the shim is not written here."""
+"""journal setup wires a project: hooks for Claude, the skills, the law in AGENTS.md, the import in CLAUDE.md. Real files in a temp root; the command lands inside the project."""
 
 import json
 from pathlib import Path
@@ -13,7 +13,6 @@ from journal.console.where import Where
 
 @pytest.fixture
 def app(tmp_path: Path, monkeypatch):
-    monkeypatch.setattr(SetupCommand, "shim", lambda self: None)
     return App(Config(tmp_path, port=0))
 
 
