@@ -1047,3 +1047,15 @@ def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app):
     assert hook(app, "Stop")[1] == {}, "a plan's task waits for the plan"
     console.run(["task", "create", "free work"], USER)
     assert "task 2 next: free work" in hook(app, "Stop")[1]["reason"]
+
+
+def test_the_shipped_templates_are_seeded_and_the_critique_ones_are_offered_to_the_viewer(app):
+    from journal.http.v3.shapers.shapers import Shapers
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    listed = app.console().run(["template", "list"], AGENT).out
+    assert "Find what is missing (for plan, critique)" in listed and "Functional design (for doc)" in listed
+    shown = app.console().run(["template", "show", "3"], AGENT).out
+    assert shown.startswith("template 3: Find what is missing") and "the step nobody wrote down" in shown
+    rows = app.container.get(Shapers).named("template").rows(app.container.get(Environments).named("main"))
+    assert [r.data["purpose"] for r in rows].count("critique") == 3 and rows[0].sections[0]["title"] == "What it is for"
