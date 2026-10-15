@@ -20,6 +20,10 @@ from journal.models.task import Task
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
+from journal.repositories.links import Links
+from journal.models.link import Link
+from journal.models.ref import Ref
+from journal.http.v3.v3_row import USER, V3Row
 from journal.repositories.messages import Messages
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
@@ -41,9 +45,9 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
-        self.agents, self.environments, self.machine, self.supervisor, self.reactions = agents, environments, machine, supervisor, reactions
+        self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
         self.launcher = launcher
 
@@ -108,6 +112,16 @@ class V3Actions:
         row = repository.find(n)
         words = {name: body[given] for name, given in (("title", "title"), ("text", "title"), ("brief", "brief"), ("body", "brief")) if given in body and hasattr(row, name)}
         return repository.save(row.with_(**words), by)
+
+    def any_comment(self, type: str, n: int, body: dict, by):
+        """A comment written under a row in the viewer is a message of the user's, linked to the row and shown under it; it reaches the agent as any message does."""
+        repository = self.repository_of(type)
+        if repository is None:
+            return None
+        row = repository.find(n)
+        message = self.messages.save(Message(environment_id=getattr(row, "environment_id", 0), author=Author.USER, text=body.get("text", "")), by)
+        self.links.save(Link(source=Ref.to(message), target=Ref.to(row), kind=Messages.COMMENTS_ON), by)
+        return V3Row.of("comment", message, title=message.text[:80], brief=message.text, refs=[f"{type}:{n}"], seen=[USER])
 
     def any_section(self, type: str, n: int, body: dict, by):
         repository = self.repository_of(type)

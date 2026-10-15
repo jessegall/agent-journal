@@ -26,7 +26,7 @@ from journal.http.v3.v3_events import V3Events
 from journal.http.v3.v3_manifest import VERSION, V3Manifest
 from journal.features.shell.commands.shell_command import RAN
 from journal.http.v3.bar_row import BarRow
-from journal.http.v3.v3_row import seconds
+from journal.http.v3.v3_row import V3Row, seconds
 from journal.http.v3.v3_settings import V3Settings
 from journal.models.entry import Entry
 from journal.models.environment import Environment
@@ -197,7 +197,7 @@ class V3Controller:
             return Response.not_found(str(missing))
         if done is None:
             return Response.refused(f"{action} is not something the viewer can do to a {type_} here")
-        return Response.json(self.row_of(type_, n, environment) or {})
+        return Response.json(done if isinstance(done, V3Row) else self.row_of(type_, n, environment) or {})
 
     def post_upload(self, request: Request) -> Response:
         environment = self.environment_of(request)

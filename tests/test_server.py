@@ -339,3 +339,14 @@ def test_an_agents_reply_is_a_comment_event_so_the_chat_refreshes_it(tmp_path: P
 def test_the_board_is_off_and_stays_off(server):
     assert call(server, "GET", "/api/main/settings")[1]["features"]["kanban"] is False
     assert call(server, "POST", "/api/main/settings", {"features": {"kanban": True}})[1]["features"]["kanban"] is False
+
+
+def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linked_to_it(server):
+    from journal.console.where import Where
+    call(server, "POST", "/api/main/todo", {"title": "the footer", "idempotency": "t1"})
+    status, made = call(server, "POST", "/api/main/todo/1/comment", {"text": "please also check the header"})
+    assert status == 200 and made["refs"] == ["todo:1"] and made["brief"] == "please also check the header"
+    rows = call(server, "GET", "/api/main/comment")[1]["rows"]
+    assert [(r["refs"], r["seen"]) for r in rows] == [(["todo:1"], ["user"])]
+    messages = call(server, "GET", "/api/main/message")[1]["rows"]
+    assert messages[-1]["brief"] == "please also check the header" and messages[-1]["seen"] == ["user"]
