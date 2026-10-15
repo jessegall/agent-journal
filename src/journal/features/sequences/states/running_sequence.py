@@ -21,5 +21,6 @@ class RunningSequence(Paused):
         return replace(self, step=step, text=text)
 
     def idle(self, event: AgentIdle) -> Transition:
+        """A stop is told the step in hand once; a step may wait on the user, so the same stop again goes through."""
         from journal.features.sequences.feature import Sequences
-        return self.stay(Sequences.STEP.about(n=self.sequence_id, step=self.step + 1, text=self.text))
+        return self.stay() if event.again else self.stay(Sequences.STEP.about(n=self.sequence_id, step=self.step + 1, text=self.text))

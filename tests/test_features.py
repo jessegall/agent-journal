@@ -198,6 +198,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     console.run(["task", "create", "t", "--start"], AGENT)
     assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "a step may wait on the user: the same stop again goes through"
     assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
