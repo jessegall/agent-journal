@@ -10,17 +10,17 @@ import Field from "../kit/Field.vue";
 import {toast} from "../kit/toast.js";
 
 const emit = defineEmits(["open"]);
-const form = computed(() => (store.settings && store.settings.form_of_address) || {});
+const form = computed(() => (store.settings && store.settings.voices) || {});
 const title = ref("");
 const name = ref("");
 const busy = ref(false);
 
-watch(form, (now) => ([title.value, name.value] = [now.title || "", now.first_name || ""]), {immediate: true});
+watch(form, (now) => ([title.value, name.value] = [now.title || "", now.name || ""]), {immediate: true});
 
 async function save() {
     busy.value = true;
     try {
-        await saveSettings({form_of_address: {...form.value, title: title.value.trim(), first_name: name.value.trim()}});
+        await saveSettings({voices: {...form.value, title: title.value.trim(), name: name.value.trim()}});
         toast("Saved: your title and name");
     } catch (error) {
         toast(error.message);

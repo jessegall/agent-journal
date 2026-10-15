@@ -9,16 +9,18 @@ export const callings = ref({});
 export const samples = ref({});
 export const namings = ref([]);
 
-const form = () => (store.settings && store.settings.form_of_address) || {};
+// the voice settings: the profile is a voice's name, butler unless chosen, so a voice is always in use
+const voices = () => (store.settings && store.settings.voices) || {};
+const voiceInUse = () => voices().profile || "butler";
 
-export const profileInUse = computed(() => Number(form().profile) || 0);
-export const profileChosen = computed(() => Boolean(store.settings) && profileInUse.value > 0);
-export const unchosen = computed(() => Boolean(store.settings) && !profileInUse.value);
+export const profileInUse = computed(() => (profiles.value.find((row) => row.data.voice === voiceInUse()) || {n: 0}).n);
+export const profileChosen = computed(() => Boolean(store.settings));
+export const unchosen = computed(() => false);
 export const butler = computed(() => profiles.value.find((row) => row.data.system && row.title === "Butler") || null);
-export const firstChoice = computed(() => unchosen.value && butler.value !== null);
+export const firstChoice = computed(() => false);
 export const standing = computed(() => profiles.value.find((row) => row.n === profileInUse.value) || butler.value);
 
-export const person = computed(() => `${form().title}|${form().first_name}`);
+export const person = computed(() => `${voices().title}|${voices().name}`);
 
 export const voiceOf = (row) => row.data.voice;
 
@@ -66,7 +68,7 @@ async function fetchProfiles() {
 
 export async function useProfile(row) {
     store.settings ||= await api.settings();
-    return saveSettings({form_of_address: {...form(), profile: row.n}});
+    return saveSettings({voices: {...voices(), profile: row.data.voice}});
 }
 
 export const deleteReason = (row) => {

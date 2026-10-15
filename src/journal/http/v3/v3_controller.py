@@ -421,7 +421,12 @@ class V3Controller:
     # helpers
 
     def environment_of(self, request: Request) -> Environment:
-        return self.environments.named(request.params.get("env") or request.environment)
+        """The environment the request names; a read never makes one, so a stray address is answered not found."""
+        name = request.params.get("env") or request.environment
+        found = self.environments.where(name=name)
+        if not found:
+            raise NotFound("environment", name)
+        return found[0]
 
     def first_environment(self) -> Environment:
         return (self.environments.all() or [self.environments.named("main")])[0]

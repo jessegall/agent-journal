@@ -33,6 +33,9 @@ class Runtime:
                 self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry))
             for seed in feature.seeds:
                 self.container.get(seed).run()
+        from journal.repositories.environments import Environments
+        if not self.container.get(Environments).all():
+            self.container.get(Environments).named("main")
 
     def start(self) -> None:
         self.boot()

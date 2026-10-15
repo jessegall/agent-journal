@@ -15,6 +15,7 @@ from journal.console.where import Where
 @pytest.fixture
 def server(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
+    app.runtime().boot()
     server = app.server()
     server.start()
     yield server
@@ -369,5 +370,17 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 60, "saved where the code reads it"
         tree = call(server, "POST", "/api/main/settings", {"tasks": {}})[1]
         assert "tasks" not in tree and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
+    finally:
+        app.runtime().stop()
+
+
+def test_a_read_of_an_unknown_environment_is_not_found_and_makes_none(tmp_path: Path):
+    from journal.repositories.environments import Environments
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        assert call(server, "GET", "/api/settings/settings")[0] == 404
+        assert not app.container.get(Environments).where(name="settings"), "a stray address in the browser never makes an environment"
     finally:
         app.runtime().stop()
