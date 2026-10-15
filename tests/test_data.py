@@ -129,3 +129,21 @@ def test_a_thread_returns_its_connection_to_the_pool(connection):
         t.start()
         t.join()
     assert len(connection._open) <= 2
+
+
+def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
+    from journal.db.connection import Connection
+    from journal.db.schema import Schema
+    from journal.features.bus import Bus
+    from journal.models.all_models import AllModels
+    from journal.repositories.messages import Messages
+    from journal.repositories.reactions import Reactions
+    from journal.repositories.links import Links
+    old = Connection(tmp_path / "old.db")
+    with old.transaction() as db:
+        db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER, author TEXT, text TEXT, created_at TEXT, updated_at TEXT, created_by TEXT, updated_by TEXT)")
+        db.execute("INSERT INTO messages (environment_id, author, text, created_at, updated_at, created_by, updated_by) VALUES (1, 'user', 'old', '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', 'user:1', 'user:1')")
+    Schema(old, AllModels.MODELS).create()
+    bus = Bus()
+    message = Messages(old, bus, Reactions(old, bus, Links(old, bus))).find(1)
+    assert message.files == () and message.acknowledgement is False and message.idempotency == "" and message.read_at is None

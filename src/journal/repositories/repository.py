@@ -90,7 +90,8 @@ class Repository(Generic[M]):
         return stamped
 
     def _load(self, row) -> M:
-        return self.model(**{column.name: column.from_sql(row[column.name]) for column in self.columns})
+        """A NULL is a value the row never had, such as a column added after it was written: the model's own default stands in."""
+        return self.model(**{column.name: value for column in self.columns if (value := column.from_sql(row[column.name])) is not None})
 
     def _column(self, name: str) -> Column:
         return next(column for column in self.columns if column.name == name)
