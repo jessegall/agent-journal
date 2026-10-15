@@ -48,9 +48,9 @@ class Working(AgentState):
         return self.go(self.reminded(), StopWords.carry_on(self))
 
     def session_started(self, event: SessionStarted) -> Transition:
-        """A session resumed with a task in hand is told which."""
-        from journal.features.tasks.feature import Tasks
-        return self.stay(Tasks.CARRY_ON.about(name=self.named()))
+        """A session resumed with a task in hand is told which, and when it was last logged."""
+        from journal.features.tasks.stop_words import StopWords
+        return self.stay(StopWords.carry_on(self))
 
     def ticked(self, event: Ticked) -> Transition:
         from journal.features.tasks.feature import Tasks
