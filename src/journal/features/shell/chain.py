@@ -36,10 +36,15 @@ class Chain:
 
     @staticmethod
     def simple(line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it, split outside quotes, subshells and groups."""
+        """Each command with the separator before it, split outside quotes, subshells, groups and comments."""
         parts, current, quote, depth, separator, i = [], "", "", 0, "", 0
         while i < len(line):
             c = line[i]
+            if c == "#" and not quote and (i == 0 or line[i - 1] in " \t\n"):
+                end = line.find("\n", i)
+                end = len(line) if end < 0 else end
+                current, i = current + line[i:end], end
+                continue
             if c == "\\" and quote != "'" and i + 1 < len(line):
                 current, i = current + line[i:i + 2], i + 2
                 continue

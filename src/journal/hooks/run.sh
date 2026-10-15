@@ -8,11 +8,29 @@ here=$(cd "$(dirname "$0")" && pwd)
 journal="$here/../../journal.sh"
 root=$(cd "$here/../../.." && pwd)
 
+# The worker. A part that exits the shell, such as a bare exit 3, ends the chain through the trap: the part's
+# status and the chain's end are written all the same, so the foreground and the journal both learn of it.
+finish() {
+    code=$1
+    [ -f "$folder/done" ] && return
+    if [ ! -f "$folder/$i.status" ]; then
+        [ "$kind" = "R" ] && sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out" 2>/dev/null)" >/dev/null 2>&1
+        echo "$code" > "$folder/$i.status"
+    fi
+    echo "$code" > "$folder/done"
+    if [ -f "$folder/moved" ]; then
+        sh "$journal" shell ended "$id" --status "$code" --file "$folder" --last "$(tail -n 5 "$folder/$i.out" 2>/dev/null)" >/dev/null 2>&1
+    fi
+}
 if [ "$1" = "--chain" ]; then
     folder=$2
     id=$(basename "$folder")
     i=0
     code=0
+    kind=S
+    part=""
+    began=$SECONDS
+    trap 'finish $?' EXIT
     while read -r kind; do
         part=$(cat "$folder/$i.part")
         [ "$kind" = "R" ] && sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1
@@ -21,13 +39,10 @@ if [ "$1" = "--chain" ]; then
         code=$?
         [ "$kind" = "R" ] && sh "$journal" shell ran "$part" --chain "$id" --status "$code" --seconds "$((SECONDS - began))" --output "$(tail -c 2000 "$folder/$i.out")" >/dev/null 2>&1
         echo "$code" > "$folder/$i.status"
-        i=$((i + 1))
         [ "$code" -eq 0 ] || break
+        i=$((i + 1))
     done < "$folder/parts"
-    echo "$code" > "$folder/done"
-    if [ -f "$folder/moved" ]; then
-        sh "$journal" shell ended "$id" --status "$code" --file "$folder" --last "$(tail -n 5 "$folder/$((i - 1)).out" 2>/dev/null)" >/dev/null 2>&1
-    fi
+    finish "$code"
     exit "$code"
 fi
 
