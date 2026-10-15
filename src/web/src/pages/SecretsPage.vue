@@ -16,6 +16,10 @@ function show(next, n = 0) {
 
 <template>
     <section class="secrets-page">
+        <header v-if="screen === 'list'" class="secrets-head">
+            <h1>Secrets</h1>
+            <p class="secrets-lead">A secret is a key or a login the agent may use without seeing it. Its values are kept in a file outside the project.</p>
+        </header>
         <SwitchCase :value="screen">
             <template #list>
                 <SecretList @open="show('one', $event)" @new="show('new')" />
@@ -32,9 +36,22 @@ function show(next, n = 0) {
 
 <style scoped>
 .secrets-page {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    max-width: 920px;
+}
+
+.secrets-head h1 {
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+.secrets-lead {
+    margin: 0;
+    color: var(--text-dim, #9aa0a6);
+    max-width: 640px;
 }
 </style>
 
@@ -43,7 +60,6 @@ function show(next, n = 0) {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    max-width: 760px;
 }
 
 .secrets-back {
