@@ -343,3 +343,16 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     console.run(["voice", "choose", "squire"], AGENT)
     assert typed and "changed how you talk" in typed[-1] and 'Address me as "my liege"' in typed[-1]
     assert "* squire" in console.run(["voice", "list"], USER).out
+
+
+def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "type", lambda self, line: typed.append(line))
+    app.console().run(["message", "send", "nobody is here yet"], USER)
+    assert typed == [], "no live agent, nothing to type to"
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "are you there?"], USER)
+    app.console().run(["message", "send", "hello?"], USER)
+    assert typed == ["the user left message 2: are you there?. answer it before anything else, with [!reply:2] in your turn",
+                     "the user left message 3: hello?. answer it before anything else, with [!reply:3] in your turn"]

@@ -277,6 +277,12 @@ G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, 
 
 ## Where it stands (2026-10-15, later)
 
+A message the user leaves while the agent sits at its prompt is typed to it through the
+supervisor (`InboxOnArrival`, nudge `messages.arrived`, said every time), since no hook fires
+at a prompt that is not being used; the start, prompt and stop listeners still list the unread.
+Seen on the first dogfood run: two messages from the chat reached the journal and nobody told
+the terminal.
+
 Version 3's viewer runs whole on version 4's server, checked page by page in a browser with
 no console errors: Home (chat with replies as comments, commit badges, the status line, the
 avatar), Tasks, Plans, Documents, Sequences, Triggers, Checks, Code, Collections, Resources,
