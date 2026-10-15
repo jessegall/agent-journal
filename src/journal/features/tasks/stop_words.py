@@ -18,7 +18,7 @@ LOG_STALE = 10 * 60
 
 
 class StopWords:
-    """What the journal says when an agent stops: carry on with the task in hand; the parked tasks, in any mode; or in auto mode the next open task and whether the agent means to stop."""
+    """What the journal says when an agent stops with work in hand: carry on. Parked tasks and the next open task are the chart's to say."""
 
     @staticmethod
     def carry_on(state: Working) -> Said:
@@ -35,14 +35,6 @@ class StopWords:
         from journal.features.tasks.feature import Tasks as TasksFeature
         if isinstance(state, Working):
             return self.carry_on(state)
-        if not isinstance(state, Idle):
-            return None
-        parked = self.tasks.in_state(environment_id, TaskState.PARKED)
-        if parked:
-            return TasksFeature.PARKED_AT_STOP.about(rows="; ".join(f"{t.id} {t.title} (parked because: {t.parked_why})" for t in parked))
-        open_ = self.plans.free(environment_id)
-        if open_ and self.settings.get(PROJECT, AUTO, True):
-            return TasksFeature.NEXT.about(n=open_[0].id, title=open_[0].title)
         return None
 
 

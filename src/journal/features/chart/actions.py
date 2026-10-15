@@ -1,6 +1,7 @@
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.features.chart.context import Context
+from journal.features.chart.fillers import Fillers
 from journal.features.sequences.running import Running
 from journal.hooks.decision import Decision
 from journal.repositories.sequences import Sequences
@@ -10,11 +11,11 @@ from journal.supervisor_link import SupervisorLink
 class Actions:
     """The catalogue's actions, one method per key: each says, holds, blocks, types or starts through the funnel that owns it, and answers the hook when one waits."""
 
-    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences) -> None:
-        self.nudger, self.supervisor, self.machine, self.running, self.sequences = nudger, supervisor, machine, running, sequences
+    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers) -> None:
+        self.nudger, self.supervisor, self.machine, self.running, self.sequences, self.fillers = nudger, supervisor, machine, running, sequences, fillers
 
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
-        return getattr(self, key)(text, ctx)
+        return getattr(self, key)(self.fillers.fill(text, ctx), ctx)
 
     def say(self, text: str, ctx: Context) -> Decision:
         from journal.features.chart.feature import ChartFeature

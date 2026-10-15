@@ -5,6 +5,7 @@ from journal.features.chart.context import Context
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.shell.chain import Chain
+from journal.features.tasks.states.idle import Idle as IdleState
 from journal.features.tasks.states.working import Working
 from journal.features.tasks.stop_words import AUTO
 from journal.models.task_state import TaskState
@@ -24,6 +25,9 @@ class Checks:
 
     def answer(self, key: str, ctx: Context) -> bool:
         return bool(getattr(self, key)(ctx))
+
+    def plain_idle(self, ctx: Context) -> bool:
+        return isinstance(self.state(ctx), IdleState)
 
     def open_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.free(ctx.environment_id))

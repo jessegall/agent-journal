@@ -7,7 +7,7 @@ TEXT_LIMIT = 500
 
 
 class Validation:
-    """What makes a chart wrong, found before it is saved: a node the catalogue does not know, a line to nowhere or into a trigger, a check without both its yes and its no, a port that does not fit the node it leaves, a cycle of checks."""
+    """What makes a chart wrong, found before it is saved: a node the catalogue does not know, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
 
     def __init__(self, catalogue: Catalogue) -> None:
         self.catalogue = catalogue
@@ -38,8 +38,8 @@ class Validation:
 
     @staticmethod
     def check_faults(nodes: list[dict], lines: list[dict]) -> list[str]:
-        ports = {(str(line.get("from")), line.get("port", THEN)) for line in lines}
-        return [f"check {n.get('id')} lacks its {port} line" for n in nodes if n.get("kind") == NodeKind.CHECK for port in (YES, NO) if (str(n.get("id", "")), port) not in ports]
+        sources = {str(line.get("from")) for line in lines}
+        return [f"check {n.get('id')} has no line out: neither yes nor no" for n in nodes if n.get("kind") == NodeKind.CHECK and str(n.get("id", "")) not in sources]
 
     @staticmethod
     def cycle_faults(nodes: list[dict], lines: list[dict]) -> list[str]:

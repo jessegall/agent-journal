@@ -1122,27 +1122,27 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     listed = console.run(["chart", "catalogue"], AGENT).out
     assert "trigger  idle" in listed and "action   say" in listed and "trigger  plans.created" in listed
     assert "has no check named flying" in console.run(["chart", "node", "check", "flying"], AGENT).err
-    console.run(["chart", "node", "trigger", "idle"], AGENT)
-    console.run(["chart", "node", "check", "open_tasks"], AGENT)
-    console.run(["chart", "node", "action", "block_stop", "--text", "tasks are open: carry on"], AGENT)
-    console.run(["chart", "line", "1", "2"], AGENT)
-    console.run(["chart", "line", "2", "3", "--port", "yes"], AGENT)
+    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text], AGENT).out.split()[1].rstrip(":"))
+    shipped = len(j.load(urlopen(f"http://127.0.0.1:{app.server().port}/journal/chart", timeout=5))["nodes"])
+    t, c, a = add("trigger", "idle"), add("check", "open_tasks"), add("action", "block_stop", "--text", "tasks are open: carry on")
+    console.run(["chart", "line", str(t), str(c)], AGENT)
+    console.run(["chart", "line", str(c), str(a), "--port", "yes"], AGENT)
     shown = console.run(["chart", "show"], AGENT).out
-    assert "1 --then--> 2" in shown and "2 --yes--> 3" in shown and "block_stop: tasks are open" in shown
+    assert f"{t} --then--> {c}" in shown and f"{c} --yes--> {a}" in shown and "block_stop: tasks are open" in shown
     port = app.server().port
     read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]] == ["idle", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
+    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["idle", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
     def post(body):
         try:
             with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
-    nodes = [{"id": 1, "kind": "trigger", "key": "idle", "x": 10, "y": 10}, {"id": 2, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
-    lines = [{"from": 1, "to": 2}, {"from": 2, "to": "new", "port": "yes"}, {"from": 2, "to": "new", "port": "no"}]
+    nodes = [{"id": t, "kind": "trigger", "key": "idle", "x": 10, "y": 10}, {"id": c, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
+    lines = [{"from": t, "to": c}, {"from": c, "to": "new", "port": "yes"}, {"from": c, "to": "new", "port": "no"}]
     status, saved = post({"revision": 0, "nodes": nodes, "lines": lines})
-    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["idle", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10
-    assert [(l["from"], l["port"]) for l in saved["lines"]] == [(1, "then"), (2, "yes"), (2, "no")], "lines drawn anew, the removed node gone"
+    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["idle", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
+    assert [(l["from"], l["port"]) for l in saved["lines"]] == [(t, "then"), (c, "yes"), (c, "no")], "lines drawn anew, the removed node gone"
     assert post({"revision": 0, "nodes": nodes, "lines": []})[0] == 409, "a stale revision is refused"
 
 
@@ -1161,13 +1161,15 @@ def test_a_wrong_chart_is_refused_with_its_faults(app):
     nodes = [{"id": "t", "kind": "trigger", "key": "idle"}, {"id": "c", "kind": "check", "key": "open_tasks"}, {"id": "a", "kind": "action", "key": "say", "text": "hi"}, {"id": "x", "kind": "check", "key": "flying"}]
     status, body = post({"revision": 0, "nodes": nodes, "lines": [{"from": "t", "to": "c"}, {"from": "c", "to": "a", "port": "yes"}, {"from": "a", "to": "t"}, {"from": "c", "to": "gone", "port": "no"}, {"from": "a", "to": "c", "port": "yes"}]})
     assert status == 409
-    for fault in ("names no catalogue entry: check flying", "leads to or from no node", "leads into trigger t", "action a leaves by then, not yes", "check x lacks its yes line", "loop back"):
+    for fault in ("names no catalogue entry: check flying", "leads to or from no node", "leads into trigger t", "action a leaves by then, not yes", "check x has no line out", "loop back"):
         assert fault in body["error"], fault
-    good = [{"from": "t", "to": "c"}, {"from": "c", "to": "a", "port": "yes"}, {"from": "c", "to": "a", "port": "no"}]
-    assert post({"revision": 0, "nodes": nodes[:3], "lines": good})[0] == 200
+    good = [{"from": "t", "to": "c"}, {"from": "c", "to": "a", "port": "yes"}]
+    status, saved = post({"revision": 0, "nodes": nodes[:3], "lines": good})
+    assert status == 200, "a check with one line ends the path on the other answer"
+    t, c, a = [n["id"] for n in saved["nodes"]]
     console = app.console()
-    assert "leaves by yes or no, not then" in console.run(["chart", "line", "2", "3"], AGENT).err
-    assert "leads into trigger 1" in console.run(["chart", "line", "3", "1"], AGENT).err
+    assert "leaves by yes or no, not then" in console.run(["chart", "line", str(c), str(a)], AGENT).err
+    assert f"leads into trigger {t}" in console.run(["chart", "line", str(a), str(t)], AGENT).err
 
 
 def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
@@ -1205,38 +1207,52 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     assert hook(app, "Stop")[1] == {}, "auto off: the states say nothing about open tasks"
-    console.run(["chart", "node", "trigger", "idle"], AGENT)
-    console.run(["chart", "node", "check", "open_tasks"], AGENT)
-    console.run(["chart", "node", "action", "block_stop", "--text", "the chart says: tasks are open, carry on"], AGENT)
-    console.run(["chart", "node", "action", "say", "--text", "the chart says: nothing is open, rest"], AGENT)
-    console.run(["chart", "line", "1", "2"], AGENT)
-    console.run(["chart", "line", "2", "3", "--port", "yes"], AGENT)
-    console.run(["chart", "line", "2", "4", "--port", "no"], AGENT)
+    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text], AGENT).out.split()[1].rstrip(":"))
+    line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], AGENT)
+    stop, open_, hold_stop, rest = add("trigger", "idle"), add("check", "open_tasks"), add("action", "block_stop", "--text", "the chart says: tasks are open, carry on"), add("action", "say", "--text", "the chart says: nothing is open, rest")
+    line(stop, open_)
+    line(open_, hold_stop, "yes")
+    line(open_, rest, "no")
     status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and body["reason"] == "the chart says: tasks are open, carry on", "the edit applies at the next event"
+    assert body.get("decision") == "block" and "the chart says: tasks are open, carry on" in body["reason"], "the edit applies at the next event"
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["task", "done", "1"], AGENT)
     console.run(["task", "done", "2"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})
     status, body = hook(app, "Stop")
-    assert body["reason"] == "the chart says: nothing is open, rest", "the no line is followed; a line said at a fresh stop holds the stop once, as any line does"
+    assert "the chart says: nothing is open, rest" in body["reason"], "the no line is followed; a line said at a fresh stop holds the stop once, as any line does"
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "the same stop again goes through"
-    console.run(["chart", "node", "trigger", "tool_starting"], AGENT)
-    console.run(["chart", "node", "check", "tool_writes"], AGENT)
-    console.run(["chart", "node", "action", "hold", "--text", "no writes today"], AGENT)
-    console.run(["chart", "line", "5", "6"], AGENT)
-    console.run(["chart", "line", "6", "7", "--port", "yes"], AGENT)
-    console.run(["chart", "line", "6", "4", "--port", "no"], AGENT)
+    tool, writes, hold = add("trigger", "tool_starting"), add("check", "tool_writes"), add("action", "hold", "--text", "no writes today")
+    line(tool, writes)
+    line(writes, hold, "yes")
+    line(writes, rest, "no")
     console.run(["task", "create", "u", "--start"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})
     assert status == 409 and body["error"] == "no writes today", "a hold refuses the tool use"
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[0] == 200
-    console.run(["chart", "node", "trigger", "tasks.created"], AGENT)
-    console.run(["chart", "node", "action", "type", "--text", "a task was filed"], AGENT)
-    console.run(["chart", "line", "8", "9"], AGENT)
+    filed, typed = add("trigger", "tasks.created"), add("action", "type", "--text", "a task was filed")
+    line(filed, typed)
     console.run(["task", "create", "filed by the user"], USER)
     app.runtime().deferred.drain()
     assert "[journal] a task was filed" in sent, "a row event walks the chart and types the line"
     from journal.repositories.entries import Entries
     walks = [e for e in app.container.get(Entries).of_kind(1, "walk") if e.data["trigger"] == "idle"]
-    assert any(w.data["nodes"] == [1, 2, 3] and not w.data["allowed"] for w in walks), "a walk leaves its trace"
+    assert any(w.data["nodes"][-3:] == [stop, open_, hold_stop] and not w.data["allowed"] for w in walks), "a walk leaves its trace, the shipped path first and the test's after it"
+
+
+def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "free work"], USER)
+    body = hook(app, "Stop")[1]
+    assert body.get("decision") == "block" and "tasks are open, and auto mode is on: task 1 next: free work" in body["reason"], "the next open task, in auto mode, through the chart"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "the same stop again goes through"
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
+    assert hook(app, "Stop")[1] == {}, "auto off: an open task says nothing"
+    console.run(["task", "start", "1"], AGENT)
+    console.run(["task", "park", "1", "after lunch"], AGENT)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
+    body = hook(app, "Stop")[1]
+    assert "parked tasks, still open: 1 free work (parked because: after lunch)" in body["reason"], "parked tasks in any mode, through the chart"

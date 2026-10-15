@@ -4,7 +4,6 @@ from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.commands.work_command import WorkCommand
 from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
 from journal.features.tasks.listeners.check_in import CheckIn
-from journal.features.tasks.listeners.answer_stop import AnswerStop
 from journal.features.tasks.listeners.log_cadence import LogCadence
 from journal.features.tasks.listeners.type_at_held_stop import TypeAtHeldStop
 from journal.features.tasks.listeners.spot_polling import SpotPolling
@@ -22,7 +21,7 @@ class Tasks(Feature):
     help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
     states = (Idle, Working, Halted, Expecting)
     commands = (TaskCommand, WorkCommand, HaltCommand)
-    listeners = (SpotPolling, AskAfterParked, AnswerStop, TypeAtHeldStop, LogCadence, CheckIn)
+    listeners = (SpotPolling, AskAfterParked, TypeAtHeldStop, LogCadence, CheckIn)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal halt \"<why>\" if you are truly stuck", repeat_after=0)
@@ -30,7 +29,6 @@ class Tasks(Feature):
     OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
     NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
-    PARKED_AT_STOP = Nudge(name, "parked_at_stop", "parked tasks, still open: {{rows}}", "journal task resume <n> picks one up; leave them parked only on purpose", repeat_after=0)
     DEFERRED = Nudge(name, "deferred", "work deferred in words, not filed: journal task create it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     POLLING = Nudge(name, "polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")
