@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
+from journal.features.refused import Refused
+from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.working import Working
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
@@ -32,6 +34,13 @@ class TaskCommand(Command):
         done = self.verb(verbs, "done", "finish a task")
         done.add_argument("n", type=int)
         done.add_argument("--how", default="")
+        park = self.verb(verbs, "park", "set a task aside for something else first")
+        park.add_argument("n", type=int)
+        park.add_argument("why")
+        self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
+        wait = self.verb(verbs, "await", "wait for something outside your hands")
+        wait.add_argument("n", type=int)
+        wait.add_argument("what")
         self.verb(verbs, "list", "every open task here")
 
     def create(self, args: Namespace, where: Where) -> int:
@@ -49,7 +58,29 @@ class TaskCommand(Command):
     def log(self, args: Namespace, where: Where) -> int:
         task = self.tasks.find(args.n)
         self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=args.line), where.actor)
+        current = self._in_hand(where)
+        if current and current.task_id == task.id:
+            self.machine.move(where.session, task.environment_id, current.logged())
         print(f"task {task.id} logged")
+        return 0
+
+    def park(self, args: Namespace, where: Where) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).parked(args.why), where.actor)
+        self._let_go(task, where)
+        print(f"task {task.id} parked: {task.title}")
+        return 0
+
+    def resume(self, args: Namespace, where: Where) -> int:
+        task = self._start(self.tasks.find(args.n), where)
+        print(f"task {task.id} resumed: {task.title}")
+        return 0
+
+    def await_(self, args: Namespace, where: Where) -> int:
+        current = self._in_hand(where)
+        if not current or current.task_id != args.n:
+            raise Refused(f"task {args.n} is not in hand: journal task start {args.n} first")
+        self.machine.move(where.session, self.tasks.find(args.n).environment_id, Expecting.leaving(current, what=args.what))
+        print(f"task {args.n} waits for {args.what}; working again lifts it")
         return 0
 
     def done(self, args: Namespace, where: Where) -> int:
@@ -71,10 +102,23 @@ class TaskCommand(Command):
             print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())
 
     def _start(self, task: Task, where: Where) -> Task:
+        """One task in hand at a time: a second start is refused until the first is done or parked."""
+        current = self._in_hand(where)
+        if current and current.task_id != task.id:
+            raise Refused(f"task {current.task_id} is in hand: finish it or park it before you start task {task.id}")
         started = self.tasks.save(task.started(self._now()), where.actor)
         if where.session:
             self.machine.move(where.session, started.environment_id, Working(task_id=started.id))
         return started
+
+    def _in_hand(self, where: Where) -> Working | None:
+        if not where.session:
+            return None
+        try:
+            current = self.machine.current(where.session)
+        except NotFound:
+            return None
+        return current if isinstance(current, Working) else None
 
     def _let_go(self, task: Task, where: Where) -> None:
         """An agent that finished the task it was on is idle again."""

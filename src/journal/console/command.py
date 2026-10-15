@@ -14,8 +14,8 @@ class Command:
         ...
 
     def perform(self, args: Namespace, where: Where) -> int:
-        """Runs the verb's method; a verb may be any word, since this is the one name a command keeps for itself."""
-        return getattr(self, args.verb)(args, where)
+        """Runs the verb's method; a verb that is a Python keyword, such as await, has its method named with a trailing underscore."""
+        return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, where)
 
     @staticmethod
     def verb(verbs, name: str, help: str) -> ArgumentParser:

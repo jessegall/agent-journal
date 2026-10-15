@@ -13,9 +13,13 @@ class Task(Scoped):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     outcome: str = ""
+    parked_why: str = ""
 
     def started(self, at: datetime) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=at)
+        return self.with_(state=TaskState.STARTED, started_at=at, parked_why="")
+
+    def parked(self, why: str) -> "Task":
+        return self.with_(state=TaskState.PARKED, parked_why=why)
 
     def finished(self, at: datetime, outcome: str) -> "Task":
         return self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome)

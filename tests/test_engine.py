@@ -114,3 +114,31 @@ def test_a_tick_reaches_the_machine_without_a_hook(app):
     hook(app, "SessionStart")
     app.container.get(Clock).tick()
     assert isinstance(app.container.get(Machine).current("s1"), Idle)
+
+
+def test_one_task_in_hand_park_resume_and_await(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "first", "--start"], AGENT)
+    console.run(["task", "create", "second"], AGENT)
+    refused = console.run(["task", "start", "2"], AGENT)
+    assert refused.code == 1 and "task 1 is in hand" in refused.err
+    console.run(["task", "park", "1", "waiting for the designer"], AGENT)
+    assert isinstance(app.container.get(Machine).current("s1"), Idle) and write(app)[0] == 409, "parked: nothing in hand, writes wait again"
+    assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1") == Working(task_id=1)
+    assert console.run(["task", "await", "1", "the deploy to finish"], AGENT).code == 0
+    assert app.container.get(Machine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    assert app.container.get(Machine).current("s1") == Working(task_id=1), "working again lifts the wait"
+
+
+def test_twenty_edits_with_nothing_logged_hold_the_next_write_and_every_tenth_names_the_task(app):
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    answers = [write(app) for _ in range(20)]
+    assert all(status == 200 for status, _ in answers)
+    assert "task 1 in hand" in answers[9][1]["hookSpecificOutput"]["additionalContext"]
+    status, body = write(app)
+    assert status == 409 and "20 edits since task 1 was last logged" in body["error"]
+    app.console().run(["task", "log", "1", "halfway"], AGENT)
+    assert write(app)[0] == 200

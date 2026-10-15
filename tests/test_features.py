@@ -70,13 +70,13 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
     assert status == 409 and "writes wait" in body["error"]
     assert app.console().run(["fact", "create", "the login is flaky"], AGENT).code == 0
-    assert machine.current("s1") == Working(task_id=1)
+    assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
     assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
     context(app, 55)
     assert "context 50% full" in hook(app, "Stop")[1]["error"]
     app.console().run(["nothing", "survives", "all logged"], AGENT)
-    assert machine.current("s1") == Working(task_id=1)
+    assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1
 
 
 def test_a_rule_binds_the_project_not_an_environment(app):
@@ -499,3 +499,22 @@ def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_
     urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
     app.runtime().deferred.drain()
     assert not any("introduce yourself" in s["line"] for s in sent[count:])
+
+
+def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
+    import subprocess
+    from journal.repositories.tasks import Tasks
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    root = app.config.root
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 1 and 2 with the margin fixed"], cwd=root, check=True)
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "footer", "--start"], AGENT)
+    app.console().run(["task", "create", "margin"], AGENT)
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
+    app.runtime().deferred.drain()
+    tasks = app.container.get(Tasks)
+    assert tasks.find(1).state == "done" and tasks.find(2).state == "done" and tasks.find(1).outcome.startswith("commit ")
+    assert typed[-1].endswith("closed task 1, task 2")
