@@ -491,3 +491,24 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 - Found by dogfooding: a reply written mid-turn can land in thinking instead of in words, and the chat never sees
   it. A thought opening with `[!reply:N]` for a message still unanswered is dispatched as that turn, so the reply
   is posted and the message answered.
+
+## Conduct toward the agent, settled on 2026-10-15 (evening)
+
+- Every session start, fresh, resumed, after a compaction or a takeover, holds writes until `journal environment
+  here` is run: the task in hand, open and parked tasks, messages, questions, workers, background runs, rules,
+  facts and reminders in one read.
+- A stop is answered, the state untouched: task in hand, "carry on", every time; parked tasks named in any mode;
+  in auto mode the next open task and "sure you want to stop?"; a wait the journal owes the agent, said once. A
+  wait on the user, a worker, an awaited run or a halt lets the stop pass. Work since a held stop makes the next
+  stop a fresh one; a stop with no work between cannot be held again, so its line is typed instead. A halt with a
+  reason is the way out.
+- Messages: nudged after ten tool uses unanswered, held after fifteen (settings); a reply, a face or any word in
+  the chat after the read answers. Every read ends with the choice: steering, or a task filed from it with `--from`.
+- Logging: ten tool uses with nothing logged ask for a log, twenty hold the next write (settings).
+- A journal command runs alone or chained only with journal commands; mixed with anything else it is refused.
+- The machine answers a hook before any other listener, so listeners see the state the event led to.
+- The viewer's source lives in `src/web` and builds with `npm --prefix src/web run build`; `scripts/checks/
+  viewer_built.py --digest` writes `dist/built-from`. The bar shows `agent.doing` when busy without a task and the
+  task's whole title when one is in hand.
+- Open from today: integrations as MCP servers (task 11); the behaviour tree, the journal's conduct as an editable
+  flowchart in the viewer, after ../workflows (not started, by the user's word).
