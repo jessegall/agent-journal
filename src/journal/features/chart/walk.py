@@ -5,6 +5,7 @@ from journal.events.models.model_event import ModelEvent
 from journal.features.chart.actions import Actions
 from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
+from journal.features.chart.dry_actions import DryActions
 from journal.hooks.decision import Decision
 from journal.models.actor import Actor
 from journal.models.entry import Entry
@@ -25,7 +26,15 @@ class Walk:
     def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries) -> None:
         self.charts, self.checks, self.actions, self.entries = charts, checks, actions, entries
 
+    def dry(self, fillers) -> "Walk":
+        """The same walk with nothing done: each action tells what it would do."""
+        return Walk(self.charts, self.checks, DryActions(fillers), self.entries)
+
     def on(self, ctx: Context) -> Decision:
+        return self.on_with_trace(ctx, [])
+
+    def on_with_trace(self, ctx: Context, passed: list) -> Decision:
+        """The walk, with the nodes it passes written into the list given."""
         charts = self.charts.all()
         if not charts:
             return Decision()
@@ -34,10 +43,10 @@ class Walk:
         after = {}
         for line in self.charts.lines_of(chart):
             after.setdefault((line.source.id, line.kind), []).append(line.target.id)
-        decision, passed = Decision(), []
+        decision = Decision()
         for start in [n for n in nodes.values() if n.kind == NodeKind.TRIGGER and n.key == key]:
             decision = decision.merged(self.follow(start, nodes, after, ctx, passed))
-        if passed:
+        if passed and not isinstance(self.actions, DryActions):
             self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision
 

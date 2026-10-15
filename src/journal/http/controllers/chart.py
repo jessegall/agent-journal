@@ -2,17 +2,19 @@ from dataclasses import asdict
 
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.chart.trial import Trial
 from journal.features.chart.validation import Validation
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.repositories.charts import Charts
+from journal.repositories.environments import Environments
 
 
 class ChartController:
     """The chart page: the one chart with its nodes, lines and catalogue, read whole and saved whole as the user."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart) -> None:
-        self.charts, self.catalogue, self.validation, self.shipped = charts, catalogue, validation, shipped
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments) -> None:
+        self.charts, self.catalogue, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
 
     def index(self, request: Request) -> Response:
         return Response.json(self.drawn())
@@ -26,6 +28,11 @@ class ChartController:
             return Response.refused("the chart is not saved: " + "; ".join(faults))
         self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)
         return Response.json(self.drawn())
+
+    def try_(self, request: Request) -> Response:
+        """A dry run: the path the chart would take for an agent event in an environment, and what it would do, nothing done."""
+        environment = self.environments.named(request.body.get("environment", "main")).id
+        return Response.json(self.trial.run(request.body.get("trigger", "idle"), environment))
 
     def reset(self, request: Request) -> Response:
         self.shipped.reset(request.actor)

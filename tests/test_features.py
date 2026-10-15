@@ -1320,3 +1320,18 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
     console.run(["message", "read", "1"], AGENT)
     answers = [read()[0] for _ in range(5)]
     assert answers[:3] == [200, 200, 200] and answers[3] == 409, "the hold after as many uses as the setting says"
+
+
+def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "free work"], USER)
+    out = console.run(["chart", "try", "idle"], AGENT).out
+    assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 3, 4, 6, 7, 8" in out
+    assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
+    assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err

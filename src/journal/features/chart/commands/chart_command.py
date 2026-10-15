@@ -4,6 +4,8 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.chart.trial import Trial
+from journal.repositories.environments import Environments
 from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
 from journal.models.node import Node
@@ -14,8 +16,8 @@ from journal.repositories.charts import PORTS, THEN, Charts
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart) -> None:
-        self.charts, self.entries, self.validation, self.shipped = charts, catalogue, validation, shipped
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments) -> None:
+        self.charts, self.entries, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "the chart: its nodes and lines")
@@ -30,6 +32,7 @@ class ChartCommand(Command):
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
         self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
         self.verb(verbs, "reset", "the chart as shipped again: every edit gone")
+        self.verb(verbs, "try", "a dry run for an agent event here: the path and what it would do, nothing done").add_argument("trigger")
 
     def show(self, args: Namespace, where: Where) -> int:
         chart = self.charts.the()
@@ -61,6 +64,13 @@ class ChartCommand(Command):
             raise Refused(fault[0])
         self.charts.connect(source, target, args.port, where.actor)
         print(f"line {source.id} --{args.port}--> {target.id}")
+        return 0
+
+    def try_(self, args: Namespace, where: Where) -> int:
+        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id)
+        print(f"{ran['trigger']}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
+        for line in ran["would"]:
+            print(f"  {line}")
         return 0
 
     def reset(self, args: Namespace, where: Where) -> int:

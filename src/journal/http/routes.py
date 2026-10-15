@@ -51,6 +51,7 @@ class Routes:
         router.get(f"{API}/chart", get(ChartController).index)
         router.post(f"{API}/chart", get(ChartController).save)
         router.post(f"{API}/chart/reset", get(ChartController).reset)
+        router.post(f"{API}/chart/try", get(ChartController).try_)
         router.get(f"{API}/mcp", get(McpController).index)
         router.post(f"{API}/mcp/install", get(McpController).install)
         router.post(f"{API}/mcp/check", get(McpController).check)
