@@ -3,7 +3,7 @@ import {ui} from "../state/ui.js";
 import {route} from "../route.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
-import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUpdate, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 
@@ -52,6 +52,13 @@ watch(
     {immediate: true}
 );
 const area = ref(null);
+
+// text put into the box without an input event, as dictation through the accessibility API does, is in the box and not in the
+// draft; before any redraw, which would write the draft back over it, and before a send, the box is read as the truth
+function takeFromBox() {
+    if (area.value && area.value.value !== draft.text) draft.text = area.value.value;
+}
+onBeforeUpdate(takeFromBox);
 const kept = ref(0);
 const resting = computed(() => Boolean(props.idle) && !draft.text.trim() && !draft.files.length);
 const ready = computed(() => Boolean(draft.text.trim()));
@@ -185,6 +192,7 @@ function focusText(e) {
 }
 
 async function go() {
+    takeFromBox();
     if (!draft.text.trim()) return;
     const text = draft.text.trim();
     const files = draft.files;
