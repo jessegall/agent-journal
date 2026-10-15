@@ -152,6 +152,7 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         app.console().run(["message", "react", str(n), "🎉"], Where("main", "s1"))
         assert call(server, "GET", f"/api/main/message/{n}")[1]["completed"] > 0, "a face from the agent answers it"
         app.console().run(["plan", "create", "p"], Where("main"))
+        app.console().run(["plan", "approve", "1"], Where("main"))
         app.console().run(["plan", "start", "1"], Where("main", "s1"))
         assert call(server, "GET", "/api/main/plan/1")[1]["data"]["status"] == "active"
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))

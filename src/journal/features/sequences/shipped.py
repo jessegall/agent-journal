@@ -4,10 +4,10 @@ BUILDING_A_PLAN = Sequence(
     title="Building a plan",
     starts_on="plan.created",
     steps=(
-        "Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief",
-        "Add the plan's tasks in order with journal plan add <plan n> \"<task title>\" --brief \"<what done looks like>\", one task per step a person could check",
-        "Show the plan with journal plan show <plan n> and tell the user in the chat it is ready to read on the plan page, in one line",
-        "Wait for the user's word: only they approve it, and journal plan start <plan n> on their word, never before",
+        "Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with journal plan brief <plan n> \"<goal>\"",
+        "Add the plan's phases in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and --checkpoint where the user should look before it goes on",
+        "File the tasks with journal plan add <plan n> \"<title>\" --brief \"<done when>\" and put each under its phase with journal plan todos <plan n> <phase> <tasks>; one task per step a person could check",
+        "When every phase has its tasks, journal plan ready <plan n> and tell the user in one line it is ready on the plan page. Only they approve it; you are told when they do, and journal plan start <plan n> then, never before",
     ),
 )
 SHIPPED = (BUILDING_A_PLAN,)

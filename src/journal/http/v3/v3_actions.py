@@ -143,10 +143,18 @@ class V3Actions:
         return self.plans.save(self.plans.find(n).done(), by)
 
     def plan_approve(self, n: int, body: dict, by):
+        return self.plans.save(self.plans.find(n).approved(), by)
+
+    def plan_start(self, n: int, body: dict, by):
+        return self.plans.save(self.plans.find(n).started(), by)
+
+    def plan_park(self, n: int, body: dict, by):
+        return self.plans.save(self.plans.find(n).parked(), by)
+
+    def plan_continue(self, n: int, body: dict, by):
         return self.plans.find(n)
 
-    plan_continue = plan_approve
-    plan_dismiss = plan_approve
+    plan_dismiss = plan_continue
 
     def environment_launch(self, n: int, body: dict, by):
         """An agent started from the viewer runs detached under its own supervisor; the viewer sees it once its start hook arrives."""

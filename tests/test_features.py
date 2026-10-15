@@ -107,6 +107,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     console.run(["plan", "add", "1", "write the notes"], USER)
     console.run(["plan", "add", "1", "tag it"], USER)
     hook(app, "SessionStart")
+    console.run(["plan", "approve", "1"], USER)
     out = console.run(["plan", "start", "1"], AGENT).out
     assert "task 1 is next, write the notes" in out
     machine = app.container.get(Machine)
@@ -999,5 +1000,39 @@ def test_a_task_added_first_goes_before_the_plans_tasks(app):
     console.run(["plan", "add", "1", "second"], USER)
     console.run(["plan", "add", "1", "third"], USER)
     console.run(["plan", "add", "1", "first", "--first"], USER)
-    shown = console.run(["plan", "show", "1"], USER).out.splitlines()[1:]
-    assert [line.split(maxsplit=2)[2] for line in shown] == ["first", "second", "third"]
+    shown = console.run(["plan", "show", "1"], USER).out.splitlines()
+    assert [line.split(maxsplit=2)[2] for line in shown if line.split()[0].isdigit()] == ["first", "second", "third"]
+
+
+def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_phase_by_phase(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "the goal"], AGENT)
+    for _ in range(4):
+        console.run(["sequence", "next"], AGENT)
+    console.run(["plan", "phase", "1", "Lay the floor", "--when", "the floor is level"], AGENT)
+    console.run(["plan", "phase", "1", "Raise the walls", "--when", "the walls stand", "--checkpoint"], AGENT)
+    console.run(["plan", "add", "1", "pour the slab"], AGENT)
+    console.run(["plan", "add", "1", "frame the walls"], AGENT)
+    console.run(["plan", "add", "1", "level the slab"], AGENT)
+    refused = console.run(["plan", "ready", "1"], AGENT)
+    assert refused.code == 1 and "phase 1, 2 of plan 1 has no task yet" in refused.err
+    console.run(["plan", "todos", "1", "1", "1", "3"], AGENT)
+    console.run(["plan", "todos", "1", "2", "2"], AGENT)
+    assert console.run(["plan", "ready", "1"], AGENT).code == 0
+    shown = console.run(["plan", "show", "1"], AGENT).out
+    assert "phase 2: Raise the walls (complete when the walls stand) [checkpoint]" in shown
+    assert "not approved" in console.run(["plan", "start", "1"], AGENT).err
+    assert "only the user approves" in console.run(["plan", "approve", "1"], AGENT).err
+    assert console.run(["plan", "approve", "1"], USER).code == 0
+    app.runtime().deferred.drain()
+    assert "the user approved plan 1" in sent[-1]["line"]
+    assert "task 1 is next, pour the slab" in console.run(["plan", "start", "1"], AGENT).out
+    console.run(["task", "done", "1"], AGENT)
+    app.runtime().deferred.drain()
+    assert app.container.get(Machine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"
