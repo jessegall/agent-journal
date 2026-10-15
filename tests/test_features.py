@@ -1256,3 +1256,19 @@ def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     body = hook(app, "Stop")[1]
     assert "parked tasks, still open: 1 free work (parked because: after lunch)" in body["reason"], "parked tasks in any mode, through the chart"
+
+
+def test_the_shipped_chart_fills_an_empty_chart_at_boot_and_leaves_an_edited_one_alone(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    chart = charts.the()
+    before = len(charts.nodes_of(chart))
+    for node in charts.nodes_of(chart):
+        charts.remove_node(node, Actor.system())
+    app.container.get(ShippedChart).run()
+    assert len(charts.nodes_of(charts.the())) == before, "an empty chart, as one from an earlier version, gets the shipped rules"
+    for node in charts.nodes_of(charts.the())[1:]:
+        charts.remove_node(node, Actor.system())
+    app.container.get(ShippedChart).run()
+    assert len(charts.nodes_of(charts.the())) == 1, "a chart with any node is the user's: never overwritten"

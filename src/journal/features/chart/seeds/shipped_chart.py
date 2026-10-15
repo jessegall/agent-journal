@@ -11,15 +11,16 @@ NEXT = "tasks are open, and auto mode is on: task {{next_task}} next: {{next_tas
 
 
 class ShippedChart(Seed):
-    """The one chart of the journal, made once with today's conduct at a stop: at rest and not the same stop again, parked tasks are named in any mode, and in auto mode the next open task holds the stop."""
+    """The one chart of the journal, made once, and given today's conduct at a stop while it has no nodes at all: at rest and not the same stop again, parked tasks are named in any mode, and in auto mode the next open task holds the stop. A chart with any node is the user's and is left alone."""
 
     def __init__(self, charts: Charts) -> None:
         self.charts = charts
 
     def run(self) -> None:
-        if self.charts.all():
+        charts = self.charts.all()
+        chart = charts[0] if charts else self.charts.save(Chart(title=TITLE), Actor.system())
+        if self.charts.nodes_of(chart):
             return
-        chart = self.charts.save(Chart(title=TITLE), Actor.system())
         by = Actor.system()
         node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y), by)
         stop = node(NodeKind.TRIGGER, "idle", x=40, y=40)
