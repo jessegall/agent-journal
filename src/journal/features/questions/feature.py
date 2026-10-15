@@ -2,6 +2,7 @@ from journal.features.feature import Feature
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
+from journal.features.questions.listeners.refuse_question_tool import RefuseQuestionTool
 from journal.features.questions.states.waiting import Waiting
 
 
@@ -11,9 +12,11 @@ class Questions(Feature):
     help = "The agent asks you a question and waits; your answer sends it back to work."
     states = (Waiting,)
     commands = (QuestionCommand,)
+    listeners = (RefuseQuestionTool,)
 
     ANSWERED = Nudge(name, "answered", "question {{n}} is answered: {{answer}}", "act on the answer", repeat_after=0)
-    nudges = (ANSWERED,)
+    OWN_TOOL = Nudge(name, "own_tool", "a question goes through the journal, not your own question tool", "journal question ask \"<one line>\" --options a,b; the user answers in the viewer and the answer reaches you", repeat_after=0)
+    nudges = (ANSWERED, OWN_TOOL)
 
     skill = Skill("questions", 'Ask the user a question and wait for the answer; load it before offering the user choices', """
 # Questions

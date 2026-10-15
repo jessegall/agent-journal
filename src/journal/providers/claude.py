@@ -19,6 +19,9 @@ class Claude(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 
+    def worker_command(self, brief: str, model: str) -> list[str]:
+        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions"]
+
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         path = super().wire_hooks(project, script, command)
         settings = json.loads(path.read_text())

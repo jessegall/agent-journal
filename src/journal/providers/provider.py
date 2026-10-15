@@ -27,6 +27,10 @@ class Provider:
 
     def resume(self, session: str) -> tuple[str, ...]: ...
 
+    def worker_command(self, brief: str, model: str) -> list[str]:
+        """The program run headless on one job, printing its report."""
+        ...
+
     def answer(self, hook: Hook, decision: Decision) -> Response:
         """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say is a refusal of the stop, since that is how the program is told to go on, and a stop already refused once is let through."""
         kind = hook.kind

@@ -18,5 +18,8 @@ class Codex(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
 
+    def worker_command(self, brief: str, model: str) -> list[str]:
+        return ["codex", "exec", "--dangerously-bypass-approvals-and-sandbox", "-m", model, brief]
+
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}

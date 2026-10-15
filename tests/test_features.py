@@ -608,3 +608,22 @@ def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
     app.runtime().deferred.drain()
     rows = app.container.get(__import__("journal.http.v3.shapers.messages_shaper", fromlist=["MessagesShaper"]).MessagesShaper).rows(app.container.get(__import__("journal.repositories.environments", fromlist=["Environments"]).Environments).find(1))
     assert "todo:1" in rows[0].refs
+
+
+def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_reminds(app, monkeypatch):
+    hook(app, "SessionStart")
+    status, body = hook(app, "PreToolUse", tool_name="AskUserQuestion", tool_input={"question": "which?"})
+    assert status == 409 and "journal question ask" in body["error"]
+
+
+def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
+    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.models.actor import Actor as A
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--model", "sonnet"], AGENT)
+    worker = app.container.get(Workers).find(1)
+    app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo the footer is fixed"], A.agent("s1"))
+    assert app.container.get(Workers).find(1).state == "reported"
+    assert any("Lady Lovelace reports: the footer is fixed" in m.text for m in app.container.get(Messages).in_(1))
