@@ -27,11 +27,13 @@ class Console:
         self._parser = None
 
     def attributed(self, where: Where) -> Where:
-        """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from."""
+        """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from; with no agent live there, the command is refused rather than signed as the user's."""
         if not where.from_agent_shell or where.session:
             return where
         live = self.container.get(Agents).live(self.container.get(Environments).named(where.environment).id)
-        return where.as_(live.session) if live else where
+        if live is None:
+            raise Refused(f"no agent is live on {where.environment}: this shell is not running under the journal, so the journal cannot sign the command")
+        return where.as_(live.session)
 
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:
@@ -44,13 +46,12 @@ class Console:
 
     def run(self, argv: list[str], where: Where) -> Outcome:
         """Runs one command with its output captured, so the same call serves the terminal and the server."""
-        where = self.attributed(where)
         out, err = io.StringIO(), io.StringIO()
         made = Creations.begin()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             try:
                 args = self.parser().parse_args(argv)
-                code = self.commands[args.noun].perform(args, where)
+                code = self.commands[args.noun].perform(args, self.attributed(where))
             except (argparse.ArgumentError, SystemExit) as refused:
                 self.parser().print_usage(err)
                 print(refused, file=err)

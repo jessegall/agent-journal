@@ -105,5 +105,6 @@
     "type": "command",
     "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/status.sh",
     "padding": 0
-  }
+  },
+  "enableAllProjectMcpServers": true
 }

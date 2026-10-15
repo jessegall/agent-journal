@@ -88,3 +88,27 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     app.console().run(["message", "send", "hi"], Where("main"))
     app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
     assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
+
+
+def test_a_command_from_an_agents_shell_with_no_agent_live_is_refused(app):
+    from journal.console.where import Where
+    app.console().run(["message", "send", "hi"], Where("main"))
+    outcome = app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
+    assert outcome.code == 1 and "no agent is live on main" in outcome.err
+
+
+def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):
+    from journal.console.where import Where
+    from journal.models.actor import Actor
+    from journal.models.agent import Agent
+    from journal.providers.claude import Claude
+    from journal.repositories.agents import Agents
+    kept = tmp_path / "s1.jsonl"
+    kept.write_text("{}\n")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: kept if session == "s1" else None)
+    agents = app.container.get(Agents)
+    agents.save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
+    agents.save(Agent(session="lost", environment_id=1, provider="claude", state="ended"), Actor.system())
+    import json as j
+    rows = j.loads(app.console().run(["environment", "json"], Where("main")).out)
+    assert rows[0]["last_session"] == "s1"

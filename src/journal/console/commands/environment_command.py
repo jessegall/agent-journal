@@ -4,10 +4,12 @@ from datetime import datetime, timedelta, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
+from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.briefing.states.orienting import Orienting
 from journal.features.shell.commands.shell_command import ENDED, MOVED
 from journal.models.task_state import TaskState
+from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
@@ -26,9 +28,9 @@ TAKEN_OVER_WITHIN = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: Machine) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: Machine, providers: Providers, config: Config) -> None:
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
-        self.rules, self.facts, self.reminders, self.machine = rules, facts, reminders, machine
+        self.rules, self.facts, self.reminders, self.machine, self.providers, self.config = rules, facts, reminders, machine, providers, config
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "here", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders; owed at every session start")
@@ -38,11 +40,13 @@ class EnvironmentCommand(Command):
         self.verb(verbs, "delete", "an environment and everything recorded in it").add_argument("name")
 
     def rows(self) -> list[dict]:
+        """Each environment for the boot menu: the newest session whose conversation the program can still find, so a carry-on never names one it has lost."""
         rows = []
         for environment in self.environments.all() or [self.environments.named("main")]:
             agents = self.agents.in_(environment.id)
             last = agents[-1] if agents else None
-            rows.append({"name": environment.name, "last_session": last.session if last else "", "working": bool(last) and last.state != "ended",
+            resumable = [a for a in agents if a.session and self.providers.named(a.provider or "claude").transcript(self.config.root, a.session)]
+            rows.append({"name": environment.name, "last_session": resumable[-1].session if resumable else "", "working": bool(last) and last.state != "ended",
                          "last_used": self.ago(last.updated_at) if last else ""})
         return rows
 
