@@ -72,8 +72,8 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
 
         <ul v-if="!loaded" class="integrations-list" aria-label="Loading the integrations">
             <li v-for="n in 3" :key="n" class="integration">
-                <SkeletonLine :bars="[{width: 28}, {width: 46}]" />
-                <SkeletonLine :bars="[{width: 70}]" />
+                <SkeletonLine :bars="[{width: '28%', height: 16}, {width: '40%', height: 14}]" />
+                <SkeletonLine :bars="[{width: '62%', height: 12}]" />
             </li>
         </ul>
         <p v-else-if="!servers.length" class="integrations-none">No integration yet. Install one of the suggestions below.</p>
@@ -110,9 +110,9 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
         <h2 class="integrations-sub">Suggested</h2>
         <ul v-if="!loaded" class="integrations-grid" aria-label="Loading the suggestions">
             <li v-for="n in 4" :key="n" class="suggestion">
-                <SkeletonLine :bars="[{width: 40}]" />
-                <SkeletonLine :bars="[{width: 80}]" />
-                <SkeletonLine :bars="[{width: 50}]" />
+                <SkeletonLine :bars="[{width: '40%', height: 16}]" />
+                <SkeletonLine :bars="[{width: '85%', height: 12}]" />
+                <SkeletonLine :bars="[{width: '50%', height: 12}]" />
             </li>
         </ul>
         <p v-else-if="!offered.length" class="integrations-none">Every suggested server is installed.</p>
