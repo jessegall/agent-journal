@@ -1,10 +1,11 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {agent, agentOnline} from "../composables/leadAgent.js";
 import Btn from "../kit/Btn.vue";
 import StateDot from "../kit/StateDot.vue";
 import TextInput from "../kit/TextInput.vue";
+import SkeletonLine from "../kit/SkeletonLine.vue";
 
 const servers = ref([]);
 const suggested = ref([]);
@@ -13,6 +14,7 @@ const busy = ref("");
 const notice = ref("");
 const keys = ref({});
 
+const offered = computed(() => suggested.value.filter((s) => !s.installed));
 const DOTS = {connected: "done", failed: "failed", needs_key: "queued", needs_auth: "queued", installed: "draft"};
 const WORDS = {
     connected: "Connected",
@@ -68,7 +70,13 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
 
         <p v-if="notice" class="integrations-notice">{{ notice }}</p>
 
-        <p v-if="loaded && !servers.length" class="integrations-none">No integration yet. Install one of the suggestions below.</p>
+        <ul v-if="!loaded" class="integrations-list" aria-label="Loading the integrations">
+            <li v-for="n in 3" :key="n" class="integration">
+                <SkeletonLine :bars="[{width: 28}, {width: 46}]" />
+                <SkeletonLine :bars="[{width: 70}]" />
+            </li>
+        </ul>
+        <p v-else-if="!servers.length" class="integrations-none">No integration yet. Install one of the suggestions below.</p>
 
         <ul v-else class="integrations-list">
             <li v-for="s in servers" :key="s.name" class="integration">
@@ -100,8 +108,16 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
         </ul>
 
         <h2 class="integrations-sub">Suggested</h2>
-        <ul class="integrations-grid">
-            <li v-for="s in suggested" :key="s.name" class="suggestion">
+        <ul v-if="!loaded" class="integrations-grid" aria-label="Loading the suggestions">
+            <li v-for="n in 4" :key="n" class="suggestion">
+                <SkeletonLine :bars="[{width: 40}]" />
+                <SkeletonLine :bars="[{width: 80}]" />
+                <SkeletonLine :bars="[{width: 50}]" />
+            </li>
+        </ul>
+        <p v-else-if="!offered.length" class="integrations-none">Every suggested server is installed.</p>
+        <ul v-else class="integrations-grid">
+            <li v-for="s in offered" :key="s.name" class="suggestion">
                 <strong>{{ s.title }}</strong>
                 <p>{{ s.about }}</p>
                 <span class="integration-note">
@@ -109,9 +125,7 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
                     <template v-else-if="s.auth === 'oauth'">Signs in on its own.</template>
                     <template v-else>Needs no key.</template>
                 </span>
-                <Btn kind="primary" small :busy="busy === s.name" :disabled="s.installed" @click="install(s)">
-                    {{ s.installed ? "Installed" : "Install" }}
-                </Btn>
+                <Btn kind="primary" small :busy="busy === s.name" @click="install(s)">Install</Btn>
             </li>
         </ul>
     </section>
