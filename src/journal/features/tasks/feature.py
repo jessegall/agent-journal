@@ -35,7 +35,7 @@ class Tasks(Feature):
     LOG_SOON = Nudge(name, "log_soon", "{{edits}} edits since you logged {{name}}: say where it stands", "{{log}} \"<where it stands>\"", repeat_after=0)
     LOG_OVERDUE = Nudge(name, "log_overdue", "{{edits}} edits since you logged {{name}}", "{{log}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
     IN_HAND = Nudge(name, "in_hand", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
-    PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
+    PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal work resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal task await again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for {{minutes}} minutes: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
     nudges = (DECLARE, CARRY_ON, CARRY_ON_LOG, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
@@ -52,8 +52,8 @@ Taking a task up is work too. File a task for work that is an item of its own, o
 - `journal task start <n>` takes a task in hand. `journal task list` shows every task here.
 - `journal task log <n> "<where it stands>"` after each step that matters; before a compaction, always.
 - `journal task done <n> --how "<outcome>"` finishes it. The output names the next open task.
-- One task in hand at a time: a second start is refused until the first is done or parked. `journal task park <n> "<why>"`
-  sets it aside for something else first; `journal task resume <n>` picks it up. Park for choice, never for being stuck.
+- One task in hand at a time: a second start is refused until the first is done or parked. `journal work park "<why>"`
+  sets the work in hand aside for something else first; `journal work resume <n>` picks it up. Park for choice, never for being stuck.
 - A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
   `journal task unblock <n>` opens it again when what it waited on came.

@@ -6,7 +6,7 @@ from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 
 TITLE = "The journal's conduct"
-PARKED = "parked tasks, still open: {{parked_tasks}}. journal task resume <n> picks one up; leave them parked only on purpose"
+PARKED = "parked tasks, still open: {{parked_tasks}}. journal work resume <n> picks one up; leave them parked only on purpose"
 NEXT = "tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck"
 
 

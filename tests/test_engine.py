@@ -127,9 +127,9 @@ def test_one_task_in_hand_park_resume_and_await(app):
     console.run(["task", "create", "second"], AGENT)
     refused = console.run(["task", "start", "2"], AGENT)
     assert refused.code == 1 and "task 1 is in progress" in refused.err
-    console.run(["task", "park", "1", "waiting for the designer"], AGENT)
+    console.run(["work", "park", "waiting for the designer"], AGENT)
     assert isinstance(app.container.get(Machine).current("s1"), Idle) and write(app)[0] == 409, "parked: nothing in hand, writes wait again"
-    assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
+    assert console.run(["work", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
     assert console.run(["work", "await", "the deploy to finish"], AGENT).code == 0
     assert app.container.get(Machine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})

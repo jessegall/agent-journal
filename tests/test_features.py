@@ -791,11 +791,11 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     console.run(["environment", "here"], AGENT)
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["task", "park", "1", "the header first"], AGENT)
+    console.run(["work", "park", "the header first"], AGENT)
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["reason"]
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "told once, the second stop goes through"
-    console.run(["task", "resume", "1"], AGENT)
+    console.run(["work", "resume", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "shipped"], AGENT)
     console.run(["task", "create", "the menu"], USER)
     assert hook(app, "Stop")[1].get("decision") != "block", "open tasks are not pressed for outside auto mode"
@@ -949,7 +949,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
     hook(app, "SessionStart", session_id="s2")
     refused = app.console().run(["task", "start", "2"], Where("main", "s2"))
     assert refused.code == 1 and "task 1 is in progress" in refused.err, "another session cannot start a second"
-    app.console().run(["task", "park", "1", "later"], AGENT)
+    app.console().run(["work", "park", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
 
 
@@ -1257,7 +1257,7 @@ def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     assert hook(app, "Stop")[1] == {}, "auto off: an open task says nothing"
     console.run(["task", "start", "1"], AGENT)
-    console.run(["task", "park", "1", "after lunch"], AGENT)
+    console.run(["work", "park", "after lunch"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     body = hook(app, "Stop")[1]
     assert "parked tasks, still open: 1 free work (parked because: after lunch)" in body["reason"], "parked tasks in any mode, through the chart"
