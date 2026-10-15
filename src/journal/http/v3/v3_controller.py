@@ -14,6 +14,8 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
 from journal.http.v3.current_work import CurrentWork
+from journal.features.registry import Registry
+from journal.features.skills.skill_files import SkillFiles
 from journal.http.v3.listing import Listing
 from journal.http.v3.project_files import ProjectFiles
 from journal.http.v3.shapers.shapers import Shapers
@@ -38,12 +40,16 @@ STARTED = time.time()
 LINGERS = 10.0
 
 
+SILENT_AFTER = 900.0
+"""Seconds a busy agent may send nothing before the viewer says it is not responding."""
+
+
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
-        self.messages, self.files, self.current, self.supervisor = messages, files, current, supervisor
+        self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files = messages, files, current, supervisor, registry, skill_files
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
 
     # the journal
@@ -70,11 +76,12 @@ class V3Controller:
         if live:
             row = self.shapers.named("agent").row(live, list(reversed(self.entries.of_kind_in(environment.id, 200))))
             d = row.data
-            agent = {"status": d["status"], "provider": live.provider or "claude", "model": "", "context": live.context_mark, "uses": 0, "started": d["started"], "at": d["at"], "tool": d["tool"], "file": "", "asking": bool(d["asking"]), "background_run": "", "says": d["last_message"], "doing": d["doing"]}
+            agent = {"status": d["status"], "provider": live.provider or "claude", "model": d["model"], "context": live.context_mark, "uses": 0, "started": d["started"], "at": d["at"], "tool": d["tool"], "file": "", "asking": bool(d["asking"]), "background_run": "", "says": d["last_message"], "doing": d["doing"]}
             held = self.current.of(live)
             work = {"n": held.task.id, "title": held.task.title, "todo": held.task.id, "parked": False, "awaiting": held.awaiting} if held else None
         counts = {"questions": self.open_count("question", environment), "messages": len(self.messages.unread(environment.id)), "suggestions": 0, "todos": self.open_count("todo", environment), "prompts": 0, "routed": 0}
-        return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": counts}
+        silent = agent["status"] in ("busy", "working") and time.time() - agent["at"] > SILENT_AFTER
+        return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": counts, "silent": silent}
 
     def open_count(self, type_: str, environment: Environment) -> int:
         return len([r for r in self.shapers.named(type_).rows(environment) if r.is_open])
@@ -215,6 +222,23 @@ class V3Controller:
 
     def get_project_files(self, request: Request) -> Response:
         return Response.json(self.files.folder(request.query.get("folder", "")))
+
+    def get_skills(self, request: Request) -> Response:
+        """The journal's skills, with whether the agent asked for has read each, as the skills page lists them."""
+        agent = next((a for a in self.agents.all() if str(a.id) == request.query.get("agent", "")), None)
+        loaded = set((agent.skills_loaded or {}).keys()) if agent else set()
+        return Response.json([{"name": skill.name, "description": skill.description, "loaded": skill.name in loaded, "always": False, "stale": False, "depth": 0} for skill in self.registry.skills()])
+
+    def get_skill(self, request: Request) -> Response:
+        skill = self.registry.skill_named(request.params["name"])
+        return Response.json({"name": skill.name, "description": skill.description, "text": skill.body}) if skill else Response.not_found("no such skill")
+
+    def post_skill_load(self, request: Request) -> Response:
+        skill = self.registry.skill_named(request.params["name"])
+        if skill is None:
+            return Response.not_found("no such skill")
+        self.supervisor.type(f"read the {skill.name} skill now: {self.skill_files.path(skill)}")
+        return Response.json({"queued": True})
 
     def get_file(self, request: Request) -> Response:
         found = self.files.file(request.query.get("path", ""))

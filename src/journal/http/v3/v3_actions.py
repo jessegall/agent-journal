@@ -21,9 +21,14 @@ from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
+from journal.features.checks.check_runner import CheckRunner
+from journal.models.trigger_action import TriggerAction
+from journal.repositories.checks import Checks
 from journal.repositories.docs import Docs
 from journal.repositories.reactions import Reactions
 from journal.repositories.reports import Reports
+from journal.repositories.sequences import Sequences
+from journal.repositories.triggers import Triggers
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.repositories.tasks import Tasks
@@ -33,10 +38,10 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, docs: Docs, reports: Reports) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions = agents, environments, machine, supervisor, reactions
-        self.docs, self.reports = docs, reports
+        self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers = docs, reports, checks, runner, sequences, triggers
 
     def create(self, type: str, environment: Environment, body: dict, request: Request):
         title, brief = body.get("title", "") or body.get("brief", "")[:80], body.get("brief", "")
@@ -109,6 +114,46 @@ class V3Actions:
 
     def doc_final(self, n: int, body: dict, by):
         return self.docs.find(n)
+
+    def report_dismiss(self, n: int, body: dict, by):
+        return self.reports.find(n)
+
+    def plan_finish(self, n: int, body: dict, by):
+        return self.plans.save(self.plans.find(n).done(), by)
+
+    def plan_abandon(self, n: int, body: dict, by):
+        return self.plans.save(self.plans.find(n).done(), by)
+
+    def plan_approve(self, n: int, body: dict, by):
+        return self.plans.find(n)
+
+    plan_continue = plan_approve
+    plan_dismiss = plan_approve
+
+    def environment_remove(self, n: int, body: dict, by):
+        self.environments.wipe(self.environments.find(n), by)
+        return {}
+
+    def check_run(self, n: int, body: dict, by):
+        return self.runner.run(self.checks.find(n), by)
+
+    def check_set(self, n: int, body: dict, by):
+        check = self.checks.find(n)
+        key, value = body.get("key", ""), body.get("value", "")
+        if key == "command":
+            return self.checks.save(check.with_(command=str(value)), by)
+        if key == "every":
+            return self.checks.save(check.with_(every=int(value or 0)), by)
+        return check
+
+    def sequence_steps(self, n: int, body: dict, by):
+        return self.sequences.save(self.sequences.find(n).with_(steps=tuple(step.get("title", "") for step in body.get("steps", []) if step.get("title"))), by)
+
+    def trigger_update(self, n: int, body: dict, by):
+        trigger = self.triggers.find(n)
+        words = body.get("words", trigger.words)
+        action = TriggerAction(body["does"]) if body.get("does") in {a.value for a in TriggerAction} else trigger.action
+        return self.triggers.save(trigger.with_(words=tuple(w.strip() for w in (words.split(",") if isinstance(words, str) else words) if w.strip()), action=action, text=body.get("text", trigger.text)), by)
 
     def report_archive(self, n: int, body: dict, by):
         return self.reports.find(n)

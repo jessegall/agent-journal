@@ -235,3 +235,33 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         assert call(server, "GET", "/api/main/todo/2")[1]["data"]["status"] == "parked"
     finally:
         app.runtime().stop()
+
+
+def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        app.console().run(["plan", "create", "p"], Where("main"))
+        assert call(server, "POST", "/api/main/plan/1/finish", {})[1]["data"]["status"] == "done"
+        app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
+        assert call(server, "POST", "/api/main/check/1/run", {})[1]["data"]["last"]["ok"] is True
+        assert call(server, "POST", "/api/main/check/1/set", {"key": "every", "value": "5"})[1]["data"]["every"] == 5
+        app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main"))
+        assert [s["title"] for s in call(server, "POST", "/api/main/sequence/1/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]
+        app.console().run(["trigger", "create", "deploy", "say so"], Where("main"))
+        updated = call(server, "POST", "/api/main/trigger/1/update", {"words": "deploy, release", "does": "deny", "text": "wait"})[1]
+        assert updated["data"]["words"] == ["deploy", "release"] and updated["data"]["action"] == "deny"
+        skills = call(server, "GET", "/api/main/skills?agent=1")[1]
+        assert any(s["name"] == "journal" for s in skills) and "text" in call(server, "GET", "/api/main/skills/journal")[1]
+        call(server, "POST", "/api/main/environment", {"title": "spike"})
+        n = next(r["n"] for r in call(server, "GET", "/api/main/environment")[1]["rows"] if r["title"] == "spike")
+        assert call(server, "POST", f"/api/main/environment/{n}/remove", {})[0] == 200
+        assert all(r["title"] != "spike" for r in call(server, "GET", "/api/main/environment")[1]["rows"])
+        assert call(server, "GET", "/api/summary")[1]["environments"][0]["silent"] is False
+    finally:
+        app.runtime().stop()
