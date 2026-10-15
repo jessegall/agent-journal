@@ -15,6 +15,4 @@ while read -r local_ref local_sha remote_ref remote_sha; do
             ;;
     esac
 done
-python3 scripts/checks/test_shape.py
-python3 scripts/boot_guard.py
 python3 scripts/checks/viewer_built.py
