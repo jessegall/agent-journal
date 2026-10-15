@@ -27,13 +27,11 @@ class Console:
         self._parser = None
 
     def attributed(self, where: Where) -> Where:
-        """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from; with no agent live there, the command is refused rather than signed as the user's."""
+        """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from; with no agent live there, as in a shell outside the journal, it is the user's own."""
         if not where.from_agent_shell or where.session:
             return where
         live = self.container.get(Agents).live(self.container.get(Environments).named(where.environment).id)
-        if live is None:
-            raise Refused(f"no agent is live on {where.environment}: this shell is not running under the journal, so the journal cannot sign the command")
-        return where.as_(live.session)
+        return where.as_(live.session) if live else where
 
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:

@@ -90,11 +90,12 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
 
 
-def test_a_command_from_an_agents_shell_with_no_agent_live_is_refused(app):
+def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app):
     from journal.console.where import Where
+    from journal.repositories.reactions import Reactions
     app.console().run(["message", "send", "hi"], Where("main"))
-    outcome = app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
-    assert outcome.code == 1 and "no agent is live on main" in outcome.err
+    assert app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"})).code == 0
+    assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
 
 
 def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):
