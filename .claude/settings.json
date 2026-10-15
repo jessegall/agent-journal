@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -65,7 +65,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal"
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
           }
         ]
       }
@@ -103,7 +103,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "sh /Users/jessegall/projects/agent-journal/src/journal/hooks/status.sh",
+    "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/status.sh",
     "padding": 0
   }
 }
