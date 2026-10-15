@@ -39,7 +39,7 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
         pump(supervisor, 0.5)
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
             link.sendto(json.dumps({"type": "Type", "line": "from the journal"}).encode(), str(inbox.path))
-        pump(supervisor, 0.5)
+        pump(supervisor, 1.0)
         seen = os.read(out_r, 65536).decode()
         assert "got:hello" in seen and "got:from the journal" in seen
         assert journal.alive()
@@ -200,7 +200,7 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
             link.sendto(json.dumps({"type": "Type", "line": "now"}).encode(), str(inbox.path))
             link.sendto(json.dumps({"type": "Type", "line": "later", "after": 0.8}).encode(), str(inbox.path))
-        pump(supervisor, 0.5)
+        pump(supervisor, 0.7)
         seen = os.read(out_r, 65536).decode()
         assert "got:now" in seen and "later" not in seen, "the line with a delay has not gone in yet; lines go in the order they were sent"
         pump(supervisor, 1.0)
@@ -233,3 +233,36 @@ def test_a_stop_instruction_ends_the_supervisor_and_takes_its_inbox_down(tmp_pat
         journal.stop()
         inbox.close()
     assert not inbox.announced_at.exists()
+
+
+def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
+    from supervisor import terminal as terminal_module
+    read_end, write_end = os.pipe()
+    terminal = Terminal(["sh"], str(tmp_path), {})
+    terminal.fd = write_end
+    os.set_blocking(write_end, False)
+    filled = 0
+    while True:
+        try:
+            filled += os.write(write_end, b"x" * 65536)
+        except BlockingIOError:
+            break
+    terminal.write(b"k")
+    terminal.type("from the journal")
+    terminal.pump()
+    terminal.feed()
+    time.sleep(terminal_module.ENTER_AFTER + 0.1)
+    terminal.pump()
+    assert terminal._enter_due == 0.0 and not any(piece == b"\r" for piece, _ in terminal._pieces), "the line has not gone in: no Enter yet"
+    os.read(read_end, filled)
+    terminal.feed()
+    terminal.feed()
+    assert os.read(read_end, 1024) == b"kfrom the journal", "the key and the line, each in a write of its own, and no Enter in the same piece"
+    terminal.pump()
+    assert not terminal.has_pending, "the Enter waits a moment after the line is in"
+    time.sleep(terminal_module.ENTER_AFTER + 0.1)
+    terminal.pump()
+    terminal.feed()
+    assert os.read(read_end, 1024) == b"\r"
+    os.close(read_end)
+    os.close(write_end)

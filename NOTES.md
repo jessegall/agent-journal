@@ -284,8 +284,10 @@ The journal's lines about messages are short and name numbers, never words: `new
 the agent from `journal message read <n>` or `journal message unread`, which mark them read.
 Every line the journal types starts with `[journal] `, put on in `SupervisorLink.type`, the one
 funnel, and law L6 says what the mark means. The supervisor types the line and presses Enter
-0.3 s later (`Terminal.ENTER_AFTER`): sent together, Claude takes them for a paste and keeps
-the line in its input, as version 3 found.
+half a second after the line has reached the terminal (`Terminal.ENTER_AFTER`), and every piece,
+a key, a line, an Enter, goes in a write of its own: read together, Claude takes them for a paste
+and keeps the line in its input, as version 3 found and as the box showed on 2026-10-16 when the
+Enter was counted from the queueing and went in behind a line still waiting for a slow reader.
 Seen on the first dogfood run: two messages from the chat reached the journal and nobody told
 the terminal.
 

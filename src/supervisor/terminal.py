@@ -8,8 +8,8 @@ import termios
 import time
 
 LONGEST = 65536
-ENTER_AFTER = 0.3
-"""Seconds between a typed line and its Enter: sent together, the agent takes them for a paste and keeps the line in its input."""
+ENTER_AFTER = 0.5
+"""Seconds between a typed line reaching the terminal and its Enter: read together, the agent takes them for a paste and keeps the line in its input."""
 
 
 class Terminal:
@@ -18,8 +18,10 @@ class Terminal:
     def __init__(self, command: list[str], cwd: str, environ: dict[str, str]) -> None:
         self.command, self.cwd, self.environ = command, cwd, environ
         self.fd, self.pid = -1, -1
-        self._pending = bytearray()
+        self._pieces: list[tuple[bytearray, bool]] = []
+        """What goes in, each piece in a write of its own: the user's keys, a typed line (True: its Enter follows), an Enter."""
         self._lines: list[tuple[float, str]] = []
+        self._line_in_flight = False
         self._enter_due = 0.0
 
     def start(self) -> None:
@@ -36,25 +38,32 @@ class Terminal:
         self.start()
 
     def write(self, data: bytes) -> None:
-        self._pending += data
+        self._pieces.append((bytearray(data), False))
 
     def feed(self) -> None:
-        """Writes what is pending without blocking; the rest waits for the next turn."""
-        if not self._pending:
+        """Writes the first piece without blocking; the rest waits for the next turn. A typed line that has gone in whole earns its Enter a moment later."""
+        if not self._pieces:
             return
+        piece, is_line = self._pieces[0]
         flags = fcntl.fcntl(self.fd, fcntl.F_GETFL)
         fcntl.fcntl(self.fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
         try:
-            sent = os.write(self.fd, bytes(self._pending))
+            sent = os.write(self.fd, bytes(piece))
         except (BlockingIOError, InterruptedError):
             sent = 0
         finally:
             fcntl.fcntl(self.fd, fcntl.F_SETFL, flags)
-        del self._pending[:sent]
+        del piece[:sent]
+        if piece:
+            return
+        self._pieces.pop(0)
+        if is_line:
+            self._line_in_flight = False
+            self._enter_due = time.time() + ENTER_AFTER
 
     @property
     def has_pending(self) -> bool:
-        return bool(self._pending)
+        return bool(self._pieces)
 
     def read(self) -> bytes:
         try:
@@ -67,17 +76,19 @@ class Terminal:
         self._lines.append((time.time() + after, line))
 
     def pump(self) -> None:
-        """Types the next due line, or presses the Enter a typed line is waiting for."""
+        """Types the next due line once the last one is in and answered with its Enter, or presses the Enter a typed line is waiting for."""
         now = time.time()
         if self._enter_due:
             if now >= self._enter_due:
                 self._enter_due = 0.0
                 self.write(b"\r")
             return
+        if self._line_in_flight:
+            return
         if self._lines and now >= self._lines[0][0]:
             _, line = self._lines.pop(0)
-            self.write(line.encode())
-            self._enter_due = now + ENTER_AFTER
+            self._pieces.append((bytearray(line.encode()), True))
+            self._line_in_flight = True
 
     def resize(self, rows: int, columns: int) -> None:
         if self.fd >= 0:
