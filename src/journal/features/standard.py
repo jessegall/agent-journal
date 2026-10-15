@@ -1,3 +1,4 @@
+from journal.features.avatar.feature import Avatar
 from journal.features.briefing.feature import Briefing
 from journal.features.chart.feature import ChartFeature
 from journal.features.checks.feature import Checks
@@ -27,7 +28,7 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, ChartFeature, Pins, Etiquette, Voices, Profiles, Git)
+    FEATURES = (Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, ChartFeature, Pins, Avatar, Etiquette, Voices, Profiles, Git)
 
     @classmethod
     def registry(cls) -> Registry: ...

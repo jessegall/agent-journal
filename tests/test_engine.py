@@ -133,7 +133,7 @@ def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(
     from journal.models.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.settings import Settings
-    for key, value in (("work.first_nudge_after", 5), ("work.name_every", 10), ("work.log_after", 20)):
+    for key, value in (("tasks.first_nudge_after", 5), ("tasks.name_every", 10), ("tasks.log_after", 20)):
         app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)

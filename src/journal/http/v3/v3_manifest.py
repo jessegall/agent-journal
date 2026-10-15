@@ -24,7 +24,20 @@ class V3Manifest:
             meta["help"] = meta.get("help", "").replace("to-do", "task").replace("helper", "worker")
 
     def for_environment(self, environment: str) -> dict:
-        return {**self._fixture, "environment": environment, "project": self.config.root.name, "branch": "", "build": self.build(), "version": VERSION, "facts": {}}
+        return {**self._fixture, "features": self.features(), "groups": self.groups(), "models": [], "spoken": {},
+                "environment": environment, "project": self.config.root.name, "branch": "", "build": self.build(), "version": VERSION, "facts": {}}
+
+    def features(self) -> dict:
+        """Every feature of version 4 as the settings page reads one: its switch, its words and its options."""
+        return {f.name: {"name": f.name, "label": f.title, "hint": f.help, "explains": f.help, "group": f.name, "default": f.default, "fixed": False,
+                         "behaviours": {}, "nudges": {}, "trigger": {},
+                         "settings": [{"name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices)} for o in f.options]}
+                for f in self.registry.features}
+
+    def groups(self) -> list[dict]:
+        """One group per feature, led by it: those that speak to the agent in the Agent tab, the rest under Features."""
+        return [{"key": f.name, "title": f.title, "line": f.help, "section": "Agent" if f.states or f.nudges else "Features", "tab": "agent" if f.states or f.nudges else "features", "lead": f.name}
+                for f in self.registry.features]
 
     @staticmethod
     def build() -> str:

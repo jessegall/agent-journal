@@ -4,6 +4,7 @@ from journal.console.command import Command
 from journal.engine.agent_state import AgentState
 from journal.features.listener import Listener
 from journal.features.nudge import Nudge
+from journal.features.option import Option
 from journal.features.seed import Seed
 from journal.features.skill import Skill
 
@@ -16,6 +17,7 @@ class Feature:
     help: ClassVar[str] = ""
     states: ClassVar[tuple[type[AgentState], ...]] = ()
     nudges: ClassVar[tuple[Nudge, ...]] = ()
+    options: ClassVar[tuple[Option, ...]] = ()
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()

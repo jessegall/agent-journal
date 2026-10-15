@@ -1,5 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.features.option import Option
+from journal.features.voices.shipped import Shipped
 from journal.features.voices.commands.voice_command import VoiceCommand
 from journal.features.voices.listeners.introduce_at_start import IntroduceAtStart
 from journal.features.voices.listeners.say_voice_at_start import SayVoiceAtStart
@@ -13,6 +15,10 @@ class Voices(Feature):
     title = "Voice"
     help = "The agent talks to you in the voice you choose, by your title and first name."
     commands = (VoiceCommand,)
+    PROFILE = Option("voices.profile", "Voice", "How the agent talks to you", "butler", kind="choice", choices=tuple(v.name for v in Shipped.ALL))
+    TITLE = Option("voices.title", "Your title", "Sir, Madam, Captain: what the voice calls you before your name", "Sir", kind="text")
+    NAME = Option("voices.name", "Your first name", "Empty takes the name git knows you by", "", kind="text")
+    options = (PROFILE, TITLE, NAME)
     listeners = (SayVoiceAtStart, SayVoiceWhenChanged, IntroduceAtStart)
 
     VOICE = Nudge(name, "voice", "how to talk to the user", "{{voice}}", repeat_after=0)

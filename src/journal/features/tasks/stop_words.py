@@ -9,10 +9,6 @@ from journal.repositories.settings import PROJECT, Settings
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 
-AUTO = "tasks.auto"
-"""With auto on, the agent works the list: a stop with a task open is answered with the next one, and only the user stops it."""
-
-
 LOG_STALE = 10 * 60
 """Seconds since the last log after which a stop asks for one."""
 

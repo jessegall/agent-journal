@@ -9,19 +9,20 @@ from journal.repositories.settings import PROJECT, Settings
 class ChosenVoice:
     """The voice, title and first name the user chose, as settings on the project; the first name falls back to what git knows the user by."""
 
-    VOICE, TITLE, NAME = "voice.profile", "voice.title", "voice.name"
-
     def __init__(self, settings: Settings, config: Config) -> None:
         self.settings, self.config = settings, config
 
     def voice(self) -> Voice:
-        return Shipped.named(str(self.settings.get(PROJECT, self.VOICE, "butler")))
+        from journal.features.voices.feature import Voices
+        return Shipped.named(str(self.settings.option(PROJECT, Voices.PROFILE)))
 
     def title(self) -> str:
-        return str(self.settings.get(PROJECT, self.TITLE, "Sir"))
+        from journal.features.voices.feature import Voices
+        return str(self.settings.option(PROJECT, Voices.TITLE))
 
     def first_name(self) -> str:
-        return str(self.settings.get(PROJECT, self.NAME, "") or self.git_name())
+        from journal.features.voices.feature import Voices
+        return str(self.settings.option(PROJECT, Voices.NAME) or self.git_name())
 
     def instruction(self) -> str:
         return self.voice().instruction(self.title(), self.first_name())

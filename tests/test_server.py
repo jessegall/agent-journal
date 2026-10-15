@@ -143,7 +143,7 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
     server = app.server()
     try:
         status, tree = call(server, "POST", "/api/main/settings", {"features": {"thinking": False}})
-        assert status == 200 and tree["features"]["thinking"] is False and len(tree["features"]) > 10 and "viewer" in tree
+        assert status == 200 and tree["features"]["thinking"] is False and len(tree["features"]) > 10
         n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k1"})[1]["n"]
         call(server, "POST", f"/api/main/message/{n}/read", {})
         row = call(server, "GET", f"/api/main/message/{n}")[1]
@@ -338,8 +338,8 @@ def test_an_agents_reply_is_a_comment_event_so_the_chat_refreshes_it(tmp_path: P
 
 
 def test_the_board_is_off_and_stays_off(server):
-    assert call(server, "GET", "/api/main/settings")[1]["features"]["kanban"] is False
-    assert call(server, "POST", "/api/main/settings", {"features": {"kanban": True}})[1]["features"]["kanban"] is False
+    assert "kanban" not in call(server, "GET", "/api/main/settings")[1]["features"]
+    assert "kanban" not in call(server, "POST", "/api/main/settings", {"features": {"kanban": True}})[1]["features"], "a switch of a feature version 4 does not have is not kept"
 
 
 def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linked_to_it(server):
@@ -351,3 +351,23 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
     assert [(r["refs"], r["seen"]) for r in rows] == [(["todo:1"], ["user"])]
     messages = call(server, "GET", "/api/main/message")[1]["rows"]
     assert messages[-1]["brief"] == "please also check the header" and messages[-1]["seen"] == ["user"]
+
+
+def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_it(tmp_path: Path):
+    from journal.features.tasks.feature import Tasks
+    from journal.repositories.settings import PROJECT, Settings
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        manifest = call(server, "GET", "/api/manifest")[1]
+        tasks = manifest["features"]["tasks"]
+        assert [s["name"] for s in tasks["settings"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
+        assert all(f in manifest["features"] for f in ("messages", "shell", "voices")) and "kanban" not in manifest["features"], "version 3's leftovers are gone"
+        assert {g["key"] for g in manifest["groups"]} == set(manifest["features"]), "one group per feature"
+        status, tree = call(server, "POST", "/api/main/settings", {"tasks": {"log_after": 60}})
+        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 60, "saved where the code reads it"
+        tree = call(server, "POST", "/api/main/settings", {"tasks": {}})[1]
+        assert "tasks" not in tree and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
+    finally:
+        app.runtime().stop()

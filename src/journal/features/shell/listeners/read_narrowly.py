@@ -5,8 +5,6 @@ from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
 from journal.repositories.settings import PROJECT, Settings
 
-SHOWN = "shell.shown_lines"
-"""The lines of a command's output, or of a file, that the agent is shown in one go: the first and last so many."""
 
 
 class ReadNarrowly(AgentListener[ToolStarting]):
@@ -26,7 +24,8 @@ class ReadNarrowly(AgentListener[ToolStarting]):
         return Decision.refuse(Shell.NARROW.about(lines=lines, cap=cap).rendered()) if lines > 2 * cap else None
 
     def cap(self) -> int:
-        return int(self.settings.get(PROJECT, SHOWN, 200))
+        from journal.features.shell.feature import Shell
+        return int(self.settings.option(PROJECT, Shell.SHOWN))
 
     @staticmethod
     def lines(path: Path) -> int:

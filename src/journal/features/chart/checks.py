@@ -7,7 +7,6 @@ from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.shell.chain import Chain
 from journal.features.tasks.states.idle import Idle as IdleState
 from journal.features.tasks.states.working import Working
-from journal.features.tasks.stop_words import AUTO
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
@@ -93,7 +92,8 @@ class Checks:
         return bool(self.messages.unanswered(ctx.environment_id))
 
     def auto_mode(self, ctx: Context) -> bool:
-        return bool(self.settings.get(PROJECT, AUTO, True))
+        from journal.features.tasks.feature import Tasks
+        return bool(self.settings.option(PROJECT, Tasks.AUTO))
 
     def same_stop_again(self, ctx: Context) -> bool:
         return isinstance(ctx.event, Idle) and ctx.event.again

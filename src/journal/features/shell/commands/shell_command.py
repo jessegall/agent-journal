@@ -8,7 +8,6 @@ from journal.engine.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain
 from journal.features.shell.doing import Doing
-from journal.features.shell.listeners.read_narrowly import SHOWN
 from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
@@ -18,8 +17,6 @@ from journal.repositories.messages import Messages
 from journal.repositories.settings import PROJECT, Settings
 from journal.supervisor_link import SupervisorLink
 
-FOREGROUND = "shell.foreground"
-WHILE_WAITING = "shell.foreground_while_waiting"
 TAIL = 2000
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
 """The entries a chain leaves: each part as it starts and as it ends, the move to the background, and the end of a moved chain."""
@@ -72,11 +69,13 @@ class ShellCommand(Command):
         """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say."""
         environment = self.environments.named(where.environment).id
         waiting = bool(self.messages.unread(environment))
-        print(int(self.settings.get(PROJECT, WHILE_WAITING if waiting else FOREGROUND, 10 if waiting else 30)))
+        from journal.features.shell.feature import Shell
+        print(int(self.settings.option(PROJECT, Shell.WHILE_WAITING if waiting else Shell.FOREGROUND)))
         return 0
 
     def cap(self, args: Namespace, where: Where) -> int:
-        print(int(self.settings.get(PROJECT, SHOWN, 200)))
+        from journal.features.shell.feature import Shell
+        print(int(self.settings.option(PROJECT, Shell.SHOWN)))
         return 0
 
     def started(self, args: Namespace, where: Where) -> int:

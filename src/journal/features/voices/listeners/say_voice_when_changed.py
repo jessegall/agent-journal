@@ -16,7 +16,7 @@ class SayVoiceWhenChanged(Listener[Saved]):
     def handle(self, event: Saved) -> None:
         from journal.features.voices.feature import Voices
         setting = event.model
-        if not isinstance(setting, Setting) or not setting.key.startswith("voice."):
+        if not isinstance(setting, Setting) or setting.key not in {o.key for o in Voices.options}:
             return
         for agent in self.agents.all():
             if agent.state != Ended.name:

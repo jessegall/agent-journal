@@ -2,13 +2,11 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
+from journal.features.option import Option
 from journal.features.tasks.states.working import Working
 from journal.hooks.decision import Decision
 from journal.repositories.settings import PROJECT, Settings
 
-FIRST_AFTER, NAME_EVERY, LOG_AFTER = "work.first_nudge_after", "work.name_every", "work.log_after"
-"""The settings, in edits with nothing logged: the first ask to log, twenty-five unless set; how often the work in hand is named back, ten unless set; and when the next write waits for a log, twenty unless set."""
-DEFAULTS = {FIRST_AFTER: 25, NAME_EVERY: 25, LOG_AFTER: 50}
 
 
 class LogCadence(AgentListener[ToolStarting]):
@@ -29,12 +27,12 @@ class LogCadence(AgentListener[ToolStarting]):
             return None
         # the machine counted this write already; what matters is how many came before it
         before = state.edits - 1
-        if before >= self.after(LOG_AFTER):
+        if before >= self.after(Tasks.LOG_AFTER):
             return Decision.refuse(Tasks.LOG_OVERDUE.about(name=state.named(), edits=before, log=self.log_of(state)).rendered())
         said = None
-        if before == self.after(FIRST_AFTER):
+        if before == self.after(Tasks.FIRST_AFTER):
             said = Tasks.LOG_SOON.about(name=state.named(), edits=before, log=self.log_of(state))
-        elif before and before % self.after(NAME_EVERY) == 0:
+        elif before and before % self.after(Tasks.NAME_EVERY) == 0:
             said = Tasks.IN_HAND.about(name=state.named(), edits=before)
         line = self.nudger.say(agent, said) if said else None
         return Decision.tell(line) if line else None
@@ -43,5 +41,5 @@ class LogCadence(AgentListener[ToolStarting]):
     def log_of(state: Working) -> str:
         return f"journal task log {state.task_id}" if state.task_id else "journal work log"
 
-    def after(self, setting: str) -> int:
-        return int(self.settings.get(PROJECT, setting, DEFAULTS[setting]))
+    def after(self, option: Option) -> int:
+        return int(self.settings.option(PROJECT, option))

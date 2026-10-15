@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.features.option import Option
 from journal.features.shell.commands.shell_command import ShellCommand
 from journal.features.shell.listeners.read_narrowly import ReadNarrowly
 from journal.features.shell.listeners.refuse_mixed_journal import RefuseMixedJournal
@@ -11,6 +12,10 @@ class Shell(Feature):
     title = "Shell commands"
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
     commands = (ShellCommand,)
+    FOREGROUND = Option("shell.foreground", "Run a command in the foreground for", "Seconds a part of a command may run before the rest of the chain moves to the background", 30, unit="seconds")
+    WHILE_WAITING = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
+    SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
+    options = (FOREGROUND, WHILE_WAITING, SHOWN)
     listeners = (RefuseMixedJournal, ReadNarrowly)
 
     MOVED = Nudge(name, "moved", "moved to the background: {{part}}", "its output goes to {{file}}; you are told when it ends. Carry on with what does not wait on it", repeat_after=0)

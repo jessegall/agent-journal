@@ -4,7 +4,6 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.voices.chosen_voice import ChosenVoice
 from journal.features.voices.shipped import Shipped
-from journal.models.setting import Setting
 from journal.repositories.settings import PROJECT, Settings
 
 
@@ -29,15 +28,17 @@ class VoiceCommand(Command):
         return 0
 
     def choose(self, args: Namespace, where: Where) -> int:
-        self._set(ChosenVoice.VOICE, args.name, where)
+        from journal.features.voices.feature import Voices
+        self._set(Voices.PROFILE.key, args.name, where)
         print(f"voice: {args.name}")
         return 0
 
     def me(self, args: Namespace, where: Where) -> int:
+        from journal.features.voices.feature import Voices
         if args.title is not None:
-            self._set(ChosenVoice.TITLE, args.title, where)
+            self._set(Voices.TITLE.key, args.title, where)
         if args.name is not None:
-            self._set(ChosenVoice.NAME, args.name, where)
+            self._set(Voices.NAME.key, args.name, where)
         print(f"the agent calls you {self.chosen.voice().calling.called(self.chosen.title(), self.chosen.first_name(), self.chosen.voice().address) or 'nothing'}")
         return 0
 
@@ -46,5 +47,4 @@ class VoiceCommand(Command):
         return 0
 
     def _set(self, key: str, value: str, where: Where) -> None:
-        found = [s for s in self.settings.in_(PROJECT) if s.key == key]
-        self.settings.save(found[0].with_(value=value) if found else Setting(environment_id=PROJECT, key=key, value=value), where.actor)
+        self.settings.set(key, value, where.actor)

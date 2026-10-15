@@ -3,10 +3,8 @@ import {saveSettings} from "./settings.js";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 
-const AUTO = "work_tracking.auto";
-
 export function setAuto(on, client = api) {
-    return saveSettings({features: {[AUTO]: on}}, client);
+    return saveSettings({tasks: {...((store.settings && store.settings.tasks) || {}), auto: on}}, client);
 }
 
 export function runPlan(plan, client = api) {

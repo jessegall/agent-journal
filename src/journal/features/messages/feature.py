@@ -12,6 +12,7 @@ from journal.features.messages.listeners.refuse_truncated_read import RefuseTrun
 from journal.features.messages.listeners.run_tags import RunTags
 from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.features.nudge import Nudge
+from journal.features.option import Option
 from journal.features.said import Said
 from journal.features.skill import Skill
 
@@ -21,6 +22,9 @@ class Messages(Feature):
     title = "Messages"
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
+    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it", 10, unit="tool uses")
+    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer", 15, unit="tool uses")
+    options = (NUDGE_AFTER, HOLD_AFTER)
     listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
 
     NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)

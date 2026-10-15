@@ -17,8 +17,8 @@ class CheckIn(AgentListener[Ticked]):
 
     def handle(self, event: Ticked) -> None:
         from journal.features.tasks.feature import Tasks
-        from journal.features.tasks.stop_words import AUTO
-        if event.quiet_for < EVERY or not self.settings.get(PROJECT, AUTO, True):
+        from journal.features.tasks.feature import Tasks
+        if event.quiet_for < EVERY or not self.settings.option(PROJECT, Tasks.AUTO):
             return
         agent = self.machine.agent(event.session, event.environment_id)
         if not isinstance(self.machine.states.named(agent.state, agent.data), Idle):

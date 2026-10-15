@@ -7,6 +7,7 @@ from journal.features.tasks.listeners.log_cadence import LogCadence
 from journal.features.tasks.listeners.type_at_held_stop import TypeAtHeldStop
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.features.nudge import Nudge
+from journal.features.option import Option
 from journal.features.skill import Skill
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.stuck import Stuck
@@ -17,9 +18,14 @@ from journal.features.tasks.states.working import Working
 class Tasks(Feature):
     name = "tasks"
     title = "Tasks"
-    help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
+    help = "A task is one unit of work with a life; a stop with one in hand is told to carry on, and its log is asked for as the edits mount."
     states = (Idle, Working, Stuck, Expecting)
     commands = (TaskCommand, StuckCommand)
+    AUTO = Option("tasks.auto", "Work the list on its own", "At a stop with tasks open, the next one holds the stop until it is taken up; off, the agent stops and waits for you", True, kind="switch")
+    FIRST_AFTER = Option("tasks.first_nudge_after", "Ask for a log after", "Edits with nothing logged before the agent is asked where the task stands", 25, unit="edits")
+    NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between namings of the task in hand, so drift is noticed", 25, unit="edits")
+    LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits with nothing logged before the next write waits for a log line", 50, unit="edits")
+    options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
     listeners = (SpotPolling, AskAfterParked, TypeAtHeldStop, LogCadence, CheckIn)
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
@@ -56,8 +62,8 @@ needs no task; file one for work that is an item of its own, that waits, or that
 - Waiting on something outside your hands, a run or a person: `journal task await <n> "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
 - Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named
-  back so drift is noticed, and at fifty the next write waits for the log line (settings work.first_nudge_after,
-  work.name_every and work.log_after). A log line starts a new version.
+  back so drift is noticed, and at fifty the next write waits for the log line (settings tasks.first_nudge_after,
+  tasks.name_every and tasks.log_after). A log line starts a new version.
 - A stop with work in hand names it back with when it was last logged, three times a version; then the stop passes.
 - A commit whose message carries `Journal: tasks done <n>` on a line of its own finishes task n.
 - Auto mode (the setting tasks.auto, on by default) means you work the list: a stop with tasks open is answered with the next
