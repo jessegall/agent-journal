@@ -13,6 +13,10 @@ FEATURES = {"messages": "messages", "ask_questions": "questions", "facts": "memo
             "helpers": "workers", "plans": "plans", "sequences": "sequences", "journal_laws": "laws", "session_briefing": "briefing", "work_tracking": "tasks", "avatar": "voices"}
 
 
+NOT_PORTED = ("kanban", "boards", "tickets")
+"""Features of version 3 that version 4 does not carry: their switches read off and stay off, so the viewer shows no Board."""
+
+
 class V3Settings:
     """The settings tree version 3's viewer shows: the shape recorded from version 3, with what the user changed laid over, and the feature switches read from and written to version 4's."""
 
@@ -27,6 +31,8 @@ class V3Settings:
             feature = next((f for f in self.registry.features if f.name == new), None)
             if feature:
                 features[old] = self.registry.is_on(feature, environment_id)
+        for name in NOT_PORTED:
+            features[name] = False
         tree["features"] = features
         tree["avatar"] = {"shown": self.settings.get(PROJECT, "avatar.shown", "always")}
         return tree

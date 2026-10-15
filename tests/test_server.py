@@ -334,3 +334,8 @@ def test_an_agents_reply_is_a_comment_event_so_the_chat_refreshes_it(tmp_path: P
         assert ("comment", "created") in kinds and ("message", "created") in kinds
     finally:
         app.runtime().stop()
+
+
+def test_the_board_is_off_and_stays_off(server):
+    assert call(server, "GET", "/api/main/settings")[1]["features"]["kanban"] is False
+    assert call(server, "POST", "/api/main/settings", {"features": {"kanban": True}})[1]["features"]["kanban"] is False
