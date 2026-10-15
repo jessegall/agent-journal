@@ -64,21 +64,21 @@ function pick(node, port, value) {
     flex-direction: column;
     gap: 6px;
     padding: 10px 12px;
-    border: 1px solid var(--line, #2a2d33);
+    border: 1px solid var(--border-2);
     border-radius: 8px;
-    background: var(--panel, #16181c);
+    background: var(--raised);
 }
 
 .chart-list-row.trigger {
-    border-left: 3px solid var(--accent, #7b86f5);
+    border-left: 3px solid var(--accent-text);
 }
 
 .chart-list-row.check {
-    border-left: 3px solid var(--warn, #e0a848);
+    border-left: 3px solid var(--blocking);
 }
 
 .chart-list-row.action {
-    border-left: 3px solid var(--ok, #4cc38a);
+    border-left: 3px solid var(--tone-commit);
 }
 
 .chart-list-head {
@@ -91,7 +91,7 @@ function pick(node, port, value) {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
 }
 
 .chart-list-grow {
@@ -101,7 +101,7 @@ function pick(node, port, value) {
 .chart-list-about {
     margin: 0;
     font-size: 12px;
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
 }
 
 .chart-list-text {
@@ -109,9 +109,9 @@ function pick(node, port, value) {
     font: inherit;
     font-size: 13px;
     padding: 6px 8px;
-    border: 1px solid var(--line, #2a2d33);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    background: var(--bg, #0f1013);
+    background: var(--bg-2);
     color: inherit;
 }
 
@@ -128,24 +128,24 @@ function pick(node, port, value) {
     border-radius: 10px;
     text-align: center;
     font-size: 11px;
-    background: var(--text-dim, #9aa0a6);
-    color: var(--bg, #0f1013);
+    background: var(--text-3);
+    color: var(--bg-2);
 }
 
 .chart-list-port-name.yes {
-    background: var(--ok, #4cc38a);
+    background: var(--tone-good);
 }
 
 .chart-list-port-name.no {
-    background: var(--warn, #e0a848);
+    background: var(--danger-soft);
 }
 
 .chart-list-pick {
     flex: 1;
     padding: 4px 8px;
-    border: 1px solid var(--line, #2a2d33);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    background: var(--bg, #0f1013);
+    background: var(--bg-2);
     color: inherit;
 }
 </style>

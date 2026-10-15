@@ -4,9 +4,11 @@ import {api} from "../api/client.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import DropList from "../kit/DropList.vue";
 import ChartList from "./ChartList.vue";
 
-const CARD = {width: 220, height: 96};
+const CARD = {width: 208, height: 44, tall: 76};
+const PORT_AT = {then: 50, yes: 30, no: 70};
 const KINDS = [
     {kind: "trigger", title: "Triggers", about: "An event that starts a path"},
     {kind: "check", title: "Checks", about: "A yes or no question about the rows"},
@@ -30,6 +32,7 @@ const camera = reactive({x: 40, y: 40, scale: 1});
 const plane = ref(null);
 const drawing = ref(null);
 const asList = ref(window.innerWidth < 720);
+const paletteOpen = ref(window.innerWidth >= 720);
 const trial = reactive({trigger: "idle", nodes: [], would: [], ran: false});
 let fresh = 0;
 
@@ -60,7 +63,7 @@ function fit() {
     const left = Math.min(...nodes.value.map((n) => n.x)) - 40;
     const top = Math.min(...nodes.value.map((n) => n.y)) - 40;
     const right = Math.max(...nodes.value.map((n) => n.x + CARD.width)) + 40;
-    const bottom = Math.max(...nodes.value.map((n) => n.y + CARD.height)) + 40;
+    const bottom = Math.max(...nodes.value.map((n) => n.y + heightOf(n))) + 40;
     const scale = Math.min(1, plane.value.clientWidth / (right - left), plane.value.clientHeight / (bottom - top));
     camera.scale = Math.max(0.4, scale);
     camera.x = (plane.value.clientWidth - (right - left) * camera.scale) / 2 - left * camera.scale;
@@ -134,11 +137,8 @@ function setText(node, text) {
 
 // the flow reads down the page: a line leaves a box by its bottom edge and enters the next by its top; a check's yes and no sit side by side
 const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
-const portAt = (node, port) => {
-    const slots = ports(node);
-    const i = slots.indexOf(port);
-    return {x: node.x + (CARD.width * (i + 1)) / (slots.length + 1), y: node.y + CARD.height};
-};
+const heightOf = (node) => (entryOf(node).takes_text ? CARD.tall : CARD.height);
+const portAt = (node, port) => ({x: node.x + (CARD.width * PORT_AT[port]) / 100, y: node.y + heightOf(node)});
 const inAt = (node) => ({x: node.x + CARD.width / 2, y: node.y});
 const path = (from, to) => {
     const bow = Math.max(40, Math.abs(to.y - from.y) / 2);
@@ -249,6 +249,8 @@ const tryIt = () =>
         trial.ran = true;
     });
 const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
+const stepOf = (node) => trial.nodes.indexOf(node.id) + 1;
+const triggerItems = computed(() => AGENT_TRIGGERS.map((key) => ({key, label: entries.value[`trigger:${key}`]?.title || key})));
 </script>
 
 <template>
@@ -262,6 +264,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
                 </p>
             </div>
             <div class="chart-acts">
+                <Btn kind="ghost" small class="chart-add" @click="paletteOpen = !paletteOpen">{{ paletteOpen ? "Hide the palette" : "Add a box" }}</Btn>
                 <Btn kind="ghost" small @click="asList = !asList">{{ asList ? "As a drawing" : "As a list" }}</Btn>
                 <Btn kind="ghost" small :disabled="!past.length" @click="undo">Undo</Btn>
                 <Btn kind="ghost" small :busy="busy === 'reset'" @click="reset">Back to the shipped chart</Btn>
@@ -271,7 +274,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
         <p v-if="notice" class="chart-notice">{{ notice }}</p>
 
         <div class="chart-body">
-            <aside class="chart-palette">
+            <aside v-if="paletteOpen" class="chart-palette">
                 <input v-model="search" class="chart-search" type="search" placeholder="Find a trigger, check or action" />
                 <div v-for="group in offered" :key="group.kind" class="chart-group">
                     <h3>{{ group.title }}</h3>
@@ -300,48 +303,56 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
                         :key="node.id"
                         :data-node="node.id"
                         :class="['chart-node', node.kind, {selected: selected === node.id, lit: onPath(node), edited: !node.shipped}]"
-                        :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${CARD.height}px`}"
+                        :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
+                        :title="entryOf(node).about"
                         @pointerdown="dragNode(node, $event)"
                     >
                         <div class="chart-node-head">
-                            <Icon :name="node.kind === 'trigger' ? 'bolt' : node.kind === 'check' ? 'question' : 'play'" :size="12" />
+                            <span v-if="onPath(node)" class="chart-node-step">{{ stepOf(node) }}</span>
+                            <Icon v-else :name="node.kind === 'trigger' ? 'bolt' : node.kind === 'check' ? 'question' : 'play'" :size="12" />
                             <span class="chart-node-title">{{ entryOf(node).title }}</span>
                             <button type="button" class="chart-node-x" title="Take this box out" @pointerdown.stop @click.stop="remove(node)">×</button>
                         </div>
-                        <textarea
+                        <input
                             v-if="entryOf(node).takes_text"
                             class="chart-node-text"
                             :value="node.text"
                             :placeholder="node.kind === 'check' ? 'a number, or a setting\'s name' : 'the line, with {{next_task}} and the like'"
-                            rows="2"
                             @pointerdown.stop
                             @input="setText(node, $event.target.value)"
                         />
-                        <p v-else class="chart-node-about">{{ entryOf(node).about }}</p>
                         <span class="chart-in" />
                         <span
                             v-for="port in ports(node)"
                             :key="port"
                             :class="['chart-port', port]"
-                            :style="{left: `${(100 * (ports(node).indexOf(port) + 1)) / (ports(node).length + 1)}%`}"
+                            :style="{left: `${PORT_AT[port]}%`}"
                             :title="`Drag a line from ${port}`"
                             @pointerdown="dragLine(node, port, $event)"
                         >{{ port }}</span>
                     </div>
                 </div>
+                <aside v-if="trial.ran" class="chart-try-panel">
+                    <div class="chart-try-panel-head">
+                        <strong>What would happen</strong>
+                        <button type="button" class="chart-node-x" title="Close" @click="trial.ran = false">×</button>
+                    </div>
+                    <ol v-if="trial.nodes.length" class="chart-try-steps">
+                        <li v-for="(id, i) in trial.nodes" :key="`${id}-${i}`">
+                            <span class="chart-node-step">{{ i + 1 }}</span>
+                            <span>{{ byId[String(id)] ? entryOf(byId[String(id)]).title : id }}</span>
+                        </li>
+                    </ol>
+                    <p v-else class="chart-try-none">No box starts on this event: nothing would happen.</p>
+                    <p v-for="line in trial.would" :key="line" class="chart-try-would">{{ line }}</p>
+                </aside>
             </div>
         </div>
 
         <footer class="chart-try">
             <span class="chart-try-label">Try it dry</span>
-            <select v-model="trial.trigger" class="chart-try-pick">
-                <option v-for="key in AGENT_TRIGGERS" :key="key" :value="key">{{ entries[`trigger:${key}`]?.title || key }}</option>
-            </select>
+            <DropList :label="entries[`trigger:${trial.trigger}`]?.title || trial.trigger" :items="triggerItems" :picked="trial.trigger" :menu-width="240" @pick="trial.trigger = $event.key" />
             <Btn kind="ghost" small :busy="busy === 'try'" @click="tryIt">Run</Btn>
-            <span v-if="trial.ran" class="chart-try-out">
-                <template v-if="trial.would.length">{{ trial.would.join(" · ") }}</template>
-                <template v-else>nothing would happen</template>
-            </span>
         </footer>
     </section>
 </template>
@@ -370,7 +381,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
 
 .chart-lead {
     margin: 0;
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
     max-width: 640px;
 }
 
@@ -382,7 +393,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
 
 .chart-notice {
     margin: 0;
-    color: var(--warn, #e0a848);
+    color: var(--blocking);
 }
 
 .chart-body {
@@ -391,6 +402,7 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     flex: 1;
     min-height: 0;
     height: calc(100vh - 330px);
+    position: relative;
 }
 
 .chart-body > .chart-list {
@@ -411,6 +423,17 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
         width: auto;
         max-height: 240px;
     }
+
+    .chart-try-panel {
+        position: static;
+        width: auto;
+    }
+}
+
+@media (min-width: 721px) {
+    .chart-add {
+        display: none;
+    }
 }
 
 .chart-palette {
@@ -426,9 +449,9 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
 .chart-search {
     width: 100%;
     padding: 6px 8px;
-    border: 1px solid var(--line, #2a2d33);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    background: var(--panel, #16181c);
+    background: var(--raised);
     color: inherit;
 }
 
@@ -437,13 +460,13 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
 }
 
 .chart-group-about {
     margin: 2px 0 6px;
     font-size: 12px;
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
 }
 
 .chart-entry {
@@ -453,39 +476,39 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     width: 100%;
     padding: 6px 8px;
     margin-bottom: 4px;
-    border: 1px solid var(--line, #2a2d33);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    background: var(--panel, #16181c);
+    background: var(--raised);
     color: inherit;
     text-align: left;
     cursor: pointer;
 }
 
 .chart-entry small {
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
 }
 
 .chart-entry.trigger {
-    border-left: 3px solid var(--accent, #7b86f5);
+    border-left: 3px solid var(--accent-text);
 }
 
 .chart-entry.check {
-    border-left: 3px solid var(--warn, #e0a848);
+    border-left: 3px solid var(--blocking);
 }
 
 .chart-entry.action {
-    border-left: 3px solid var(--ok, #4cc38a);
+    border-left: 3px solid var(--tone-commit);
 }
 
 .chart-plane {
     flex: 1;
     position: relative;
+    background-size: 16px 16px;
     overflow: hidden;
-    border: 1px solid var(--line, #2a2d33);
+    border: 1px solid var(--border-2);
     border-radius: 10px;
-    background: var(--panel, #16181c);
-    background-image: radial-gradient(var(--line, #2a2d33) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background: var(--raised);
+    background-image: radial-gradient(var(--line) 1px, transparent 1px);
     cursor: grab;
 }
 
@@ -505,20 +528,20 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
 
 .chart-wire {
     fill: none;
-    stroke: var(--text-dim, #9aa0a6);
+    stroke: var(--text-3);
     stroke-width: 1.5;
 }
 
 .chart-wire.yes {
-    stroke: var(--ok, #4cc38a);
+    stroke: var(--tone-good);
 }
 
 .chart-wire.no {
-    stroke: var(--warn, #e0a848);
+    stroke: var(--danger-soft);
 }
 
 .chart-wire.drafting {
-    stroke: var(--accent, #7b86f5);
+    stroke: var(--accent);
     stroke-dasharray: 4 4;
 }
 
@@ -534,34 +557,50 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     position: absolute;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 6px;
-    padding: 8px 10px;
-    border: 1px solid var(--line, #2a2d33);
-    border-radius: 8px;
-    background: var(--bg, #0f1013);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    padding: 6px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--raised);
     cursor: move;
     user-select: none;
+    box-sizing: border-box;
 }
 
 .chart-node.trigger {
-    border-top: 3px solid var(--accent, #7b86f5);
+    color: var(--accent-text);
 }
 
 .chart-node.check {
-    border-top: 3px solid var(--warn, #e0a848);
+    color: var(--blocking);
 }
 
 .chart-node.action {
-    border-top: 3px solid var(--ok, #4cc38a);
+    color: var(--tone-commit);
+}
+
+.chart-node-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg-2);
+    font-size: 10px;
+    font-weight: 600;
+    flex: none;
 }
 
 .chart-node.selected {
-    outline: 2px solid var(--accent, #7b86f5);
+    outline: 2px solid var(--accent);
 }
 
 .chart-node.lit {
-    box-shadow: 0 0 0 3px var(--accent, #7b86f5);
+    border-color: var(--accent);
+    background: var(--accent-dim);
 }
 
 .chart-node-head {
@@ -573,43 +612,33 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
 .chart-node-title {
     flex: 1;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12.5px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chart-node-x {
     border: 0;
     background: none;
-    color: var(--text-dim, #9aa0a6);
+    color: var(--text-3);
     cursor: pointer;
     font-size: 14px;
 }
 
 .chart-node-text {
     width: 100%;
-    resize: vertical;
     font: inherit;
     font-size: 12px;
-    padding: 4px 6px;
-    border: 1px solid var(--line, #2a2d33);
-    border-radius: 4px;
-    background: var(--panel, #16181c);
-    color: inherit;
+    padding: 3px 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 5px;
+    background: var(--bg-2);
+    color: var(--text-2);
     cursor: text;
     user-select: text;
-}
-
-.chart-node-about {
-    margin: 0;
-    font-size: 12px;
-    color: var(--text-dim, #9aa0a6);
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.chart-node-text {
-    max-height: 48px;
+    box-sizing: border-box;
 }
 
 .chart-in {
@@ -620,8 +649,8 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     height: 8px;
     transform: translateX(-50%);
     border-radius: 50%;
-    background: var(--line, #2a2d33);
-    border: 1px solid var(--text-dim, #9aa0a6);
+    background: var(--border-2);
+    border: 1px solid var(--text-3);
 }
 
 .chart-node.trigger .chart-in {
@@ -635,17 +664,17 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     padding: 1px 6px;
     border-radius: 10px;
     font-size: 10px;
-    background: var(--text-dim, #9aa0a6);
-    color: var(--bg, #0f1013);
+    background: var(--text-3);
+    color: var(--bg-2);
     cursor: crosshair;
 }
 
 .chart-port.yes {
-    background: var(--ok, #4cc38a);
+    background: var(--tone-good);
 }
 
 .chart-port.no {
-    background: var(--warn, #e0a848);
+    background: var(--danger-soft);
 }
 
 .chart-try {
@@ -659,15 +688,53 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     font-weight: 600;
 }
 
-.chart-try-pick {
-    padding: 4px 8px;
-    border: 1px solid var(--line, #2a2d33);
-    border-radius: 6px;
-    background: var(--panel, #16181c);
-    color: inherit;
+.chart-try-panel {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: 260px;
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--raised);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12.5px;
 }
 
-.chart-try-out {
-    color: var(--text-dim, #9aa0a6);
+.chart-try-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chart-try-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chart-try-steps li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-try-none,
+.chart-try-would {
+    margin: 0;
+    color: var(--text-2);
+}
+
+.chart-try-would {
+    padding: 6px 8px;
+    border-radius: 5px;
+    background: var(--bg-2);
 }
 </style>
