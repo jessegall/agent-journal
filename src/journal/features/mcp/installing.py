@@ -67,8 +67,3 @@ class Installing:
                 self.supervisor.restart_agent(agent.environment_id, resume)
             else:
                 self.pending.add(agent.session, agent.environment_id, resume)
-
-    def idle(self, agent) -> bool:
-        """An agent sits idle when its latest move was a stop or a start, or it has made none."""
-        moves = [e for e in self.entries.of_kind_in(agent.environment_id, 200) if e.kind in MOVES and e.actor and e.actor.id == agent.session]
-        return not moves or moves[0].kind in ("Idle", "SessionStarted")
