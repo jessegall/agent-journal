@@ -1350,3 +1350,27 @@ def test_a_messages_mentions_reach_the_viewer_as_refs(app):
     app.console().run(["message", "send", "look at plan 1 and task 2"], USER)
     rows = app.container.get(Shapers).named("message").rows(app.container.get(Environments).named("main"))
     assert rows[-1].refs == ["plan:1", "todo:2"]
+
+
+def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claudes_own_command(app, monkeypatch):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    from journal.features.mcp.health import Health
+    from journal.features.mcp.known import Known
+    from journal.supervisor_link import SupervisorLink
+    sent, removed = [], []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(Health, "asked", lambda self: {"blender": Known("blender", "uvx blender-mcp", "connected", "")})
+    monkeypatch.setattr(Health, "remove", lambda self, name: removed.append(name) or name == "blender")
+    hook(app, "SessionStart")
+    port = app.server().port
+    listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))["servers"]
+    assert [s["name"] for s in listed] == ["blender"] and listed[0]["managed"] is False
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/blender/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+        assert j.loads(r.read()) == {"removed": "blender"}
+    assert removed == ["blender"] and sent[-1]["type"] == "RestartAgent"
+    try:
+        urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/nothing/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5)
+    except HTTPError as error:
+        assert error.code == 404

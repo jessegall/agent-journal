@@ -89,8 +89,9 @@ onUnmounted(() => clearInterval(checking));
             <div>
                 <h1>Integrations</h1>
                 <p class="integrations-lead">
-                    An integration is an MCP server the agents are given. Installing one restarts the running agents, so it
-                    applies at once. A key is kept outside the project and never written into it.
+                    An integration is an MCP server the agents are given, from here or from Claude Code itself. Installing or
+                    removing one restarts the running agents once they are idle, so it applies at once. A key is kept outside
+                    the project and never written into it.
                 </p>
             </div>
             <Btn kind="ghost" :busy="busy === 'check'" :disabled="!servers.length" @click="check">Check all</Btn>
@@ -112,10 +113,9 @@ onUnmounted(() => clearInterval(checking));
                 <div class="integration-row">
                     <StateDot :state="DOTS[s.state] || 'draft'" />
                     <strong>{{ s.title }}</strong>
-                    <span class="integration-state">{{ WORDS[s.state] || s.state }}<template v-if="s.last_error">: {{ s.last_error }}</template></span>
+                    <span class="integration-state" :title="s.last_error">{{ WORDS[s.state] || s.state }}<template v-if="s.last_error">: {{ s.last_error }}</template></span>
                     <span class="integration-grow" />
-                    <span v-if="!s.managed" class="integration-note">Set up in Claude Code itself</span>
-                    <Btn v-else kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
+                    <Btn kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
                 </div>
                 <code class="integration-how">{{ s.url || s.command }}</code>
                 <div v-if="s.managed && s.auth === 'key'" class="integration-key">
@@ -260,6 +260,10 @@ onUnmounted(() => clearInterval(checking));
 .integration-state {
     color: var(--text-dim, #9aa0a6);
     font-size: 13px;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .integration-how {

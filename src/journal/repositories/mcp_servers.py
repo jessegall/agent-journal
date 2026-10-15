@@ -10,4 +10,4 @@ class McpServers(Repository[McpServer]):
         for server in self.all():
             if server.name == name:
                 return server
-        raise NotFound(f"no MCP server named {name}")
+        raise NotFound("mcp server", name)

@@ -59,10 +59,13 @@ class McpController:
         return Response.json(self.row(self.installing.keyed(server, request.body.get("value", ""), request.actor)))
 
     def remove(self, request: Request) -> Response:
+        name = request.params["name"]
         try:
-            server = self.servers.named(request.params["name"])
-        except NotFound as missing:
-            return Response.not_found(str(missing))
+            server = self.servers.named(name)
+        except NotFound:
+            if not self.installing.remove_known(name):
+                return Response.not_found(f"no server named {name}")
+            return Response.json({"removed": name})
         self.installing.remove(server, request.actor)
         return Response.json({"removed": server.name})
 

@@ -36,6 +36,13 @@ class Installing:
             self.keys.forget(server.key_var)
         self.applied()
 
+    def remove_known(self, name: str) -> bool:
+        """A server set up in the program itself, taken out there; the agents restart as after any change."""
+        if not self.health.remove(name):
+            return False
+        self.applied()
+        return True
+
     def checked(self, by: Actor) -> list[McpServer]:
         found = self.health.fresh()
         checked = []

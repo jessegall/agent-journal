@@ -30,6 +30,15 @@ class Health:
         self._found, self._at = self.asked(), time.time()
         return self._found
 
+    def remove(self, name: str) -> bool:
+        """A server the program has from elsewhere taken out through the program's own command, whichever scope holds it; the next check is fresh."""
+        for scope in ("local", "project", "user"):
+            run = subprocess.run(["claude", "mcp", "remove", name, "-s", scope], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+            if run.returncode == 0:
+                self._at = 0.0
+                return True
+        return False
+
     def asked(self) -> dict[str, Known]:
         try:
             out = subprocess.run(["claude", "mcp", "list"], cwd=self.config.root, capture_output=True, text=True, timeout=60).stdout
