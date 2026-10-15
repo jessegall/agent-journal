@@ -33,4 +33,4 @@ class RunTags(AgentListener[TurnWritten]):
             argv = [word.format(name=argument, n=numbers, text=text) for word in RUNS[name]]
             outcome = self.console.run(argv, where)
             if outcome.code:
-                self.supervisor.type(f"the [!{name}] tag did not run: {(outcome.err or outcome.out).strip().splitlines()[-1]}")
+                self.supervisor.type(event.environment_id, f"the [!{name}] tag did not run: {(outcome.err or outcome.out).strip().splitlines()[-1]}")

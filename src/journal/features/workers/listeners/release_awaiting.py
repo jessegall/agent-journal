@@ -33,4 +33,4 @@ class ReleaseAwaiting(Listener[Updated]):
 
     def _type(self, agent, line: str | None) -> None:
         if line:
-            self.supervisor.type(line)
+            self.supervisor.type(agent.environment_id, line)

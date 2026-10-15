@@ -1,4 +1,5 @@
 import hashlib
+import re
 import socket
 from pathlib import Path
 
@@ -8,11 +9,17 @@ LARGEST = 1 << 16
 
 
 class Inbox:
-    """A unix socket the journal writes to; each datagram is one instruction."""
+    """A unix socket the journal writes to, one per environment; each datagram is one instruction. While open, the project's runtime folder names it, so the journal finds the agent of each environment."""
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
+    def __init__(self, path: Path, announced_at: Path) -> None:
+        self.path, self.announced_at = path, announced_at
         self._socket: socket.socket | None = None
+
+    @classmethod
+    def for_(cls, root: Path, environment: str) -> "Inbox":
+        key = hashlib.sha1(str(root.resolve()).encode()).hexdigest()[:12]
+        slug = re.sub(r"[^A-Za-z0-9_-]", "-", environment)[:24]
+        return cls(Path("/tmp") / f"journal-{key}-{slug}.sock", root / ".journal" / "runtime" / "inboxes" / environment)
 
     @property
     def fd(self) -> int:
@@ -23,6 +30,8 @@ class Inbox:
         self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         self._socket.bind(str(self.path))
         self._socket.setblocking(False)
+        self.announced_at.parent.mkdir(parents=True, exist_ok=True)
+        self.announced_at.write_text(str(self.path))
 
     def received(self) -> list[Instruction]:
         found = []
@@ -38,7 +47,4 @@ class Inbox:
         if self._socket:
             self._socket.close()
         self.path.unlink(missing_ok=True)
-
-    @staticmethod
-    def path_for(root: Path) -> Path:
-        return Path("/tmp") / f"journal-{hashlib.sha1(str(root.resolve()).encode()).hexdigest()[:16]}.sock"
+        self.announced_at.unlink(missing_ok=True)

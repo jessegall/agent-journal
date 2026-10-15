@@ -49,7 +49,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         if closed:
             line = self.nudger.say(self.agents.for_session(event.session), Tasks.CLOSED_BY_COMMIT.about(sha=sha[:8], tasks=", ".join(f"task {n}" for n in closed)))
             if line:
-                self.supervisor.type(line)
+                self.supervisor.type(event.environment_id, line)
 
     def head(self) -> tuple[str, str, str, str] | None:
         try:

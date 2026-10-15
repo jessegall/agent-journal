@@ -38,5 +38,5 @@ class CheckRunner:
             said = ChecksFeature.FAILING if was_failing else ChecksFeature.FAILED
             for agent in self.agents.all():
                 if agent.state != Ended.name and (line := self.nudger.say(agent, said.about(n=ran.id, title=ran.title, tail=tail))):
-                    self.supervisor.type(line)
+                    self.supervisor.type(agent.environment_id, line)
         return ran

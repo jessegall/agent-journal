@@ -253,7 +253,7 @@ class V3Controller:
         skill = self.registry.skill_named(request.params["name"])
         if skill is None:
             return Response.not_found("no such skill")
-        self.supervisor.type(f"read the {skill.name} skill now: {self.skill_files.path(skill)}")
+        self.supervisor.type(self.environment_of(request).id, f"read the {skill.name} skill now: {self.skill_files.path(skill)}")
         return Response.json({"queued": True})
 
     def get_file(self, request: Request) -> Response:
@@ -349,7 +349,7 @@ class V3Controller:
         """A command typed in the terminal pane goes to the agent's own terminal, as the user would type it."""
         command = request.body.get("command", "").strip()
         if command:
-            self.supervisor.type_raw(command)
+            self.supervisor.type_raw(self.environment_of(request).id, command)
         return Response.json({"queued": bool(command)})
 
     def get_agent_transcript(self, request: Request) -> Response:

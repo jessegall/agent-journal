@@ -19,7 +19,7 @@ class AgentController(Controller[Agent]):
         return Response.json([self.described(agent) for agent in self.repository.page_in(self.environment_id(request), self.limit(request), self.before(request))])
 
     def type(self, request: Request) -> Response:
-        self.supervisor.type(request.body.get("line", ""))
+        self.supervisor.type(self.environment_id(request), request.body.get("line", ""))
         return Response.json({})
 
     def described(self, agent: Agent) -> dict:

@@ -142,7 +142,7 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     from journal.repositories.messages import Messages
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     app.console().run(["message", "send", "first"], USER)
     app.console().run(["message", "send", "second"], USER)
     hook(app, "SessionStart")
@@ -204,7 +204,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
 def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "t", "--start"], AGENT)
@@ -296,7 +296,7 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["check", "create", "it is fine", "--command", "true"], USER)
@@ -333,7 +333,7 @@ def test_a_command_that_took_a_minute_is_sent_to_the_background_next_time(app):
 def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="I ran journal task start 3 because the user wants it.")
     app.runtime().deferred.drain()
@@ -357,7 +357,7 @@ def test_the_skill_tool_loads_a_skill_too(skilled):
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     console = app.console()
     console.run(["voice", "me", "--title", "Sir", "--name", "Example"], USER)
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
@@ -370,7 +370,7 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     app.console().run(["message", "send", "nobody is here yet"], USER)
     assert typed == [], "no live agent, nothing to type to"
     hook(app, "SessionStart")
@@ -399,7 +399,7 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
     from journal.repositories.reactions import Reactions
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     console = app.console()
     console.run(["message", "send", "thanks, carry on"], USER)
     hook(app, "SessionStart")
@@ -423,7 +423,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
     from journal.repositories.messages import Messages
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
     hook(app, "SessionStart", source="startup")
     hook(app, "UserPromptSubmit", prompt="[journal] the journal is ready on main")
     hook(app, "MessageDisplay", message="Noted.")
@@ -447,7 +447,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
 def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="The build — the one from last night — is green.")
     hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
@@ -462,7 +462,7 @@ def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, m
     from journal.repositories.tasks import Tasks
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message='[!todo="Fix the footer"]\nThe footer overlaps the form on narrow screens.')
     hook(app, "MessageDisplay", message="[!log:1] Halfway: the overlap is a margin.")
@@ -490,7 +490,7 @@ def test_notable_moments_are_cards_on_the_agents_timeline(app):
 def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_not(app, monkeypatch):
     sent = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     hook(app, "SessionStart", source="startup")
     app.runtime().deferred.drain()
     assert sent[-1]["line"].startswith("[journal] introduce yourself to the user in the chat") and sent[-1]["after"] == 4.0
@@ -506,7 +506,7 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     from journal.repositories.tasks import Tasks
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     root = app.config.root
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 1 and 2 with the margin fixed"], cwd=root, check=True)
@@ -577,7 +577,7 @@ def test_a_session_silent_for_an_hour_is_ended(app):
 def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     app.console().run(["fact", "create", "the login uses the old session store", "--keywords", "login,session"], USER)
     hook(app, "MessageDisplay", message="I will look at the login next.")

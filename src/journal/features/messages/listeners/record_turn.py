@@ -33,7 +33,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         if not event.final or not event.text.strip():
             return
         if Faces.only_face(event.text):
-            self.supervisor.type(MessagesFeature.ONLY_A_FACE.about(face=event.text.strip()).rendered())
+            self.supervisor.type(event.environment_id, MessagesFeature.ONLY_A_FACE.about(face=event.text.strip()).rendered())
             return
         self._record(event, event.text)
 
@@ -49,7 +49,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             self._mark_read(n, by)
         stray = STRAY_TAG.search(text)
         if stray:
-            self.supervisor.type(f"the [!reply:{stray.group(1)}] tag must open a line of your turn; message {stray.group(1)} is still unanswered")
+            self.supervisor.type(event.environment_id, f"the [!reply:{stray.group(1)}] tag must open a line of your turn; message {stray.group(1)} is still unanswered")
 
     def _answers_a_journal_line(self, event: TurnWritten) -> bool:
         """The turn's prompt was a line the journal typed whose answer is not for the user, and no file changed since: nothing in it is news."""

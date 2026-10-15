@@ -9,6 +9,7 @@ from supervisor.journal_process import JournalProcess
 from supervisor.choice import Choice
 from supervisor.header import Header
 from supervisor.menu import Menu
+from supervisor.no_journal import NoJournal
 from supervisor.other_hooks import OtherHooks
 from supervisor.project_command import ProjectCommand
 from supervisor.supervisor import Supervisor
@@ -16,7 +17,7 @@ from supervisor.terminal import Terminal
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
 SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
-FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0}
+FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,8 @@ class Launch:
     skip: bool = False
     yes: bool = False
     no_open: bool = False
+    no_journal: bool = False
+    """Started by a journal already running: no server of its own."""
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
@@ -66,7 +69,7 @@ class Launch:
 
     def environ(self, choice: Choice) -> dict[str, str]:
         path = os.pathsep.join([str(self.root / ".journal" / "bin"), os.environ.get("PATH", "")])
-        return {**os.environ, "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "JOURNAL_INBOX": str(Inbox.path_for(self.root)), "AGENT_JOURNAL_ACTIVE": "1"}
+        return {**os.environ, "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1"}
 
     def run(self) -> int:
         """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends."""
@@ -84,6 +87,6 @@ class Launch:
     def supervisor(self, choice: Choice) -> Supervisor:
         environ = self.environ(choice)
         terminal = Terminal(self.agent_command(choice), str(self.root), environ)
-        journal = JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
+        journal = NoJournal(self.root) if self.no_journal else JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
         header = Header(self.root.name, choice.environment) if sys.stdout.isatty() else None
-        return Supervisor(terminal, Inbox(Inbox.path_for(self.root)), journal, header, viewer="" if self.no_open else f"#/{choice.environment}")
+        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), journal, header, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}")

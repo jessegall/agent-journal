@@ -26,5 +26,5 @@ class QuestionController(Controller[Question]):
             state = self.machine.states.named(agent.state, agent.data)
             if state.question_id == answered.id:
                 self.machine.move(agent.session, agent.environment_id, state.back().to)
-                self.supervisor.type(QuestionsFeature.ANSWERED.about(n=answered.id, answer=answered.answer).rendered())
+                self.supervisor.type(answered.environment_id, QuestionsFeature.ANSWERED.about(n=answered.id, answer=answered.answer).rendered())
         return Response.json(answered)

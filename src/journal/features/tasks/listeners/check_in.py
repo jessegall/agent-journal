@@ -25,4 +25,4 @@ class CheckIn(AgentListener[Ticked]):
             return
         line = self.nudger.say(agent, Tasks.CHECK_IN.about(minutes=int(event.quiet_for // 60)))
         if line:
-            self.supervisor.type(line)
+            self.supervisor.type(event.environment_id, line)

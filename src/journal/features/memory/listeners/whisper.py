@@ -28,7 +28,7 @@ class Whisper(AgentListener[AgentEvent]):
         agent = self.machine.agent(event.session, event.environment_id)
         for noun, row in self.rows(event.environment_id):
             if words & set(row.keywords) and (line := self.nudger.say(agent, self.said(noun, row))):
-                self.supervisor.type(line)
+                self.supervisor.type(event.environment_id, line)
                 self.cards.show(event.environment_id, event.session, f"Recalled {noun} {row.id}", "rules", "", row.text, f"{noun}:{row.id}", key=f"whisper:{noun}:{row.id}")
         return None
 

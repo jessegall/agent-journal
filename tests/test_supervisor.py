@@ -27,7 +27,7 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
     out_r, out_w = os.pipe()
     in_r, in_w = os.pipe()
     terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
-    inbox = Inbox(Inbox.path_for(tmp_path))
+    inbox = Inbox.for_(tmp_path, "main")
     journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
     supervisor = Supervisor(terminal, inbox, journal, stdin=in_r, stdout=out_w)
     inbox.open()
@@ -179,7 +179,7 @@ def test_the_supervisor_notices_the_journal_when_it_answers(tmp_path: Path, monk
     app.server().start()
     try:
         header = Header("p", "main", stdout=os.open(os.devnull, os.O_WRONLY))
-        supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s"), JournalProcess(tmp_path, ["true"], {}, tmp_path / "log"), header)
+        supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox.for_(tmp_path, "main"), JournalProcess(tmp_path, ["true"], {}, tmp_path / "log"), header)
         supervisor._started_at = time.time()
         supervisor.notice_journal_once()
         assert header.url == f"http://127.0.0.1:{app.server().port}/"
@@ -191,7 +191,7 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
     out_r, out_w = os.pipe()
     in_r, in_w = os.pipe()
     terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
-    inbox = Inbox(Inbox.path_for(tmp_path))
+    inbox = Inbox.for_(tmp_path, "main")
     journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
     supervisor = Supervisor(terminal, inbox, journal, stdin=in_r, stdout=out_w)
     inbox.open()

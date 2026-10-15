@@ -21,4 +21,4 @@ class ReviewNewRule(Listener[Created]):
         agent = self.agents.for_session(event.by.id)
         line = self.nudger.say(agent, Memory.RULE_REVIEW.about(n=rule.id))
         if line:
-            self.supervisor.type(line)
+            self.supervisor.type(agent.environment_id, line)

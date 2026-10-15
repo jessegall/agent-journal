@@ -31,7 +31,7 @@ class Clock:
             quiet = now - agent.updated_at.timestamp()
             for answer in self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, at=now, quiet_for=quiet)):
                 if isinstance(answer, Decision) and answer.context:
-                    self.supervisor.type(answer.context)
+                    self.supervisor.type(agent.environment_id, answer.context)
 
     def stop(self) -> None:
         self._stopping.set()

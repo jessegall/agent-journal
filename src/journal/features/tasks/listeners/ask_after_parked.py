@@ -25,4 +25,4 @@ class AskAfterParked(AgentListener[Ticked]):
         task = parked[0]
         line = self.nudger.say(agent, TasksFeature.PARKED_STILL.about(n=task.id, title=task.title, why=task.parked_why))
         if line:
-            self.supervisor.type(line)
+            self.supervisor.type(event.environment_id, line)

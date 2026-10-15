@@ -25,4 +25,4 @@ class TellReaction(Listener[Created]):
             return
         line = self.nudger.say(agent, MessagesFeature.REACTED.about(face=reaction.face, n=link.target.id))
         if line:
-            self.supervisor.type(line)
+            self.supervisor.type(reaction.environment_id, line)

@@ -24,8 +24,9 @@ LONGEST = 65536
 class Supervisor:
     """One loop: stdin to the agent, the agent to stdout under the header line, the inbox's instructions carried out, the journal kept running."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, header: Header | None = None, stdin: int = 0, stdout: int = 1, viewer: str = "") -> None:
+    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, header: Header | None = None, stdin: int | None = 0, stdout: int = 1, viewer: str = "") -> None:
         self.terminal, self.inbox, self.journal, self.stdin, self.stdout = terminal, inbox, journal, stdin, stdout
+        """stdin is None for a supervisor started by the journal, with nobody at a keyboard."""
         self.header = header
         """The line kept at the top of the screen; none when the output is not a terminal."""
         self.viewer = viewer
@@ -54,20 +55,20 @@ class Supervisor:
             self.inbox.close()
             if self.header:
                 self.header.end()
-            if saved is not None:
+            if saved is not None and self.stdin is not None:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
         return self._code
 
     def fit(self) -> None:
         """Gives the agent the terminal's size, less the header's line when there is one."""
-        rows, columns = Terminal.size_of(self.stdin)
+        rows, columns = Terminal.size_of(self.stdin) if self.stdin is not None else (40, 120)
         if self.header:
             self.header.resize(rows, columns)
             rows = self.header.agent_rows
         self.terminal.resize(rows, columns)
 
     def relay_once(self, timeout: float) -> None:
-        reads = [self.stdin, self.terminal.fd, self.inbox.fd]
+        reads = [self.terminal.fd, self.inbox.fd, *([self.stdin] if self.stdin is not None else [])]
         writes = [self.terminal.fd] if self.terminal.has_pending else []
         readable, writable, _ = select.select(reads, writes, [], timeout)
         self.terminal.pump()
@@ -82,7 +83,7 @@ class Supervisor:
                 self._ended()
                 return
             os.write(self.stdout, self.header.shield(data) if self.header else data)
-        if self.stdin in readable:
+        if self.stdin is not None and self.stdin in readable:
             data = os.read(self.stdin, LONGEST)
             if not data:
                 self.stop()
@@ -143,6 +144,8 @@ class Supervisor:
         self._code = code if code is not None else 0
 
     def _raw(self):
+        if self.stdin is None:
+            return None
         try:
             saved = termios.tcgetattr(self.stdin)
             tty.setraw(self.stdin)

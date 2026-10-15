@@ -21,4 +21,4 @@ class IntroduceAtStart(AgentListener[SessionStarted]):
             return
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Voices.INTRODUCE.about())
         if line:
-            self.supervisor.type(line, after=PROMPT_UP_AFTER)
+            self.supervisor.type(event.environment_id, line, after=PROMPT_UP_AFTER)

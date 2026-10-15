@@ -25,9 +25,9 @@ class ReadTurn(AgentListener[TurnWritten]):
         agent = self.machine.agent(event.session, event.environment_id)
         for pattern, said in ((SHOP_TALK, Etiquette.SHOP_TALK), (THIRD_PERSON, Etiquette.THIRD_PERSON), (EM_DASHES, Etiquette.DASHES)):
             if pattern.search(event.text) and (line := self.nudger.say(agent, said.about())):
-                self.supervisor.type(line)
+                self.supervisor.type(event.environment_id, line)
         if self.run_together(event.text) and (line := self.nudger.say(agent, Etiquette.PARAGRAPHS.about())):
-            self.supervisor.type(line)
+            self.supervisor.type(event.environment_id, line)
 
     @staticmethod
     def run_together(text: str) -> bool:

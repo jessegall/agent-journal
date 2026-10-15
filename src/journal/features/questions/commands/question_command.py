@@ -45,7 +45,7 @@ class QuestionCommand(Command):
             if state.question_id != question.id:
                 continue
             self.machine.move(agent.session, agent.environment_id, state.back().to)
-            self.supervisor.type(QuestionsFeature.ANSWERED.about(n=question.id, answer=question.answer).rendered())
+            self.supervisor.type(question.environment_id, QuestionsFeature.ANSWERED.about(n=question.id, answer=question.answer).rendered())
         self.cards.show(question.environment_id, "", f"You answered question {question.id}", "question", "good", question.answer, f"question:{question.id}")
         print(f"question {question.id} answered: {question.answer}")
         return 0

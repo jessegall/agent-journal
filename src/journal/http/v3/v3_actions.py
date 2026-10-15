@@ -22,6 +22,7 @@ from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
+from journal.engine.agent_launcher import AgentLauncher
 from journal.features.checks.check_runner import CheckRunner
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.checks import Checks
@@ -39,10 +40,11 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions = agents, environments, machine, supervisor, reactions
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
+        self.launcher = launcher
 
     def create(self, type: str, environment: Environment, body: dict, request: Request):
         title, brief = body.get("title", "") or body.get("brief", "")[:80], body.get("brief", "")
@@ -130,6 +132,16 @@ class V3Actions:
 
     plan_continue = plan_approve
     plan_dismiss = plan_approve
+
+    def environment_launch(self, n: int, body: dict, by):
+        """An agent started from the viewer runs detached under its own supervisor; the viewer sees it once its start hook arrives."""
+        environment = self.environments.find(n)
+        self.launcher.start(environment.name, body.get("agent", "claude"))
+        return environment
+
+    def environment_stop(self, n: int, body: dict, by):
+        self.supervisor.stop(n)
+        return self.environments.find(n)
 
     def environment_remove(self, n: int, body: dict, by):
         self.environments.wipe(self.environments.find(n), by)
@@ -219,7 +231,7 @@ class V3Actions:
             state = self.machine.states.named(agent.state, agent.data)
             if state.question_id == answered.id:
                 self.machine.move(agent.session, agent.environment_id, state.back().to)
-                self.supervisor.type(QuestionsFeature.ANSWERED.about(n=answered.id, answer=answered.answer).rendered())
+                self.supervisor.type(answered.environment_id, QuestionsFeature.ANSWERED.about(n=answered.id, answer=answered.answer).rendered())
         return answered
 
     def question_complete(self, n: int, body: dict, by):

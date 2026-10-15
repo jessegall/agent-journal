@@ -18,5 +18,6 @@ class SayVoiceWhenChanged(Listener[Saved]):
         setting = event.model
         if not isinstance(setting, Setting) or not setting.key.startswith("voice."):
             return
-        if any(agent.state != Ended.name for agent in self.agents.all()):
-            self.supervisor.type(Voices.CHANGED.about(voice=self.chosen.instruction()).rendered())
+        for agent in self.agents.all():
+            if agent.state != Ended.name:
+                self.supervisor.type(agent.environment_id, Voices.CHANGED.about(voice=self.chosen.instruction()).rendered())
