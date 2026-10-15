@@ -936,3 +936,14 @@ def test_commands_run_at_the_same_moment_keep_their_own_output(app):
     for t in threads:
         t.join()
     assert all(outs[n] == ("200\n" if n % 2 else "30\n") for n in range(20)), "the capture is process-wide, so runs never overlap"
+
+
+def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "first", "--start"], AGENT)
+    app.console().run(["task", "create", "second"], AGENT)
+    hook(app, "SessionStart", session_id="s2")
+    refused = app.console().run(["task", "start", "2"], Where("main", "s2"))
+    assert refused.code == 1 and "task 1 is in progress" in refused.err, "another session cannot start a second"
+    app.console().run(["task", "park", "1", "later"], AGENT)
+    assert app.console().run(["task", "start", "2"], AGENT).code == 0
