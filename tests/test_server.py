@@ -277,3 +277,15 @@ def test_a_file_attached_to_a_message_is_stored_and_served(server):
     assert row["data"]["files"] == {"note.txt": ""}
     with urlopen(f"http://127.0.0.1:{server.port}/api/main/message/{n}/files/note.txt", timeout=5) as reply:
         assert reply.read() == b"hello there" and reply.headers["Content-Type"].startswith("text/plain")
+
+
+def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_step(tmp_path: Path):
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        call(server, "POST", "/api/main/message", {"brief": "after the reset", "idempotency": "r1"})
+        events = call(server, "GET", "/api/main/events?since=999999")[1]
+        assert events and events[-1]["type"] == "message", "an id from a journal that was reset still gets the recent events"
+    finally:
+        app.runtime().stop()

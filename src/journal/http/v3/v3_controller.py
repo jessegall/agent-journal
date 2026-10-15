@@ -363,6 +363,9 @@ class V3Controller:
         return Response.json(self.events_since(environment, since, int(request.query.get("last", 0) or 0)))
 
     def events_since(self, environment: Environment, since: int, last: int = 0) -> list[dict]:
+        """The events after an id; a viewer asking from an id ahead of the record remembers a journal that was reset, and is given the recent page so it falls back in step."""
+        if since > self.entries.last_id(environment.id):
+            since = 0
         entries = self.entries.since(environment.id, since) if since else list(reversed(self.entries.of_kind_in(environment.id, last or 100)))
         agent_n = {a.session: a.id for a in self.agents.in_(environment.id)}
         found = [V3Events.of(e, environment.name, agent_n.get(e.actor.id if e.actor else "", 0)) for e in entries]

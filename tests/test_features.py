@@ -627,3 +627,9 @@ def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo the footer is fixed"], A.agent("s1"))
     assert app.container.get(Workers).find(1).state == "reported"
     assert any("Lady Lovelace reports: the footer is fixed" in m.text for m in app.container.get(Messages).in_(1))
+
+
+def test_a_message_waiting_at_session_start_is_named_in_the_start_block(app):
+    app.console().run(["message", "send", "sent while you were away"], USER)
+    told = hook(app, "SessionStart", source="resume")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "new message 1" in told
