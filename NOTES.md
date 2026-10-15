@@ -554,3 +554,30 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   counter rules (unread, unanswered, log cadence) stay as listeners until their lines move over; docs/the-rules.md.
 - The Workflow page: canvas with pan and zoom, palette, lines dragged from ports, text in place, draft with undo,
   list form for a phone or a keyboard, Try it dry. No release yet: version 4 is still a branch.
+
+## The night of 2026-10-16: settled and shipped
+
+- **Pinned links**: a `Notice` row pins a link above the chat with its label; `journal notice create "<what>" --link <url> --label "<Open ...>"`
+  and `journal notice close <n>`; the user closes it from the strip; a link in the chat that no pin carries earns one reminder,
+  the journal's own and pull requests excepted.
+- **No work command** (the user's ruling): a quick edit needs no task and is never refused; `task park <n>`, `task resume <n>`
+  and `task await <n>` are the task's verbs; the log is asked after 25 edits, named every 25, held at 50 (`Tasks.*` options).
+- **Options**: a feature declares the settings it reads as `Option`s (`Feature.options`), key `feature.name`, with the words
+  the settings page shows; `Settings.option(PROJECT, option)` reads one. The settings page is built from them: the manifest's
+  features and groups come from the registry, the tree nests the stored keys on the first dot, a save writes the keys and
+  drops the ones left out. Version 3's settings fixture, its eighty features, the services, share-links and developer tabs,
+  the tunnel panes and the status bar's work modes are gone. The avatar is a feature with its `shown` option.
+- **A read never makes an environment**: `Environments.existing(name)` is the one lookup for every route and answers not
+  found; the runtime makes `main` at boot. The browser's stray `#/settings` had made four environments named settings.
+- **The supervisor's Enter**: typed half a second after the line has reached the terminal, each piece in a write of its own;
+  before, the Enter was counted from the queueing and went in behind a line still waiting for a slow reader, so Claude took
+  the two for a paste and kept them in the box.
+- **The Workflows page** is built from Herr Gropius's design after one critique round (first-time, words, parity): PageBar
+  with the picker (Default tag), New workflow (event and name in one row, the workflow born with its trigger), Reset to
+  default and Delete workflow asking by name, Undo, Discard changes, Save with the unsaved count; the Integrations header;
+  nodes as cards with the kind over the title, hollow ports that take the port's colour when hooked, a plus on hover; Add
+  node as a menu with search that says where the node lands and connects it; a line dropped on empty canvas offers Add node
+  where it fell; Test with the workflow's own event, the result in the SidePanel with numbered steps and the path lit on the
+  canvas; the list form with DropLists, no native select; the catalogue in plain words (Agent stops, Agent idle?, Send
+  message to agent). The phone screen (design P1 to P5) is task 90.
+- **The branch is on origin** as draft pull request 26.
