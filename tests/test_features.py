@@ -710,3 +710,26 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
     assert "failed with code 1" in typed[-1] and "2 failed" in typed[-1]
     assert len(app.container.get(Entries).of_kind(1, CARD, 10)) == 2
+
+
+def test_a_reply_written_in_thinking_is_said_out_loud_and_setup_restart_names_the_journals(app, monkeypatch, tmp_path):
+    import json as j
+    from journal.providers.claude import Claude
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    transcript = tmp_path / "s1.jsonl"
+    rows = [{"type": "user", "message": {"content": "hello?"}},
+            {"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": "[!reply:1]\nYes, hello."}]}},
+            {"type": "user", "message": {"content": [{"type": "tool_result", "content": "ok"}]}},
+            {"type": "assistant", "message": {"content": [{"type": "text", "text": "Checking."}]}}]
+    transcript.write_text("\n".join(j.dumps(r) for r in rows) + "\n")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["message", "send", "hello?"], USER)
+    console.run(["message", "read", "1"], AGENT)
+    hook(app, "Stop")
+    app.runtime().deferred.drain()
+    assert any("your reply to message 1 was in your thinking" in line for line in typed), typed
+    assert "no journal is running" in console.run(["setup", "restart"], USER).out

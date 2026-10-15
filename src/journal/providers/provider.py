@@ -25,6 +25,10 @@ class Provider:
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
+    def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
+        """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""
+        return []
+
     def resume(self, session: str) -> tuple[str, ...]: ...
 
     controls: ClassVar[dict] = {"groups": [], "note": ""}

@@ -11,6 +11,7 @@ from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.refuse_truncated_read import RefuseTruncatedRead
 from journal.features.messages.listeners.run_tags import RunTags
+from journal.features.messages.listeners.say_it_out_loud import SayItOutLoud
 from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.features.messages.states.catching_up import CatchingUp
 from journal.features.nudge import Nudge
@@ -24,7 +25,7 @@ class Messages(Feature):
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
     states = (CatchingUp,)
-    listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, HoldAfterCompaction, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
+    listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, HoldAfterCompaction, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, SayItOutLoud)
 
     NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)
     SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)
@@ -36,7 +37,8 @@ class Messages(Feature):
     ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N], or a face: journal message react N \"👍\"; only a journal command goes through", repeat_after=0, answered_in_chat=True)
     CATCH_UP = Nudge(name, "catch_up", "the conversation was compacted: read the latest messages before any other write", "journal message recent", repeat_after=0)
     WHOLE = Nudge(name, "whole", "read the user's message whole: no pipe after journal message read", "run it on its own; every word of a message is for you", repeat_after=0)
-    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, CATCH_UP, WHOLE)
+    SAY_IT = Nudge(name, "say_it", "your reply to message {{numbers}} was in your thinking, not in the chat", "the user never sees your thinking: say it in the chat, as visible words", repeat_after=0)
+    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, CATCH_UP, WHOLE, SAY_IT)
 
     @classmethod
     def inbox(cls, unread: list) -> "Said":

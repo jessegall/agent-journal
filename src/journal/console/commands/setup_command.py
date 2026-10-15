@@ -28,6 +28,7 @@ class SetupCommand(Command):
     def arguments(self, verbs) -> None:
         self.verb(verbs, "here", "wire the hooks, write the skills and the law, put journal on the path")
         self.verb(verbs, "hooks", "wire the hooks only")
+        self.verb(verbs, "restart", "restart the running journals on the installed code; the agents keep running")
 
     def here(self, args: Namespace, where: Where) -> int:
         self.config.home.mkdir(parents=True, exist_ok=True)
@@ -44,6 +45,14 @@ class SetupCommand(Command):
         print(f"ignored {self.ignored().relative_to(self.config.root)}")
         for name in self.restarted():
             print(f"restart {name}: the journal of that environment runs the new code")
+        return 0
+
+    def restart(self, args: Namespace, where: Where) -> int:
+        names = self.restarted()
+        for name in names:
+            print(f"restart {name}: the journal of that environment runs the new code")
+        if not names:
+            print("no journal is running")
         return 0
 
     def restarted(self) -> list[str]:

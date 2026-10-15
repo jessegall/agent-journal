@@ -5,6 +5,10 @@ from pathlib import Path
 from journal.providers.provider import Provider
 
 
+TAIL = 2_000_000
+"""How much of the transcript's end is read for the thoughts of one turn."""
+
+
 class Claude(Provider):
     name = "claude"
     home = ".claude"
@@ -23,6 +27,25 @@ class Claude(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"
         return path if path.is_file() else None
+
+    def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
+        """The thinking blocks after the last prompt, read from the transcript's tail."""
+        path = self.transcript(project, session)
+        if path is None:
+            return []
+        with path.open("rb") as file:
+            start = max(0, path.stat().st_size - TAIL)
+            file.seek(start)
+            lines = file.read().decode(errors="replace").splitlines()[1 if start else 0:]
+        rows = [json.loads(line) for line in lines if line.startswith("{")]
+        thoughts: list[str] = []
+        for row in rows:
+            content = row.get("message", {}).get("content", [])
+            if row.get("type") == "user" and not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content):
+                thoughts = []
+            elif row.get("type") == "assistant":
+                thoughts += [b["thinking"] for b in content if isinstance(b, dict) and b.get("type") == "thinking"]
+        return thoughts
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
