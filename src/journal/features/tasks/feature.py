@@ -41,7 +41,7 @@ class Tasks(Feature):
     IN_HAND = Nudge(name, "in_hand", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal task await again. Done or failed: log what came of it and take the next step", repeat_after=300)
-    CHECK_IN = Nudge(name, "check_in", "nothing has happened for {{minutes}} minutes: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
+    CHECK_IN = Nudge(name, "check_in", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
     nudges = (CARRY_ON, CARRY_ON_LOG, OPEN, UNLOGGED, NEXT, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """

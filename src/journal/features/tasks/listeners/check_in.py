@@ -17,12 +17,11 @@ class CheckIn(AgentListener[Ticked]):
 
     def handle(self, event: Ticked) -> None:
         from journal.features.tasks.feature import Tasks
-        from journal.features.tasks.feature import Tasks
         if event.quiet_for < EVERY or not self.settings.option(PROJECT, Tasks.AUTO):
             return
         agent = self.machine.agent(event.session, event.environment_id)
         if not isinstance(self.machine.states.named(agent.state, agent.data), Idle):
             return
-        line = self.nudger.say(agent, Tasks.CHECK_IN.about(minutes=int(event.quiet_for // 60)))
+        line = self.nudger.say(agent, Tasks.CHECK_IN.about())
         if line:
             self.supervisor.type(event.environment_id, line)
