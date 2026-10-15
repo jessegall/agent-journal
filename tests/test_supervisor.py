@@ -210,3 +210,27 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
         supervisor.stop()
         journal.stop()
         inbox.close()
+
+
+def test_a_stop_instruction_ends_the_supervisor_and_takes_its_inbox_down(tmp_path: Path):
+    out_r, out_w = os.pipe()
+    terminal = Terminal(["sh", "-c", "trap '' TERM; while true; do sleep 1; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
+    inbox = Inbox.for_(tmp_path, "main")
+    journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
+    supervisor = Supervisor(terminal, inbox, journal, stdin=None, stdout=out_w)
+    inbox.open()
+    journal.start()
+    terminal.start()
+    try:
+        assert inbox.announced_at.read_text() == str(inbox.path)
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
+            link.sendto(json.dumps({"type": "Stop"}).encode(), str(inbox.path))
+        began = time.time()
+        while supervisor._code is None and time.time() - began < 8:
+            supervisor.relay_once(0.05)
+        assert supervisor._code is not None, "an agent that ignores TERM is still ended"
+        assert terminal.exited() is None, "reaped once, never asked after again"
+    finally:
+        journal.stop()
+        inbox.close()
+    assert not inbox.announced_at.exists()

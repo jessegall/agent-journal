@@ -32,48 +32,48 @@ def call(server, method: str, path: str, body: dict | None = None, env: str = "m
 
 
 def test_tasks_live_over_http(server):
-    status, task = call(server, "POST", "/api/tasks", {"title": "ship it", "brief": "b"})
+    status, task = call(server, "POST", "/journal/tasks", {"title": "ship it", "brief": "b"})
     assert status == 201 and task["id"] == 1 and task["created_by"] == "user:1"
-    status, started = call(server, "POST", "/api/tasks/1/start")
+    status, started = call(server, "POST", "/journal/tasks/1/start")
     assert status == 200 and started["state"] == "started"
-    assert call(server, "POST", "/api/tasks/1/log", {"line": "halfway"})[0] == 201
-    status, done = call(server, "POST", "/api/tasks/1/finish", {"how": "merged"})
+    assert call(server, "POST", "/journal/tasks/1/log", {"line": "halfway"})[0] == 201
+    status, done = call(server, "POST", "/journal/tasks/1/finish", {"how": "merged"})
     assert done["state"] == "done" and done["outcome"] == "merged"
-    status, listed = call(server, "GET", "/api/tasks")
+    status, listed = call(server, "GET", "/journal/tasks")
     assert [t["title"] for t in listed] == ["ship it"]
     for n in range(3):
-        call(server, "POST", "/api/tasks", {"title": f"more {n}"})
-    page = call(server, "GET", "/api/tasks?limit=2")[1]
+        call(server, "POST", "/journal/tasks", {"title": f"more {n}"})
+    page = call(server, "GET", "/journal/tasks?limit=2")[1]
     assert [t["title"] for t in page] == ["more 2", "more 1"], "newest first, capped"
-    assert [t["title"] for t in call(server, "GET", f"/api/tasks?limit=2&before={page[-1]['id']}")[1]] == ["more 0", "ship it"]
-    assert call(server, "GET", "/api/tasks", env="other")[1] == []
+    assert [t["title"] for t in call(server, "GET", f"/journal/tasks?limit=2&before={page[-1]['id']}")[1]] == ["more 0", "ship it"]
+    assert call(server, "GET", "/journal/tasks", env="other")[1] == []
 
 
 def test_a_missing_row_and_a_missing_route_say_so(server):
-    assert call(server, "GET", "/api/tasks/9")[0] == 404
-    assert call(server, "GET", "/api/nothing")[0] == 404
+    assert call(server, "GET", "/journal/tasks/9")[0] == 404
+    assert call(server, "GET", "/journal/nothing")[0] == 404
 
 
 def test_the_port_file_is_written_while_serving(server):
     assert int(server.config.port_file.read_text()) == server.port
 
 
-def test_the_viewer_api_lists_every_resource_and_answers_a_question(server):
-    assert call(server, "GET", "/api/environments")[1][0]["name"] == "main"
+def test_version_fours_own_api_lists_every_resource_and_answers_a_question(server):
+    assert call(server, "GET", "/journal/environments")[1][0]["name"] == "main"
     for name in ("plans", "facts", "reminders", "reports", "docs", "workers", "messages", "questions", "agents", "rules", "entries"):
-        assert call(server, "GET", f"/api/{name}")[0] == 200, name
-    status, message = call(server, "POST", "/api/messages", {"text": "hello agent"})
+        assert call(server, "GET", f"/journal/{name}")[0] == 200, name
+    status, message = call(server, "POST", "/journal/messages", {"text": "hello agent"})
     assert status == 201 and message["author"] == "user" and message["read_at"] is None
-    status, question = call(server, "POST", "/api/questions", {"text": "which?", "options": ["a", "b"]})
+    status, question = call(server, "POST", "/journal/questions", {"text": "which?", "options": ["a", "b"]})
     assert status == 201
-    status, answered = call(server, "POST", "/api/questions/1/answer", {"answer": "b"})
+    status, answered = call(server, "POST", "/journal/questions/1/answer", {"answer": "b"})
     assert answered["answer"] == "b"
-    status, since = call(server, "GET", "/api/entries/since?since=0")
+    status, since = call(server, "GET", "/journal/entries/since?since=0")
     assert status == 200 and "latest" in since
-    status, settings = call(server, "GET", "/api/settings")
+    status, settings = call(server, "GET", "/journal/settings")
     assert any(f["name"] == "tasks" and f["on"] for f in settings)
-    call(server, "POST", "/api/settings", {"key": "features.tasks", "value": False})
-    assert not next(f for f in call(server, "GET", "/api/settings")[1] if f["name"] == "tasks")["on"]
+    call(server, "POST", "/journal/settings", {"key": "features.tasks", "value": False})
+    assert not next(f for f in call(server, "GET", "/journal/settings")[1] if f["name"] == "tasks")["on"]
 
 
 def test_a_path_outside_the_api_is_the_viewer(server):

@@ -91,23 +91,30 @@ class Terminal:
             return (40, 120)
 
     def exited(self) -> int | None:
+        """The agent's exit code once it has ended, reaped here and never asked after again."""
         if self.pid < 0:
             return None
         pid, status = os.waitpid(self.pid, os.WNOHANG)
-        return os.waitstatus_to_exitcode(status) if pid else None
+        if not pid:
+            return None
+        self.pid = -1
+        return os.waitstatus_to_exitcode(status)
 
     def stop(self, grace: float) -> int:
+        """Asks the agent to end, then makes it; the exit code, with the process reaped once."""
         if self.pid < 0:
             return 0
         try:
             os.kill(self.pid, signal.SIGTERM)
         except ProcessLookupError:
-            return 0
+            return self.exited() or 0
         until = time.time() + grace
         while time.time() < until:
-            pid, status = os.waitpid(self.pid, os.WNOHANG)
-            if pid:
-                return os.waitstatus_to_exitcode(status)
+            code = self.exited()
+            if code is not None:
+                return code
             time.sleep(0.05)
         os.kill(self.pid, signal.SIGKILL)
-        return os.waitstatus_to_exitcode(os.waitpid(self.pid, 0)[1])
+        pid, status = os.waitpid(self.pid, 0)
+        self.pid = -1
+        return os.waitstatus_to_exitcode(status)

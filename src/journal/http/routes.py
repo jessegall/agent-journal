@@ -19,7 +19,8 @@ from journal.repositories.reminders import Reminders
 from journal.repositories.reports import Reports
 from journal.repositories.workers import Workers
 
-API = "/api"
+API = "/journal"
+"""Version 4's own API, apart from the version 3 one the viewer speaks under /api."""
 
 
 class Routes:
