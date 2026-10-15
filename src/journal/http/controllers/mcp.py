@@ -1,4 +1,5 @@
 from journal.features.mcp.catalogue import Catalogue
+from journal.features.mcp.health import Health
 from journal.features.mcp.installing import Installing
 from journal.features.mcp.keys import Keys
 from journal.http.request import Request
@@ -10,19 +11,34 @@ from journal.repositories.not_found import NotFound
 class McpController:
     """The integrations page: the project's MCP servers and how they stand, the suggestions, and the acts on them."""
 
-    def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing) -> None:
-        self.servers, self.catalogue, self.keys, self.installing = servers, catalogue, keys, installing
+    def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing, health: Health) -> None:
+        self.servers, self.catalogue, self.keys, self.installing, self.health = servers, catalogue, keys, installing, health
 
     def index(self, request: Request) -> Response:
-        installed = {s.name for s in self.servers.all()}
+        """The journal's own servers and, after them, the ones the program has from elsewhere: shown with their state, not managed from here."""
+        own = [self.row(s) for s in self.servers.all()]
+        elsewhere = [self.known_row(k) for name, k in self.health.of_all().items() if name != "*" and name not in {s["name"] for s in own}]
+        present = [*own, *elsewhere]
         return Response.json({
-            "servers": [self.row(s) for s in self.servers.all()],
-            "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": s.name in installed} for s in self.catalogue.all()],
+            "servers": present,
+            "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
         })
+
+    @staticmethod
+    def present(suggestion, servers: list[dict]) -> bool:
+        """A suggestion is already there by its name, or by the url or package the program runs it from."""
+        marks = {suggestion.url} | {a for a in suggestion.args if a.startswith("@")}
+        return any(s["name"] == suggestion.name or any(m and m in f"{s['command']} {s['url']}" for m in marks) for s in servers)
 
     def row(self, server) -> dict:
         return {"name": server.name, "title": server.title, "transport": server.transport, "command": " ".join([server.command, *server.args]).strip(), "url": server.url,
-                "auth": server.auth, "key_var": server.key_var, "has_key": bool(server.key_var) and self.keys.has(server.key_var), "state": server.state, "last_error": server.last_error}
+                "auth": server.auth, "key_var": server.key_var, "has_key": bool(server.key_var) and self.keys.has(server.key_var), "state": server.state, "last_error": server.last_error, "managed": True}
+
+    @staticmethod
+    def known_row(known) -> dict:
+        http = known.how.startswith("http")
+        return {"name": known.name, "title": known.name, "transport": "http" if http else "stdio", "command": "" if http else known.how, "url": known.how if http else "",
+                "auth": "none", "key_var": "", "has_key": False, "state": known.state, "last_error": known.words if known.state == "failed" else "", "managed": False}
 
     def install(self, request: Request) -> Response:
         try:

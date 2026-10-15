@@ -77,10 +77,11 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
                     <strong>{{ s.title }}</strong>
                     <span class="integration-state">{{ WORDS[s.state] || s.state }}<template v-if="s.last_error">: {{ s.last_error }}</template></span>
                     <span class="integration-grow" />
-                    <Btn kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
+                    <span v-if="!s.managed" class="integration-note">Set up in Claude Code itself</span>
+                    <Btn v-else kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
                 </div>
                 <code class="integration-how">{{ s.url || s.command }}</code>
-                <div v-if="s.auth === 'key'" class="integration-key">
+                <div v-if="s.managed && s.auth === 'key'" class="integration-key">
                     <TextInput
                         v-model="keys[s.name]"
                         type="password"
@@ -91,7 +92,7 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
                         {{ s.has_key ? "Replace key" : "Save key" }}
                     </Btn>
                 </div>
-                <div v-else-if="s.auth === 'oauth'" class="integration-key">
+                <div v-else-if="s.managed && s.auth === 'oauth'" class="integration-key">
                     <span class="integration-note">Signs in from the agent's terminal: a browser window opens there.</span>
                     <Btn kind="primary" small :busy="busy === s.name" :disabled="!agentOnline" @click="signIn(s)">Sign in</Btn>
                 </div>

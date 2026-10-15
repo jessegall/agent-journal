@@ -833,7 +833,8 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
-    monkeypatch.setattr(Health, "of_all", lambda self: {"github": ("connected", ""), "linear": ("needs_auth", "Needs authentication")})
+    from journal.features.mcp.known import Known
+    monkeypatch.setattr(Health, "of_all", lambda self: {"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")})
     hook(app, "SessionStart")
     port = app.server().port
     def post(path, body):
@@ -851,6 +852,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     states = {s["name"]: s["state"] for s in post("/journal/mcp/check", {})["servers"]}
     assert states == {"github": "connected", "linear": "needs_auth"}
     page = j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))
-    assert [s["name"] for s in page["servers"]] == ["github", "linear"] and next(s for s in page["suggested"] if s["name"] == "github")["installed"] is True
+    assert [(s["name"], s["managed"]) for s in page["servers"]] == [("github", True), ("linear", True), ("playwright", False)], "the program's own servers show after the journal's"
+    assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
     assert app.console().run(["mcp", "list"], USER).out.startswith("linear")

@@ -37,7 +37,8 @@ class Installing:
         found = self.health.of_all()
         checked = []
         for server in self.servers.all():
-            state, words = found.get(server.name, found.get("*", ("needs_key" if server.key_var and not self.keys.has(server.key_var) else "installed", "")))
+            known = found.get(server.name) or found.get("*")
+            state, words = (known.state, known.words) if known else ("needs_key" if server.key_var and not self.keys.has(server.key_var) else "installed", "")
             checked.append(self.servers.save(server.checked(state, words if state == "failed" else ""), by))
         return checked
 
