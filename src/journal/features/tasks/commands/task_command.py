@@ -43,6 +43,10 @@ class TaskCommand(Command):
         park.add_argument("n", type=int)
         park.add_argument("why")
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
+        block = self.verb(verbs, "block", "a task waits on something outside your hands: blocked, with why, it is neither offered nor nudged")
+        block.add_argument("n", type=int)
+        block.add_argument("why")
+        self.verb(verbs, "unblock", "what it waited on came: the task is open again").add_argument("n", type=int)
         wait = self.verb(verbs, "await", "wait for something outside your hands")
         wait.add_argument("n", type=int)
         wait.add_argument("what")
@@ -75,6 +79,17 @@ class TaskCommand(Command):
         task = self.tasks.save(self.tasks.find(args.n).parked(args.why), where.actor)
         self._let_go(task, where)
         print(f"task {task.id} parked: {task.title}")
+        return 0
+
+    def block(self, args: Namespace, where: Where) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why), where.actor)
+        self._let_go(task, where)
+        print(f"task {task.id} blocked: {task.title} (waiting on: {task.blocked_why})")
+        return 0
+
+    def unblock(self, args: Namespace, where: Where) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).unblocked(), where.actor)
+        print(f"task {task.id} open again: {task.title}")
         return 0
 
     def resume(self, args: Namespace, where: Where) -> int:

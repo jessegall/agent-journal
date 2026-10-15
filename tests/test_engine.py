@@ -168,3 +168,17 @@ def test_a_stop_after_work_is_a_fresh_stop_and_one_with_no_work_between_is_typed
     status, body = hook(app, "Stop", stop_hook_active=True)
     app.runtime().deferred.drain()
     assert status == 200 and typed[-1] == "[journal] task 1 is in hand: carry on. log where it stands, then continue; journal halt \"<why>\" if you are truly stuck"
+
+
+def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nudged(app):
+    from journal.models.task_state import TaskState
+    from journal.repositories.tasks import Tasks
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the tree", "--start"], AGENT)
+    assert "waiting on: a talk with the user" in console.run(["task", "block", "1", "a talk with the user"], AGENT).out
+    assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(Machine).current("s1").name == "idle"
+    assert hook(app, "Stop")[0] == 200, "a blocked task is not offered, in auto mode or not"
+    assert "blocked tasks, waiting on something outside: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "here"], AGENT).out
+    assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN

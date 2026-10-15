@@ -51,6 +51,9 @@ write with none started is refused.
 - `journal task done <n> --how "<outcome>"` finishes it. The output names the next open task.
 - One task in hand at a time: a second start is refused until the first is done or parked. `journal task park <n> "<why>"`
   sets it aside for something else first; `journal task resume <n>` picks it up. Park for choice, never for being stuck.
+- A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
+  `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
+  `journal task unblock <n>` opens it again when what it waited on came.
 - Waiting on something outside your hands, a run or a person: `journal task await <n> "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
 - Log as you go: after ten tool uses with nothing logged you are asked to, and after twenty the next write waits for
