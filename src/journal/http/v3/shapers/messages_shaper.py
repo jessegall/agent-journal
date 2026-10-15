@@ -3,7 +3,6 @@ from journal.http.v3.v3_row import AGENT, USER, V3Row, seconds
 from journal.models.author import Author
 from journal.models.environment import Environment
 from journal.repositories.messages import Messages
-from journal.repositories.reactions import Reactions
 
 TITLE = 80
 
@@ -13,17 +12,14 @@ class MessagesShaper(Shaper):
 
     type = "message"
 
-    def __init__(self, messages: Messages, reactions: Reactions) -> None:
-        self.messages, self.reactions = messages, reactions
+    def __init__(self, messages: Messages) -> None:
+        self.messages = messages
 
     def rows(self, environment: Environment) -> list[V3Row]:
         """An agent's reply to a message is the comment on it, not a message of its own, so the chat shows it once."""
         all_rows = self.messages.in_(environment.id)
-        replied = {m.reply_to for m in all_rows if m.reply_to and m.author == Author.AGENT}
-        return [self.row(m, m.id in replied or self.reacted_by_agent(m)) for m in all_rows if not (m.reply_to and m.author == Author.AGENT)]
-
-    def reacted_by_agent(self, m) -> bool:
-        return m.author == Author.USER and any(r.author == Author.AGENT for r in self.reactions.on(m))
+        open_ = {m.id for m in self.messages.unanswered(environment.id)} | {m.id for m in self.messages.unread(environment.id)}
+        return [self.row(m, m.id not in open_) for m in all_rows if not (m.reply_to and m.author == Author.AGENT)]
 
     @staticmethod
     def row(m, answered: bool) -> V3Row:

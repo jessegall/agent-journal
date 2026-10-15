@@ -7,16 +7,21 @@ from journal.models.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.environments import Environments
+from journal.engine.machine import Machine
 from journal.features.messages.faces import Faces
+from journal.features.messages.states.catching_up import CatchingUp
+from journal.repositories.not_found import NotFound
 from journal.repositories.messages import Messages
 from journal.repositories.reactions import Reactions
+
+RECENT = 20
 
 
 class MessageCommand(Command):
     noun = "message"
 
-    def __init__(self, messages: Messages, environments: Environments, reactions: Reactions) -> None:
-        self.messages, self.environments, self.reactions = messages, environments, reactions
+    def __init__(self, messages: Messages, environments: Environments, reactions: Reactions, machine: Machine) -> None:
+        self.messages, self.environments, self.reactions, self.machine = messages, environments, reactions, machine
 
     def arguments(self, verbs) -> None:
         send = self.verb(verbs, "send", "leave a message")
@@ -25,6 +30,7 @@ class MessageCommand(Command):
         self.verb(verbs, "list", "every message here")
         self.verb(verbs, "read", "show a message and mark it read").add_argument("n", type=int)
         self.verb(verbs, "unread", "show every unread message and mark them read")
+        self.verb(verbs, "recent", "the latest messages, owed after a compaction")
         react = self.verb(verbs, "react", "put a face on a message, or take it off again")
         react.add_argument("n", type=int)
         react.add_argument("face")
@@ -55,6 +61,23 @@ class MessageCommand(Command):
         for message in waiting:
             self.show(self.messages.mark_read(message, where.actor))
         return 0
+
+    def recent(self, args: Namespace, where: Where) -> int:
+        environment = self.environments.named(where.environment)
+        for message in self.messages.recent(environment.id, RECENT):
+            print(f"{message.id:>4}  {message.author:<5} {message.text}")
+        self._caught_up(where, environment.id)
+        return 0
+
+    def _caught_up(self, where: Where, environment_id: int) -> None:
+        if not where.session:
+            return
+        try:
+            current = self.machine.current(where.session)
+        except NotFound:
+            return
+        if isinstance(current, CatchingUp):
+            self.machine.move(where.session, environment_id, current.back().to)
 
     def react(self, args: Namespace, where: Where) -> int:
         if args.face not in Faces.ALL:

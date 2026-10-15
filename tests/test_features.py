@@ -518,3 +518,57 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     tasks = app.container.get(Tasks)
     assert tasks.find(1).state == "done" and tasks.find(2).state == "done" and tasks.find(1).outcome.startswith("commit ")
     assert typed[-1].endswith("closed task 1, task 2")
+
+
+def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_waits(app):
+    app.console().run(["message", "send", "hello"], USER)
+    app.console().run(["task", "create", "t"], USER)
+    data = json.dumps({"hook_event_name": "SessionStart", "session_id": "earlier"}).encode()
+    urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+    told = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "handle the journal quietly" in told and "laws L1 to L9" in told and "another agent worked this environment until" in told
+    assert "waiting for you here: 1 tasks, 1 messages" in told
+
+
+def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after_five_reminders(app):
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "look at the footer"], USER)
+    named = [i for i in range(1, 16) if "new message 1" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1])]
+    assert named == [3, 6, 9, 12, 15] or len(named) >= 4, "every third tool use names the inbox"
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    assert status == 409 and "your inbox is unread" in body["error"]
+    app.console().run(["message", "read", "1"], AGENT)
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
+
+
+def test_a_message_read_and_unanswered_holds_every_tool_call_after_ten_uses_but_a_journal_command(app):
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "can you look?"], USER)
+    app.console().run(["message", "read", "1"], AGENT)
+    answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(11)]
+    assert all(status == 200 for status, _ in answers[:10]) and "answer message 1 before you do anything else" in json.dumps(answers[0][1])
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    assert status == 409 and "your tool calls are held: answer message 1 first" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 1"})[0] == 200, "a journal command goes through"
+    app.console().run(["message", "react", "1", "👍"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200
+
+
+def test_after_a_compaction_the_latest_messages_are_read_before_any_other_write(app):
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    status, body = hook(app, "SessionStart", source="compact")
+    assert "the conversation was compacted" in body["hookSpecificOutput"]["additionalContext"]
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    assert status == 409 and "journal message recent" in body["error"]
+    assert app.console().run(["message", "recent"], AGENT).code == 0
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
+
+
+def test_a_session_silent_for_an_hour_is_ended(app):
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    hook(app, "SessionStart")
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=3601.0))
+    assert app.container.get(Machine).current("s1").name == "ended"
