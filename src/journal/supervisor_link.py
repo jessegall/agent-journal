@@ -12,8 +12,8 @@ class SupervisorLink:
     def __init__(self) -> None:
         self.path = os.environ.get("JOURNAL_INBOX", "")
 
-    def type(self, line: str) -> None:
-        self._send({"type": "Type", "line": f"{MARK} {line}"})
+    def type(self, line: str, after: float = 0.0) -> None:
+        self._send({"type": "Type", "line": f"{MARK} {line}", "after": after})
 
     def restart_agent(self, resume: tuple[str, ...]) -> None:
         self._send({"type": "RestartAgent", "resume": list(resume)})

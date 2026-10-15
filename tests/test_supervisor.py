@@ -185,3 +185,28 @@ def test_the_supervisor_notices_the_journal_when_it_answers(tmp_path: Path, monk
         assert header.url == f"http://127.0.0.1:{app.server().port}/"
     finally:
         app.server().stop()
+
+
+def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
+    out_r, out_w = os.pipe()
+    in_r, in_w = os.pipe()
+    terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
+    inbox = Inbox(Inbox.path_for(tmp_path))
+    journal = JournalProcess(tmp_path, ["sh", "-c", "sleep 30"], {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
+    supervisor = Supervisor(terminal, inbox, journal, stdin=in_r, stdout=out_w)
+    inbox.open()
+    journal.start()
+    terminal.start()
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
+            link.sendto(json.dumps({"type": "Type", "line": "now"}).encode(), str(inbox.path))
+            link.sendto(json.dumps({"type": "Type", "line": "later", "after": 0.8}).encode(), str(inbox.path))
+        pump(supervisor, 0.5)
+        seen = os.read(out_r, 65536).decode()
+        assert "got:now" in seen and "later" not in seen, "the line with a delay has not gone in yet; lines go in the order they were sent"
+        pump(supervisor, 1.0)
+        assert "got:later" in os.read(out_r, 65536).decode()
+    finally:
+        supervisor.stop()
+        journal.stop()
+        inbox.close()

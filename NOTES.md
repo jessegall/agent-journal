@@ -415,6 +415,10 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   acknowledgement (a column on the message) and hidden by the viewer's default. Em dashes and
   run-together paragraphs are nudged. Subagent marks come from the Agent tool's start and finish in the
   agent shaper. Found on the way: `UnlinkDeleted` existed and was never registered; it is now.
+- **The agent introduces itself (2026-10-15).** On a fresh conversation (`SessionStarted.source ==
+  "startup"`, never on resume, clear or compact) the voices feature types `introduce yourself to the
+  user in the chat` four seconds after the start hook, when Claude's prompt is up. Typed lines now carry
+  `after` seconds and go in one at a time in the order sent (`Terminal.type(line, after)`, `pump`).
 - **Messaging, third batch (2026-10-15).** `Tags` (messages feature) reads every command tag at a
   line's start; `RunTags` runs the command each stands for through the console with the turn's words
   as its text (`todo`, `log`, `end`, `fact`, `rule`, `reminder`), and a refusal is typed back. The

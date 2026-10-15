@@ -18,6 +18,7 @@ class Terminal:
         self.command, self.cwd, self.environ = command, cwd, environ
         self.fd, self.pid = -1, -1
         self._pending = bytearray()
+        self._lines: list[tuple[float, str]] = []
         self._enter_due = 0.0
 
     def start(self) -> None:
@@ -60,15 +61,22 @@ class Terminal:
         except OSError:
             return b""
 
-    def type(self, line: str) -> None:
-        """Types the line, and presses Enter a moment later."""
-        self.write(line.encode())
-        self._enter_due = time.time() + ENTER_AFTER
+    def type(self, line: str, after: float = 0.0) -> None:
+        """Queues the line to be typed after so many seconds, each followed by Enter a moment later, one line at a time."""
+        self._lines.append((time.time() + after, line))
 
-    def press_enter_when_due(self) -> None:
-        if self._enter_due and time.time() >= self._enter_due:
-            self._enter_due = 0.0
-            self.write(b"\r")
+    def pump(self) -> None:
+        """Types the next due line, or presses the Enter a typed line is waiting for."""
+        now = time.time()
+        if self._enter_due:
+            if now >= self._enter_due:
+                self._enter_due = 0.0
+                self.write(b"\r")
+            return
+        if self._lines and now >= self._lines[0][0]:
+            _, line = self._lines.pop(0)
+            self.write(line.encode())
+            self._enter_due = now + ENTER_AFTER
 
     def resize(self, rows: int, columns: int) -> None:
         if self.fd >= 0:

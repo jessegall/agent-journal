@@ -70,7 +70,7 @@ class Supervisor:
         reads = [self.stdin, self.terminal.fd, self.inbox.fd]
         writes = [self.terminal.fd] if self.terminal.has_pending else []
         readable, writable, _ = select.select(reads, writes, [], timeout)
-        self.terminal.press_enter_when_due()
+        self.terminal.pump()
         if self.terminal.fd in writable:
             self.terminal.feed()
         if self.inbox.fd in readable:
@@ -121,7 +121,7 @@ class Supervisor:
         {Type: self.type, RestartAgent: self.restart_agent, RestartJournal: self.restart_journal, Stop: self.stop}[type(instruction)](instruction)
 
     def type(self, instruction: Type) -> None:
-        self.terminal.type(instruction.line)
+        self.terminal.type(instruction.line, instruction.after)
 
     def restart_agent(self, instruction: RestartAgent) -> None:
         self._stopping = True

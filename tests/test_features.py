@@ -479,3 +479,17 @@ def test_notable_moments_are_cards_on_the_agents_timeline(app):
     app.console().run(["halt", "now", "stuck on the login"], AGENT)
     cards = [e.data for e in app.container.get(Entries).of_kind(1, "card")]
     assert [c["label"] for c in cards] == ["Agent halted"] and cards[0]["detail"] == "stuck on the login" and cards[0]["tone"] == "bad"
+
+
+def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_not(app, monkeypatch):
+    sent = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: sent.append(instruction))
+    hook(app, "SessionStart", source="startup")
+    app.runtime().deferred.drain()
+    assert sent[-1]["line"].startswith("[journal] introduce yourself to the user in the chat") and sent[-1]["after"] == 4.0
+    count = len(sent)
+    data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s2", "source": "resume"}).encode()
+    urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+    app.runtime().deferred.drain()
+    assert not any("introduce yourself" in s["line"] for s in sent[count:])
