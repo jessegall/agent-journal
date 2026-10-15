@@ -7,7 +7,9 @@ from journal.http.request import Request
 from journal.models.author import Author
 from journal.models.environment import Environment
 from journal.models.fact import Fact
+from journal.models.doc import Doc
 from journal.models.message import Message
+from journal.models.report import Report
 from journal.models.plan import Plan
 from journal.models.question import Question
 from journal.models.reminder import Reminder
@@ -19,7 +21,9 @@ from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
+from journal.repositories.docs import Docs
 from journal.repositories.reactions import Reactions
+from journal.repositories.reports import Reports
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.repositories.tasks import Tasks
@@ -29,9 +33,10 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, docs: Docs, reports: Reports) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions = agents, environments, machine, supervisor, reactions
+        self.docs, self.reports = docs, reports
 
     def create(self, type: str, environment: Environment, body: dict, request: Request):
         title, brief = body.get("title", "") or body.get("brief", "")[:80], body.get("brief", "")
@@ -57,14 +62,56 @@ class V3Actions:
             return self.rules.save(Rule(text=title, reason=brief), by)
         if type == "plan":
             return self.plans.save(Plan(environment_id=environment.id, title=title, brief=brief), by)
+        if type == "doc":
+            return self.docs.save(Doc(environment_id=environment.id, title=body.get("title", ""), body=body.get("brief", "")), by)
+        if type == "report":
+            return self.reports.save(Report(environment_id=environment.id, title=body.get("title", ""), body=body.get("brief", "")), by)
         if type == "environment":
             return self.environments.named(title)
         return None
 
     def act(self, type: str, n: int, action: str, body: dict, request: Request):
+        """A type's own handler first; else the acts every row answers: read, restore and priority change nothing here, update rewrites the words, section appends one."""
         by = request.actor
-        handler = getattr(self, f"{type}_{action}", None)
-        return handler(n, body, by) if handler else None
+        own = getattr(self, f"{type}_{action}", None)
+        if own:
+            return own(n, body, by)
+        shared = getattr(self, f"any_{action}", None)
+        return shared(type, n, body, by) if shared else None
+
+    WRITTEN = {"doc": "docs", "report": "reports", "todo": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders", "question": "questions"}
+    """The repository behind each type the viewer may rewrite."""
+
+    def repository_of(self, type: str):
+        return getattr(self, self.WRITTEN[type]) if type in self.WRITTEN else None
+
+    def any_read(self, type: str, n: int, body: dict, by):
+        repository = self.repository_of(type)
+        return repository.find(n) if repository else None
+
+    any_restore = any_read
+    any_priority = any_read
+
+    def any_update(self, type: str, n: int, body: dict, by):
+        repository = self.repository_of(type)
+        if repository is None:
+            return None
+        row = repository.find(n)
+        words = {name: body[given] for name, given in (("title", "title"), ("text", "title"), ("brief", "brief"), ("body", "brief")) if given in body and hasattr(row, name)}
+        return repository.save(row.with_(**words), by)
+
+    def any_section(self, type: str, n: int, body: dict, by):
+        repository = self.repository_of(type)
+        if repository is None or type not in ("doc", "report"):
+            return None
+        row = repository.find(n)
+        return repository.save(row.with_(body=f"{row.body.rstrip()}\n\n## {body.get('title', '')}\n\n{body.get('body', '')}\n"), by)
+
+    def doc_final(self, n: int, body: dict, by):
+        return self.docs.find(n)
+
+    def report_archive(self, n: int, body: dict, by):
+        return self.reports.find(n)
 
     def message_react(self, n: int, body: dict, by):
         made = self.reactions.toggle(self.messages.find(n), body.get("face", ""), Author.USER, by)

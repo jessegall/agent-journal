@@ -4,7 +4,7 @@ from journal.models.environment import Environment
 from journal.models.task_state import TaskState
 from journal.repositories.tasks import Tasks
 
-STATUS = {TaskState.OPEN: "open", TaskState.STARTED: "started", TaskState.DONE: "done"}
+STATUS = {TaskState.OPEN: "open", TaskState.STARTED: "started", TaskState.PARKED: "parked", TaskState.DONE: "done"}
 
 
 class TodosShaper(Shaper):
@@ -21,4 +21,4 @@ class TodosShaper(Shaper):
     @staticmethod
     def row(t) -> V3Row:
         return V3Row.of("todo", t, title=t.title, brief=t.brief, outcome=t.outcome, completed=seconds(t.finished_at),
-                        data={"status": STATUS[t.state], "work": t.id if t.state != TaskState.OPEN else 0, "priority": 3, "rank": 0.0, "after": [], "struck": False, "hidden": False})
+                        data={"status": STATUS[t.state], "work": t.id if t.state != TaskState.OPEN else 0, "parked": t.state == TaskState.PARKED, "parked_why": t.parked_why, "priority": 3, "rank": 0.0, "after": [], "struck": False, "hidden": False})

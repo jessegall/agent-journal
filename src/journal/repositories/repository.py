@@ -81,11 +81,12 @@ class Repository(Generic[M]):
 
     def _update(self, row: M, by: Actor) -> M:
         stamped = row.with_(updated_at=self._now(), updated_by=by)
+        was = self.find(row.id)
         self.bus.dispatch(Updating(model=stamped, by=by))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
-        self.bus.dispatch(Updated(model=stamped, by=by))
+        self.bus.dispatch(Updated(model=stamped, by=by, was=was))
         return stamped
 
     def _load(self, row) -> M:

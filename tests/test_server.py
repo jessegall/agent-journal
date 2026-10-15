@@ -193,3 +193,45 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
         assert call(server, "GET", "/api/summary")[1]["environments"][0]["work"]["awaiting"] == "stuck on the login"
     finally:
         app.runtime().stop()
+
+
+def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: Path, monkeypatch):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
+    def hook(kind, **extra):
+        return urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+    try:
+        hook("SessionStart")
+        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k"})[1]["n"]
+        app.console().run(["message", "read", str(n)], Where("main", "s1"))
+        app.console().run(["task", "create", "t", "--start"], Where("main", "s1"))
+        app.console().run(["task", "done", "1", "--how", "shipped"], Where("main", "s1"))
+        events = call(server, "GET", "/api/main/events?last=50")[1]
+        assert any(e["type"] == "message" and e["action"] == "updated" and e["data"]["by"] == "read" for e in events)
+        assert any(e["type"] == "todo" and e["action"] == "completed" for e in events)
+        assert any(e["type"] == "agent" and e["data"]["hook"] == "SessionStart" for e in events)
+        hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(tmp_path / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
+        edit = call(server, "GET", "/api/main/agent/1/edits")[1]["edits"][0]
+        assert [r["kind"] for r in edit["rows"]] == ["ctx", "del", "add", "ctx"] and edit["first_line"] == 7 and edit["last_line"] == 9
+        hook("PostToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_response={"stdout": "1 t", "stderr": ""})
+        assert call(server, "GET", "/api/main/agent/1/terminal")[1]["lines"][-1]["tool"] == "Journal"
+        assert call(server, "POST", "/api/main/agent/s1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
+        doc = call(server, "POST", "/api/main/doc", {"title": "Design", "brief": "Intro\n\n## Goals\n\nShip it"})[1]
+        assert [s["title"] for s in doc["sections"]] == ["Goals"]
+        doc = call(server, "POST", f"/api/main/doc/{doc['n']}/section", {"title": "Risks", "body": "None"})[1]
+        assert [s["title"] for s in doc["sections"]] == ["Goals", "Risks"]
+        assert call(server, "POST", f"/api/main/doc/{doc['n']}/update", {"title": "Design v2", "brief": doc["brief"]})[1]["title"] == "Design v2"
+        app.console().run(["task", "create", "later", "--start"], Where("main", "s1"))
+        app.console().run(["task", "park", "2", "waiting"], Where("main", "s1"))
+        assert call(server, "GET", "/api/main/todo/2")[1]["data"]["status"] == "parked"
+    finally:
+        app.runtime().stop()

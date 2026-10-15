@@ -23,7 +23,7 @@ class WorksShaper(Shaper):
 
     def row(self, t, held) -> V3Row:
         logged = self.logs.of(t)
-        data = {"todo": t.id, "status": "open" if t.state == TaskState.STARTED else "done", "parked": False, "awaiting": held.awaiting if held else "", "awaiting_since": seconds(t.updated_at) if held and held.awaiting else 0,
+        data = {"todo": t.id, "status": "open" if t.state in (TaskState.STARTED, TaskState.PARKED) else "done", "parked": t.state == TaskState.PARKED, "parked_why": t.parked_why, "awaiting": held.awaiting if held else "", "awaiting_since": seconds(t.updated_at) if held and held.awaiting else 0,
                 "awaiting_on": held.awaiting_on if held else "", "logged": seconds(logged[-1].created_at) if logged else 0}
         return V3Row.of("work", t, title=t.title, brief=t.brief, outcome=t.outcome, completed=seconds(t.finished_at), created=seconds(t.started_at) or seconds(t.created_at),
                         sections=[{"title": "Log", "body": "\n".join(f"- {l.line}" for l in logged)}] if logged else [], data=data)

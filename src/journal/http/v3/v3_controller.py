@@ -27,6 +27,7 @@ from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.supervisor_link import SupervisorLink
 from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
 from journal.repositories.tasks import Tasks
@@ -40,9 +41,9 @@ LINGERS = 10.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
-        self.messages, self.files, self.current = messages, files, current
+        self.messages, self.files, self.current, self.supervisor = messages, files, current, supervisor
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
 
     # the journal
@@ -255,11 +256,31 @@ class V3Controller:
             path = str(Path(path).resolve().relative_to(self.config.root.resolve()))
         except ValueError:
             path = Path(path).name
-        removed = input_.get("old_string", "").splitlines() if tool == "Edit" else []
-        added = (input_.get("new_string", "") if tool == "Edit" else input_.get("content", "")).splitlines()
-        rows = [*({"kind": "del", "line": 0, "text": line, "hidden": 0} for line in removed[:60]), *({"kind": "add", "line": 0, "text": line, "hidden": 0} for line in added[:60])]
+        rows = self.patch_rows(entry.data.get("tool_response", {}), input_, tool)
         at = seconds(entry.created_at)
-        return {"id": f"{path}@{at}", "path": path, "kind": "create" if tool == "Write" else "edit", "at": at, "added": len(added), "removed": len(removed), "first_line": 0, "last_line": 0, "rows": rows, "image": False}
+        numbered = [r["line"] for r in rows if r["line"]]
+        return {"id": f"{path}@{at}", "path": path, "kind": "create" if tool == "Write" else "edit", "at": at, "added": len([r for r in rows if r["kind"] == "add"]), "removed": len([r for r in rows if r["kind"] == "del"]),
+                "first_line": min(numbered) if numbered else 1, "last_line": max(numbered) if numbered else len(rows), "rows": rows[:200], "image": False}
+
+    @staticmethod
+    def patch_rows(response, input_: dict, tool: str) -> list[dict]:
+        """The changed lines with their numbers from the provider's structured patch; a whole write is all added lines from one."""
+        hunks = response.get("structuredPatch", []) if isinstance(response, dict) else []
+        if not hunks:
+            added = (input_.get("new_string", "") if tool == "Edit" else input_.get("content", "")).splitlines()
+            return [{"kind": "add", "line": n, "text": line, "hidden": 0} for n, line in enumerate(added, 1)]
+        rows = []
+        for hunk in hunks:
+            old, new = hunk.get("oldStart", 1), hunk.get("newStart", 1)
+            for text in hunk.get("lines", []):
+                mark, body = text[:1], text[1:]
+                if mark == "+":
+                    rows.append({"kind": "add", "line": new, "text": body, "hidden": 0}); new += 1
+                elif mark == "-":
+                    rows.append({"kind": "del", "line": old, "text": body, "hidden": 0}); old += 1
+                else:
+                    rows.append({"kind": "ctx", "line": new, "text": body, "hidden": 0}); new += 1; old += 1
+        return rows
 
     def get_agent_edited_file(self, request: Request) -> Response:
         path = request.query.get("id", "").split("@")[0]
@@ -280,8 +301,16 @@ class V3Controller:
         for e in reversed(self.entries.of_kind_in(environment.id, 400)):
             if e.kind != "ToolFinished" or e.data.get("tool_name") != "Bash" or not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= after:
                 continue
-            lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Bash", "command": e.data.get("tool_input", {}).get("command", ""), "output": Hook.printed(e.data.get("tool_response", "")), "stepped": False, "level": "everything"})
+            command = e.data.get("tool_input", {}).get("command", "")
+            lines.append({"agent": n, "at": seconds(e.created_at), "tool": "Journal" if command.lstrip().split(" ")[0].endswith("journal") else "Bash", "command": command, "output": Hook.printed(e.data.get("tool_response", "")), "stepped": False, "level": "everything"})
         return Response.json({"lines": lines[-200:]})
+
+    def post_agent_shell(self, request: Request) -> Response:
+        """A command typed in the terminal pane goes to the agent's own terminal, as the user would type it."""
+        command = request.body.get("command", "").strip()
+        if command:
+            self.supervisor.type_raw(command)
+        return Response.json({"queued": bool(command)})
 
     def get_agent_transcript(self, request: Request) -> Response:
         return Response.json({"turns": [], "rows": [], "more": False})

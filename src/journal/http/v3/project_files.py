@@ -1,4 +1,5 @@
 import subprocess
+import time
 from pathlib import Path
 
 from journal.config import Config
@@ -12,6 +13,15 @@ class ProjectFiles:
 
     def __init__(self, config: Config) -> None:
         self.root = config.root.resolve()
+        self._branch = ("", 0.0)
+
+    def branch(self) -> str:
+        """The checked-out branch, asked of git at most every few seconds since every agent row carries it."""
+        name, at = self._branch
+        if time.time() - at > 5:
+            done = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=self.root, capture_output=True, text=True, timeout=5)
+            self._branch = (done.stdout.strip() if done.returncode == 0 else "", time.time())
+        return self._branch[0]
 
     def folder(self, given: str) -> list[dict]:
         path = self.inside(given)

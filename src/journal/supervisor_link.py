@@ -15,6 +15,10 @@ class SupervisorLink:
     def type(self, line: str, after: float = 0.0) -> None:
         self._send({"type": "Type", "line": f"{MARK} {line}", "after": after})
 
+    def type_raw(self, line: str) -> None:
+        """What the user typed in the viewer's terminal pane, as the user, without the mark."""
+        self._send({"type": "Type", "line": line, "after": 0.0})
+
     def restart_agent(self, resume: tuple[str, ...]) -> None:
         self._send({"type": "RestartAgent", "resume": list(resume)})
 
