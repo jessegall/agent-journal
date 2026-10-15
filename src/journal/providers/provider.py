@@ -48,7 +48,7 @@ class Provider:
         if not decision.context:
             return Response(200, {})
         if kind == HookKind.STOP:
-            return Response(200, {}) if hook.stop_again else Response(409, {"error": decision.context})
+            return Response(409, {"error": decision.context})
         if kind in CONTEXT_HOOKS:
             return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}})
         return Response(200, {})

@@ -1,6 +1,5 @@
-import re
-
 from journal.engine.machine import Machine
+from journal.features.shell.chain import Chain
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
@@ -12,8 +11,6 @@ from journal.repositories.settings import PROJECT, Settings
 NUDGE_AFTER, HOLD_AFTER = "messages.nudge_after", "messages.hold_after"
 """The settings: tool uses with a message read and unanswered before the agent is nudged to answer, ten unless set, and before every tool call waits for the answer, fifteen unless set."""
 DEFAULTS = {NUDGE_AFTER: 10, HOLD_AFTER: 15}
-JOURNAL_COMMAND = re.compile(r"(?:^|[;&|]\s*)\S*journal\s+[a-z]")
-"""A journal command anywhere in the shell line, after a cd or beside another command, as an agent writes it."""
 
 
 class HoldUnanswered(AgentListener[ToolStarting]):
@@ -44,4 +41,5 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     @staticmethod
     def is_journal_command(event: ToolStarting) -> bool:
-        return event.tool == "Bash" and bool(JOURNAL_COMMAND.search(event.input.get("command", "")))
+        journal, parts = Chain.journal_parts(event.input.get("command", "")) if event.tool == "Bash" else (0, 0)
+        return parts > 0 and journal == parts

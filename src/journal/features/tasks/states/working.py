@@ -9,10 +9,6 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 
 QUIET_AFTER = 900.0
-LOG_AFTER = 20
-"""Edits with nothing logged before the next write waits for a log line."""
-NAME_EVERY = 10
-"""Edits between namings of the work in hand, so the agent notices when it drifted."""
 
 
 @dataclass(frozen=True)
@@ -22,19 +18,13 @@ class Working(AgentState):
     name = "working"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     task_id: int = 0
-    edits: int = 0
+    uses: int = 0
 
     def tool_starting(self, event: ToolStarting) -> Transition:
-        from journal.features.tasks.feature import Tasks
-        if not event.writes:
-            return self.stay()
-        if self.edits >= LOG_AFTER:
-            return self.refuse(Tasks.LOG_OVERDUE.about(n=self.task_id, edits=self.edits))
-        counted = Working(task_id=self.task_id, edits=self.edits + 1)
-        return self.go(counted, Tasks.IN_HAND.about(n=self.task_id)) if counted.edits % NAME_EVERY == 0 else self.go(counted)
+        return self.go(Working(task_id=self.task_id, uses=self.uses + 1))
 
     def logged(self) -> "Working":
-        return Working(task_id=self.task_id, edits=0)
+        return Working(task_id=self.task_id, uses=0)
 
     def idle(self, event: AgentIdle) -> Transition:
         from journal.features.tasks.feature import Tasks

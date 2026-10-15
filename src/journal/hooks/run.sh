@@ -8,17 +8,23 @@ here=$(cd "$(dirname "$0")" && pwd)
 __journal_cli="$here/../../journal.sh"
 root=$(cd "$here/../../.." && pwd)
 
-# The working tree as git sees it, one line a changed file: lines added, lines removed, path; a new file counts as
-# all added. What differs between before and after a part is what that part changed. The helpers never fail the
+# The working tree as git sees it, one line a changed file: lines added, lines removed, path, a new file marked ?
+# and counted only once it shows up as changed. Only a part that writes, as the journal read it, is measured, so a
+# read costs nothing. What differs between before and after is what the part changed. The helpers never fail the
 # worker, whatever a part did to its options, such as set -e.
 __journal_tree() {
     git diff --numstat HEAD 2>/dev/null | grep -v "	\.journal/"
-    git ls-files --others --exclude-standard 2>/dev/null | grep -v "^\.journal/" | while IFS= read -r __journal_new; do
-        printf '%s\t0\t%s\n' "$(wc -l < "$__journal_new" | tr -d ' ')" "$__journal_new"
-    done
+    git ls-files --others --exclude-standard 2>/dev/null | grep -v "^\.journal/" | sed 's/^/?\t0\t/'
+}
+# The part before left a status the next may read as $?; replayed, except under set -e, where the replay itself would end the shell.
+__journal_status() {
+    case "$-" in *e*) return 0 ;; *) return "$__journal_code" ;; esac
 }
 __journal_changed() {
-    { diff "$__journal_folder/$1.before" "$__journal_folder/$1.after" 2>/dev/null || true; } | sed -n 's/^> //p'
+    { diff "$__journal_folder/$1.before" "$__journal_folder/$1.after" 2>/dev/null || true; } | sed -n 's/^> //p' | while IFS="$(printf '\t')" read -r __journal_a __journal_r __journal_path; do
+        [ "$__journal_a" = "?" ] && __journal_a=$(wc -l < "$__journal_path" 2>/dev/null | tr -d ' ')
+        printf '%s\t%s\t%s\n' "${__journal_a:-0}" "$__journal_r" "$__journal_path"
+    done
 }
 
 # The worker. Its own variables carry a prefix, since the parts run in the same shell and may set i or code.
@@ -51,18 +57,20 @@ if [ "$1" = "--chain" ]; then
     while read -r __journal_kind; do
         __journal_part=$(cat "$__journal_folder/$__journal_i.part")
         case "$__journal_kind" in
-            ?'&'?) if [ "$__journal_code" -ne 0 ]; then : > "$__journal_folder/$__journal_i.out"; : > "$__journal_folder/$__journal_i.err"; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; __journal_i=$((__journal_i + 1)); continue; fi ;;
+            ?'&'??) if [ "$__journal_code" -ne 0 ]; then : > "$__journal_folder/$__journal_i.out"; : > "$__journal_folder/$__journal_i.err"; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; __journal_i=$((__journal_i + 1)); continue; fi ;;
         esac
-        case "$__journal_kind" in R*) __journal_lastr=$__journal_i; sh "$__journal_cli" shell started "$__journal_part" --chain "$__journal_id" >/dev/null 2>&1; __journal_tree > "$__journal_folder/$__journal_i.before" || true ;; esac
+        case "$__journal_kind" in R*) __journal_lastr=$__journal_i; sh "$__journal_cli" shell started "$__journal_part" --chain "$__journal_id" >/dev/null 2>&1 ;; esac
+        case "$__journal_kind" in ???w) __journal_tree > "$__journal_folder/$__journal_i.before" || true ;; esac
         __journal_began=$SECONDS
         case "$__journal_part" in
             exec\ *) (eval "$__journal_part") > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$?; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; break ;;
             *) case "$__journal_kind" in
-                   *'&') if (exit "$__journal_code"); eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; then __journal_code=0; else __journal_code=$?; fi ;;
-                   *) (exit "$__journal_code"); eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$? ;;
+                   ??'&'?) if __journal_status; eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; then __journal_code=0; else __journal_code=$?; fi ;;
+                   *) __journal_status; eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$? ;;
                esac ;;
         esac
-        case "$__journal_kind" in R*) __journal_tree > "$__journal_folder/$__journal_i.after" || true; sh "$__journal_cli" shell ran "$__journal_part" --chain "$__journal_id" --status "$__journal_code" --seconds "$((SECONDS - __journal_began))" --output "$(cat "$__journal_folder/$__journal_i.out" "$__journal_folder/$__journal_i.err" | tail -c 2000)" --changed "$(__journal_changed "$__journal_i")" >/dev/null 2>&1 ;; esac
+        case "$__journal_kind" in ???w) __journal_tree > "$__journal_folder/$__journal_i.after" || true ;; esac
+        case "$__journal_kind" in R*) sh "$__journal_cli" shell ran "$__journal_part" --chain "$__journal_id" --status "$__journal_code" --seconds "$((SECONDS - __journal_began))" --output "$(cat "$__journal_folder/$__journal_i.out" "$__journal_folder/$__journal_i.err" | tail -c 2000)" --changed "$(__journal_changed "$__journal_i")" >/dev/null 2>&1 ;; esac
         echo "$__journal_code" > "$__journal_folder/$__journal_i.status"
         __journal_i=$((__journal_i + 1))
     done < "$__journal_folder/parts"

@@ -1,5 +1,6 @@
 from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.agent.idle import Idle
 from journal.features.agent_listener import AgentListener
 from journal.features.bus import Bus
 from journal.features.listener import Listener
@@ -20,12 +21,13 @@ class Receiver:
         self.environments, self.entries, self.translation, self.bus, self.deferred = environments, entries, translation, bus, deferred
 
     def receive(self, hook: Hook) -> Decision:
+        """The hook's decision. A stop that is the same stop again, with no work since the held one, cannot be held a second time: its words go by the typed line instead."""
         environment = self.environments.named(hook.environment)
         event = self.translation.event(hook, environment)
         self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
         decision = self._blocking(event)
         self._defer(event)
-        return decision
+        return Decision() if isinstance(event, Idle) and event.again and decision.allowed else decision
 
     def _blocking(self, event: AgentEvent) -> Decision:
         decision = Decision()

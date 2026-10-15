@@ -12,7 +12,7 @@ from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 
-STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "TurnWritten": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
+STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan"})
 """The states in which the agent has declared its work: only then is it working, as version 3 had it; an agent merely running is busy."""
 EVENT = {"ToolStarting": "PreToolUse", "ToolFinished": "PostToolUse", "PromptSubmitted": "UserPromptSubmit", "Idle": "Stop", "SessionStarted": "SessionStart", "SessionEnded": "SessionEnd", "Compacting": "PreCompact"}
@@ -53,7 +53,8 @@ class AgentsShaper(Shaper):
 
     def row(self, a, entries) -> V3Row:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted", "commit")]
-        last = hooks[-1] if hooks else None
+        moves = [e for e in hooks if e.kind in STATUS]
+        last = moves[-1] if moves else None
         kind = last.kind if last else ""
         status = "stopped" if a.state == "ended" else "working" if a.state in WORKING and STATUS.get(kind, "idle") == "busy" else STATUS.get(kind, "idle")
         at = seconds(last.created_at) if last else seconds(a.updated_at)

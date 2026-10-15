@@ -15,6 +15,7 @@ from journal.hooks.turn_gatherer import TurnGatherer
 from journal.hooks.hook_kind import HookKind
 from journal.models.environment import Environment
 from journal.providers.providers import Providers
+from journal.repositories.entries import Entries
 
 
 class Translation:
@@ -33,9 +34,21 @@ class Translation:
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
-    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer) -> None:
+    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer, entries: Entries) -> None:
         self.context, self.providers, self.turns = context, providers, turns
+        self.entries = entries
+
+    def again(self, hook: Hook, environment: Environment) -> bool:
+        """A stop is the same stop again only when the agent did nothing since the one before it: once it has worked, a stop is a fresh stop, whatever the provider's flag says."""
+        if not hook.stop_again:
+            return False
+        stops = [e for e in self.entries.of_kind(environment.id, "Idle", 20) if e.actor and e.actor.id == hook.session]
+        if not stops:
+            return True
+        return not any(e.id > stops[0].id for e in self.entries.of_kind(environment.id, "ToolStarting", 50) if e.actor and e.actor.id == hook.session)
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
+        if isinstance(bare, Idle):
+            bare = Idle(again=self.again(hook, environment))
         return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session)))

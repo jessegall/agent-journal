@@ -17,7 +17,7 @@ class CheckIn(AgentListener[Ticked]):
 
     def handle(self, event: Ticked) -> None:
         from journal.features.tasks.feature import Tasks
-        from journal.features.tasks.listeners.offer_next import AUTO
+        from journal.features.tasks.stop_words import AUTO
         if event.quiet_for < EVERY or not self.settings.get(PROJECT, AUTO, True):
             return
         agent = self.machine.agent(event.session, event.environment_id)

@@ -26,6 +26,17 @@ class Chain:
         return [Part(p, recorded=r, always=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
 
     @classmethod
+    def journal_parts(cls, line: str) -> tuple[int, int]:
+        """How many of the agent's own parts are journal commands, and how many parts there are."""
+        own = [p for p in cls.parts(line) if p.recorded]
+        return len([p for p in own if cls.is_journal(p.text)]), len(own)
+
+    @staticmethod
+    def is_journal(part: str) -> bool:
+        words = part.split()
+        return bool(words) and words[0].rsplit("/", 1)[-1] in ("journal", "journal.sh", "journal.py")
+
+    @classmethod
     def of(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
         """A wrapped part becomes the agent's own commands inside it; any other stays the shell's, in silence."""
         wrapped = WRAPPED.match(part)

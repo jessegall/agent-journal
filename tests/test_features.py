@@ -95,7 +95,7 @@ def test_pauses_nest_and_each_back_pops_one(app):
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert isinstance(machine.current("s1"), AtMark), "the halt went back to the mark it left"
     app.console().run(["nothing", "survives", "fine"], AGENT)
-    assert machine.current("s1") == Working(task_id=1), "the mark went back to the task"
+    assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1, "the mark went back to the task"
 
 
 def test_a_plan_is_followed_task_by_task_to_its_end(app):
@@ -651,7 +651,7 @@ def test_a_reply_naming_several_messages_answers_each_and_a_journal_command_afte
     app.console().run(["message", "read", "4"], AGENT)
     for _ in range(15):
         hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /tmp && journal message react 4 \"👍\""})[0] == 200
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message react 4 \"👍\"; journal task list"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})[0] == 409
 
 
@@ -679,7 +679,7 @@ def test_a_message_read_through_a_pipe_is_refused(app):
     hook(app, "SessionStart")
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 3 | head -3"})
     assert status == 409 and "read the user's message whole" in body["error"]
-    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /x && journal message read 3"})[0] == 200
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 3"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list | head -5"})[0] == 200, "only the user's words are protected"
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep 'journal message read 3' notes.md | head -2"})[0] == 200, "the words quoted inside another command are not a read"
 
@@ -723,7 +723,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     console, port = app.console(), app.server().port
     folder = app.config.root / "parts"
     folder.mkdir()
-    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&\nR&;\nR;;\n"
+    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
     bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"]
@@ -813,3 +813,11 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})
     assert status == 409 and "no work declared" in body["error"]
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
+
+
+def test_a_journal_command_chained_with_anything_else_is_refused(app):
+    hook(app, "SessionStart")
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd src && journal task log 1 'x' && python3 -m pytest -q"})
+    assert status == 409 and "a journal command runs on its own" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task log 1 'x'; journal message unread"})[0] == 200
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "python3 -m pytest -q && git commit -m x"})[0] == 200

@@ -8,6 +8,7 @@ from journal.engine.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain
 from journal.features.shell.doing import Doing
+from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
@@ -33,7 +34,7 @@ class ShellCommand(Command):
         self.cards, self.nudger, self.supervisor = cards, nudger, supervisor
 
     def arguments(self, verbs) -> None:
-        split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder: R for the agent's own, S for the shell's wrapping, one per line")
+        split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder; one line per part: R or S for the agent's own or the shell's wrapping, ; or & for how it follows, & or ; for what follows, w or - for whether it writes")
         split.add_argument("line")
         split.add_argument("--into", required=True)
         self.verb(verbs, "limit", "the seconds a command may run in the foreground now")
@@ -62,7 +63,7 @@ class ShellCommand(Command):
         folder = Path(args.into)
         for i, part in enumerate(Chain.parts(args.line)):
             (folder / f"{i}.part").write_text(part.text)
-            print(part.kind())
+            print(part.kind() + ("w" if part.recorded and Writes.part(part.text) else "-"))
         return 0
 
     def limit(self, args: Namespace, where: Where) -> int:

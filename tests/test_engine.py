@@ -51,14 +51,14 @@ def test_a_write_with_no_work_declared_is_refused_and_a_read_is_not(app):
     assert isinstance(app.container.get(Machine).current("s1"), Idle)
 
 
-def test_task_start_moves_the_agent_to_working_and_a_stop_says_carry_on_once(app):
+def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "ship it", "--start"], AGENT)
     assert app.container.get(Machine).current("s1") == Working(task_id=1)
     assert write(app)[0] == 200
     status, body = hook(app, "Stop")
     assert status == 409 and "task 1 is in hand: carry on" in body["error"], "a stop with work in hand is refused, which is how Claude is told to go on"
-    assert hook(app, "Stop")[1] == {}, "the same line is not said twice within the window"
+    assert hook(app, "Stop")[0] == 409, "every fresh stop with work in hand is held, until a halt"
     assert hook(app, "PreCompact")[1] == {}, "a compaction hook carries nothing to the agent; the marks said it"
 
 
@@ -136,20 +136,35 @@ def test_one_task_in_hand_park_resume_and_await(app):
     assert app.container.get(Machine).current("s1") == Working(task_id=1), "working again lifts the wait"
 
 
-def test_twenty_edits_with_nothing_logged_hold_the_next_write_and_every_tenth_names_the_task(app):
+def test_ten_uses_with_nothing_logged_ask_for_a_log_and_twenty_hold_the_next_write(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    answers = [write(app) for _ in range(20)]
-    assert all(status == 200 for status, _ in answers)
-    assert "task 1 in hand" in answers[9][1]["hookSpecificOutput"]["additionalContext"]
+    answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(11)]
+    assert all(status == 200 for status, _ in answers) and "it has been a while since you logged task 1" in json.dumps(answers[10][1]) and "logged" not in json.dumps(answers[9][1])
+    reads = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(9)]
+    assert all(status == 200 for status, _ in reads), "a read is never held for a log"
     status, body = write(app)
-    assert status == 409 and "20 edits since task 1 was last logged" in body["error"]
+    assert status == 409 and "20 tool uses since task 1 was last logged" in body["error"]
     app.console().run(["task", "log", "1", "halfway"], AGENT)
     assert write(app)[0] == 200
-
-
 def test_a_stop_in_a_paused_state_says_what_the_journal_awaits_once(app):
     status, body = hook(app, "SessionStart")
     status, body = hook(app, "Stop")
     assert status == 409 and "you stopped while the journal awaits a look at what is in flight here" in body["error"]
     assert hook(app, "Stop", stop_hook_active=True)[0] == 200
+
+
+def test_a_stop_after_work_is_a_fresh_stop_and_one_with_no_work_between_is_typed(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    assert hook(app, "Stop")[0] == 409
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    assert hook(app, "Stop", stop_hook_active=True)[0] == 409, "work since the held stop makes the next a fresh one"
+    status, body = hook(app, "Stop", stop_hook_active=True)
+    app.runtime().deferred.drain()
+    assert status == 200 and typed[-1] == "[journal] task 1 is in hand: carry on. log where it stands, then continue; journal halt \"<why>\" if you are truly stuck"
