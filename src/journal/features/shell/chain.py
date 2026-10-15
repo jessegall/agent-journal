@@ -5,8 +5,12 @@ from journal.features.shell.part import Part
 WRAPPED = re.compile(r"^eval '(.*)' < /dev/null$", re.S)
 """Claude Code runs the agent's command as eval '<command>' < /dev/null between its own set-up and a pwd: the command inside is what the agent wrote."""
 QUOTE = "'\"'\"'"
-OPENS = {"for": "done", "while": "done", "until": "done", "if": "fi", "case": "esac"}
+OPENS = {"for": "done", "while": "done", "until": "done", "select": "done", "repeat": "done", "if": "fi", "case": "esac", "foreach": "end"}
 """A compound command runs from its opening word to its closing one, whatever separators lie between."""
+BODIES = {"do", "then", "{"}
+"""The word that opens a compound command's body in the long form; without it zsh takes the next command, with its && chain, as the body."""
+SHORT = {"for", "select", "repeat"}
+"""The openers zsh allows in that short form; an if, a while or an until reads on to its then or do."""
 
 
 class Chain:
@@ -63,7 +67,7 @@ class Chain:
                 depth += 1
             elif (c in ")}" or line.startswith("]]", i)) and depth:
                 depth -= 1
-            found = "&&" if line.startswith("&&", i) else ";" if c == ";" and not line.startswith(";;", i) else ""
+            found = "&&" if line.startswith("&&", i) else ";" if c == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";" else ""
             if found and not depth:
                 parts.append((separator, current.strip()))
                 current, separator, i = "", found, i + len(found)
@@ -74,16 +78,23 @@ class Chain:
 
     @staticmethod
     def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
-        """A loop, an if or a case is one command from its opening word to its closing one; the separators inside are put back."""
-        joined, closers = [], []
+        """A loop, an if or a case is one command from its opening word to its closing one, or in zsh's short form to the end of the next command's && chain; the separators inside are put back."""
+        joined, closers, short = [], [], False
         for separator, part in parts:
             words = part.split()
+            if short and separator != "&&":
+                closers.pop()
+                short = False
             if closers:
-                joined[-1] = (joined[-1][0], f"{joined[-1][1]}{separator} {part}")
+                opener = joined[-1][1].split()[0]
+                joined[-1] = (joined[-1][0], f"{joined[-1][1]}{separator if separator == ';' else ' ' + separator} {part}")
+                if len(closers) == 1 and not short and separator == ";" and opener in SHORT and words and words[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
+                    short = True
             else:
                 joined.append((separator, part))
-            if words and words[0] in OPENS:
+            if words and words[0] in OPENS and not short and OPENS[words[0]] not in words[1:]:
                 closers.append(OPENS[words[0]])
-            if closers and words and closers[-1] in (words[0], words[-1]):
+                short = words[0] == "repeat" and len(words) > 2
+            elif closers and words and words[0] == closers[-1] and not short:
                 closers.pop()
         return joined

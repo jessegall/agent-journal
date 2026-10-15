@@ -99,6 +99,18 @@ CORPUS = [
     "echo $((1 + 2)); echo $(( 3 && 4 ))",
     "until false; do echo once; break; done; echo u",
     "x=5; while [ $x -gt 3 ]; do x=$((x - 1)); done; echo $x",
+    "for x in a b; echo $x && echo y; echo z",
+    "repeat 2 echo r && echo s; echo t",
+    "if true; echo short-if; echo after",
+    "case a in a) echo one;& b) echo two;; esac; case b in a) echo no;| b) echo yes;; esac",
+    "for i in 1; do echo done; done; echo fi; echo esac",
+    "foreach x (p q)\necho $x\nend; echo after-foreach",
+    "for ((i=0; i<2; i++)); do echo $i; done; echo c",
+    "true || false && echo y; false || true && echo z",
+    "! true; echo $?; ! false && echo negated",
+    "{ echo a } always { echo b }; echo c",
+    "f() echo in-f && echo also; f; echo out",
+    "i=7; for i in 1 2; do :; done; echo $i; code=9; echo $code",
 ]
 
 
