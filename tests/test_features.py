@@ -1105,14 +1105,10 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app)
     assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"
 
 
-def test_the_first_write_after_a_message_is_read_waits_for_a_reply_or_a_face(app):
+def test_a_write_after_a_message_is_read_goes_on_the_answer_is_asked_not_forced(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["message", "send", "could you rename it?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "a read goes on"
-    status, body = hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})
-    assert status == 409 and "answer message 1 first" in body["error"], "a write waits for the answer"
-    app.console().run(["message", "react", "1", "👍"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 200
+    assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 200, "a gentleman answers because he was asked, not because his hands are tied"

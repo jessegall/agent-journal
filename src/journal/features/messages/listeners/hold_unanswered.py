@@ -4,7 +4,6 @@ from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
-from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.repositories.settings import PROJECT, Settings
@@ -15,12 +14,12 @@ DEFAULTS = {NUDGE_AFTER: 10, HOLD_AFTER: 15}
 
 
 class HoldUnanswered(AgentListener[ToolStarting]):
-    """A message read and left unanswered holds the first write at once, is named back after ten tool uses, and after fifteen every tool call waits for the answer; only a journal command goes through. An answer is a reply, a face, or any message in the chat after the read."""
+    """A message read and left unanswered is named back after ten tool uses, and after fifteen every tool call waits for the answer; only a journal command goes through. An answer is a reply, a face, or any message in the chat after the read."""
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings, providers: Providers) -> None:
-        self.machine, self.nudger, self.messages, self.entries, self.settings, self.providers = machine, nudger, messages, entries, settings, providers
+    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings) -> None:
+        self.machine, self.nudger, self.messages, self.entries, self.settings = machine, nudger, messages, entries, settings
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
@@ -30,7 +29,7 @@ class HoldUnanswered(AgentListener[ToolStarting]):
         since = min(m.read_at for m in owed)
         uses = len([e for e in self.entries.of_kind(event.environment_id, "ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= since])
         numbers = ", ".join(str(m.id) for m in owed[-3:])
-        if uses >= self.after(HOLD_AFTER) or self.providers.named(event.provider).writes(event.tool, event.input):
+        if uses >= self.after(HOLD_AFTER):
             return Decision.refuse(MessagesFeature.ANSWER_HELD.about(messages=numbers).rendered())
         if uses < self.after(NUDGE_AFTER):
             return None
