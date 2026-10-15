@@ -1192,3 +1192,51 @@ def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
     status, body = post({"revision": 0, "nodes": nodes, "lines": [{"from": "t", "to": "a"}]})
     assert status == 200 and body["nodes"][1]["text"] == "say this and that", "control characters and line breaks are stripped"
     assert "at most 500 characters" in app.console().run(["chart", "node", "action", "say", "--text", "y" * 501], AGENT).err
+
+
+def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_next(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "free work"], USER)
+    assert hook(app, "Stop")[1] == {}, "auto off: the states say nothing about open tasks"
+    console.run(["chart", "node", "trigger", "idle"], AGENT)
+    console.run(["chart", "node", "check", "open_tasks"], AGENT)
+    console.run(["chart", "node", "action", "block_stop", "--text", "the chart says: tasks are open, carry on"], AGENT)
+    console.run(["chart", "node", "action", "say", "--text", "the chart says: nothing is open, rest"], AGENT)
+    console.run(["chart", "line", "1", "2"], AGENT)
+    console.run(["chart", "line", "2", "3", "--port", "yes"], AGENT)
+    console.run(["chart", "line", "2", "4", "--port", "no"], AGENT)
+    status, body = hook(app, "Stop")
+    assert body.get("decision") == "block" and body["reason"] == "the chart says: tasks are open, carry on", "the edit applies at the next event"
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "done", "2"], AGENT)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})
+    status, body = hook(app, "Stop")
+    assert body["reason"] == "the chart says: nothing is open, rest", "the no line is followed; a line said at a fresh stop holds the stop once, as any line does"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "the same stop again goes through"
+    console.run(["chart", "node", "trigger", "tool_starting"], AGENT)
+    console.run(["chart", "node", "check", "tool_writes"], AGENT)
+    console.run(["chart", "node", "action", "hold", "--text", "no writes today"], AGENT)
+    console.run(["chart", "line", "5", "6"], AGENT)
+    console.run(["chart", "line", "6", "7", "--port", "yes"], AGENT)
+    console.run(["chart", "line", "6", "4", "--port", "no"], AGENT)
+    console.run(["task", "create", "u", "--start"], AGENT)
+    status, body = hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})
+    assert status == 409 and body["error"] == "no writes today", "a hold refuses the tool use"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[0] == 200
+    console.run(["chart", "node", "trigger", "tasks.created"], AGENT)
+    console.run(["chart", "node", "action", "type", "--text", "a task was filed"], AGENT)
+    console.run(["chart", "line", "8", "9"], AGENT)
+    console.run(["task", "create", "filed by the user"], USER)
+    app.runtime().deferred.drain()
+    assert "[journal] a task was filed" in sent, "a row event walks the chart and types the line"
+    from journal.repositories.entries import Entries
+    walks = [e for e in app.container.get(Entries).of_kind(1, "walk") if e.data["trigger"] == "idle"]
+    assert any(w.data["nodes"] == [1, 2, 3] and not w.data["allowed"] for w in walks), "a walk leaves its trace"
