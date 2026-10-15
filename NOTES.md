@@ -404,3 +404,5 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   core only; no tests on single models or features until the core stands.
 - Old root files still to deal with: `docker/`, `install.py`, `install.sh`, `pytest.ini`,
   `conftest.py`, `.coveragerc`, `plugins.json`, `.githooks/`, `.codex/agents/`.
+
+- **docs/messaging-and-chat-marks.md** holds the requirements for the chat, read from version 3 on 2026-10-15: your messages, the agent's words, tags, replies, reactions, marks, etiquette, and what version 4 still lacks.
