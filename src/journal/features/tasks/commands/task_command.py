@@ -1,12 +1,15 @@
 import time
 from argparse import Namespace
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
+from journal.engine.states.paused import Paused
 from journal.refused import Refused
 from journal.features.tasks.states.expecting import Expecting
+from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 from journal.models.link import Link
 from journal.models.ref import Ref
@@ -144,7 +147,7 @@ class TaskCommand(Command):
         return current if isinstance(current, Working) else None
 
     def _let_go(self, task: Task, where: Where) -> None:
-        """An agent that finished the task it was on is idle again."""
+        """An agent that finished the task it was on is idle again, also when it held the task under a pause, such as a skill owed: the pause then goes back to idle."""
         if not where.session:
             return
         try:
@@ -153,6 +156,8 @@ class TaskCommand(Command):
             return
         if isinstance(current, Working) and current.task_id == task.id:
             self.machine.move(where.session, task.environment_id, self.machine.states.first())
+        elif isinstance(current, Paused) and current.resume.get("state") == Working.name and current.resume.get("data", {}).get("task_id") == task.id:
+            self.machine.move(where.session, task.environment_id, replace(current, resume={"state": self.machine.states.first().name, "data": {}}))
 
     @staticmethod
     def _now() -> datetime:

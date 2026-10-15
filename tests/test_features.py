@@ -863,3 +863,17 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
     assert app.console().run(["mcp", "list"], USER).out.startswith("linear")
+
+
+def test_a_task_finished_while_a_skill_is_owed_is_let_go_of_under_the_pause(skilled):
+    app = skilled
+    hook(app, "SessionStart")
+    read_skill(app, "journal")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "loading_skill", "the tasks skill is owed on entering work"
+    done = app.console().run(["task", "done", "1", "--how", "quick"], AGENT)
+    assert done.code == 0, done.err
+    read_skill(app, "journal-tasks")
+    assert machine.current("s1").name == "idle", "the pause went back to idle, not to the finished task"
