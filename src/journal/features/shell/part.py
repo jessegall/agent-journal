@@ -8,5 +8,5 @@ class Part:
     text: str
     recorded: bool = True
 
-    def line(self) -> str:
-        return f"{'R' if self.recorded else 'S'}\t{self.text}"
+    def kind(self) -> str:
+        return "R" if self.recorded else "S"

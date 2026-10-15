@@ -694,7 +694,10 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     console, port = app.console(), app.server().port
-    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'done'"], AGENT).out == "R\tcd src\nR\tpytest -q | tail -1\nR\tgit commit -m 'done'\n"
+    folder = app.config.root / "parts"
+    folder.mkdir()
+    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R\nR\nR\n"
+    assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
     bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"]
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False

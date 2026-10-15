@@ -13,8 +13,8 @@ if [ "$1" = "--chain" ]; then
     id=$(basename "$folder")
     i=0
     code=0
-    while IFS="$(printf '\t')" read -r kind part; do
-        [ -n "$part" ] || continue
+    while read -r kind; do
+        part=$(cat "$folder/$i.part")
         [ "$kind" = "R" ] && sh "$journal" shell started "$part" --chain "$id" >/dev/null 2>&1
         began=$SECONDS
         eval "$part" > "$folder/$i.out" 2>&1
@@ -38,7 +38,7 @@ id=$(date +%s)-$$
 folder="$root/runtime/outputs/$id"
 mkdir -p "$folder"
 printf '%s' "$1" > "$folder/line"
-sh "$journal" shell split "$1" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
+sh "$journal" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$journal" shell limit 2>/dev/null); limit=${limit:-30}
 shown=0
@@ -54,7 +54,7 @@ while :; do
     [ -f "$folder/done" ] && exit "$(cat "$folder/done")"
     if [ $((SECONDS - began)) -ge "$limit" ]; then
         touch "$folder/moved"
-        running=$(sed -n "$((shown + 1))p" "$folder/parts" | cut -f2-)
+        running=$(cat "$folder/$shown.part")
         sh "$journal" shell moved "$id" "$running" --file "$folder"
         exit 0
     fi

@@ -1,5 +1,6 @@
 from argparse import Namespace
 from datetime import datetime, timezone
+from pathlib import Path
 
 from journal.console.command import Command
 from journal.console.where import Where
@@ -32,7 +33,9 @@ class ShellCommand(Command):
         self.cards, self.nudger, self.supervisor = cards, nudger, supervisor
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "split", "the commands a line chains, one per line: R for the agent's own, S for the shell's wrapping").add_argument("line")
+        split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder: R for the agent's own, S for the shell's wrapping, one per line")
+        split.add_argument("line")
+        split.add_argument("--into", required=True)
         self.verb(verbs, "limit", "the seconds a command may run in the foreground now")
         started = self.verb(verbs, "started", "a part of a chain has started")
         started.add_argument("part")
@@ -54,8 +57,11 @@ class ShellCommand(Command):
         ended.add_argument("--last", default="")
 
     def split(self, args: Namespace, where: Where) -> int:
-        for part in Chain.parts(args.line):
-            print(part.line())
+        """A part may span lines, so each goes to a file of its own; the printed index says which are the agent's."""
+        folder = Path(args.into)
+        for i, part in enumerate(Chain.parts(args.line)):
+            (folder / f"{i}.part").write_text(part.text)
+            print(part.kind())
         return 0
 
     def limit(self, args: Namespace, where: Where) -> int:
