@@ -1,6 +1,7 @@
 import argparse
 import contextlib
 import io
+import threading
 
 from journal.console.command import Command
 from journal.console.creations import Creations
@@ -18,6 +19,7 @@ class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
 
     def __init__(self, container: Container) -> None:
+        self._capture = threading.Lock()
         self.container = container
         self.commands: dict[str, Command] = {}
         self._parser: argparse.ArgumentParser | None = None
@@ -43,8 +45,12 @@ class Console:
         return self._parser
 
     def run(self, argv: list[str], where: Where) -> Outcome:
-        """Runs one command with its output captured, so the same call serves the terminal and the server."""
+        """Runs one command with its output captured, so the same call serves the terminal and the server. The capture is process-wide, so commands run one at a time."""
         out, err = io.StringIO(), io.StringIO()
+        with self._capture:
+            return self.captured(argv, where, out, err)
+
+    def captured(self, argv: list[str], where: Where, out: io.StringIO, err: io.StringIO) -> Outcome:
         made = Creations.begin()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             try:

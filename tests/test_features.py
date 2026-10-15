@@ -922,3 +922,17 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     for later in (120, 150, 180, 210):
         tick(later)
     assert [s["line"] for s in sent].count("[journal] while at work") == 3, "three tries, then the chat is told"
+
+
+def test_commands_run_at_the_same_moment_keep_their_own_output(app):
+    import threading
+    console = app.console()
+    outs = {}
+    def run(n):
+        outs[n] = console.run(["shell", "cap"] if n % 2 else ["shell", "limit"], AGENT).out
+    threads = [threading.Thread(target=run, args=(n,)) for n in range(20)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert all(outs[n] == ("200\n" if n % 2 else "30\n") for n in range(20)), "the capture is process-wide, so runs never overlap"
