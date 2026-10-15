@@ -48,7 +48,7 @@ class Walk:
             node = nodes[at.pop(0)]
             passed.append(node.id)
             if node.kind == NodeKind.CHECK:
-                port = YES if self.checks.answer(node.key, ctx) else NO
+                port = YES if self.checks.answer(node.key, ctx, node.text) else NO
             else:
                 port = THEN
                 if node.kind == NodeKind.ACTION:

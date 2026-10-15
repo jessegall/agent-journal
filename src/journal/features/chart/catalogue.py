@@ -32,6 +32,13 @@ CHECKS = (
     ("journal_command", "A journal command?", "the tool about to run is a journal command"),
     ("running_sequence", "In a sequence?", "the agent is on a step of a sequence"),
 )
+COUNTER_CHECKS = (
+    ("tool_uses_since_unread_every", "Every Nth tool use with a message unread?", "true on every Nth tool use since the oldest unread message came; the text is N"),
+    ("tool_uses_since_unread_over", "N tool uses with a message unread?", "at least N tool uses since the oldest unread message came; the text is N or a setting's name"),
+    ("tool_uses_since_read_over", "N tool uses with a message unanswered?", "at least N tool uses since the oldest message was read and not answered; the text is N or a setting's name, such as messages.hold_after"),
+    ("edits_since_log_over", "N edits since the last log?", "the task in hand has at least N edits since it was logged; the text is N or a setting's name, such as work.log_after"),
+    ("edits_since_log_every", "Every Nth edit since the last log?", "true on every Nth edit since the task in hand was logged; the text is N or a setting's name"),
+)
 ACTIONS = (
     ("say", "Say a line", "the line is said to the agent through the nudger, once per repeat window", True),
     ("hold", "Hold the tool", "the tool use is refused with the line, until what the line names is done", True),
@@ -51,7 +58,9 @@ class Catalogue:
         return agent + rows
 
     def checks(self) -> list[Entry]:
-        return [Entry(NodeKind.CHECK, key, title, about) for key, title, about in CHECKS]
+        plain = [Entry(NodeKind.CHECK, key, title, about) for key, title, about in CHECKS]
+        counters = [Entry(NodeKind.CHECK, key, title, about, takes_text=True) for key, title, about in COUNTER_CHECKS]
+        return plain + counters
 
     def actions(self) -> list[Entry]:
         return [Entry(NodeKind.ACTION, key, title, about, takes_text) for key, title, about, takes_text in ACTIONS]

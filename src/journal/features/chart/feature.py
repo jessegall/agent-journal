@@ -15,7 +15,8 @@ class ChartFeature(Feature):
     seeds = (ShippedChart,)
     listeners = (WalkAgentEvents, WalkRowEvents)
 
-    LINE = Nudge(name, "line", "{{text}}", repeat_after=60)
+    LINE = Nudge(name, "line", "{{text}}", repeat_after=0)
+    """A chart line is said whenever its path is walked: when it repeats is the chart's own business, through its checks."""
     nudges = (LINE,)
 
     skill = Skill("chart", "The chart of the journal's conduct; load it when the chart is read or edited", """

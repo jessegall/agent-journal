@@ -1293,3 +1293,30 @@ def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(a
     assert "reset to the shipped one, revision 2" in console.run(["chart", "reset"], AGENT).out
     again = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
     assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
+
+
+def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    app.container.get(Settings).save(Setting(environment_id=0, key="messages.hold_after", value=4), Actor.system())
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text], AGENT).out.split()[1].rstrip(":"))
+    line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], AGENT)
+    tool = add("trigger", "tool_starting")
+    every = add("check", "tool_uses_since_unread_every", "--text", "3")
+    inbox = add("action", "say", "--text", "the chart: your inbox waits")
+    over = add("check", "tool_uses_since_read_over", "--text", "messages.hold_after")
+    held = add("action", "hold", "--text", "the chart: answer first")
+    line(tool, every)
+    line(every, inbox, "yes")
+    line(every, over, "no")
+    line(over, held, "yes")
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["message", "send", "hello?"], USER)
+    read = lambda: hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
+    named = [n for n in range(1, 7) if "your inbox waits" in json.dumps(read()[1])]
+    assert named == [3, 6], "every third use since the message came"
+    console.run(["message", "read", "1"], AGENT)
+    answers = [read()[0] for _ in range(5)]
+    assert answers[:3] == [200, 200, 200] and answers[3] == 409, "the hold after as many uses as the setting says"
