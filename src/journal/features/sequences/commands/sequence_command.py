@@ -3,6 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
+from journal.features.sequences.running import Running
 from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.models.sequence import Sequence
 from journal.repositories.environments import Environments
@@ -12,11 +13,12 @@ from journal.repositories.sequences import Sequences
 class SequenceCommand(Command):
     noun = "sequence"
 
-    def __init__(self, sequences: Sequences, environments: Environments, machine: Machine) -> None:
-        self.sequences, self.environments, self.machine = sequences, environments, machine
+    def __init__(self, sequences: Sequences, environments: Environments, machine: Machine, running: Running) -> None:
+        self.sequences, self.environments, self.machine, self.running = sequences, environments, machine, running
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "write a sequence of steps")
+        create.add_argument("--starts-on", default="", help="the row event that starts it on its own, as kind.created, such as plan.created")
         create.add_argument("title")
         create.add_argument("--steps", required=True, help="steps separated by |")
         self.verb(verbs, "run", "start a sequence at its first step").add_argument("n", type=int)
@@ -25,18 +27,12 @@ class SequenceCommand(Command):
 
     def create(self, args: Namespace, where: Where) -> int:
         steps = tuple(s.strip() for s in args.steps.split("|") if s.strip())
-        sequence = self.sequences.save(Sequence(title=args.title, steps=steps), where.actor)
+        sequence = self.sequences.save(Sequence(title=args.title, steps=steps, starts_on=args.starts_on), where.actor)
         print(f"sequence {sequence.id}: {sequence.title}, {len(steps)} steps")
         return 0
 
     def run(self, args: Namespace, where: Where) -> int:
-        from journal.features.sequences.feature import Sequences as SequencesFeature
-        sequence = self.sequences.find(args.n)
-        environment = self.environments.named(where.environment).id
-        agent = self.machine.agent(where.session, environment)
-        current = self.machine.states.named(agent.state, agent.data)
-        self.machine.move(where.session, environment, RunningSequence.leaving(current, sequence_id=sequence.id, step=0, text=sequence.steps[0]))
-        print(SequencesFeature.STEP.about(n=sequence.id, step=1, text=sequence.steps[0]).rendered())
+        print(self.running.start(self.sequences.find(args.n), where.session, self.environments.named(where.environment).id))
         return 0
 
     def next(self, args: Namespace, where: Where) -> int:
@@ -59,5 +55,6 @@ class SequenceCommand(Command):
 
     def list(self, args: Namespace, where: Where) -> int:
         for sequence in self.sequences.all():
-            print(f"{sequence.id:>4}  {sequence.title} ({len(sequence.steps)} steps)")
+            starts = f", starts on {sequence.starts_on}" if sequence.starts_on else ""
+            print(f"{sequence.id:>4}  {sequence.title} ({len(sequence.steps)} steps{starts})")
         return 0

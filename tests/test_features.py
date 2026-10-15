@@ -192,10 +192,11 @@ def test_the_same_check_three_times_is_named(app):
 
 def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     console = app.console()
-    console.run(["sequence", "create", "release", "--steps", "bump the version | tag it | push"], USER)
+    created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it | push"], USER).out
+    release = created.split()[1].rstrip(":")
     hook(app, "SessionStart")
     console.run(["task", "create", "t", "--start"], AGENT)
-    assert "step 1: bump the version" in console.run(["sequence", "run", "1"], AGENT).out
+    assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
     assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
@@ -959,3 +960,24 @@ def test_the_bar_names_the_work_declared_without_a_task_even_while_the_agent_is_
     from journal.engine.states.paused import Paused
     held = Paused(resume={"state": "working", "data": {"what": "tidying the notes"}})
     assert shaper.described(held) == "tidying the notes", "a pause that names nothing shows the work underneath"
+
+
+def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    listed = app.console().run(["sequence", "list"], AGENT).out
+    assert "Building a plan (4 steps, starts on plan.created)" in listed, "the shipped sequence is seeded at boot"
+    app.console().run(["plan", "create", "Behaviour tree", "--brief", "a flowchart"], AGENT)
+    app.runtime().deferred.drain()
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "running_sequence" and "step 1" in sent[-1]["line"] and "goal" in sent[-1]["line"]
+    app.console().run(["plan", "create", "Another", "--brief", "b"], AGENT)
+    app.runtime().deferred.drain()
+    assert machine.current("s1").step == 0, "a sequence already running is not started again"
+    for _ in range(4):
+        app.console().run(["sequence", "next"], AGENT)
+    assert machine.current("s1").name == "idle", "the last step goes back to what the agent was doing"

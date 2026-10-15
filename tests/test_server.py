@@ -158,8 +158,8 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         app.console().run(["check", "run", "1"], Where("main"))
         check = call(server, "GET", "/api/main/check/1")[1]
         assert check["data"]["last"]["ok"] is True and "runs" in check["data"]
-        app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main"))
-        assert [s["title"] for s in call(server, "GET", "/api/main/sequence/1")[1]["sections"]] == ["tag", "push"]
+        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
+        assert [s["title"] for s in call(server, "GET", f"/api/main/sequence/{release}")[1]["sections"]] == ["tag", "push"]
         counts = call(server, "GET", "/api/summary")[1]["environments"][0]["counts"]
         assert {"messages", "suggestions", "todos", "questions"} <= set(counts)
         (tmp_path / "hello.py").write_text("print('hi')\n")
@@ -251,8 +251,8 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
         assert call(server, "POST", "/api/main/check/1/run", {})[1]["data"]["last"]["ok"] is True
         assert call(server, "POST", "/api/main/check/1/set", {"key": "every", "value": "5"})[1]["data"]["every"] == 5
-        app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main"))
-        assert [s["title"] for s in call(server, "POST", "/api/main/sequence/1/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]
+        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
+        assert [s["title"] for s in call(server, "POST", f"/api/main/sequence/{release}/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]
         app.console().run(["trigger", "create", "deploy", "say so"], Where("main"))
         updated = call(server, "POST", "/api/main/trigger/1/update", {"words": "deploy, release", "does": "deny", "text": "wait"})[1]
         assert updated["data"]["words"] == ["deploy", "release"] and updated["data"]["action"] == "deny"

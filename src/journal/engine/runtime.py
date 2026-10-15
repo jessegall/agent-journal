@@ -31,6 +31,8 @@ class Runtime:
         for feature in self.registry.features:
             for listener in feature.listeners:
                 self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry))
+            for seed in feature.seeds:
+                self.container.get(seed).run()
 
     def start(self) -> None:
         self.boot()

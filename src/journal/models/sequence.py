@@ -9,3 +9,5 @@ class Sequence(Model):
 
     title: str = ""
     steps: tuple[str, ...] = ()
+    starts_on: str = ""
+    """The row event that starts it on its own, as kind.created, such as plan.created; empty for one run by hand."""
