@@ -1,6 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
 from journal.features.shell.commands.shell_command import ShellCommand
+from journal.features.shell.listeners.read_narrowly import ReadNarrowly
 from journal.features.shell.listeners.refuse_mixed_journal import RefuseMixedJournal
 from journal.features.skill import Skill
 
@@ -10,10 +11,11 @@ class Shell(Feature):
     title = "Shell commands"
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
     commands = (ShellCommand,)
-    listeners = (RefuseMixedJournal,)
+    listeners = (RefuseMixedJournal, ReadNarrowly)
 
     MOVED = Nudge(name, "moved", "moved to the background: {{part}}", "its output goes to {{file}}; you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
     ENDED = Nudge(name, "ended", "the command in the background {{outcome}}", "last lines: {{last}}; the whole output is at {{file}}", repeat_after=0)
+    NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
     ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it could be carried off to the background with it; run it in a call of its own", repeat_after=0)
     nudges = (MOVED, ENDED, ALONE)
 

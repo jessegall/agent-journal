@@ -877,3 +877,15 @@ def test_a_task_finished_while_a_skill_is_owed_is_let_go_of_under_the_pause(skil
     assert done.code == 0, done.err
     read_skill(app, "journal-tasks")
     assert machine.current("s1").name == "idle", "the pause went back to idle, not to the finished task"
+
+
+def test_a_long_file_is_not_read_whole(app, tmp_path):
+    hook(app, "SessionStart")
+    long, short = tmp_path / "long.txt", tmp_path / "short.txt"
+    long.write_text("x\n" * 401)
+    short.write_text("x\n" * 400)
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(long)})
+    assert status == 409 and "401 lines" in body["error"] and "offset and limit" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(long), "limit": 50})[0] == 200, "a part of it is fine"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(short)})[0] == 200, "twice the cap fits in one go"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "gone.txt")})[0] == 200

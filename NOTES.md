@@ -459,6 +459,8 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 
 ## The shell runner (2026-10-15)
 
+- The foreground shows a part's output cut to its first and last `shell.shown_lines` lines (200); a line says how many were cut and that the whole lies in the part's file. A Read of a file longer than twice that, without offset or limit, is refused with the same guidance (`ReadNarrowly`).
+
 - Every shell command of the agent runs through `hooks/run.sh`, set as Claude Code's shell prefix at launch. The
   line is taken apart at `&&` and `;` (`Chain`); a pipe is one pipeline. Claude's own wrapping (`source`, `setopt`,
   `eval '…' < /dev/null`, `pwd -P >| file`) is run in silence; the parts inside the eval are the agent's and are

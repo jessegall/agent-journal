@@ -8,6 +8,7 @@ from journal.engine.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain
 from journal.features.shell.doing import Doing
+from journal.features.shell.listeners.read_narrowly import SHOWN
 from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
@@ -38,6 +39,7 @@ class ShellCommand(Command):
         split.add_argument("line")
         split.add_argument("--into", required=True)
         self.verb(verbs, "limit", "the seconds a command may run in the foreground now")
+        self.verb(verbs, "cap", "the lines of a part's output shown at each end; the middle is cut and left in the part's file")
         started = self.verb(verbs, "started", "a part of a chain has started")
         started.add_argument("part")
         started.add_argument("--chain", required=True)
@@ -71,6 +73,10 @@ class ShellCommand(Command):
         environment = self.environments.named(where.environment).id
         waiting = bool(self.messages.unread(environment))
         print(int(self.settings.get(PROJECT, WHILE_WAITING if waiting else FOREGROUND, 10 if waiting else 30)))
+        return 0
+
+    def cap(self, args: Namespace, where: Where) -> int:
+        print(int(self.settings.get(PROJECT, SHOWN, 200)))
         return 0
 
     def started(self, args: Namespace, where: Where) -> int:
