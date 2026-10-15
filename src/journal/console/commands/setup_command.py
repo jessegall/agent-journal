@@ -10,11 +10,8 @@ from journal.features.laws.law_text import LawText
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.skills.skill_files import SkillFiles
 from journal.providers.providers import Providers
+from supervisor.project_command import ProjectCommand
 
-COMMAND = """#!/bin/sh
-# This project's journal command: nothing is installed outside the project. The supervisor puts this folder on the agent's PATH.
-JOURNAL_ROOT={root} exec sh {shim} "$@"
-"""
 
 
 class SetupCommand(Command):
@@ -67,13 +64,7 @@ class SetupCommand(Command):
 
     def shim(self) -> Path:
         """The command, written inside the project at .journal/bin/journal and nowhere else."""
-        shim = self.config.home / "bin" / "journal"
-        shim.parent.mkdir(parents=True, exist_ok=True)
-        text = COMMAND.format(root=shlex.quote(str(self.config.root)), shim=shlex.quote(str(self.package.parent / "journal.sh")))
-        if not shim.is_file() or shim.read_text() != text:
-            shim.write_text(text)
-            shim.chmod(0o755)
-        return shim
+        return ProjectCommand(self.config.root, self.package.parent / "journal.sh").write()
 
     @property
     def package(self) -> Path:
