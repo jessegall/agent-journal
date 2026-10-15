@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, reactive, ref} from "vue";
+import {computed, nextTick, onMounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
@@ -52,8 +52,23 @@ function take(got) {
     loaded.value = true;
 }
 
+// the whole chart in view at first, as large as the canvas allows
+function fit() {
+    if (!plane.value || !nodes.value.length) return;
+    const left = Math.min(...nodes.value.map((n) => n.x)) - 40;
+    const top = Math.min(...nodes.value.map((n) => n.y)) - 40;
+    const right = Math.max(...nodes.value.map((n) => n.x + CARD.width)) + 40;
+    const bottom = Math.max(...nodes.value.map((n) => n.y + CARD.height)) + 40;
+    const scale = Math.min(1, plane.value.clientWidth / (right - left), plane.value.clientHeight / (bottom - top));
+    camera.scale = Math.max(0.4, scale);
+    camera.x = (plane.value.clientWidth - (right - left) * camera.scale) / 2 - left * camera.scale;
+    camera.y = (plane.value.clientHeight - (bottom - top) * camera.scale) / 2 - top * camera.scale;
+}
+
 async function load() {
     take(await api.chart());
+    await nextTick();
+    fit();
 }
 onMounted(load);
 
@@ -356,7 +371,8 @@ const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
     display: flex;
     gap: 16px;
     flex: 1;
-    min-height: 420px;
+    min-height: 0;
+    height: calc(100vh - 330px);
 }
 
 .chart-palette {
