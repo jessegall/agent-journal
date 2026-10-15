@@ -84,15 +84,32 @@ def test_the_menu_defaults_and_answers_and_remembers(tmp_path: Path, monkeypatch
     assert menu.choose("claude", env="spike", new=True, aside=True, skip=False, yes=True) == Choice("spike", "", hooks_aside=True, skip_prompts=True)
 
 
-def test_without_other_hooks_the_hooks_question_is_not_asked(tmp_path: Path, monkeypatch):
-    menu = menu_answering(tmp_path, monkeypatch, ["", "2", "2"])
-    assert menu.choose("claude") == Choice("main", "", hooks_aside=False, skip_prompts=False)
-    assert menu.choose("claude", aside=True, yes=True).hooks_aside is False, "nothing to set aside"
+def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_path: Path, monkeypatch):
+    menu = menu_answering(tmp_path, monkeypatch, ["", "2", "2", "1"])
+    assert menu.choose("claude") == Choice("main", "", hooks_aside=True, skip_prompts=False)
+    assert menu.choose("claude", yes=True).hooks_aside is True, "remembered"
+
+
+def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
+    from supervisor.other_hooks import OtherHooks
+    assert not OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
+    assert OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
+
+
+def test_the_header_fits_the_width_and_moves_the_agents_clears_under_it():
+    from supervisor.header import Header
+    header = Header("agent-journal", "main")
+    header.rows, header.columns = 10, 60
+    text = header.line().decode()
+    assert text.startswith("\x1b[H") and "agent-journal" in text and text.rstrip("\x1b[0m").endswith("journal starting…")
+    header.url = "http://127.0.0.1:8420/"
+    assert "http://127.0.0.1:8420/" in header.line().decode() and header.agent_rows == 9
+    assert Header.shield(b"a\x1b[2Jb\x1b[Hc") == b"a\x1b[2;1H\x1b[Jb\x1b[2;1Hc"
 
 
 def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_agent_works(tmp_path: Path, monkeypatch):
     deleted = []
-    menu = menu_answering(tmp_path, monkeypatch, ["x1", "1", "x2", "2", "1", "2", "2"])
+    menu = menu_answering(tmp_path, monkeypatch, ["x1", "1", "x2", "2", "1", "2", "2", "2"])
     menu.journal = lambda *argv: deleted.append(argv) or ""
     assert menu.choose("claude").environment == "main"
     assert deleted == [("environment", "delete", "spike")]
@@ -151,3 +168,19 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
     except RuntimeError:
         pass
     assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and OtherHooks(tmp_path, "claude").put_back() == []
+
+
+def test_the_supervisor_notices_the_journal_when_it_answers(tmp_path: Path, monkeypatch):
+    from journal.app import App
+    from journal.config import Config
+    from supervisor.header import Header
+    app = App(Config(tmp_path, port=0))
+    app.server().start()
+    try:
+        header = Header("p", "main", stdout=os.open(os.devnull, os.O_WRONLY))
+        supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s"), JournalProcess(tmp_path, ["true"], {}, tmp_path / "log"), header)
+        supervisor._started_at = time.time()
+        supervisor.notice_journal_once()
+        assert header.url == f"http://127.0.0.1:{app.server().port}/"
+    finally:
+        app.server().stop()

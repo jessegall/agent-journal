@@ -7,6 +7,7 @@ from pathlib import Path
 from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
 from supervisor.choice import Choice
+from supervisor.header import Header
 from supervisor.menu import Menu
 from supervisor.other_hooks import OtherHooks
 from supervisor.supervisor import Supervisor
@@ -81,4 +82,5 @@ class Launch:
         environ = self.environ(choice)
         terminal = Terminal(self.agent_command(choice), str(self.root), environ)
         journal = JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
-        return Supervisor(terminal, Inbox(Inbox.path_for(self.root)), journal, viewer="" if self.no_open else f"#/{choice.environment}")
+        header = Header(self.root.name, choice.environment) if sys.stdout.isatty() else None
+        return Supervisor(terminal, Inbox(Inbox.path_for(self.root)), journal, header, viewer="" if self.no_open else f"#/{choice.environment}")

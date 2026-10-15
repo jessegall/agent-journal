@@ -23,7 +23,6 @@ class Terminal:
             os.chdir(self.cwd)
             os.execvpe(self.command[0], self.command, self.environ)
         self.pid, self.fd = pid, fd
-        self.resize(*self.size_of(0))
 
     def restart(self, resume: tuple[str, ...]) -> None:
         """Stops the agent and starts it again with the arguments that resume its conversation."""

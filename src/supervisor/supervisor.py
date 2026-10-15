@@ -8,6 +8,7 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
+from supervisor.header import Header
 from supervisor.inbox import Inbox
 from supervisor.instructions.instruction import Instruction
 from supervisor.instructions.restart_agent import RestartAgent
@@ -21,15 +22,17 @@ LONGEST = 65536
 
 
 class Supervisor:
-    """One loop: stdin to the agent, the agent to stdout, the inbox's instructions carried out, the journal kept running."""
+    """One loop: stdin to the agent, the agent to stdout under the header line, the inbox's instructions carried out, the journal kept running."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, stdin: int = 0, stdout: int = 1, viewer: str = "") -> None:
+    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, header: Header | None = None, stdin: int = 0, stdout: int = 1, viewer: str = "") -> None:
         self.terminal, self.inbox, self.journal, self.stdin, self.stdout = terminal, inbox, journal, stdin, stdout
+        self.header = header
+        """The line kept at the top of the screen; none when the output is not a terminal."""
         self.viewer = viewer
         """A page to open in the browser once the journal is up, as #/<environment>; empty opens nothing."""
         self._stopping = False
         self._code: int | None = None
-        self._opened = False
+        self._noticed = False
         self._started_at = 0.0
 
     def run(self) -> int:
@@ -38,19 +41,30 @@ class Supervisor:
         self.journal.start()
         self._started_at = time.time()
         self.terminal.start()
-        signal.signal(signal.SIGWINCH, lambda *_: self.terminal.resize(*Terminal.size_of(self.stdin)))
+        self.fit()
+        signal.signal(signal.SIGWINCH, lambda *_: self.fit())
         signal.signal(signal.SIGTERM, lambda *_: self.stop())
         try:
             while self._code is None:
                 self.relay_once(0.5)
                 self.journal.keep_alive()
-                self.open_viewer_once()
+                self.notice_journal_once()
         finally:
             self.journal.stop()
             self.inbox.close()
+            if self.header:
+                self.header.end()
             if saved is not None:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
         return self._code
+
+    def fit(self) -> None:
+        """Gives the agent the terminal's size, less the header's line when there is one."""
+        rows, columns = Terminal.size_of(self.stdin)
+        if self.header:
+            self.header.resize(rows, columns)
+            rows = self.header.agent_rows
+        self.terminal.resize(rows, columns)
 
     def relay_once(self, timeout: float) -> None:
         reads = [self.stdin, self.terminal.fd, self.inbox.fd]
@@ -66,7 +80,7 @@ class Supervisor:
             if not data:
                 self._ended()
                 return
-            os.write(self.stdout, data)
+            os.write(self.stdout, self.header.shield(data) if self.header else data)
         if self.stdin in readable:
             data = os.read(self.stdin, LONGEST)
             if not data:
@@ -76,25 +90,28 @@ class Supervisor:
         if (code := self.terminal.exited()) is not None and not self._stopping:
             self._code = code
 
-    def open_viewer_once(self) -> None:
-        """Opens the viewer in the browser the first time the port in the port file answers, and never again; a port file left by a dead journal answers nothing."""
-        if self._opened or not self.viewer:
+    def notice_journal_once(self) -> None:
+        """The first time the port in the port file answers: the header shows the URL and the viewer opens in the browser; a port file left by a dead journal answers nothing."""
+        if self._noticed:
             return
         if time.time() - self._started_at > 30:
-            self._opened = True
+            self._noticed = True
             return
         port_file = self.journal.root / ".journal" / "port"
         url = f"http://127.0.0.1:{port_file.read_text().strip()}/" if port_file.is_file() else ""
         if not url or not self._answers(url):
             return
-        self._opened = True
-        webbrowser.open(url + self.viewer, new=2)
+        self._noticed = True
+        if self.header:
+            self.header.set_url(url)
+        if self.viewer:
+            webbrowser.open(url + self.viewer, new=2)
 
     @staticmethod
     def _answers(url: str) -> bool:
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=0.5) as reply:
-                return reply.status < 500
+            with urllib.request.urlopen(url, timeout=0.5) as reply:
+                return reply.status == 200
         except OSError:
             return False
 
@@ -109,6 +126,7 @@ class Supervisor:
         self._stopping = True
         self.terminal.restart(instruction.resume)
         self._stopping = False
+        self.fit()
 
     def restart_journal(self, instruction: RestartJournal) -> None:
         self.journal.restart()

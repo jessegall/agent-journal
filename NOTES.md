@@ -247,11 +247,13 @@ D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then 
    environment (badges: agent working, last used; or a new name), whether to carry on the last
    conversation (then the other questions take last time's answers, as version 3 did), whether
    to run without permission prompts (`--dangerously-skip-permissions` for Claude, the bypass
-   flag for Codex) and, only when the agent's settings hold hooks that are not the journal's,
-   whether to set those aside for the run (version 3's clean slate: `OtherHooks` copies each
+   flag for Codex) and whether to set aside the hooks that are not the journal's for the run,
+   asked every time as an opt-in, listing the files found to hold any (version 3's clean slate: `OtherHooks` copies each
    file to `.journal/runtime/set-aside`, leaves only the journal's blocks, and puts the hooks
    key back when the agent exits, keeping edits made to the rest of the file meanwhile; a run
-   that died is put back at the next launch). The journal's own hooks always run. The answers
+   that died is put back at the next launch; the journal's own hook is known by the one path
+   `journal/hooks/hook.sh`, so version 3's hook.sh counts as somebody else's). The journal's
+   own hooks always run. The answers
    to the last two are remembered in `.journal/launch.json` as the next defaults. The
    environment screen deletes with x: on the environment under the cursor, after a confirmation,
    it goes with everything recorded in it (`journal environment delete <name>`, which is
@@ -261,6 +263,10 @@ D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then 
    supervisor stays stdlib-only: it asks `journal.py environment json` for the list. Not carried
    over from version 3: taking over an environment another agent holds (version 4 has no
    eviction) and filling the chat from an unseen conversation's transcript.
+   Once the agent starts the screen is cleared and the agent has it whole but for one line at
+   the top (`Header`): the package on the left, project and environment centred, the viewer's
+   URL on the right once the journal answers. The agent runs in a scroll region under it with
+   one row less, and its clear-screen and home moves are rewritten to the row under the line.
 E2. **Pagination.** Every index endpoint answers a page, newest first: `?limit=` (default
    50, at most 500) and `?before=<id>` for older rows. `Repository.page(limit, before,
    **fields)` is the one query. The viewer asks for a page and offers "Older".

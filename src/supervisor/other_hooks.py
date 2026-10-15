@@ -57,5 +57,5 @@ class OtherHooks:
 
     @staticmethod
     def is_ours(block: dict) -> bool:
-        text = json.dumps(block)
-        return "hook.sh" in text and "journal" in text
+        """The journal's own hook, by the one path only this package's script has; version 3's hook.sh is somebody else's."""
+        return "journal/hooks/hook.sh" in json.dumps(block)

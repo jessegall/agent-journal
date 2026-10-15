@@ -42,8 +42,7 @@ class Menu:
         asking = asking and not resume
         """Carrying on takes last time's answers to the other questions, as the banner promised."""
         skip_prompts = skip or (self._prompts(agent, before.get("skip_prompts", False)) if asking else before.get("skip_prompts", False))
-        others = OtherHooks(self.root, agent).others()
-        hooks_aside = bool(others) and (aside or (self._hooks(others, before.get("hooks_aside", True)) if asking else before.get("hooks_aside", True)))
+        hooks_aside = aside or (self._hooks(OtherHooks(self.root, agent).others(), before.get("hooks_aside", False)) if asking else before.get("hooks_aside", False))
         self.remembered.write(skip_prompts=skip_prompts, hooks_aside=hooks_aside)
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
         self._summary(choice)
@@ -83,8 +82,9 @@ class Menu:
         return self.screen.pick("Run without permission prompts", notes, [Option("Yes, skip them"), Option("No, ask me each time")], 0 if skipped_before else 1) == 0
 
     def _hooks(self, others: list[Path], aside_before: bool) -> bool:
-        notes = [f"Hooks that are not the journal's, in {len(others)} file{'s' if len(others) != 1 else ''}:", *(f"  {path}" for path in others), "", "Set aside, they cannot fight the journal's; they are put back when the agent exits."]
-        return self.screen.pick("Set aside the other hooks", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
+        found = [f"Found now, in {len(others)} file{'s' if len(others) != 1 else ''}:", *(f"  {path}" for path in others)] if others else ["None found in the settings right now."]
+        notes = ["They might conflict with the journal's. Set aside, a copy is kept and they are put back when the journal ends.", *found]
+        return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
 
     def _summary(self, choice: Choice) -> None:
         self.screen.summary([("environment", choice.environment), ("conversation", f"continued from {choice.resume[:8]}" if choice.resume else "new"),

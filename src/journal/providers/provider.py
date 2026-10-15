@@ -56,7 +56,8 @@ class Provider:
 
     @staticmethod
     def ours(block: dict) -> bool:
-        return "hook.sh" in json.dumps(block) and "journal" in json.dumps(block)
+        """The journal's own hook, by the one path only this package's script has; version 3's hook.sh is somebody else's."""
+        return "journal/hooks/hook.sh" in json.dumps(block)
 
     def read_path(self, tool: str, input: dict) -> str:
         return input.get("file_path", "") or input.get("path", "") if tool == self.read_tool else ""
