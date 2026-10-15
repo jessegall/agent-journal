@@ -516,3 +516,22 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   task's whole title when one is in hand.
 - Open from today: integrations as MCP servers (task 11); the behaviour tree, the journal's conduct as an editable
   flowchart in the viewer, after ../workflows (not started, by the user's word).
+
+## Ported whole on 2026-10-15 (night)
+
+- Plans are version 3's shape again: a goal, phases in order with a complete-when and a checkpoint flag, tasks under
+  phases (links `phase_of` and `in_phase`), a ready stage the agent sets once every phase has tasks, and the user's
+  approval before `plan start`, from the plan page's Approve button or `journal plan approve`. The agent is told
+  of the approval by a typed line. The shaper derives the building stage from the rows.
+- Sequences may start on a row event (`starts_on`, as `plan.created`); the shipped "Building a plan" sequence is
+  seeded at boot (feature `seeds`, run by the runtime) and tells the plan's steps. A step may wait on the user, so
+  the same stop again goes through.
+- Delivery: every line the journal types is held in `TypedLines` until its prompt hook brings it back; one not back
+  after ten quiet seconds between turns is typed again, three tries, each a card.
+- The supervisor pins nothing to the screen any more: its line is Claude Code's own status line, read from
+  `.journal/runtime/status-line`; the terminal scrolls back as it always does.
+- The server runs commands one at a time: the output capture is process-wide, and two at once stole each other's lines.
+- The runner shows a part's output cut to its first and last two hundred lines; a Read of a longer file without a
+  range is refused.
+- Still open: the avatar that keeps jumping at a perch (task 38, parked with a finding), the behaviour tree (plan 1,
+  ready for approval).
