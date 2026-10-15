@@ -539,19 +539,8 @@ export const TABS = [
         line: "What the journal does besides the agent's own settings, which are in the Agent tab. Each feature can be switched off on its own.",
     },
     {key: "system", title: "System", line: "Project settings, updates, browser settings and shutting down."},
-    {
-        key: "services",
-        title: "Services",
-        line: "The processes the journal and its plugins keep running. Start, stop, restart and read their logs.",
-    },
-    {
-        key: "sharing",
-        title: "Phone and share links",
-        line: "Your phone and share links reach this journal through the tunler account below.",
-    },
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
-    {key: "developer", title: "Developer", line: "Only needed when you work on the journal itself."},
 ];
 
 export const tabLine = (key) => TABS.find((t) => t.key === key).line;

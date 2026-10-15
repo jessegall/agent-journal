@@ -23,13 +23,11 @@ import Toast from "../kit/Toast.vue";
 import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
 import ConnectionMark from "./ConnectionMark.vue";
-import Segmented from "../kit/Segmented.vue";
-import NewWorkBoard from "./NewWorkBoard.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
 import {useEveryHelper, useHelpers} from "../composables/helpers.js";
 import {isWorking} from "../domain/helpers.js";
-import {MODES, ORCHESTRATOR} from "../domain/modes.js";
+import {ORCHESTRATOR} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
@@ -55,29 +53,11 @@ const orchestratingHelpers = computed(() => (mode.value === ORCHESTRATOR ? helpe
 const helpersOpen = ref(false);
 const {rows: everyHelper, loaded: everyHelperLoaded, refresh: refreshEveryHelper} = useEveryHelper(helpersOpen);
 const helpersAnchor = ref(null);
-const modeOptions = computed(() =>
-    MODES.map((one) => ({
-        ...one,
-        tip: {title: one.label, line: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note},
-    }))
-);
 
 function toggleHelpers(e) {
     helpersAnchor.value = e.currentTarget;
     helpersOpen.value = !helpersOpen.value;
     if (helpersOpen.value) refreshEveryHelper();
-}
-const keepMode = (key) => (store.settings = {...store.settings, work_modes: {...store.settings.work_modes, mode: key}});
-
-async function pickMode(key) {
-    const was = mode.value;
-    keepMode(key);
-    try {
-        await api.saveMode(key);
-    } catch (e) {
-        keepMode(was);
-        toast.value = {text: e.message};
-    }
 }
 
 async function pauseOrResume() {
@@ -189,10 +169,6 @@ async function runBar(p) {
                         "
                         @change="setAuto"
                     />
-                    <Segmented class="statusbar-mode" :options="modeOptions" :value="mode" @pick="pickMode" />
-                    <template v-if="mode === ORCHESTRATOR">
-                        <NewWorkBoard @failed="toast = {text: $event}" />
-                    </template>
                     <ConnectionMark />
                     <button
                         type="button"

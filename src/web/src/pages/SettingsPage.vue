@@ -26,7 +26,7 @@ import {rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
-const LISTED = ["agent", "features", "system", "sharing", "developer"];
+const LISTED = ["agent", "features", "system"];
 const known = (key) => TABS.some((t) => t.key === key);
 const opening = (...keys) => keys.find(known) || TABS[0].key;
 const tab = ref(opening(route.value.sub, remembered(TAB, "")));

@@ -4,7 +4,6 @@ import EmptyState from "../kit/EmptyState.vue";
 import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import PluginSettings from "./PluginSettings.vue";
-import ServicesList from "./ServicesList.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import SettingsRegion from "./SettingsRegion.vue";
 import {tabLine} from "../domain/settingsCatalog.js";
@@ -41,10 +40,6 @@ const emit = defineEmits(["pick", "saved", "change", "timing", "act", "show-all"
                 <template #environments>
                     <p class="settings-line">{{ tabLine("environments") }}</p>
                     <SettingsEnvironments :query="query" />
-                </template>
-                <template #services>
-                    <p class="settings-line">{{ tabLine("services") }}</p>
-                    <ServicesList />
                 </template>
                 <template #plugins>
                     <PluginSettings :query="query" @saved="(label) => emit('saved', label)" />
