@@ -36,7 +36,7 @@ class Chain:
 
     @staticmethod
     def simple(line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it, split outside quotes, subshells, groups and comments."""
+        """Each command with the separator before it, split outside quotes, subshells, groups and comments; a heredoc takes the rest of the line whole."""
         parts, current, quote, depth, separator, i = [], "", "", 0, "", 0
         while i < len(line):
             c = line[i]
@@ -51,9 +51,11 @@ class Chain:
             if quote:
                 quote, current, i = "" if c == quote else quote, current + c, i + 1
                 continue
-            if c in "\"'":
+            if c in "\"'`":
                 quote, current, i = c, current + c, i + 1
                 continue
+            if line.startswith("<<", i) and not line.startswith("<<<", i):
+                return [(separator, (current + line[i:]).strip())] if not parts else parts + [(separator, (current + line[i:]).strip())]
             if c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t") or line[i - 1:i] == "$")) or line.startswith("[[", i):
                 depth += 1
             elif (c in ")}" or line.startswith("]]", i)) and depth:
