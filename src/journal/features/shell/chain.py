@@ -19,18 +19,20 @@ class Chain:
     @classmethod
     def parts(cls, line: str) -> list[Part]:
         """The chain's commands in order: the agent's own recorded, the shell's wrapping around them silent."""
-        chained = cls.chained(line)
-        if not any(WRAPPED.match(p) for _, p in chained):
-            return [Part(p, always=s != "&&") for s, p in chained]
-        return [part for s, p in chained for part in cls.of(s, p)]
+        chained = [(s, p, True) for s, p in cls.chained(line)]
+        if any(WRAPPED.match(p) for _, p, _ in chained):
+            chained = [inner for s, p, _ in chained for inner in cls.of(s, p)]
+        following = [s for s, _, _ in chained[1:]] + [""]
+        return [Part(p, recorded=r, always=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
 
     @classmethod
-    def of(cls, separator: str, part: str) -> list[Part]:
+    def of(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
+        """A wrapped part becomes the agent's own commands inside it; any other stays the shell's, in silence."""
         wrapped = WRAPPED.match(part)
         if not wrapped:
-            return [Part(part, recorded=False, always=separator != "&&")]
+            return [(separator, part, False)]
         inner = cls.chained(wrapped.group(1).replace(QUOTE, "'"))
-        return [Part(p, always=(s or separator) != "&&") for s, p in inner]
+        return [(s or separator, p, True) for s, p in inner]
 
     @classmethod
     def split(cls, line: str) -> list[str]:
@@ -43,35 +45,50 @@ class Chain:
 
     @staticmethod
     def simple(line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it, split outside quotes, subshells, groups and comments; a heredoc takes the rest of the line whole."""
-        parts, current, quote, depth, separator, i = [], "", "", 0, "", 0
+        """Each command with the separator before it, split only at the top level: quotes, substitutions, subshells, groups, brackets and comments nest on a stack, and a heredoc takes the rest of the line whole."""
+        parts, current, stack, separator, i = [], "", [], "", 0
         while i < len(line):
-            c = line[i]
-            if c == "#" and not quote and (i == 0 or line[i - 1] in " \t\n"):
-                end = line.find("\n", i)
-                end = len(line) if end < 0 else end
-                current, i = current + line[i:end], end
-                continue
-            if c == "\\" and quote != "'" and i + 1 < len(line):
+            c, inner = line[i], stack[-1] if stack else ""
+            if c == "\\" and inner != "'" and i + 1 < len(line):
                 current, i = current + line[i:i + 2], i + 2
                 continue
-            if quote:
-                quote, current, i = "" if c == quote else quote, current + c, i + 1
+            if inner in ("'", "`"):
+                stack.pop() if c == inner else None
+            elif inner == '"':
+                if c == '"':
+                    stack.pop()
+                elif line.startswith("$(", i):
+                    stack.append("(")
+                    current, i = current + "$(", i + 2
+                    continue
+            elif c in "\"'`":
+                stack.append(c)
+            elif line.startswith("[[", i) and not stack:
+                stack.append("[")
+                current, i = current + "[[", i + 2
                 continue
-            if c in "\"'`":
-                quote, current, i = c, current + c, i + 1
+            elif inner == "[" and line.startswith("]]", i):
+                stack.pop()
+                current, i = current + "]]", i + 2
                 continue
-            if line.startswith("<<", i) and not line.startswith("<<<", i):
-                return [(separator, (current + line[i:]).strip())] if not parts else parts + [(separator, (current + line[i:]).strip())]
-            if c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t") or line[i - 1:i] == "$")) or line.startswith("[[", i):
-                depth += 1
-            elif (c in ")}" or line.startswith("]]", i)) and depth:
-                depth -= 1
-            found = "&&" if line.startswith("&&", i) else ";" if c == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";" else ""
-            if found and not depth:
-                parts.append((separator, current.strip()))
-                current, separator, i = "", found, i + len(found)
-                continue
+            elif c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t") or line[i - 1:i] == "$")):
+                stack.append(c)
+            elif c == ")" and inner == "(" or c == "}" and inner == "{":
+                stack.pop()
+            elif not stack:
+                if c == "#" and (i == 0 or line[i - 1] in " \t\n"):
+                    end = line.find("\n", i)
+                    end = len(line) if end < 0 else end
+                    current, i = current + line[i:end], end
+                    continue
+                if line.startswith("<<", i) and not line.startswith("<<<", i):
+                    parts.append((separator, (current + line[i:]).strip()))
+                    return [(s, p) for s, p in parts if p]
+                found = "&&" if line.startswith("&&", i) else ";" if c == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";" else ""
+                if found:
+                    parts.append((separator, current.strip()))
+                    current, separator, i = "", found, i + len(found)
+                    continue
             current, i = current + c, i + 1
         parts.append((separator, current.strip()))
         return [(s, p) for s, p in parts if p]

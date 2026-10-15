@@ -9,7 +9,8 @@ __journal_cli="$here/../../journal.sh"
 root=$(cd "$here/../../.." && pwd)
 
 # The worker. Its own variables carry a prefix, since the parts run in the same shell and may set i or code.
-# A part after && is skipped while the part before it failed, a part after ; runs whatever came before,
+# A part after && is skipped while the part before it failed, a part after ; runs whatever came before, and a part
+# before && may fail without ending a shell under set -e,
 # as in the shell; a part that exits the shell, such as a bare exit 3, ends the chain through the trap: the part's
 # status and the chain's end are written all the same, so the foreground and the journal both learn of it.
 __journal_finish() {
@@ -37,13 +38,16 @@ if [ "$1" = "--chain" ]; then
     while read -r __journal_kind; do
         __journal_part=$(cat "$__journal_folder/$__journal_i.part")
         case "$__journal_kind" in
-            *'&') if [ "$__journal_code" -ne 0 ]; then : > "$__journal_folder/$__journal_i.out"; : > "$__journal_folder/$__journal_i.err"; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; __journal_i=$((__journal_i + 1)); continue; fi ;;
+            ?'&'?) if [ "$__journal_code" -ne 0 ]; then : > "$__journal_folder/$__journal_i.out"; : > "$__journal_folder/$__journal_i.err"; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; __journal_i=$((__journal_i + 1)); continue; fi ;;
         esac
         case "$__journal_kind" in R*) __journal_lastr=$__journal_i; sh "$__journal_cli" shell started "$__journal_part" --chain "$__journal_id" >/dev/null 2>&1 ;; esac
         __journal_began=$SECONDS
         case "$__journal_part" in
             exec\ *) (eval "$__journal_part") > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$?; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; break ;;
-            *) (exit "$__journal_code"); eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$? ;;
+            *) case "$__journal_kind" in
+                   *'&') if (exit "$__journal_code"); eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; then __journal_code=0; else __journal_code=$?; fi ;;
+                   *) (exit "$__journal_code"); eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$? ;;
+               esac ;;
         esac
         case "$__journal_kind" in R*) sh "$__journal_cli" shell ran "$__journal_part" --chain "$__journal_id" --status "$__journal_code" --seconds "$((SECONDS - __journal_began))" --output "$(cat "$__journal_folder/$__journal_i.out" "$__journal_folder/$__journal_i.err" | tail -c 2000)" >/dev/null 2>&1 ;; esac
         echo "$__journal_code" > "$__journal_folder/$__journal_i.status"

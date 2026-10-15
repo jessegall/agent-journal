@@ -702,7 +702,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     console, port = app.console(), app.server().port
     folder = app.config.root / "parts"
     folder.mkdir()
-    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;\nR&\nR;\n"
+    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&\nR&;\nR;;\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
     bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"]

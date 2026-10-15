@@ -111,6 +111,15 @@ CORPUS = [
     "{ echo a } always { echo b }; echo c",
     "f() echo in-f && echo also; f; echo out",
     "i=7; for i in 1 2; do :; done; echo $i; code=9; echo $code",
+    "set -e; false && echo x; echo y",
+    "set -e; echo a; false; echo b",
+    "set -e; false || echo recovered; echo c",
+    "find . -maxdepth 0 -exec echo {} \\; && echo {a,b}",
+    "x=$(echo \"a;b\"); echo $x; echo \"$(echo \"q;q\")\"",
+    "x='1;2'; [[ $x == *\";\"* ]] && echo m",
+    "echo a |& cat; echo b &> /dev/null; echo c",
+    "(echo in-sub; exit 4); echo $?",
+    "echo \"\$(echo a; echo b)\" && printf '%s\\n' \"$(echo c; echo d)\"",
 ]
 
 
