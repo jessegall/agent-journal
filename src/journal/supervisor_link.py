@@ -2,6 +2,7 @@ import json
 import socket
 
 from journal.config import Config
+from journal.engine.typed_lines import TypedLines
 from journal.repositories.environments import Environments
 
 MARK = "[journal]"
@@ -10,11 +11,18 @@ MARK = "[journal]"
 class SupervisorLink:
     """The journal's end of each supervisor's inbox: one datagram per instruction, nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
-    def __init__(self, config: Config, environments: Environments) -> None:
-        self.config, self.environments = config, environments
+    def __init__(self, config: Config, environments: Environments, typed: TypedLines) -> None:
+        self.config, self.environments, self.typed = config, environments, typed
 
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
-        self._send(environment_id, {"type": "Type", "line": f"{MARK} {line}", "after": after})
+        """A line of the journal's, marked, and noted until its prompt hook proves it arrived."""
+        marked = f"{MARK} {line}"
+        self.typed.typed(environment_id, marked)
+        self._send(environment_id, {"type": "Type", "line": marked, "after": after})
+
+    def type_again(self, environment_id: int, marked: str) -> None:
+        """A marked line typed once more, as it was."""
+        self._send(environment_id, {"type": "Type", "line": marked, "after": 0.0})
 
     def type_raw(self, environment_id: int, line: str) -> None:
         """What the user typed in the viewer's terminal pane, as the user, without the mark."""

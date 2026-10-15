@@ -496,6 +496,8 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 
 ## Conduct toward the agent, settled on 2026-10-15 (evening)
 
+- Delivery (2026-10-15): every line the journal types is noted in `TypedLines` until the prompt hook brings its words back. One not seen back while the agent has sat between turns for ten seconds is typed again, three times at most, each try a card in the chat; the fourth miss is a card saying the line never arrived. The agent's turn being over is `Turn.over`, shared with the MCP restart.
+
 - Every session start, fresh, resumed, after a compaction or a takeover, holds writes until `journal environment
   here` is run: the task in hand, open and parked tasks, messages, questions, workers, background runs, rules,
   facts and reminders in one read.

@@ -893,3 +893,32 @@ def test_a_long_file_is_not_read_whole(app, tmp_path):
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(long), "limit": 50})[0] == 200, "a part of it is fine"
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(short)})[0] == 200, "twice the cap fits in one go"
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "gone.txt")})[0] == 200
+
+
+def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_lost(app, monkeypatch):
+    import time
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    hook(app, "SessionStart")
+    link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
+    link.type(1, "hello there")
+    tick = lambda later: bus.dispatch(Ticked(session="s1", environment_id=1, at=time.time() + later, quiet_for=later))
+    tick(2)
+    assert [s["line"] for s in sent] == ["[journal] hello there"], "a fresh line is given time"
+    tick(30)
+    assert [s["line"] for s in sent] == ["[journal] hello there"] * 2, "a line not seen back while the agent sits between turns is typed again"
+    hook(app, "UserPromptSubmit", prompt="[journal] hello there")
+    tick(60)
+    assert len(sent) == 2, "the prompt that brought it back confirms it"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "x", "limit": 1})
+    link.type(1, "while at work")
+    tick(90)
+    assert len(sent) == 3, "a line typed to an agent at work waits for its turn to end"
+    hook(app, "Stop")
+    for later in (120, 150, 180, 210):
+        tick(later)
+    assert [s["line"] for s in sent].count("[journal] while at work") == 3, "three tries, then the chat is told"
