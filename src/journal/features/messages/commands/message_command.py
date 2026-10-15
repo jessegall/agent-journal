@@ -6,12 +6,15 @@ from journal.console.where import Where
 from journal.models.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.message import Message
+from journal.models.ref import Ref
 from journal.repositories.environments import Environments
+from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.messages.faces import Faces
 from journal.features.messages.states.catching_up import CatchingUp
 from journal.repositories.not_found import NotFound
 from journal.repositories.messages import Messages
+from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
 
 RECENT = 20
@@ -20,8 +23,8 @@ RECENT = 20
 class MessageCommand(Command):
     noun = "message"
 
-    def __init__(self, messages: Messages, environments: Environments, reactions: Reactions, machine: Machine) -> None:
-        self.messages, self.environments, self.reactions, self.machine = messages, environments, reactions, machine
+    def __init__(self, messages: Messages, environments: Environments, reactions: Reactions, machine: Machine, links: Links, config: Config) -> None:
+        self.messages, self.environments, self.reactions, self.machine, self.links, self.config = messages, environments, reactions, machine, links, config
 
     def arguments(self, verbs) -> None:
         send = self.verb(verbs, "send", "leave a message")
@@ -31,6 +34,10 @@ class MessageCommand(Command):
         self.verb(verbs, "read", "show a message and mark it read").add_argument("n", type=int)
         self.verb(verbs, "unread", "show every unread message and mark them read")
         self.verb(verbs, "recent", "the latest messages, owed after a compaction")
+        tag = self.verb(verbs, "tag", "say what an attached picture shows, so it can be found later")
+        tag.add_argument("n", type=int)
+        tag.add_argument("name")
+        tag.add_argument("caption")
         react = self.verb(verbs, "react", "put a face on a message, or take it off again")
         react.add_argument("n", type=int)
         react.add_argument("face")
@@ -91,7 +98,23 @@ class MessageCommand(Command):
         print(f"{args.face} {'on' if made else 'off'} message {args.n}")
         return 0
 
-    @staticmethod
-    def show(message: Message) -> None:
+    def tag(self, args: Namespace, where: Where) -> int:
+        message = self.messages.find(args.n)
+        if args.name not in message.files:
+            print(f"message {args.n} has no file named {args.name}")
+            return 1
+        self.messages.save(message.with_(captions={**message.captions, args.name: args.caption}), where.actor)
+        print(f"{args.name} on message {args.n}: {args.caption}")
+        return 0
+
+    def show(self, message: Message) -> None:
+        """The message, its files with where to open them and what they show, and the rows it is linked to."""
         print(f"message {message.id} from the {message.author}: {message.text}")
+        for name in message.files:
+            path = self.config.home / "files" / "message" / str(message.id) / name
+            seen = message.captions.get(name)
+            print(f"  file {path}" + (f": {seen}" if seen else f" (open it, then journal message tag {message.id} \"{name}\" \"<what it shows>\")"))
+        for link in self.links.of(message):
+            other = link.target if link.source == Ref.to(message) else link.source
+            print(f"  {link.kind} {other}")
         print(f"  reply with [!reply:{message.id}] in your turn")

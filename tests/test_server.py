@@ -289,3 +289,29 @@ def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_
         assert events and events[-1]["type"] == "message", "an id from a journal that was reset still gets the recent events"
     finally:
         app.runtime().stop()
+
+
+def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_quotes_what_it_answers(tmp_path: Path, monkeypatch):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        controls = call(server, "GET", "/api/agent-controls/claude?model=opus&effort=high")[1]
+        assert [g["key"] for g in controls["groups"]] == ["model", "effort", "context"] and controls["groups"][0]["current"] == "opus"
+        assert call(server, "POST", "/api/main/agent/s1/control", {"action": "effort", "value": "max"})[1]["queued"] is True and typed[-1] == "/effort max"
+        assert call(server, "POST", "/api/main/agent/s1/control", {"action": "model", "value": "gpt"})[0] == 409
+        n = call(server, "POST", "/api/main/message", {"brief": "is the footer fixed?\nand the header?", "idempotency": "q"})[1]["n"]
+        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        app.runtime().deferred.drain()
+        comment = call(server, "GET", "/api/main/comment")[1]["rows"][-1]
+        assert comment["brief"] == "> is the footer fixed?\n> and the header?\n\nBoth are." and comment["refs"] == [f"message:{n}"]
+    finally:
+        app.runtime().stop()

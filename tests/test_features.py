@@ -650,3 +650,21 @@ def test_a_reply_naming_several_messages_answers_each_and_a_journal_command_afte
         hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /tmp && journal message react 4 \"👍\""})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})[0] == 409
+
+
+def test_reading_a_message_names_its_files_links_and_captions(app):
+    import json as j
+    from urllib.request import Request as R, urlopen as u
+    console = app.console()
+    console.run(["message", "send", "see the picture"], USER)
+    boundary = "b1"
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"shot one.png\"\r\nContent-Type: image/png\r\n\r\nPNG\r\n--{boundary}--\r\n").encode()
+    u(R(f"http://127.0.0.1:{app.server().port}/api/main/message/1/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}), timeout=5).read()
+    with u(f"http://127.0.0.1:{app.server().port}/api/main/message/1/files/shot%20one.png", timeout=5) as reply:
+        assert reply.read() == b"PNG", "a file name with a space is found"
+    shown = console.run(["message", "read", "1"], AGENT).out
+    assert "file " in shown and "shot one.png" in shown and "journal message tag 1" in shown
+    assert console.run(["message", "tag", "1", "shot one.png", "the footer overlapping the form"], AGENT).code == 0
+    assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).out
+    console.run(["message", "react", "1", "👍"], USER)
+    assert "reacts" in console.run(["message", "read", "1"], AGENT).out

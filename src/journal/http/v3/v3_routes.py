@@ -17,6 +17,7 @@ class V3Routes:
                               ("new-feature", c.get_new_feature), ("upstream", c.get_empty), ("releases", c.get_empty_list), ("services", c.get_empty_list), ("extension", c.get_empty), ("hosting", c.get_empty)):
             router.get(f"{API}/{path}", handler)
         router.post(f"{API}/identity", c.post_identity)
+        router.get(f"{API}/agent-controls/{{provider}}", c.get_agent_controls)
         router.get(f"{API}/{{env}}/health", c.get_health)
         router.get(f"{API}/{{env}}/bar", c.get_bar)
         router.get(f"{API}/{{env}}/settings", c.get_settings)
@@ -41,6 +42,7 @@ class V3Routes:
         router.get(f"{API}/{{env}}/agent/{{n}}/terminal", c.get_agent_terminal)
         router.get(f"{API}/{{env}}/agent/{{n}}/transcript", c.get_agent_transcript)
         router.post(f"{API}/{{env}}/agent/{{session}}/shell", c.post_agent_shell)
+        router.post(f"{API}/{{env}}/agent/{{session}}/control", c.post_agent_control)
         router.get(f"{API}/{{env}}/{{type}}", c.get_list)
         router.post(f"{API}/{{env}}/{{type}}", c.post_create)
         router.get(f"{API}/{{env}}/{{type}}/{{n}}", c.get_one)

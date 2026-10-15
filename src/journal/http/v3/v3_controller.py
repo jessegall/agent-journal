@@ -16,6 +16,7 @@ from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
 from journal.http.v3.current_work import CurrentWork
 from journal.features.registry import Registry
+from journal.providers.providers import Providers
 from journal.features.skills.skill_files import SkillFiles
 from journal.http.v3.listing import Listing
 from journal.http.v3.project_files import ProjectFiles
@@ -48,9 +49,9 @@ SILENT_AFTER = 900.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
-        self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files = messages, files, current, supervisor, registry, skill_files
+        self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files, self.providers = messages, files, current, supervisor, registry, skill_files, providers
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
 
     # the journal
@@ -238,6 +239,23 @@ class V3Controller:
 
     def get_project_files(self, request: Request) -> Response:
         return Response.json(self.files.folder(request.query.get("folder", "")))
+
+    def get_agent_controls(self, request: Request) -> Response:
+        """The pickers of the agent bar for a provider, the current choices marked."""
+        provider = self.providers.named(request.params["provider"])
+        current = {"model": request.query.get("model", ""), "effort": request.query.get("effort", "")}
+        groups = [{**group, "current": current.get(group["key"], "")} for group in provider.controls["groups"]]
+        return Response.json({"groups": groups, "note": provider.controls["note"]})
+
+    def post_agent_control(self, request: Request) -> Response:
+        """A pick in the agent bar is the provider's own command, typed into the agent as the user would."""
+        provider = self.providers.named(next((a.provider for a in self.agents.all() if a.session == request.params["session"]), "claude") or "claude")
+        action, value = request.body.get("action", ""), request.body.get("value", "")
+        choice = next((c for g in provider.controls["groups"] if g["key"] == action for c in g["choices"] if c["value"] == value), None)
+        if choice is None:
+            return Response.refused(f"{action} {value} is not a choice the agent bar offers")
+        self.supervisor.type_raw(self.environment_of(request).id, choice["command"])
+        return Response.json({"queued": True})
 
     def get_skills(self, request: Request) -> Response:
         """The journal's skills, with whether the agent asked for has read each, as the skills page lists them."""

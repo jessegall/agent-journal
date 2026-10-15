@@ -27,6 +27,9 @@ class Provider:
 
     def resume(self, session: str) -> tuple[str, ...]: ...
 
+    controls: ClassVar[dict] = {"groups": [], "note": ""}
+    """The model, effort and context choices the viewer's agent bar offers, each with the line typed into the agent to take it."""
+
     def worker_command(self, brief: str, model: str) -> list[str]:
         """The program run headless on one job, printing its report."""
         ...

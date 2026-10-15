@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from journal.models.author import Author
@@ -16,4 +16,6 @@ class Message(Scoped):
     acknowledgement: bool = False
     files: tuple[str, ...] = ()
     """The names of the files attached, kept under the journal's files folder."""
+    captions: dict = field(default_factory=dict)
+    """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     """An agent's turn that only answered a journal line and changed nothing: kept, and left out of the chat unless shown."""

@@ -23,3 +23,9 @@ class ContextFile:
 
     def effort(self, session: str) -> str:
         return self.status(session).get("effort", {}).get("level", "")
+
+    def usage(self, session: str) -> list[dict]:
+        """Claude's plan windows as the statusline reports them: how much is used and when each resets."""
+        limits = self.status(session).get("rate_limits", {})
+        return [{"key": key, "label": label, "used": limits[key].get("used_percentage", 0), "resets": limits[key].get("resets_at", 0)}
+                for key, label in (("five_hour", "5h"), ("seven_day", "7d")) if isinstance(limits.get(key), dict)]

@@ -11,6 +11,14 @@ class Claude(Provider):
     settings_file = "settings.json"
     write_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
     read_tool = "Read"
+    controls = {
+        "groups": [
+            {"key": "model", "label": "Model", "choices": [{"value": v, "label": l, "command": f"/model {v}"} for v, l in (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))]},
+            {"key": "effort", "label": "Reasoning effort", "choices": [{"value": v, "label": l, "command": f"/effort {v}"} for v, l in (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))]},
+            {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"}, {"value": "clear", "label": "Clear context", "command": "/clear"}]},
+        ],
+        "note": "Changes apply at once to this Claude Code session.",
+    }
 
     def transcript(self, project: Path, session: str) -> Path | None:
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"

@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.route import Handler, Route
@@ -17,5 +19,5 @@ class Router:
         for route in self.routes:
             params = route.params(request.method, request.path)
             if params is not None:
-                return route.handler(request.with_params(params))
+                return route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
         return Response.not_found(f"{request.method} {request.path}")
