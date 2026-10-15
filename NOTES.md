@@ -437,6 +437,14 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   command serves both versions and nothing of the journal lives outside a project. Setup adds `/.journal`
   to the project's `.gitignore`. A wired hook first tests that its script exists. A dogfood checkout
   therefore runs from its own `.journal/src` copy: re-run `sh install.sh` after a change to try it live.
+- **One inbox per environment (2026-10-15, evening).** A supervisor's inbox socket is named for the
+  project and the environment, and while it runs it announces its path at
+  `.journal/runtime/inboxes/<environment>`. `SupervisorLink` takes the environment id on every call
+  and reads that file, so a line reaches the agent of that environment and none other; an environment
+  with no supervisor hears nothing. The viewer's Start runs `journal.py <agent> --env <name> --yes
+  --no-open --no-journal` detached (`AgentLauncher`): no keyboard (`stdin=None`), no journal of its
+  own (`NoJournal`), its screen in `.journal/runtime/agent-<env>.log`; Stop sends the supervisor the
+  Stop instruction. Deleted on the way: `JOURNAL_INBOX`.
 - **The command is the project's.** `journal setup` writes `.journal/bin/journal` and nothing outside the
   project; the supervisor puts that folder first on the agent's PATH, so `journal …` resolves inside a
   session and nowhere else. Ruled 2026-10-15 after a dogfood setup overwrote the global `journal` of
