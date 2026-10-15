@@ -47,7 +47,13 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Server**: one process, `journal serve`, started and kept alive by the supervisor. A
   `ThreadingHTTPServer`: each request on a thread. The hook is `hooks/hook.sh`, a curl to
   `/hooks/<agent>` with the body on stdin; it decides nothing and exits 0 when the server
-  is away. The port is read from `.journal/port`.
+  is away. The port is read from `.journal/port`. The server takes the port this project had
+  last, else the first free one from 8420 to 8439, so journals of many projects run side by
+  side; `JOURNAL_PORT` names one exact port and `0` any free one. The `journal` shim runs the
+  package itself when the port file names a server that no longer answers.
+- **The schema follows the models.** `Schema.create` makes each table from the model's fields
+  and adds a column a model gained since the table was made (`ALTER TABLE ADD COLUMN`);
+  nothing is dropped or renamed by itself. Numbered migrations are for the rest.
 - **Events are two families.** `events/models/` are the Laravel model events. `events/agent/`
   are what the agent did, one per hook kind: `SessionStarted`, `PromptSubmitted`,
   `ToolStarting`, `ToolFinished`, `Compacting`, `Idle`, `SessionEnded`, `SubagentStarted`,
@@ -235,13 +241,20 @@ F. **The viewer is version 3's, whole** (the user's ruling on 2026-10-15, revers
    entries (every row change is an entry now), the bar, the summary, identity, agents,
    profiles, and the writes the viewer sends (`v3_actions.py`). The viewer's own code is the
    one place to adapt if the contract ever moves; today nothing in it changed.
-D2. **The boot menu**, re-envisioned small. `journal claude` asks three things in the terminal
-   before launching, each with a default so Enter alone is the common case: which environment
-   (the existing ones with when each was last used, or a new name); whether to continue that
-   environment's last conversation or start a new one; and whether to run with the journal's
-   hooks or set them aside for this run (then `AGENT_JOURNAL_ACTIVE` is unset and the hook
-   script exits at once). `--env`, `--new`, `--aside` and `--yes` answer it without asking.
-   The supervisor stays stdlib-only: it asks `journal.py environments json` for the list.
+D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then one question
+   at a time under it, moved through with ↑ ↓ (or j k), a number to jump, Enter to pick and
+   Esc to leave; the space under the banner is cleared before each question. It asks which
+   environment (badges: agent working, last used; or a new name), whether to carry on the last
+   conversation (then the other questions take last time's answers, as version 3 did), whether
+   to run without permission prompts (`--dangerously-skip-permissions` for Claude, the bypass
+   flag for Codex) and whether to run with the journal's hooks or set them aside (then
+   `AGENT_JOURNAL_ACTIVE` is unset and the hook script exits at once). The answers to the last
+   two are remembered in `.journal/launch.json` as the next defaults. `--env`, `--new`,
+   `--skip`, `--aside`, `--yes` and `--no-open` answer it without asking; without a terminal
+   the same questions are numbered lines. The supervisor stays stdlib-only: it asks
+   `journal.py environment json` for the list. Not carried over from version 3: taking over an
+   environment another agent holds (version 4 has no eviction), filling the chat from an unseen
+   conversation's transcript, and setting aside other tools' hooks (clean slate).
 E2. **Pagination.** Every index endpoint answers a page, newest first: `?limit=` (default
    50, at most 500) and `?before=<id>` for older rows. `Repository.page(limit, before,
    **fields)` is the one query. The viewer asks for a page and offers "Older".
@@ -257,7 +270,14 @@ no console errors: Home (chat with replies as comments, commit badges, the statu
 avatar), Tasks, Plans, Documents, Sequences, Triggers, Checks, Code, Collections, Resources,
 Settings (version 3's full tree, feature switches live), Journals, Agents. A real Claude
 session through the hooks replied in the chosen voice, wrote, committed, and the chat showed
-it all. The boot menu is one question per screen in colour and opens the viewer.
+it all. The boot menu is version 3's arrow-key picker and opens the viewer once the port
+answers. A session driven through a pseudo-terminal passed the menu, started Claude with the
+hooks, and the journal recorded the session start, the briefing nudges and the session end.
+
+Found on the first real run here (2026-10-15 morning): the viewer's message post crashed with
+"table messages has no column named idempotency", because the database here was made by an
+earlier build and the schema never added columns; fixed by the schema adding them. The port
+was fixed at 8420 for every project; fixed by the range.
 
 ## Where it stood before the viewer decision
 

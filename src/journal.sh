@@ -11,8 +11,8 @@ port=$(cat "$root/.journal/port" 2>/dev/null)
 if [ -n "$port" ]; then
     agent=false; [ -n "$CLAUDECODE$CODEX_SANDBOX" ] && agent=true
     body=$(python3 -c 'import json,os,sys; print(json.dumps({"argv": sys.argv[2:], "env": os.environ.get("JOURNAL_ENV","main"), "session": os.environ.get("JOURNAL_SESSION",""), "agent": sys.argv[1] == "true"}))' "$agent" "$@") &&
-    reply=$(curl -sS --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" --data-binary "$body") &&
-    printf '%s' "$reply" | python3 -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o["out"]); sys.stderr.write(o["err"]); sys.exit(o["code"])'
-    exit $?
+    reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" --data-binary "$body") &&
+    { printf '%s' "$reply" | python3 -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o["out"]); sys.stderr.write(o["err"]); sys.exit(o["code"])'; exit $?; }
 fi
+# No server answered (none up, or a port file left by one that died): the package runs the command itself.
 cd "$root" && exec python3 "$here/journal.py" "$@"

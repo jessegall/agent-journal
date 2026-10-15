@@ -9,6 +9,7 @@ from pathlib import Path
 from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
 from supervisor.launch import Launch
+from supervisor.choice import Choice
 from supervisor.menu import Menu
 from supervisor.screen import Screen
 from supervisor.supervisor import Supervisor
@@ -53,25 +54,31 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
         inbox.close()
 
 
-def test_the_menu_defaults_and_answers(tmp_path: Path, monkeypatch):
+def test_the_menu_defaults_and_answers_and_remembers(tmp_path: Path, monkeypatch):
     import io
-    answers = iter(["", "n", "a"])
+    answers = iter(["", "2", "1", "2"])
     monkeypatch.setattr("builtins.input", lambda: next(answers))
-    rows = [{"name": "main", "last_session": "abc", "last_used": "2 hours ago"}, {"name": "spike", "last_session": "", "last_used": ""}]
+    rows = [{"name": "main", "last_session": "abc", "last_used": "2 hours ago", "working": True}, {"name": "spike", "last_session": "", "last_used": "", "working": False}]
     menu = Menu(tmp_path, tmp_path / "journal.py", Screen(io.StringIO()))
     menu.environments = lambda: rows
-    choice = menu.choose()
-    assert choice.environment == "main" and choice.resume == "" and choice.hooks_aside
-    assert menu.choose(yes=True) == menu.choose(env="main", new=False, aside=False, yes=True)
-    assert menu.choose(yes=True).resume == "abc"
-    assert menu.choose(env="spike", yes=True).resume == ""
+    choice = menu.choose("claude")
+    assert choice == Choice("main", "", hooks_aside=True, skip_prompts=True)
+    assert menu.choose("claude", yes=True) == Choice("main", "abc", hooks_aside=True, skip_prompts=True), "yes takes the defaults, which are last time's answers"
+    assert menu.choose("claude", env="spike", yes=True).resume == ""
+    assert menu.choose("claude", env="spike", new=True, aside=False, skip=False, yes=True) == Choice("spike", "", hooks_aside=True, skip_prompts=True)
+
+
+def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path):
+    from supervisor.option import Option
+    from supervisor.screen import Screen as Picker
+    assert Picker._moved(0, "\x1b[B", 3) == 1 and Picker._moved(0, "\x1b[A", 3) == 2 and Picker._moved(0, "3", 3) == 2 and Picker._moved(1, "x", 3) == 1
 
 
 def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     launch = Launch.parse(["claude", "--env", "spike", "--aside", "--", "--model", "x"], tmp_path)
     assert launch.env == "spike" and launch.aside and launch.args == ("--model", "x")
-    from supervisor.menu import Choice
     assert launch.agent_command(Choice("spike", "s-1", True)) == ["claude", "--resume", "s-1", "--model", "x"]
+    assert launch.agent_command(Choice("spike", "", True, skip_prompts=True)) == ["claude", "--dangerously-skip-permissions", "--model", "x"]
     environ = launch.environ(Choice("spike", "", True))
     assert "AGENT_JOURNAL_ACTIVE" not in environ and environ["JOURNAL_ENV"] == "spike"
     assert launch.environ(Choice("spike", "", False))["AGENT_JOURNAL_ACTIVE"] == "1"

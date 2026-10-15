@@ -105,3 +105,15 @@ def test_writes_from_many_threads_all_land(connection, bus):
     for t in threads:
         t.join()
     assert len(tasks.all()) == 20
+
+
+def test_a_column_a_model_gained_is_added_to_a_table_made_before_it(tmp_path):
+    from journal.db.connection import Connection
+    from journal.db.schema import Schema
+    from journal.models.all_models import AllModels
+    old = Connection(tmp_path / "old.db")
+    with old.transaction() as db:
+        db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER)")
+    Schema(old, AllModels.MODELS).create()
+    names = {row["name"] for row in old.execute("PRAGMA table_info(messages)").fetchall()}
+    assert "idempotency" in names and "text" in names

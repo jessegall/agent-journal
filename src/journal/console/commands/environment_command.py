@@ -24,7 +24,7 @@ class EnvironmentCommand(Command):
         for environment in self.environments.all() or [self.environments.named("main")]:
             agents = self.agents.in_(environment.id)
             last = agents[-1] if agents else None
-            rows.append({"name": environment.name, "last_session": last.session if last and last.state != "ended" else (last.session if last else ""),
+            rows.append({"name": environment.name, "last_session": last.session if last else "", "working": bool(last) and last.state != "ended",
                          "last_used": self.ago(last.updated_at) if last else ""})
         return rows
 

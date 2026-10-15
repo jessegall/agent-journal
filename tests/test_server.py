@@ -78,3 +78,20 @@ def test_the_viewer_api_lists_every_resource_and_answers_a_question(server):
 def test_a_path_outside_the_api_is_the_viewer(server):
     with urlopen(f"http://127.0.0.1:{server.port}/anything", timeout=5) as reply:
         assert reply.status == 200 and b"<div id=\"app\">" in reply.read()
+
+
+def test_a_taken_port_sends_the_next_journal_to_the_next_one(tmp_path: Path):
+    import socket
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        first = probe.getsockname()[1]
+    one = App(Config(tmp_path / "one", port=first, span=3))
+    two = App(Config(tmp_path / "two", port=first, span=3))
+    one.server().start()
+    two.server().start()
+    try:
+        assert one.server().port == first and two.server().port == first + 1
+        assert (tmp_path / "two" / ".journal" / "port").read_text() == str(first + 1)
+    finally:
+        one.server().stop()
+        two.server().stop()

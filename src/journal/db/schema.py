@@ -17,6 +17,14 @@ class Schema:
             db.execute("CREATE TABLE IF NOT EXISTS migrations (number INTEGER PRIMARY KEY, ran_at TEXT NOT NULL)")
             for model in self.models:
                 db.execute(self.statement(model))
+                self.add_new_columns(db, model)
+
+    def add_new_columns(self, db, model: type[Model]) -> None:
+        """A column a model gained after its table was made is added to the table; nothing is ever dropped."""
+        present = {row["name"] for row in db.execute(f"PRAGMA table_info({model.table()})").fetchall()}
+        for column in self.columns(model):
+            if column.name not in present:
+                db.execute(f"ALTER TABLE {model.table()} ADD COLUMN {column.name} {column.sql_type}")
 
     def statement(self, model: type[Model]) -> str:
         columns = ", ".join(f"{column.name} {column.sql_type}" for column in self.columns(model) if column.name != "id")

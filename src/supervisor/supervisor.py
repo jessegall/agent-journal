@@ -4,6 +4,7 @@ import signal
 import termios
 import time
 import tty
+import urllib.request
 import webbrowser
 from pathlib import Path
 
@@ -76,19 +77,26 @@ class Supervisor:
             self._code = code
 
     def open_viewer_once(self) -> None:
-        """Opens the viewer in the browser the first time the journal has written its port, and never again."""
+        """Opens the viewer in the browser the first time the port in the port file answers, and never again; a port file left by a dead journal answers nothing."""
         if self._opened or not self.viewer:
             return
+        if time.time() - self._started_at > 30:
+            self._opened = True
+            return
         port_file = self.journal.root / ".journal" / "port"
-        if not port_file.is_file():
-            if time.time() - self._started_at > 30:
-                self._opened = True
+        url = f"http://127.0.0.1:{port_file.read_text().strip()}/" if port_file.is_file() else ""
+        if not url or not self._answers(url):
             return
         self._opened = True
+        webbrowser.open(url + self.viewer, new=2)
+
+    @staticmethod
+    def _answers(url: str) -> bool:
         try:
-            webbrowser.open(f"http://127.0.0.1:{port_file.read_text().strip()}/{self.viewer}", new=2)
-        except Exception:
-            return
+            with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=0.5) as reply:
+                return reply.status < 500
+        except OSError:
+            return False
 
     def carry_out(self, instruction: Instruction) -> None:
         """Dispatches on the instruction's type to one of the four below."""

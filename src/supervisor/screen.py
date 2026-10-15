@@ -1,40 +1,119 @@
 import os
+import shutil
 import sys
+import termios
+import tty
 
-BOLD, DIM, ACCENT, GOOD, WARN, RESET = "\x1b[1m", "\x1b[2m", "\x1b[38;5;111m", "\x1b[38;5;114m", "\x1b[38;5;221m", "\x1b[0m"
+from supervisor.keys import Keys
+from supervisor.option import Option
+
+BOLD, DIM, ACCENT, GOOD, BADGE, RESET = "\x1b[1m", "\x1b[2m", "\x1b[38;5;111m", "\x1b[38;5;114m", "\x1b[38;5;176m", "\x1b[0m"
+SAVE_CURSOR, BACK_TO_SAVED, HIDE_CURSOR, SHOW_CURSOR = "\x1b7", "\x1b8\x1b[J", "\x1b[?25l", "\x1b[?25h"
+HINT = "↑ ↓ to move · Enter to pick · a number to jump · Esc to leave"
 
 
 class Screen:
-    """The terminal the boot menu draws on: it clears between questions, and colours only where the terminal can show them."""
+    """The terminal the boot menu draws on: a banner once, then one question at a time in the space under it, each moved through with the arrow keys. Without a terminal to draw on, the same questions are numbered lines answered by typing."""
 
-    def __init__(self, out=sys.stdout) -> None:
+    def __init__(self, out=sys.stdout, keys: Keys | None = None) -> None:
         self.out = out
-        self.colour = out.isatty() and os.environ.get("TERM", "dumb") != "dumb" and not os.environ.get("NO_COLOR")
+        self.interactive = out.isatty() and sys.stdin.isatty()
+        self.colour = self.interactive and os.environ.get("TERM", "dumb") != "dumb" and not os.environ.get("NO_COLOR")
+        self.keys = keys or Keys(sys.stdin.fileno() if self.interactive else 0)
 
     def paint(self, code: str, text: str) -> str:
         return f"{code}{text}{RESET}" if self.colour else text
 
-    def clear(self) -> None:
-        if self.colour:
-            self.out.write("\x1b[2J\x1b[H")
+    def banner(self, agent: str, project: str) -> None:
+        width = max(40, shutil.get_terminal_size().columns - 4) if self.interactive else 60
+        lines = [f"agent-journal", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "", "A question or two first: move with ↑ ↓ and pick with Enter."]
+        rule = "─" * width
+        body = "\n".join(f"│ {line:<{width - 2}} │" for line in lines)
+        clear = "\x1b[2J\x1b[H" if self.interactive else ""
+        self.out.write(f"{clear}{self.paint(ACCENT, '┌' + rule + '┐')}\n{body}\n{self.paint(ACCENT, '└' + rule + '┘')}\n{SAVE_CURSOR if self.interactive else ''}")
         self.out.flush()
 
-    def head(self, project: str, line: str) -> None:
-        self.clear()
-        self.out.write(f"{self.paint(ACCENT + BOLD, 'Agent journal')}  {self.paint(DIM, '·')}  {self.paint(BOLD, project)}\n")
-        self.out.write(f"{self.paint(DIM, line)}\n\n")
+    def pick(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
+        """The index of the option picked; the one at `default` is where the cursor starts."""
+        self._fresh()
+        if self.interactive:
+            return self._pick_with_keys(heading, notes, options, default)
+        return self._pick_by_number(heading, notes, options, default)
 
-    def say(self, text: str = "") -> None:
-        self.out.write(text + "\n")
-
-    def option(self, key: str, label: str, note: str = "", chosen: bool = False) -> None:
-        mark = self.paint(GOOD, "●") if chosen else self.paint(DIM, "○")
-        self.out.write(f"  {mark} {self.paint(BOLD, key):<14} {label}{('  ' + self.paint(DIM, note)) if note else ''}\n")
-
-    def ask(self, prompt: str, default: str = "") -> str:
-        self.out.write(f"\n{self.paint(ACCENT, '›')} {prompt}{(' ' + self.paint(DIM, '[' + default + ']')) if default else ''} ")
+    def ask(self, prompt: str) -> str:
+        """A free-text answer, such as the name of a new environment."""
+        self.out.write(f"\n  {self.paint(ACCENT, '›')} {prompt} ")
         self.out.flush()
         try:
             return input().strip()
         except EOFError:
             return ""
+
+    def summary(self, rows: list[tuple[str, str]]) -> None:
+        self._fresh()
+        self.out.write(f"  {self.paint(ACCENT, '?')} {self.paint(BOLD, 'Starting')}\n\n")
+        for name, value in rows:
+            self.out.write(f"    {self.paint(GOOD, '✓')} {name:<13} {value}\n")
+        self.out.write("\n")
+        self.out.flush()
+
+    def _fresh(self) -> None:
+        """Clears the space under the banner, so each question has the screen to itself."""
+        self.out.write(BACK_TO_SAVED if self.interactive else "\n")
+
+    def _lines(self, heading: str, notes: list[str], options: list[Option], at: int) -> list[str]:
+        width = max(len(option.label) for option in options)
+        lines = [f"  {self.paint(ACCENT, '?')} {self.paint(BOLD, heading)}", ""]
+        lines += [f"    {self.paint(DIM, note)}" for note in notes] + ([""] if notes else [])
+        for i, option in enumerate(options):
+            badges = "".join(f"  {self.paint(BADGE, '[' + badge + ']')}" for badge in option.badges)
+            label = f"{option.label:<{width}}"
+            lines.append(f"  {self.paint(ACCENT, '❯')} {self.paint(BOLD, label)}{badges}" if i == at else f"    {label}{badges}")
+        return [*lines, "", f"  {self.paint(DIM, HINT)}"]
+
+    def _pick_with_keys(self, heading: str, notes: list[str], options: list[Option], at: int) -> int:
+        fd = sys.stdin.fileno()
+        saved = termios.tcgetattr(fd)
+        drawn = 0
+        try:
+            tty.setcbreak(fd)
+            self.out.write(HIDE_CURSOR)
+            while True:
+                lines = self._lines(heading, notes, options, at)
+                self.out.write((f"\x1b[{drawn}F\x1b[J" if drawn else "") + "\n".join(lines) + "\n")
+                self.out.flush()
+                drawn = len(lines)
+                for key in self.keys.read():
+                    if key in Keys.ENTER:
+                        return at
+                    if key == Keys.ESCAPE:
+                        raise SystemExit("journal: left without starting")
+                    at = self._moved(at, key, len(options))
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, saved)
+            self.out.write(SHOW_CURSOR)
+            self.out.flush()
+
+    @staticmethod
+    def _moved(at: int, key: str, count: int) -> int:
+        if key in Keys.UP:
+            return (at - 1) % count
+        if key in Keys.DOWN:
+            return (at + 1) % count
+        if key.isdigit() and 1 <= int(key) <= count:
+            return int(key) - 1
+        return at
+
+    def _pick_by_number(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
+        self.out.write(f"\n  {heading}\n  {'─' * len(heading)}\n")
+        for note in notes:
+            self.out.write(f"    {note}\n")
+        self.out.write("\n")
+        for i, option in enumerate(options, 1):
+            badges = "".join(f"  [{badge}]" for badge in option.badges)
+            self.out.write(f"    {i}  {option.label}{badges}{'   ← Enter' if i - 1 == default else ''}\n")
+        while True:
+            answer = self.ask(">") or str(default + 1)
+            if answer.isdigit() and 1 <= int(answer) <= len(options):
+                return int(answer) - 1
+            self.out.write(f"    A number from 1 to {len(options)}.\n")

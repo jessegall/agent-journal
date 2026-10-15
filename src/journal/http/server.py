@@ -41,6 +41,16 @@ class Server:
 
     def _build(self) -> ThreadingHTTPServer:
         bound = type("BoundHandler", (Handler,), {"router": self.router, "identity": self.identity, "static": self.static})
-        server = ThreadingHTTPServer(("127.0.0.1", self.config.port), bound)
+        server = self._bind(bound)
         server.daemon_threads = True
         return server
+
+    def _bind(self, handler: type[Handler]) -> ThreadingHTTPServer:
+        """Takes the first free port of the ones the config names; a taken one is left to whoever has it."""
+        ports = self.config.ports()
+        for port in ports[:-1]:
+            try:
+                return ThreadingHTTPServer(("127.0.0.1", port), handler)
+            except OSError:
+                continue
+        return ThreadingHTTPServer(("127.0.0.1", ports[-1]), handler)

@@ -1,16 +1,19 @@
 import os
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
-from supervisor.menu import Choice, Menu
+from supervisor.choice import Choice
+from supervisor.menu import Menu
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
-FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--yes": 0, "--no-open": 0}
+SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
+FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0}
 
 
 @dataclass(frozen=True)
@@ -23,6 +26,7 @@ class Launch:
     env: str = ""
     new: bool = False
     aside: bool = False
+    skip: bool = False
     yes: bool = False
     no_open: bool = False
 
@@ -45,12 +49,14 @@ class Launch:
 
     def choice(self) -> Choice:
         if not sys.stdin.isatty():
-            return Choice(self.env or "main", "", self.aside)
-        return Menu(self.root, self.package / "journal.py").choose(self.env, self.new, self.aside, self.yes)
+            return Choice(self.env or "main", "", self.aside, self.skip)
+        subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
+        return Menu(self.root, self.package / "journal.py").choose(self.agent, self.env, self.new, self.aside, self.skip, self.yes)
 
     def agent_command(self, choice: Choice) -> list[str]:
         resume = RESUME[self.agent](choice.resume) if choice.resume else []
-        return [self.agent, *resume, *self.args]
+        skip = [flag for flag in SKIP[self.agent] if choice.skip_prompts and flag not in self.args]
+        return [self.agent, *resume, *skip, *self.args]
 
     def journal_command(self) -> list[str]:
         return [sys.executable, str(self.package / "journal.py"), "serve"]

@@ -17,11 +17,12 @@ From the root of your project, with `python3`, `git` and `curl` on the path:
 
 `setup here` makes `.journal/`, wires Claude's hooks (and Codex's where `.codex/` exists), writes the
 journal's skills and the agent profiles, puts the journal's law into AGENTS.md, imports it from
-CLAUDE.md, and installs a `journal` command in `~/.local/bin`. `journal claude` asks, one screen at a
-time, which environment, whether to continue its last conversation and whether to run with the hooks,
-then runs Claude under the supervisor with the server beside it and opens the viewer in your browser.
-`--env <name>`, `--new`, `--aside`, `--yes` and `--no-open` answer the menu from the command line.
-The viewer is at the port in `.journal/port`, 8420 by default, or `JOURNAL_PORT`.
+CLAUDE.md, and installs a `journal` command in `~/.local/bin`. `journal claude` asks, one question at a
+time with ↑ ↓ and Enter, which environment, whether to carry on its last conversation, whether to skip
+the permission prompts and whether to run with the hooks, then runs Claude under the supervisor with
+the server beside it and opens the viewer in your browser. `--env <name>`, `--new`, `--skip`, `--aside`,
+`--yes` and `--no-open` answer the menu from the command line. The viewer is at the port in
+`.journal/port`: the first free one from 8420, or `JOURNAL_PORT`.
 
 The viewer is version 3's, unchanged: the server answers its API from the new database.
 
