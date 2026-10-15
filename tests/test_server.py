@@ -315,3 +315,22 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_quotes_wh
         assert comment["brief"] == "> is the footer fixed?\n> and the header?\n\nBoth are." and comment["refs"] == [f"message:{n}"]
     finally:
         app.runtime().stop()
+
+
+def test_an_agents_reply_is_a_comment_event_so_the_chat_refreshes_it(tmp_path: Path):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
+        for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
+            urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        app.runtime().deferred.drain()
+        kinds = [(e["type"], e["action"]) for e in call(server, "GET", "/api/main/events?since=0")[1]]
+        assert ("comment", "created") in kinds and ("message", "created") in kinds
+    finally:
+        app.runtime().stop()

@@ -49,9 +49,10 @@ SILENT_AFTER = 900.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
         self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files, self.providers = messages, files, current, supervisor, registry, skill_files, providers
+        self.events = events
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
 
     # the journal
@@ -386,7 +387,7 @@ class V3Controller:
             since = 0
         entries = self.entries.since(environment.id, since) if since else list(reversed(self.entries.of_kind_in(environment.id, last or 100)))
         agent_n = {a.session: a.id for a in self.agents.in_(environment.id)}
-        found = [V3Events.of(e, environment.name, agent_n.get(e.actor.id if e.actor else "", 0)) for e in entries]
+        found = [self.events.of(e, environment.name, agent_n.get(e.actor.id if e.actor else "", 0)) for e in entries]
         return [e for e in found if e]
 
     def get_stream(self, request: Request) -> StreamResponse:
@@ -402,7 +403,7 @@ class V3Controller:
                 fresh = self.entries.since(environment.id, last)
                 for entry in fresh:
                     last = entry.id
-                    event = V3Events.of(entry, environment.name)
+                    event = self.events.of(entry, environment.name)
                     if event:
                         quiet = 0.0
                         yield f"id: {event['id']}\ndata: {json.dumps(event)}\n\n".encode()
