@@ -1,6 +1,7 @@
 import json
 from argparse import Namespace
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from journal.console.command import Command
 from journal.console.where import Where
@@ -80,8 +81,10 @@ class EnvironmentCommand(Command):
         return [line for line in lines if line]
 
     def background(self, environment_id: int) -> list[str]:
+        """The chains moved to the background that have not ended: not reported as ended, and their folder still there without a done mark."""
         ended = {e.data["chain"] for e in self.entries.of_kind(environment_id, ENDED, 50)}
-        return [f"{e.data['part']} (output in {e.data['file']})" for e in reversed(self.entries.of_kind(environment_id, MOVED, 50)) if e.data["chain"] not in ended]
+        moved = [e for e in reversed(self.entries.of_kind(environment_id, MOVED, 50)) if e.data["chain"] not in ended]
+        return [f"{e.data['part']} (output in {e.data['file']})" for e in moved if Path(e.data["file"]).is_dir() and not (Path(e.data["file"]) / "done").is_file()]
 
     @staticmethod
     def named(what: str, rows: list[str]) -> str:
