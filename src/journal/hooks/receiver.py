@@ -1,3 +1,4 @@
+from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
 from journal.features.agent_listener import AgentListener
 from journal.features.bus import Bus
@@ -39,7 +40,7 @@ class Receiver:
             self.deferred.add(lambda listener=listener: listener.handle(event))
 
     def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
-        """The listeners of this event, blocking ones first and deferred ones second."""
+        """The listeners of this event: the machine first, so every other sees the state the event led to, the other blocking ones next and the deferred ones last."""
         listeners = self.bus.listeners(type(event))
-        blocking = [l for l in listeners if getattr(l, "blocking", False)]
-        return blocking, [l for l in listeners if l not in blocking]
+        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: not isinstance(l, Machine))
+        return blocking, [l for l in listeners if not getattr(l, "blocking", False)]

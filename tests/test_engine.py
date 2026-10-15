@@ -92,6 +92,7 @@ def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revi
     hook(app, "SessionEnd")
     assert app.container.get(Machine).current("s1").name == "ended"
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     assert app.container.get(Machine).current("s1").name == "idle"
 
 
@@ -114,6 +115,7 @@ def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
 def test_a_tick_reaches_the_machine_without_a_hook(app):
     from journal.engine.clock import Clock
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.container.get(Clock).tick()
     assert isinstance(app.container.get(Machine).current("s1"), Idle)
 

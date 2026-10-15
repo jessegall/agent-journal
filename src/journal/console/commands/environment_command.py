@@ -1,20 +1,37 @@
 import json
 from argparse import Namespace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
+from journal.engine.machine import Machine
+from journal.features.briefing.states.orienting import Orienting
+from journal.features.shell.commands.shell_command import ENDED, MOVED
+from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
+from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
+from journal.repositories.facts import Facts
+from journal.repositories.messages import Messages
+from journal.repositories.not_found import NotFound
+from journal.repositories.questions import Questions
+from journal.repositories.reminders import Reminders
+from journal.repositories.rules import Rules
+from journal.repositories.tasks import Tasks
+from journal.repositories.workers import Workers
+
+TAKEN_OVER_WITHIN = timedelta(hours=12)
 
 
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents) -> None:
-        self.environments, self.agents = environments, agents
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: Machine) -> None:
+        self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
+        self.rules, self.facts, self.reminders, self.machine = rules, facts, reminders, machine
 
     def arguments(self, verbs) -> None:
+        self.verb(verbs, "here", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders; owed at every session start")
         self.verb(verbs, "list", "every environment and when it was last used")
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")
@@ -28,6 +45,53 @@ class EnvironmentCommand(Command):
             rows.append({"name": environment.name, "last_session": last.session if last else "", "working": bool(last) and last.state != "ended",
                          "last_used": self.ago(last.updated_at) if last else ""})
         return rows
+
+    def here(self, args: Namespace, where: Where) -> int:
+        environment = self.environments.named(where.environment)
+        for line in self.in_flight(environment.id, where.session):
+            print(line)
+        self.oriented(where, environment.id)
+        return 0
+
+    def in_flight(self, environment_id: int, session: str) -> list[str]:
+        """What an agent must know here, one line a kind; nothing in flight says so."""
+        since = datetime.now(timezone.utc) - TAKEN_OVER_WITHIN
+        others = [a for a in self.agents.in_(environment_id) if a.session != session and a.updated_at >= since]
+        held = self.tasks.in_state(environment_id, TaskState.STARTED)
+        lines = [
+            f"taken over from another agent, last seen {others[-1].updated_at.strftime('%H:%M')}" if others else "",
+            self.named("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
+            self.named("open tasks", [f"{t.id} {t.title}" for t in self.tasks.in_state(environment_id, TaskState.OPEN)]),
+            self.named("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.in_state(environment_id, TaskState.PARKED)]),
+            self.named("unread messages", [str(m.id) for m in self.messages.unread(environment_id)]),
+            self.named("messages read and unanswered", [str(m.id) for m in self.messages.unanswered(environment_id)]),
+            self.named("questions waiting for the user", [f"{q.id} {q.text}" for q in self.questions.open(environment_id)]),
+            self.named("workers out", [f"{w.id} {w.name}" for w in self.workers.out(environment_id)]),
+            self.named("running in the background", self.background(environment_id)),
+            self.named("rules in force", [f"{r.id} {r.text}" for r in self.rules.all()]),
+            self.named("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.in_(environment_id)]),
+            self.named("reminders here", [f"{r.id} {r.text}" for r in self.reminders.in_(environment_id)]),
+        ]
+        return [line for line in lines if line]
+
+    def background(self, environment_id: int) -> list[str]:
+        ended = {e.data["chain"] for e in self.entries.of_kind(environment_id, ENDED, 50)}
+        return [f"{e.data['part']} (output in {e.data['file']})" for e in reversed(self.entries.of_kind(environment_id, MOVED, 50)) if e.data["chain"] not in ended]
+
+    @staticmethod
+    def named(what: str, rows: list[str]) -> str:
+        return f"{what}: " + "; ".join(rows) if rows else ""
+
+    def oriented(self, where: Where, environment_id: int) -> None:
+        """An agent that read this has its bearings: the hold at its start is lifted."""
+        if not where.session:
+            return
+        try:
+            current = self.machine.current(where.session)
+        except NotFound:
+            return
+        if isinstance(current, Orienting):
+            self.machine.move(where.session, environment_id, current.back().to)
 
     def list(self, args: Namespace, where: Where) -> int:
         for row in self.rows():

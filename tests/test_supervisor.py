@@ -104,7 +104,9 @@ def test_the_header_fits_the_width_and_moves_the_agents_clears_under_it():
     assert text.startswith("\x1b[H") and "agent-journal" in text and text.rstrip("\x1b[0m").endswith("journal starting…")
     header.url = "http://127.0.0.1:8420/"
     assert "http://127.0.0.1:8420/" in header.line().decode() and header.agent_rows == 9
-    assert Header.shield(b"a\x1b[2Jb\x1b[Hc") == b"a\x1b[2;1H\x1b[Jb\x1b[2;1Hc"
+    assert header.shield(b"a\x1b[2Jb\x1b[Hc") == b"a\x1b[2;1H\x1b[Jb\x1b[2;1Hc" + header.restored(), "a clear redraws the line and the region"
+    assert header.shield(b"plain text\x1b[2K") == b"plain text\x1b[2K", "ordinary output leaves the line alone"
+    assert header.shield(b"x\x1b[r").endswith(header.restored()), "a scroll-region reset is undone"
 
 
 def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_agent_works(tmp_path: Path, monkeypatch):

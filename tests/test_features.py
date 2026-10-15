@@ -176,6 +176,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
 def test_a_prompt_answers_a_question_in_other_words(app):
     from journal.features.questions.states.waiting import Waiting
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["question", "ask", "Which name?"], AGENT)
     hook(app, "UserPromptSubmit", prompt="call it beta")
     assert app.container.get(Machine).current("s1").name == "idle"
@@ -257,6 +258,8 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     assert isinstance(machine.current("s1"), LoadingSkill)
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409
     read_skill(app, "journal")
+    assert machine.current("s1").name == "orienting", "the skill read, the start's look at what is in flight is still owed"
+    app.console().run(["environment", "here"], AGENT)
     assert machine.current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
 
@@ -336,6 +339,7 @@ def test_the_skill_tool_loads_a_skill_too(skilled):
     app = skilled
     hook(app, "SessionStart")
     hook(app, "PostToolUse", tool_name="Skill", tool_input={"skill": "journal"}, tool_response="")
+    app.console().run(["environment", "here"], AGENT)
     assert app.container.get(Machine).current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", "")
 
@@ -541,14 +545,18 @@ def test_a_message_read_and_unanswered_holds_every_tool_call_after_ten_uses_but_
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200
 
 
-def test_after_a_compaction_the_latest_messages_are_read_before_any_other_write(app):
+def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app):
     hook(app, "SessionStart")
-    app.console().run(["task", "create", "t", "--start"], AGENT)
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["message", "send", "hi"], USER)
     status, body = hook(app, "SessionStart", source="compact")
-    assert "the conversation was compacted" in body["hookSpecificOutput"]["additionalContext"]
+    assert "read what is in flight here before any other write" in body["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    assert status == 409 and "journal message recent" in body["error"]
-    assert app.console().run(["message", "recent"], AGENT).code == 0
+    assert status == 409 and "journal environment here" in body["error"]
+    shown = console.run(["environment", "here"], AGENT).out
+    assert "task in hand: 1 t" in shown and "unread messages: 1" in shown
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
 
@@ -577,6 +585,7 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
 
 def test_auto_mode_answers_a_stop_with_the_next_task(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "the footer"], USER)
     status, body = hook(app, "Stop")
     assert status == 409 and "task 1 next: the footer" in body["error"]
@@ -662,6 +671,7 @@ def test_a_message_read_through_a_pipe_is_refused(app):
     assert status == 409 and "read the user's message whole" in body["error"]
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /x && journal message read 3"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list | head -5"})[0] == 200, "only the user's words are protected"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep 'journal message read 3' notes.md | head -2"})[0] == 200, "the words quoted inside another command are not a read"
 
 
 def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():

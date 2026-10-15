@@ -1,8 +1,11 @@
 import os
+import re
 
 ACCENT_BAR, BOLD, RESET = "\x1b[48;5;24m\x1b[38;5;255m", "\x1b[1m", "\x1b[0m"
 HOME, CLEAR = b"\x1b[H", b"\x1b[2J"
 HOME_UNDER, CLEAR_UNDER = b"\x1b[2;1H", b"\x1b[2;1H\x1b[J"
+DISTURBS = re.compile(rb"\x1b\[[0-9;]*r|\x1b\[[0-3]?J|\x1b\[(?:1|0)?(?:;[0-9]*)?H|\x1bc")
+"""A scroll-region reset, a screen clear, a move to the first row or a full reset: each would wipe the line."""
 
 
 class Header:
@@ -38,10 +41,13 @@ class Header:
         text = f"{left}{centred}{right}"[: self.columns]
         return f"\x1b[H{ACCENT_BAR}{BOLD}\x1b[K{text}{RESET}".encode()
 
-    @staticmethod
-    def shield(data: bytes) -> bytes:
-        """The agent's clear-screen and home moves, moved to the row under the line."""
-        return data.replace(CLEAR, CLEAR_UNDER).replace(HOME, HOME_UNDER)
+    def shield(self, data: bytes) -> bytes:
+        """The agent's clear-screen and home moves, moved to the row under the line; after anything that resets the screen or the scroll region, the line and the region are drawn again."""
+        shielded = data.replace(CLEAR, CLEAR_UNDER).replace(HOME, HOME_UNDER)
+        return shielded + self.restored() if DISTURBS.search(data) else shielded
+
+    def restored(self) -> bytes:
+        return b"\x1b7" + f"\x1b[2;{self.rows}r".encode() + self.line() + b"\x1b8"
 
     @property
     def agent_rows(self) -> int:
