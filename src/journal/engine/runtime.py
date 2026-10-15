@@ -3,9 +3,11 @@ from journal.engine.clock import Clock
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
+from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.models.created import Created
+from journal.events.models.deleted import Deleted
 from journal.features.bus import Bus
 from journal.features.registry import Registry
 from journal.features.switched import Switched
@@ -25,6 +27,7 @@ class Runtime:
         self.bus.listen(AgentEvent, self.machine)
         self.bus.listen(Created, Creations())
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
+        self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:
             for listener in feature.listeners:
                 self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry))

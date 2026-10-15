@@ -8,6 +8,7 @@ from journal.models.link import Link
 from journal.models.message import Message
 from journal.models.plan import Plan
 from journal.models.question import Question
+from journal.models.reaction import Reaction
 from journal.models.reminder import Reminder
 from journal.models.report import Report
 from journal.models.rule import Rule
@@ -24,5 +25,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Message, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Message, Reaction, Question, Fact, Rule, Reminder, Report, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

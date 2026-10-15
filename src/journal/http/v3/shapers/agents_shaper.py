@@ -43,9 +43,25 @@ class AgentsShaper(Shaper):
             "provider": a.provider, "model": "", "context": a.context_mark, "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
             "doing": self.doing(a, state), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "cards": self.commit_cards(entries), "whispers": [], "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
-            "subagent_rows": [], "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "halted": a.data.get("why", "") if a.state == "halted" else "", "state": a.state,
+            "subagent_rows": self.subagent_rows(hooks), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "halted": a.data.get("why", "") if a.state == "halted" else "", "state": a.state,
         }
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)
+
+    @staticmethod
+    def subagent_rows(hooks) -> list[dict]:
+        """Each dispatch of a subagent, from the Agent tool's start and finish, as the chat draws its start and end marks."""
+        rows, open_ = [], []
+        for e in hooks:
+            if e.data.get("tool_name") not in ("Agent", "Task"):
+                continue
+            given = e.data.get("tool_input", {})
+            if e.kind == "ToolStarting":
+                rows.append({"id": f"sub:{e.id}", "at": seconds(e.created_at), "task": given.get("description", "") or given.get("prompt", "")[:80], "type": given.get("subagent_type", "") or "subagent", "model": given.get("model", ""), "session": "", "status": "running", "ended": 0, "refusal": ""})
+                open_.append(rows[-1])
+            elif e.kind == "ToolFinished" and open_:
+                done = open_.pop(0)
+                done.update(status="done", ended=seconds(e.created_at))
+        return rows
 
     @staticmethod
     def doing(a, state) -> str:

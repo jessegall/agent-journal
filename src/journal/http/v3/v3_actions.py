@@ -19,6 +19,7 @@ from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
+from journal.repositories.reactions import Reactions
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.repositories.tasks import Tasks
@@ -28,9 +29,9 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
-        self.agents, self.environments, self.machine, self.supervisor = agents, environments, machine, supervisor
+        self.agents, self.environments, self.machine, self.supervisor, self.reactions = agents, environments, machine, supervisor, reactions
 
     def create(self, type: str, environment: Environment, body: dict, request: Request):
         title, brief = body.get("title", "") or body.get("brief", "")[:80], body.get("brief", "")
@@ -66,7 +67,8 @@ class V3Actions:
         return handler(n, body, by) if handler else None
 
     def message_react(self, n: int, body: dict, by):
-        return self.messages.find(n)
+        made = self.reactions.toggle(self.messages.find(n), body.get("face", ""), Author.USER, by)
+        return made if made else {}
 
     def message_read(self, n: int, body: dict, by):
         return self.messages.mark_read(self.messages.find(n), by)

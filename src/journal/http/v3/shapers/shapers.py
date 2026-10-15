@@ -7,6 +7,7 @@ from journal.http.v3.shapers.nudges_shaper import NudgesShaper
 from journal.http.v3.shapers.plans_shaper import PlansShaper
 from journal.http.v3.shapers.profiles_shaper import ProfilesShaper
 from journal.http.v3.shapers.questions_shaper import QuestionsShaper
+from journal.http.v3.shapers.reactions_shaper import ReactionsShaper
 from journal.http.v3.shapers.rules_shaper import RulesShaper
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.shapers.simple_shaper import SimpleShaper
@@ -23,7 +24,7 @@ from journal.repositories.reports import Reports
 from journal.repositories.sequences import Sequences
 from journal.repositories.triggers import Triggers
 
-EMPTY = ("notification", "notice", "reaction", "suggestion", "tool", "plugin", "browser", "feature", "ticket", "board", "worktree", "template", "critique", "dump", "record", "output", "collection", "share", "secret", "phone")
+EMPTY = ("notification", "notice", "suggestion", "tool", "plugin", "browser", "feature", "ticket", "board", "worktree", "template", "critique", "dump", "record", "output", "collection", "share", "secret", "phone")
 
 
 class Shapers:
@@ -33,7 +34,7 @@ class Shapers:
         get = container.get
         own = [
             get(MessagesShaper), get(CommentsShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
-            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper),
+            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper),
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
             WritingShaper(get(Docs), "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),

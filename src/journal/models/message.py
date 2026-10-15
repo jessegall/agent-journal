@@ -13,3 +13,5 @@ class Message(Scoped):
     read_at: datetime | None = None
     idempotency: str = ""
     """The key the sender gave it, so a message sent twice lands once and the viewer can match what it sent."""
+    acknowledgement: bool = False
+    """An agent's turn that only answered a journal line and changed nothing: kept, and left out of the chat unless shown."""

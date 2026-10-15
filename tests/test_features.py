@@ -383,3 +383,67 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
     shown = app.console().run(["message", "unread"], AGENT).out
     assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "four" in shown
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
+
+
+def test_a_turn_streamed_in_parts_lands_once_whole(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    hook(app, "MessageDisplay", delta="Good ", message_id="m1", final=False)
+    hook(app, "MessageDisplay", delta="evening.", message_id="m1", final=True)
+    app.runtime().deferred.drain()
+    assert [m.text for m in app.container.get(Messages).in_(1) if m.author == "agent"] == ["Good evening."]
+
+
+def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch):
+    from journal.repositories.messages import Messages
+    from journal.repositories.reactions import Reactions
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    console = app.console()
+    console.run(["message", "send", "thanks, carry on"], USER)
+    hook(app, "SessionStart")
+    assert console.run(["message", "react", "1", "👍"], AGENT).out.startswith("👍 on message 1")
+    messages, reactions = app.container.get(Messages), app.container.get(Reactions)
+    assert messages.find(1).read_at is not None, "a face from the agent answers the message"
+    assert [r.face for r in reactions.on(messages.find(1))] == ["👍"]
+    assert console.run(["message", "react", "1", "👍"], AGENT).out.startswith("👍 off message 1") and reactions.on(messages.find(1)) == []
+    assert console.run(["message", "react", "1", "🍕"], AGENT).code == 1
+    hook(app, "MessageDisplay", message="Done.")
+    app.runtime().deferred.drain()
+    console.run(["message", "react", "2", "🎉"], USER)
+    assert typed[-1] == "[journal] the user put 🎉 on message 2. act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it"
+    hook(app, "MessageDisplay", message="👍")
+    app.runtime().deferred.drain()
+    assert [m.text for m in messages.in_(1)] == ["thanks, carry on", "Done."], "a turn that is only a face is not posted"
+    assert typed[-1].startswith("[journal] your turn was only 👍, so it was not posted")
+
+
+def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    hook(app, "UserPromptSubmit", prompt="[journal] new message 9")
+    hook(app, "MessageDisplay", message="Noted.")
+    app.runtime().deferred.drain()
+    hook(app, "UserPromptSubmit", prompt="[journal] carry on")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    hook(app, "MessageDisplay", message="Still nothing changed.")
+    hook(app, "UserPromptSubmit", prompt="[journal] carry on")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    hook(app, "MessageDisplay", message="Fixed the login.")
+    hook(app, "UserPromptSubmit", prompt="please fix the footer")
+    hook(app, "MessageDisplay", message="On it.")
+    app.runtime().deferred.drain()
+    assert [(m.text, m.acknowledgement) for m in app.container.get(Messages).in_(1) if m.author == "agent"] == [("Noted.", True), ("Still nothing changed.", True), ("Fixed the login.", False), ("On it.", False)]
+
+
+def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    hook(app, "MessageDisplay", message="The build — the one from last night — is green.")
+    hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
+    app.runtime().deferred.drain()
+    assert any("em dashes" in line for line in typed) and any("ran its paragraphs together" in line for line in typed)

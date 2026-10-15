@@ -406,6 +406,15 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   `conftest.py`, `.coveragerc`, `plugins.json`, `.githooks/`, `.codex/agents/`.
 
 - **docs/messaging-and-chat-marks.md** holds the requirements for the chat, read from version 3 on 2026-10-15: your messages, the agent's words, tags, replies, reactions, marks, etiquette, and what version 4 still lacks.
+- **Messaging, second batch (2026-10-15).** The whole turn is gathered in the hook layer
+  (`TurnGatherer` under `Translation`): every `TurnWritten` carries the text so far and its delta, so
+  the recorder and the etiquette listener read the same whole on the final one. Reactions are a model
+  (`Reaction`: face, author) linked to the message by a `reacts` link, toggled by `journal message react`
+  and the viewer; the user's face is typed to the live agent on the link's creation; a turn that is only
+  a face is not posted. A turn answering a `[journal]` prompt with no file written since is kept as an
+  acknowledgement (a column on the message) and hidden by the viewer's default. Em dashes and
+  run-together paragraphs are nudged. Subagent marks come from the Agent tool's start and finish in the
+  agent shaper. Found on the way: `UnlinkDeleted` existed and was never registered; it is now.
 - **A deferred failure never stops the worker.** `Deferred._work` logs a failing piece of work to the
   server log and runs the next; before, one exception ended the thread and every later deferred listener
   waited in the queue for good, silently. Found 2026-10-15 behind a reply that never reached the chat.

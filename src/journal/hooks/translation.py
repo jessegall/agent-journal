@@ -11,6 +11,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
 from journal.hooks.context_file import ContextFile
 from journal.hooks.hook import Hook
+from journal.hooks.turn_gatherer import TurnGatherer
 from journal.hooks.hook_kind import HookKind
 from journal.models.environment import Environment
 from journal.providers.providers import Providers
@@ -28,13 +29,13 @@ class Translation:
         HookKind.STOP: lambda hook, provider: Idle(again=hook.stop_again),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
-        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text, turn_id=hook.turn_id, final=hook.final),
+        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text, delta=hook.text, turn_id=hook.turn_id, final=hook.final),
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
-    def __init__(self, context: ContextFile, providers: Providers) -> None:
-        self.context, self.providers = context, providers
+    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer) -> None:
+        self.context, self.providers, self.turns = context, providers, turns
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
-        return bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session))
+        return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session)))

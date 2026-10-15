@@ -95,3 +95,29 @@ def test_a_taken_port_sends_the_next_journal_to_the_next_one(tmp_path: Path):
     finally:
         one.server().stop()
         two.server().stop()
+
+
+def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        status, message = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k1"})
+        assert status in (200, 201)
+        n = message.get("n") or message.get("row", {}).get("n") or 1
+        call(server, "POST", f"/api/main/message/{n}/react", {"face": "👍"})
+        listed = json.dumps(call(server, "GET", "/api/main/reaction")[1], ensure_ascii=False)
+        assert '"face": "👍"' in listed and f'"message:{n}"' in listed
+        call(server, "POST", f"/api/main/message/{n}/react", {"face": "👍"})
+        assert "\"face\"" not in json.dumps(call(server, "GET", "/api/main/reaction")[1], ensure_ascii=False), "the same face again takes it off"
+        hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
+        for kind, extra in (("SessionStart", {}), ("PreToolUse", {"tool_name": "Agent", "tool_input": {"description": "review the login", "prompt": "read the login flow and report", "subagent_type": "reviewer", "model": "sonnet"}}), ("PostToolUse", {"tool_name": "Agent", "tool_input": {}, "tool_response": "fine"})):
+            urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        agents = json.dumps(call(server, "GET", "/api/main/agent")[1])
+        assert '"task": "review the login"' in agents and '"type": "reviewer"' in agents and '"status": "done"' in agents
+    finally:
+        app.runtime().stop()

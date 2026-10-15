@@ -26,4 +26,4 @@ class MessagesShaper(Shaper):
         read = seconds(m.read_at)
         return V3Row.of("message", m, title=(m.text[:TITLE - 1] + "…") if len(m.text) > TITLE else m.text, brief=m.text,
                         seen=[author, other] if read else [author], refs=[f"message:{m.reply_to}"] if m.reply_to else [],
-                        data={"idempotency": m.idempotency or f"v4:{m.id}", "acknowledgement": False}, completed=read, outcome="read" if read else "")
+                        data={"idempotency": m.idempotency or f"v4:{m.id}", "acknowledgement": m.acknowledgement, "delivered": bool(read)}, completed=read, outcome="read" if read else "")
