@@ -21,6 +21,6 @@ class InboxOnArrival(Listener[Created]):
         agent = self.agents.live(message.environment_id)
         if agent is None:
             return
-        line = self.nudger.say(agent, MessagesFeature.ARRIVED.about(n=message.id))
+        line = self.nudger.say(agent, MessagesFeature.NEW.about(n=message.id))
         if line:
             self.supervisor.type(line)

@@ -7,6 +7,8 @@ import termios
 import time
 
 LONGEST = 65536
+ENTER_AFTER = 0.3
+"""Seconds between a typed line and its Enter: sent together, the agent takes them for a paste and keeps the line in its input."""
 
 
 class Terminal:
@@ -16,6 +18,7 @@ class Terminal:
         self.command, self.cwd, self.environ = command, cwd, environ
         self.fd, self.pid = -1, -1
         self._pending = bytearray()
+        self._enter_due = 0.0
 
     def start(self) -> None:
         pid, fd = pty.fork()
@@ -58,7 +61,14 @@ class Terminal:
             return b""
 
     def type(self, line: str) -> None:
-        self.write(line.encode() + b"\r")
+        """Types the line, and presses Enter a moment later."""
+        self.write(line.encode())
+        self._enter_due = time.time() + ENTER_AFTER
+
+    def press_enter_when_due(self) -> None:
+        if self._enter_due and time.time() >= self._enter_due:
+            self._enter_due = 0.0
+            self.write(b"\r")
 
     def resize(self, rows: int, columns: int) -> None:
         if self.fd >= 0:

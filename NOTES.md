@@ -277,12 +277,15 @@ G. **Run it for real**: `journal setup` in a scratch project, `journal claude`, 
 
 ## Where it stands (2026-10-15, later)
 
-A message the user leaves while the agent sits at its prompt is named to it by number through
-the supervisor (`InboxOnArrival`, nudge `messages.arrived`, said every time), as version 3 did:
-never its words, which reach the agent when it runs `journal message read <n>`. No hook fires
-at a prompt that is not being used; the start, prompt and stop listeners still list the unread.
+The journal's lines about messages are short and name numbers, never words: `new message 4`
+(typed at once through the supervisor, `InboxOnArrival`), `new messages 4, 5, 6`, or past three
+`7 messages unread: journal message unread`; the same forms at start, at a prompt and at a stop
+(`Messages.inbox`). The words and the reply hint (`reply with [!reply:N] in your turn`) reach
+the agent from `journal message read <n>` or `journal message unread`, which mark them read.
 Every line the journal types starts with `[journal] `, put on in `SupervisorLink.type`, the one
-funnel, and law L6 says what the mark means.
+funnel, and law L6 says what the mark means. The supervisor types the line and presses Enter
+0.3 s later (`Terminal.ENTER_AFTER`): sent together, Claude takes them for a paste and keeps
+the line in its input, as version 3 found.
 Seen on the first dogfood run: two messages from the chat reached the journal and nobody told
 the terminal.
 

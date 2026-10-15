@@ -11,7 +11,7 @@ A = TypeVar("A", bound=AgentEvent)
 
 
 class TellInbox(AgentListener[A]):
-    """What the three moments share: unread messages from the user are put before the agent, numbered, so it answers them before anything else."""
+    """What the three moments share: what waits unread is named to the agent by number, so it reads and answers it before anything else."""
 
     blocking = True
 
@@ -23,6 +23,5 @@ class TellInbox(AgentListener[A]):
         unread = self.messages.unread(event.environment_id)
         if not unread:
             return None
-        rows = "; ".join(f"{m.id}. {m.text}" for m in unread)
-        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), MessagesFeature.ANSWER.about(messages=rows))
+        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), MessagesFeature.inbox(unread))
         return Decision.tell(line) if line else None

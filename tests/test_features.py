@@ -126,7 +126,9 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     console = app.console()
     console.run(["message", "send", "can you look at the login?"], USER)
     status, body = hook(app, "UserPromptSubmit", prompt="hi")
-    assert "answer these messages before you do anything else: 1. can you look at the login?" in body["hookSpecificOutput"]["additionalContext"]
+    assert "new message 1" in body["hookSpecificOutput"]["additionalContext"]
+    shown = console.run(["message", "read", "1"], AGENT).out
+    assert "can you look at the login?" in shown and "[!reply:1]" in shown
     hook(app, "MessageDisplay", message="[!reply:1] On it, the login is next.")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).in_(1)
@@ -354,7 +356,10 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
     hook(app, "SessionStart")
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "send", "hello?"], USER)
-    assert typed == ["[journal] there is a new message in your inbox, 2. journal message read 2 takes it in; answer it before anything else",
-                     "[journal] there is a new message in your inbox, 3. journal message read 3 takes it in; answer it before anything else"]
-    outcome = app.console().run(["message", "read", "2"], AGENT)
-    assert "are you there?" in outcome.out, "reading a message shows its words"
+    assert typed == ["[journal] new message 2", "[journal] new message 3"]
+    assert "new messages 1, 2, 3" in hook(app, "UserPromptSubmit", prompt="hi")[1]["hookSpecificOutput"]["additionalContext"]
+    app.console().run(["message", "send", "four"], USER)
+    assert "4 messages unread: journal message unread" in hook(app, "Stop")[1]["error"]
+    shown = app.console().run(["message", "unread"], AGENT).out
+    assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "four" in shown
+    assert hook(app, "Stop")[1] == {}, "nothing unread is left"

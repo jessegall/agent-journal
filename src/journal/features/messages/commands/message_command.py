@@ -21,7 +21,8 @@ class MessageCommand(Command):
         send.add_argument("text")
         send.add_argument("--reply-to", type=int, default=None)
         self.verb(verbs, "list", "every message here")
-        self.verb(verbs, "read", "mark a message read").add_argument("n", type=int)
+        self.verb(verbs, "read", "show a message and mark it read").add_argument("n", type=int)
+        self.verb(verbs, "unread", "show every unread message and mark them read")
 
     def send(self, args: Namespace, where: Where) -> int:
         author = Author.AGENT if where.actor.kind == ActorKind.AGENT else Author.USER
@@ -38,7 +39,19 @@ class MessageCommand(Command):
         return 0
 
     def read(self, args: Namespace, where: Where) -> int:
-        """Shows the message's words and marks it read: the words reach the agent here, once it opens the message."""
-        message = self.messages.mark_read(self.messages.find(args.n), where.actor)
-        print(f"message {message.id} from the {message.author}: {message.text}")
+        """The words reach the agent here, once it opens the message, with how to answer it."""
+        self.show(self.messages.mark_read(self.messages.find(args.n), where.actor))
         return 0
+
+    def unread(self, args: Namespace, where: Where) -> int:
+        waiting = self.messages.unread(self.environments.named(where.environment).id)
+        if not waiting:
+            print("nothing unread")
+        for message in waiting:
+            self.show(self.messages.mark_read(message, where.actor))
+        return 0
+
+    @staticmethod
+    def show(message: Message) -> None:
+        print(f"message {message.id} from the {message.author}: {message.text}")
+        print(f"  reply with [!reply:{message.id}] in your turn")
