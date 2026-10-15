@@ -145,5 +145,5 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
         db.execute("INSERT INTO messages (environment_id, author, text, created_at, updated_at, created_by, updated_by) VALUES (1, 'user', 'old', '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', 'user:1', 'user:1')")
     Schema(old, AllModels.MODELS).create()
     bus = Bus()
-    message = Messages(old, bus, Reactions(old, bus, Links(old, bus))).find(1)
+    message = Messages(old, bus, Reactions(old, bus, Links(old, bus)), Links(old, bus)).find(1)
     assert message.files == () and message.acknowledgement is False and message.idempotency == "" and message.read_at is None

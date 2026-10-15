@@ -5,6 +5,7 @@ from journal.features.bus import Bus
 from journal.models.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
+from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
 from journal.repositories.scoped_repository import ScopedRepository
 
@@ -12,9 +13,12 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Messages(ScopedRepository[Message]):
     model = Message
 
-    def __init__(self, connection: Connection, bus: Bus, reactions: Reactions) -> None:
+    ANSWERS = "answers"
+    """The link from a reply to each further message it answers, beyond the one it is a reply to."""
+
+    def __init__(self, connection: Connection, bus: Bus, reactions: Reactions, links: Links) -> None:
         super().__init__(connection, bus)
-        self.reactions = reactions
+        self.reactions, self.links = reactions, links
 
     def unread(self, environment_id: int) -> list[Message]:
         """What the user left that the agent has not read."""
@@ -24,6 +28,7 @@ class Messages(ScopedRepository[Message]):
         """What the user left that the agent has read and neither replied to nor put a face on."""
         rows = self.in_(environment_id)
         replied = {m.reply_to for m in rows if m.reply_to and m.author == Author.AGENT}
+        replied |= {ref.id for m in rows if m.reply_to and m.author == Author.AGENT for ref in self.links.targets(m, self.ANSWERS)}
         return [m for m in rows if m.author == Author.USER and m.read_at is not None and m.id not in replied and not self.reacted_by_agent(m)]
 
     def reacted_by_agent(self, message: Message) -> bool:

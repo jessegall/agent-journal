@@ -1,3 +1,5 @@
+import re
+
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
@@ -8,6 +10,8 @@ from journal.repositories.messages import Messages
 
 HOLD_AFTER = 10
 """Tool uses with a message read and unanswered before every tool call waits for the answer."""
+JOURNAL_COMMAND = re.compile(r"(?:^|[;&|]\s*)\S*journal\s+[a-z]")
+"""A journal command anywhere in the shell line, after a cd or beside another command, as an agent writes it."""
 
 
 class HoldUnanswered(AgentListener[ToolStarting]):
@@ -33,4 +37,4 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     @staticmethod
     def is_journal_command(event: ToolStarting) -> bool:
-        return event.tool == "Bash" and event.input.get("command", "").lstrip().split(" ")[0].endswith("journal")
+        return event.tool == "Bash" and bool(JOURNAL_COMMAND.search(event.input.get("command", "")))

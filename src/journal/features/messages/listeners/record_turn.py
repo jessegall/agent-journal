@@ -7,9 +7,12 @@ from journal.features.messages.tags import Tags
 from journal.features.registry import Registry
 from journal.models.actor import Actor
 from journal.models.author import Author
+from journal.models.link import Link
 from journal.models.message import Message
+from journal.models.ref import Ref
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
+from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
 from journal.supervisor_link import SupervisorLink
@@ -25,8 +28,8 @@ SHORT = 240
 class RecordTurn(AgentListener[TurnWritten]):
     """Every whole turn the agent writes for the user becomes a message in the chat, its tags taken out. A [!reply:N] tag opening a line makes it the answer to message N (N,M answers both) and marks them read; a tag elsewhere is text, and the agent is told so. A [!log:N] turn belongs to the task's log alone. A turn that is only a face is not posted: the agent is told to react. A turn that only answered a journal line and changed nothing is kept as an acknowledgement, out of the chat."""
 
-    def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink) -> None:
-        self.messages, self.entries, self.providers, self.registry, self.supervisor = messages, entries, providers, registry, supervisor
+    def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links) -> None:
+        self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links = messages, entries, providers, registry, supervisor, links
 
     def handle(self, event: TurnWritten) -> None:
         from journal.features.messages.feature import Messages as MessagesFeature
@@ -44,7 +47,9 @@ class RecordTurn(AgentListener[TurnWritten]):
         quiet = Tags.kept_out(whole) and not answered
         acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
         if text and not quiet:
-            self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+            reply = self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+            for n in answered[1:]:
+                self._also_answers(reply, n, by)
         for n in answered:
             self._mark_read(n, by)
         stray = STRAY_TAG.search(text)
@@ -66,6 +71,13 @@ class RecordTurn(AgentListener[TurnWritten]):
         said = [e for e in self.entries.of_kind(event.environment_id, "nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
         nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
         return bool(nudge and nudge.answered_in_chat)
+
+    def _also_answers(self, reply: Message, n: int, by: Actor) -> None:
+        """A reply naming several messages answers each: the first is what it replies to, the rest are linked."""
+        try:
+            self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), by)
+        except NotFound:
+            return
 
     def _mark_read(self, n: int, by: Actor) -> None:
         try:

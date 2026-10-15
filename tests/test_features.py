@@ -633,3 +633,20 @@ def test_a_message_waiting_at_session_start_is_named_in_the_start_block(app):
     app.console().run(["message", "send", "sent while you were away"], USER)
     told = hook(app, "SessionStart", source="resume")[1]["hookSpecificOutput"]["additionalContext"]
     assert "new message 1" in told
+
+
+def test_a_reply_naming_several_messages_answers_each_and_a_journal_command_after_a_cd_passes_the_hold(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    for text in ("one", "two"):
+        app.console().run(["message", "send", text], USER)
+    app.console().run(["message", "unread"], AGENT)
+    hook(app, "MessageDisplay", message="[!reply:1,2]\nBoth seen.")
+    app.runtime().deferred.drain()
+    assert app.container.get(Messages).unanswered(1) == []
+    app.console().run(["message", "send", "three"], USER)
+    app.console().run(["message", "read", "4"], AGENT)
+    for _ in range(11):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cd /tmp && journal message react 4 \"👍\""})[0] == 200
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})[0] == 409
