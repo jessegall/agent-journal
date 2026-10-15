@@ -1,0 +1,61 @@
+from argparse import Namespace
+
+from journal.console.command import Command
+from journal.console.where import Where
+from journal.features.chart.catalogue import Catalogue
+from journal.models.node import Node
+from journal.models.node_kind import NodeKind
+from journal.repositories.charts import PORTS, THEN, Charts
+
+
+class ChartCommand(Command):
+    noun = "chart"
+
+    def __init__(self, charts: Charts, catalogue: Catalogue) -> None:
+        self.charts, self.entries = charts, catalogue
+
+    def arguments(self, verbs) -> None:
+        self.verb(verbs, "show", "the chart: its nodes and lines")
+        self.verb(verbs, "catalogue", "everything a node may be")
+        node = self.verb(verbs, "node", "add a node naming a catalogue entry")
+        node.add_argument("kind", choices=[k.value for k in NodeKind])
+        node.add_argument("key")
+        node.add_argument("--text", default="", help="the line an action says, holds with, blocks with or types, or the sequence it starts")
+        line = self.verb(verbs, "line", "draw a line from one node to another")
+        line.add_argument("source", type=int)
+        line.add_argument("target", type=int)
+        line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
+        self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
+
+    def show(self, args: Namespace, where: Where) -> int:
+        chart = self.charts.the()
+        print(f"chart {chart.id}, revision {chart.revision}: {chart.title}")
+        for node in self.charts.nodes_of(chart):
+            print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else ""))
+        for line in self.charts.lines_of(chart):
+            print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
+        return 0
+
+    def catalogue(self, args: Namespace, where: Where) -> int:
+        for entry in self.entries.all():
+            print(f"{entry.kind:<8} {entry.key:<28} {entry.title}: {entry.about}")
+        return 0
+
+    def node(self, args: Namespace, where: Where) -> int:
+        kind = NodeKind(args.kind)
+        entry = self.entries.entry(kind, args.key)
+        node = self.charts.add_node(self.charts.the(), Node(kind=kind, key=args.key, text=args.text), where.actor)
+        print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))
+        return 0
+
+    def line(self, args: Namespace, where: Where) -> int:
+        source, target = self.charts.nodes.find(args.source), self.charts.nodes.find(args.target)
+        self.charts.connect(source, target, args.port, where.actor)
+        print(f"line {source.id} --{args.port}--> {target.id}")
+        return 0
+
+    def remove(self, args: Namespace, where: Where) -> int:
+        node = self.charts.nodes.find(args.n)
+        self.charts.remove_node(node, where.actor)
+        print(f"node {node.id} removed")
+        return 0

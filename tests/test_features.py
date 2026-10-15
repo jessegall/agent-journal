@@ -1112,3 +1112,35 @@ def test_a_write_after_a_message_is_read_goes_on_the_answer_is_asked_not_forced(
     app.console().run(["message", "send", "could you rename it?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
     assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 200, "a gentleman answers because he was asked, not because his hands are tied"
+
+def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
+    import json as j
+    from urllib.request import Request as R, urlopen
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    console = app.console()
+    listed = console.run(["chart", "catalogue"], AGENT).out
+    assert "trigger  idle" in listed and "action   say" in listed and "trigger  plans.created" in listed
+    assert "has no check named flying" in console.run(["chart", "node", "check", "flying"], AGENT).err
+    console.run(["chart", "node", "trigger", "idle"], AGENT)
+    console.run(["chart", "node", "check", "open_tasks"], AGENT)
+    console.run(["chart", "node", "action", "block_stop", "--text", "tasks are open: carry on"], AGENT)
+    console.run(["chart", "line", "1", "2"], AGENT)
+    console.run(["chart", "line", "2", "3", "--port", "yes"], AGENT)
+    shown = console.run(["chart", "show"], AGENT).out
+    assert "1 --then--> 2" in shown and "2 --yes--> 3" in shown and "block_stop: tasks are open" in shown
+    port = app.server().port
+    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]] == ["idle", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
+    def post(body):
+        try:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+                return r.status, j.loads(r.read())
+        except HTTPError as error:
+            return error.code, j.loads(error.read())
+    nodes = [{"id": 1, "kind": "trigger", "key": "idle", "x": 10, "y": 10}, {"id": 2, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
+    lines = [{"from": 1, "to": 2}, {"from": 2, "to": "new", "port": "no"}]
+    status, saved = post({"revision": 0, "nodes": nodes, "lines": lines})
+    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["idle", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10
+    assert [(l["from"], l["port"]) for l in saved["lines"]] == [(1, "then"), (2, "no")], "lines drawn anew, the removed node gone"
+    assert post({"revision": 0, "nodes": nodes, "lines": []})[0] == 409, "a stale revision is refused"

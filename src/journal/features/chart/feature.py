@@ -1,0 +1,24 @@
+from journal.features.chart.commands.chart_command import ChartCommand
+from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.feature import Feature
+from journal.features.skill import Skill
+
+
+class ChartFeature(Feature):
+    name = "chart"
+    title = "Chart"
+    help = "The journal's conduct toward the agent as a flowchart the user edits: triggers, checks and actions joined by lines."
+    commands = (ChartCommand,)
+    seeds = (ShippedChart,)
+
+    skill = Skill("chart", "The chart of the journal's conduct; load it when the chart is read or edited", """
+# The chart
+
+One chart per journal: a flowchart of the journal's conduct toward the agent. A trigger is an event, a check a
+yes or no question, an action what the journal does; lines join them, then from a trigger or an action, yes or
+no from a check.
+
+- `journal chart show` prints it; `journal chart catalogue` lists everything a node may be.
+- `journal chart node <trigger|check|action> <key> [--text "<line>"]`, `journal chart line <from> <to> [--port yes|no]`,
+  `journal chart remove <n>` edit it by hand; the chart page edits it as a drawing.
+""", keywords=('chart', 'flowchart', 'trigger', 'conduct'))
