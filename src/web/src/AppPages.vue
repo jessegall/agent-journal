@@ -10,6 +10,7 @@ import Home from "./pages/Home.vue";
 import HubPage from "./pages/HubPage.vue";
 import Index from "./pages/Index.vue";
 import IntegrationsPage from "./pages/IntegrationsPage.vue";
+import ChartPage from "./pages/ChartPage.vue";
 import OrganizationPage from "./pages/OrganizationPage.vue";
 import PluginPage from "./pages/PluginPage.vue";
 import PluginsPage from "./pages/PluginsPage.vue";
@@ -36,6 +37,7 @@ defineProps({page: {type: String, required: true}});
         <template #plugins><PluginsPage /></template>
         <template #secrets><SecretsPage /></template>
         <template #integrations><IntegrationsPage /></template>
+        <template #chart><ChartPage /></template>
         <template #kanban><BoardPage /></template>
         <template #organization><OrganizationPage /></template>
         <template #resources><ResourcesPage /></template>

@@ -126,6 +126,22 @@ export class ApiClient {
         return `${this.base}/journal${path}`;
     }
 
+    chart() {
+        return transport.request("GET", this.own("/chart"));
+    }
+
+    chartSave(body) {
+        return transport.request("POST", this.own("/chart"), body);
+    }
+
+    chartReset() {
+        return transport.request("POST", this.own("/chart/reset"), {});
+    }
+
+    chartTry(trigger, environment) {
+        return transport.request("POST", this.own("/chart/try"), {trigger, environment});
+    }
+
     mcp() {
         return transport.request("GET", this.own("/mcp"));
     }

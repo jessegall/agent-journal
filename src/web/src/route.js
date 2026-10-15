@@ -142,6 +142,7 @@ export const PAGES = [
     "plugins",
     "secrets",
     "integrations",
+    "chart",
     "page",
     "hub",
     "file",
