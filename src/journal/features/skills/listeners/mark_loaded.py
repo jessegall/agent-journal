@@ -1,3 +1,4 @@
+from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.features.agent_listener import AgentListener
@@ -11,8 +12,8 @@ class MarkLoaded(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, agents: Agents, files: SkillFiles) -> None:
-        self.machine, self.agents, self.files = machine, agents, files
+    def __init__(self, machine: Machine, agents: Agents, files: SkillFiles, cards: Cards) -> None:
+        self.machine, self.agents, self.files, self.cards = machine, agents, files, cards
 
     def handle(self, event: ToolFinished) -> None:
         skill = self.files.skill_read(event.read_path) if event.read_path else self.files.skill_in_folder(event.skill_loaded) if event.skill_loaded else None
@@ -20,3 +21,4 @@ class MarkLoaded(AgentListener[ToolFinished]):
             return
         agent = self.machine.agent(event.session, event.environment_id)
         self.agents.save(agent.with_(skills_loaded={**(agent.skills_loaded or {}), skill.name: self.files.hash_of(skill)}), Actor.system())
+        self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good")

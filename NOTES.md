@@ -415,6 +415,13 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   acknowledgement (a column on the message) and hidden by the viewer's default. Em dashes and
   run-together paragraphs are nudged. Subagent marks come from the Agent tool's start and finish in the
   agent shaper. Found on the way: `UnlinkDeleted` existed and was never registered; it is now.
+- **Messaging, third batch (2026-10-15).** `Tags` (messages feature) reads every command tag at a
+  line's start; `RunTags` runs the command each stands for through the console with the turn's words
+  as its text (`todo`, `log`, `end`, `fact`, `rule`, `reminder`), and a refusal is typed back. The
+  recorder strips every tag and keeps a `log` turn out of the chat. `Cards` (engine) is the one funnel
+  for marks on the agent's timeline, as `card` entries: a check run, a trigger met, a question
+  answered, a skill loaded, a halt; the agent shaper draws them beside the commit cards. The console
+  now answers a missing row or a refusal with code 1 and the reason instead of raising.
 - **A deferred failure never stops the worker.** `Deferred._work` logs a failing piece of work to the
   server log and runs the next; before, one exception ended the thread and every later deferred listener
   waited in the queue for good, silently. Found 2026-10-15 behind a reply that never reached the chat.

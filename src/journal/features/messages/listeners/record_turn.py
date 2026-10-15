@@ -3,6 +3,7 @@ import re
 from journal.events.agent.turn_written import TurnWritten
 from journal.features.agent_listener import AgentListener
 from journal.features.messages.faces import Faces
+from journal.features.messages.tags import Tags
 from journal.models.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
@@ -19,7 +20,7 @@ JOURNAL_LINE = "[journal]"
 
 
 class RecordTurn(AgentListener[TurnWritten]):
-    """Every whole turn the agent writes for the user becomes a message in the chat. A [!reply:N] tag opening a line makes it the answer to message N (N,M answers both) and marks them read; a tag elsewhere is text, and the agent is told so. A turn that is only a face is not posted: the agent is told to react. A turn that only answered a journal line and changed nothing is kept as an acknowledgement, out of the chat."""
+    """Every whole turn the agent writes for the user becomes a message in the chat, its tags taken out. A [!reply:N] tag opening a line makes it the answer to message N (N,M answers both) and marks them read; a tag elsewhere is text, and the agent is told so. A [!log:N] turn belongs to the task's log alone. A turn that is only a face is not posted: the agent is told to react. A turn that only answered a journal line and changed nothing is kept as an acknowledgement, out of the chat."""
 
     def __init__(self, messages: Messages, entries: Entries, providers: Providers, supervisor: SupervisorLink) -> None:
         self.messages, self.entries, self.providers, self.supervisor = messages, entries, providers, supervisor
@@ -36,9 +37,11 @@ class RecordTurn(AgentListener[TurnWritten]):
     def _record(self, event: TurnWritten, whole: str) -> None:
         by = Actor.agent(event.session)
         answered = [int(n) for tag in REPLY_TAG.finditer(whole) for n in tag.group(1).split(",")]
-        text = REPLY_TAG.sub("", whole).strip()
+        text = Tags.visible(whole)
+        quiet = Tags.kept_out(whole) and not answered
         acknowledgement = not answered and self._answers_a_journal_line(event)
-        self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+        if text and not quiet:
+            self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
         for n in answered:
             self._mark_read(n, by)
         stray = STRAY_TAG.search(text)

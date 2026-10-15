@@ -24,12 +24,18 @@ class AgentsShaper(Shaper):
 
     def rows(self, environment: Environment) -> list[V3Row]:
         recent = list(reversed(self.entries.of_kind_in(environment.id, KEPT)))
-        return [self.row(a, [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in self.agents.in_(environment.id)]
+        return [self.row(a, [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session) or (e.kind == "card" and not e.data.get("session"))]) for a in self.agents.in_(environment.id)]
 
     @staticmethod
     def commit_cards(entries) -> list[dict]:
         return [{"key": f"commit:{e.data['sha']}", "label": f"Agent committed {e.data['sha'][:8]} on `{e.data.get('branch', '')}`", "icon": "branch", "tone": "commit", "title": e.data.get("subject", ""), "at": seconds(e.created_at), "state": "", "detail": ""}
                 for e in entries if e.kind == "commit"]
+
+    @staticmethod
+    def feature_cards(entries) -> list[dict]:
+        """The marks features showed through the cards funnel, as the chat draws them."""
+        return [{"key": e.data["key"], "label": e.data["label"], "icon": e.data["icon"], "tone": e.data.get("tone", ""), "title": e.data.get("detail", ""), "detail": e.data.get("detail", ""), "row": e.data.get("row", ""), "at": e.data.get("at") or seconds(e.created_at), "state": "", "settled": ""}
+                for e in entries if e.kind == "card"]
 
     def row(self, a, entries) -> V3Row:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted", "commit")]
@@ -42,7 +48,7 @@ class AgentsShaper(Shaper):
             "status": status, "event": EVENT.get(kind, kind), "tool": last.data.get("tool_name", "") if last and kind == "ToolStarting" else "", "file": "", "at": at,
             "provider": a.provider, "model": "", "context": a.context_mark, "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
             "doing": self.doing(a, state), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
-            "cards": self.commit_cards(entries), "whispers": [], "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
+            "cards": sorted([*self.commit_cards(entries), *self.feature_cards(entries)], key=lambda c: c["at"]), "whispers": [], "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
             "subagent_rows": self.subagent_rows(hooks), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "halted": a.data.get("why", "") if a.state == "halted" else "", "state": a.state,
         }
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)

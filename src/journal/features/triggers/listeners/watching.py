@@ -1,6 +1,7 @@
 from typing import TypeVar
 
 from journal.engine.machine import Machine
+from journal.engine.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.features.agent_listener import AgentListener
@@ -17,8 +18,8 @@ class Watching(AgentListener[A]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, triggers: Triggers) -> None:
-        self.machine, self.nudger, self.triggers = machine, nudger, triggers
+    def __init__(self, machine: Machine, nudger: Nudger, triggers: Triggers, cards: Cards) -> None:
+        self.machine, self.nudger, self.triggers, self.cards = machine, nudger, triggers, cards
 
     def text_of(self, event: A) -> str:
         raise NotImplementedError
@@ -35,6 +36,8 @@ class Watching(AgentListener[A]):
         if denied and self.can_deny():
             return Decision.refuse(TriggersFeature.DENIED.about(title=denied[0].text).rendered())
         agent = self.machine.agent(event.session, event.environment_id)
+        for trigger in met:
+            self.cards.show(event.environment_id, event.session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"trigger:{trigger.id}")
         lines = [line for trigger in met if (line := self.nudger.say(agent, self.said(trigger)))]
         return Decision.tell("\n".join(lines)) if lines else None
 

@@ -2,6 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.console.where import Where
+from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.features.questions.states.waiting import Waiting
 from journal.models.question import Question
@@ -14,8 +15,8 @@ from journal.supervisor_link import SupervisorLink
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink) -> None:
-        self.questions, self.agents, self.environments, self.machine, self.supervisor = questions, agents, environments, machine, supervisor
+    def __init__(self, questions: Questions, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, cards: Cards) -> None:
+        self.questions, self.agents, self.environments, self.machine, self.supervisor, self.cards = questions, agents, environments, machine, supervisor, cards
 
     def arguments(self, verbs) -> None:
         ask = self.verb(verbs, "ask", "ask the user something and wait")
@@ -45,6 +46,7 @@ class QuestionCommand(Command):
                 continue
             self.machine.move(agent.session, agent.environment_id, state.back().to)
             self.supervisor.type(QuestionsFeature.ANSWERED.about(n=question.id, answer=question.answer).rendered())
+        self.cards.show(question.environment_id, "", f"You answered question {question.id}", "question", "good", question.answer, f"question:{question.id}")
         print(f"question {question.id} answered: {question.answer}")
         return 0
 

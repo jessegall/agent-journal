@@ -5,6 +5,8 @@ import io
 from journal.console.command import Command
 from journal.console.creations import Creations
 from journal.console.outcome import Outcome
+from journal.features.refused import Refused
+from journal.repositories.not_found import NotFound
 from journal.console.where import Where
 from journal.container import Container
 
@@ -43,6 +45,9 @@ class Console:
                 self.parser().print_usage(err)
                 print(refused, file=err)
                 code = 2
+            except (NotFound, Refused) as refused:
+                print(refused, file=err)
+                code = 1
         Creations.end()
         if made:
             out.write(Creations.line(made) + "\n")

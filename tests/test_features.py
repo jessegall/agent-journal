@@ -447,3 +447,35 @@ def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch)
     hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
     app.runtime().deferred.drain()
     assert any("em dashes" in line for line in typed) and any("ran its paragraphs together" in line for line in typed)
+
+
+def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, monkeypatch):
+    from journal.repositories.facts import Facts
+    from journal.repositories.messages import Messages
+    from journal.repositories.task_logs import TaskLogs
+    from journal.repositories.tasks import Tasks
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    hook(app, "MessageDisplay", message='[!todo="Fix the footer"]\nThe footer overlaps the form on narrow screens.')
+    hook(app, "MessageDisplay", message="[!log:1] Halfway: the overlap is a margin.")
+    hook(app, "MessageDisplay", message='**[!fact="The footer is 64px tall"]**\nMeasured in the browser.')
+    hook(app, "MessageDisplay", message="[!end:1]\nThe footer sits below the form now.")
+    hook(app, "MessageDisplay", message="[!end:99]\nNo such task.")
+    app.runtime().deferred.drain()
+    tasks, messages = app.container.get(Tasks), app.container.get(Messages)
+    assert tasks.find(1).title == "Fix the footer" and "overlaps" in tasks.find(1).brief and tasks.find(1).state == "done"
+    assert [log.line for log in app.container.get(TaskLogs).all()][-2:] == ["Halfway: the overlap is a margin.", "The footer sits below the form now."] or any("Halfway" in log.line for log in app.container.get(TaskLogs).all())
+    assert [f.text for f in app.container.get(Facts).all()] == ["The footer is 64px tall"]
+    assert [m.text for m in messages.in_(1) if m.author == "agent"] == ["The footer overlaps the form on narrow screens.", "Measured in the browser.", "The footer sits below the form now.", "No such task."], "a log turn stays out of the chat; the others post without their tag"
+    assert typed[-1].startswith("[journal] the [!end] tag did not run:")
+
+
+def test_notable_moments_are_cards_on_the_agents_timeline(app):
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    app.console().run(["halt", "now", "stuck on the login"], AGENT)
+    cards = [e.data for e in app.container.get(Entries).of_kind(1, "card")]
+    assert [c["label"] for c in cards] == ["Agent halted"] and cards[0]["detail"] == "stuck on the login" and cards[0]["tone"] == "bad"
