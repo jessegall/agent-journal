@@ -468,5 +468,10 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   chain goes on in the background; the journal types one line when it ends. The limit is `shell.foreground`
   (30 s) or `shell.foreground_while_waiting` (10 s) while a message of the user's is unread.
 - The bar and the terminal pane read the parts, not the tool call; a Bash call as a whole adds nothing to either.
-- Open: each part costs two shim calls (about 0.15 s each); run.sh could post straight to the server.
+- What stays one part: a pipe, quotes of every kind including backticks, subshells, groups, double brackets,
+  parameter braces, a comment to the end of its line, a loop, an if or a case to its closing word, and a line with a
+  heredoc. A bare `exit` or `exec` in a part ends the chain with that part's code, as the shell would. Output folders
+  older than a day are swept at each run.
+- Open: each part costs two shim calls (about 0.1 s each); run.sh could post straight to the server. A worker or
+  subagent started from the agent's shell inherits the prefix, so its commands are recorded under the live agent.
 - The runner's process test is `tests/runner_process.py`, not in the default run.
