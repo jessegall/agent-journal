@@ -6,6 +6,7 @@ from journal.console.where import Where
 from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.refused import Refused
+from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 from journal.models.task_log import TaskLog
@@ -25,6 +26,7 @@ class WorkCommand(Command):
         self.verb(verbs, "start", "declare what you are doing before you write; no task needed for a small change").add_argument("what")
         self.verb(verbs, "log", "where the work in hand stands").add_argument("line")
         self.verb(verbs, "end", "the work is done").add_argument("--how", default="")
+        self.verb(verbs, "await", "the work in hand waits for something outside your hands, a run or a person; working again lifts it").add_argument("what")
 
     def start(self, args: Namespace, where: Where) -> int:
         current = self.in_hand(where)
@@ -51,6 +53,14 @@ class WorkCommand(Command):
         self.cards.show(environment, where.session, f"Work ended: {current.what}", "check", "good", args.how)
         self.machine.move(where.session, environment, Idle())
         print(f"work ended: {current.what}" + (f" ({args.how})" if args.how else ""))
+        return 0
+
+    def await_(self, args: Namespace, where: Where) -> int:
+        current = self.in_hand(where)
+        if not current:
+            raise Refused("nothing is in hand to wait with: journal task start <n> or journal work start \"<what>\" first")
+        self.machine.move(where.session, self.environment(where), Expecting.leaving(current, what=args.what))
+        print(f"{current.named()} waits for {args.what}; working again lifts it")
         return 0
 
     def environment(self, where: Where) -> int:

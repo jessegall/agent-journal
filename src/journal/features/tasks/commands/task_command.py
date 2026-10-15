@@ -8,7 +8,6 @@ from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.refused import Refused
-from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 from journal.models.link import Link
@@ -52,9 +51,6 @@ class TaskCommand(Command):
         block.add_argument("n", type=int)
         block.add_argument("why")
         self.verb(verbs, "unblock", "what it waited on came: the task is open again").add_argument("n", type=int)
-        wait = self.verb(verbs, "await", "wait for something outside your hands")
-        wait.add_argument("n", type=int)
-        wait.add_argument("what")
         self.verb(verbs, "list", "every open task here")
 
     def create(self, args: Namespace, where: Where) -> int:
@@ -100,14 +96,6 @@ class TaskCommand(Command):
     def resume(self, args: Namespace, where: Where) -> int:
         task = self._start(self.tasks.find(args.n), where)
         print(f"task {task.id} resumed: {task.title}")
-        return 0
-
-    def await_(self, args: Namespace, where: Where) -> int:
-        current = self._in_hand(where)
-        if not current or current.task_id != args.n:
-            raise Refused(f"task {args.n} is not in hand: journal task start {args.n} first")
-        self.machine.move(where.session, self.tasks.find(args.n).environment_id, Expecting.leaving(current, what=args.what))
-        print(f"task {args.n} waits for {args.what}; working again lifts it")
         return 0
 
     def done(self, args: Namespace, where: Where) -> int:
