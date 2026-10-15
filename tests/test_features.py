@@ -1400,7 +1400,7 @@ def test_a_journal_holds_several_workflows_and_the_engine_walks_them_all(app):
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["The journal's conduct"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []

@@ -1,7 +1,7 @@
 # The chart: the journal's conduct, drawn
 
-The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. There is one
-chart per journal. The journal ships it with today's conduct, so nothing changes until you edit it.
+The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. A journal holds several
+workflows, each starting at one trigger. The journal ships it with today's conduct, so nothing changes until you edit it.
 
 ## Three kinds of box
 
@@ -30,12 +30,14 @@ passed, so the viewer can say why the agent heard a line.
 
 ## Editing
 
-Drag a line from a port onto a box; click a line to take it out; drag a box by its head; type an action's line in
-its box. Every change is a draft until you press Save; Undo steps the draft back. A wrong chart is refused with
-its faults named: a box the catalogue does not know, a line to nowhere or into a trigger, a check with no line
-out, a loop. Back to the shipped chart throws every edit away. As a list shows the same chart as rows with a
-picker for each port, for a phone or a keyboard. Try it dry runs the chart for an agent event without doing
-anything, and shows the path and what it would do.
+Drag a line from a port onto a card; drop it on empty canvas and Add node opens where it fell; click a line to
+take it out; drag a card to move it; type an action's message in its card. Add node puts a node below the
+selected one, connected to its first free output, and says so before you pick. Every change is a draft until you
+press Save; Undo steps the draft back and Discard changes drops it. A wrong workflow is refused with its faults
+named: a node the catalogue does not know, a line to nowhere or into a trigger, a check with no line out, a
+loop. Reset to default puts the shipped workflow back, after asking. List shows the same workflow as cards with
+a picker for each output, for a phone or a keyboard. Test runs the workflow for its own event without doing
+anything, and shows the steps and what it would do in a side panel.
 
 The shipped chart today: at a stop, at rest and not the same stop again, parked tasks are named in any mode, and
 in auto mode the next open task holds the stop. The rules the states still keep are listed in the-rules.md.

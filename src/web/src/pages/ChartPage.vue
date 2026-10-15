@@ -96,7 +96,7 @@ function fit() {
     const left = Math.min(...nodes.value.map((n) => n.x)) - 40;
     const top = Math.min(...nodes.value.map((n) => n.y)) - 32;
     const right = Math.max(...nodes.value.map((n) => n.x + CARD.width)) + 40;
-    const bottom = Math.max(...nodes.value.map((n) => n.y + heightOf(n))) + 40;
+    const bottom = Math.max(...nodes.value.map((n) => n.y + heightOf(n))) + 64;
     const scale = Math.min(1, plane.value.clientWidth / (right - left), plane.value.clientHeight / (bottom - top));
     camera.scale = Math.max(0.4, scale);
     camera.x = (plane.value.clientWidth - (right - left) * camera.scale) / 2 - left * camera.scale;
@@ -393,6 +393,7 @@ const skipped = computed(() => {
         .filter(Boolean);
 });
 const triggerTitle = computed(() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet"));
+const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
 const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting's name" : "Message to the agent");
 </script>
 
@@ -415,6 +416,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             </template>
             <template v-else>
                 <DropList :label="title || 'Workflow'" icon="bolt" :items="workflowItems" :picked="String(current)" :menu-width="260" @pick="open(Number($event.key))" />
+                <span v-if="shipped" class="chart-default" title="Comes with the journal; Reset to default restores it">Default</span>
                 <Btn kind="ghost" small @click="startNaming">New workflow</Btn>
                 <Btn
                     kind="danger"
@@ -549,15 +551,15 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 <MenuLabel>Triggers</MenuLabel>
                 <p v-if="trigger" class="chart-menu-about">This workflow has its trigger: {{ triggerTitle }}. For another event, create a new workflow.</p>
                 <template v-for="entry in offeredTriggers" :key="`trigger:${entry.key}`">
-                    <MenuItem :description="entry.about" @click="add(entry)"><span class="chart-glyph trigger" />{{ entry.title }}</MenuItem>
+                    <MenuItem :description="described(entry)" @click="add(entry)"><span class="chart-glyph trigger" />{{ entry.title }}</MenuItem>
                 </template>
                 <MenuLabel>Checks <span class="chart-label-note">— a yes or no question</span></MenuLabel>
                 <template v-for="entry in offeredChecks" :key="`check:${entry.key}`">
-                    <MenuItem :description="entry.about" @click="add(entry)"><span class="chart-glyph check" />{{ entry.title }}</MenuItem>
+                    <MenuItem :description="described(entry)" @click="add(entry)"><span class="chart-glyph check" />{{ entry.title }}</MenuItem>
                 </template>
                 <MenuLabel>Actions <span class="chart-label-note">— something the workflow does</span></MenuLabel>
                 <template v-for="entry in offeredActions" :key="`action:${entry.key}`">
-                    <MenuItem :description="entry.about" @click="add(entry)"><span class="chart-glyph action" />{{ entry.title }}</MenuItem>
+                    <MenuItem :description="described(entry)" @click="add(entry)"><span class="chart-glyph action" />{{ entry.title }}</MenuItem>
                 </template>
             </MenuPanel>
         </template>
@@ -622,6 +624,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 
 .chart-grow {
     flex: 1;
+}
+
+.chart-default {
+    margin-left: -4px;
+    padding: 0 5px;
+    border: 1px solid var(--border-2);
+    border-radius: 4px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    line-height: 15px;
 }
 
 .chart-unsaved {
@@ -1102,6 +1114,10 @@ g:hover .chart-wire {
     padding: 0 8px 4px;
     color: var(--text-4);
     font-size: 11.5px;
+}
+
+.chart :deep(.menu-item) .chart-glyph {
+    margin-right: 8px;
 }
 
 .chart-label-note {
