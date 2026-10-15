@@ -3,7 +3,6 @@ import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {agent, agentOnline} from "../composables/leadAgent.js";
 import Btn from "../kit/Btn.vue";
-import EmptyState from "../kit/EmptyState.vue";
 import StateDot from "../kit/StateDot.vue";
 import TextInput from "../kit/TextInput.vue";
 
@@ -69,7 +68,7 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
 
         <p v-if="notice" class="integrations-notice">{{ notice }}</p>
 
-        <EmptyState v-if="loaded && !servers.length" title="No integration yet">Install one of the suggestions below.</EmptyState>
+        <p v-if="loaded && !servers.length" class="integrations-none">No integration yet. Install one of the suggestions below.</p>
 
         <ul v-else class="integrations-list">
             <li v-for="s in servers" :key="s.name" class="integration">
@@ -142,6 +141,11 @@ const signIn = (s) => act(s.name, () => api.runShell(agent.value.title, "/mcp"))
     margin: 0;
     color: var(--text-dim, #9aa0a6);
     max-width: 640px;
+}
+
+.integrations-none {
+    margin: 0;
+    color: var(--text-dim, #9aa0a6);
 }
 
 .integrations-notice {
