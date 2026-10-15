@@ -3,6 +3,7 @@ import re
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.shell.commands.shell_command import RAN, RUNNING
+from journal.features.tasks.states.working import Working
 from journal.features.thinking.thoughts import Thoughts
 from journal.hooks.context_file import ContextFile
 from journal.http.v3.project_files import ProjectFiles
@@ -92,6 +93,8 @@ class AgentsShaper(Shaper):
             return last.data["doing"]
         if last and last.kind == "ToolStarting":
             return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
+        if isinstance(state, Working) and state.what:
+            return state.what
         return state.awaiting()[0] if isinstance(state, Paused) else ""
 
     @staticmethod

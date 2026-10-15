@@ -19,7 +19,7 @@ class StopWords:
     def for_(self, state: AgentState, environment_id: int) -> Said | None:
         from journal.features.tasks.feature import Tasks as TasksFeature
         if isinstance(state, Working):
-            return TasksFeature.CARRY_ON.about(n=state.task_id)
+            return TasksFeature.CARRY_ON.about(name=state.named())
         if not isinstance(state, Idle):
             return None
         parked = self.tasks.in_state(environment_id, TaskState.PARKED)

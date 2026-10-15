@@ -17,9 +17,9 @@ class Header:
         self.rows, self.columns = 24, 80
 
     def begin(self, rows: int, columns: int) -> None:
-        """Clears the whole screen, draws the line and gives the agent the rows under it."""
+        """Clears the whole screen and the scrollback, so nothing can scroll past the line, draws it and gives the agent the rows under it."""
         self.rows, self.columns = rows, columns
-        os.write(self.stdout, b"\x1b[2J" + self.line() + f"\x1b[2;{rows}r".encode() + HOME_UNDER)
+        os.write(self.stdout, b"\x1b[2J\x1b[3J" + self.line() + f"\x1b[2;{rows}r".encode() + HOME_UNDER)
 
     def end(self) -> None:
         os.write(self.stdout, b"\x1b[r\x1b[2J\x1b[H")

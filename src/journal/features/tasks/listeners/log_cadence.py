@@ -28,11 +28,15 @@ class LogCadence(AgentListener[ToolStarting]):
         # the machine counted this use already; what matters is how many came before it
         before = state.uses - 1
         if before >= self.after(HOLD_AFTER) and event.writes:
-            return Decision.refuse(Tasks.LOG_OVERDUE.about(n=state.task_id, uses=before).rendered())
+            return Decision.refuse(Tasks.LOG_OVERDUE.about(name=state.named(), uses=before, log=self.log_of(state)).rendered())
         if before < self.after(NUDGE_AFTER):
             return None
-        line = self.nudger.say(agent, Tasks.LOG_SOON.about(n=state.task_id, uses=before))
+        line = self.nudger.say(agent, Tasks.LOG_SOON.about(name=state.named(), uses=before, log=self.log_of(state)))
         return Decision.tell(line) if line else None
+
+    @staticmethod
+    def log_of(state: Working) -> str:
+        return f"journal task log {state.task_id}" if state.task_id else "journal work log"
 
     def after(self, setting: str) -> int:
         return int(self.settings.get(PROJECT, setting, DEFAULTS[setting]))

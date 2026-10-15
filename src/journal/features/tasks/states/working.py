@@ -18,23 +18,28 @@ class Working(AgentState):
     name = "working"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     task_id: int = 0
+    what: str = ""
+    """Work declared without a task: what the agent said it is doing."""
     uses: int = 0
 
+    def named(self) -> str:
+        return f"task {self.task_id}" if self.task_id else f"the work in hand, {self.what}"
+
     def tool_starting(self, event: ToolStarting) -> Transition:
-        return self.go(Working(task_id=self.task_id, uses=self.uses + 1))
+        return self.go(Working(task_id=self.task_id, what=self.what, uses=self.uses + 1))
 
     def logged(self) -> "Working":
-        return Working(task_id=self.task_id, uses=0)
+        return Working(task_id=self.task_id, what=self.what, uses=0)
 
     def idle(self, event: AgentIdle) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.stay() if event.again else self.stay(Tasks.CARRY_ON.about(n=self.task_id))
+        return self.stay() if event.again else self.stay(Tasks.CARRY_ON.about(name=self.named()))
 
     def session_started(self, event: SessionStarted) -> Transition:
         """A session resumed with a task in hand is told which."""
         from journal.features.tasks.feature import Tasks
-        return self.stay(Tasks.CARRY_ON.about(n=self.task_id))
+        return self.stay(Tasks.CARRY_ON.about(name=self.named()))
 
     def ticked(self, event: Ticked) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.stay(Tasks.OPEN.about(n=self.task_id)) if event.quiet_for >= QUIET_AFTER else self.stay()
+        return self.stay(Tasks.OPEN.about(name=self.named())) if event.quiet_for >= QUIET_AFTER else self.stay()

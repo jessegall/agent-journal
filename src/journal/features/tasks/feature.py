@@ -1,6 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.tasks.commands.halt_command import HaltCommand
 from journal.features.tasks.commands.task_command import TaskCommand
+from journal.features.tasks.commands.work_command import WorkCommand
 from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
 from journal.features.tasks.listeners.check_in import CheckIn
 from journal.features.tasks.listeners.answer_stop import AnswerStop
@@ -20,20 +21,20 @@ class Tasks(Feature):
     title = "Tasks"
     help = "A file write with no task started is refused; a stop with a task in hand is told to carry on."
     states = (Idle, Working, Halted, Expecting)
-    commands = (TaskCommand, HaltCommand)
+    commands = (TaskCommand, WorkCommand, HaltCommand)
     listeners = (SpotPolling, AskAfterParked, AnswerStop, TypeAtHeldStop, LogCadence, CheckIn)
 
     DECLARE = Nudge(name, "declare", "no work declared: start a task before you write", "journal task start <n>, or journal task create \"<title>\" --start")
-    CARRY_ON = Nudge(name, "carry_on", "task {{n}} is in hand: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck", repeat_after=0)
-    OPEN = Nudge(name, "open", "task {{n}} is still open: log where it stands or finish it", repeat_after=900)
+    CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand: carry on", "log where it stands, then continue; journal halt \"<why>\" if you are truly stuck", repeat_after=0)
+    OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
     NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal halt now \"<why>\" if you are truly stuck", repeat_after=0)
     PARKED_AT_STOP = Nudge(name, "parked_at_stop", "parked tasks, still open: {{rows}}", "journal task resume <n> picks one up; leave them parked only on purpose", repeat_after=0)
     DEFERRED = Nudge(name, "deferred", "work deferred in words, not filed: journal task create it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     POLLING = Nudge(name, "polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")
-    LOG_SOON = Nudge(name, "log_soon", "it has been a while since you logged task {{n}}: {{uses}} tool uses", "journal task log {{n}} \"<where it stands>\", or the [!log:{{n}}] tag on a turn", repeat_after=120)
-    LOG_OVERDUE = Nudge(name, "log_overdue", "{{uses}} tool uses since task {{n}} was last logged", "journal task log {{n}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
+    LOG_SOON = Nudge(name, "log_soon", "it has been a while since you logged {{name}}: {{uses}} tool uses", "{{log}} \"<where it stands>\"", repeat_after=120)
+    LOG_OVERDUE = Nudge(name, "log_overdue", "{{uses}} tool uses since you logged {{name}}", "{{log}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal task await again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for {{minutes}} minutes: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
@@ -42,8 +43,10 @@ class Tasks(Feature):
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
 
-A task is one unit of work with a life: open, started, done. Only one is in hand at a time, and a file
-write with none started is refused.
+A task is one unit of work with a life: open, started, done. Only one is in hand at a time. A file write
+needs work declared, and that need not be a task: `journal work start "<what>"` declares a small change in a
+sentence, `journal work log "<line>"` says where it stands, `journal work end --how "<outcome>"` closes it.
+Taking a task up is work too. File a task for work that is an item of its own, or that waits.
 
 - `journal task create "<title>" --brief "<what and where to start>"` files one; add `--start` to take it at once.
 - `journal task start <n>` takes a task in hand. `journal task list` shows every task here.

@@ -57,8 +57,8 @@ def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app)
     assert app.container.get(Machine).current("s1") == Working(task_id=1)
     assert write(app)[0] == 200
     status, body = hook(app, "Stop")
-    assert status == 409 and "task 1 is in hand: carry on" in body["error"], "a stop with work in hand is refused, which is how Claude is told to go on"
-    assert hook(app, "Stop")[0] == 409, "every fresh stop with work in hand is held, until a halt"
+    assert body.get("decision") == "block" and "task 1 is in hand: carry on" in body["reason"], "a stop with work in hand is held, which is how Claude is told to go on"
+    assert hook(app, "Stop")[1].get("decision") == "block", "every fresh stop with work in hand is held, until a halt"
     assert hook(app, "PreCompact")[1] == {}, "a compaction hook carries nothing to the agent; the marks said it"
 
 
@@ -145,14 +145,14 @@ def test_ten_uses_with_nothing_logged_ask_for_a_log_and_twenty_hold_the_next_wri
     reads = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(9)]
     assert all(status == 200 for status, _ in reads), "a read is never held for a log"
     status, body = write(app)
-    assert status == 409 and "20 tool uses since task 1 was last logged" in body["error"]
+    assert status == 409 and "20 tool uses since you logged task 1" in body["error"]
     app.console().run(["task", "log", "1", "halfway"], AGENT)
     assert write(app)[0] == 200
 def test_a_stop_in_a_paused_state_says_what_the_journal_awaits_once(app):
     status, body = hook(app, "SessionStart")
     status, body = hook(app, "Stop")
-    assert status == 409 and "you stopped while the journal awaits a look at what is in flight here" in body["error"]
-    assert hook(app, "Stop", stop_hook_active=True)[0] == 200
+    assert body.get("decision") == "block" and "you stopped while the journal awaits a look at what is in flight here" in body["reason"]
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block"
 
 
 def test_a_stop_after_work_is_a_fresh_stop_and_one_with_no_work_between_is_typed(app, monkeypatch):
@@ -162,9 +162,9 @@ def test_a_stop_after_work_is_a_fresh_stop_and_one_with_no_work_between_is_typed
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    assert hook(app, "Stop")[0] == 409
+    assert hook(app, "Stop")[1].get("decision") == "block"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert hook(app, "Stop", stop_hook_active=True)[0] == 409, "work since the held stop makes the next a fresh one"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "work since the held stop makes the next a fresh one"
     status, body = hook(app, "Stop", stop_hook_active=True)
     app.runtime().deferred.drain()
     assert status == 200 and typed[-1] == "[journal] task 1 is in hand: carry on. log where it stands, then continue; journal halt \"<why>\" if you are truly stuck"
@@ -179,6 +179,22 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     console.run(["task", "create", "the tree", "--start"], AGENT)
     assert "waiting on: a talk with the user" in console.run(["task", "block", "1", "a talk with the user"], AGENT).out
     assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(Machine).current("s1").name == "idle"
-    assert hook(app, "Stop")[0] == 200, "a blocked task is not offered, in auto mode or not"
+    assert hook(app, "Stop")[1].get("decision") != "block", "a blocked task is not offered, in auto mode or not"
     assert "blocked tasks, waiting on something outside: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "here"], AGENT).out
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN
+
+
+def test_work_declared_without_a_task_opens_the_write_gate_and_ends_on_its_own(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    assert write(app)[0] == 409
+    assert console.run(["work", "start", "fix the footer's typo"], AGENT).out.strip() == "work started: fix the footer's typo"
+    assert write(app)[0] == 200
+    assert "the work in hand, fix the footer's typo is in hand: carry on" in hook(app, "Stop")[1]["reason"]
+    assert console.run(["work", "log", "typo found in the footer"], AGENT).code == 0
+    assert console.run(["task", "create", "bigger", "--start"], AGENT).code == 0, "a task may be taken up over free work"
+    console.run(["task", "done", "1", "--how", "x"], AGENT)
+    console.run(["work", "start", "another"], AGENT)
+    assert "work ended: another (done)" in console.run(["work", "end", "--how", "done"], AGENT).out
+    assert app.container.get(Machine).current("s1").name == "idle"

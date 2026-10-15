@@ -124,9 +124,9 @@ class TaskCommand(Command):
             print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())
 
     def _start(self, task: Task, where: Where) -> Task:
-        """One task in hand at a time: a second start is refused until the first is done or parked."""
+        """One task in hand at a time: a second start is refused until the first is done or parked. Work declared without a task gives way to a task taken up."""
         current = self._in_hand(where)
-        if current and current.task_id != task.id:
+        if current and current.task_id and current.task_id != task.id:
             raise Refused(f"task {current.task_id} is in hand: finish it or park it before you start task {task.id}")
         started = self.tasks.save(task.started(self._now()), where.actor)
         if where.session:

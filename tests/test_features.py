@@ -74,7 +74,7 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
     assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
     context(app, 55)
-    assert "context 50% full" in hook(app, "Stop")[1]["error"]
+    assert "context 50% full" in hook(app, "Stop")[1]["reason"]
     app.console().run(["nothing", "survives", "all logged"], AGENT)
     assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1
 
@@ -111,7 +111,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert "task 1 is next, write the notes" in out
     machine = app.container.get(Machine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
-    assert "task 1 is in hand" in hook(app, "Stop")[1]["error"]
+    assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
     out = console.run(["task", "done", "1"], AGENT).out
     assert "task 2 is next, tag it" in out
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=2)
@@ -156,7 +156,7 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     messages = app.container.get(Messages).in_(1)
     assert messages[-1].reply_to is None and "[!reply:2]" in messages[-1].text, "a tag inside a line is text"
     assert typed[-1].endswith("the [!reply:2] tag must open a line of your turn; message 2 is still unanswered")
-    assert "new message 2" in hook(app, "Stop")[1]["error"]
+    assert "new message 2" in hook(app, "Stop")[1]["reason"]
 
 
 def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
@@ -196,7 +196,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     hook(app, "SessionStart")
     console.run(["task", "create", "t", "--start"], AGENT)
     assert "step 1: bump the version" in console.run(["sequence", "run", "1"], AGENT).out
-    assert "step 1: bump the version" in hook(app, "Stop")[1]["error"]
+    assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
     assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
@@ -371,7 +371,7 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
     assert typed == ["[journal] new message 2", "[journal] new message 3"]
     assert "new messages 1, 2, 3" in hook(app, "UserPromptSubmit", prompt="hi")[1]["hookSpecificOutput"]["additionalContext"]
     app.console().run(["message", "send", "four"], USER)
-    assert "4 messages unread: journal message unread" in hook(app, "Stop")[1]["error"]
+    assert "4 messages unread: journal message unread" in hook(app, "Stop")[1]["reason"]
     shown = app.console().run(["message", "unread"], AGENT).out
     assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "four" in shown
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
@@ -596,7 +596,7 @@ def test_auto_mode_answers_a_stop_with_the_next_task(app):
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "the footer"], USER)
     status, body = hook(app, "Stop")
-    assert status == 409 and "task 1 next: the footer" in body["error"]
+    assert body.get("decision") == "block" and "task 1 next: the footer" in body["reason"]
     from journal.models.actor import Actor as A
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), A.user(1))
     assert hook(app, "Stop")[1] == {}, "with auto off a stop is a stop"
@@ -789,12 +789,12 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "park", "1", "the header first"], AGENT)
     status, body = hook(app, "Stop")
-    assert status == 409 and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["error"]
-    assert hook(app, "Stop", stop_hook_active=True)[0] == 200, "told once, the second stop goes through"
+    assert body.get("decision") == "block" and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["reason"]
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "told once, the second stop goes through"
     console.run(["task", "resume", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "shipped"], AGENT)
     console.run(["task", "create", "the menu"], USER)
-    assert hook(app, "Stop")[0] == 200, "open tasks are not pressed for outside auto mode"
+    assert hook(app, "Stop")[1].get("decision") != "block", "open tasks are not pressed for outside auto mode"
 
 
 def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
