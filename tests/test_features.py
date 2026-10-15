@@ -1059,3 +1059,17 @@ def test_the_shipped_templates_are_seeded_and_the_critique_ones_are_offered_to_t
     assert shown.startswith("template 3: Find what is missing") and "the step nobody wrote down" in shown
     rows = app.container.get(Shapers).named("template").rows(app.container.get(Environments).named("main"))
     assert [r.data["purpose"] for r in rows].count("critique") == 3 and rows[0].sections[0]["title"] == "What it is for"
+
+
+def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp_path):
+    from journal.http.v3.shapers.shapers import Shapers
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["plan", "create", "p", "--brief", "g"], USER)
+    body = tmp_path / "critique.md"
+    body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
+    out = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).out
+    assert out.startswith("report 1: Critique of plan 1, about plans:1")
+    rows = app.container.get(Shapers).named("report").rows(app.container.get(Environments).named("main"))
+    assert [s["title"] for s in rows[0].sections] == ["Phase 1", "Phase 2"] and "plans:1" in rows[0].refs

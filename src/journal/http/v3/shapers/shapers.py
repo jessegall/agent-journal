@@ -20,6 +20,7 @@ from journal.container import Container
 from journal.repositories.checks import Checks
 from journal.repositories.docs import Docs
 from journal.repositories.facts import Facts
+from journal.repositories.links import Links
 from journal.repositories.reminders import Reminders
 from journal.repositories.reports import Reports
 from journal.repositories.sequences import Sequences
@@ -38,8 +39,8 @@ class Shapers:
             get(MessagesShaper), get(CommentsShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
             get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper),
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
-            WritingShaper(get(Reports), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
-            WritingShaper(get(Docs), "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),
+            WritingShaper(get(Reports), get(Links), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
+            WritingShaper(get(Docs), get(Links), "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),
             SimpleShaper(get(Sequences), "sequence", lambda r: r.title, lambda r: "", lambda r: {"runs": {}, "system": False, "starts_on": ""}, sections=lambda r: [{"title": s, "body": ""} for s in r.steps]),
             SimpleShaper(get(Templates), "template", lambda r: r.title, lambda r: r.brief, lambda r: {"purpose": r.purpose, "applies_to": list(r.applies_to), "fields": []},
                          sections=lambda r: [{"title": part.split(":", 1)[0].strip(), "body": part.split(":", 1)[1].strip() if ":" in part else ""} for part in r.parts]),
