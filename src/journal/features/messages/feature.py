@@ -54,6 +54,8 @@ The user leaves messages; you answer them before anything else.
   shows every unread one and marks them read.
 - Answer each in your next turn with the tag `[!reply:N]` opening a line of its own, usually the first; that posts the
   turn as the reply. A tag inside a line is only text.
+- Every message read is one of two things: steering, which you take as steering, or something to do, which you file
+  as a task from it, `journal task create "<title>" --from N`, so the chat shows the task above the message.
 - A message that only needs acknowledging ("ok", "thanks", "carry on") gets a face, not words: `journal message react N "👍"`,
   🙏 for thanks; the same face again takes it off. The user's face on a message is acted on when it asks for something and
   never mentioned. A turn of yours that is only a face is not posted.

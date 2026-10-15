@@ -15,6 +15,8 @@ class Messages(ScopedRepository[Message]):
 
     ANSWERS = "answers"
     """The link from a reply to each further message it answers, beyond the one it is a reply to."""
+    ABOUT = "about"
+    """The link from a message of the user's to a task filed from it."""
 
     def __init__(self, connection: Connection, bus: Bus, reactions: Reactions, links: Links) -> None:
         super().__init__(connection, bus)

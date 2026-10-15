@@ -14,7 +14,6 @@ from journal.repositories.tasks import Tasks
 
 NAMED = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
 FRESH = timedelta(minutes=5)
-ABOUT = "about"
 
 
 class LinkNamedTasks(Listener[Created]):
@@ -37,5 +36,5 @@ class LinkNamedTasks(Listener[Created]):
                 task = self.tasks.find(n)
             except NotFound:
                 continue
-            if task.created_at >= since and Ref.to(task) not in self.links.targets(asked, ABOUT):
-                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=ABOUT), event.by)
+            if task.created_at >= since and Ref.to(task) not in self.links.targets(asked, Messages.ABOUT):
+                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.ABOUT), event.by)

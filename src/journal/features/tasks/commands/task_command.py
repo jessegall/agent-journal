@@ -7,10 +7,14 @@ from journal.engine.machine import Machine
 from journal.features.refused import Refused
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.working import Working
+from journal.models.link import Link
+from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
 from journal.repositories.environments import Environments
+from journal.repositories.links import Links
+from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
@@ -19,8 +23,8 @@ from journal.repositories.tasks import Tasks
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments, machine: Machine) -> None:
-        self.tasks, self.logs, self.environments, self.machine = tasks, logs, environments, machine
+    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments, machine: Machine, messages: Messages, links: Links) -> None:
+        self.tasks, self.logs, self.environments, self.machine, self.messages, self.links = tasks, logs, environments, machine, messages, links
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -47,7 +51,7 @@ class TaskCommand(Command):
     def create(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(Task(environment_id=self.environments.named(where.environment).id, title=args.title, brief=args.brief), where.actor)
         if args.message:
-            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=ABOUT), where.actor)
+            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), where.actor)
         if args.start:
             task = self._start(task, where)
         print(f"task {task.id} {task.state}: {task.title}" + (f" (from message {args.message})" if args.message else ""))

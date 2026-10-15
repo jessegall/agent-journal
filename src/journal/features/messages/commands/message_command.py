@@ -105,3 +105,4 @@ class MessageCommand(Command):
             other = link.target if link.source == Ref.to(message) else link.source
             print(f"  {link.kind} {other}")
         print(f"  reply with [!reply:{message.id}] in your turn")
+        print(f"  steering? take it as steering. something to do? file it: journal task create \"<title>\" --from {message.id}")
