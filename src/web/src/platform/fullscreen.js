@@ -4,20 +4,11 @@ import {onMac} from "./keys.js";
 
 const FADE = 90;
 const SETTLE = 260;
-const OWN_CHANGE = 1500;
 
 let entered = false;
 let leaving = false;
 let fading = 0;
 let settling = 0;
-
-const DISPLAY = window.matchMedia("(display-mode: fullscreen)");
-const browserFull = () =>
-    !document.fullscreenElement && (DISPLAY.matches || (window.innerHeight === screen.height && window.innerWidth === screen.width));
-
-let byBrowser = browserFull();
-let following = false;
-let ownChange = 0;
 
 export const FULLSCREEN_KEYS = onMac ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
 export const switching = ref(false);
@@ -42,21 +33,11 @@ function enter() {
         .catch(() => {});
 }
 
-function followBrowser() {
-    if (leaving || document.fullscreenElement || performance.now() - ownChange < OWN_CHANGE) return;
-    const now = browserFull();
-    if (now === byBrowser) return;
-    byBrowser = now;
-    following = store.wide !== now;
-    store.wide = now;
-}
-
 export function followFullscreen() {
     watch(
         () => store.wide,
         (on) => {
-            if (on && !following) enter();
-            following = false;
+            if (on) enter();
             switching.value = true;
             clearTimeout(settling);
             clearTimeout(fading);
@@ -64,15 +45,12 @@ export function followFullscreen() {
         }
     );
     window.addEventListener("resize", () => {
-        followBrowser();
         if (switching.value) settle();
     });
-    DISPLAY.addEventListener("change", followBrowser);
     window.addEventListener("beforeunload", () => (leaving = true));
     window.addEventListener("pagehide", () => (leaving = true));
     window.addEventListener("pageshow", () => (leaving = false));
     document.addEventListener("fullscreenchange", () => {
-        ownChange = performance.now();
         if (switching.value) settle();
         if (document.fullscreenElement) return;
         if (entered && store.wide && !leaving) store.wide = false;
