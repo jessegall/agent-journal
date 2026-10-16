@@ -38,12 +38,13 @@ class V3Manifest:
                 for f in self.registry.features}
 
     def read_by(self) -> dict[str, list[dict]]:
-        """Which workflow's node reads each setting: a check node whose text names the setting's key; a setting no node names does nothing, and the page says so."""
+        """Which workflow's node reads each setting: a check node whose text ends with the setting's key, alone or after a count's name; a setting no node names does nothing, and the page says so."""
         readers: dict[str, list[dict]] = {}
         for chart in self.charts.all():
             for node in self.charts.nodes_of(chart):
-                if node.kind == NodeKind.CHECK and "." in node.text:
-                    readers.setdefault(node.text, []).append({"workflow": chart.title, "node": node.id})
+                words = node.text.split()
+                if node.kind == NodeKind.CHECK and words and "." in words[-1]:
+                    readers.setdefault(words[-1], []).append({"workflow": chart.title, "node": node.id})
         return readers
 
     def groups(self) -> list[dict]:
