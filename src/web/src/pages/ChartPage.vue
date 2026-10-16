@@ -24,7 +24,16 @@ const FILLERS = [
     {key: "{{next_task}}", about: "The number of the next open task"},
     {key: "{{next_task_title}}", about: "The title of the next open task"},
 ];
-const LEAD = "Workflows control what happens when the agent does something. Each starts at a trigger (an event), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
+const LEAD =
+    "The journal ships one workflow for every state the agent can be in, and one for what every state shares. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
+const STATE_PLACE = {base: "Default · every state"};
+
+// where a workflow runs, as a note beside its title: a shipped one at its state, one of your own at its event
+function placeOf(workflow) {
+    if (workflow.state) return STATE_PLACE[workflow.state] || `Default · the ${workflow.state.replace("_", " ")} state`;
+    if (workflow.event) return `Yours · at ${entries.value[`trigger:${workflow.event}`]?.title || workflow.event}`;
+    return "Yours";
+}
 const VIEWS = [
     {key: "canvas", label: "Canvas"},
     {key: "list", label: "List"},
@@ -66,7 +75,7 @@ const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
 const selectedNode = computed(() => (selected.value ? byId.value[String(selected.value)] || null : null));
 const dirty = computed(() => past.value.length > 0);
-const workflowItems = computed(() => workflows.value.map((w) => ({key: String(w.id), label: w.title, note: w.shipped ? "Default" : ""})));
+const workflowItems = computed(() => workflows.value.map((w) => ({key: String(w.id), label: w.title, note: placeOf(w)})));
 const eventItems = computed(() => catalogue.value.filter((e) => e.kind === "trigger").map((e) => ({key: e.key, label: e.title})));
 const matches = (e) => !search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase());
 const offeredChecks = computed(() => catalogue.value.filter((e) => e.kind === "check" && matches(e)));
@@ -81,7 +90,11 @@ const landing = computed(() => {
     const port = ports(node).find((p) => !hooked(node, p));
     return port ? {node, port} : null;
 });
-const landingWords = computed(() => (landing.value ? `Added below ${entryOf(landing.value.node).title} and connected to its ${WORD[landing.value.port]} output.` : "Added to the canvas, unconnected: drag a port onto it."));
+const landingWords = computed(() =>
+    landing.value
+        ? `Added below ${entryOf(landing.value.node).title} and connected to its ${WORD[landing.value.port]} output.`
+        : "Added to the canvas, unconnected: drag a port onto it."
+);
 
 function take(got) {
     current.value = got.id;
@@ -167,10 +180,23 @@ function add(entry) {
     adding.value = null;
     change(() => {
         fresh += 1;
-        const below = from ? {x: from.node.x + (from.port === "no" ? 240 : from.port === "yes" ? -240 : 0), y: from.node.y + heightOf(from.node) + 44} : null;
-        const middle = {x: Math.round((plane.value?.clientWidth / 2 - camera.x) / camera.scale - CARD.width / 2) || 120, y: Math.round((plane.value?.clientHeight / 2 - camera.y) / camera.scale) || 120};
+        const below = from
+            ? {x: from.node.x + (from.port === "no" ? 240 : from.port === "yes" ? -240 : 0), y: from.node.y + heightOf(from.node) + 44}
+            : null;
+        const middle = {
+            x: Math.round((plane.value?.clientWidth / 2 - camera.x) / camera.scale - CARD.width / 2) || 120,
+            y: Math.round((plane.value?.clientHeight / 2 - camera.y) / camera.scale) || 120,
+        };
         const spot = at || below || middle;
-        const node = {id: `new-${fresh}`, kind: entry.kind, key: entry.key, text: "", x: Math.round(spot.x), y: Math.round(spot.y), shipped: false};
+        const node = {
+            id: `new-${fresh}`,
+            kind: entry.kind,
+            key: entry.key,
+            text: "",
+            x: Math.round(spot.x),
+            y: Math.round(spot.y),
+            shipped: false,
+        };
         nodes.value.push(node);
         if (from && node.kind !== "trigger") {
             lines.value = lines.value.filter((l) => !(String(l.from) === String(from.node.id) && l.port === from.port));
@@ -239,7 +265,8 @@ function planePoint(event) {
 }
 
 function pan(event) {
-    if (event.target !== plane.value && !event.target.classList.contains("chart-wires") && !event.target.classList.contains("chart-camera")) return;
+    if (event.target !== plane.value && !event.target.classList.contains("chart-wires") && !event.target.classList.contains("chart-camera"))
+        return;
     const start = {x: event.clientX, y: event.clientY, cx: camera.x, cy: camera.y};
     const move = (e) => {
         camera.x = start.cx + e.clientX - start.x;
@@ -295,7 +322,11 @@ function dragLine(node, port, event) {
     const move = (e) => {
         const card = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-node]");
         const target = card && byId.value[card.dataset.node];
-        drawing.value = {...drawing.value, to: planePoint(e), target: target && target.id !== node.id && target.kind !== "trigger" ? target : null};
+        drawing.value = {
+            ...drawing.value,
+            to: planePoint(e),
+            target: target && target.id !== node.id && target.kind !== "trigger" ? target : null,
+        };
     };
     const up = async (e) => {
         window.removeEventListener("pointermove", move);
@@ -322,7 +353,14 @@ const drawingPath = computed(() => {
     return path(from, drawing.value.target ? inAt(drawing.value.target) : drawing.value.to);
 });
 const dropAnchor = computed(() => (adding.value && adding.value.at && dropMark.value) || addButton.value?.$el || addButton.value || null);
-const markStyle = computed(() => (adding.value && adding.value.at ? {left: `${camera.x + (adding.value.at.x + CARD.width / 2) * camera.scale}px`, top: `${camera.y + adding.value.at.y * camera.scale}px`} : null));
+const markStyle = computed(() =>
+    adding.value && adding.value.at
+        ? {
+              left: `${camera.x + (adding.value.at.x + CARD.width / 2) * camera.scale}px`,
+              top: `${camera.y + adding.value.at.y * camera.scale}px`,
+          }
+        : null
+);
 
 async function act(name, work) {
     busy.value = name;
@@ -365,7 +403,7 @@ const startNaming = () => {
 };
 const namingLabel = computed(() => (naming.value ? entries.value[`trigger:${naming.value.trigger}`]?.title || naming.value.trigger : ""));
 
-(() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet"));
+() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet");
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
 // the message is written in the side panel and lands on the card as one change when the panel closes
 function openMessage(node) {
@@ -394,7 +432,14 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     <section class="chart">
         <PageBar class="chart-bar">
             <template v-if="naming">
-                <DropList :label="namingLabel" icon="bolt" :items="eventItems" :picked="naming.trigger" :menu-width="260" @pick="naming.trigger = $event.key" />
+                <DropList
+                    :label="namingLabel"
+                    icon="bolt"
+                    :items="eventItems"
+                    :picked="naming.trigger"
+                    :menu-width="260"
+                    @pick="naming.trigger = $event.key"
+                />
                 <TextInput
                     class="chart-name"
                     :value="naming.title"
@@ -408,24 +453,52 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 <Btn kind="ghost" small @click="naming = null">Cancel</Btn>
             </template>
             <template v-else>
-                <DropList :label="title || 'Workflow'" icon="bolt" :items="workflowItems" :picked="String(current)" :menu-width="260" @pick="open(Number($event.key))" />
+                <DropList
+                    :label="title || 'Workflow'"
+                    icon="bolt"
+                    :items="workflowItems"
+                    :picked="String(current)"
+                    :menu-width="260"
+                    @pick="open(Number($event.key))"
+                />
                 <Btn kind="ghost" small @click="startNaming">New workflow</Btn>
                 <Btn
                     kind="danger"
                     small
                     :disabled="!shipped"
-                    :title="shipped ? 'Replace this workflow with the version the journal ships' : 'Only the default workflow has a version to reset to'"
+                    :title="
+                        shipped
+                            ? 'Replace this workflow with the version the journal ships'
+                            : 'Only the default workflow has a version to reset to'
+                    "
                     @click="confirming = 'reset'"
                 >
                     Reset to default
                 </Btn>
-                <Btn kind="danger" small :disabled="shipped" :title="shipped ? 'The default workflow can be reset, not deleted' : ''" @click="confirming = 'remove'">Delete workflow</Btn>
+                <Btn
+                    kind="danger"
+                    small
+                    :disabled="shipped"
+                    :title="shipped ? 'The default workflow can be reset, not deleted' : ''"
+                    @click="confirming = 'remove'"
+                >
+                    Delete workflow
+                </Btn>
             </template>
             <span class="chart-grow" />
             <span v-if="dirty" class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
             <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
             <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
-            <Btn kind="primary" small :busy="busy === 'save'" :disabled="!dirty" title="Takes effect at the agent's next event" @click="save">Save</Btn>
+            <Btn
+                kind="primary"
+                small
+                :busy="busy === 'save'"
+                :disabled="!dirty"
+                title="Takes effect at the agent's next event"
+                @click="save"
+            >
+                Save
+            </Btn>
         </PageBar>
 
         <div class="chart-page">
@@ -441,7 +514,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             </header>
             <p v-if="notice" class="chart-notice">{{ notice }}</p>
 
-            <ChartList v-if="view === 'list'" :nodes="nodes" :lines="lines" :entry-of="entryOf" @text="setText" @line="connect" @unline="disconnect" @remove="remove" />
+            <ChartList
+                v-if="view === 'list'"
+                :nodes="nodes"
+                :lines="lines"
+                :entry-of="entryOf"
+                @text="setText"
+                @line="connect"
+                @unline="disconnect"
+                @remove="remove"
+            />
             <div v-else ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
                 <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
                     <svg class="chart-wires" overflow="visible">
@@ -457,14 +539,25 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         v-for="node in nodes"
                         :key="node.id"
                         :data-node="node.id"
-                        :class="['chart-node', node.kind, {selected: selected === node.id, target: drawing && drawing.target && drawing.target.id === node.id}]"
+                        :class="[
+                            'chart-node',
+                            node.kind,
+                            {selected: selected === node.id, target: drawing && drawing.target && drawing.target.id === node.id},
+                        ]"
                         :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
                         @pointerdown="dragNode(node, $event)"
                     >
                         <div class="chart-node-kind">
                             <span :class="['chart-glyph', node.kind]" />
                             <span>{{ KIND[node.kind] }}</span>
-                            <button v-if="selected === node.id" type="button" class="chart-node-x" title="Delete node" @pointerdown.stop @click.stop="remove(node)">
+                            <button
+                                v-if="selected === node.id"
+                                type="button"
+                                class="chart-node-x"
+                                title="Delete node"
+                                @pointerdown.stop
+                                @click.stop="remove(node)"
+                            >
                                 <Icon name="close" :size="12" />
                             </button>
                         </div>
@@ -490,10 +583,17 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 @input="setText(node, $event.target.value)"
                             />
                         </template>
-                        <span v-if="node.kind !== 'trigger'" :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]" />
+                        <span
+                            v-if="node.kind !== 'trigger'"
+                            :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]"
+                        />
                         <template v-for="port in ports(node)" :key="port">
                             <span
-                                :class="['chart-port', port, {on: hooked(node, port), hover: isHover(node, port) && !drawing, dragging: isDrawingFrom(node, port)}]"
+                                :class="[
+                                    'chart-port',
+                                    port,
+                                    {on: hooked(node, port), hover: isHover(node, port) && !drawing, dragging: isDrawingFrom(node, port)},
+                                ]"
                                 :style="{left: `${PORT_AT[port]}%`}"
                                 :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
                                 @pointerdown="dragLine(node, port, $event)"
@@ -502,11 +602,23 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                             >
                                 <Icon v-if="isHover(node, port) && !drawing && !hooked(node, port)" name="plus" :size="11" />
                             </span>
-                            <span v-if="port !== 'then'" :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]" :style="{left: `${PORT_AT[port]}%`}">{{ WORD[port] }}</span>
+                            <span
+                                v-if="port !== 'then'"
+                                :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
+                                :style="{left: `${PORT_AT[port]}%`}"
+                            >
+                                {{ WORD[port] }}
+                            </span>
                         </template>
                     </div>
-                    <span v-if="drawing && drawing.target" class="chart-tip" :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}">
-                        Release to connect <b>{{ WORD[drawing.port] }}</b> to {{ entryOf(drawing.target).title }}
+                    <span
+                        v-if="drawing && drawing.target"
+                        class="chart-tip"
+                        :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}"
+                    >
+                        Release to connect
+                        <b>{{ WORD[drawing.port] }}</b>
+                        to {{ entryOf(drawing.target).title }}
                     </span>
                 </div>
                 <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
@@ -522,36 +634,78 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     <div class="chart-hint">
                         <p class="chart-hint-title">Nothing follows the trigger yet</p>
                         <p class="chart-hint-text">Add node puts a check or an action below the selected node and connects it.</p>
-                        <Btn @click.stop="(selected = trigger.id), openAdd(null)">Add node</Btn>
+                        <Btn @click.stop="((selected = trigger.id), openAdd(null))">Add node</Btn>
                     </div>
                 </template>
             </div>
         </div>
 
         <template v-if="adding">
-            <MenuPanel :anchor="dropAnchor" align="right" :min-width="320" :max-width="340" :max-height="520" @click.stop @close="adding = null">
-                <TextInput class="chart-search" icon="search" :value="search" placeholder="Search nodes" autofocus @input="search = $event.target.value" />
+            <MenuPanel
+                :anchor="dropAnchor"
+                align="right"
+                :min-width="320"
+                :max-width="340"
+                :max-height="520"
+                @click.stop
+                @close="adding = null"
+            >
+                <TextInput
+                    class="chart-search"
+                    icon="search"
+                    :value="search"
+                    placeholder="Search nodes"
+                    autofocus
+                    @input="search = $event.target.value"
+                />
                 <p class="chart-landing">{{ landingWords }}</p>
                 <MenuLabel>Triggers</MenuLabel>
-                <p v-if="trigger" class="chart-menu-about">This workflow has its trigger: {{ triggerTitle }}. For another event, create a new workflow.</p>
+                <p v-if="trigger" class="chart-menu-about">
+                    This workflow has its trigger: {{ triggerTitle }}. For another event, create a new workflow.
+                </p>
                 <template v-for="entry in offeredTriggers" :key="`trigger:${entry.key}`">
-                    <MenuItem :description="described(entry)" @click="add(entry)"><span class="chart-glyph trigger" />{{ entry.title }}</MenuItem>
+                    <MenuItem :description="described(entry)" @click="add(entry)">
+                        <span class="chart-glyph trigger" />
+                        {{ entry.title }}
+                    </MenuItem>
                 </template>
-                <MenuLabel>Checks <span class="chart-label-note">— a yes or no question</span></MenuLabel>
+                <MenuLabel>
+                    Checks
+                    <span class="chart-label-note">— a yes or no question</span>
+                </MenuLabel>
                 <template v-for="entry in offeredChecks" :key="`check:${entry.key}`">
-                    <MenuItem :description="described(entry)" @click="add(entry)"><span class="chart-glyph check" />{{ entry.title }}</MenuItem>
+                    <MenuItem :description="described(entry)" @click="add(entry)">
+                        <span class="chart-glyph check" />
+                        {{ entry.title }}
+                    </MenuItem>
                 </template>
-                <MenuLabel>Actions <span class="chart-label-note">— something the workflow does</span></MenuLabel>
+                <MenuLabel>
+                    Actions
+                    <span class="chart-label-note">— something the workflow does</span>
+                </MenuLabel>
                 <template v-for="entry in offeredActions" :key="`action:${entry.key}`">
-                    <MenuItem :description="described(entry)" @click="add(entry)"><span class="chart-glyph action" />{{ entry.title }}</MenuItem>
+                    <MenuItem :description="described(entry)" @click="add(entry)">
+                        <span class="chart-glyph action" />
+                        {{ entry.title }}
+                    </MenuItem>
                 </template>
             </MenuPanel>
         </template>
 
-
         <template v-if="editing">
-            <SidePanel title="Message to the agent" :abstract="`${entryOf(editing).title}: what the journal says to the agent at this step`" @close="closeMessage">
-                <textarea ref="messageBox" class="chart-message" :value="messageText" rows="10" placeholder="Message to the agent" @input="messageText = $event.target.value" />
+            <SidePanel
+                title="Message to the agent"
+                :abstract="`${entryOf(editing).title}: what the journal says to the agent at this step`"
+                @close="closeMessage"
+            >
+                <textarea
+                    ref="messageBox"
+                    class="chart-message"
+                    :value="messageText"
+                    rows="10"
+                    placeholder="Message to the agent"
+                    @input="messageText = $event.target.value"
+                />
                 <MenuLabel>Values you can insert</MenuLabel>
                 <div class="chart-fillers">
                     <template v-for="filler in FILLERS" :key="filler.key">
@@ -570,8 +724,15 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
         <template v-if="showLead">
             <Dialog title="How workflows work" fits @close="showLead = false">
                 <p class="chart-dialog-text">{{ LEAD }}</p>
-                <p class="chart-dialog-text">A trigger is an event, such as the agent stopping. A check is a yes or no question the journal answers from what it knows, and the flow goes on by the Yes or the No line. An action is what the journal does: send a message to the agent, block its stop, block a tool, type into its terminal or start a sequence.</p>
-                <p class="chart-dialog-text">Add node puts a node below the selected one and connects it. Drag from a port onto another node to connect them, click a line to remove it, and drag a node to move it. Nothing changes until you save.</p>
+                <p class="chart-dialog-text">
+                    A trigger is an event, such as the agent stopping. A check is a yes or no question the journal answers from what it
+                    knows, and the flow goes on by the Yes or the No line. An action is what the journal does: send a message to the agent,
+                    block its stop, block a tool, type into its terminal or start a sequence.
+                </p>
+                <p class="chart-dialog-text">
+                    Add node puts a node below the selected one and connects it. Drag from a port onto another node to connect them, click a
+                    line to remove it, and drag a node to move it. Nothing changes until you save.
+                </p>
                 <template #foot>
                     <Btn kind="primary" @click="showLead = false">Close</Btn>
                 </template>
@@ -805,7 +966,6 @@ g:hover .chart-wire {
 }
 
 .chart-node.selected,
-
 .chart-node.target {
     border-color: var(--border-3);
     background: var(--hover);
@@ -1121,6 +1281,5 @@ button.chart-node-text:hover {
     .chart-head {
         flex-direction: column;
     }
-
 }
 </style>

@@ -130,7 +130,15 @@ function add(entry) {
         fresh += 1;
         const last = nodes.value.at(-1) || null;
         const from = last && last.kind !== "trigger" ? ports(last).find((p) => !lineOf(last, p)) : last ? "then" : null;
-        const node = {id: `new-${fresh}`, kind: entry.kind, key: entry.key, text: "", x: last ? last.x : 400, y: last ? last.y + 128 : 0, shipped: false};
+        const node = {
+            id: `new-${fresh}`,
+            kind: entry.kind,
+            key: entry.key,
+            text: "",
+            x: last ? last.x : 400,
+            y: last ? last.y + 128 : 0,
+            shipped: false,
+        };
         nodes.value.push(node);
         if (last && from && node.kind !== "trigger") lines.value.push({from: last.id, to: node.id, port: from});
     });
@@ -174,14 +182,28 @@ const test = () =>
     });
 
 // the sheets: every choice is an action sheet, as the phone does it
+const STATE_PLACE = {base: "Default · every state"};
+function placeOf(workflow) {
+    if (workflow.state) return STATE_PLACE[workflow.state] || `Default · the ${workflow.state.replace("_", " ")} state`;
+    if (workflow.event)
+        return `Yours · at ${catalogue.value.find((e) => e.kind === "trigger" && e.key === workflow.event)?.title || workflow.event}`;
+    return "Yours";
+}
 const workflowActions = computed(() =>
-    workflows.value.map((w) => ({key: String(w.id), label: w.title, sub: w.shipped ? "Default" : "", check: w.id === current.value, run: () => open(w.id)}))
+    workflows.value.map((w) => ({key: String(w.id), label: w.title, sub: placeOf(w), check: w.id === current.value, run: () => open(w.id)}))
 );
-const eventActions = computed(() => catalogue.value.filter((e) => e.kind === "trigger").map((e) => ({key: e.key, label: e.title, sub: described(e), run: () => create(e)})));
+const eventActions = computed(() =>
+    catalogue.value.filter((e) => e.kind === "trigger").map((e) => ({key: e.key, label: e.title, sub: described(e), run: () => create(e)}))
+);
 const nodeActions = computed(() =>
     catalogue.value
         .filter((e) => e.kind !== "trigger" || !trigger.value)
-        .map((e) => ({key: `${e.kind}:${e.key}`, label: e.title, sub: `${KIND[e.kind]}${e.about ? ` · ${described(e)}` : ""}`, run: () => add(e)}))
+        .map((e) => ({
+            key: `${e.kind}:${e.key}`,
+            label: e.title,
+            sub: `${KIND[e.kind]}${e.about ? ` · ${described(e)}` : ""}`,
+            run: () => add(e),
+        }))
 );
 const portActions = computed(() => {
     if (!porting.value) return [];
@@ -189,12 +211,28 @@ const portActions = computed(() => {
     const now = targetOf(node, port);
     return [
         {key: "", label: END, check: !now, run: () => connect(node, port, null)},
-        ...nodes.value.filter((n) => n.id !== node.id && n.kind !== "trigger").map((n) => ({key: String(n.id), label: named(n), check: now && now.id === n.id, run: () => connect(node, port, n)})),
+        ...nodes.value
+            .filter((n) => n.id !== node.id && n.kind !== "trigger")
+            .map((n) => ({key: String(n.id), label: named(n), check: now && now.id === n.id, run: () => connect(node, port, n)})),
     ];
 });
 const workflowOwn = computed(() => [
-    {key: "reset", label: "Reset to default", sub: shipped.value ? "Replace this workflow with the version the journal ships" : "Only the default workflow has a version to reset to", danger: shipped.value, run: () => shipped.value && (sheet.value = "confirm-reset")},
-    {key: "remove", label: "Delete workflow", sub: shipped.value ? "The default workflow can be reset, not deleted" : "The workflow and its nodes are deleted", danger: !shipped.value, run: () => !shipped.value && (sheet.value = "confirm-remove")},
+    {
+        key: "reset",
+        label: "Reset to default",
+        sub: shipped.value
+            ? "Replace this workflow with the version the journal ships"
+            : "Only the default workflow has a version to reset to",
+        danger: shipped.value,
+        run: () => shipped.value && (sheet.value = "confirm-reset"),
+    },
+    {
+        key: "remove",
+        label: "Delete workflow",
+        sub: shipped.value ? "The default workflow can be reset, not deleted" : "The workflow and its nodes are deleted",
+        danger: !shipped.value,
+        run: () => !shipped.value && (sheet.value = "confirm-remove"),
+    },
 ]);
 const confirmActions = computed(() =>
     sheet.value === "confirm-reset"
@@ -214,8 +252,14 @@ const steps = computed(() => {
     return trial.value.nodes.map((id, i) => {
         const node = byId.value[String(id)];
         const next = trial.value.nodes[i + 1];
-        const line = node && next !== undefined ? lines.value.find((l) => String(l.from) === String(id) && String(l.to) === String(next)) : null;
-        return {id, title: node ? entryOf(node).title : String(id), answer: node && node.kind === "check" ? (line ? WORD[line.port] : "") : node ? KIND[node.kind] : "", tone: node && node.kind === "check" ? (line ? line.port : "") : "kind"};
+        const line =
+            node && next !== undefined ? lines.value.find((l) => String(l.from) === String(id) && String(l.to) === String(next)) : null;
+        return {
+            id,
+            title: node ? entryOf(node).title : String(id),
+            answer: node && node.kind === "check" ? (line ? WORD[line.port] : "") : node ? KIND[node.kind] : "",
+            tone: node && node.kind === "check" ? (line ? line.port : "") : "kind",
+        };
     });
 });
 </script>
@@ -231,7 +275,12 @@ const steps = computed(() => {
         </template>
         <template v-else-if="loaded">
             <CellGroup>
-                <Cell :label="title || 'Workflow'" :sub="`${shipped ? 'Default · ' : ''}${nodes.length} ${nodes.length === 1 ? 'node' : 'nodes'}`" icon="bolt" @pick="sheet = 'workflows'" />
+                <Cell
+                    :label="title || 'Workflow'"
+                    :sub="`${shipped ? 'Default · ' : ''}${nodes.length} ${nodes.length === 1 ? 'node' : 'nodes'}`"
+                    icon="bolt"
+                    @pick="sheet = 'workflows'"
+                />
             </CellGroup>
             <div class="wf-row">
                 <Button kind="plain" @click="sheet = 'events'">New workflow</Button>
@@ -242,7 +291,10 @@ const steps = computed(() => {
                 <EmptyList icon="bolt" title="No nodes yet" reason="Start with a trigger: the event that starts this workflow." />
             </template>
             <template v-for="node in nodes" :key="node.id">
-                <CellGroup :head="`${numberOf(node)} · ${KIND[node.kind]}`" :foot="entryOf(node).takes_text && node.kind === 'action' ? `Insert values with ${HELP}` : ''">
+                <CellGroup
+                    :head="`${numberOf(node)} · ${KIND[node.kind]}`"
+                    :foot="entryOf(node).takes_text && node.kind === 'action' ? `Insert values with ${HELP}` : ''"
+                >
                     <SwipeRow :label="entryOf(node).title" :trail="deleteNode(node)">
                         <Cell :label="entryOf(node).title" :sub="described(entryOf(node))" still />
                     </SwipeRow>
@@ -262,7 +314,9 @@ const steps = computed(() => {
                                 <span :class="['wf-dot', port, {on: targetOf(node, port)}]" aria-hidden="true" />
                             </template>
                             <template #end>
-                                <span :class="['wf-target', {none: !targetOf(node, port)}]">{{ targetOf(node, port) ? named(targetOf(node, port)) : "End here" }}</span>
+                                <span :class="['wf-target', {none: !targetOf(node, port)}]">
+                                    {{ targetOf(node, port) ? named(targetOf(node, port)) : "End here" }}
+                                </span>
                                 <Icon name="chevronRight" :size="14" class="wf-chev" />
                             </template>
                         </Cell>
@@ -272,7 +326,13 @@ const steps = computed(() => {
 
             <CellGroup head="Workflow" :foot="shipped ? 'The default workflow can be reset, not deleted.' : ''">
                 <template v-for="action in workflowOwn" :key="action.key">
-                    <Cell :label="action.label" :sub="action.sub" :tone="action.danger ? 'danger' : 'off'" :chevron="false" @pick="action.run" />
+                    <Cell
+                        :label="action.label"
+                        :sub="action.sub"
+                        :tone="action.danger ? 'danger' : 'off'"
+                        :chevron="false"
+                        @pick="action.run"
+                    />
                 </template>
             </CellGroup>
         </template>
@@ -296,22 +356,48 @@ const steps = computed(() => {
         <ActionSheet title="Workflow" :about="title" line="the one to edit" :actions="workflowActions" @close="sheet = ''" />
     </template>
     <template v-if="sheet === 'events'">
-        <ActionSheet title="New workflow" about="Pick its event" line="the workflow is born with its trigger" :actions="eventActions" @close="sheet = ''" />
+        <ActionSheet
+            title="New workflow"
+            about="Pick its event"
+            line="the workflow is born with its trigger"
+            :actions="eventActions"
+            @close="sheet = ''"
+        />
     </template>
     <template v-if="sheet === 'nodes'">
-        <ActionSheet title="Add node" about="Checks and actions" line="added at the end and connected to the last node" :actions="nodeActions" @close="sheet = ''" />
+        <ActionSheet
+            title="Add node"
+            about="Checks and actions"
+            line="added at the end and connected to the last node"
+            :actions="nodeActions"
+            @close="sheet = ''"
+        />
     </template>
     <template v-if="sheet === 'port' && porting">
-        <ActionSheet :title="PORT[porting.port]" :about="named(porting.node)" :line="`where the ${WORD[porting.port]} answer goes`" :actions="portActions" @close="sheet = ''" />
+        <ActionSheet
+            :title="PORT[porting.port]"
+            :about="named(porting.node)"
+            :line="`where the ${WORD[porting.port]} answer goes`"
+            :actions="portActions"
+            @close="sheet = ''"
+        />
     </template>
     <template v-if="sheet === 'confirm-reset' || sheet === 'confirm-remove'">
-        <ActionSheet :title="sheet === 'confirm-reset' ? `Replace ‘${title}’ with the default version?` : `Delete ‘${title}’?`" :about="title" line="the other workflows stay as they are" :actions="confirmActions" @close="sheet = ''" />
+        <ActionSheet
+            :title="sheet === 'confirm-reset' ? `Replace ‘${title}’ with the default version?` : `Delete ‘${title}’?`"
+            :about="title"
+            line="the other workflows stay as they are"
+            :actions="confirmActions"
+            @close="sheet = ''"
+        />
     </template>
     <template v-if="sheet === 'test'">
         <PhoneSheet label="Test with event" tall @close="sheet = ''">
             <template #head>
                 <h2 class="wf-sheet-title">Test with event</h2>
-                <p class="wf-sheet-sub">{{ trigger ? entryOf(trigger).title : "No trigger" }} · changes nothing; runs against current data</p>
+                <p class="wf-sheet-sub">
+                    {{ trigger ? entryOf(trigger).title : "No trigger" }} · changes nothing; runs against current data
+                </p>
             </template>
             <div class="wf-sheet-body">
                 <Button kind="primary" fill :busy="busy === 'try'" @click="test">Test</Button>
