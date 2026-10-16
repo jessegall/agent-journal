@@ -139,9 +139,8 @@ workflow at the foot starts one at this event, always or for one state, at the l
 parked"); the line under it says when it runs (always, or when the agent is in its state). A workflow of your own
 is born "New workflow", takes the title of its first action when you save one, and keeps the name you give it.
 A journal whose shipped workflows still carry the older "State at Event" titles, never renamed, takes the plain
-titles at boot. Above the list, in grey,
-the moves the engine makes itself at this event before the list runs, such as the journal moving the agent to
-Working when it starts a task, or a prompt freeing a wait: fixed lines, which no workflow edits. Recent runs names a
+titles at boot. The moves the engine makes itself, such as moving the agent to Working when a task starts, are not workflows and are
+not shown among them. Recent runs names a
 state change in words, by the step that moved the agent or the journal's own move that came first, and the answer
 the agent was given, said or held. On the canvas each card says how often it ran, and a count card carries its own
 number in its title. Opening a run lights its path and, on each count card it passed, the number the check read.

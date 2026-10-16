@@ -645,9 +645,9 @@ def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(server):
     assert status == 409 and "holds locked step" in body["error"], "a workflow holding the law is not turned off"
 
 
-def test_the_index_serves_the_engines_own_moves_as_fixed_lines_and_a_run_names_a_state_change(server):
+def test_the_engines_own_moves_are_not_served_with_the_workflows_and_a_run_names_a_state_change(server):
     status, read = call(server, "GET", "/journal/chart")
-    assert status == 200 and "the journal itself moves the agent to Working when it starts a task" in read["fixed"]["tasks.updated"][0] and "a prompt always frees a wait" in read["fixed"]["prompt_submitted"] and "idle" not in read["fixed"], "per trigger, the moves the engine makes itself before the list runs"
+    assert status == 200 and "fixed" not in read, "the engine's own moves are not workflows and are not shown among them"
     status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Wait after a tool"})
     trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
     nodes = made["nodes"] + [{"id": "w", "kind": "action", "key": "wait_outside", "text": "the deploy", "x": 0, "y": 0}]

@@ -56,8 +56,8 @@ write, a skill to read, a state to move to. It is drawn on the canvas, in your o
 edit it. The engine keeps what has nothing to decide and nothing you would want to tune: how a
 shell command runs, that a journal command is never mixed with other shell or piped, that a long
 output is cut, that a slow command goes to the background, the moves the journal makes when a
-task starts or a session ends. Those are fixed, shown as grey lines at the head of the list, and
-never a node. Unsure which a thing is? Ask whether a user would ever open it to change it: if
+task starts or a session ends. Those live in the engine and never appear on the canvas, not as a
+node and not as a note. Unsure which a thing is? Ask whether a user would ever open it to change it: if
 yes, it is a workflow.
 
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script

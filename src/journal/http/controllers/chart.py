@@ -19,6 +19,8 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.environments import Environments
 
 
+ENGINE_MOVES = ("tasks.updated", "task_logs.created", "plans.updated", "questions.created", "workers.updated", "sequences.updated", "prompt_submitted", "session_started", "session_ended", "ticked")
+"""The events at which the engine moves the agent itself before the workflows run, so a run there can say the journal's own move came first."""
 NEW_TITLE = "New workflow"
 """The title a workflow is born with until its first action or the user names it."""
 
@@ -31,7 +33,7 @@ class ChartController:
         self.traces, self.states = traces, states
 
     def index(self, request: Request) -> Response:
-        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed(), "fixed": self.catalogue.fixed()})
+        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed()})
 
     def listed_states(self) -> list[dict]:
         return self.states.listed()
@@ -54,7 +56,7 @@ class ChartController:
         state = self.states.title_of(run["started"]) if run["started"] else ""
         if run["moved_to"]:
             return f"{state} to {self.states.title_of(run['moved_to'])}, by step {run['moved_by'][-1]}" if run["moved_by"] else ""
-        if run["event"] in self.catalogue.fixed() and run["row"]:
+        if run["event"] in ENGINE_MOVES and run["row"]:
             return f"{state}, after {run['trigger'].lower()} {run['row']}: the journal's own move came first"
         return ""
 
