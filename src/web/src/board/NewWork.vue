@@ -117,8 +117,8 @@ const documentName = computed(
         ""
 );
 const pointed = ref(null);
-const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
-const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
+const heardSince = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
+const writing = computed(() => Boolean(lastSent.value) && !heardSince(lastSent.value));
 const revising = computed(() => writing.value && drafts.value.length > 0);
 const empty = computed(
     () => docked.value && phase.value === "drafting" && !writing.value && !asking.value && !drafts.value.length && !reading.value
