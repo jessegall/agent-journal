@@ -763,4 +763,12 @@ workflows at the head; Stop here ends an event's walk; Orienting, Loading a skil
 the agent owes. Phase one so far: a shipped workflow remembers its shipping (drawn_version) and an edited one the
 shipping moved past is kept and told so; shipped workflows are named after their drawing (state:event), a retired
 one is remembered and reset by state and event draws it back; Chart.place orders an event's workflows, a state is
-optional, the walk runs the event's list in order with the nearest state in the lineage replacing its parents'.
+optional, the walk runs the event's list in order with the nearest state in the lineage replacing its parents';
+one move per event, the first hold wins and later holds are recorded unanswered, the new state's workflows run at
+their place after a move, the waits are placed before the states they go back to; a Stop here node ends the event's
+walk, warned on save for what it skips; the order endpoint and chart order take an event's list at the revisions
+read, refusing a stale one naming who saved first; the page is an event list and the event's ordered list, dragged
+to reorder, filtered by state; a locked workflow or step is the journal's law: the seed draws the holds locked, a
+locked workflow keeps the head of its event's list and is neither deleted nor turned off, a locked step is neither
+taken out, reworded (its numbers may change) nor gated by a check or a Stop here of the user's, and the
+DRAWINGS_VERSION bump that locks the holds in a standing journal comes with the Always workflows.

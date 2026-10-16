@@ -1,6 +1,7 @@
 <script setup>
 import {ago} from "../format/time.js";
 import {overlapping, tidy} from "../domain/tidy.js";
+import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
 import {markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
@@ -222,6 +223,7 @@ function add(entry) {
 }
 
 function remove(node) {
+    if (node.locked) return;
     if (!unlocked.value) return;
     change(() => {
         nodes.value = nodes.value.filter((n) => n.id !== node.id);
@@ -252,6 +254,7 @@ function disconnect(node, port) {
 }
 
 function setText(node, text) {
+    if (node.locked) return;
     if (!unlocked.value) return;
     change(() => {
         node.text = text;
@@ -630,6 +633,7 @@ const moveBy = (id, by) => {
     ids.splice(to, 0, id);
     return reorder(ids);
 };
+const selectedLocked = computed(() => Boolean(nodes.value.find((n) => n.id === selected.value && n.locked)));
 const isLit = (id) => lit.value.map(String).includes(String(id));
 const litWire = (line) =>
     isLit(line.from) &&
@@ -778,6 +782,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         @click="pick(pickedEvent, row.id)"
                     >
                         <span class="chart-item-place">{{ row.place }}</span>
+                        <Icon v-if="row.locked" name="lock" :size="11" class="chart-item-lock" :title="LOCK_WHY" />
                         <span class="chart-item-words">
                             <span class="chart-row-name">{{ row.title }}</span>
                             <span class="chart-row-sub">
@@ -833,7 +838,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                     Test run
                                 </Btn>
                                 <Btn v-if="currentWorkflow.off" kind="ghost" small :busy="busy === 'on'" @click="turnOn">Turn on</Btn>
-                                <Btn v-else kind="ghost" small @click="confirming = 'off'">Turn off</Btn>
+                                <Btn
+                                    v-else
+                                    kind="ghost"
+                                    small
+                                    :disabled="Boolean(stayOn(currentWorkflow))"
+                                    :title="stayOn(currentWorkflow) || null"
+                                    @click="confirming = 'off'"
+                                >
+                                    Turn off
+                                </Btn>
                                 <Btn
                                     v-if="shipped && (currentWorkflow.edited || currentWorkflow.off)"
                                     kind="ghost"
@@ -842,7 +856,9 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 >
                                     Reset to default
                                 </Btn>
-                                <Btn v-if="!shipped" kind="ghost" small @click="confirming = 'remove'">Delete</Btn>
+                                <Btn v-if="!shipped && !currentWorkflow.locked" kind="ghost" small @click="confirming = 'remove'">
+                                    Delete
+                                </Btn>
                             </template>
                         </template>
                         <Btn v-if="!unlocked" kind="ghost" small @click="listsHidden = !listsHidden">
@@ -858,6 +874,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     changes.
                 </p>
                 <p v-if="trialWords" class="chart-trace">{{ trialWords }}</p>
+                <p v-if="stayOn(currentWorkflow)" class="chart-trace">{{ stayOn(currentWorkflow) }}</p>
+                <p v-if="selectedLocked" class="chart-trace">{{ LOCK_WHY }} {{ LOCK_RULE }}</p>
                 <p v-else-if="walkWords" class="chart-trace">{{ walkWords }}</p>
 
                 <ChartList
@@ -894,6 +912,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                     target: drawing && drawing.target && drawing.target.id === node.id,
                                     lit: isLit(node.id),
                                     end: node.key === 'stop_here',
+                                    locked: node.locked,
                                 },
                             ]"
                             :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
@@ -902,8 +921,9 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                             <div class="chart-node-kind">
                                 <span :class="['chart-glyph', node.kind]" />
                                 <span>{{ KIND[node.kind] }}</span>
+                                <Icon v-if="node.locked" name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
                                 <button
-                                    v-if="selected === node.id"
+                                    v-if="selected === node.id && !node.locked"
                                     type="button"
                                     class="chart-node-x"
                                     title="Delete node"
@@ -919,7 +939,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                     v-if="node.kind === 'action'"
                                     type="button"
                                     :class="['chart-node-text', {empty: !node.text}]"
-                                    title="Click to write the message"
+                                    :disabled="node.locked"
+                                    :title="node.locked ? LOCK_WHY : 'Click to write the message'"
                                     @pointerdown.stop
                                     @click.stop="openMessage(node)"
                                 >
@@ -930,6 +951,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                     class="chart-node-text"
                                     :value="node.text"
                                     :placeholder="placeholderOf(node)"
+                                    :disabled="node.locked"
+                                    :title="node.locked ? LOCK_WHY : null"
                                     @pointerdown.stop
                                     @focus="selected = node.id"
                                     @input="setText(node, $event.target.value)"
@@ -1272,8 +1295,14 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 .chart-item.dragging {
     opacity: 0.5;
 }
-.chart-item.locked .chart-item-place::after {
-    content: " 🔒";
+.chart-item-lock,
+.chart-node-lock {
+    flex: none;
+    color: var(--text-3);
+}
+.chart-node.locked .chart-node-text:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
 }
 .chart-item-place {
     flex: none;

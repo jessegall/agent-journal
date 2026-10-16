@@ -6,7 +6,7 @@ from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import EVENT_ORDER, ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
-from journal.features.chart.validation import TEXT_LIMIT, Validation
+from journal.features.chart.validation import LOCK_RULE, LOCK_WHY, TEXT_LIMIT, Validation
 from journal.refused import Refused
 from journal.models.chart import Chart
 from journal.models.node import Node
@@ -99,6 +99,8 @@ class ChartCommand(Command):
 
     def drop(self, args: Namespace, where: Where) -> int:
         chart = self.charts.find(args.n)
+        if chart.locked:
+            raise Refused(f"workflow {chart.id} is locked, {LOCK_WHY}: it stays")
         if chart.shipped:
             raise Refused(f"workflow {chart.id} is a shipped one and stays: empty it, or journal chart reset {chart.id} brings its drawing back")
         self.charts.remove(chart, where.actor)
@@ -142,6 +144,11 @@ class ChartCommand(Command):
         if fault:
             raise Refused(fault[0])
         chart = self.editable(self.charts.chart_of(source), args)
+        lines = [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in self.charts.lines_of(chart) if not (l.source.id == source.id and l.kind == args.port)]
+        nodes = [{"id": n.id, "kind": n.kind, "key": n.key, "text": n.text} for n in self.charts.nodes_of(chart)]
+        locked = self.validation.lock_faults(chart, nodes, lines + [{"from": source.id, "to": target.id, "port": args.port}])
+        if locked:
+            raise Refused(str(locked[0]))
         self.charts.connect(source, target, args.port, where.actor)
         self.charts.revised(chart, where.actor)
         print(f"line {source.id} --{args.port}--> {target.id}")
@@ -182,6 +189,8 @@ class ChartCommand(Command):
 
     def remove(self, args: Namespace, where: Where) -> int:
         node = self.charts.nodes.find(args.n)
+        if node.locked:
+            raise Refused(f"step {node.id} is locked, {LOCK_WHY}: {LOCK_RULE}")
         chart = self.editable(self.charts.chart_of(node), args)
         self.charts.remove_node(node, where.actor)
         self.charts.revised(chart, where.actor)

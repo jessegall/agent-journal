@@ -488,7 +488,7 @@ def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no
 
 def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(server):
     status, read = call(server, "GET", "/journal/chart")
-    base = next(w for w in read["workflows"] if w["state"] == "idle" and w["event"] == "idle")
+    base = next(w for w in read["workflows"] if w["shipped"] and not w["guarded"])
     assert status == 200 and not base["off"], "a shipped workflow with its drawing answers its events"
     status, body = call(server, "POST", f"/journal/chart/{base['id']}/remove", {})
     assert status == 409 and "empty it or reset it" in body["error"], "a shipped workflow stays"
@@ -504,16 +504,16 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     assert states["following_plan"]["parent"] == "working" and states["working"]["parent"] == "" and states["idle"]["title"] == "Idle"
     assert read["states"][0]["key"] == "idle" and {"orienting", "at_mark", "loading_skill", "ended", "running_sequence"} <= set(states), "every state the engine has, the first first"
     assert states["awaiting"]["title"] == "Waiting on a worker" and states["orienting"]["parent"] == ""
-    idle = next(w for w in read["workflows"] if w["state"] == "idle" and w["event"] == "idle")
+    idle = next(w for w in read["workflows"] if w["shipped"] and not w["guarded"])
     assert idle["edited"] is False and idle["failed"] is False and idle["off"] is False
     status, off = call(server, "POST", f"/journal/chart/{idle['id']}/off", {})
     assert status == 200 and off["off"] is True and all(n["kind"] != "trigger" for n in off["nodes"]), "turned off: the trigger is gone, the rest stays"
     status, on = call(server, "POST", f"/journal/chart/{idle['id']}/on", {})
-    assert status == 200 and on["off"] is False and [n["key"] for n in on["nodes"] if n["kind"] == "trigger"] == ["idle"], "turned on: the trigger of its event is back"
+    assert status == 200 and on["off"] is False and [n["key"] for n in on["nodes"] if n["kind"] == "trigger"] == [idle["event"]], "turned on: the trigger of its event is back"
     assert on["edited"] is False, "a default turned off and on is still the default"
     stale = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": 0, "nodes": on["nodes"], "lines": on["lines"]})
     assert stale[0] == 409 and stale[1]["conflict"] is True and stale[1]["revision"] == on["revision"] and stale[1]["revised_by"] and stale[1]["revised_at"] > 0
-    bad = [{"id": "t", "kind": "trigger", "key": "idle"}, {"id": "c", "kind": "check", "key": "flying"}]
+    bad = [{"id": "t", "kind": "trigger", "key": idle["event"]}, {"id": "c", "kind": "check", "key": "flying"}]
     refused = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": on["revision"], "nodes": bad, "lines": [{"from": "t", "to": "c"}]})
     assert refused[0] == 409 and {f["node"] for f in refused[1]["faults"]} == {"c"} and any("check c has no line out" in f["words"] for f in refused[1]["faults"])
     assert {f["key"] for f in read["fillers"]} >= {"{{task}}", "{{inbox}}", "{{parked_tasks}}", "{{worker_name}}"} and all(f["about"] for f in read["fillers"])
@@ -571,3 +571,31 @@ def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_name
     assert status == 409 and "name each once" in body["error"], "an order names every workflow of the event"
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "flying", "order": []})
     assert status == 409 and "no workflow answers flying" in body["error"]
+
+
+def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(server):
+    status, read = call(server, "GET", "/journal/chart")
+    guarded = next(w for w in read["workflows"] if w["guarded"])
+    status, one = call(server, "GET", f"/journal/chart/{guarded['id']}")
+    lock = next(n for n in one["nodes"] if n["locked"])
+    assert one["guarded"] and not one["locked"] and lock["shipped"], "a shipped hold is drawn locked; the workflow holding it is guarded, not locked itself"
+    save = lambda nodes, lines: call(server, "POST", f"/journal/chart/{guarded['id']}", {"revision": one["revision"], "nodes": nodes, "lines": lines})
+    status, body = save([n for n in one["nodes"] if n["id"] != lock["id"]], [l for l in one["lines"] if lock["id"] not in (l["from"], l["to"])])
+    assert status == 409 and f"step {lock['id']} is locked" in body["error"] and "add steps after it" in body["error"], "a locked step cannot be taken out, and the refusal says what a user still can"
+    status, body = save([{**n, "text": "my own words"} if n["id"] == lock["id"] else n for n in one["nodes"]], one["lines"])
+    assert status == 409 and "its words stay" in body["error"], "a locked step is not reworded"
+    trigger = next(n for n in one["nodes"] if n["kind"] == "trigger")
+    check = next(e for e in one["catalogue"] if e["kind"] == "check" and not e["takes_text"])
+    before = {"id": "new1", "kind": "check", "key": check["key"], "text": "", "x": 0, "y": 0}
+    status, body = save(one["nodes"] + [before], one["lines"] + [{"from": trigger["id"], "to": "new1", "port": "then"}, {"from": "new1", "to": lock["id"], "port": "yes"}])
+    assert status == 409 and "would come before a locked step" in body["error"], "no check of the user's decides whether the law runs"
+    stop = {"id": "new2", "kind": "action", "key": "stop_here", "text": "", "x": 0, "y": 0}
+    status, body = save(one["nodes"] + [stop], one["lines"] + [{"from": trigger["id"], "to": "new2", "port": "then"}, {"from": "new2", "to": lock["id"], "port": "then"}])
+    assert status == 409, "a Stop here before a locked step is refused too"
+    after = {"id": "new3", "kind": "action", "key": "say", "text": "after the law", "x": 0, "y": 0}
+    out = next((l for l in one["lines"] if l["from"] == lock["id"]), None)
+    onward = [{"from": "new3", "to": out["to"], "port": "then"}] if out else []
+    status, body = save(one["nodes"] + [after], [l for l in one["lines"] if l is not out] + [{"from": lock["id"], "to": "new3", "port": "then"}] + onward)
+    assert status == 200 and any(n["key"] == "say" and n["text"] == "after the law" for n in body["nodes"]), f"a step after a locked one is the user's to add: {body}"
+    status, body = call(server, "POST", f"/journal/chart/{guarded['id']}/off", {})
+    assert status == 409 and "holds locked step" in body["error"], "a workflow holding the law is not turned off"

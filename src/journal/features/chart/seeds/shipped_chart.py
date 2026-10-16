@@ -1,6 +1,7 @@
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.drawing import Drawing
+from journal.features.chart.validation import HOLDS
 from journal.features.seed import Seed
 from journal.models.actor import Actor
 from journal.models.chart import Chart
@@ -130,7 +131,7 @@ class ShippedChart(Seed):
         """A shipped drawing drawn anew as its own workflow, named after it."""
         state, event = key.split(":", 1)
         drawing = self.drawings[key]
-        chart = self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=PLACE_ORDER.index(state) if state in PLACE_ORDER else len(PLACE_ORDER)), by)
+        chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=PLACE_ORDER.index(state) if state in PLACE_ORDER else len(PLACE_ORDER)), by)
         drawing.draw(chart)
         return chart
 
@@ -195,7 +196,8 @@ class ShippedChart(Seed):
         return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:
-        return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), Actor.system())
+        """A shipped node; a hold is a guard of the journal's protocol and is drawn locked."""
+        return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True, locked=key in HOLDS), Actor.system())
 
     def trigger(self, chart: Chart) -> Node:
         """The workflow's one trigger, the event it is for, made where it is not yet."""

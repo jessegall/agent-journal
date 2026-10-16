@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
+import {LOCK_WHY, stayOn} from "../../domain/workflowLocks.js";
 import {pairs, statusOf} from "../../domain/workflowPairs.js";
 import Icon from "../../kit/Icon.vue";
 import ActionSheet from "../kit/ActionSheet.vue";
@@ -339,7 +340,7 @@ const workflowOwn = computed(() => {
     const own = [
         {key: "up", label: "Run earlier", sub: "One place up in the event's order", run: () => moveBy(-1)},
         {key: "down", label: "Run later", sub: "One place down in the event's order", run: () => moveBy(1)},
-        off,
+        ...(stayOn(workflow) ? [] : [off]),
     ];
     if (shipped.value && (workflow.edited || workflow.off)) {
         own.push({
@@ -350,7 +351,7 @@ const workflowOwn = computed(() => {
             run: () => (sheet.value = "confirm-reset"),
         });
     }
-    if (!shipped.value)
+    if (!shipped.value && !workflow.locked)
         own.push({
             key: "remove",
             label: "Delete workflow",
@@ -370,7 +371,7 @@ const confirmActions = computed(() => {
     if (sheet.value === "confirm-off") return [{key: "off", label: "Turn off", sub: parentWords.value, danger: true, run: turnOff}];
     return [{key: "remove", label: "Delete workflow", sub: parentWords.value, danger: true, run: removeWorkflow}];
 });
-const deleteNode = (node) => [{key: "delete", label: "Delete step", tone: "danger", run: () => remove(node)}];
+const deleteNode = (node) => (node.locked ? [] : [{key: "delete", label: "Delete step", tone: "danger", run: () => remove(node)}]);
 
 function pickPort(node, port) {
     porting.value = {node, port};
@@ -410,6 +411,7 @@ const steps = computed(() => {
                 <Cell label="Workflow" :sub="currentWorkflow ? currentWorkflow.title : 'none yet'" icon="bolt" @pick="sheet = 'list'" />
             </CellGroup>
             <p class="wf-status">{{ statusWords }}</p>
+            <p v-if="stayOn(currentWorkflow)" class="wf-status">{{ stayOn(currentWorkflow) }}</p>
             <p v-if="currentWorkflow && currentWorkflow.behind" class="wf-status">
                 The shipped version changed since you edited this. Reset to default takes the new one.
             </p>
@@ -435,9 +437,10 @@ const steps = computed(() => {
                     :foot="entryOf(node).takes_text && node.kind === 'action' ? `Insert values with ${HELP}` : ''"
                 >
                     <SwipeRow :label="entryOf(node).title" :trail="deleteNode(node)">
-                        <Cell :label="entryOf(node).title" :sub="described(entryOf(node))" still />
+                        <Cell :label="entryOf(node).title" :sub="node.locked ? LOCK_WHY : described(entryOf(node))" still />
                     </SwipeRow>
-                    <template v-if="entryOf(node).takes_text">
+                    <Cell v-if="node.locked && node.text" :label="node.text" sub="The words of the law stay" still />
+                    <template v-if="entryOf(node).takes_text && !node.locked">
                         <div class="wf-text">
                             <Field
                                 :model-value="node.text"

@@ -1408,9 +1408,10 @@ def test_a_wrong_chart_is_refused_with_its_faults(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     port = app.server().port
+    own = int(app.console().run(["chart", "new", "Mine", "--on", "idle"], USER).out.split()[1].rstrip(":"))
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{own}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1434,12 +1435,13 @@ def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     port = app.server().port
-    catalogue = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))["catalogue"]
+    own = int(app.console().run(["chart", "new", "Mine", "--on", "idle"], USER).out.split()[1].rstrip(":"))
+    catalogue = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/{own}", headers={"X-Journal-Env": "main"}), timeout=5))["catalogue"]
     by_key = {e["key"]: e for e in catalogue}
     assert by_key["turn_written"]["providers"] == ["claude"] and by_key["idle"]["providers"] == ["claude", "codex"]
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{own}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -2624,3 +2626,25 @@ def test_a_stop_here_node_ends_the_events_walk_so_no_later_workflow_runs(app):
     assert any("Stop here in this workflow skips" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Stop here skips, by name"
     out = console.run(["chart", "try", "tool_finished"], AGENT).out
     assert "would stop here: no later workflow of the event runs" in out and "the later one speaks" not in out, "the dry run says where it would stop"
+
+
+def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_command(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    first, t1 = own_workflow(console, charts, "idle", "tool_finished")
+    second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    charts.save(charts.find(second).with_(locked=True), USER.actor)
+    assert "is locked" in console.run(["chart", "order", "tool_finished", str(first), str(second)], USER).err, "the locked ones keep the head of the list"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(first)], USER).code == 0
+    assert "is locked" in console.run(["chart", "drop", str(second)], USER).err, "a locked workflow stays"
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    hold = add(first, "action", "say", "--text", "[chart] the law")
+    charts.nodes.save(charts.nodes.find(hold).with_(locked=True), USER.actor)
+    console.run(["chart", "line", str(t1), str(hold)], USER)
+    assert "is locked" in console.run(["chart", "remove", str(hold)], USER).err, "a locked step is not taken out"
+    gate = add(first, "check", "unread_messages")
+    assert "would come before a locked step" in console.run(["chart", "line", str(gate), str(hold), "--port", "yes"], USER).err, "no check of the user's is drawn before a locked step"
+    after = add(first, "action", "say", "--text", "[chart] after the law")
+    assert console.run(["chart", "line", str(hold), str(after)], USER).code == 0, "a step after it is the user's to add"

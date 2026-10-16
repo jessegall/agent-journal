@@ -18,6 +18,8 @@ class Node(Model):
     x: int = 0
     y: int = 0
     shipped: bool = False
+    locked: bool = False
+    """True for a step that is the journal's law: it cannot be taken out, reworded or turned off, and nothing the user adds may decide whether it runs."""
     """True for a node the journal shipped and the user has not touched; an edit makes it the user's, so a later release knows which rules are still its own."""
 
     def cleaned(self) -> "Node":

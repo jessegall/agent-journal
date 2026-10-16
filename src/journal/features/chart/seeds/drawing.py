@@ -10,3 +10,5 @@ class Drawing:
 
     title: str
     draw: Callable[[Chart], None]
+    locked: bool = False
+    """True for a drawing that is the journal's law: drawn as a locked workflow."""

@@ -23,6 +23,9 @@ class Chart(Model):
     drawing: str = ""
     """The name of the shipped drawing this workflow came from, the state and the event it was shipped for; empty on one of the user's own."""
     drawn_version: int = 0
+    """The DRAWINGS_VERSION the shipped drawing was drawn at, so a newer release knows it is behind."""
+    locked: bool = False
+    """True for a workflow that is the journal's law: it runs first at its event and cannot be deleted or turned off."""
     """The shipping a shipped workflow's drawing came from: one the user edited that the shipping has since moved past is told so."""
 
     def saved_again(self) -> "Chart":

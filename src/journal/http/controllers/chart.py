@@ -6,7 +6,7 @@ from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
-from journal.features.chart.validation import Validation
+from journal.features.chart.validation import LOCK_WHY, Validation
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.http.request import Request
 from journal.http.response import Response
@@ -48,8 +48,11 @@ class ChartController:
         return Response.json({"trigger": event, "workflows": [self.named(c) for c in placed]})
 
     def off(self, request: Request) -> Response:
-        """A workflow turned off: its trigger taken out, the rest kept, so it answers nothing until turned on again."""
+        """A workflow turned off: its trigger taken out, the rest kept, so it answers nothing until turned on again; one that is or holds the journal's law stays on."""
         chart = self.charts.find(request.number("id"))
+        refusal = self.validation.off_fault(chart)
+        if refusal:
+            return Response.refused(str(refusal[0]))
         for node in [n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.TRIGGER]:
             self.charts.remove_node(node, request.actor)
         return Response.json(self.drawn(self.charts.revised(chart, request.actor)))
@@ -82,6 +85,8 @@ class ChartController:
 
     def remove(self, request: Request) -> Response:
         chart = self.charts.find(request.number("id"))
+        if chart.locked:
+            return Response.refused(f"workflow {chart.id} is locked, {LOCK_WHY}: it stays")
         if chart.shipped:
             return Response.refused("a shipped workflow stays; empty it or reset it instead")
         self.charts.remove(chart, request.actor)
@@ -114,7 +119,7 @@ class ChartController:
         last_walk, last_failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
         return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "place": chart.place, "off": not self.charts.graph(chart).triggers,
                 "edited": not all(n.shipped for n in self.charts.nodes_of(chart)), "failed": bool(last_failure) and last_failure["at"] >= last_walk.get("at", 0),
-                "behind": self.shipped.behind(chart),
+                "behind": self.shipped.behind(chart), "locked": chart.locked, "guarded": any(n.locked for n in self.charts.nodes_of(chart)),
                 "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": last_walk, "last_failure": last_failure}
 
     def entries(self) -> list[dict]:
@@ -124,7 +129,7 @@ class ChartController:
         return {
             "state": chart.state,
             **self.named(chart), "shipped": chart.shipped,
-            "nodes": [{"id": n.id, "kind": n.kind.value, "key": n.key, "text": n.text, "x": n.x, "y": n.y, "shipped": n.shipped} for n in self.charts.nodes_of(chart)],
+            "nodes": [{"id": n.id, "kind": n.kind.value, "key": n.key, "text": n.text, "x": n.x, "y": n.y, "shipped": n.shipped, "locked": n.locked} for n in self.charts.nodes_of(chart)],
             "lines": [{"from": line.source.id, "to": line.target.id, "port": line.kind} for line in self.charts.lines_of(chart)],
             "catalogue": self.entries(),
         }

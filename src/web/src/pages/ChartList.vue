@@ -1,4 +1,5 @@
 <script setup>
+import {LOCK_WHY} from "../domain/workflowLocks.js";
 import Btn from "../kit/Btn.vue";
 import DropList from "../kit/DropList.vue";
 
@@ -53,16 +54,17 @@ function pick(node, port, key) {
             <div class="chart-list-head">
                 <span class="chart-list-kind">{{ numberOf(node) }} · {{ KIND[node.kind] }}</span>
                 <span class="chart-list-grow" />
-                <Btn kind="ghost" small :disabled="locked" @click="emit('remove', node)">Delete node</Btn>
+                <Btn kind="ghost" small :disabled="locked || node.locked" @click="emit('remove', node)">Delete node</Btn>
             </div>
             <strong class="chart-list-title">{{ entryOf(node).title }}</strong>
+            <p v-if="node.locked" class="chart-list-about">{{ LOCK_WHY }}</p>
             <p v-if="entryOf(node).about" class="chart-list-about">{{ described(node) }}</p>
             <template v-if="entryOf(node).takes_text">
                 <textarea
                     class="chart-list-text"
                     :value="node.text"
                     rows="2"
-                    :disabled="locked"
+                    :disabled="locked || node.locked"
                     :placeholder="node.kind === 'check' ? 'A number, or a setting\'s name' : 'Message to the agent'"
                     @input="emit('text', node, $event.target.value)"
                 />

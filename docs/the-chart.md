@@ -122,6 +122,16 @@ agent's rows as the picked workflow's state, nothing sent, and lights the path; 
 trial can stand in for. The phone shows the same as an Event cell, a Workflow cell that opens the ordered list,
 and Run earlier and Run later on the open workflow.
 
+## Locks
+
+A lock marks the journal's law. A locked workflow runs first at its event, keeps the head of the list, and cannot
+be deleted or turned off. A locked step, the holds the journal ships as guards of its protocol, cannot be taken
+out, reworded or turned off, and no check or Stop here of yours may come before it on its path: nothing the user
+adds decides whether the law runs. What you can do around it: add steps after it, change the numbers in its text,
+and Reset to default, which draws it back. A workflow holding a locked step cannot be turned off either. The page
+shows the lock on the row and on the card, with one line saying why, and the save, the commands and the order
+refuse the same, each saying what you still can.
+
 ## Editing
 
 The page opens read-only. Edit switches editing on, folds the lists into two crumbs and says in the bar that
