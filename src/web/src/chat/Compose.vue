@@ -3,7 +3,7 @@ import {ui} from "../state/ui.js";
 import {route} from "../route.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
-import {computed, nextTick, onBeforeUpdate, onMounted, onUnmounted, onUpdated, reactive, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onBeforeUpdate, onMounted, onUnmounted, onUpdated, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 
@@ -88,6 +88,17 @@ function measure() {
 
 onMounted(() => nextTick(measure));
 onMounted(() => (shown = area.value ? area.value.value : ""));
+// words put in without an input event, by dictation, are read from the box at every moment they could be lost or needed: coming back
+// to the window, before the box is taken off the page, and before the send button decides whether there is anything to send
+onMounted(() => {
+    window.addEventListener("focus", takeFromBox);
+    document.addEventListener("visibilitychange", takeFromBox);
+});
+onBeforeUnmount(() => {
+    takeFromBox();
+    window.removeEventListener("focus", takeFromBox);
+    document.removeEventListener("visibilitychange", takeFromBox);
+});
 watch(
     () => [props.idle?.label, props.submit],
     () => nextTick(measure)
@@ -95,6 +106,7 @@ watch(
 const faceWidth = computed(() => (resting.value ? widths.idle : widths.submit) || 0);
 
 function pressed(e) {
+    takeFromBox();
     if (!resting.value) return;
     e.preventDefault();
     use(props.idle);
@@ -279,6 +291,8 @@ async function use(tool) {
                     ref="area"
                     :value="draft.text"
                     @input="typed"
+                    @focus="takeFromBox"
+                    @keyup="takeFromBox"
                     class="box-area"
                     rows="3"
                     :placeholder="placeholder"
@@ -309,6 +323,7 @@ async function use(tool) {
                         type="submit"
                         :class="['compose-send', {resting, ready}]"
                         :disabled="!resting && !ready"
+                        @pointerdown="takeFromBox"
                         :title="resting ? idle.title : ''"
                         @click="pressed"
                     >

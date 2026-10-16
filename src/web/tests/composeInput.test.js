@@ -87,3 +87,23 @@ test("the box empties after a reply, though the quote is cleared while the send 
     expect(box.value).toBe("");
     unmount();
 });
+
+test("words put in without an input event are read from the box on coming back to the window and before a send", async () => {
+    const sent = [];
+    const props = ref({send: async (text) => sent.push(text), quote: ""});
+    const {box, unmount} = await mounted(props);
+    box.value = "dictated words";
+    window.dispatchEvent(new Event("focus"));
+    await settle();
+    props.value = {...props.value, quote: "a quote arriving"};
+    await settle();
+    expect(box.value).toBe("dictated words");
+    const button = document.querySelector(".compose-send");
+    button.dispatchEvent(new Event("pointerdown", {bubbles: true}));
+    await settle();
+    expect(button.disabled).toBe(false);
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
+    await settle();
+    expect(sent).toEqual(["dictated words"]);
+    unmount();
+});
