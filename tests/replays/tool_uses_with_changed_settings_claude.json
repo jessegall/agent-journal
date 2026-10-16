@@ -14,13 +14,25 @@
         "briefing.orient",
         "voices.voice",
         "messages.new"
-      ]
+      ],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 0,
+        "uses": 0
+      }
     },
     {
       "name": "read 1 while owed",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 1,
+        "uses": 1
+      }
     },
     {
       "name": "read 2 while owed",
@@ -33,13 +45,25 @@
       "typed": [],
       "nudges": [
         "messages.answer"
-      ]
+      ],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 2,
+        "uses": 2
+      }
     },
     {
       "name": "read 3 while owed",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 3,
+        "uses": 3
+      }
     },
     {
       "name": "read 4 while owed",
@@ -47,7 +71,13 @@
         "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 4,
+        "uses": 4
+      }
     },
     {
       "name": "read 5 while owed",
@@ -55,25 +85,49 @@
         "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 5,
+        "uses": 5
+      }
     },
     {
       "name": "the reply",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0,
+        "namings": 0,
+        "owed": 5,
+        "uses": 5
+      }
     },
     {
       "name": "write 1",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 1,
+        "namings": 0,
+        "owed": 6,
+        "uses": 6
+      }
     },
     {
       "name": "write 2",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 2,
+        "namings": 0,
+        "owed": 7,
+        "uses": 7
+      }
     },
     {
       "name": "write 3",
@@ -86,7 +140,13 @@
       "typed": [],
       "nudges": [
         "tasks.in_hand"
-      ]
+      ],
+      "counts": {
+        "edits": 3,
+        "namings": 0,
+        "owed": 8,
+        "uses": 8
+      }
     },
     {
       "name": "write 4",
@@ -99,7 +159,13 @@
       "typed": [],
       "nudges": [
         "tasks.log_soon"
-      ]
+      ],
+      "counts": {
+        "edits": 4,
+        "namings": 0,
+        "owed": 9,
+        "uses": 9
+      }
     },
     {
       "name": "write 5",
@@ -112,13 +178,25 @@
       "typed": [],
       "nudges": [
         "tasks.in_hand"
-      ]
+      ],
+      "counts": {
+        "edits": 5,
+        "namings": 0,
+        "owed": 10,
+        "uses": 10
+      }
     },
     {
       "name": "write 6",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 6,
+        "namings": 0,
+        "owed": 11,
+        "uses": 11
+      }
     },
     {
       "name": "write 7",
@@ -126,7 +204,13 @@
         "error": "6 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write"
       },
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 6,
+        "namings": 0,
+        "owed": 12,
+        "uses": 12
+      }
     }
   ]
 }

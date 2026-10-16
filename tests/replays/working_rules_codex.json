@@ -11,7 +11,10 @@
         "briefing.laws",
         "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {
+        "edits": 0
+      }
     },
     {
       "name": "a stop with the task in hand",
@@ -22,7 +25,10 @@
       "typed": [],
       "nudges": [
         "tasks.carry_on"
-      ]
+      ],
+      "counts": {
+        "edits": 0
+      }
     },
     {
       "name": "the session starts again",
@@ -40,13 +46,19 @@
         "briefing.laws",
         "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {
+        "edits": 0
+      }
     },
     {
       "name": "quiet for a quarter of an hour",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0
+      }
     }
   ]
 }

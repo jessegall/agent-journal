@@ -9,8 +9,7 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
 
-from journal.models.actor import Actor
-from journal.repositories.charts import Charts
+from journal.repositories.counts import Counts
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
@@ -54,10 +53,11 @@ class Replay:
         monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, instruction: self.typed.append(instruction["line"]))
 
     def step(self, name: str, answer=None) -> None:
-        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, and the nudges said since."""
+        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, and the agent's counts as they stand."""
         with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
             nudges = [e.data["key"] for e in reversed(self.app.container.get(Entries).of_kind_in(1000)) if e.kind == "nudge"]
-        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:]})
+            counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).where(session="s1"), key=lambda c: c.name)}
+        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:], "counts": counts})
         self.seen = len(nudges)
         self.typed.clear()
 
@@ -84,15 +84,11 @@ class Frozen:
 
 
 def recorded(name: str, app, monkeypatch, steps, provider: str, nudges: bool = False):
-    """The listener side of a replay: frozen before the listeners were deleted and read from its record; with REPLAY_FREEZE set it is run anew with every shipped workflow emptied, which records only what listeners are still in code."""
+    """The frozen side of a replay, read from its record: first the listeners' conduct, frozen before they were deleted, and since phase one of plan 7 the shipped workflows' conduct as it stood when last frozen; with REPLAY_FREEZE set the steps run anew on a fresh journal and the record is written again."""
     if not FREEZE:
         return Frozen(name)
     app.runtime().start()
     replay = Replay(app, monkeypatch)
-    charts = app.container.get(Charts)
-    for chart in charts.shipped():
-        for node in charts.nodes_of(chart):
-            charts.remove_node(node, Actor.system())
     steps(app, replay, provider)
     replay.freeze(name, nudges)
     return replay
@@ -122,6 +118,8 @@ def differences(left: list[dict], right: list[dict], nudges: bool = False) -> li
             found.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
         if nudges and sorted(a["nudges"]) != sorted(b["nudges"]):
             found.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
+        if "counts" in a and "counts" in b and a["counts"] != b["counts"]:
+            found.append(f"{a['name']}: the counts differ: {a['counts']} against {b['counts']}")
     if len(left) != len(right):
         found.append(f"{len(left)} steps against {len(right)}")
     return found

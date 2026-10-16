@@ -84,6 +84,25 @@ def tool_uses_with_the_inbox(app, replay: Replay, provider: str) -> None:
     replay.step("a read after the reply", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
 
 
+def count_survives_events(app, replay: Replay, provider: str) -> None:
+    """The steps: a message arrives, two reads, a stop, a prompt, a third read that names the inbox since the count of uses survived the stop and the prompt, a session start, then three reads more, the sixth naming again."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["message", "send", "one"], USER)
+    replay.step("message 1 arrives")
+    read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
+    replay.step("read 1", read())
+    replay.step("read 2", read())
+    replay.step("a stop", hook_as(app, provider, "Stop")[1])
+    replay.step("a prompt", hook_as(app, provider, "UserPromptSubmit", prompt="working")[1])
+    replay.step("read 3, the third use since the message", read())
+    replay.step("the session starts again", hook_as(app, provider, "SessionStart")[1])
+    replay.step("read 4", read())
+    replay.step("read 5", read())
+    replay.step("read 6, the sixth", read())
+
+
 def writes_over_the_log(app, replay: Replay, provider: str) -> None:
     """The steps: a task in hand, twenty-seven writes, a log line, then fifty-one writes more."""
     hook_as(app, provider, "SessionStart")
@@ -496,3 +515,17 @@ def test_an_edited_tool_workflow_still_holds_the_tool_once_a_boot_adds_the_locke
     right = Replay(with_workflow, monkeypatch)
     tool_uses_with_the_inbox(with_workflow, right, provider)
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same holds and lines"
+
+
+def test_a_count_survives_a_stop_a_prompt_and_a_session_start(journals, monkeypatch):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"count_survives_events_{provider}", with_listener, monkeypatch, count_survives_events, provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch)
+    count_survives_events(with_workflow, right, provider)
+    by_name = {s["name"]: s for s in right.record()}
+    assert by_name["message 1 arrives"]["counts"] == {"namings": 0, "uses": 0}, "the message starts the counts"
+    assert by_name["a prompt"]["counts"]["uses"] == 2 and "new message 1" in str(by_name["read 3, the third use since the message"]["answer"]), "the count of uses survives the stop and the prompt: the third use names the inbox"
+    assert by_name["read 3, the third use since the message"]["counts"] == {"namings": 1, "owed": 3, "uses": 3}, "the naming is counted; the uses owed count along, to be started at nought when a message is read and owed"
+    assert "new message 1" in str(by_name["read 6, the sixth"]["answer"]) and by_name["read 6, the sixth"]["counts"] == {"namings": 2, "owed": 6, "uses": 6}, "and the session start: the sixth use names again"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same, counts included"
