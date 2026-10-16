@@ -37,6 +37,16 @@ class ChartController:
         runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]]} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
 
+    def order(self, request: Request) -> Response:
+        """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since."""
+        event = request.body.get("trigger", "")
+        given = [{"id": int(row.get("id", 0)), "revision": int(row.get("revision", -1))} for row in request.body.get("order", [])]
+        faults = self.validation.order_faults(event, given)
+        if faults:
+            return Response.json({"error": "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
+        placed = self.charts.reorder(event, [row["id"] for row in given], request.actor)
+        return Response.json({"trigger": event, "workflows": [self.named(c) for c in placed]})
+
     def off(self, request: Request) -> Response:
         """A workflow turned off: its trigger taken out, the rest kept, so it answers nothing until turned on again."""
         chart = self.charts.find(request.number("id"))

@@ -553,3 +553,21 @@ def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude
     assert status == 200 and one["model"] == "sonnet" and one["tools"] == "Read, Grep"
     assert call(server, "GET", "/journal/profiles/nobody")[0] == 404
     assert call(server, "POST", "/journal/profiles/bad.name", {})[0] == 409
+
+
+def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_names_who_saved_first(server):
+    status, read = call(server, "GET", "/journal/chart")
+    stops = sorted([w for w in read["workflows"] if w["event"] == "idle"], key=lambda w: w["place"])
+    status, mine = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle", "title": "Always at a stop"})
+    assert status == 201 and mine["place"] > stops[-1]["place"], "a new workflow takes the last place of its event"
+    rows = [{"id": w["id"], "revision": w["revision"]} for w in stops]
+    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": mine["revision"]}] + rows})
+    assert status == 200 and [w["id"] for w in body["workflows"]][0] == mine["id"] and body["workflows"][0]["place"] == 0, "dragged first, it runs first"
+    moved = next(w for w in body["workflows"] if w["id"] == mine["id"])
+    assert moved["revision"] == mine["revision"] + 1 and all(w["revision"] == r["revision"] + 1 for w, r in zip(body["workflows"][1:], rows)), "each workflow that moved has one more revision"
+    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": rows + [{"id": mine["id"], "revision": mine["revision"]}]})
+    assert status == 409 and "changed since you read it" in body["error"] and "saved it first" in body["error"], "an order over a stale list is refused, naming who saved first"
+    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": moved["revision"]}]})
+    assert status == 409 and "name each once" in body["error"], "an order names every workflow of the event"
+    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "flying", "order": []})
+    assert status == 409 and "no workflow answers flying" in body["error"]

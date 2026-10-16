@@ -47,6 +47,16 @@ class Charts(Repository[Chart]):
         """Every workflow that answers the event, in the order they run."""
         return sorted((c for c in self.all() if c.event == event), key=lambda c: (c.place, c.id))
 
+    def reorder(self, event: str, ids: list[int], by: Actor) -> list[Chart]:
+        """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor."""
+        standing = {c.id: c for c in self.for_event(event)}
+        placed = []
+        for place, number in enumerate(ids):
+            chart = standing[number]
+            placed.append(self.save(chart.with_(place=place).saved_again(), by) if chart.place != place else chart)
+        self._graphs.clear()
+        return placed
+
     def next_place(self, event: str) -> int:
         """The place after the last workflow of the event."""
         return max((c.place for c in self.for_event(event)), default=-1) + 1

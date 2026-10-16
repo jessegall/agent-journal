@@ -52,6 +52,7 @@ class Routes:
         router.post(f"{API}/chart", get(ChartController).create)
         router.post(f"{API}/chart/try", get(ChartController).try_)
         router.get(f"{API}/chart/runs", get(ChartController).runs)
+        router.post(f"{API}/chart/order", get(ChartController).order)
         router.get(f"{API}/chart/{{id}}", get(ChartController).one)
         router.post(f"{API}/chart/{{id}}", get(ChartController).save)
         router.post(f"{API}/chart/{{id}}/reset", get(ChartController).reset)

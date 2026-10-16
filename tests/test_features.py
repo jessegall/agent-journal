@@ -2036,6 +2036,8 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     n, trigger = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(n)], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place == 0, "the order command puts them in the order given"
+    assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
     assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(trigger), str(say)], USER)

@@ -190,6 +190,10 @@ export class ApiClient {
         return this.ownPost(`/profiles/${name}`, body);
     }
 
+    chartOrder(trigger, order) {
+        return this.ownPost("/chart/order", {trigger, order});
+    }
+
     chartRuns(last = 10) {
         return this.ownGet(`/chart/runs?last=${last}`);
     }

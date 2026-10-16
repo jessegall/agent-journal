@@ -30,6 +30,20 @@ class Validation:
             return [Fault(f"no event is called {chart.event}: journal chart catalogue lists them")]
         return []
 
+    def order_faults(self, event: str, given: list[dict]) -> list[Fault]:
+        """An order names every workflow of the event once, each at the revision it was read, so a drag over a stale list is refused naming who saved first."""
+        standing = {c.id: c for c in self.charts.for_event(event)}
+        if not standing:
+            return [Fault(f"no workflow answers {event}")]
+        ids = [row["id"] for row in given]
+        if sorted(ids) != sorted(standing):
+            return [Fault(f"the order names {', '.join(str(i) for i in ids) or 'nothing'}, but the workflows of {event} are {', '.join(str(i) for i in standing)}: name each once")]
+        stale = [standing[row["id"]] for row in given if row["revision"] != standing[row["id"]].revision]
+        if stale:
+            who = stale[0].updated_by.stamp if stale[0].updated_by else "someone"
+            return [Fault(f"workflow {stale[0].id} changed since you read it: {who} saved it first, read the list again")]
+        return []
+
     def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[Fault]:
         by_id = {str(n.get("id", "")): n for n in nodes}
         faults = [Fault(f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}", str(n.get("id", ""))) for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]

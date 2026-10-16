@@ -40,6 +40,9 @@ class ChartCommand(Command):
         line.add_argument("source", type=int)
         line.add_argument("target", type=int)
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
+        order = self.verb(verbs, "order", "the order an event's workflows run in: every one of them, by number, first to last")
+        order.add_argument("event")
+        order.add_argument("ids", type=int, nargs="+")
         remove = self.verb(verbs, "remove", "take a node out, with its lines")
         remove.add_argument("n", type=int)
         for editing in (node, line, remove):
@@ -165,6 +168,16 @@ class ChartCommand(Command):
             raise Refused(f"workflow {chart.id} is not a shipped one: only a shipped workflow has a drawing to go back to")
         chart = self.shipped.reset(chart, where.actor)
         print(f"chart {chart.id} reset to the shipped one, revision {chart.revision}")
+        return 0
+
+    def order(self, args: Namespace, where: Where) -> int:
+        """The event's workflows reordered as given, at the revisions they stand at."""
+        standing = {c.id: c for c in self.charts.for_event(args.event)}
+        faults = self.validation.order_faults(args.event, [{"id": n, "revision": standing[n].revision if n in standing else -1} for n in args.ids])
+        if faults:
+            raise Refused(str(faults[0]))
+        placed = self.charts.reorder(args.event, args.ids, where.actor)
+        print(f"{args.event}: " + ", ".join(f"{c.place + 1}. {c.title}" for c in placed))
         return 0
 
     def remove(self, args: Namespace, where: Where) -> int:
