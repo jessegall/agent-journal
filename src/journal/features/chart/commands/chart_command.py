@@ -47,7 +47,8 @@ class ChartCommand(Command):
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.charts.all():
-            print(f"workflow {chart.id}, revision {chart.revision}: {chart.title}")
+            sidelined = self.charts.sidelined_by(chart)
+            print(f"workflow {chart.id}, revision {chart.revision}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
             for node in self.charts.nodes_of(chart):
                 print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
             for line in self.charts.lines_of(chart):
@@ -78,6 +79,9 @@ class ChartCommand(Command):
         chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
         if kind == NodeKind.TRIGGER and any(n.kind == NodeKind.TRIGGER for n in self.charts.nodes_of(chart)):
             raise Refused(f"workflow {chart.id} already has its trigger: a workflow holds one; journal chart new \"<title>\" for another")
+        taken = self.validation.taken_faults(chart, [{"kind": kind, "key": args.key}])
+        if taken:
+            raise Refused(taken[0])
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
         print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))
         return 0

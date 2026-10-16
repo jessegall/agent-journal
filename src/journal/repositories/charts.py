@@ -4,6 +4,7 @@ from journal.models.actor import Actor
 from journal.models.chart import Chart
 from journal.models.link import Link
 from journal.models.node import Node
+from journal.models.node_kind import NodeKind
 from journal.models.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.nodes import Nodes
@@ -28,6 +29,19 @@ class Charts(Repository[Chart]):
 
     def shipped_on(self, event: str) -> list[Chart]:
         return [c for c in self.shipped() if c.event == event]
+
+    def answering(self, event: str) -> Chart | None:
+        """The one workflow that answers an event: the oldest whose trigger is on it. A journal holds one per event; should it somehow hold two, the oldest runs and the rest are sidelined."""
+        for chart in self.all():
+            if any(n.kind == NodeKind.TRIGGER and n.key == event for n in self.nodes_of(chart)):
+                return chart
+        return None
+
+    def sidelined_by(self, chart: Chart) -> Chart | None:
+        """The older workflow that answers this one's event instead, when there is one."""
+        trigger = next((n for n in self.nodes_of(chart) if n.kind == NodeKind.TRIGGER), None)
+        answering = self.answering(trigger.key) if trigger else None
+        return answering if answering and answering.id != chart.id else None
 
     def remove(self, chart: Chart, by: Actor) -> None:
         for node in self.nodes_of(chart):

@@ -1,6 +1,7 @@
 from journal.features.chart.catalogue import Catalogue
+from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
-from journal.repositories.charts import NO, THEN, YES
+from journal.repositories.charts import NO, THEN, YES, Charts
 
 TEXT_LIMIT = 500
 """A node's text becomes a prompt or a typed line: this many characters at most."""
@@ -9,12 +10,13 @@ TEXT_LIMIT = 500
 class Validation:
     """What makes a workflow wrong, found before it is saved: a node the catalogue does not know, more than one trigger, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
 
-    def __init__(self, catalogue: Catalogue) -> None:
-        self.catalogue = catalogue
+    def __init__(self, catalogue: Catalogue, charts: Charts) -> None:
+        self.catalogue, self.charts = catalogue, charts
 
-    def faults(self, nodes: list[dict], lines: list[dict]) -> list[str]:
+    def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[str]:
         by_id = {str(n.get("id", "")): n for n in nodes}
         faults = [f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}" for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
+        faults += self.taken_faults(chart, nodes)
         faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
         triggers = [n for n in nodes if n.get("kind") == NodeKind.TRIGGER]
         if len(triggers) > 1:
@@ -27,6 +29,15 @@ class Validation:
             faults += self.port_fault(source, target, line.get("port", THEN))
         faults += self.check_faults(nodes, lines)
         faults += self.cycle_faults(nodes, lines)
+        return faults
+
+    def taken_faults(self, chart: Chart, nodes: list[dict]) -> list[str]:
+        """One workflow per event: a trigger on an event another workflow already answers is refused, since two on one event would both drive the agent."""
+        faults = []
+        for trigger in [n for n in nodes if n.get("kind") == NodeKind.TRIGGER]:
+            other = self.charts.answering(trigger.get("key", ""))
+            if other and other.id != chart.id:
+                faults.append(f"workflow {other.id}, {other.title}, already answers {trigger.get('key')}: one workflow per event")
         return faults
 
     @staticmethod

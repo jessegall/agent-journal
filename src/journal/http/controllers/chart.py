@@ -34,6 +34,9 @@ class ChartController:
         """A workflow is born with its trigger: the event it starts at, named by its key, and a title that is the event's unless given."""
         trigger = next((e for e in self.catalogue.all() if e.kind == NodeKind.TRIGGER and e.key == request.body.get("trigger", "")), None)
         title = request.body.get("title", "").strip() or (trigger.title if trigger else "A workflow")
+        taken = self.validation.taken_faults(Chart(title=title), [{"kind": NodeKind.TRIGGER, "key": trigger.key}]) if trigger else []
+        if taken:
+            return Response.refused(taken[0])
         chart = self.charts.save(Chart(title=title), request.actor)
         if trigger:
             self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=trigger.key, x=400, y=0), request.actor)
@@ -50,7 +53,7 @@ class ChartController:
         chart = self.charts.find(int(request.params["id"]))
         if int(request.body.get("revision", -1)) != chart.revision:
             return Response.refused(f"the workflow changed since you read it: it is at revision {chart.revision}, read it again")
-        faults = self.validation.faults(request.body.get("nodes", []), request.body.get("lines", []))
+        faults = self.validation.faults(chart, request.body.get("nodes", []), request.body.get("lines", []))
         if faults:
             return Response.refused("the workflow is not saved: " + "; ".join(faults))
         return Response.json(self.drawn(self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)))
@@ -68,9 +71,9 @@ class ChartController:
             return Response.refused("only a shipped workflow has a shipped drawing to go back to")
         return Response.json(self.drawn(self.shipped.reset(chart, request.actor)))
 
-    @staticmethod
-    def named(chart: Chart) -> dict:
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision}
+    def named(self, chart: Chart) -> dict:
+        sidelined = self.charts.sidelined_by(chart)
+        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "sidelined_by": sidelined.id if sidelined else None}
 
     def entries(self) -> list[dict]:
         return [{**asdict(e), "kind": e.kind.value} for e in self.catalogue.all()]

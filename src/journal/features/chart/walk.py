@@ -38,7 +38,8 @@ class Walk:
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
         """The walk, with the nodes it passes written into the list given."""
         key, decision = self.trigger_key(ctx.event), Decision()
-        for chart in self.charts.all():
+        chart = self.charts.answering(key)
+        if chart:
             nodes = {node.id: node for node in self.charts.nodes_of(chart)}
             after = {}
             for line in self.charts.lines_of(chart):
@@ -59,7 +60,7 @@ class Walk:
                 port, decision = self.step(node, ctx, decision)
             except Exception as fault:
                 self.failed(node, ctx, fault)
-                break
+                continue
             at += after.get((node.id, port), [])
         return decision
 
@@ -72,7 +73,7 @@ class Walk:
         return THEN, decision
 
     def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
-        """A node that raised ends its path, and leaves what happened where the page can show it: the other paths still answer. The ruling behind the catch is in NOTES, under the chart."""
+        """A node that raised ends its own path, nothing follows it, and leaves what happened where the page can show it: the paths beside it, from the same trigger too, still answer. The ruling behind the catch is in NOTES, under the chart."""
         self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data={"session": ctx.session, "node": node.id, "key": node.key, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
 
     @staticmethod

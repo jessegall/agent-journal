@@ -400,3 +400,15 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     assert [r["n"] for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
     older = replace(Listing.from_query({"completed": "1", "before": "11"}), timeline=True).listed(rows)
     assert [r["n"] for r in older["rows"]] == list(range(1, 11)) and not older["more"]
+
+
+def test_the_page_refuses_a_second_workflow_on_an_event(server):
+    status, body = call(server, "POST", "/journal/chart", {"trigger": "idle", "title": "Another stop"})
+    assert status >= 400 and "one workflow per event" in json.dumps(body)
+    status, made = call(server, "POST", "/journal/chart", {"trigger": "ticked", "title": "On the tick"})
+    assert status == 201
+    moved = [{**node, "key": "idle"} for node in made["nodes"]]
+    status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
+    assert status >= 400 and "one workflow per event" in json.dumps(body)
+    status, listed = call(server, "GET", "/journal/chart")
+    assert [w["sidelined_by"] for w in listed["workflows"]] == [None, None], "both answer their own event"

@@ -1129,24 +1129,24 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     wf = int(console.run(["chart", "new", "a test"], AGENT).out.split()[1].rstrip(":"))
     add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
     shipped = 0
-    t, c, a = add("trigger", "idle"), add("check", "open_tasks"), add("action", "block_stop", "--text", "tasks are open: carry on")
+    t, c, a = add("trigger", "prompt_submitted"), add("check", "open_tasks"), add("action", "block_stop", "--text", "tasks are open: carry on")
     console.run(["chart", "line", str(t), str(c)], AGENT)
     console.run(["chart", "line", str(c), str(a), "--port", "yes"], AGENT)
     shown = console.run(["chart", "show"], AGENT).out
     assert f"{t} --then--> {c}" in shown and f"{c} --yes--> {a}" in shown and "block_stop: tasks are open" in shown
     port = app.server().port
     read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/{wf}", timeout=5))
-    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["idle", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
+    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["prompt_submitted", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
     def post(body):
         try:
             with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{wf}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
-    nodes = [{"id": t, "kind": "trigger", "key": "idle", "x": 10, "y": 10}, {"id": c, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
+    nodes = [{"id": t, "kind": "trigger", "key": "prompt_submitted", "x": 10, "y": 10}, {"id": c, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
     lines = [{"from": t, "to": c}, {"from": c, "to": "new", "port": "yes"}, {"from": c, "to": "new", "port": "no"}]
     status, saved = post({"revision": 0, "nodes": nodes, "lines": lines})
-    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["idle", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
+    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["prompt_submitted", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
     assert [(l["from"], l["port"]) for l in saved["lines"]] == [(t, "then"), (c, "yes"), (c, "no")], "lines drawn anew, the removed node gone"
     assert post({"revision": 0, "nodes": nodes, "lines": []})[0] == 409, "a stale revision is refused"
 
@@ -1212,11 +1212,15 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     assert hook(app, "Stop")[1] == {}, "auto off: the states say nothing about open tasks"
-    wf = [int(console.run(["chart", "new", f"test {i}"], AGENT).out.split()[1].rstrip(":")) for i in range(3)]
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    wf = [1] + [int(console.run(["chart", "new", f"test {i}"], AGENT).out.split()[1].rstrip(":")) for i in range(2)]
     at = [wf[0]]
     add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(at[0])], AGENT).out.split()[1].rstrip(":"))
     line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], AGENT)
-    stop, open_, hold_stop, rest = add("trigger", "idle"), add("check", "open_tasks"), add("action", "block_stop", "--text", "the chart says: tasks are open, carry on"), add("action", "say", "--text", "the chart says: nothing is open, rest")
+    stop = next(n.id for n in charts.nodes_of(charts.find(1)) if n.kind == NodeKind.TRIGGER)
+    open_, hold_stop, rest = add("check", "open_tasks"), add("action", "block_stop", "--text", "the chart says: tasks are open, carry on"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(stop, open_)
     line(open_, hold_stop, "yes")
     line(open_, rest, "no")
@@ -1246,7 +1250,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     assert "[journal] a task was filed" in sent, "a row event walks the chart and types the line"
     from journal.repositories.entries import Entries
     walks = [e for e in app.container.get(Entries).of_kind(1, "walk") if e.data["trigger"] == "idle"]
-    assert any(w.data["nodes"][-3:] == [stop, open_, hold_stop] and not w.data["allowed"] for w in walks), "a walk leaves its trace, the shipped path first and the test's after it"
+    assert any({stop, open_, hold_stop} <= set(w.data["nodes"]) and not w.data["allowed"] for w in walks), "a walk leaves its trace: the one workflow on the stop, with the edit's path beside the shipped one"
 
 
 def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
@@ -1426,7 +1430,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     assert machine.current("s1").name == "running_sequence" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, typed to the agent"
 
 
-def test_a_journal_holds_several_workflows_and_the_engine_walks_them_all(app):
+def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its_event(app):
     import json as j
     from urllib.request import Request as R, urlopen
     hook(app, "SessionStart")
@@ -1439,13 +1443,14 @@ def test_a_journal_holds_several_workflows_and_the_engine_walks_them_all(app):
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
     second = made["id"]
-    console.run(["chart", "node", "trigger", "idle", "--in", str(second)], AGENT)
-    stop = int(console.run(["chart", "show"], AGENT).out.split("workflow 2")[1].split()[4])
+    console.run(["chart", "node", "trigger", "prompt_submitted", "--in", str(second)], AGENT)
+    prompt = int(console.run(["chart", "show"], AGENT).out.split("workflow 2")[1].split()[4])
     say = int(console.run(["chart", "node", "action", "say", "--text", "the second workflow says hello", "--in", str(second)], AGENT).out.split()[1].rstrip(":"))
-    console.run(["chart", "line", str(stop), str(say)], AGENT)
+    console.run(["chart", "line", str(prompt), str(say)], AGENT)
     console.run(["task", "create", "free work"], USER)
+    assert "the second workflow says hello" in j.dumps(hook(app, "UserPromptSubmit", prompt="hello there")[1]), "the second workflow speaks at its own event"
     body = hook(app, "Stop")[1]
-    assert "the second workflow says hello" in body["reason"] and "tasks are open" in body["reason"], "both workflows speak at one stop"
+    assert "tasks are open" in body["reason"] and "says hello" not in body["reason"], "and the stop is the first one's alone"
     try:
         urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5)
     except HTTPError as error:
@@ -1710,14 +1715,13 @@ def test_a_failing_node_ends_its_path_is_recorded_and_the_walk_goes_on(app):
     console.run(["environment", "here"], AGENT)
     charts = app.container.get(Charts)
     env = app.container.get(Environments).named("main").id
-    made = console.run(["chart", "new", "A broken one"], USER).out
-    broken = charts.find(int(made.split()[1].rstrip(":")))
-    trigger = charts.add_node(broken, Node(kind=NodeKind.TRIGGER, key="idle"), Actor.user(1))
-    bad = charts.add_node(broken, Node(kind=NodeKind.CHECK, key="no_such_check"), Actor.user(1))
+    shipped = charts.find(1)
+    trigger = next(n for n in charts.nodes_of(shipped) if n.kind == NodeKind.TRIGGER)
+    bad = charts.add_node(shipped, Node(kind=NodeKind.CHECK, key="no_such_check"), Actor.user(1))
     charts.connect(trigger, bad, THEN, Actor.user(1))
     console.run(["task", "create", "free work"], USER)
     status, body = hook(app, "Stop")
-    assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the shipped workflow still answers the stop"
+    assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the shipped path beside the broken one still answers the stop"
     failed = app.container.get(Entries).of_kind(env, "walk_failed", 5)
     assert failed and failed[0].data["node"] == bad.id and "no_such_check" in failed[0].data["fault"], "the fault is on record, naming the node"
 
@@ -1750,3 +1754,24 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     app.runtime().deferred.drain()
     assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released"
     assert typed.count("[journal] worker 1 reported") == 1, "the line is typed once for the environment"
+
+
+def test_one_workflow_per_event_a_second_is_refused_and_the_older_one_answers(app):
+    import json
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import THEN, Charts
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    n = int(console.run(["chart", "new", "Another stop"], USER).out.split()[1].rstrip(":"))
+    refused = console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
+    assert "Agent stops, already answers idle: one workflow per event" in refused
+    charts = app.container.get(Charts)
+    second = charts.find(n)
+    trigger = charts.add_node(second, Node(kind=NodeKind.TRIGGER, key="idle"), Actor.user(1))
+    charts.connect(trigger, charts.add_node(second, Node(kind=NodeKind.ACTION, key="block", text="the second one"), Actor.user(1)), THEN, Actor.user(1))
+    console.run(["task", "create", "free work"], USER)
+    status, body = hook(app, "Stop")
+    assert "task 1 next" in body["reason"] and "the second one" not in json.dumps(body), "a journal that somehow holds two runs the older one"
+    assert f"workflow {n}, revision 0: Another stop  (sidelined: workflow 1 answers its event)" in console.run(["chart", "show"], USER).out
