@@ -23,6 +23,8 @@ from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.entries import Entries
 
 STEPS = 50
+MOVERS = ("release", "move_to")
+"""The actions that move the agent: one of them per event, the first to act."""
 """A path is at most this long: a longer one is a loop the validation missed, and it stops here."""
 WALKED = "walk"
 FAILED = "walk_failed"
@@ -44,31 +46,23 @@ class Walk:
         return self.on_with_trace(ctx, [])
 
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
-        """The walk, with the nodes it passes written into the list given."""
+        """The walk, with the nodes it passes written into the list given: the event's workflows in their order; a move inside one re-reads the state, and the new state's workflows that come later in the order run at their place."""
         key, decision = self.trigger_key(ctx.event), Decision()
-        workflows = self.workflows_for(ctx, key)
-        graphs = [self.charts.graph(chart) for chart in workflows]
-        for graph in graphs:
+        walked, graphs, queue = [], [], self.workflows_for(ctx, key)
+        while queue:
+            chart = queue.pop(0)
+            walked.append(chart)
+            graph = self.charts.graph(chart)
+            graphs.append(graph)
+            moves_before = len(ctx.moves)
             for start in graph.triggers.get(key, ()):
                 decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
-        moved = self.moved_to(ctx)
-        if moved is not None:
-            for chart in [c for c in self.workflows_for(replace(ctx, state=moved), key) if c not in workflows]:
-                graph = self.charts.graph(chart)
-                graphs.append(graph)
-                workflows.append(chart)
-                for start in graph.triggers.get(key, ()):
-                    decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, replace(ctx, state=moved), passed))
+            if len(ctx.moves) > moves_before:
+                ctx = replace(ctx, state=ctx.moves[-1][1])
+                queue = [c for c in self.workflows_for(ctx, key) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": (moved or ctx.state).name if ctx.state else "", "workflows": [c.id for c in workflows], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves]}), Actor.system())
         return decision
-
-    def moved_to(self, ctx: Context) -> AgentState | None:
-        """The state a release or a move inside the walk left the agent in, when it differs from the one the walk read: the event is handed on to that state's workflow once, so a tool use that lifts a wait is walked as working too; None when the agent stands where it stood, or the walk is dry or about no agent."""
-        if not ctx.session or not ctx.state or isinstance(self.actions, DryActions):
-            return None
-        now = self.machine.current(ctx.session)
-        return now if now.name != ctx.state.name else None
 
     @staticmethod
     def worth_recording(event: Event, graphs: list[Graph], passed: list) -> bool:
@@ -121,12 +115,45 @@ class Walk:
         return decision
 
     def step(self, node: Node, ctx: Context, decision: Decision) -> tuple[str, Decision]:
-        """One node: a check answers with the port to leave by, an action acts and leaves by then, a trigger leaves by then."""
+        """One node: a check answers with the port to leave by, an action acts and leaves by then, a trigger leaves by then. The first hold of the event wins and a later one is recorded unanswered; a second move in one event is refused."""
         if node.kind == NodeKind.CHECK:
             return (YES if self.checks.answer(node.key, ctx, node.text) else NO), decision
-        if node.kind == NodeKind.ACTION:
-            return THEN, decision.merged(self.actions.perform(node.key, node.text, ctx))
-        return THEN, decision
+        if node.kind != NodeKind.ACTION:
+            return THEN, decision
+        if node.key in MOVERS and ctx.moves:
+            return THEN, decision.merged(self.second_move(node, ctx))
+        acted = self.actions.perform(node.key, node.text, ctx)
+        if node.key in MOVERS:
+            landed = self.landed(node, ctx)
+            if landed is not None:
+                ctx.moves.append((node.id, landed))
+        if not acted.allowed:
+            if ctx.held:
+                ctx.unanswered.append(node.id)
+                acted = Decision.tell(acted.context)
+            else:
+                ctx.held.append(node.id)
+        return THEN, decision.merged(acted)
+
+    def second_move(self, node: Node, ctx: Context) -> Decision:
+        """A second move in one event is refused and recorded, naming both nodes; a dry run says it would be."""
+        first = ctx.moves[0][0]
+        if isinstance(self.actions, DryActions):
+            return Decision.tell(f"would refuse a second move at node {node.id}: node {first} moved the agent first")
+        self.failed(node, ctx, RuntimeError(f"a second move in one event, refused: node {first} moved the agent first"))
+        return Decision()
+
+    def landed(self, node: Node, ctx: Context) -> AgentState | None:
+        """The state a move left the agent in, read again from the machine; in a dry run, the state the move would lead to."""
+        if not ctx.session or not ctx.state:
+            return None
+        if not isinstance(self.actions, DryActions):
+            now = self.machine.current(ctx.session)
+            return now if now.name != ctx.state.name or now.to_data() != ctx.state.to_data() else None
+        if node.key == "move_to":
+            name = node.text.strip().partition(" ")[0]
+            return self.states.named(name, {}) if self.states.known(name) else None
+        return self.states.named(ctx.state.resume.get("state", "idle"), ctx.state.resume.get("data", {})) if isinstance(ctx.state, Paused) else None
 
     def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
         """A node that raised is recorded where the page can show it, and the path goes on past it, by no from a check and by then from an action, so one broken step never silences what follows. The ruling behind the catch is in NOTES, under the chart."""

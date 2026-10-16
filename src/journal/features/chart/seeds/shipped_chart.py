@@ -11,6 +11,8 @@ from journal.repositories.settings import Settings
 
 SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "running_sequence")
 """The states the journal ships workflows for."""
+PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "working", "following_plan")
+"""The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
 OWN_EVENTS_ONLY = ("following_plan",)
 """A state under a parent ships only its own events: the parent's workflows serve the rest, and a shared-only one here would shadow them."""
 SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_starting", "messages.created")
@@ -128,7 +130,7 @@ class ShippedChart(Seed):
         """A shipped drawing drawn anew as its own workflow, named after it."""
         state, event = key.split(":", 1)
         drawing = self.drawings[key]
-        chart = self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=list(self.drawings).index(key)), by)
+        chart = self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=PLACE_ORDER.index(state) if state in PLACE_ORDER else len(PLACE_ORDER)), by)
         drawing.draw(chart)
         return chart
 

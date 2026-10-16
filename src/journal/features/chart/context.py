@@ -17,3 +17,9 @@ class Context:
     """The agent's state as the walk found it, read once after the machine and the engine's holds have answered the event, so every check and filler reads the same state; None when the walk is about no agent."""
     spoken: set = field(default_factory=set)
     """The lines this event already put in the terminal: a row event walks about every agent of the environment, and a walk about a second agent does not repeat a line the first one typed."""
+    moves: list = field(default_factory=list)
+    """The moves made in this event, each the node that made it and the state it left the agent in: one per event, a second is refused."""
+    held: list = field(default_factory=list)
+    """The node whose hold answers this event, the first to hold; empty while nothing holds."""
+    unanswered: list = field(default_factory=list)
+    """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""

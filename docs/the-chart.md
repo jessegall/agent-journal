@@ -10,8 +10,12 @@ becomes workflows of its own at the head of each list. The journal ships them wi
 changes until you edit them.
 
 The walk reads the agent's state once, right after the engine's machine has answered the event and before the engine's
-holds, and every check and filler reads that same state; so a tool use that lifts a wait is walked as Working, and a
-session start is walked as the state the agent resumes in, before the briefing's hold takes it. A release or a move inside the walk hands the event on to the new state's workflow, once, so a tool use that lifts a wait is walked as working too. The trace of a walk names the state it ended in and the workflows it ran, in the order they run: the
+holds, and every check and filler reads that same state; a session start is walked as the state the agent resumes
+in, before the briefing's hold takes it. One move per event: a release or a move inside a workflow re-reads the
+state, the new state's workflows that come later in the event's order run at their place, and a second move in the
+same event is refused and recorded naming both nodes. The first hold of an event wins: a later hold, in the same
+workflow or another, is recorded as not answered and only its words ride. The shipped workflows place the waits
+before the states they go back to, so a tool use that lifts a wait is walked as Working too. The trace of a walk names the state it ended in and the workflows it ran, in the order they run: the
 workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 

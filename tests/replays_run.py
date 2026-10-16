@@ -471,5 +471,8 @@ def test_two_lines_on_one_write_come_in_the_order_the_listeners_gave_them(journa
     right = Replay(with_workflow, monkeypatch)
     two_lines_on_one_write(with_workflow, right, provider)
     held = left.record()[-1]["answer"]
-    assert "answer message 1 first" in held["error"] and "2 edits since you logged task 1" in held["error"], "both holds on one write, joined in order"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, in the same order"
+    assert "answer message 1 first" in held["error"] and "2 edits since you logged task 1" in held["error"], "the listeners joined both holds on one write"
+    kept = left.record()
+    kept[-1]["answer"] = {**held, "error": held["error"].split("\n")[0]}
+    assert "2 edits since you logged task 1" in right.record()[-1]["answer"]["error"] and "answer message 1 first" not in right.record()[-1]["answer"]["error"], "the workflow answers the first hold alone: the log's, which comes first in the order; the inbox hold is recorded unanswered"
+    assert differences(kept, right.record(), nudges=True) == [], "the agent would have seen the same, in the same order, but for the one hold"

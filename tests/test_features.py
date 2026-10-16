@@ -2170,7 +2170,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert "a workflow holds one trigger, of the event it is for" in node(idle, "trigger", "tool_finished").err
     assert node(idle, "check", "open_tasks").code == 0
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {idle} [idle at idle, place 0], revision 1 by user:1: Idle at Agent stops" in shown and f"workflow {working} [working at tool_starting, place" in shown
+    assert f"workflow {idle} [idle at idle, place 5], revision 1 by user:1: Idle at Agent stops" in shown and f"workflow {working} [working at tool_starting, place" in shown
 
 def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
@@ -2282,7 +2282,7 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     refused = console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle"], USER)
     assert refused.code == 1 and f"workflow {base.id}, Idle at Agent stops, is a default one: add --edit-default" in refused.err
     assert console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle", "--edit-default"], USER).code == 0
-    assert f"workflow {base.id} [idle at idle, place 0], revision 1 by user:1: Idle at Agent stops" in console.run(["chart", "show"], USER).out
+    assert f"workflow {base.id} [idle at idle, place 5], revision 1 by user:1: Idle at Agent stops" in console.run(["chart", "show"], USER).out
     own = int(console.run(["chart", "new", "mine", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert console.run(["chart", "node", "check", "open_tasks", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
@@ -2336,7 +2336,7 @@ def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "working", "--on", "tool_starting"], USER).out
     assert "is a shipped one and stays" in console.run(["chart", "drop", "1"], USER).err
     shown = console.run(["chart", "show"], USER).out
-    assert shown.index("[idle at idle") < shown.index("[working at") < shown.index("[awaiting at") < shown.index(f"workflow {mine} ["), "by event in the order the events come, then in the order the workflows run; your own at an event no default has comes last"
+    assert shown.index("[expecting at idle") < shown.index("[idle at idle") < shown.index("[working at idle") < shown.index("[awaiting at workers") < shown.index(f"workflow {mine} ["), "by event in the order the events come, then in the order the workflows run, the waits first; your own at an event no default has comes last"
 
 def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, monkeypatch):
     import json
@@ -2556,3 +2556,38 @@ def test_a_triggers_workflows_run_in_the_users_order_stateless_ones_always_and_a
     console.run(["chart", "line", str(t4), str(say4)], USER)
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "e"})
     assert "the plan speaks" in said(body) and "working speaks" not in said(body), "a child's workflow at the event replaces its parent's there"
+
+
+def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run_at_their_place(app):
+    from journal.features.chart.walk import FAILED, WALKED
+    from journal.repositories.charts import Charts
+    from journal.repositories.entries import Entries
+    console, charts, entries = app.console(), app.container.get(Charts), app.container.get(Entries)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    link = lambda a, b: console.run(["chart", "line", str(a), str(b)], USER)
+    holds, t4 = own_workflow(console, charts, "idle", "tool_starting")
+    hold1 = add(holds, "action", "hold", "--text", "[chart] the first hold")
+    link(t4, hold1)
+    more = int(console.run(["chart", "new", "Holds too", "--for", "idle", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
+    t5 = next(n.id for n in charts.nodes_of(charts.find(more)) if n.key == "tool_starting")
+    hold2 = add(more, "action", "hold", "--text", "[chart] the second hold")
+    link(t5, hold2)
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "b"})
+    assert status == 409 and "the first hold" in body["error"] and "the second hold" not in body["error"], "the first hold wins"
+    assert entries.of_kind(WALKED, 3)[0].data["unanswered"] == [hold2], "the later hold is recorded as not answered"
+    first, t1 = own_workflow(console, charts, "idle", "tool_finished")
+    away = add(first, "action", "move_to", "--text", "expecting the build")
+    stuck = add(first, "action", "move_to", "--text", "stuck for good")
+    link(t1, away)
+    link(away, stuck)
+    landed, t3 = own_workflow(console, charts, "expecting", "tool_finished")
+    greet = add(landed, "action", "say", "--text", "[chart] expecting speaks at its place")
+    link(t3, greet)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    assert app.container.get(Machine).current("s1").name == "expecting", "the first move stands"
+    refused = entries.of_kind(FAILED, 3)[0]
+    assert refused.data["node"] == stuck and f"node {away} moved the agent first" in refused.data["fault"], "the second move in the event is refused and recorded naming both nodes"
+    walked = entries.of_kind(WALKED, 3)[0]
+    assert walked.data["moved_by"] == [away] and "expecting speaks at its place" in walked.data["said"], "the new state's workflow later in the order ran at its place"
