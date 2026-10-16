@@ -2509,3 +2509,10 @@ def test_an_upgrade_keeps_a_users_edited_workflow_when_the_shipped_one_changes_s
     app.container.get(ShippedChart).reset(kept, Actor.user(1))
     reset = charts.find(working.id)
     assert app.container.get(ChartController).named(reset)["behind"] is False and all(n.shipped for n in charts.nodes_of(reset)) and all(n.kind != NodeKind.ACTION or n.text != "my own line" for n in charts.nodes_of(reset)), "Reset to default takes the new shipped drawing"
+    assert reset.drawing == "working:tool_starting" and charts.find(idle.id).drawing == "idle:idle", "a shipped workflow is named after its drawing"
+    app.container.get(ShippedChart).forget(charts.find(idle.id), Actor.user(1))
+    app.container.get(ShippedChart).run()
+    assert charts.for_pair("idle", "idle") is None, "a shipped workflow taken out on purpose is not drawn again at boot"
+    assert console.run(["chart", "reset", "--for", "idle", "--on", "idle"], USER).code == 0
+    back = charts.for_pair("idle", "idle")
+    assert back is not None and back.shipped and back.drawing == "idle:idle" and all(n.shipped for n in charts.nodes_of(back)), "reset by state and event draws it again"

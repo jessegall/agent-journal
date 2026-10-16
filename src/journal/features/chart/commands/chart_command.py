@@ -155,6 +155,11 @@ class ChartCommand(Command):
         return 0
 
     def reset(self, args: Namespace, where: Where) -> int:
+        """A shipped workflow back to its drawing; one taken out on purpose, named by its state and event, drawn again."""
+        if not args.chart and args.state and args.event and self.shipped.key_of(args.state, args.event) in self.shipped.retired():
+            chart = self.shipped.restore(self.shipped.key_of(args.state, args.event), where.actor)
+            print(f"chart {chart.id} drawn again from the shipped drawing: {chart.title}")
+            return 0
         chart = self.named_workflow(args.chart, args.state, args.event)
         if not chart.shipped:
             raise Refused(f"workflow {chart.id} is not a shipped one: only a shipped workflow has a drawing to go back to")

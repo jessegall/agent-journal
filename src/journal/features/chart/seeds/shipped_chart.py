@@ -21,6 +21,8 @@ KEPT = " (kept from the older shape)"
 DRAWINGS_VERSION = 7
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
+RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
+"""The shipped drawings taken out of a journal on purpose, by name, so a boot does not draw them again; Reset by their state and event brings one back."""
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
 
 NEW_MESSAGE = "[messages.new] new message {{row}}"
@@ -71,13 +73,13 @@ class ShippedChart(Seed):
             ("running_sequence", "idle"): self.sequence_at_stop,
         }
         shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "tool_starting": self.shared_at_tool, "messages.created": self.shared_at_message}
-        self.drawings: dict[tuple[str, str], Drawing] = {}
+        self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
             shared_here = set() if state in OWN_EVENTS_ONLY else set(SHARED_EVENTS)
             events = sorted({e for st, e in own if st == state} | shared_here, key=EVENT_ORDER.index)
             for event in events:
-                self.drawings[(state, event)] = Drawing(self.title_of(state, event), self.composed(own.get((state, event)), shared.get(event)))
-        """One drawing per state per trigger: the state's own branch first, the shared branch of the event beside it."""
+                self.drawings[self.key_of(state, event)] = Drawing(self.title_of(state, event), self.composed(own.get((state, event)), shared.get(event)))
+        """One drawing per state per trigger, named state:event: the state's own steps first, the shared conduct of the event after them."""
 
     def title_of(self, state: str, event: str) -> str:
         return f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
@@ -99,13 +101,49 @@ class ShippedChart(Seed):
         self.retire_the_older_shape(by)
         self.retire_unpaired(by)
         self.stop_what_names_an_unknown_entry(by)
-        for (state, event), drawing in self.drawings.items():
-            standing = self.charts.for_pair(state, event)
+        self.name_the_shipped(by)
+        retired = self.retired()
+        for key in self.drawings:
+            standing = self.shipped_named(key)
             if standing is None:
-                drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawn_version=DRAWINGS_VERSION), by))
+                if key not in retired:
+                    self.draw(key, by)
             elif self.outdated(standing):
                 self.reset(standing, by)
         self.settings.set(DRAWINGS_VERSION_KEY, DRAWINGS_VERSION, by)
+
+    @staticmethod
+    def key_of(state: str, event: str) -> str:
+        return f"{state}:{event}"
+
+    def name_the_shipped(self, by: Actor) -> None:
+        """A shipped workflow from before drawings had names is named after its state and event, once."""
+        for chart in [c for c in self.charts.shipped() if not c.drawing and c.state and c.event]:
+            self.charts.save(chart.with_(drawing=self.key_of(chart.state, chart.event)), by)
+
+    def shipped_named(self, key: str) -> Chart | None:
+        return next((c for c in self.charts.shipped() if c.drawing == key), None)
+
+    def draw(self, key: str, by: Actor) -> Chart:
+        """A shipped drawing drawn anew as its own workflow, named after it."""
+        state, event = key.split(":", 1)
+        drawing = self.drawings[key]
+        chart = self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION), by)
+        drawing.draw(chart)
+        return chart
+
+    def retired(self) -> set[str]:
+        return set(self.settings.project(RETIRED_DRAWINGS_KEY, []) or [])
+
+    def forget(self, chart: Chart, by: Actor) -> None:
+        """A shipped workflow taken out on purpose stays out: its drawing's name is remembered as retired and it is removed."""
+        self.settings.set(RETIRED_DRAWINGS_KEY, sorted(self.retired() | {chart.drawing}), by)
+        self.charts.remove(chart, by)
+
+    def restore(self, key: str, by: Actor) -> Chart:
+        """A retired shipped drawing drawn again, on the user's word."""
+        self.settings.set(RETIRED_DRAWINGS_KEY, sorted(self.retired() - {key}), by)
+        return self.draw(key, by)
 
     def outdated(self, chart: Chart) -> bool:
         """An unedited shipped workflow drawn by an older shipping is redrawn; one the user edited is theirs and stays, and the page says the shipping moved past it."""
@@ -148,11 +186,11 @@ class ShippedChart(Seed):
 
     def reset(self, chart: Chart, by: Actor) -> Chart:
         """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew, one more revision."""
-        drawing = self.drawings[(chart.state, chart.event)]
+        drawing = self.drawings[chart.drawing or self.key_of(chart.state, chart.event)]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
-        return self.charts.save(chart.saved_again().with_(title=drawing.title, drawn_version=DRAWINGS_VERSION), by)
+        return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:
         return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), Actor.system())
