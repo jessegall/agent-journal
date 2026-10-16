@@ -211,6 +211,33 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         app.runtime().stop()
 
 
+def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_path: Path):
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        console, user, agent = app.console(), Where("main"), Where("main", "s1")
+        console.run(["plan", "create", "p", "--brief", "b"], user)
+        for title in ("first", "second", "third"):
+            console.run(["plan", "add", "1", title], user)
+        console.run(["plan", "phase", "1", "one", "--when", "w"], user)
+        console.run(["plan", "phase", "1", "two", "--when", "w"], user)
+        console.run(["plan", "todos", "1", "1", "1", "2"], user)
+        console.run(["plan", "todos", "1", "2", "3"], user)
+        console.run(["plan", "ready", "1"], user)
+        console.run(["plan", "approve", "1"], user)
+        console.run(["plan", "start", "1"], agent)
+        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 1
+        console.run(["task", "done", "1"], agent)
+        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 1, "a phase with a task still open is the one shown"
+        console.run(["task", "done", "2"], agent)
+        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 2, "every task of phase one done: phase two is shown"
+        console.run(["task", "done", "3"], agent)
+        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 2, "all done: the last phase"
+    finally:
+        app.runtime().stop()
+
+
 def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
     from journal.models.actor import Actor
     from journal.models.setting import Setting
