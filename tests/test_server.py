@@ -127,6 +127,23 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
         app.runtime().stop()
 
 
+def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_turn_or_session(server):
+    send = lambda kind, **extra: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s7", **extra})
+    rows = lambda: next(a for a in call(server, "GET", "/api/agent")[1]["rows"] if a["title"] == "s7")["data"]["subagent_rows"]
+    send("SessionStart", source="startup")
+    send("PreToolUse", tool_name="Agent", tool_input={"description": "no model named", "prompt": "read"}, tool_use_id="t-refused")
+    send("PreToolUse", tool_name="Agent", tool_input={"description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
+    send("PreToolUse", tool_name="Agent", tool_input={"description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
+    send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a7"}, tool_use_id="t-bg")
+    assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
+    send("Stop")
+    assert [(r["running"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running")], "a call with no answer ends with its turn; one in the background goes on"
+    send("SessionStart", source="compact")
+    assert rows()[1]["running"] is True, "a compaction ends no subagent"
+    send("SessionEnd")
+    assert [r["running"] for r in rows()] == [False, False], "a subagent with no stop ends with its session"
+
+
 def test_request_threads_leave_no_connection_behind(server):
     from journal.db.connection import Connection
     database = server.database

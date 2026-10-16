@@ -18,6 +18,8 @@ WORKING = frozenset({"working", "following_plan"})
 EVENT = {"ToolStarting": "PreToolUse", "ToolFinished": "PostToolUse", "PromptSubmitted": "UserPromptSubmit", "Idle": "Stop", "SessionStarted": "SessionStart", "SessionEnded": "SessionEnd", "Compacting": "PreCompact"}
 PAUSED = frozenset({"waiting", "awaiting", "stuck", "at_mark", "loading_skill"})
 KEPT = 400
+ENDS = frozenset({"Idle", "SessionStarted", "SessionEnded"})
+"""The entries no Agent call of their session outlives: the turn that made it, or the session, is over."""
 TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
 
 
@@ -51,15 +53,20 @@ class AgentsShaper(Shaper):
             "provider": a.provider, "model": self.context.model(a.session), "effort": self.context.effort(a.session), "usage": {"windows": self.context.usage(a.session)}, "branch": self.files.branch(), "context": round((self.context.of(a.session) or 0) * 100), "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
             "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thoughts.latest(a.session), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "cards": self.commit_cards(entries), "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
-            "subagent_rows": self.subagent_rows(self.entries.dispatches(a.session)), "subagents": len(self.subagent_rows(self.entries.dispatches(a.session))), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
+            "subagent_rows": (subagents := self.subagent_rows(self.entries.dispatches(a.session))), "subagents": len(subagents), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
         }
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)
 
     @staticmethod
     def subagent_rows(hooks) -> list[dict]:
-        """Each dispatch of a subagent, its finish paired to its start by the tool use's id, by order only when a hook carries none, so a start that never finished leaves the others alone: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch."""
+        """Each dispatch of a subagent, its finish paired to its start by the tool use's id, by order only when a hook carries none, so a start that never finished leaves the others alone: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch. A call with no answer when its turn ends was cut off, and a subagent in the background with no stop when its session ends went with it."""
         rows, open_, background = [], {}, {}
         for e in hooks:
+            if e.kind in ENDS:
+                AgentsShaper.stopped(open_, e)
+                if e.kind == "SessionEnded" or (e.kind == "SessionStarted" and e.data.get("source") != "compact"):
+                    AgentsShaper.stopped(background, e)
+                continue
             if e.kind == "SubagentEnded":
                 row = background.pop(e.data.get("agent_id", ""), None)
                 if row:
@@ -79,6 +86,13 @@ class AgentsShaper(Shaper):
                 else:
                     done.update(status="done", running=False, ended=seconds(e.created_at))
         return rows
+
+    @staticmethod
+    def stopped(running: dict, e) -> None:
+        """Each row still running ended at this entry, without the answer or the stop that would have closed it."""
+        for row in running.values():
+            row.update(status="stopped", running=False, ended=seconds(e.created_at))
+        running.clear()
 
     @staticmethod
     def launched(response) -> str:
