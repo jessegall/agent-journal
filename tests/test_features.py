@@ -1073,9 +1073,13 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
+    app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
-    assert app.container.get(Machine).current("s1").edits == 1, "a shell line that writes counts as an edit toward the log; a read does not"
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).named("s1", "edits").value == 1, "a shell line that writes counts as an edit toward the log; a read does not"
 
 
 def test_a_journal_command_chained_with_anything_else_is_refused(app):
@@ -1595,9 +1599,9 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
     add = lambda kind, key, *text: int(console.run(["chart", "node", "--edit-default", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
     line = lambda a, b, port="then": console.run(["chart", "line", "--edit-default", str(a), str(b), "--port", port], AGENT)
     tool = next(n.id for n in charts.nodes_of(shipped) if n.kind == NodeKind.TRIGGER and n.key == "tool_starting")
-    every = add("check", "tool_uses_since_unread_every", "--text", "3")
+    every = add("check", "count_every", "--text", "uses 3")
     inbox = add("action", "say", "--text", "the chart: your inbox waits")
-    over = add("check", "tool_uses_since_read_over", "--text", "messages.hold_after")
+    over = add("check", "count_over", "--text", "owed messages.hold_after")
     held = add("action", "hold", "--text", "the chart: answer first")
     line(tool, every)
     line(every, inbox, "yes")
@@ -1607,7 +1611,7 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
     console.run(["message", "send", "hello?"], USER)
     read = lambda: hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     named = [n for n in range(1, 7) if "your inbox waits" in json.dumps(read()[1])]
-    assert named == [3, 6], "every third use since the message came"
+    assert named == [3, 6], "every third use since the message came, on the count the guards keep"
     console.run(["message", "read", "1"], AGENT)
     answers = [read()[0] for _ in range(5)]
     assert answers[:3] == [200, 200, 200] and answers[3] == 409, "the hold after as many uses as the setting says"
@@ -1883,7 +1887,9 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     for _ in range(26):
         hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
-    assert checks.answer("edits_since_log_over", at, "tasks.first_nudge_after") and checks.answer("edits_since_log_every", at, "25"), "counted before the write about to run, as the log cadence counts"
+    from journal.repositories.scope import Scope
+    with app.container.get(Scope).of(env):
+        assert checks.answer("count_at", at, "edits tasks.log_after") and checks.answer("count_every", at, "edits 6") and not checks.answer("count_over", at, "edits 13"), "the edits count the Working workflow keeps: twelve writes counted, the rest held at the log threshold and not counted"
 
 
 def test_the_checks_for_quiet_time_workers_and_questions(app):
@@ -1973,10 +1979,11 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     console.run(["message", "read", "1"], AGENT)
     assert fillers.fill("{{owed}}", tick) == "1"
     console.run(["task", "create", "the footer", "--start"], AGENT)
+    app.runtime().deferred.drain()
     for _ in range(3):
         hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     write = at(ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env))
-    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", write) == "task 1 / 2 / journal task log 1"
+    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", write) == "task 1 / 3 / journal task log 1"
     console.run(["await", "the deploy"], AGENT)
     assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now: you have waited 5 min", "the context carries the state as it is when the walk starts"
     console.run(["task", "park", "1", "the header first"], AGENT)
@@ -2867,3 +2874,38 @@ def test_working_counts_its_edits_on_the_canvas_the_task_named_the_log_asked_for
     with scope.of(1):
         assert edits() == 0, "a log line for the task in hand puts the edits at nought"
     assert write("d.py")[0] == 200, "logged, the write goes on"
+
+
+def test_a_boot_carries_a_working_agents_edits_into_its_count_once_and_rewrites_a_retired_counter_check(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.agents import Agents
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    console, charts, counts, agents, seed, scope = app.console(), app.container.get(Charts), app.container.get(Counts), app.container.get(Agents), app.container.get(ShippedChart), app.container.get(Scope)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    with scope.of(1):
+        agent = agents.for_session("s1")
+        agents.save(agent.with_(data={**agent.data, "edits": 4}), Actor.system())
+        for count in counts.where(session="s1", name="edits"):
+            counts.delete(count, Actor.system())
+    seed.run()
+    with scope.of(1):
+        assert [c.value for c in counts.where(session="s1", name="edits")] == [4], "the engine's edits before the workflows counted them become the count"
+        counts.set("s1", "edits", 9, Actor.system())
+    seed.run()
+    with scope.of(1):
+        assert [c.value for c in counts.where(session="s1", name="edits")] == [9], "once: a standing count is not written over"
+    mine = int(console.run(["chart", "new", "Mine at a tool", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in charts.nodes_of(charts.find(mine)) if n.kind == NodeKind.TRIGGER)
+    old = charts.add_node(charts.find(mine), Node(kind=NodeKind.CHECK, key="tool_uses_since_unread_every", text="3"), Actor.user(1))
+    charts.connect(charts.nodes.find(trigger), old, "then", Actor.user(1))
+    seed.run()
+    kept = charts.find(mine)
+    node = charts.nodes.find(old.id)
+    assert node.key == "count_every" and node.text == "uses 3" and "rewrote tool_uses_since_unread_every to count checks" in kept.title, "a retired counter check is rewritten to its count check, the number kept, and the title says so"
+    assert any(n.kind == NodeKind.TRIGGER for n in charts.nodes_of(kept)), "the workflow is not stopped: it still answers its event"

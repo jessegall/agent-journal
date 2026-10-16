@@ -24,7 +24,6 @@ CHECKS = (
     ("unread_messages", "Has unread messages?", "the user left a message the agent has not read"),
     ("unread_over", "N or more messages unread?", "at least N messages the agent has not read; the text is N"),
     ("log_stale_over", "Is the log older than N seconds?", "the task in hand was last logged longer ago than N seconds, or never; the text is N"),
-    ("unread_reminders_over", "N namings of the unread inbox gone by?", "the tool uses since the oldest unread message came, counted in units of the setting messages.remind_every, reach N; the text is N or a setting's name, such as messages.hold_after_reminders"),
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
     ("message_by_user", "Message written by you?", "the row is a message the user wrote, not the agent"),
     ("message_just_read", "Message just read?", "the row is a message the agent has just read: this write set when it was read"),
@@ -45,13 +44,7 @@ CHECKS = (
 )
 COUNTER_CHECKS = (
     ("unanswered_over", "N or more messages unanswered?", "at least N messages read and not yet replied to or given a face; the text is N or a setting's name"),
-    ("tool_uses_since_unread_every", "Every Nth tool use with a message unread?", "true on every Nth tool use since the oldest unread message came; the text is N"),
-    ("tool_uses_since_unread_over", "N tool uses with a message unread?", "at least N tool uses since the oldest unread message came; the text is N or a setting's name"),
-    ("tool_uses_since_read_over", "N tool uses with a message unanswered?", "at least N tool uses since the oldest message was read and not answered; the text is N or a setting's name, such as messages.hold_after"),
-    ("edits_since_log_over", "N edits since the last log?", "the task in hand had at least N edits since it was logged, before this one; the text is N or a setting's name, such as tasks.log_after"),
-    ("edits_since_log_every", "Every Nth edit since the last log?", "true when the edits since the task in hand was logged, before this one, are a multiple of N; the text is N or a setting's name"),
     ("quiet_for_over", "Has the agent been quiet for N seconds?", "the clock ticks and the agent has done nothing for at least N seconds; the text is N or a setting's name"),
-    ("edits_since_log_at", "Exactly N edits since the last log?", "true once, when the edits since the task in hand was logged, before this one, are exactly N; the text is N or a setting's name, such as tasks.first_nudge_after"),
 )
 COUNT_CHECKS = (
     ("count_over", "Is a count over N?", "the agent's count named first in the text has reached N; the text is the count's name, then N or a setting's name, such as reads messages.hold_after"),

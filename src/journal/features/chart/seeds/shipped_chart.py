@@ -5,8 +5,11 @@ from journal.features.chart.validation import HOLDS
 from journal.features.seed import Seed
 from journal.models.actor import Actor
 from journal.models.chart import Chart
+from journal.models.count import Count
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
+from journal.repositories.agents import Agents
+from journal.repositories.counts import Counts
 from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.settings import Settings
 
@@ -29,6 +32,8 @@ DRAWINGS_VERSION = 8
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
+RETIRED_CHECKS = {"tool_uses_since_unread_every": ("count_every", "uses"), "tool_uses_since_unread_over": ("count_over", "uses"), "tool_uses_since_read_over": ("count_over", "owed"), "unread_reminders_over": ("count_over", "namings"), "edits_since_log_over": ("count_over", "edits"), "edits_since_log_every": ("count_every", "edits"), "edits_since_log_at": ("count_at", "edits")}
+"""The counter checks that read the engine's hidden counts, each now a count check on the count the workflows keep: a user's workflow naming one is rewritten at boot."""
 """The shipped drawings taken out of a journal on purpose, by name, so a boot does not draw them again; Reset by their state and event brings one back."""
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
 
@@ -60,8 +65,8 @@ STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequ
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue) -> None:
-        self.states = states
+    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue, agents: Agents, counts: Counts) -> None:
+        self.states, self.agents, self.counts = states, agents, counts
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         own = {
             ("idle", "idle"): self.idle_at_stop,
@@ -110,7 +115,9 @@ class ShippedChart(Seed):
         by = Actor.system()
         self.retire_the_older_shape(by)
         self.retire_unpaired(by)
+        self.rewrite_retired_checks(by)
         self.stop_what_names_an_unknown_entry(by)
+        self.carry_working_edits(by)
         self.name_the_shipped(by)
         retired = self.retired()
         for key, drawing in self.drawings.items():
@@ -214,6 +221,24 @@ class ShippedChart(Seed):
         for node in [n for n in nodes if n.kind == NodeKind.TRIGGER]:
             self.charts.remove_node(node, by)
         self.charts.save(chart.with_(shipped=False, state="", event="", title=chart.title + KEPT), by)
+
+    def rewrite_retired_checks(self, by: Actor) -> None:
+        """A user's workflow naming a counter check that read a hidden count is rewritten to the count check on the count the workflows keep, its number kept, and its title says what was rewritten."""
+        for chart in [c for c in self.charts.all() if not c.shipped]:
+            rewritten = []
+            for node in [n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.CHECK and n.key in RETIRED_CHECKS]:
+                key, name = RETIRED_CHECKS[node.key]
+                self.charts.nodes.save(node.with_(key=key, text=f"{name} {node.text}".strip()), by)
+                rewritten.append(node.key)
+            if rewritten:
+                self.charts.save(chart.with_(title=f"{chart.title} (upgrade rewrote {', '.join(rewritten)} to count checks)"), by)
+                self.charts.revised(chart, by)
+
+    def carry_working_edits(self, by: Actor) -> None:
+        """A Working agent's edits since its log, counted by the engine before the workflows counted them, become its edits count once, where none stands yet."""
+        for agent in [a for a in self.agents.all() if a.state == "working" and a.data.get("edits")]:
+            if not self.counts.where(environment_id=agent.environment_id, session=agent.session, name="edits"):
+                self.counts.save(Count(environment_id=agent.environment_id, session=agent.session, name="edits", value=int(agent.data["edits"])), by)
 
     def stop_what_names_an_unknown_entry(self, by: Actor) -> None:
         """A kept or user workflow naming a check, action or trigger the catalogue no longer has is stopped at boot, its triggers taken out and its title saying why, rather than left to fail on every walk."""

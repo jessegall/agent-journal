@@ -33,7 +33,7 @@ from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("unanswered_over", "tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over", "log_stale_over")
+COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over")
 """The checks that take a number: the node's text, or the setting named there."""
 COUNT_CHECKS = ("count_over", "count_at", "count_every")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
@@ -54,16 +54,20 @@ class Checks:
             return bool(check(ctx, name, self.number(limit)))
         return bool(check(ctx, self.number(text)) if key in COUNTERS else check(ctx))
 
+    def count_of(self, ctx: Context, name: str) -> int:
+        """The agent's count by that name, nought for no agent."""
+        return self.counts.named(ctx.session, name).value if ctx.session else 0
+
     def count_over(self, ctx: Context, name: str, limit: int) -> bool:
         """The agent's count by that name has reached the number."""
-        return bool(ctx.session) and self.counts.named(ctx.session, name).value >= limit
+        return bool(ctx.session) and self.count_of(ctx, name) >= limit
 
     def count_at(self, ctx: Context, name: str, limit: int) -> bool:
-        return bool(ctx.session) and self.counts.named(ctx.session, name).value == limit
+        return bool(ctx.session) and self.count_of(ctx, name) == limit
 
     def count_every(self, ctx: Context, name: str, limit: int) -> bool:
         """The count stands at a multiple of the number, and not at nought: every Nth time, so a cadence reads one check."""
-        value = self.counts.named(ctx.session, name).value if ctx.session else 0
+        value = self.count_of(ctx, name)
         return limit > 0 and value > 0 and value % limit == 0
 
     def number(self, text: str) -> int:
@@ -75,56 +79,10 @@ class Checks:
             return int(self.settings.option(option))
         return int(self.settings.project(text.strip(), 0)) if text.strip() else 0
 
-    def tool_uses_since_unread_every(self, ctx: Context, every: int) -> bool:
-        """Every so many tool uses since the oldest unread message came, counting the one about to run."""
-        uses = self.uses_since(ctx, self.oldest_unread(ctx))
-        return bool(every) and uses is not None and uses % every == 0
-
-    def unread_reminders_over(self, ctx: Context, n: int) -> bool:
-        """So many namings of the unread inbox gone by: the tool uses since the oldest unread message came, in units of messages.remind_every."""
-        from journal.features.messages.feature import Messages as MessagesFeature
-        uses = self.uses_since(ctx, self.oldest_unread(ctx))
-        every = int(self.settings.option(MessagesFeature.REMIND_EVERY))
-        return uses is not None and bool(every) and uses // every >= n
-
-    def tool_uses_since_unread_over(self, ctx: Context, limit: int) -> bool:
-        uses = self.uses_since(ctx, self.oldest_unread(ctx))
-        return uses is not None and uses >= limit
-
-    def tool_uses_since_read_over(self, ctx: Context, limit: int) -> bool:
-        """So many tool uses since the oldest message was read and left unanswered."""
-        owed = self.messages.unanswered()
-        uses = self.uses_since(ctx, min(m.read_at for m in owed)) if owed else None
-        return uses is not None and uses >= limit
-
-    def edits_since_log_over(self, ctx: Context, limit: int) -> bool:
-        return self.edits_before(ctx) >= limit
-
-    def edits_since_log_every(self, ctx: Context, every: int) -> bool:
-        before = self.edits_before(ctx)
-        return bool(every) and before > 0 and before % every == 0
-
-    def edits_since_log_at(self, ctx: Context, n: int) -> bool:
-        return self.edits_before(ctx) == n
-
     def log_stale_over(self, ctx: Context, seconds: int) -> bool:
         """The task in hand was last logged longer ago than so many seconds, or never."""
         state = self.state(ctx)
         return isinstance(state, Working) and (not state.logged_at or time.time() - state.logged_at > seconds)
-
-    def edits_before(self, ctx: Context) -> int:
-        """The edits since the task in hand was logged, before the write about to run: the machine counted that one already, as the log cadence counts."""
-        state = self.state(ctx)
-        return state.edits - 1 if isinstance(state, Working) and state.edits else -1
-
-    def oldest_unread(self, ctx: Context):
-        unread = self.messages.unread()
-        return min(m.created_at for m in unread) if unread else None
-
-    def uses_since(self, ctx: Context, since) -> int | None:
-        if since is None or not ctx.session:
-            return None
-        return len([e for e in self.entries.of_kind("ToolStarting", 200) if e.actor and e.actor.id == ctx.session and e.created_at >= since])
 
     def open_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.free())

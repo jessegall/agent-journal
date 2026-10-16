@@ -9,6 +9,7 @@ from journal.features.tasks.states.working import Working
 from journal.models.question import Question
 from journal.models.task_state import TaskState
 from journal.models.worker import Worker
+from journal.repositories.counts import Counts
 from journal.repositories.messages import Messages
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
@@ -20,8 +21,8 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages) -> None:
-        self.tasks, self.plans, self.messages = tasks, plans, messages
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts) -> None:
+        self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
 
     @classmethod
     def listed(cls) -> list[dict]:
@@ -80,9 +81,8 @@ class Fillers:
         return f"last logged {ago(state.logged_at)}" if state.logged_at else "nothing logged yet"
 
     def task_edits(self, ctx: Context) -> str:
-        """The edits since the task in hand was logged, before the write about to run."""
-        state = self.state(ctx)
-        return str(state.edits - 1) if isinstance(state, Working) and state.edits else "0"
+        """The agent's count of edits since the task in hand was logged, as the Working workflows keep it."""
+        return str(self.counts.named(ctx.session, "edits").value) if ctx.session else "0"
 
     def log_command(self, ctx: Context) -> str:
         """The command that logs the task in hand."""

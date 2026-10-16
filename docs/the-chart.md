@@ -75,8 +75,8 @@ A workflow of your own is for a state at an event no default covers, made with N
 - A **check** is a yes or no question the journal answers from its rows: are tasks open, is a task in hand, is a
   message unread, is auto mode on, does the tool about to run write. A check leaves
   by a yes line and a no line; one of them may be left out, and the path then ends on that answer. Counter
-  checks take a number in their text, or the name of a setting that holds it: every third tool use with a message
-  unread, fifteen tool uses with a message unanswered, twenty edits since the last log. A count check reads a
+  checks take a number in their text, or the name of a setting that holds it: four or more messages unread, quiet
+  for so many seconds, the log older than so many seconds. A count check reads a
   count the workflow keeps for the agent, named first in its text, against the number after it: is the count
   over N, is it at N, is it at every Nth (a multiple of N, never nought). The counts are the engine's own: no
   workflow starts at a count's write, and a session's counts go when it ends. A row event's checks read the row the
