@@ -23,6 +23,12 @@ class Plans(ScopedRepository[Plan]):
         super().__init__(connection, bus)
         self.links, self.tasks, self.phases = links, tasks, phases
 
+    def approve(self, plan: Plan, by: Actor) -> Plan:
+        """The user's word on a plan: approved from ready, and left as it is once started, so a second word cannot set a running plan back."""
+        if plan.state in (PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED):
+            return plan
+        return self.save(plan.approved(), by)
+
     def cancel(self, plan: Plan, by: Actor) -> list[Task]:
         """The plan cancelled with the tasks that are its alone: a task not done that another live plan also holds stays; the cancelled tasks are returned."""
         cancelled = []

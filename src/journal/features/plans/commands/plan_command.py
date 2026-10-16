@@ -115,8 +115,8 @@ class PlanCommand(Command):
     def approve(self, args: Namespace, where: Where) -> int:
         if where.actor.kind != ActorKind.USER:
             raise Refused("only the user approves a plan: ask, then wait for their word")
-        plan = self.plans.save(self.plans.find(args.n).approved(), where.actor)
-        print(f"plan {plan.id} approved")
+        plan = self.plans.approve(self.plans.find(args.n), where.actor)
+        print(f"plan {plan.id} {plan.state}")
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:

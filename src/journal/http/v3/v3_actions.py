@@ -150,7 +150,7 @@ class V3Actions:
         return self.plans.save(self.plans.find(n).done(), by)
 
     def plan_approve(self, n: int, body: dict, by):
-        return self.plans.save(self.plans.find(n).approved(), by)
+        return self.plans.approve(self.plans.find(n), by)
 
     def plan_start(self, n: int, body: dict, by):
         return self.plans.save(self.plans.find(n).started(), by)

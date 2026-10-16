@@ -1872,3 +1872,20 @@ def test_the_walk_reads_the_state_once_after_the_machine_has_moved(app):
     assert "in hand: task 1" in json.dumps(body), "the tool use lifted the wait before the walk, and the walk read Working, once"
     walks = app.container.get(Entries).of_kind(1, "walk", 5)
     assert walks[0].data["state"] == "working", "the trace names the state the walk read"
+
+
+def test_approving_a_started_plan_leaves_it_started(app):
+    from journal.models.plan_state import PlanState
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    assert "plan 1 started" in console.run(["plan", "approve", "1"], USER).out
+    assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a second word from the page cannot set a running plan back to approved"
