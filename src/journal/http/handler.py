@@ -1,4 +1,5 @@
 import json
+import traceback
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
@@ -32,10 +33,18 @@ class Handler(BaseHTTPRequestHandler):
         request = self._request()
         if not request.path.startswith(("/api/", "/journal/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
             return self._file(*found)
-        self._answer(self.router.dispatch(request))
+        self._answer(self._dispatched(request))
 
     def do_POST(self) -> None:
-        self._answer(self.router.dispatch(self._request()))
+        self._answer(self._dispatched(self._request()))
+
+    def _dispatched(self, request: Request):
+        """The router's answer, or a 500 naming the fault: a handler that raises still answers, and the fault is in the log with its trace."""
+        try:
+            return self.router.dispatch(request)
+        except Exception as fault:
+            traceback.print_exc()
+            return Response(500, {"error": f"{type(fault).__name__}: {fault}"})
 
     def _answer(self, answer) -> None:
         if isinstance(answer, StreamResponse):

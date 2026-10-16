@@ -412,3 +412,4 @@ def test_the_page_refuses_a_second_workflow_on_an_event(server):
     assert status >= 400 and "one workflow per event" in json.dumps(body)
     status, listed = call(server, "GET", "/journal/chart")
     assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 9, "each answers its own event"
+

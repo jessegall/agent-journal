@@ -4,7 +4,7 @@ from journal.models.environment import Environment
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
 
-STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.APPROVED: "approved", PlanState.STARTED: "active", PlanState.PARKED: "parked", PlanState.DONE: "done"}
+STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.APPROVED: "approved", PlanState.STARTED: "active", PlanState.PARKED: "parked", PlanState.DONE: "done", PlanState.CANCELLED: "abandoned"}
 
 
 class PlansShaper(Shaper):

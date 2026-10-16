@@ -4,7 +4,7 @@ from journal.models.environment import Environment
 from journal.models.task_state import TaskState
 from journal.repositories.tasks import Tasks
 
-STATUS = {TaskState.OPEN: "open", TaskState.STARTED: "started", TaskState.PARKED: "parked", TaskState.BLOCKED: "blocked", TaskState.DONE: "done"}
+STATUS = {TaskState.OPEN: "open", TaskState.STARTED: "started", TaskState.PARKED: "parked", TaskState.BLOCKED: "blocked", TaskState.DONE: "done", TaskState.CANCELLED: "abandoned"}
 
 
 class TodosShaper(Shaper):

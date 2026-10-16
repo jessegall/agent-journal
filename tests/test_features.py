@@ -407,6 +407,7 @@ def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app):
     messages = app.container.get(Messages)
     app.console().run(["message", "send", "did you adjust the plan?"], USER)
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] chat etiquette: a line from the journal is an instruction, not a message")
     hook(app, "MessageDisplay", delta="[!reply:1]\n", turn_id="t1", message_id="m1", index=0, final=False)
     hook(app, "MessageDisplay", delta="Yes, fourteen tasks went into the plan.", turn_id="t1", message_id="m1", index=1, final=True)
@@ -1908,3 +1909,16 @@ def test_approving_a_started_plan_leaves_it_started(app):
     console.run(["plan", "start", "1"], AGENT)
     assert "plan 1 started" in console.run(["plan", "approve", "1"], USER).out
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a second word from the page cannot set a running plan back to approved"
+
+
+def test_the_dashboard_shows_a_cancelled_plan_and_a_failing_handler_still_answers(app):
+    import json as j
+    from urllib.request import urlopen
+    console = app.console()
+    console.run(["plan", "create", "old", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "its own"], USER)
+    console.run(["plan", "cancel", "1"], USER)
+    with urlopen(f"http://127.0.0.1:{app.server().port}/api/main/dashboard?types=plan%2Ctodo&completed=1&last=50", timeout=5) as reply:
+        assert reply.status == 200, "a cancelled plan and its task are shaped for the page"
+        shown = j.loads(reply.read())
+    assert "abandoned" in j.dumps(shown)
