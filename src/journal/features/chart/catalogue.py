@@ -53,6 +53,8 @@ ACTIONS = (
     ("block_stop", "Block stop", "the agent carries on, with the message", True),
     ("type", "Type into terminal", "types the text into the agent's terminal as its next prompt", True),
     ("start_sequence", "Start sequence", "starts the sequence named in the text at its first step", True),
+    ("show_card", "Show a card in the chat", "a card in the chat with the message, so the user sees what the journal did", True),
+    ("release", "Release the agent from its wait", "an agent paused for a worker, a question or anything outside goes back to what it was doing, told with the message; an agent not paused is left as it is", True),
 )
 
 

@@ -1618,3 +1618,28 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
     question = app.container.get(Questions).find(1)
     answered = Context(event=Updated(model=question.answered("beta"), by=Actor.user(1), was=question), session="s1", environment_id=env)
     assert checks.answer("question_answered", answered) and checks.answer("agent_waits_on_the_question", answered)
+
+
+def test_the_card_and_release_actions(app):
+    from journal.events.agent.ticked import Ticked
+    from journal.features.chart.actions import Actions
+    from journal.features.chart.context import Context
+    from journal.repositories.entries import Entries
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    actions = app.container.get(Actions)
+    env = app.container.get(Environments).named("main").id
+    ctx = Context(event=Ticked(at=0.0, quiet_for=0.0, session="s1", environment_id=env), session="s1", environment_id=env)
+    machine = app.container.get(Machine)
+    actions.perform("release", "nothing to release", ctx)
+    assert machine.current("s1").name == "idle", "an agent not paused is left as it is"
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["await", "the build"], AGENT)
+    assert machine.current("s1").name == "expecting"
+    actions.perform("release", "the build came back: carry on", ctx)
+    assert machine.current("s1").task_id == 1, "released to what it was doing"
+    actions.perform("show_card", "The journal did a thing", ctx)
+    cards = [e for e in app.container.get(Entries).of_kind(env, "card", 10)]
+    assert cards and cards[0].data["label"] == "The journal did a thing"
