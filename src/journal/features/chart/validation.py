@@ -1,4 +1,5 @@
 from journal.features.chart.catalogue import Catalogue
+from journal.features.chart.fault import Fault
 from journal.features.chart.moves import Moves
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
@@ -21,27 +22,27 @@ class Validation:
     def __init__(self, catalogue: Catalogue, charts: Charts, states: StatesCatalogue) -> None:
         self.catalogue, self.charts, self.states = catalogue, charts, states
 
-    def binding_faults(self, chart: Chart) -> list[str]:
+    def binding_faults(self, chart: Chart) -> list[Fault]:
         """A workflow is bound to a state the engine knows at an event the catalogue has, and the pair has one workflow: a second on the same pair, or a state or event nobody has heard of, is refused."""
         if not self.states.known(chart.state):
-            return [f"no state is called {chart.state}: one of {', '.join(self.states.names())}"]
+            return [Fault(f"no state is called {chart.state}: one of {', '.join(self.states.names())}")]
         if not self.catalogue.has(NodeKind.TRIGGER, chart.event):
-            return [f"no event is called {chart.event}: journal chart catalogue lists them"]
+            return [Fault(f"no event is called {chart.event}: journal chart catalogue lists them")]
         other = self.charts.for_pair(chart.state, chart.event)
         if other and other.id != chart.id:
-            return [f"workflow {other.id}, {other.title}, is already the workflow for {chart.state} at {chart.event}: one workflow per state per trigger"]
+            return [Fault(f"workflow {other.id}, {other.title}, is already the workflow for {chart.state} at {chart.event}: one workflow per state per trigger")]
         return []
 
-    def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[str]:
+    def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[Fault]:
         by_id = {str(n.get("id", "")): n for n in nodes}
-        faults = [f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}" for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
-        faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
+        faults = [Fault(f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}", str(n.get("id", ""))) for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
+        faults += [Fault(f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters", str(n.get("id", ""))) for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
         faults += self.trigger_faults(chart, nodes)
         faults += self.action_faults(nodes)
         for line in lines:
             source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
             if not source or not target:
-                faults.append(f"a line from {line.get('from')} to {line.get('to')} leads to or from no node")
+                faults.append(Fault(f"a line from {line.get('from')} to {line.get('to')} leads to or from no node"))
                 continue
             faults += self.port_fault(source, target, line.get("port", THEN))
         faults += self.check_faults(nodes, lines)
@@ -59,7 +60,7 @@ class Validation:
         return [f"nothing in the {chart.state} workflows releases the agent: without a release or a move at some event, an agent {chart.state} stays so until you release it by hand"]
 
     @staticmethod
-    def hold_faults(nodes: list[dict], lines: list[dict]) -> list[str]:
+    def hold_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:
         """A hold that a trigger reaches through no check would hold the agent at every one of that event: the agent never gets past it."""
         by_id = {str(n.get("id", "")): n for n in nodes}
         then = {}
@@ -75,46 +76,46 @@ class Validation:
                     continue
                 seen.add(str(node.get("id", "")))
                 if node.get("key") in HOLDS:
-                    faults.append(f"action {node.get('id')} holds the agent at every {trigger.get('key')}: put a check before it, or the agent never gets past")
+                    faults.append(Fault(f"action {node.get('id')} holds the agent at every {trigger.get('key')}: put a check before it, or the agent never gets past", str(node.get("id", ""))))
                 ahead += then.get(str(node.get("id", "")), [])
         return faults
 
-    def action_faults(self, nodes: list[dict]) -> list[str]:
+    def action_faults(self, nodes: list[dict]) -> list[Fault]:
         """A move names idle, or a wait a workflow may make, expecting or stuck, with the words it waits for after the name."""
         faults = []
         for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") == "move_to"):
             name = n.get("text", "").strip().partition(" ")[0]
             if not name or not self.states.known(name):
-                faults.append(f"node {n.get('id')} moves the agent to {name or 'nowhere'}: no state is called that")
+                faults.append(Fault(f"node {n.get('id')} moves the agent to {name or 'nowhere'}: no state is called that", str(n.get("id", ""))))
             elif name != "idle" and not Moves.words_field(self.states.named(name, {})):
-                faults.append(f"node {n.get('id')} moves the agent to {name}: {Moves.refusal(name)}")
+                faults.append(Fault(f"node {n.get('id')} moves the agent to {name}: {Moves.refusal(name)}", str(n.get("id", ""))))
         return faults
 
     @staticmethod
-    def trigger_faults(chart: Chart, nodes: list[dict]) -> list[str]:
+    def trigger_faults(chart: Chart, nodes: list[dict]) -> list[Fault]:
         """A workflow holds one trigger, of the event it is for."""
         keys = [n.get("key", "") for n in nodes if n.get("kind") == NodeKind.TRIGGER]
         if len(keys) > 1:
-            return [f"a workflow holds one trigger, of the event it is for; this one has {len(keys)}"]
-        return [f"the trigger is {keys[0]}, but this workflow is for {chart.state} at {chart.event}" for k in keys[:1] if k != chart.event]
+            return [Fault(f"a workflow holds one trigger, of the event it is for; this one has {len(keys)}")]
+        return [Fault(f"the trigger is {keys[0]}, but this workflow is for {chart.state} at {chart.event}") for k in keys[:1] if k != chart.event]
 
     @staticmethod
-    def port_fault(source: dict, target: dict, port: str) -> list[str]:
+    def port_fault(source: dict, target: dict, port: str) -> list[Fault]:
         if target.get("kind") == NodeKind.TRIGGER:
-            return [f"a line leads into trigger {target.get('id')}: a trigger only starts a path"]
+            return [Fault(f"a line leads into trigger {target.get('id')}: a trigger only starts a path", str(target.get("id", "")))]
         if source.get("kind") == NodeKind.CHECK and port not in (YES, NO):
-            return [f"check {source.get('id')} leaves by yes or no, not {port}"]
+            return [Fault(f"check {source.get('id')} leaves by yes or no, not {port}", str(source.get("id", "")))]
         if source.get("kind") != NodeKind.CHECK and port != THEN:
-            return [f"{source.get('kind')} {source.get('id')} leaves by then, not {port}"]
+            return [Fault(f"{source.get('kind')} {source.get('id')} leaves by then, not {port}", str(source.get("id", "")))]
         return []
 
     @staticmethod
-    def check_faults(nodes: list[dict], lines: list[dict]) -> list[str]:
+    def check_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:
         sources = {str(line.get("from")) for line in lines}
-        return [f"check {n.get('id')} has no line out: neither yes nor no" for n in nodes if n.get("kind") == NodeKind.CHECK and str(n.get("id", "")) not in sources]
+        return [Fault(f"check {n.get('id')} has no line out: neither yes nor no", str(n.get("id", ""))) for n in nodes if n.get("kind") == NodeKind.CHECK and str(n.get("id", "")) not in sources]
 
     @staticmethod
-    def cycle_faults(nodes: list[dict], lines: list[dict]) -> list[str]:
+    def cycle_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:
         """A path that comes back to a node it passed would walk for ever: an action's then may lead on, so the whole graph is walked."""
         after: dict[str, list[str]] = {str(n.get("id", "")): [] for n in nodes}
         for line in lines:
@@ -132,4 +133,4 @@ class Validation:
             on_path.pop()
             return looped
 
-        return [f"the lines loop back through node {start}" for start in after if start not in seen and walk(start)]
+        return [Fault(f"the lines loop back through node {start}", start) for start in after if start not in seen and walk(start)]

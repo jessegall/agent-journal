@@ -88,7 +88,7 @@ class ChartCommand(Command):
         chart = Chart(title=args.title, state=args.state, event=args.event)
         faults = self.validation.binding_faults(chart)
         if faults:
-            raise Refused(faults[0])
+            raise Refused(str(faults[0]))
         chart = self.charts.save(chart, where.actor)
         self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=args.event, x=400, y=0), where.actor)
         print(f"workflow {chart.id}: {chart.title}")
@@ -127,7 +127,7 @@ class ChartCommand(Command):
             present = [{"kind": n.kind, "key": n.key} for n in self.charts.nodes_of(chart)]
             faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}])
             if faults:
-                raise Refused(faults[0])
+                raise Refused(str(faults[0]))
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
         self.charts.revised(chart, where.actor)
         print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))

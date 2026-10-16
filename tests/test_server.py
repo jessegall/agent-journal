@@ -508,11 +508,15 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     assert status == 200 and off["off"] is True and all(n["kind"] != "trigger" for n in off["nodes"]), "turned off: the trigger is gone, the rest stays"
     status, on = call(server, "POST", f"/journal/chart/{idle['id']}/on", {})
     assert status == 200 and on["off"] is False and [n["key"] for n in on["nodes"] if n["kind"] == "trigger"] == ["idle"], "turned on: the trigger of its event is back"
+    assert on["edited"] is False, "a default turned off and on is still the default"
     stale = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": 0, "nodes": on["nodes"], "lines": on["lines"]})
-    assert stale[0] == 409 and stale[1]["conflict"] is True and stale[1]["revision"] == on["revision"]
+    assert stale[0] == 409 and stale[1]["conflict"] is True and stale[1]["revision"] == on["revision"] and stale[1]["revised_by"] and stale[1]["revised_at"] > 0
     bad = [{"id": "t", "kind": "trigger", "key": "idle"}, {"id": "c", "kind": "check", "key": "flying"}]
     refused = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": on["revision"], "nodes": bad, "lines": [{"from": "t", "to": "c"}]})
-    assert refused[0] == 409 and any("flying" in f for f in refused[1]["faults"]) and any("check c has no line out" in f for f in refused[1]["faults"])
+    assert refused[0] == 409 and {f["node"] for f in refused[1]["faults"]} == {"c"} and any("check c has no line out" in f["words"] for f in refused[1]["faults"])
+    assert {f["key"] for f in read["fillers"]} >= {"{{task}}", "{{inbox}}", "{{parked_tasks}}", "{{worker_name}}"} and all(f["about"] for f in read["fillers"])
+    tried = {e["key"]: e["tried"] for e in read["catalogue"] if e["kind"] == "trigger"}
+    assert tried["idle"] and tried["messages.created"] and tried["workers.updated"] and not tried["tasks.created"] and not tried["messages.deleted"]
     status, runs = call(server, "GET", "/journal/chart/runs?last=5")
     assert status == 200 and runs == {"runs": []}, "nothing walked yet in this journal"
 

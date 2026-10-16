@@ -3,6 +3,7 @@ from dataclasses import asdict
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import STATE_TITLES, ShippedChart
 from journal.features.chart.assumptions import Assumptions
+from journal.features.chart.fillers import Fillers
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import Validation
@@ -26,7 +27,7 @@ class ChartController:
         self.traces, self.states = traces, states
 
     def index(self, request: Request) -> Response:
-        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states()})
+        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed()})
 
     def listed_states(self) -> list[dict]:
         """The states the page lists, each with its words and the state it inherits workflows from, when it has one."""
@@ -53,7 +54,7 @@ class ChartController:
         """A workflow turned on again: its trigger put back, the one of the event it is for."""
         chart = self.charts.find(request.number("id"))
         if not any(n.kind == NodeKind.TRIGGER for n in self.charts.nodes_of(chart)):
-            self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=chart.event, x=400, y=0), request.actor)
+            self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=chart.event, x=400, y=0, shipped=chart.shipped), request.actor)
         return Response.json(self.drawn(self.charts.revised(chart, request.actor)))
 
     def one(self, request: Request) -> Response:
@@ -65,7 +66,7 @@ class ChartController:
     def create(self, request: Request) -> Response:
         """A workflow of the user's own for a state at an event, born with its trigger and a title that names the pair unless given."""
         state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
-        title = request.body.get("title", "").strip() or f"{state} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
+        title = request.body.get("title", "").strip() or f"{STATE_TITLES.get(state, state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
         chart = Chart(title=title, state=state, event=event)
         faults = self.validation.binding_faults(chart)
         if faults:
@@ -84,10 +85,11 @@ class ChartController:
     def save(self, request: Request) -> Response:
         chart = self.charts.find(request.number("id"))
         if int(request.body.get("revision", -1)) != chart.revision:
-            return Response.json({"error": f"the workflow changed since you opened it: it is at revision {chart.revision}, read it again", "revision": chart.revision, "conflict": True}, 409)
+            return Response.json({"error": f"the workflow changed since you opened it: it is at revision {chart.revision}, read it again", "revision": chart.revision, "conflict": True,
+                                  "revised_by": chart.updated_by.stamp if chart.updated_by else "", "revised_at": chart.updated_at.timestamp() if chart.updated_at else 0}, 409)
         faults = self.validation.faults(chart, request.body.get("nodes", []), request.body.get("lines", []))
         if faults:
-            return Response.json({"error": "the workflow is not saved: " + "; ".join(faults), "faults": faults}, 409)
+            return Response.json({"error": "the workflow is not saved: " + "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
         return Response.json(self.drawn(self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)))
 
     def try_(self, request: Request) -> Response:
@@ -110,7 +112,7 @@ class ChartController:
                 "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": last_walk, "last_failure": last_failure}
 
     def entries(self) -> list[dict]:
-        return [{**asdict(e), "kind": e.kind.value} for e in self.catalogue.all()]
+        return [{**asdict(e), "kind": e.kind.value, "tried": self.trial.stands_in_for(e.key)} for e in self.catalogue.all()]
 
     def drawn(self, chart: Chart) -> dict:
         return {

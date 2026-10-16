@@ -93,6 +93,11 @@ class Trial:
         data = agent.data if agent and agent.state == assumptions.state else {}
         return self.machine.states.named(assumptions.state, data)
 
+    def stands_in_for(self, trigger: str) -> bool:
+        """Whether a trial can stand in for the event: any agent event, or a row event of a table it holds a row of, created or updated."""
+        table, _, moment = trigger.partition(".")
+        return trigger in EVENTS or (table in self.repositories and moment in ("created", "updated"))
+
     def row_event(self, trigger: str, row: int):
         """A row event stood in for the row named: created as it is, or updated from how it stood before the change the event means."""
         table, _, moment = trigger.partition(".")

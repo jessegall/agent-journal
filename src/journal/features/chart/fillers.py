@@ -23,6 +23,11 @@ class Fillers:
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages) -> None:
         self.tasks, self.plans, self.messages = tasks, plans, messages
 
+    @classmethod
+    def listed(cls) -> list[dict]:
+        """Every placeholder a node's text may name, with what it stands for, for the page's insert panel."""
+        return [{"key": "{{" + name + "}}", "about": method.__doc__} for name, method in vars(cls).items() if not name.startswith("_") and name not in ("fill", "listed", "state", "plan_at_checkpoint") and method.__doc__]
+
     def fill(self, text: str, ctx: Context) -> str:
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
 
@@ -51,9 +56,11 @@ class Fillers:
         return MessagesFeature.inbox(unread).rendered() if unread else ""
 
     def unread_count(self, ctx: Context) -> str:
+        """How many messages are unread."""
         return str(len(self.messages.unread()))
 
     def unread_numbers(self, ctx: Context) -> str:
+        """The unread messages by number, comma separated."""
         return ", ".join(str(m.id) for m in self.messages.unread())
 
     def owed(self, ctx: Context) -> str:
@@ -78,14 +85,17 @@ class Fillers:
         return str(state.edits - 1) if isinstance(state, Working) and state.edits else "0"
 
     def log_command(self, ctx: Context) -> str:
+        """The command that logs the task in hand."""
         state = self.state(ctx)
         return f"journal task log {state.task_id}" if isinstance(state, Working) and state.task_id else ""
 
     def awaited(self, ctx: Context) -> str:
+        """What an expecting agent is expecting, in its own words."""
         state = self.state(ctx)
         return state.what if isinstance(state, Expecting) else ""
 
     def sequence_n(self, ctx: Context) -> str:
+        """The number of the sequence being run."""
         state = self.state(ctx)
         return str(state.sequence_id) if isinstance(state, RunningSequence) else ""
 
@@ -95,33 +105,41 @@ class Fillers:
         return str(state.step + 1) if isinstance(state, RunningSequence) else ""
 
     def sequence_step_text(self, ctx: Context) -> str:
+        """The words of the sequence step in hand."""
         state = self.state(ctx)
         return state.text if isinstance(state, RunningSequence) else ""
 
     def quiet_minutes(self, ctx: Context) -> str:
+        """How many minutes the agent has been quiet, at a tick."""
         return str(int(ctx.event.quiet_for // 60)) if isinstance(ctx.event, Ticked) else "0"
 
     def worker_n(self, ctx: Context) -> str:
+        """The number of the worker a worker event is about."""
         model = getattr(ctx.event, "model", None)
         return str(model.id) if isinstance(model, Worker) else ""
 
     def worker_name(self, ctx: Context) -> str:
+        """The name of the worker a worker event is about."""
         model = getattr(ctx.event, "model", None)
         return model.name if isinstance(model, Worker) else ""
 
     def question_n(self, ctx: Context) -> str:
+        """The number of the question a question event is about."""
         model = getattr(ctx.event, "model", None)
         return str(model.id) if isinstance(model, Question) else ""
 
     def parked_n(self, ctx: Context) -> str:
+        """The number of the first parked task."""
         parked = self.tasks.in_state(TaskState.PARKED)
         return str(parked[0].id) if parked else ""
 
     def parked_title(self, ctx: Context) -> str:
+        """The title of the first parked task."""
         parked = self.tasks.in_state(TaskState.PARKED)
         return parked[0].title if parked else ""
 
     def parked_why(self, ctx: Context) -> str:
+        """Why the first parked task was parked."""
         parked = self.tasks.in_state(TaskState.PARKED)
         return parked[0].parked_why if parked else ""
 
@@ -129,12 +147,15 @@ class Fillers:
         return ctx.state
 
     def parked_tasks(self, ctx: Context) -> str:
+        """The parked tasks, each with why it was parked."""
         return "; ".join(f"{t.id} {t.title} (parked because: {t.parked_why})" for t in self.tasks.in_state(TaskState.PARKED))
 
     def next_task(self, ctx: Context) -> str:
+        """The number of the next open task of the plans."""
         free = self.plans.free()
         return str(free[0].id) if free else ""
 
     def next_task_title(self, ctx: Context) -> str:
+        """The title of the next open task of the plans."""
         free = self.plans.free()
         return free[0].title if free else ""

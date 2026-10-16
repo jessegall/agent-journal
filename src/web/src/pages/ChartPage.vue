@@ -21,13 +21,7 @@ const CARD = {width: 208, plain: 48, text: 84};
 const PORT_AT = {then: 50, yes: 30, no: 70};
 const WORD = {then: "Next", yes: "Yes", no: "No"};
 const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
-const FILLERS = [
-    {key: "{{parked_tasks}}", about: "The parked tasks, each with why it was parked"},
-    {key: "{{next_task}}", about: "The number of the next open task"},
-    {key: "{{next_task_title}}", about: "The title of the next open task"},
-    {key: "{{plan_n}}", about: "The number of the started plan standing at a checkpoint"},
-    {key: "{{checkpoint_phase}}", about: "The title of the checkpoint phase that plan stands at"},
-];
+const fillers = ref([]);
 const LEAD =
     "The journal ships one workflow per state per trigger, picked by the state and then the event, each carrying the shared conduct of its event as well as the state's own. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
 
@@ -162,6 +156,7 @@ async function open(id) {
 
 async function load() {
     const got = await api.chart();
+    fillers.value = got.fillers;
     workflows.value = got.workflows;
     catalogue.value = got.catalogue;
     states.value = got.states || [];
@@ -790,7 +785,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 />
                 <MenuLabel>Values you can insert</MenuLabel>
                 <div class="chart-fillers">
-                    <template v-for="filler in FILLERS" :key="filler.key">
+                    <template v-for="filler in fillers" :key="filler.key">
                         <button type="button" class="chart-filler" @click="insertFiller(filler)">
                             <code>{{ filler.key }}</code>
                             <span>{{ filler.about }}</span>
