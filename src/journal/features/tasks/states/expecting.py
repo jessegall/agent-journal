@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from journal.engine.states.paused import Paused
 from journal.engine.transition import Transition
 from journal.events.agent.idle import Idle as AgentIdle
-from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.tool_starting import ToolStarting
 
 
@@ -22,8 +21,6 @@ class Expecting(Paused):
         """The agent's own tool use is working again; a subagent's is not."""
         return self.stay() if event.subagent else self.back()
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
-        return self.back()
 
     def idle(self, event: AgentIdle) -> Transition:
         return self.stay()

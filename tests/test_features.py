@@ -626,6 +626,25 @@ def test_a_quiet_tick_leaves_no_walk_entry_and_a_tick_that_acts_does(app):
     assert len(ticks()) == 1, "a tick whose walk acted, the parked ask, is recorded"
 
 
+def test_a_word_from_the_user_frees_a_wait_whose_workflow_no_longer_releases_it(app, monkeypatch):
+    from journal.repositories.charts import Charts
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    charts = app.container.get(Charts)
+    charts.replace(charts.for_state("awaiting"), [], [], Actor.user(1))
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
+    console.run(["worker", "wait", "1"], AGENT)
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "awaiting"
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    assert machine.current("s1").name == "awaiting", "the emptied workflow releases nothing"
+    hook(app, "UserPromptSubmit", prompt="carry on without it")
+    assert machine.current("s1").name == "working", "the user's word is the engine's way out of the wait"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from journal.engine.states.paused import Paused
 from journal.engine.transition import Transition
-from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.tool_starting import ToolStarting
 
 
@@ -19,5 +18,3 @@ class Stuck(Paused):
     def tool_starting(self, event: ToolStarting) -> Transition:
         return self.stay() if event.subagent else self.back()
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
-        return self.back()

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from journal.engine.states.paused import Paused
 from journal.engine.transition import Transition
-from journal.events.agent.prompt_submitted import PromptSubmitted
 
 
 @dataclass(frozen=True)
@@ -15,5 +14,3 @@ class Waiting(Paused):
     def awaiting(self) -> tuple[str, str]:
         return f"your answer to question {self.question_id}", f"question:{self.question_id}"
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
-        return self.back()
