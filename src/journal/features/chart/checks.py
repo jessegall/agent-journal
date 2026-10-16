@@ -18,6 +18,7 @@ from journal.models.question import Question
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.workers import Workers
+from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
@@ -105,6 +106,10 @@ class Checks:
 
     def open_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.free())
+
+    def plan_at_checkpoint(self, ctx: Context) -> bool:
+        """A started plan here stands at a completed checkpoint phase, its next phase not begun."""
+        return any(self.plans.at_checkpoint(p) for p in self.plans.in_() if p.state == PlanState.STARTED)
 
     def task_in_hand(self, ctx: Context) -> bool:
         state = self.state(ctx)

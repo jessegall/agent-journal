@@ -29,6 +29,7 @@ CHECKS = (
     ("message_by_user", "Message written by the user?", "the row is a message the user wrote, not the agent"),
     ("tool_reads_their_files", "Tool reads the message's own files?", "the tool about to run reads a file attached to a message read and left unanswered"),
     ("auto_mode", "Auto mode on?", "the environment runs in auto mode"),
+    ("plan_at_checkpoint", "Plan at a checkpoint?", "a started plan stands at a completed checkpoint phase, its next phase not begun"),
     ("tool_writes", "Tool changes files?", "the tool about to run changes a file or runs a writing command"),
     ("journal_command", "Tool is a journal command?", "the tool about to run is a journal command"),
     ("worker_reported", "Worker reported?", "the row is a worker that just reported"),

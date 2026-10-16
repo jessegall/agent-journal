@@ -49,7 +49,7 @@ class PlanCommand(Command):
         todos.add_argument("tasks", type=int, nargs="+")
         self.verb(verbs, "ready", "the plan is built: every phase has its tasks, and the user may approve it").add_argument("n", type=int)
         self.verb(verbs, "approve", "the user's word: the plan may start").add_argument("n", type=int)
-        self.verb(verbs, "start", "follow an approved plan: its first open task is started").add_argument("n", type=int)
+        self.verb(verbs, "start", "follow an approved plan, or go on past a checkpoint: its next open task is started").add_argument("n", type=int)
         self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
         self.verb(verbs, "cancel", "a plan given up, with the tasks that are its alone; one another live plan holds stays").add_argument("n", type=int)
         self.verb(verbs, "show", "a plan and its tasks").add_argument("n", type=int)
@@ -121,7 +121,7 @@ class PlanCommand(Command):
     def start(self, args: Namespace, where: Where) -> int:
         from journal.features.plans.feature import Plans as PlansFeature
         plan = self.plans.find(args.n)
-        if plan.state not in (PlanState.APPROVED, PlanState.PARKED):
+        if plan.state not in (PlanState.APPROVED, PlanState.PARKED, PlanState.STARTED):
             raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
         plan = self.plans.save(plan.started(), where.actor)
         task = self.plans.next_task(plan)

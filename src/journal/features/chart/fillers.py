@@ -10,6 +10,7 @@ from journal.models.question import Question
 from journal.models.task_state import TaskState
 from journal.models.worker import Worker
 from journal.repositories.messages import Messages
+from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 
@@ -24,6 +25,19 @@ class Fillers:
 
     def fill(self, text: str, ctx: Context) -> str:
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
+
+    def plan_n(self, ctx: Context) -> str:
+        """The number of the started plan standing at a checkpoint."""
+        plan = self.plan_at_checkpoint()
+        return str(plan.id) if plan else ""
+
+    def checkpoint_phase(self, ctx: Context) -> str:
+        """The title of the checkpoint phase a started plan stands at."""
+        plan = self.plan_at_checkpoint()
+        return self.plans.at_checkpoint(plan).title if plan else ""
+
+    def plan_at_checkpoint(self):
+        return next((p for p in self.plans.in_() if p.state == PlanState.STARTED and self.plans.at_checkpoint(p)), None)
 
     def row(self, ctx: Context) -> str:
         """The number of the row a row event is about."""

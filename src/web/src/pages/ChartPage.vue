@@ -25,6 +25,8 @@ const FILLERS = [
     {key: "{{parked_tasks}}", about: "The parked tasks, each with why it was parked"},
     {key: "{{next_task}}", about: "The number of the next open task"},
     {key: "{{next_task_title}}", about: "The title of the next open task"},
+    {key: "{{plan_n}}", about: "The number of the started plan standing at a checkpoint"},
+    {key: "{{checkpoint_phase}}", about: "The title of the checkpoint phase that plan stands at"},
 ];
 const LEAD =
     "The journal ships one workflow for every state the agent can be in, each carrying what every state shares as well as its own. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";

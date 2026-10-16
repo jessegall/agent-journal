@@ -13,7 +13,7 @@ from journal.repositories.tasks import Tasks
 
 
 class AdvancePlan(Listener[Updated]):
-    """When an agent following a plan finishes the task it was on, the next open task is started for it; when none is left, the plan is done and the agent is idle."""
+    """When an agent following a plan finishes the task it was on, the next open task is started for it; at a checkpoint phase's end the plan waits and the agent is idle, the Idle workflow saying what the mode makes of it; when no task is left, the plan is done and the agent is idle."""
 
     def __init__(self, machine: Machine, plans: Plans, tasks: Tasks) -> None:
         self.machine, self.plans, self.tasks = machine, plans, tasks
@@ -30,6 +30,11 @@ class AdvancePlan(Listener[Updated]):
         if not isinstance(state, FollowingPlan) or state.task_id != task.id:
             return
         plan = self.plans.find(state.plan_id)
+        checkpoint = self.plans.at_checkpoint(plan)
+        if checkpoint is not None:
+            self.machine.move(event.by.id, task.environment_id, self.machine.states.first())
+            print(PlansFeature.CHECKPOINT.about(n=plan.id, phase=checkpoint.title).rendered())
+            return
         following = self.plans.next_task(plan)
         if following is None:
             self.plans.save(plan.done(), event.by)

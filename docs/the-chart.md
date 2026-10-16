@@ -30,8 +30,9 @@ Every one of them carries the shared conduct: a message arriving is typed to the
 start, a prompt and a stop; the unread inbox named every so many tool uses and the write held after so many
 namings; a read message answered before the next tool, held after so many uses. And each adds its own:
 
-- **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks,
-  the parked ask after a minute and the check-in after half an hour.
+- **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; a plan standing at a
+  checkpoint waits for the user's look, or in auto mode holds the stop and carries on; as the clock ticks, the
+  parked ask after a minute and the check-in after half an hour.
 - **Working**: the task in hand named back every so many edits, the log asked for and then held; carry on at a
   stop and a start, with the log asked for when stale; the task still open after a quiet quarter hour.
   Following a plan inherits it.

@@ -676,6 +676,35 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
     assert machine.current("s1").name == "working", "oriented again, the agent goes on with its work, not back into a wait already answered"
 
 
+def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, monkeypatch):
+    from journal.repositories.plans import Plans
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "add", "1", "second"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w", "--checkpoint"], USER)
+    console.run(["plan", "phase", "1", "two", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    console.run(["plan", "todos", "1", "2", "2"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "done", "1"], AGENT)
+    machine, plans = app.container.get(Machine), app.container.get(Plans)
+    assert machine.current("s1").name == "idle" and plans.at_checkpoint(plans.find(1)).title == "one", "the plan waits at its checkpoint; the next phase is not begun"
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    status, body = hook(app, "Stop")
+    assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "auto off: the checkpoint waits for the user's look, said at the stop"
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
+    status, body = hook(app, "Stop")
+    assert body.get("decision") == "block" and "in auto mode its checkpoint is no stop" in body["reason"], "auto on: the checkpoint is no stop, said by the Idle workflow"
+    assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1").name == "following_plan", "plan start goes on past the checkpoint"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus
@@ -1454,7 +1483,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 31, 4, 5, 6" in out, "the stop branch holds, then the inbox branch finds nothing unread"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 7, 35, 4, 5, 6" in out, "the stop branch holds, the checkpoint check finds no plan, the inbox branch finds nothing unread"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
     console.run(["message", "send", "are you there?"], USER)

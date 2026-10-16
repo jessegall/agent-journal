@@ -17,7 +17,7 @@ SEQUENCE_TITLE = "Running a sequence"
 KEPT = " (kept from the older shape)"
 FORMER_BASE = "base"
 """The state name the workflow for what every state shared was bound to, before each state's workflow carried it."""
-DRAWINGS_VERSION = 2
+DRAWINGS_VERSION = 3
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
@@ -30,6 +30,8 @@ UNREAD_HELD = "[messages.unread_held] your inbox is unread: {{unread_count}} wai
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
 ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
 PARKED = "[tasks.parked] parked tasks, still open: {{parked_tasks}}. journal task resume <n> picks one up; leave them parked only on purpose"
+CHECKPOINT = "[plans.checkpoint] plan {{plan_n}}: phase {{checkpoint_phase}} is complete and a checkpoint. the user looks before the next phase; wait for their word, then journal plan start {{plan_n}}"
+CHECKPOINT_PASSED = "[plans.checkpoint_passed] plan {{plan_n}}: phase {{checkpoint_phase}} is complete, and in auto mode its checkpoint is no stop. journal plan start {{plan_n}} begins the next phase; carry on"
 NEXT = "[tasks.next] tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck"
 PARKED_STILL = "[tasks.parked_still] task {{parked_n}}, {{parked_title}}, is still parked: can you continue it now?. it was parked because: {{parked_why}}. journal task resume {{parked_n}} picks it up again"
 CHECK_IN = "[tasks.check_in] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
@@ -185,7 +187,7 @@ class ShippedChart(Seed):
         self.line(some, say_one, NO)
 
     def draw_idle(self, chart: Chart) -> None:
-        """An agent at rest: at a stop, parked tasks hold it in any mode and in auto mode the next open task holds it; as the clock ticks, the parked ask after a minute and the check-in after half an hour in auto mode."""
+        """An agent at rest: at a stop, parked tasks hold it in any mode and in auto mode the next open task holds it; a plan at a checkpoint waits for the user's look, or in auto mode holds the stop and carries on; as the clock ticks, the parked ask after a minute and the check-in after half an hour in auto mode."""
         stop = self.trigger(chart, "idle", x=160, y=0)
         parked = self.node(chart, NodeKind.CHECK, "parked_tasks", x=160, y=92)
         say_parked = self.node(chart, NodeKind.ACTION, "block_stop", PARKED, x=0, y=184)
@@ -197,6 +199,14 @@ class ShippedChart(Seed):
         self.line(parked, auto, NO)
         self.line(auto, open_, YES)
         self.line(open_, hold_stop, YES)
+        checkpoint = self.node(chart, NodeKind.CHECK, "plan_at_checkpoint", x=320, y=92)
+        auto_at_checkpoint = self.node(chart, NodeKind.CHECK, "auto_mode", x=320, y=184)
+        passed = self.node(chart, NodeKind.ACTION, "block_stop", CHECKPOINT_PASSED, x=240, y=276)
+        looks = self.node(chart, NodeKind.ACTION, "say", CHECKPOINT, x=400, y=276)
+        self.line(stop, checkpoint, THEN)
+        self.line(checkpoint, auto_at_checkpoint, YES)
+        self.line(auto_at_checkpoint, passed, YES)
+        self.line(auto_at_checkpoint, looks, NO)
         tick = self.trigger(chart, "ticked", x=560, y=0)
         parked_tick = self.node(chart, NodeKind.CHECK, "parked_tasks", x=440, y=92)
         quiet_a_minute = self.node(chart, NodeKind.CHECK, "quiet_for_over", "60", x=440, y=184)
