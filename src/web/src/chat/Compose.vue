@@ -38,6 +38,11 @@ watch(
         ui.drafts[draftKey.value] = text;
     }
 );
+// a reply changes what the box is for: the words follow the box, and nothing stays behind under the old key to come back later
+watch(draftKey, (now, was) => {
+    delete ui.drafts[was];
+    ui.drafts[now] = draft.text;
+});
 const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => {
     store.drafting += is ? 1 : -1;

@@ -43,3 +43,26 @@ test("leaving an edit clears only the words it put in the box, never words typed
     expect(box.value).toBe("a new thought");
     unmount();
 });
+
+test("the words typed follow the box when it becomes a reply, and nothing stays behind to come back after the send", async () => {
+    const {ui} = await import("../src/state/ui.js");
+    const props = ref({placeholder: "Message the agent"});
+    const {box, unmount} = await mounted(props);
+    box.value = "hello there";
+    box.dispatchEvent(new Event("input"));
+    await settle();
+    props.value = {placeholder: "Reply to 450"};
+    await settle();
+    expect(box.value).toBe("hello there");
+    expect(ui.drafts[":Message the agent"]).toBe(undefined);
+    expect(ui.drafts[":Reply to 450"]).toBe("hello there");
+    box.value = "";
+    box.dispatchEvent(new Event("input"));
+    await settle();
+    props.value = {placeholder: "Message the agent"};
+    await settle();
+    unmount();
+    const again = await mounted(ref({placeholder: "Message the agent"}));
+    expect(again.box.value).toBe("");
+    again.unmount();
+});
