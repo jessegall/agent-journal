@@ -367,6 +367,31 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
         app.runtime().stop()
 
 
+def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
+    from journal.engine.cards import Cards
+    from journal.models.actor import Actor
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    app = App(Config(tmp_path, port=0))
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.runtime().start()
+    server = app.server()
+    try:
+        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
+        for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
+            urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        app.runtime().deferred.drain()
+        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "check:3")
+        rows = [r for r in call(server, "GET", "/api/main/message?completed=1")[1]["rows"] if r["n"] >= n]
+        assert [r["n"] for r in rows] == sorted(r["n"] for r in rows)
+        assert [(r["data"]["author"], r["brief"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
+        card = rows[-1]
+        assert card["seen"] == ["system"] and card["completed"] and card["data"]["actor"] == "system"
+        assert card["data"]["card"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "check:3"}
+    finally:
+        app.runtime().stop()
+
+
 def test_the_board_is_off_and_stays_off(server):
     assert "kanban" not in call(server, "GET", "/api/main/settings")[1]["features"]
     assert "kanban" not in call(server, "POST", "/api/main/settings", {"features": {"kanban": True}})[1]["features"], "a switch of a feature version 4 does not have is not kept"

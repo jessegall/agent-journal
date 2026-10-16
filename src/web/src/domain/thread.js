@@ -92,10 +92,20 @@ const compactions = (agents) =>
 
 const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
 
-const whispers = (agents) =>
-    sessions(agents).flatMap((a) =>
-        (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref, words: w.words, shows: w.shows}))
-    );
+const SYSTEM_TURNS = {
+    whisper: (card) => ({type: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
+    card: (card, label) => ({
+        type: "card",
+        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row},
+    }),
+};
+
+const fromSystem = (m) => m.data.author === "system";
+
+const systemTurn = (m) => {
+    const card = m.data.card;
+    return {...m, who: "agent", title: m.brief, ...SYSTEM_TURNS[card.kind](card, m.brief)};
+};
 
 const cards = (agents) =>
     sessions(agents).flatMap((a) =>
@@ -165,12 +175,14 @@ const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.key
 export function threadTurns(rows, pending, env, older = false, hidden = []) {
     const keys = new Map();
     const live = rows.message.filter((m) => !m.deleted && !m.data.window);
+    const said = live.filter((m) => !fromSystem(m));
     const paged = live.filter((m) => m.completed);
     const floor = older && live.length ? Math.min(...(paged.length ? paged : live).map((m) => m.created)) : 0;
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [
-        ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
-        ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
+        ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
+        ...said.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
+        ...live.filter(fromSystem).map(systemTurn),
         ...rows.comment
             .filter((c) => !c.deleted && !c.data.visitor)
             .map((c) => onItsRow(c, rows.comment))
@@ -182,7 +194,6 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
-        ...whispers(rows.agent || []),
         ...thoughts(rows.agent || []),
         ...cards(rows.agent || []),
         ...madeByAgent(rows.doc || [], env),
