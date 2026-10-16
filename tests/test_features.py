@@ -3190,3 +3190,28 @@ def test_each_feature_declares_its_own_checks_and_actions_and_the_catalogue_only
     assert all(callable(getattr(Actions, e.key, None)) for e in catalogue.actions()), "every declared action is performed by the chart's actions"
     owners = {k: f for f, k in declared}
     assert owners["unread_over"] == "messages" and owners["open_tasks"] == "tasks" and owners["require_skill"] == "skills" and owners["count_every"] == "chart" and owners["worker_reported"] == "workers"
+
+
+def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_for_claude_and_codex(app):
+    import time
+    from journal.events.agent.prompt_submitted import PromptSubmitted
+    from journal.events.agent.ticked import Ticked
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.features.chart.checks import Checks
+    from journal.features.chart.context import Context
+    hook(app, "SessionStart")
+    checks = app.container.get(Checks)
+    at = lambda event, provider="claude": Context(event=event, session="s1", environment_id=1, provider=provider)
+    write = at(ToolStarting(tool="Write", input={"file_path": "src/deploy.sh"}, session="s1", environment_id=1))
+    shell = at(ToolStarting(tool="shell", input={"command": ["bash", "-lc", "git push origin main"]}, session="s1", environment_id=1, provider="codex"), "codex")
+    assert checks.answer("tool_named", write, "Write, Edit") and not checks.answer("tool_named", write, "Bash") and checks.answer("tool_named", shell, "shell"), "the tool's name, as the provider names it"
+    assert checks.answer("tool_input_has", write, "deploy") and checks.answer("tool_input_has", shell, "git push") and not checks.answer("tool_input_has", write, "push"), "the words anywhere in the input, Codex's command list included"
+    prompt = at(PromptSubmitted(prompt="Deploy it to production now", session="s1", environment_id=1))
+    assert checks.answer("prompt_has", prompt, "deploy") and not checks.answer("prompt_has", prompt, "rollback") and not checks.answer("prompt_has", write, "deploy")
+    full = at(ToolStarting(tool="Read", input={}, session="s1", environment_id=1, context=0.62))
+    assert checks.answer("context_over", full, "60") and not checks.answer("context_over", full, "70") and not checks.answer("context_over", write, "0"), "the context as the event reports it"
+    night = time.mktime((2026, 10, 17, 23, 30, 0, 0, 0, -1))
+    noon = time.mktime((2026, 10, 17, 12, 0, 0, 0, 0, -1))
+    tick = lambda when: at(Ticked(at=when, quiet_for=0.0, session="s1", environment_id=1))
+    assert checks.answer("time_between", tick(night), "22:00-06:00") and not checks.answer("time_between", tick(noon), "22:00-06:00") and checks.answer("time_between", tick(noon), "09:00-17:00"), "a span past midnight included"
+    assert not checks.answer("time_between", tick(noon), "late"), "a span that is no span answers no"

@@ -9,6 +9,11 @@ describe("a card's title says its own number", () => {
         );
     });
 
+    it("puts the whole text in place of N when the check reads words", () => {
+        expect(cardTitle({title: "Tool is one of N?"}, {text: "Write, Edit"})).toBe("Tool is one of Write, Edit?");
+        expect(cardTitle({title: "Time of day within N?"}, {text: "22:00-06:00"})).toBe("Time of day within 22:00-06:00?");
+    });
+
     it("names the count and its number", () => {
         expect(cardTitle({title: "Is a count over N?"}, {text: "edits 20"})).toBe("Is the count edits over 20?");
         expect(cardTitle({title: "Is a count at every Nth?"}, {text: "turns 50"})).toBe("Is the count turns at every 50th?");

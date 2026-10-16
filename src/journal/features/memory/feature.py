@@ -22,6 +22,7 @@ class Memory(Feature):
     listeners = (Whisper, ReviewNewRule)
     checks = (
         Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
+        Entry(NodeKind.CHECK, 'context_over', 'Context over N percent?', "the agent's context window is fuller than N percent, as the event reports it; the text is N or a setting's name", takes_text=True),
         Entry(NodeKind.CHECK, 'mark_owed', 'Has a context mark still to record?', 'the agent crossed a context mark and has not yet decided what survives it: a fact, a rule or nothing'),
     )
     actions = (

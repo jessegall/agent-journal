@@ -7,5 +7,5 @@ export function cardTitle(entry, node) {
     const [name, number] = node.text.trim().split(/\s+/);
     const numbered = (value) => title.replace(N, (match, th) => `${value}${th || ""}`);
     if (title.includes("a count")) return number ? numbered(number).replace("a count", `the count ${name}`) : title;
-    return numbered(name);
+    return numbered(node.text.trim());
 }

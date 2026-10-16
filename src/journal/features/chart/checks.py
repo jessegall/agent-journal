@@ -35,7 +35,9 @@ from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over")
+COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over", "context_over")
+WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
+"""The checks that read their text as words: the tool names, the words looked for, the hours."""
 """The checks that take a number: the node's text, or the setting named there."""
 COUNT_CHECKS = ("count_over", "count_at", "count_every")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
@@ -55,7 +57,9 @@ class Checks:
         if key in COUNT_CHECKS:
             name, _, limit = text.strip().partition(" ")
             return bool(check(ctx, name, self.number(limit)))
-        return bool(check(ctx, self.number(text)) if key in COUNTERS else check(ctx))
+        if key in COUNTERS:
+            return bool(check(ctx, self.number(text)))
+        return bool(check(ctx, text.strip()) if key in WORD_CHECKS else check(ctx))
 
     def count_of(self, ctx: Context, name: str) -> int:
         """The agent's count by that name, nought for no agent."""
@@ -103,6 +107,49 @@ class Checks:
 
     def blocked_tasks(self, ctx: Context) -> bool:
         return bool(self.tasks.in_state(TaskState.BLOCKED))
+
+    def tool_named(self, ctx: Context, names: str) -> bool:
+        """The tool about to run is one of the names in the text, as the provider names it, in any case."""
+        wanted = {n.strip().lower() for n in names.replace(",", " ").split() if n.strip()}
+        return isinstance(ctx.event, ToolStarting) and ctx.event.tool.lower() in wanted
+
+    def tool_input_has(self, ctx: Context, words: str) -> bool:
+        """The tool's input, any of its text, holds the words, in any case: a file path, a command, a prompt to a subagent."""
+        if not isinstance(ctx.event, ToolStarting) or not words:
+            return False
+        return words.lower() in " ".join(self.texts_in(ctx.event.input)).lower()
+
+    @classmethod
+    def texts_in(cls, value) -> list[str]:
+        if isinstance(value, str):
+            return [value]
+        if isinstance(value, dict):
+            return [t for v in value.values() for t in cls.texts_in(v)]
+        if isinstance(value, (list, tuple)):
+            return [t for v in value for t in cls.texts_in(v)]
+        return []
+
+    def prompt_has(self, ctx: Context, words: str) -> bool:
+        """The prompt the user sent holds the words, in any case."""
+        return isinstance(ctx.event, PromptSubmitted) and bool(words) and words.lower() in ctx.event.prompt.lower()
+
+    def context_over(self, ctx: Context, percent: int) -> bool:
+        """The agent's context window is fuller than so many percent, as the event reports it."""
+        context = getattr(ctx.event, "context", None)
+        return context is not None and context * 100 > percent
+
+    def time_between(self, ctx: Context, hours: str) -> bool:
+        """The local time of day falls within the span in the text, HH:MM-HH:MM, a span past midnight included; a tick's own time, else now."""
+        start, _, end = hours.replace(" ", "").partition("-")
+        try:
+            a = int(start[:2]) * 60 + int(start[3:5] or 0)
+            b = int(end[:2]) * 60 + int(end[3:5] or 0)
+        except ValueError:
+            return False
+        at = ctx.event.at if isinstance(ctx.event, Ticked) and ctx.event.at else time.time()
+        local = time.localtime(at)
+        now = local.tm_hour * 60 + local.tm_min
+        return a <= now < b if a <= b else now >= a or now < b
 
     def quiet_for_over(self, ctx: Context, seconds: int) -> bool:
         """The clock ticks and the agent has been quiet for at least so many seconds."""
