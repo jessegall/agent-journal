@@ -58,8 +58,8 @@ class Charts(Repository[Chart]):
         return placed
 
     def next_place(self, event: str) -> int:
-        """The place after the last workflow of the event."""
-        return max((c.place for c in self.for_event(event)), default=-1) + 1
+        """The place after the last workflow of the event, never before nought: the locked and the Always ones sit below it, and a new one comes after everything."""
+        return max([c.place for c in self.for_event(event)] + [-1]) + 1 if any(c.place >= 0 for c in self.for_event(event)) else 0
 
     def remove(self, chart: Chart, by: Actor) -> None:
         for node in self.nodes_of(chart):

@@ -86,18 +86,19 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
     context(app, 30)
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert "context 25% full" in body["hookSpecificOutput"]["additionalContext"]
-    machine = app.container.get(Machine)
-    assert isinstance(machine.current("s1"), AtMark) and machine.current("s1").mark == 25
+    from journal.repositories.agents import Agents
+    machine, agents = app.container.get(Machine), app.container.get(Agents)
+    assert isinstance(machine.current("s1"), Working) and agents.for_session("s1").mark_owed == 25 and agents.for_session("s1").context_mark == 25, "the mark is a fact on the row, not a state"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
     assert status == 409 and "writes wait" in body["error"]
     assert app.console().run(["fact", "create", "the login is flaky"], AGENT).code == 0
-    assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1
+    assert agents.for_session("s1").mark_owed == 0 and machine.current("s1").task_id == 1
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
     assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
     context(app, 55)
-    assert "context 50% full" in hook(app, "Stop")[1]["reason"]
+    assert "context 50% full" in json.dumps(hook(app, "Stop")[1]) and agents.for_session("s1").mark_owed == 50
     app.console().run(["nothing", "survives", "all logged"], AGENT)
-    assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1
+    assert agents.for_session("s1").mark_owed == 0 and machine.current("s1").task_id == 1
 
 
 def test_a_rule_binds_the_project_not_an_environment(app):
@@ -105,18 +106,21 @@ def test_a_rule_binds_the_project_not_an_environment(app):
     assert "Always name the model" in app.console().run(["rule", "list"], USER).out
 
 
-def test_pauses_nest_and_each_back_pops_one(app):
+def test_a_mark_owed_outlives_being_stuck_and_a_decision_pays_it(app):
+    from journal.repositories.agents import Agents
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.console().run(["stuck", "stuck"], AGENT)
-    machine = app.container.get(Machine)
-    assert machine.current("s1").name == "stuck"
+    machine, agents = app.container.get(Machine), app.container.get(Agents)
+    assert machine.current("s1").name == "stuck" and agents.for_session("s1").mark_owed == 25, "stuck, the mark is still owed"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert isinstance(machine.current("s1"), AtMark), "being stuck went back to the mark it left"
+    assert isinstance(machine.current("s1"), Working), "the agent's own tool use lifts being stuck"
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409, "the mark still holds a write"
     app.console().run(["nothing", "survives", "fine"], AGENT)
-    assert isinstance(machine.current("s1"), Working) and machine.current("s1").task_id == 1, "the mark went back to the task"
+    assert agents.for_session("s1").mark_owed == 0 and machine.current("s1").task_id == 1, "the decision pays the mark; the task stands"
 
 
 def test_a_plan_is_followed_task_by_task_to_its_end(app):
@@ -2070,7 +2074,8 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     n, trigger = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
-    assert console.run(["chart", "order", "tool_finished", str(second), str(n)], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place == 0, "the order command puts them in the order given"
+    always = next(c.id for c in charts.for_event("tool_finished") if not c.state)
+    assert console.run(["chart", "order", "tool_finished", str(always), str(second), str(n)], USER).out.startswith("tool_finished: 1. Always at Tool finished, 2. Yet another, 3. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
     assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
     assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
@@ -2369,7 +2374,7 @@ def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     assert "name the workflow: --in <n> by its number, or --for <state> --on <event>" in console.run(["chart", "node", "--edit-default", "check", "open_tasks"], USER).err
     assert "no workflow is for flying at idle" in console.run(["chart", "node", "--edit-default", "check", "open_tasks", "--for", "flying", "--on", "idle"], USER).err
     assert console.run(["chart", "node", "--edit-default", "check", "open_tasks", "--for", "working", "--on", "tool_starting"], USER).code == 0
-    mine = int(console.run(["chart", "new", "Mine", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    mine = int(console.run(["chart", "new", "Mine", "--for", "idle", "--on", "subagent_started"], USER).out.split()[1].rstrip(":"))
     assert "is not a shipped one" in console.run(["chart", "reset", str(mine)], USER).err
     assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "working", "--on", "tool_starting"], USER).out
     assert "is a shipped one and stays" in console.run(["chart", "drop", "1"], USER).err
@@ -2428,7 +2433,8 @@ def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_
         previous = following
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     cut = entries.of_kind("walk_failed", 1)[0]
-    assert f"ran past {STEPS} nodes" in cut.data["fault"] and len(entries.of_kind("walk", 1)[0].data["nodes"]) == STEPS, "a runaway path is cut off at the cap and the cut is on record"
+    own = {n.id for n in app.container.get(ChartRows).nodes_of(app.container.get(ChartRows).find(chart))}
+    assert f"ran past {STEPS} nodes" in cut.data["fault"] and len([n for n in entries.of_kind("walk", 1)[0].data["nodes"] if n in own]) == STEPS, "a runaway path is cut off at the cap and the cut is on record"
 
 
 def test_the_rules_doc_rules_on_every_state_the_engine_knows(app):
@@ -2678,7 +2684,7 @@ def test_a_stop_here_node_ends_the_events_walk_so_no_later_workflow_runs(app):
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
     assert "first speaks" in said(body) and "the later one speaks" not in said(body) and "never said" not in said(body), "the walk ends at Stop here: nothing after it, no later workflow"
     walked = entries.of_kind(WALKED, 3)[0]
-    assert walked.data["stopped_at"] == stop and walked.data["workflows"] == [first], "the record says where the walk stopped and that the later workflow never ran"
+    assert walked.data["stopped_at"] == stop and [w for w in walked.data["workflows"] if charts.find(w).state] == [first] and second not in walked.data["workflows"], "the record says where the walk stopped and that the later workflow never ran"
     assert any("Stop here in this workflow skips" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Stop here skips, by name"
     out = console.run(["chart", "try", "tool_finished"], AGENT).out
     assert "would stop here: no later workflow of the event runs" in out and "the later one speaks" not in out, "the dry run says where it would stop"
@@ -2692,8 +2698,9 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
     first, t1 = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     charts.save(charts.find(second).with_(locked=True), USER.actor)
-    assert "is locked" in console.run(["chart", "order", "tool_finished", str(first), str(second)], USER).err, "the locked ones keep the head of the list"
-    assert console.run(["chart", "order", "tool_finished", str(second), str(first)], USER).code == 0
+    always = next(c.id for c in charts.for_event("tool_finished") if not c.state and not c.locked)
+    assert "is locked" in console.run(["chart", "order", "tool_finished", str(always), str(first), str(second)], USER).err, "the locked ones keep the head of the list"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(always), str(first)], USER).code == 0
     assert "is locked" in console.run(["chart", "drop", str(second)], USER).err, "a locked workflow stays"
     add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
     hold = add(first, "action", "say", "--text", "[chart] the law")

@@ -143,6 +143,22 @@ class Checks:
         """The prompt names a keyword of a skill."""
         return isinstance(ctx.event, PromptSubmitted) and bool(self.requiring.named_in(ctx.event.prompt))
 
+    def context_over_mark(self, ctx: Context) -> bool:
+        """The context window crossed a mark the agent has not been asked at."""
+        return bool(ctx.session) and bool(self.marks_due(ctx))
+
+    def marks_due(self, ctx: Context) -> list[int]:
+        from journal.features.memory.feature import Memory
+        context = getattr(ctx.event, "context", None)
+        if context is None or not ctx.session:
+            return []
+        taken = self.machine.agent(ctx.session, ctx.environment_id).context_mark
+        return [mark for mark in Memory.MARKS if context * 100 >= mark > taken]
+
+    def mark_owed(self, ctx: Context) -> bool:
+        """The agent crossed a mark and has not decided what survives it."""
+        return bool(ctx.session) and bool(self.machine.agent(ctx.session, ctx.environment_id).mark_owed)
+
     def not_oriented(self, ctx: Context) -> bool:
         """The agent has not looked at what is in flight here since its session started."""
         return bool(ctx.session) and not self.machine.agent(ctx.session, ctx.environment_id).oriented

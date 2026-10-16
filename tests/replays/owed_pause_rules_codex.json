@@ -33,10 +33,7 @@
     },
     {
       "name": "a stop under the mark",
-      "answer": {
-        "decision": "block",
-        "reason": "you stopped while the journal awaits a decision at the context mark, 80% full. do that first, or journal stuck \"<why>\" if you are truly stuck"
-      },
+      "answer": {},
       "typed": [],
       "nudges": [],
       "counts": {

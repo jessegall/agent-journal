@@ -29,6 +29,8 @@ CHECKS = (
     ("prompt_names_skill", "Prompt names a skill's keyword?", "the prompt the user sent names a keyword of one of the journal's skills"),
     ("skill_owed", "Skill owed?", "the agent owes a read of a skill's file: required and not read since"),
     ("not_oriented", "Agent not yet oriented?", "the agent has not looked at what is in flight here since its session started"),
+    ("context_over_mark", "Context over a mark not taken?", "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
+    ("mark_owed", "Mark owed?", "the agent crossed a context mark and has not yet decided what survives it: a fact, a rule or nothing"),
     ("message_just_read", "Message just read?", "the row is a message the agent has just read: this write set when it was read"),
     ("task_just_started", "Task just started by this agent?", "the row is a task this agent has just started: this write set when it started, by the agent walking"),
     ("log_for_task_in_hand", "Log is for the task in hand?", "the row is a log line of the task this agent has in hand"),
@@ -57,6 +59,7 @@ COUNT_CHECKS = (
 ACTIONS = (
     ("say", "Send the agent a message", "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", True),
     ("hold", "Hold the tool", "stops the tool and sends the message, until what the message names is done", True),
+    ("hold_at_mark", "Hold the agent at a context mark", "the mark crossed is taken and owed: the agent is told to decide what survives the context, and a fact, a rule or journal nothing pays it", False),
     ("mark_unoriented", "Mark the agent unoriented", "the agent owes a look at what is in flight here before any other write, and is told so; journal environment here pays it", False),
     ("require_skill", "Require a skill", "the agent owes a read of the skill named in the text, told where its file is; with no text, the skills the prompt names at a prompt, else the skill of the state the agent is in", True),
     ("block_stop", "Keep the agent from stopping", "the agent carries on, with the message", True),

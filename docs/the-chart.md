@@ -37,10 +37,13 @@ journal clears the compiled graphs, so the next walk reads the edit.
 ## The shipped workflows
 
 The journal's guards come first: Guards at Tool about to run is a locked workflow bound to no state, at the head
-of the list in every journal, drawn back by any boot that finds it missing, where a skill owed holds the tool
+of the list in every journal, drawn back by any boot that finds it missing, where a skill owed holds a write
 until its file is read, a write before the look at what is in flight here is held until `journal environment
-here`, the unread inbox is named every so many tool uses and the write held after so many namings, and a read
-message answered before the next tool, held after so many uses. Then the conduct for every
+here`, a write at a context mark not decided at is held until a fact, a rule or `journal nothing`, the unread
+inbox is named every so many tool uses and the write held after so many namings, and a read message answered
+before the next tool, held after so many uses. Every Always or Guards workflow at an agent event opens with the
+context mark, locked: the context crossing a quarter, a half or four fifths holds the agent at it, told to decide
+what survives, and the mark owed is a fact on its row until it does. Then the conduct for every
 state, one Always workflow per event, bound to no state and placed after the locked ones: Always at Session starts
 requires the journal skill (locked), names the inbox and marks the agent unoriented (locked), owing the look that
 `journal environment here` pays, Always at Prompt sent requires the skills a prompt names

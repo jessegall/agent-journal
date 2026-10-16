@@ -58,11 +58,10 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Plan updated | plans.approved, next, done, parked | the plan's state changed | type | a workflow later, in every state's on plans.updated, with plan-state checks and fillers |
 | Setting saved | voices.changed | a voice setting changed | type | stays with the voices feature |
 | Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |
-| Any event at a mark | memory.decide / held | context at 25, 50, 80 percent | say, hold | stays in the engine: the context marks |
+| Any event at a mark | memory.decide / held | context at 25, 50, 80 percent | say, hold | in every Always and Guards workflow at an agent event (Context over a mark not taken?, Hold the agent at a context mark, locked) and the write hold in Guards at Tool about to run; the mark owed is a fact on the agent's row, paid by fact, rule or nothing |
 | Any event | memory.whisper | a fact, rule or reminder's keyword in the prompt | say | stays with the memory feature: it reads the keywords of facts, rules and reminders, which no check reads |
 
-What stays in code by design, with why: the briefing and the hold until oriented (a start is the engine's), the
-context marks and their hold (a mark is the engine's), skills owed, delivery of typed lines, the shell runner's
+What stays in code by design, with why: the briefing (a start is the engine's), delivery of typed lines, the shell runner's
 parts and limits with its three refusals (a mixed journal chain, a whole read of a long file, a piped read of the
 user's words: each a guard on shell syntax), the reading of the agent's turn for etiquette and faces, and the state
 rules (carry on in hand, the awaited check) until each moves with its state. Every other line in the table above is
@@ -88,13 +87,13 @@ title and the state by its name.
 | awaiting | the workflow Awaiting | a worker reporting or stopping and the release are conduct |
 | waiting | the workflow Waiting | a question answered and the release are conduct |
 | expecting | the workflow Expecting | the check on the awaited thing, and the wait lifted by the agent's own tool use, are conduct |
-| a wait under a pause the agent owes | the wait's workflow, through the pause | a row event about a question or a worker reaches the wait beneath Orienting, AtMark or LoadingSkill: its workflow runs, its checks see the wait, and a release takes the wait out from under the pause, which keeps standing |
+| a wait while the agent owes the journal something | the wait's workflow | what the agent owes, a skill, the look at a start, a decision at a mark, is a fact on its row and never a state over the wait: a row event about a question or a worker reaches the wait itself, and the guards hold its writes until the debt is paid, which keeps standing |
 | every wait above | the engine, as the way out | a word from the user frees any wait that is not the agent's own doing, ruled once in Paused; so a wait whose workflow was emptied or edited still ends, and the page warns when a wait's workflow releases nothing |
 | running_sequence | the workflow Running a sequence | the step held at a stop is conduct; the stepping stays the state's move |
 | stuck | the workflow Stuck | the journal stays quiet until the agent's own tool use lifts the wait; the shared conduct runs under it |
 | orienting | a fact on the agent's row and the guards' hold | the look at what is in flight is owed as a fact, marked by Always at Session starts and paid by journal environment here; the state stays only until phase two retires it |
-| at_mark | the engine | the context mark's hold until something survives it is owed to the journal |
-| loading_skill | the engine | a skill owed before a state's work is the engine's |
+| at_mark | a fact on the agent's row and the guards' hold | the mark crossed is taken by Hold the agent at a context mark in every Always and Guards workflow and paid by fact, rule or nothing; the state stays only until phase two retires it |
+| loading_skill | a fact on the agent's row and the guards' hold | a skill owed is a link from the agent, set by Require a skill and paid by the read; the state stays only until phase two retires it |
 | ended | the engine, nothing | a session that ended says nothing and walks nothing |
 
 A state not in this table does not exist: the subagent state nothing ever entered is gone.
@@ -106,7 +105,7 @@ A state not in this table does not exist: the subagent state nothing ever entere
   `journal environment here`.
 - Skills forgotten at a compaction, so a start owes them again (skills); a state's skill is required by its own
   workflow at Session starts, the ones a prompt names by Always at Prompt sent.
-- The context mark: decide what survives, held there (memory/hold_at_mark); a new rule questioned once (memory/review_new_rule).
+- A new rule questioned once (memory/review_new_rule); the context mark is the workflows' now, as a fact on the agent's row.
 - A plan's advance and its approval (plans); a sequence's steps and its start on a row event (sequences); a
   question asked only through the journal (questions).
 - The shell runner's parts, limits and the mixed-journal refusal; a long file not read whole (shell).
