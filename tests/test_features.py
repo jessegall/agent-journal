@@ -1824,3 +1824,26 @@ def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, 
     for i in range(101, 1101):
         nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
     assert len([t for t in typed if "chat etiquette" in t]) - before == 1, "a thousand lines later the count is still exact: no flood once the entries outgrow a window"
+
+
+def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_ones(app):
+    from journal.models.plan_state import PlanState
+    from journal.models.task_state import TaskState
+    from journal.repositories.plans import Plans
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["plan", "create", "old", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "its own"], USER)
+    console.run(["plan", "add", "1", "finished"], USER)
+    console.run(["task", "start", "2"], AGENT)
+    console.run(["task", "done", "2", "--how", "done"], AGENT)
+    console.run(["plan", "create", "new", "--brief", "b"], USER)
+    console.run(["plan", "add", "2", "shared"], USER)
+    console.run(["plan", "phase", "1", "p", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "3"], USER)
+    out = console.run(["plan", "cancel", "1"], USER).out
+    assert "plan 1 cancelled, with tasks 1" in out
+    plans, tasks = app.container.get(Plans), app.container.get(Tasks)
+    assert plans.find(1).state == PlanState.CANCELLED and tasks.find(1).state == TaskState.CANCELLED
+    assert tasks.find(2).state == TaskState.DONE and tasks.find(3).state == TaskState.OPEN, "a done task stays done; a task the new plan holds too stays open"
+    assert tasks.find(1).id not in [t.id for t in plans.free(1)], "a cancelled task is offered to nobody"

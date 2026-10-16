@@ -23,6 +23,9 @@ class Task(Scoped):
     def parked(self, why: str) -> "Task":
         return self.with_(state=TaskState.PARKED, parked_why=why)
 
+    def cancelled(self) -> "Task":
+        return self.with_(state=TaskState.CANCELLED)
+
     def blocked(self, why: str) -> "Task":
         return self.with_(state=TaskState.BLOCKED, blocked_why=why)
 

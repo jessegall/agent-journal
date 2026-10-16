@@ -52,6 +52,7 @@ class PlanCommand(Command):
         self.verb(verbs, "approve", "the user's word: the plan may start").add_argument("n", type=int)
         self.verb(verbs, "start", "follow an approved plan: its first open task is started").add_argument("n", type=int)
         self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
+        self.verb(verbs, "cancel", "a plan given up, with the tasks that are its alone; one another live plan holds stays").add_argument("n", type=int)
         self.verb(verbs, "show", "a plan and its tasks").add_argument("n", type=int)
         self.verb(verbs, "list", "every plan here")
 
@@ -137,6 +138,12 @@ class PlanCommand(Command):
     def park(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(self.plans.find(args.n).parked(), where.actor)
         print(f"plan {plan.id} parked")
+        return 0
+
+    def cancel(self, args: Namespace, where: Where) -> int:
+        plan = self.plans.find(args.n)
+        gone = self.plans.cancel(plan, where.actor)
+        print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in gone)}" if gone else ""))
         return 0
 
     def brief(self, args: Namespace, where: Where) -> int:

@@ -1,7 +1,9 @@
 from journal.db.connection import Connection
 from journal.features.bus import Bus
+from journal.models.actor import Actor
 from journal.models.phase import Phase
 from journal.models.plan import Plan
+from journal.models.plan_state import PlanState
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
@@ -20,6 +22,20 @@ class Plans(ScopedRepository[Plan]):
     def __init__(self, connection: Connection, bus: Bus, links: Links, tasks: Tasks, phases: Phases) -> None:
         super().__init__(connection, bus)
         self.links, self.tasks, self.phases = links, tasks, phases
+
+    def cancel(self, plan: Plan, by: Actor) -> list[Task]:
+        """The plan cancelled with the tasks that are its alone: a task not done that another live plan also holds stays; the cancelled tasks are returned."""
+        cancelled = []
+        for task in self.tasks_of(plan):
+            if task.state in (TaskState.DONE, TaskState.CANCELLED) or self.held_elsewhere(task, plan):
+                continue
+            cancelled.append(self.tasks.save(task.cancelled(), by))
+        self.save(plan.cancelled(), by)
+        return cancelled
+
+    def held_elsewhere(self, task: Task, plan: Plan) -> bool:
+        """Whether another plan that is not cancelled holds this task too."""
+        return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
 
     def tasks_of(self, plan: Plan) -> list[Task]:
         """In the order they were added."""

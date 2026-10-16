@@ -26,3 +26,6 @@ class Plan(Scoped):
 
     def done(self) -> "Plan":
         return self.with_(state=PlanState.DONE)
+
+    def cancelled(self) -> "Plan":
+        return self.with_(state=PlanState.CANCELLED)

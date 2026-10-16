@@ -8,3 +8,4 @@ class PlanState(StrEnum):
     STARTED = "started"
     PARKED = "parked"
     DONE = "done"
+    CANCELLED = "cancelled"

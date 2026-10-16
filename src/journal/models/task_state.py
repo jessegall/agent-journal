@@ -7,3 +7,4 @@ class TaskState(StrEnum):
     PARKED = "parked"
     BLOCKED = "blocked"
     DONE = "done"
+    CANCELLED = "cancelled"
