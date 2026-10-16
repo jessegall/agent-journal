@@ -771,4 +771,9 @@ read, refusing a stale one naming who saved first; the page is an event list and
 to reorder, filtered by state; a locked workflow or step is the journal's law: the seed draws the holds locked, a
 locked workflow keeps the head of its event's list and is neither deleted nor turned off, a locked step is neither
 taken out, reworded (its numbers may change) nor gated by a check or a Stop here of the user's, and the
-DRAWINGS_VERSION bump that locks the holds in a standing journal comes with the Always workflows.
+DRAWINGS_VERSION bump that locks the holds in a standing journal came with the Always workflows: the tool conduct
+is the locked Guards at Tool about to run (whole, the holds and the naming around them, since one path cannot be
+split), the inbox and the message named are Always workflows per shared event after the locked ones, a state's
+shipped workflow carries only its own steps and a state with nothing own at an event ships none there, a standing
+journal's copies are released at boot (unedited gone, edited kept as the user's with the shared nodes stripped),
+and A message is updated has no conduct to ship, so no Always workflow stands there yet.

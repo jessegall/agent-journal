@@ -14,18 +14,18 @@ SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "e
 """The states the journal ships workflows for."""
 PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "working", "following_plan")
 """The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
-OWN_EVENTS_ONLY = ("following_plan",)
-"""A state under a parent ships only its own events: the parent's workflows serve the rest, and a shared-only one here would shadow them."""
 SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "messages.created")
-"""The events every state's workflows carry the shared conduct on: the inbox and the answers owed."""
+"""The events with conduct for every state, shipped as an Always workflow each: the inbox named at a stop, a start and a prompt, and a message that comes named."""
 GUARDS = {"tool_starting": "Guards at Tool about to run"}
 """The journal's guards, one locked workflow per event bound to no state, first in the event's list in every journal: at a tool use, the inbox named and the write held while a message waits, and the answer owed held."""
 HEAD = -1000
 """Where a locked workflow is placed: before anything the user orders."""
+ALWAYS_PLACE = -500
+"""Where an Always workflow is placed when drawn: after the locked ones, before the states' and the user's, until the user drags it."""
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 7
+DRAWINGS_VERSION = 8
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -58,7 +58,7 @@ ANSWERED = "question {{question_n}} is answered. journal question show {{questio
 CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
 STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequence_step_text}}. journal sequence next when it is done"
 class ShippedChart(Seed):
-    """The workflows the journal ships, one per state per trigger, each carrying the shared conduct of its event as well as the state's own: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
+    """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
     def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue) -> None:
         self.states = states
@@ -82,12 +82,12 @@ class ShippedChart(Seed):
         shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "messages.created": self.shared_at_message}
         self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
-            shared_here = set() if state in OWN_EVENTS_ONLY else set(SHARED_EVENTS)
-            events = sorted({e for st, e in own if st == state} | shared_here, key=EVENT_ORDER.index)
-            for event in events:
-                self.drawings[self.key_of(state, event)] = Drawing(self.title_of(state, event), self.composed(own.get((state, event)), shared.get(event)))
+            for event in sorted({e for st, e in own if st == state}, key=EVENT_ORDER.index):
+                self.drawings[self.key_of(state, event)] = Drawing(self.title_of(state, event), self.composed(own[(state, event)], None))
+        for event in SHARED_EVENTS:
+            self.drawings[self.key_of("", event)] = Drawing(f"Always at {self.catalogue.entry(NodeKind.TRIGGER, event).title}", self.composed(None, shared[event]))
         self.drawings[self.key_of("", "tool_starting")] = Drawing(GUARDS["tool_starting"], self.composed(None, self.shared_at_tool), locked=True)
-        """One drawing per state per trigger, named state:event, the state's own steps first and the shared conduct of the event after them; then the journal's guards, named :event, locked and bound to no state."""
+        """One drawing per state per trigger it has steps of its own at, named state:event; then the conduct for every state as an Always workflow per shared event and the journal's guards, named :event, bound to no state."""
 
     def title_of(self, state: str, event: str) -> str:
         return f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
@@ -118,7 +118,29 @@ class ShippedChart(Seed):
                     self.draw(key, by)
             elif self.outdated(standing):
                 self.reset(standing, by)
+        self.release_what_no_drawing_names(by)
+        self.strip_the_shared_conduct(by)
         self.settings.set(DRAWINGS_VERSION_KEY, DRAWINGS_VERSION, by)
+
+    def release_what_no_drawing_names(self, by: Actor) -> None:
+        """A shipped workflow whose drawing the journal no longer ships, a state's at an event it has nothing of its own at: gone when unedited, else the user's own, its shared conduct stripped, still bound where it was."""
+        for chart in [c for c in self.charts.shipped() if c.drawing and c.drawing not in self.drawings]:
+            if all(n.shipped for n in self.charts.nodes_of(chart)):
+                self.charts.remove(chart, by)
+                continue
+            self.strip(chart, by)
+            self.charts.save(chart.with_(shipped=False, drawing="", title=chart.title + KEPT), by)
+
+    def strip_the_shared_conduct(self, by: Actor) -> None:
+        """An edited state's workflow drawn when it still carried the event's shared conduct loses those shipped nodes, now an Always workflow's, and keeps the user's own and the state's."""
+        for chart in [c for c in self.charts.shipped() if c.state and c.drawn_version < DRAWINGS_VERSION]:
+            self.strip(chart, by)
+
+    def strip(self, chart: Chart, by: Actor) -> None:
+        """The shipped nodes of the chart that the event's stateless workflows carry, by kind, key and words, taken out with their lines."""
+        carried = {(n.kind, n.key, n.text) for c in self.charts.for_event(chart.event) if not c.state for n in self.charts.nodes_of(c) if n.kind != NodeKind.TRIGGER}
+        for node in [n for n in self.charts.nodes_of(chart) if n.shipped and (n.kind, n.key, n.text) in carried]:
+            self.charts.remove_node(node, by)
 
     @staticmethod
     def key_of(state: str, event: str) -> str:
@@ -136,10 +158,15 @@ class ShippedChart(Seed):
         """A shipped drawing drawn anew as its own workflow, named after it; a locked one at the head of its event's list, the rest in the states' order."""
         state, event = key.split(":", 1)
         drawing = self.drawings[key]
-        place = HEAD + len([c for c in self.charts.for_event(event) if c.locked]) if drawing.locked else self.state_place(state)
+        place = self.stateless_place(event, drawing.locked) if not state else self.state_place(state)
         chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=place), by)
         drawing.draw(chart)
         return chart
+
+    def stateless_place(self, event: str, locked: bool) -> int:
+        """A locked workflow at the head, an Always one after the locked ones: each before the states' and the user's, in the order drawn."""
+        standing = [c for c in self.charts.for_event(event) if not c.state and c.locked == locked]
+        return (HEAD if locked else ALWAYS_PLACE) + len(standing)
 
     @staticmethod
     def state_place(state: str) -> int:
@@ -199,12 +226,13 @@ class ShippedChart(Seed):
             self.charts.save(chart.with_(title=f"{chart.title} (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)"), by)
 
     def reset(self, chart: Chart, by: Actor) -> Chart:
-        """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew, one more revision."""
+        """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew at the place its state ships at, one more revision."""
         drawing = self.drawings[chart.drawing or self.key_of(chart.state, chart.event)]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
-        return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION), by)
+        place = self.state_place(chart.state) if chart.state else chart.place
+        return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION, place=place), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:
         """A shipped node; a hold is a guard of the journal's protocol and is drawn locked."""

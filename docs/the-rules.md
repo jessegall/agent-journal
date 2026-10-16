@@ -73,7 +73,7 @@ check is built, and the rows marked phase 2 move into their state's workflow wit
 
 ## Every state, and who holds its conduct
 
-One workflow per state per trigger, each carrying the shared conduct of its event; a state's workflow at an event is found by the
+The conduct for every state is an Always workflow per event, after the locked guards; a state's own steps are its workflow at the trigger, found by the
 state's class and then its parents, so following a plan takes Working's workflow and every wait takes its own
 before Paused's. The event the Stop hook sends is keyed `idle` in the catalogue, where its title is Agent stops;
 the state the agent rests in is also called idle, so the trial, the commands and the page name the event by its

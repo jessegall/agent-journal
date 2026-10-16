@@ -4,10 +4,10 @@ The Workflow page shows how the journal treats the agent as a flowchart, and let
 one event, the trigger it holds, and is bound to a state, running only while the agent is in that state, or to none,
 running always. An event may have any number of workflows, and they run in one order, the place each holds in the
 event's list, which the user sets; a workflow bound to a child state, Following a plan under Working, replaces its
-parent's at that event, and the state beneath an owed pause counts as the agent's. Each shipped workflow carries the
-shared conduct of its event, the inbox and the answers owed, as well as the state's own, until the shared conduct
-becomes workflows of its own at the head of each list. The journal ships them with today's conduct, so nothing
-changes until you edit them.
+parent's at that event, and the state beneath an owed pause counts as the agent's. The conduct for every state, the inbox
+and the answers owed, is an Always workflow per event at the head of each list, after the locked guards, and a
+state's shipped workflow carries only the state's own steps. The journal ships them with today's conduct, so
+nothing changes until you edit them.
 
 The walk reads the agent's state once, right after the engine's machine has answered the event and before the engine's
 holds, and every check and filler reads that same state; a session start is walked as the state the agent resumes
@@ -39,9 +39,11 @@ journal clears the compiled graphs, so the next walk reads the edit.
 The journal's guards come first: Guards at Tool about to run is a locked workflow bound to no state, at the head
 of the list in every journal, drawn back by any boot that finds it missing, where the unread inbox is named every
 so many tool uses and the write held after so many namings, and a read message answered before the next tool, held
-after so many uses. Every state has a workflow at each of the other shared events, carrying the shared conduct: a
-message arriving is typed to the agent; the inbox named at a start, a prompt and a stop. And each state adds its
-own, at its own events:
+after so many uses. Then the conduct for every state, one Always workflow per event, bound to no state and placed
+after the locked ones: Always at Agent stops, Session starts and Prompt sent name the inbox, Always at A message is
+created types a message that comes to the agent. A state's workflow at an event carries only the state's own
+steps, and a state with nothing of its own at an event has no workflow there; a copy from before, edited by you,
+keeps your steps and the state's and loses the shared ones at the boot that moves them. Each state's own:
 
 - **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks, the
   parked ask after a minute and the check-in after half an hour.
@@ -86,8 +88,8 @@ A workflow of your own is for a state at an event no default covers, made with N
   in brackets, `[messages.new]`, speaks as that nudge.
 
 Lines join the boxes: then from a trigger or an action, yes or no from a check, and one line per port, so a
-workflow is one path read top to bottom and nothing runs side by side. The shipped workflows chain the state's own
-steps first and the event's shared conduct after them, every open end leading on to the next part. A step that
+workflow is one path read top to bottom and nothing runs side by side. A shipped workflow chains its steps into one
+path, every open end leading on to the next part. A step that
 raises is recorded where the page shows it and the path goes on past it, by no from a check and by then from an
 action, so one broken step never silences what follows.
 

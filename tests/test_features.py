@@ -1533,15 +1533,15 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_keeps_edited_ones
     from journal.repositories.charts import Charts
     charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.system()
     idle = charts.for_pair("idle", "idle")
-    assert idle.shipped and idle.title == "Idle at Agent stops" and len(charts.nodes_of(idle)) > 10, "a state's workflow at an event carries the shared conduct as well as its own"
-    for node in charts.nodes_of(idle)[5:]:
+    assert idle.shipped and idle.title == "Idle at Agent stops" and len(charts.nodes_of(idle)) > 5, "a state's workflow at an event carries the state's own steps"
+    for node in charts.nodes_of(idle)[3:]:
         charts.remove_node(node, by)
     seed.run()
-    assert len(charts.nodes_of(charts.for_pair("idle", "idle"))) == 5, "an edited workflow is the user's: never overwritten, never doubled"
+    assert len(charts.nodes_of(charts.for_pair("idle", "idle"))) == 3, "an edited workflow is the user's: never overwritten, never doubled"
     charts.remove(charts.for_pair("idle", "idle"), by)
     seed.run()
-    assert charts.for_pair("idle", "idle") and len(charts.nodes_of(charts.for_pair("idle", "idle"))) > 10, "a journal lacking a shipped workflow gets it at boot"
-    assert len(charts.shipped()) == len(seed.drawings) and all(c.event and (c.state or c.locked) for c in charts.shipped()), "one shipped workflow per drawing: a state's at a trigger, or the journal's locked guards at one"
+    assert charts.for_pair("idle", "idle") and len(charts.nodes_of(charts.for_pair("idle", "idle"))) > 5, "a journal lacking a shipped workflow gets it at boot"
+    assert len(charts.shipped()) == len(seed.drawings) and all(c.event and c.drawing for c in charts.shipped()), "one shipped workflow per drawing: a state's at a trigger it has steps at, an Always one or the guards at an event"
     unedited = charts.save(Chart(title="Agent stops", shipped=True, event="idle"), by)
     charts.add_node(unedited, Node(kind=NodeKind.TRIGGER, key="idle", shipped=True), by)
     edited = charts.save(Chart(title="Tool about to run", shipped=True, event="tool_starting"), by)
@@ -1559,17 +1559,22 @@ def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(a
     console = app.console()
     console.run(["environment", "here"], AGENT)
     port = app.server().port
-    read = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    free = next(c for c in charts.shipped() if not any(n.locked for n in charts.nodes_of(c)) and any(n.kind == NodeKind.ACTION for n in charts.nodes_of(c))).id
+    read = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/{free}", headers={"X-Journal-Env": "main"}), timeout=5))
     assert all(n["shipped"] for n in read["nodes"])
     nodes = read["nodes"]
-    nodes[-1]["text"] = "my own words"
+    k = max(i for i, n in enumerate(nodes) if n["kind"] != "trigger" and not n["locked"])
+    nodes[k]["text"] = "my own words"
     nodes[0]["x"] = 99
-    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{free}", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         saved = j.loads(r.read())
-    assert saved["nodes"][-1]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
+    assert saved["nodes"][k]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
     assert "(edited)" in console.run(["chart", "show"], AGENT).out
-    assert "reset to the shipped one, revision 2" in console.run(["chart", "reset", "1"], AGENT).out
-    again = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))
+    assert "reset to the shipped one, revision 2" in console.run(["chart", "reset", str(free)], AGENT).out
+    again = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/{free}", headers={"X-Journal-Env": "main"}), timeout=5))
     assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
 
 
@@ -1618,7 +1623,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 4, 5, 6, 7" in out, "one path: the parked check, auto mode, the open task held, then the inbox check finds nothing unread"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 6" in out, "one path through Idle's own: the parked check, auto mode, the open task held, after the Always inbox check found nothing unread"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
     console.run(["message", "send", "are you there?"], USER)
@@ -1717,7 +1722,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert listed["workflows"][0]["title"] == "Idle at Agent stops" and all(w["event"] and (w["state"] or w["locked"]) for w in listed["workflows"]) and listed["catalogue"]
+    assert listed["workflows"][0]["title"] == "Idle at Agent stops" and all(w["event"] for w in listed["workflows"]) and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings", "state": "idle", "trigger": "tool_finished"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and [n["key"] for n in made["nodes"]] == ["tool_finished"], "born with its trigger"
@@ -2055,8 +2060,10 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     console.run(["message", "send", "are you there?"], USER)
     app.runtime().deferred.drain()
     assert typed.count("[journal] new message 1") == 1, "named once, by the workflow"
-    assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "idle", "--on", "messages.created"], USER).out
-    assert "[idle at messages.created, place" in console.run(["chart", "show"], USER).out
+    from journal.repositories.charts import Charts
+    always = next(c for c in app.container.get(Charts).for_event("messages.created") if not c.state)
+    assert "reset to the shipped one" in console.run(["chart", "reset", str(always.id)], USER).out
+    assert "[always at messages.created, place" in console.run(["chart", "show"], USER).out
 
 
 def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, monkeypatch):
@@ -2298,7 +2305,7 @@ def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monke
     read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))["workflows"]
     assert all(w["last_walk"] == {} and w["last_failure"] == {} for w in read()), "nothing walked yet"
     hook(app, "SessionStart")
-    base = next(w for w in read() if w["state"] == "idle" and w["event"] == "session_started")
+    base = next(w for w in read() if w["state"] == "" and w["event"] == "session_started")
     assert base["last_walk"]["trigger"] == "Session starts" and base["last_walk"]["at"] > 0 and base["last_failure"] == {}
     app.console().run(["message", "send", "a word for the agent"], USER)
 
@@ -2306,7 +2313,7 @@ def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monke
         raise RuntimeError("the typist is out")
     monkeypatch.setattr(Actions, "say", broken)
     hook(app, "UserPromptSubmit", prompt="hello")
-    base = next(w for w in read() if w["state"] == "idle" and w["event"] == "prompt_submitted")
+    base = next(w for w in read() if w["state"] == "" and w["event"] == "prompt_submitted")
     assert base["last_failure"]["key"] == "say" and "RuntimeError: the typist is out" in base["last_failure"]["fault"] and base["last_failure"]["at"] > 0
 
 
@@ -2340,7 +2347,7 @@ def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "working", "--on", "tool_starting"], USER).out
     assert "is a shipped one and stays" in console.run(["chart", "drop", "1"], USER).err
     shown = console.run(["chart", "show"], USER).out
-    assert shown.index("[expecting at idle") < shown.index("[idle at idle") < shown.index("[working at idle") < shown.index("[awaiting at workers") < shown.index(f"workflow {mine} ["), "by event in the order the events come, then in the order the workflows run, the waits first; your own at an event no default has comes last"
+    assert shown.index("[always at idle") < shown.index("[idle at idle") < shown.index("[working at idle") < shown.index("[awaiting at workers") < shown.index(f"workflow {mine} ["), "by event in the order the events come, then in the order the workflows run, the waits first; your own at an event no default has comes last"
 
 def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, monkeypatch):
     import json
@@ -2509,6 +2516,10 @@ def test_an_upgrade_keeps_a_users_edited_workflow_when_the_shipped_one_changes_s
     kept = charts.find(working.id)
     assert kept.shipped and any(n.id == mine for n in charts.nodes_of(kept)), "the edited shipped workflow is kept with the user's node, still the state's workflow"
     assert charts.find(idle.id).drawn_version == shipped_chart.DRAWINGS_VERSION and all(n.shipped for n in charts.nodes_of(charts.find(idle.id))), "an unedited shipped workflow is redrawn at the new shipping"
+    charts.save(charts.find(idle.id).with_(place=0, drawn_version=1), Actor.user(1))
+    monkeypatch.setattr(shipped_chart, "DRAWINGS_VERSION", shipped_chart.DRAWINGS_VERSION + 1)
+    app.container.get(ShippedChart).run()
+    assert charts.find(idle.id).place == ShippedChart.state_place("idle"), "redrawn, a state's workflow takes the place its state ships at, so a journal from before places has the waits first"
     named = {w["id"]: w for w in [app.container.get(ChartController).named(c) for c in charts.all()]}
     assert named[working.id]["behind"] is True and named[working.id]["edited"] is True, "the page says the shipping moved past the user's edit"
     assert named[idle.id]["behind"] is False
@@ -2671,3 +2682,44 @@ def test_a_boot_adds_the_missing_locked_guards_at_the_head_of_the_list_and_leave
     assert charts.find(working.id).revision == edited.revision and any(n.id == mine for n in charts.nodes_of(charts.find(working.id))), "the user's edited workflow is not touched"
     assert charts.find(own).revision == made.revision and charts.find(own).event == "tool_starting", "nor the user's own"
     assert app.container.get(ChartController).named(back)["locked"] is True, "the page shows the insertion by its lock"
+
+
+def test_the_shared_conduct_is_an_always_workflow_per_event_after_the_locked_ones_and_a_state_ships_only_its_own(app):
+    from journal.features.chart.seeds.shipped_chart import KEPT, SHARED_EVENTS, ShippedChart
+    from journal.models.chart import Chart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    from journal.repositories.settings import Settings
+    charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.system()
+    for event in SHARED_EVENTS:
+        listed = charts.for_event(event)
+        always = next(c for c in listed if not c.state)
+        assert always.shipped and not always.locked and always.title.startswith("Always at") and listed.index(always) == 0, f"the conduct for every state at {event} is one Always workflow, first in the list"
+    tool = charts.for_event("tool_starting")
+    assert tool[0].locked and all(c.state for c in tool[1:]), "at a tool use the guards are the stateless one, locked at the head"
+    assert charts.for_pair("idle", "tool_starting") is None and charts.for_pair("awaiting", "idle") is None, "a state with nothing of its own at a shared event ships no workflow"
+    working = charts.for_pair("working", "idle")
+    assert working and not any(n.text.startswith("[messages.") for n in charts.nodes_of(working)), "a state's workflow carries only its own steps"
+    ids_before = {c.id: c.place for c in charts.for_event("idle")}
+    charts.remove(next(c for c in charts.for_event("idle") if not c.state), by)
+    seed.run()
+    seed.run()
+    after = charts.for_event("idle")
+    assert not after[0].state and after[0].title == "Always at Agent stops" and all(ids_before[c.id] == c.place for c in after[1:]), "a re-seed puts a new Always workflow at the head and keeps every other position; two boots keep it"
+    assert len([c for c in charts.shipped() if not c.state]) == len(SHARED_EVENTS) + 1, "the stateless shipped workflows stand across boots, never retired as the older shape"
+    older = charts.save(Chart(title="Stuck at Agent stops", shipped=True, state="stuck", event="idle", drawing="stuck:idle", drawn_version=7), by)
+    seed.composed(None, seed.shared_inbox)(older)
+    edited = charts.save(Chart(title="Expecting at Agent stops", shipped=True, state="expecting", event="idle", drawing="expecting:idle", drawn_version=7), by)
+    seed.composed(None, seed.shared_inbox)(edited)
+    mine = charts.add_node(edited, Node(kind=NodeKind.ACTION, key="say", text="[chart] mine"), by)
+    seed.composed(seed.working_carries_on, seed.shared_inbox)(working)
+    theirs = charts.add_node(working, Node(kind=NodeKind.ACTION, key="say", text="[chart] theirs"), by)
+    charts.save(working.with_(drawn_version=7), by)
+    app.container.get(Settings).set("chart.drawings_version", 7, by)
+    seed.run()
+    assert charts.for_pair("stuck", "idle") is None, "an unedited copy of the older shape at an event the state has nothing at goes"
+    kept = charts.for_pair("expecting", "idle")
+    assert kept and not kept.shipped and kept.title.endswith(KEPT) and [n.id for n in charts.nodes_of(kept) if n.kind != NodeKind.TRIGGER] == [mine.id], "an edited one is kept as the user's, bound where it was, its shared conduct stripped"
+    nodes = charts.nodes_of(charts.find(working.id))
+    assert charts.find(working.id).shipped and any(n.id == theirs.id for n in nodes) and not any(n.text.startswith("[messages.") for n in nodes) and any(n.shipped and n.kind == NodeKind.CHECK for n in nodes), "an edited state's workflow loses the shipped shared nodes and keeps the user's and the state's own"
