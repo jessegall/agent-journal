@@ -306,7 +306,7 @@ def test_tool_about_to_run_as_the_shipped_workflow_equals_the_three_listeners_on
     tool_uses_with_the_inbox(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert "new message 1" in str(by_name["read 3"]["answer"]) and by_name["read 4"]["answer"] == {}, "the listener names the inbox every third use"
-    assert "your inbox is unread: 1 waiting" in str(by_name["a write at 17"]["answer"]), "and holds the write after five namings"
+    assert "you have 1 unread messages" in str(by_name["a write at 17"]["answer"]), "and holds the write after five namings"
     assert "answer message 1 first" in str(by_name["a read while owed"]["answer"]) and by_name["a journal command while owed"]["answer"] == {} and by_name["a look at its files"]["answer"] == {} and by_name["a read after the reply"]["answer"] == {}
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 

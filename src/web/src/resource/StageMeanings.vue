@@ -6,7 +6,7 @@ import SectionHeading from "../kit/SectionHeading.vue";
 
 const props = defineProps({board: {type: Object, required: true}});
 const MEANINGS = [
-    {value: "", label: "Nothing"},
+    {value: "", label: "None"},
     {value: "start", label: "Work starts"},
     {value: "review", label: "Ready for review"},
     {value: "done", label: "Done"},

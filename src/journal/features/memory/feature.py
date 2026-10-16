@@ -23,13 +23,13 @@ class Memory(Feature):
     MARKS = (25, 50, 80)
     """Percent of the context window at which the agent is asked to decide what survives."""
 
-    DECIDE = Nudge(name, "decide", "context {{percent}}% full: record what must survive it", "journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do", repeat_after=0)
-    HELD = Nudge(name, "held", "writes wait until you decide what survives the context", "journal fact create, journal rule create, or journal nothing \"<why>\"")
-    RULE_REVIEW = Nudge(name, "rule_review", "is rule {{n}} a ruling for the whole project?", "keep it only as Always or Never for every environment; otherwise strike it and file a fact or a reminder here")
+    DECIDE = Nudge(name, "decide", "context {{percent}}% full: decide what to keep from it", "journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do", repeat_after=0)
+    HELD = Nudge(name, "held", "writes wait until you decide what to keep from the context", "journal fact create, journal rule create, or journal nothing \"<why>\"")
+    RULE_REVIEW = Nudge(name, "rule_review", "does rule {{n}} apply to the whole project?", "keep it only as Always or Never for every environment; otherwise delete it and record a fact or a reminder here")
     WHISPER = Nudge(name, "whisper", "{{noun}} {{n}}: {{text}}", repeat_after=ONCE)
     nudges = (DECIDE, HELD, RULE_REVIEW, WHISPER)
 
-    skill = Skill("memory", 'Decide what survives the context window: a fact, a rule or a reminder; load it at a context mark', """
+    skill = Skill("memory", 'Decide what to keep from the context window: a fact, a rule or a reminder; load it at a context mark', """
 # Memory
 
 At a mark of the context window, writes wait until you decide what must survive it.

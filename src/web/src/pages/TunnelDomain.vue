@@ -33,13 +33,13 @@ async function release() {
             <span class="domain-ask">
                 Move this journal to a new address? Share links stop working and a paired phone has to be paired again.
             </span>
-            <Btn small kind="primary" :busy="busy" @click="release">Move</Btn>
-            <Btn small @click="asking = false">Keep</Btn>
+            <Btn small kind="primary" :busy="busy" @click="release">Move to the new address</Btn>
+            <Btn small @click="asking = false">Keep it</Btn>
         </template>
         <template v-else-if="asking">
             <span class="domain-ask">Release it? Anyone can claim it after.</span>
-            <Btn small kind="primary" :busy="busy" @click="release">Release</Btn>
-            <Btn small @click="asking = false">Keep</Btn>
+            <Btn small kind="primary" :busy="busy" @click="release">Release the address</Btn>
+            <Btn small @click="asking = false">Keep it</Btn>
         </template>
         <template v-else>
             <Btn small @click="asking = true">{{ own ? "Move to a new address" : "Release" }}</Btn>

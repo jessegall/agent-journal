@@ -39,7 +39,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "answer message 1 before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
+          "additionalContext": "answer message 1 before you do anything else. a reply with [!reply:N]; an emoji reaction answers only a short message"
         }
       },
       "typed": [],
@@ -68,7 +68,7 @@
     {
       "name": "read 4 while owed",
       "answer": {
-        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
       "nudges": [],
@@ -82,7 +82,7 @@
     {
       "name": "read 5 while owed",
       "answer": {
-        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
       "nudges": [],

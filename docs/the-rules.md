@@ -23,7 +23,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 
 | Event | Line (nudge key) | Checks it needs | Action | Catalogue today |
 | --- | --- | --- | --- | --- |
-| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | in the locked workflow the guards at Tool about to run, on the counts of uses and namings; its listener is deleted |
+| Tool about to run | messages.unread_held: "you have N unread messages" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | in the locked workflow the guards at Tool about to run, on the counts of uses and namings; its listener is deleted |
 | Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | in the locked workflow the guards at Tool about to run, on the count of uses owed; its listener is deleted |
 | Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | stays in code: a shell-syntax guard, with the mixed-journal and narrow-read refusals |
 | Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | in the workflow Working at Tool about to run, on the edits count the workflows keep; its listener is deleted |

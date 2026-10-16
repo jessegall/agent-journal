@@ -44,7 +44,7 @@ onMounted(async () => {
                 <b>The agent is waiting for a secret: {{ row.title }}</b>
                 <span class="secrets-reason">{{ row.data.asked }}</span>
                 <template #actions>
-                    <Btn kind="primary" small @click="emit('open', row.n)">Fill it in</Btn>
+                    <Btn kind="primary" small @click="emit('open', row.n)">Enter the values</Btn>
                 </template>
             </Notice>
         </template>
@@ -57,17 +57,22 @@ onMounted(async () => {
                         <span>{{ whenWords(row) }}</span>
                     </span>
                     <template v-if="isWaiting(row)">
-                        <Chip tone="accent">Waiting: a value</Chip>
+                        <Chip tone="accent">Needs a value</Chip>
                     </template>
                     <Icon name="chevron" :size="12" />
                 </button>
             </template>
             <template v-if="!secrets.length">
-                <EmptyState :loading="!hasLoaded('secret')">No secrets yet. Add a key or a login the agent may use without seeing it.</EmptyState>
+                <EmptyState :loading="!hasLoaded('secret')">
+                    No secrets yet. Add a key or a login the agent may use without seeing it.
+                </EmptyState>
             </template>
         </ListBox>
         <div class="secrets-bar">
-            <Btn kind="primary" @click="emit('new')"><Icon name="plus" :size="12" /> New secret</Btn>
+            <Btn kind="primary" @click="emit('new')">
+                <Icon name="plus" :size="12" />
+                New secret
+            </Btn>
         </div>
         <div class="secrets-file">
             <b>Where the values are kept</b>

@@ -23,7 +23,7 @@ class Plans(Feature):
     PARKED = Nudge(name, "parked", "the user parked plan {{n}}")
     APPROVED = Nudge(name, "approved", "the user approved plan {{n}}", "journal plan start {{n}} begins its first task", repeat_after=0)
     CHECKPOINT = Nudge(name, "checkpoint", "plan {{n}}: phase {{phase}} is complete and a checkpoint", "the user looks before the next phase; wait for their word, then journal plan start {{n}}", repeat_after=0)
-    CHECKPOINT_PASSED = Nudge(name, "checkpoint_passed", "plan {{n}}: phase {{phase}} is complete, and in auto mode its checkpoint is no stop", "journal plan start {{n}} begins the next phase; carry on", repeat_after=0)
+    CHECKPOINT_PASSED = Nudge(name, "checkpoint_passed", "plan {{n}}: phase {{phase}} is complete, and in auto mode it does not stop you", "journal plan start {{n}} begins the next phase; carry on", repeat_after=0)
     nudges = (NEXT, DONE, PARKED, APPROVED, CHECKPOINT, CHECKPOINT_PASSED)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """

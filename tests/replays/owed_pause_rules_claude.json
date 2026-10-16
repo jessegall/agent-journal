@@ -22,7 +22,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "context 80% full: record what must survive it. journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do"
+          "additionalContext": "context 80% full: decide what to keep from it. journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do"
         }
       },
       "typed": [],

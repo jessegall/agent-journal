@@ -25,7 +25,7 @@
       "name": "quiet for half an hour",
       "answer": null,
       "typed": [
-        "[journal] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
+        "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
       ],
       "nudges": [
         "tasks.check_in"
@@ -52,7 +52,7 @@
       "name": "a minute with a task parked",
       "answer": null,
       "typed": [
-        "[journal] task 1, the footer, is still parked: can you continue it now?. it was parked because: the header first. journal task resume 1 picks it up again"
+        "[journal] task 1, the footer, is still parked: can you continue it now? It was parked because: the header first. journal task resume 1 picks it up again"
       ],
       "nudges": [
         "tasks.parked_still"

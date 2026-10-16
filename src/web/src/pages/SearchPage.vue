@@ -46,7 +46,10 @@ async function run() {
         return;
     }
     try {
-        const [found, gone] = await Promise.all([api.search(query, archived.value, picked.value), attic.value ? api.searchAttic(query) : []]);
+        const [found, gone] = await Promise.all([
+            api.search(query, archived.value, picked.value),
+            attic.value ? api.searchAttic(query) : [],
+        ]);
         if (current === request) [hits.value, more.value, removed.value] = [found.hits, found.more, gone];
     } finally {
         if (current === request) searching.value = false;
@@ -113,10 +116,10 @@ watch(
                         <div class="archived">
                             <span>Archived</span>
                             <template v-if="brought[r.ref]">
-                                <small>Brought back</small>
+                                <small>Restored</small>
                             </template>
                             <template v-else>
-                                <Btn small @click="restore(r)">Bring back</Btn>
+                                <Btn small @click="restore(r)">Restore</Btn>
                             </template>
                         </div>
                     </template>
@@ -146,10 +149,10 @@ watch(
                         <span class="removed-place">{{ hit.environment }} · {{ hit.ref.replace(":", " ") }}</span>
                         <span class="removed-title">{{ hit.title }}</span>
                         <template v-if="restored[hit.environment]">
-                            <small>Brought back</small>
+                            <small>Restored</small>
                         </template>
                         <template v-else>
-                            <Btn small @click="bringBack(hit.environment)">Bring back {{ hit.environment }}</Btn>
+                            <Btn small @click="bringBack(hit.environment)">Restore {{ hit.environment }}</Btn>
                         </template>
                     </li>
                 </template>

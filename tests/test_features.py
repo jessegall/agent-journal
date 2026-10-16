@@ -508,7 +508,7 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
     hook(app, "MessageDisplay", message="👍")
     app.runtime().deferred.drain()
     assert [m.text for m in messages.in_()] == ["thanks, carry on", "Done."], "a turn that is only a face is not posted"
-    assert typed[-1].startswith("[journal] your turn was only 👍, so it was not posted")
+    assert typed[-1].startswith("[journal] your reply was only 👍, so it was not posted")
 
 
 def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monkeypatch):
@@ -544,7 +544,7 @@ def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch)
     hook(app, "MessageDisplay", message="The build — the one from last night — is green.")
     hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
     app.runtime().deferred.drain()
-    assert any("em dashes" in line for line in typed) and any("ran its paragraphs together" in line for line in typed)
+    assert any("em dashes" in line for line in typed) and any("no blank lines between paragraphs" in line for line in typed)
 
 
 def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, monkeypatch):
@@ -640,7 +640,7 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
     named = [i for i in range(1, 16) if "new message 1" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1])]
     assert named == [3, 6, 9, 12, 15] or len(named) >= 4, "every third tool use names the inbox"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    assert status == 409 and "your inbox is unread" in body["error"]
+    assert status == 409 and "unread messages" in body["error"]
     app.console().run(["message", "read", "1"], AGENT)
     app.console().run(["message", "react", "1", "👍"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -764,7 +764,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "auto off: the checkpoint waits for the user's look, said at the stop"
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and "in auto mode its checkpoint is no stop" in body["reason"], "auto on: the checkpoint is no stop, said by the plan state's own workflow"
+    assert body.get("decision") == "block" and "in auto mode it does not stop you" in body["reason"], "auto on: the checkpoint is no stop, said by the plan state's own workflow"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
     hook(app, "SessionStart", session_id="s2")
     assert machine.current("s2") == FollowingPlan(plan_id=1, task_id=2), "a session that starts while the plan runs follows it, at its task in hand"
@@ -876,7 +876,7 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
     whispers = [line for line in typed if "fact 1: the login uses the old session store" in line]
     assert len(whispers) == 1, "whispered once per row per agent"
     app.console().run(["rule", "create", "Always run the suite before a commit"], AGENT)
-    assert typed[-1].startswith("[journal] is rule 1 a ruling for the whole project?")
+    assert typed[-1].startswith("[journal] does rule 1 apply to the whole project?")
 
 
 def test_auto_mode_answers_a_stop_with_the_next_task(app):
@@ -3061,7 +3061,7 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show():
     held = lambda name: {s["name"]: s["answer"]["error"] for s in json.loads((records / f"{name}_codex.json").read_text())["steps"] if isinstance(s["answer"], dict) and "error" in s["answer"]}
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
     assert "journal environment here" in held("orienting_rules")["a write before the look"]
-    assert "decide what survives the context" in held("at_mark_rules")["a write at the mark"]
+    assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
     from journal.features.chart.catalogue import Catalogue
     by_key = {e.key: e for e in Catalogue().triggers()}
     assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"

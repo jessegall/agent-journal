@@ -8,7 +8,7 @@ const emit = defineEmits(["read", "browse"]);
 <template>
     <p class="bar-none">Loaded in this window, newest last. Compacting the conversation empties it.</p>
     <template v-if="!skills.length">
-        <p class="bar-none">None — the agent is working from memory.</p>
+        <p class="bar-none">None: no skill is loaded in this conversation.</p>
     </template>
     <template v-for="s in skills" :key="s">
         <button type="button" class="bar-item" :title="`Read the ${s} skill`" @click="emit('read', s)">

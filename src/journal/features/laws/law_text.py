@@ -41,7 +41,7 @@ designing go to a subagent; a job that changes a file goes to a worker (`journal
 ## How you work with the journal
 
 Load the `journal` skill first in every session; the journal holds writes until you have. Declare a task before you write.
-Answer the user's messages before anything else. At a context mark, record what must survive it.
+Answer the user's messages before anything else. At a context mark, decide what to keep from it.
 """
 
     @classmethod

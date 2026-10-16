@@ -69,7 +69,9 @@ const choices = computed(() => {
         {value: "none", label: "No name", hint: "It never addresses you by name."},
     ].map((choice) => ({...choice, current: choice.value === draft.calling}));
 });
-const styles = computed(() => namings.value.map((style) => ({value: style.text, label: style.label, hint: style.text, current: style.text === draft.naming})));
+const styles = computed(() =>
+    namings.value.map((style) => ({value: style.text, label: style.label, hint: style.text, current: style.text === draft.naming}))
+);
 const sample = computed(() => (locked.value ? sampleOf(props.row) : draft.sample));
 const missing = computed(() => {
     if (!draft.title.trim()) return "Give it a name.";
@@ -119,17 +121,20 @@ function startFrom(row) {
         <div class="profile-panel">
             <template v-if="locked">
                 <Notice>
-                    Comes with the journal, so it can't be changed, and an update may change its wording. Make a copy to have a version
-                    of your own.
+                    Comes with the journal, so it can't be changed, and an update may change its wording. Make a copy to have a version of
+                    your own.
                 </Notice>
             </template>
             <template v-if="isNew">
-                <FormField label="Copy an existing profile" help="Copies how it talks, what it calls you and the sample line. You change them below.">
+                <FormField
+                    label="Copy an existing profile"
+                    help="Copies how it talks, what it calls you and the sample line. You change them below."
+                >
                     <div class="profile-panel-starts">
                         <template v-for="other in profiles" :key="other.n">
                             <Btn small :kind="start === other.n ? 'primary' : 'ghost'" @click="startFrom(other)">{{ other.title }}</Btn>
                         </template>
-                        <Btn small :kind="start === 0 ? 'primary' : 'ghost'" @click="startFrom(null)">Nothing</Btn>
+                        <Btn small :kind="start === 0 ? 'primary' : 'ghost'" @click="startFrom(null)">Start empty</Btn>
                     </div>
                 </FormField>
             </template>
@@ -167,7 +172,10 @@ function startFrom(row) {
                     @input="edit('humour', $event.target.value)"
                 />
             </FormField>
-            <FormField label="Agent names" help="How the agent names the helpers and subagents it starts. Pick a style, or write your own below.">
+            <FormField
+                label="Agent names"
+                help="How the agent names the helpers and subagents it starts. Pick a style, or write your own below."
+            >
                 <ChoiceList stacked :choices="styles" :disabled="locked" @pick="edit('naming', $event)" />
                 <TextArea
                     :value="draft.naming"
@@ -185,7 +193,10 @@ function startFrom(row) {
             <FormField label="Address" help="Your title and first name are set in Settings › Agent, under Your title and name.">
                 <ChoiceList stacked :choices="choices" :disabled="locked" @pick="edit('calling', $event)" />
             </FormField>
-            <FormField label="Introduction" help="A short “who am I” in its own voice. It is shown on the profile's card and in the first-start dialog.">
+            <FormField
+                label="Introduction"
+                help="A short “who am I” in its own voice. It is shown on the profile's card and in the first-start dialog."
+            >
                 <TextArea
                     :value="draft.introduction"
                     :disabled="locked"
@@ -222,10 +233,14 @@ function startFrom(row) {
                 <Btn small kind="primary" @click="$emit('duplicate', row)">Make a copy to change it</Btn>
             </template>
             <template v-else-if="inUse">
-                <span class="profile-panel-status">You're editing the profile in use. Each change is saved and the agent is told at once.</span>
+                <span class="profile-panel-status">
+                    You're editing the profile in use. Each change is saved and the agent is told at once.
+                </span>
             </template>
             <template v-else>
-                <span class="profile-panel-status">Changes are saved as you make them. The agent hears them once you use this profile.</span>
+                <span class="profile-panel-status">
+                    Changes are saved as you make them. The agent hears them once you use this profile.
+                </span>
                 <Btn small @click="$emit('use', row)">Use this profile</Btn>
             </template>
         </template>

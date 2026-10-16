@@ -28,7 +28,7 @@ class ChartFeature(Feature):
 The journal's conduct toward the agent is workflows: each answers one event, bound to a state or to none, and an
 event's workflows run in the order the user sets, the locked guards first, then the Always ones, then the states'.
 A trigger is an event, a check a yes or no question, an action what the journal does; lines join them, then from a
-trigger or an action, yes or no from a check, one line per port. A locked workflow or step is the journal's law:
+trigger or an action, yes or no from a check, one line per port. A locked workflow or step ships with the journal and cannot be removed:
 not deleted, not turned off, not reworded or gated; a Stop here node ends the event's walk for everything after
 it; the first hold of an event wins and one move per event is taken. A count the workflow keeps for the agent is
 started, counted one and read by its name on the canvas.

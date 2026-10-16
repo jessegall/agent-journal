@@ -64,7 +64,7 @@ class Actions:
         return Decision()
 
     def hold_at_mark(self, text: str, ctx: Context) -> Decision:
-        """The highest mark crossed is taken and owed on the agent's row, and the agent is told to decide what survives the context."""
+        """The highest mark crossed is taken and owed on the agent's row, and the agent is told to decide what to keep from the context."""
         from journal.features.memory.feature import Memory
         due = self.checks.marks_due(ctx)
         if not due:

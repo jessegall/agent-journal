@@ -261,7 +261,7 @@
     {
       "name": "a write at 17",
       "answer": {
-        "error": "your inbox is unread: 1 waiting. journal message unread before any other write"
+        "error": "you have 1 unread messages. journal message unread before any other write"
       },
       "typed": [],
       "nudges": [],
@@ -287,7 +287,7 @@
     {
       "name": "a read while owed",
       "answer": {
-        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
       "nudges": [],

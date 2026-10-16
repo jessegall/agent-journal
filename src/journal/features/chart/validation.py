@@ -11,8 +11,8 @@ TEXT_LIMIT = 500
 """A node's text becomes a prompt or a typed line: this many characters at most."""
 
 HOLDS = ("hold", "block_stop")
-LOCK_WHY = "the journal's law"
-LOCK_RULE = "a locked step cannot be taken out, reworded or turned off, and no check or Stop here of yours may come before it; you can add steps after it, change its numbers, and Reset to default brings it back"
+LOCK_WHY = "it ships with the journal"
+LOCK_RULE = "a locked step cannot be taken out, reworded or turned off, and you cannot put a check or Stop here before it; you can add steps after it, change its numbers, and Reset to default brings it back"
 """What a user can and cannot do around a locked node, said in every refusal."""
 """The actions that stop the agent until what their message names is done."""
 

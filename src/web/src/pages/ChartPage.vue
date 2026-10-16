@@ -687,7 +687,7 @@ function insertFiller(filler) {
     if (box) nextTick(() => box.focus());
 }
 
-const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting's name" : "Message to the agent");
+const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name of a setting" : "Message to the agent");
 </script>
 
 <template>
@@ -1238,7 +1238,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 <p class="chart-dialog-text">You have {{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }} here.</p>
                 <template #foot>
                     <Btn @click="leaving = null">Keep editing</Btn>
-                    <Btn kind="danger" @click="leaveAnyway">Leave and lose them</Btn>
+                    <Btn kind="danger" @click="leaveAnyway">Leave without saving</Btn>
                     <Btn kind="primary" :busy="busy === 'save'" @click="save().then(() => !dirty && leaveAnyway())">Save</Btn>
                 </template>
             </Dialog>

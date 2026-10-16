@@ -439,7 +439,7 @@ const steps = computed(() => {
                     <SwipeRow :label="entryOf(node).title" :trail="deleteNode(node)">
                         <Cell :label="entryOf(node).title" :sub="node.locked ? LOCK_WHY : described(entryOf(node))" still />
                     </SwipeRow>
-                    <Cell v-if="node.locked && node.text" :label="node.text" sub="The words of the law stay" still />
+                    <Cell v-if="node.locked && node.text" :label="node.text" sub="Locked: this text cannot be changed" still />
                     <template v-if="entryOf(node).takes_text && !node.locked">
                         <div class="wf-text">
                             <Field

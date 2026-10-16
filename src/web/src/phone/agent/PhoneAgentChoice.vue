@@ -14,7 +14,7 @@ import {useLeadAgent} from "./lead.js";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back"]);
-const TITLES = {model: "Model", effort: "Reasoning effort", context: "Memory used"};
+const TITLES = {model: "Model", effort: "Reasoning effort", context: "Context used"};
 const {agent, data, loaded} = useLeadAgent();
 const controls = ref(null);
 const sending = ref(false);
@@ -27,14 +27,16 @@ const line = computed(() => {
     if (props.target === "effort") return `Effort ${data.value.effort || "not reported"}`;
     const at = lastCompaction(store.agents);
     const compacted = at ? `last compacted ${age(at)}` : "not compacted yet";
-    return `${Math.round(Number(data.value.context || 0))}% of the agent's memory is used; the conversation was ${compacted}`;
+    return `${Math.round(Number(data.value.context || 0))}% of the agent's context is used; the conversation was ${compacted}`;
 });
 
 watch(
     () => data.value && `${data.value.provider}|${data.value.model}|${data.value.effort}`,
     async (now) => {
         if (!now) return;
-        controls.value = await api.agentControls(data.value.provider, data.value.model, data.value.effort).catch((error) => ({groups: [], note: error.message}));
+        controls.value = await api
+            .agentControls(data.value.provider, data.value.model, data.value.effort)
+            .catch((error) => ({groups: [], note: error.message}));
     },
     {immediate: true}
 );
@@ -65,7 +67,12 @@ async function choose(group, choice) {
         <template v-for="group in groups" :key="group.key">
             <CellGroup :head="target === 'context' ? '' : group.label" :foot="target === 'context' ? '' : controls.note">
                 <template v-for="choice in group.choices" :key="choice.value">
-                    <Cell :label="choice.label" :sub="choice.unavailable || choice.hint || ''" :chevron="false" @pick="choose(group, choice)">
+                    <Cell
+                        :label="choice.label"
+                        :sub="choice.unavailable || choice.hint || ''"
+                        :chevron="false"
+                        @pick="choose(group, choice)"
+                    >
                         <template v-if="choice.current" #end>
                             <Icon name="check" :size="16" class="choice-check" />
                         </template>

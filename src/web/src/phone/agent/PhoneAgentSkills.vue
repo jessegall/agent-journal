@@ -15,12 +15,17 @@ const skills = computed(() => loadedSkills(data.value));
 </script>
 
 <template>
-    <PhonePage title="Skills loaded" line="Loaded in the current conversation, newest last. Compacting the conversation unloads them." :back="back" @back="emit('back')">
+    <PhonePage
+        title="Skills loaded"
+        line="Loaded in the current conversation, newest last. Compacting the conversation unloads them."
+        :back="back"
+        @back="emit('back')"
+    >
         <template v-if="loaded && !data">
             <PhoneNoAgent />
         </template>
         <template v-else-if="loaded && !skills.length">
-            <EmptyList icon="book" title="No skill is loaded" reason="The agent is working from memory." />
+            <EmptyList icon="book" title="No skill is loaded" reason="No skill is loaded in this conversation." />
         </template>
         <template v-else>
             <CellGroup>

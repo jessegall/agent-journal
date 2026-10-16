@@ -5,7 +5,7 @@ from journal.hooks.decision import Decision
 
 
 class RefuseMixedJournal(AgentListener[ToolStarting]):
-    """A journal command runs on its own, or chained only with other journal commands: chained with anything else it could be carried off to the background with it, and its answer lost."""
+    """A journal command runs on its own, or chained only with other journal commands: chained with anything else it would move to the background with it, and its answer lost."""
 
     blocking = True
 
