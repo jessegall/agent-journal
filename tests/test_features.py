@@ -9,6 +9,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.settings import PROJECT, Settings
@@ -23,7 +24,9 @@ USER = Where("main")
 
 @pytest.fixture
 def app(tmp_path: Path, monkeypatch):
+    """A fresh journal on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
     app = App(Config(tmp_path, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
@@ -1233,8 +1236,9 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     status, body = hook(app, "Stop")
     assert "the chart says: nothing is open, rest" in body["reason"], "the no line is followed; a line said at a stop holds the stop, as any line does"
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again at the next stop: there is no repeated-stop escape"
-    at[0] = wf[1]
-    tool, writes, hold, calm = add("trigger", "tool_starting"), add("check", "tool_writes"), add("action", "hold", "--text", "no writes today"), add("action", "say", "--text", "the chart says: nothing is open, rest")
+    at[0] = charts.shipped_on("tool_starting")[0].id
+    tool = next(n.id for n in charts.nodes_of(charts.find(at[0])) if n.kind == NodeKind.TRIGGER)
+    writes, hold, calm = add("check", "tool_writes"), add("action", "hold", "--text", "no writes today"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(tool, writes)
     line(writes, hold, "yes")
     line(writes, calm, "no")
@@ -1319,10 +1323,17 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    wf = int(console.run(["chart", "new", "counters"], AGENT).out.split()[1].rstrip(":"))
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    shipped = charts.shipped_on("tool_starting")[0]
+    for node in charts.nodes_of(shipped):
+        if node.kind != NodeKind.TRIGGER:
+            charts.remove_node(node, Actor.system())
+    wf = shipped.id
     add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
     line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], AGENT)
-    tool = add("trigger", "tool_starting")
+    tool = next(n.id for n in charts.nodes_of(shipped) if n.kind == NodeKind.TRIGGER)
     every = add("check", "tool_uses_since_unread_every", "--text", "3")
     inbox = add("action", "say", "--text", "the chart: your inbox waits")
     over = add("check", "tool_uses_since_read_over", "--text", "messages.hold_after")
@@ -1439,7 +1450,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent", "Tool about to run"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []

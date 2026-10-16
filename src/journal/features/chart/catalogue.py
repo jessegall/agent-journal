@@ -24,6 +24,7 @@ CHECKS = (
     ("blocked_tasks", "Has blocked tasks?", "a task waits on something outside"),
     ("unread_messages", "Has unread messages?", "the user left a message the agent has not read"),
     ("unread_over", "N or more messages unread?", "at least N messages the agent has not read; the text is N"),
+    ("unread_reminders_over", "N namings of the unread inbox gone by?", "the tool uses since the oldest unread message came, counted in units of the setting messages.remind_every, reach N; the text is N or a setting's name, such as messages.hold_after_reminders"),
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
     ("message_by_user", "Message written by the user?", "the row is a message the user wrote, not the agent"),
     ("tool_reads_their_files", "Tool reads the message's own files?", "the tool about to run reads a file attached to a message read and left unanswered"),

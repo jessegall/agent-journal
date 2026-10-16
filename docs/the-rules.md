@@ -21,10 +21,10 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 
 | Event | Line (nudge key) | Checks it needs | Action | Catalogue today |
 | --- | --- | --- | --- | --- |
-| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | counters and the cadence options exist; needs the say to carry the key and the unread count filler |
-| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | checks exist; needs the owed-numbers filler |
+| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | shipped as the workflow Tool about to run; the listener is off where it stands |
+| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | shipped as the workflow Tool about to run; the listener is off where it stands |
 | Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | stays in code: a shell-syntax guard, with the mixed-journal and narrow-read refusals |
-| Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | counters exist, the exact-N form too, settings read through their option; needs the task name and edit fillers |
+| Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | shipped as the workflow Tool about to run; the listener is off where it stands |
 | Tool about to run | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | a workflow: needs the check "same command N times running" from the entries, and the command filler |
 | Tool about to run | laws.no_model / no_job | the tool dispatches a subagent; the dispatch names no model or no job | hold | needs checks on the tool's input |
 | Tool about to run | questions.own_tool | the tool is the agent's own question tool | hold | a workflow: needs the check "tool is named X", the text being the name |

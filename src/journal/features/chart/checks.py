@@ -30,7 +30,7 @@ from journal.repositories.settings import PROJECT, Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over")
+COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over")
 """The checks that take a number: the node's text, or the setting named there."""
 
 
@@ -58,6 +58,13 @@ class Checks:
         """Every so many tool uses since the oldest unread message came, counting the one about to run."""
         uses = self.uses_since(ctx, self.oldest_unread(ctx))
         return bool(every) and uses is not None and uses % every == 0
+
+    def unread_reminders_over(self, ctx: Context, n: int) -> bool:
+        """So many namings of the unread inbox gone by: the tool uses since the oldest unread message came, in units of messages.remind_every."""
+        from journal.features.messages.feature import Messages as MessagesFeature
+        uses = self.uses_since(ctx, self.oldest_unread(ctx))
+        every = int(self.settings.option(PROJECT, MessagesFeature.REMIND_EVERY))
+        return uses is not None and bool(every) and uses // every >= n
 
     def tool_uses_since_unread_over(self, ctx: Context, limit: int) -> bool:
         uses = self.uses_since(ctx, self.oldest_unread(ctx))
