@@ -3043,7 +3043,7 @@ def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_s
     charts.save(inbox.with_(title="Guards at Tool about to run"), Actor.system())
     shipped.run()
     assert charts.find(idle.id).title == "Hold the stop while a task is parked", "the old title, never renamed by the user, becomes the plain one at boot"
-    assert charts.find(inbox.id).title == "Name the unread messages every N tool uses"
+    assert charts.find(inbox.id).title == "Name the unread messages every 3 tool uses"
     charts.save(charts.find(idle.id).with_(title="My own stop rules"), Actor.system())
     shipped.run()
     assert charts.find(idle.id).title == "My own stop rules", "a title the user gave stays"
@@ -3116,3 +3116,18 @@ def test_the_counts_the_inbox_reminders_read_come_from_the_record_and_no_workflo
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b"})
     with app.container.get(Scope).of(1):
         assert checks.count_of(at(), "uses") == 0 and checks.count_of(at(), "owed") == 2, "read: nothing unread, two uses since the first unanswered was read"
+
+
+def test_a_shipped_title_says_its_settings_number_and_a_changed_setting_retitles_it_at_boot(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    named = lambda: next(c for c in charts.shipped() if c.drawing == ":tool_starting:inbox")
+    assert named().title == "Name the unread messages every 3 tool uses", "the title says the number, never N"
+    app.container.get(Settings).save(Setting(environment_id=0, key="messages.remind_every", value=5), Actor.system())
+    ShippedChart.__init__(app.container.get(ShippedChart), *[getattr(app.container.get(ShippedChart), a) for a in ("charts", "catalogue", "settings", "states", "agents", "counts", "registry")])
+    app.container.get(ShippedChart).run()
+    assert named().title == "Name the unread messages every 5 tool uses", "a changed setting retitles the workflow at boot"
+    charts.save(named().with_(title="My reminder"), Actor.system())
+    app.container.get(ShippedChart).run()
+    assert named().title == "My reminder", "a title the user gave stays"

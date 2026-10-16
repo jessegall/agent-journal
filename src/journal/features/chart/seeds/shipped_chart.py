@@ -1,3 +1,4 @@
+import re
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.drawing import Drawing
@@ -17,16 +18,18 @@ SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "e
 """The states the journal ships workflows for."""
 PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "following_plan", "working", "ended")
 """The place the shipped workflows of one event take, the waits first, and a child state before its parent, so following a plan speaks at a checkpoint before Working's lines and can end the walk there."""
+SETTING = re.compile(r"\{([a-z_]+\.[a-z_]+)\}")
+"""A setting a shipped title names, filled with its value when the title is drawn."""
 STATELESS = (
     (":session_started:start", "Tell the agent the journal's rules, facts and what waits", "start_block"),
     (":session_started:inbox", "Say what is unread", "shared_inbox"),
     (":session_started:voice", "Tell the agent how to talk to the user", "say_voice"),
     (":prompt_submitted:inbox", "Say what is unread", "shared_inbox"),
     (":idle:inbox", "Say what is unread", "shared_inbox"),
-    (":tool_starting:unread_held", "Hold a write while messages stay unread after N reminders", "hold_write_while_unread"),
-    (":tool_starting:inbox", "Name the unread messages every N tool uses", "name_the_unread"),
+    (":tool_starting:unread_held", "Hold a write while messages stay unread after {messages.hold_after_reminders} reminders", "hold_write_while_unread"),
+    (":tool_starting:inbox", "Name the unread messages every {messages.remind_every} tool uses", "name_the_unread"),
     (":tool_starting:answer_held", "Hold the tools while a read message stays unanswered", "hold_while_unanswered"),
-    (":tool_starting:answer", "Ask for an answer to a read message after N tool uses", "ask_for_an_answer"),
+    (":tool_starting:answer", "Ask for an answer to a read message after {messages.nudge_after} tool uses", "ask_for_an_answer"),
 )
 """The Always workflows the journal ships, one subject each, in the order they run at their event: the drawing's name, its title and the builder that draws it."""
 OWN = (
@@ -35,8 +38,8 @@ OWN = (
     ("idle", "ticked", "parked", "Ask about a parked task after a minute of quiet", "ask_about_parked"),
     ("idle", "ticked", "check_in", "Check in after half an hour of quiet in auto mode", "check_in"),
     ("working", "tool_starting", "log_held", "Hold the write when the task log is overdue", "hold_write_when_log_overdue"),
-    ("working", "tool_starting", "log", "Ask for a task log after N edits", "ask_for_a_log_after_edits"),
-    ("working", "tool_starting", "in_hand", "Name the task in hand every N edits", "name_the_task_in_hand"),
+    ("working", "tool_starting", "log", "Ask for a task log after {tasks.first_nudge_after} edits", "ask_for_a_log_after_edits"),
+    ("working", "tool_starting", "in_hand", "Name the task in hand every {tasks.name_every} edits", "name_the_task_in_hand"),
     ("working", "idle", "carry_on", "Tell the agent to carry on with its task", "carry_on"),
     ("working", "idle", "log", "Ask for a log when the task's log is old", "ask_for_a_log"),
     ("working", "session_started", "carry_on", "Tell the agent to carry on with its task", "carry_on"),
@@ -115,14 +118,28 @@ class ShippedChart(Seed):
         self.states, self.agents, self.counts, self.registry = states, agents, counts, registry
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         self.drawings: dict[str, Drawing] = {}
+        self.templates: dict[str, str] = {}
         for state, event, name, title, builder in OWN:
-            self.drawings[f"{state}:{event}:{name}"] = Drawing(title, self.composed(getattr(self, builder), None))
+            self.templates[f"{state}:{event}:{name}"] = title
+            self.drawings[f"{state}:{event}:{name}"] = Drawing(self.titled(title), self.composed(getattr(self, builder), None))
         for key, title, builder in STATELESS:
-            self.drawings[key] = Drawing(title, self.composed(None, getattr(self, builder)))
+            self.templates[key] = title
+            self.drawings[key] = Drawing(self.titled(title), self.composed(None, getattr(self, builder)))
         """One drawing per state per trigger it has steps of its own at, named state:event; then the conduct for every state as an Always workflow per shared event and the journal's guards, named :event, bound to no state."""
 
     def title_of(self, key: str) -> str:
         return self.drawings[key].title
+
+    def titled(self, template: str) -> str:
+        """A title with each setting it names, {messages.remind_every}, filled with the setting's value now."""
+        options = {o.key: o for o in self.registry.options()}
+        return SETTING.sub(lambda m: str(self.settings.option(options[m.group(1)])) if m.group(1) in options else m.group(0), template)
+
+    def numbered_alike(self, key: str, title: str) -> bool:
+        """The title is the drawing's own with some numbers in its settings' places: the journal's title, never renamed by the user."""
+        template = self.templates.get(key, "")
+        pattern = r"\d+".join(re.escape(part) for part in SETTING.split(template)[::2])
+        return bool(template) and re.fullmatch(pattern, title) is not None
 
     def old_title(self, chart: Chart) -> str:
         """The title a shipped workflow carried before titles said what a workflow does: its state, or Always or Guards, at its event."""
@@ -136,8 +153,8 @@ class ShippedChart(Seed):
         return {self.old_title(chart), f"Guards at {event}"}
 
     def retitle_the_shipped(self, by: Actor) -> None:
-        """A shipped workflow still titled by its state and event, which the user never renamed, takes the title that says what it does."""
-        for chart in [c for c in self.charts.shipped() if c.drawing in self.drawings and c.title in self.old_titles(c)]:
+        """A shipped workflow still titled by its state and event, or by its own title with older numbers, which the user never renamed, takes the title that says what it does with the settings' numbers now."""
+        for chart in [c for c in self.charts.shipped() if c.drawing in self.drawings and c.title != self.drawings[c.drawing].title and (c.title in self.old_titles(c) or self.numbered_alike(c.drawing, c.title))]:
             self.charts.save(chart.with_(title=self.drawings[chart.drawing].title), by)
 
     def composed(self, own, shared):
