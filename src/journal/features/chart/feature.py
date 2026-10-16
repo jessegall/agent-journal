@@ -1,4 +1,5 @@
 from journal.features.chart.commands.chart_command import ChartCommand
+from journal.features.chart.listeners.forget_counts_at_end import ForgetCountsAtEnd
 from journal.features.chart.listeners.walk_agent_events import WalkAgentEvents
 from journal.features.chart.listeners.walk_row_events import WalkRowEvents
 from journal.features.chart.seeds.shipped_chart import ShippedChart
@@ -13,7 +14,7 @@ class ChartFeature(Feature):
     help = "The journal's conduct toward the agent as a flowchart the user edits: triggers, checks and actions joined by lines."
     commands = (ChartCommand,)
     seeds = (ShippedChart,)
-    listeners = (WalkAgentEvents, WalkRowEvents)
+    listeners = (WalkAgentEvents, WalkRowEvents, ForgetCountsAtEnd)
 
     LINE = Nudge(name, "line", "{{text}}", repeat_after=0)
     """A chart line is said whenever its path is walked: when it repeats is the chart's own business, through its checks."""

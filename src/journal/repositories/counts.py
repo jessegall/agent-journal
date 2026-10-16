@@ -13,3 +13,8 @@ class Counts(ScopedRepository[Count]):
 
     def set(self, session: str, name: str, value: int, by: Actor) -> Count:
         return self.save(self.named(session, name).with_(value=value), by)
+
+    def forget(self, session: str, by: Actor) -> None:
+        """A session's counts gone with it."""
+        for count in self.where(environment_id=self.scope.id, session=session):
+            self.delete(count, by)

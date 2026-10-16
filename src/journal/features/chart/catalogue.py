@@ -79,8 +79,8 @@ def article(words: str) -> str:
     return "An" if first[0].lower() in "aeiou" or (first.isupper() and first[0] in "AEFHILMNORSX") else "A"
 
 
-OWN = ("agents", "entries", "links")
-"""The engine's own tables, which a walk writes itself when it moves an agent, records itself or draws a line: a trigger on them would walk without end, so no workflow may name them."""
+OWN = ("agents", "entries", "links", "counts")
+"""The engine's own tables, which a walk writes itself when it moves an agent, records itself, draws a line or counts: a trigger on them would walk without end, so no workflow may name them."""
 
 
 class Catalogue:

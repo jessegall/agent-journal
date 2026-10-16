@@ -2505,6 +2505,16 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     assert "two tools" not in said(body) and "every second tool" not in said(body), "a new start puts the count back at nought, and nought is no Nth"
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "d"})
     assert "every second tool" in said(body), "the second use since the new start is an Nth again"
+    from journal.features.chart.walk import WALKED
+    from journal.repositories.entries import Entries
+    with scope.of(1):
+        walks = [e.data["trigger"] for e in app.container.get(Entries).of_kind(WALKED, 100)]
+    assert walks and not any(t.startswith("counts.") for t in walks), "a count's write walks no row event: counts are the engine's own"
+    assert "has no trigger named counts.updated" in console.run(["chart", "node", "trigger", "counts.updated", "--in", str(finishing)], USER).err, "no workflow starts at a count"
+    hook(app, "SessionEnd")
+    app.runtime().deferred.drain()
+    with scope.of(1):
+        assert counts.where(session="s1") == [], "an ended session's counts are deleted with it"
     assert not typed, "nothing was typed: every line rode a hook's answer"
 
 
