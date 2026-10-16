@@ -66,3 +66,24 @@ test("the words typed follow the box when it becomes a reply, and nothing stays 
     expect(again.box.value).toBe("");
     again.unmount();
 });
+
+test("the box empties after a reply, though the quote is cleared while the send is in flight", async () => {
+    const props = ref({quote: "the words quoted", send: async () => {}});
+    const {box, unmount} = await mounted(props);
+    props.value = {
+        ...props.value,
+        send: async () => {
+            props.value = {...props.value, quote: ""};
+            await settle();
+        },
+    };
+    await settle();
+    box.value = "did you enforce this?";
+    box.dispatchEvent(new Event("input"));
+    await settle();
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
+    await settle();
+    await settle();
+    expect(box.value).toBe("");
+    unmount();
+});

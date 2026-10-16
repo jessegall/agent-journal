@@ -65,6 +65,12 @@ let shown = "";
 function takeFromBox() {
     if (area.value && area.value.value !== shown) draft.text = area.value.value;
 }
+
+// typing is the draft taking the box's words, so what the box shows is known at once, before any redraw
+function typed(event) {
+    draft.text = event.target.value;
+    shown = draft.text;
+}
 onBeforeUpdate(takeFromBox);
 onUpdated(() => (shown = area.value ? area.value.value : ""));
 const kept = ref(0);
@@ -271,7 +277,8 @@ async function use(tool) {
                 </template>
                 <textarea
                     ref="area"
-                    v-model="draft.text"
+                    :value="draft.text"
+                    @input="typed"
                     class="box-area"
                     rows="3"
                     :placeholder="placeholder"
