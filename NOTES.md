@@ -614,3 +614,8 @@ Ruled on 2026-10-16 under plan 3 (task 175): every state has one holder of its c
 in the table "Every state, and who holds its conduct" in docs/the-rules.md; the subagent state, which nothing ever
 entered, is deleted; the Stop hook's event stays keyed idle and the commands and the trial name it by its title,
 Agent stops, beside the state idle.
+
+Ruled on 2026-10-16 under plan 3 (task 176): every line still said outside a workflow is one of three in the rules
+doc's table: a law or a guard that stays in code, a feature's own conduct of another kind that stays with it, or a
+workflow in phase 3 once its check exists: polling, the reaction, a rule's review, the etiquette reminder and a
+plan's changes, each in the base workflow.
