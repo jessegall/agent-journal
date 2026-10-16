@@ -9,8 +9,6 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 
 QUIET_AFTER = 900.0
-REMINDERS = 3
-"""Stops at which one version of the work is named back; a log line starts a new version."""
 
 
 @dataclass(frozen=True)
@@ -44,9 +42,8 @@ class Working(AgentState):
         return replace(self, edits=0, logged_at=at, reminders=0)
 
     def idle(self, event: AgentIdle) -> Transition:
+        """Every stop with a task in hand is told to carry on; an agent that is truly stuck says so with journal stuck, which lets it stop."""
         from journal.features.tasks.stop_words import StopWords
-        if event.again or self.reminders >= REMINDERS:
-            return self.stay()
         return self.go(self.reminded(), StopWords.carry_on(self))
 
     def session_started(self, event: SessionStarted) -> Transition:

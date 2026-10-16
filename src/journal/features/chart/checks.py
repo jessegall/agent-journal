@@ -95,9 +95,6 @@ class Checks:
         from journal.features.tasks.feature import Tasks
         return bool(self.settings.option(PROJECT, Tasks.AUTO))
 
-    def same_stop_again(self, ctx: Context) -> bool:
-        return isinstance(ctx.event, Idle) and ctx.event.again
-
     def following_plan(self, ctx: Context) -> bool:
         return isinstance(self.state(ctx), FollowingPlan)
 

@@ -7,7 +7,7 @@ catalogue could carry it once a check or an action it needs exists.
 
 ## Carried by the chart
 
-- At a stop, at rest and not the same stop again: parked tasks are named, in any mode.
+- At a stop, at rest: parked tasks hold the stop and are named, in any mode.
 - At a stop, at rest, auto mode on and tasks open outside a plan: the next task holds the stop.
 
 ## Chart-able, kept by a listener today
@@ -25,7 +25,6 @@ catalogue could carry it once a check or an action it needs exists.
 - A fact, rule or reminder whispered when its keyword comes up (memory/whisper).
 - A subagent dispatch without a model or a job refused (laws/judge_dispatch): a check on the tool's input.
 - A result of many lines named (laws/measure_result).
-- The stop that cannot be held still gets its words, typed (tasks/type_at_held_stop).
 
 ## Kept by a state or a listener, by design
 

@@ -25,7 +25,6 @@ CHECKS = (
     ("unread_messages", "Has unread messages?", "the user left a message the agent has not read"),
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
     ("auto_mode", "Auto mode on?", "the environment runs in auto mode"),
-    ("same_stop_again", "Same stop repeated?", "this stop was already refused once and nothing happened since"),
     ("following_plan", "Following a plan?", "the agent is on a plan's task"),
     ("tool_writes", "Tool changes files?", "the tool about to run changes a file or runs a writing command"),
     ("journal_command", "Tool is a journal command?", "the tool about to run is a journal command"),

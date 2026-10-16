@@ -53,11 +53,6 @@ class Hook:
         return bool(self.body.get("final", True))
 
     @property
-    def stop_again(self) -> bool:
-        """Claude's Stop hook says when it already refused this stop once; a second refusal would loop."""
-        return bool(self.body.get("stop_hook_active", False))
-
-    @property
     def source(self) -> str:
         return self.body.get("source", "")
 

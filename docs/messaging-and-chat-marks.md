@@ -67,7 +67,7 @@ does not.
     a refusal comes back as a nudge on the next turn.
 19. Tags and what they run: `reply` runs `journal message reply N` with the turn as the reply (`N,M` answers both
     with one reply); `log` runs `work log`; `end` runs `work end N --how`; `todo`, `fact` and `rule` create that
-    row with the turn as its brief; `await` runs `work await` with the rest of the turn.
+    row with the turn as its brief; `await` runs `journal await` with the rest of the turn.
 20. The tag is stripped from what the chat shows. A `reply`, `log` or `await` turn is not also posted as a
     message, since the reply is the chat and the others are shown where they belong; a `todo`, `fact`, `rule` or
     `end` turn is posted as well, without its tag.

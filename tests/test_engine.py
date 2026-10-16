@@ -123,7 +123,7 @@ def test_one_task_in_hand_park_resume_and_await(app):
     console.run(["task", "park", "1", "waiting for the designer"], AGENT)
     assert isinstance(app.container.get(Machine).current("s1"), Idle), "parked: nothing in hand"
     assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
-    assert console.run(["task", "await", "1", "the deploy to finish"], AGENT).code == 0
+    assert console.run(["await", "the deploy to finish"], AGENT).code == 0
     assert app.container.get(Machine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert app.container.get(Machine).current("s1").task_id == 1, "working again lifts the wait"
@@ -148,30 +148,14 @@ def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(
     assert write(app)[0] == 200
 
 
-def test_a_stop_names_open_work_three_times_a_version_with_its_last_log(app):
+def test_every_stop_with_a_task_in_hand_says_carry_on_and_stuck_is_the_way_out(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    answers = [hook(app, "Stop") for _ in range(4)]
-    assert all(a[1].get("decision") == "block" and "task 1 is in hand, last logged just now: carry on" in a[1]["reason"] for a in answers[:3])
-    assert answers[3][1] == {}, "the fourth stop on the same version passes"
-    app.console().run(["task", "log", "1", "a new version"], AGENT)
-    assert hook(app, "Stop")[1].get("decision") == "block", "a log line starts the reminders again"
-def test_a_stop_after_work_is_a_fresh_stop_and_one_with_no_work_between_is_typed(app, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
-    typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
-    hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
-    app.console().run(["task", "create", "t", "--start"], AGENT)
-    assert hook(app, "Stop")[1].get("decision") == "block"
-    hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "work since the held stop makes the next a fresh one"
-    status, body = hook(app, "Stop", stop_hook_active=True)
-    app.runtime().deferred.drain()
-    assert status == 200 and typed[-1].startswith("[journal] task 1 is in hand, last logged just now: carry on")
-
-
+    answers = [hook(app, "Stop", stop_hook_active=i > 0) for i in range(4)]
+    assert all(a[1].get("decision") == "block" and "task 1 is in hand, last logged just now: carry on" in a[1]["reason"] for a in answers), "there is no repeated-stop escape"
+    app.console().run(["stuck", "I cannot reach the service"], AGENT)
+    assert hook(app, "Stop")[1] == {}, "stuck lets the agent stop"
 def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nudged(app):
     from journal.models.task_state import TaskState
     from journal.repositories.tasks import Tasks

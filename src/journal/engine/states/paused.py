@@ -19,14 +19,14 @@ class Paused(AgentState):
 
     resume: dict = field(default_factory=dict)
     owed_by_agent: ClassVar[bool] = False
-    """True when what the state awaits is the agent's own doing, a read or a decision: a stop then says so once. A wait on the user, a worker or a halt lets the stop pass."""
+    """True when what the state awaits is the agent's own doing, a read or a decision: a stop then says so. A wait on the user, a worker or a halt lets the stop pass."""
 
     def awaiting(self) -> tuple[str, str]:
         """What the agent waits for while paused here, in words, and the rows it waits on as refs; the viewer's status line reads both."""
         return "", ""
 
     def idle(self, event: Idle) -> Transition:
-        return self.refuse(AWAITING.about(what=self.awaiting()[0])) if self.owed_by_agent and not event.again else self.stay()
+        return self.refuse(AWAITING.about(what=self.awaiting()[0])) if self.owed_by_agent else self.stay()
 
     def back(self, *says: Said) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)

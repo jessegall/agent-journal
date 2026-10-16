@@ -10,7 +10,6 @@ from journal.engine.states.paused import Paused
 from journal.refused import Refused
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.in_hand import InHand
-from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.working import Working
 from journal.models.link import Link
 from journal.models.ref import Ref
@@ -53,9 +52,6 @@ class TaskCommand(Command):
         park.add_argument("n", type=int)
         park.add_argument("why")
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
-        wait = self.verb(verbs, "await", "the task in hand waits for something outside your hands, a run or a person; working again lifts it")
-        wait.add_argument("n", type=int)
-        wait.add_argument("what")
         self.verb(verbs, "list", "every open task here")
 
     def create(self, args: Namespace, where: Where) -> int:
@@ -90,14 +86,6 @@ class TaskCommand(Command):
     def resume(self, args: Namespace, where: Where) -> int:
         task = self.in_hand.start(self.tasks.find(args.n), where)
         print(f"task {task.id} resumed: {task.title}")
-        return 0
-
-    def await_(self, args: Namespace, where: Where) -> int:
-        current = self.in_hand.current(where)
-        if not current or current.task_id != args.n:
-            raise Refused(f"task {args.n} is not in hand: journal task start {args.n} first")
-        self.machine.move(where.session, self.tasks.find(args.n).environment_id, Expecting.leaving(current, what=args.what))
-        print(f"task {args.n} waits for {args.what}; working again lifts it")
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:

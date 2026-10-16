@@ -561,7 +561,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   and `journal notice close <n>`; the user closes it from the strip; a link in the chat that no pin carries earns one reminder,
   the journal's own and pull requests excepted.
 - **No work command** (the user's ruling): a quick edit needs no task and is never refused; `task park <n>`, `task resume <n>`
-  and `task await <n>` are the task's verbs; the log is asked after 25 edits, named every 25, held at 50 (`Tasks.*` options).
+  are the task's verbs and `journal await "<what>"` the one wait; the log is asked after 25 edits, named every 25, held at 50 (`Tasks.*` options).
 - **Options**: a feature declares the settings it reads as `Option`s (`Feature.options`), key `feature.name`, with the words
   the settings page shows; `Settings.option(PROJECT, option)` reads one. The settings page is built from them: the manifest's
   features and groups come from the registry, the tree nests the stored keys on the first dot, a save writes the keys and

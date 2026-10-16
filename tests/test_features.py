@@ -199,8 +199,11 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     console.run(["task", "create", "t", "--start"], AGENT)
     assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "a step may wait on the user: the same stop again goes through"
-    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "told the step at every stop"
+    console.run(["await", "the user"], AGENT)
+    assert hook(app, "Stop")[1].get("decision") != "block", "a step that waits on the user says so, and the stop passes"
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal sequence next"})
+    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out, "working again lifts the wait and the sequence goes on"
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
     assert app.container.get(Machine).current("s1").task_id == 1
@@ -801,7 +804,7 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     console.run(["task", "park", "1", "the header first"], AGENT)
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["reason"]
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "told once, the second stop goes through"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "told at every stop, until the task is resumed or done"
     console.run(["task", "resume", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "shipped"], AGENT)
     console.run(["task", "create", "the menu"], USER)
@@ -1219,8 +1222,8 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     console.run(["task", "done", "2"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})
     status, body = hook(app, "Stop")
-    assert "the chart says: nothing is open, rest" in body["reason"], "the no line is followed; a line said at a fresh stop holds the stop once, as any line does"
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "the same stop again goes through"
+    assert "the chart says: nothing is open, rest" in body["reason"], "the no line is followed; a line said at a stop holds the stop, as any line does"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again at the next stop: there is no repeated-stop escape"
     at[0] = wf[1]
     tool, writes, hold, calm = add("trigger", "tool_starting"), add("check", "tool_writes"), add("action", "hold", "--text", "no writes today"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(tool, writes)
@@ -1248,7 +1251,7 @@ def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
     console.run(["task", "create", "free work"], USER)
     body = hook(app, "Stop")[1]
     assert body.get("decision") == "block" and "tasks are open, and auto mode is on: task 1 next: free work" in body["reason"], "the next open task, in auto mode, through the chart"
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") != "block", "the same stop again goes through"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again: journal stuck is the way out"
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     assert hook(app, "Stop")[1] == {}, "auto off: an open task says nothing"
@@ -1334,7 +1337,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 3, 4, 6, 7, 8" in out
+    assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 3, 5, 6, 7" in out
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
 

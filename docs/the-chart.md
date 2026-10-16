@@ -10,7 +10,7 @@ workflows, each starting at one trigger. The journal ships it with today's condu
   ends, the clock ticks. Every row is one too: a task created, a plan updated, a message deleted, and so on for
   each kind of row. A trigger only starts a path; no line leads into it.
 - A **check** is a yes or no question the journal answers from its rows: are tasks open, is a task in hand, is a
-  message unread, is auto mode on, is this the same stop again, does the tool about to run write. A check leaves
+  message unread, is auto mode on, does the tool about to run write. A check leaves
   by a yes line and a no line; one of them may be left out, and the path then ends on that answer. Counter
   checks take a number in their text, or the name of a setting that holds it: every third tool use with a message
   unread, fifteen tool uses with a message unanswered, twenty edits since the last log.
@@ -39,5 +39,5 @@ loop. Reset to default puts the shipped workflow back, after asking. List shows 
 a picker for each output, for a phone or a keyboard. Test runs the workflow for its own event without doing
 anything, and shows the steps and what it would do in a side panel.
 
-The shipped chart today: at a stop, at rest and not the same stop again, parked tasks are named in any mode, and
+The shipped chart today: at a stop, at rest, parked tasks hold the stop and are named in any mode, and
 in auto mode the next open task holds the stop. The rules the states still keep are listed in the-rules.md.

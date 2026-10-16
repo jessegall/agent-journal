@@ -27,7 +27,7 @@ class Translation:
         HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool, hook.input)),
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output, read_path=provider.read_path(hook.tool, hook.input), skill_loaded=provider.skill_loaded(hook.tool, hook.input)),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
-        HookKind.STOP: lambda hook, provider: Idle(again=hook.stop_again),
+        HookKind.STOP: lambda hook, provider: Idle(),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
         HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),
@@ -38,17 +38,6 @@ class Translation:
         self.context, self.providers, self.turns = context, providers, turns
         self.entries = entries
 
-    def again(self, hook: Hook, environment: Environment) -> bool:
-        """A stop is the same stop again only when the agent did nothing since the one before it: once it has worked, a stop is a fresh stop, whatever the provider's flag says."""
-        if not hook.stop_again:
-            return False
-        stops = [e for e in self.entries.of_kind(environment.id, "Idle", 20) if e.actor and e.actor.id == hook.session]
-        if not stops:
-            return True
-        return not any(e.id > stops[0].id for e in self.entries.of_kind(environment.id, "ToolStarting", 50) if e.actor and e.actor.id == hook.session)
-
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
-        if isinstance(bare, Idle):
-            bare = Idle(again=self.again(hook, environment))
         return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session)))
