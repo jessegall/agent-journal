@@ -22,9 +22,12 @@ class Charts(Repository[Chart]):
         super().__init__(connection, bus)
         self.links, self.nodes = links, nodes
 
-    def the(self) -> Chart:
-        """The shipped workflow: the first the journal made."""
-        return self.all()[0]
+    def shipped(self) -> list[Chart]:
+        """The workflows the journal ships, one per event, in the order they were made."""
+        return [c for c in self.all() if c.shipped]
+
+    def shipped_on(self, event: str) -> list[Chart]:
+        return [c for c in self.shipped() if c.event == event]
 
     def remove(self, chart: Chart, by: Actor) -> None:
         for node in self.nodes_of(chart):

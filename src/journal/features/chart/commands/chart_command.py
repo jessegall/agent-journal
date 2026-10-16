@@ -36,7 +36,7 @@ class ChartCommand(Command):
         line.add_argument("target", type=int)
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
         self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
-        self.verb(verbs, "reset", "the chart as shipped again: every edit gone")
+        self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone").add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number; the first shipped one unless given")
         self.verb(verbs, "try", "a dry run for an agent event here: the path and what it would do, nothing done").add_argument("trigger")
 
     def show(self, args: Namespace, where: Where) -> int:
@@ -69,7 +69,7 @@ class ChartCommand(Command):
         entry = self.entries.entry(kind, args.key)
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
-        chart = self.charts.find(args.chart) if args.chart else self.charts.the()
+        chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
         if kind == NodeKind.TRIGGER and any(n.kind == NodeKind.TRIGGER for n in self.charts.nodes_of(chart)):
             raise Refused(f"workflow {chart.id} already has its trigger: a workflow holds one; journal chart new \"<title>\" for another")
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
@@ -93,7 +93,10 @@ class ChartCommand(Command):
         return 0
 
     def reset(self, args: Namespace, where: Where) -> int:
-        chart = self.shipped.reset(where.actor)
+        chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
+        if not chart.shipped:
+            raise Refused(f"workflow {chart.id} is not a shipped one: only a shipped workflow has a drawing to go back to")
+        chart = self.shipped.reset(chart, where.actor)
         print(f"chart {chart.id} reset to the shipped one, revision {chart.revision}")
         return 0
 

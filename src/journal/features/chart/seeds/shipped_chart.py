@@ -13,29 +13,43 @@ NEXT = "tasks are open, and auto mode is on: task {{next_task}} next: {{next_tas
 
 
 class ShippedChart(Seed):
-    """The one chart of the journal, made once, and given today's conduct at a stop while it has no nodes at all: at rest and not the same stop again, parked tasks are named in any mode, and in auto mode the next open task holds the stop. A chart with any node is the user's and is left alone."""
+    """The workflows the journal ships, one per event: each is made at boot where it is absent and left alone where it stands, edited or not, so a journal that upgrades gets the new ones and keeps its own. A reset redraws one by its event."""
 
     def __init__(self, charts: Charts) -> None:
         self.charts = charts
+        self.drawings = {"idle": (TITLE, self.draw_stop)}
+        """The events the journal ships a workflow for: each with its title and the drawing that gives it its nodes and lines."""
 
     def run(self) -> None:
-        charts = self.charts.all()
-        chart = charts[0] if charts else self.charts.save(Chart(title=TITLE), Actor.system())
-        if chart.title == OLD_TITLE:
-            chart = self.charts.save(chart.with_(title=TITLE), Actor.system())
-        if self.charts.nodes_of(chart):
-            return
-        self.draw(chart)
+        by = Actor.system()
+        self.claim_legacy(by)
+        for event, (title, draw) in self.drawings.items():
+            if self.charts.shipped_on(event):
+                continue
+            draw(self.charts.save(Chart(title=title, shipped=True, event=event), by))
 
-    def reset(self, by: Actor) -> Chart:
-        """The chart as shipped again: every node and line gone, the shipped ones drawn anew, one more revision."""
-        chart = self.charts.the()
+    def claim_legacy(self, by: Actor) -> None:
+        """A journal from before workflows were marked: its first chart carried the shipped stop rules and is the shipped one on that event."""
+        for chart in self.charts.all():
+            if chart.shipped:
+                continue
+            shipped_nodes = [n for n in self.charts.nodes_of(chart) if n.shipped]
+            if not shipped_nodes:
+                continue
+            trigger = next((n.key for n in shipped_nodes if n.kind == NodeKind.TRIGGER), "idle")
+            title = self.drawings[trigger][0] if chart.title == OLD_TITLE and trigger in self.drawings else chart.title
+            self.charts.save(chart.with_(shipped=True, event=trigger, title=title), by)
+
+    def reset(self, chart: Chart, by: Actor) -> Chart:
+        """A shipped workflow as shipped again: every node and line gone, its event's drawing drawn anew, one more revision."""
+        title, draw = self.drawings[chart.event]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
-        self.draw(chart)
-        return self.charts.save(chart.saved_again().with_(title=TITLE), by)
+        draw(chart)
+        return self.charts.save(chart.saved_again().with_(title=title), by)
 
-    def draw(self, chart: Chart) -> None:
+    def draw_stop(self, chart: Chart) -> None:
+        """Today's conduct at a stop: at rest, parked tasks hold the stop in any mode, and in auto mode the next open task holds it."""
         by = Actor.system()
         node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
         stop = node(NodeKind.TRIGGER, "idle", x=400, y=0)

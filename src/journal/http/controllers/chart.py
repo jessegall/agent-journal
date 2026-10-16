@@ -40,8 +40,8 @@ class ChartController:
 
     def remove(self, request: Request) -> Response:
         chart = self.charts.find(int(request.params["id"]))
-        if chart.id == self.charts.the().id:
-            return Response.refused("the shipped workflow stays; empty it or reset it instead")
+        if chart.shipped:
+            return Response.refused("a shipped workflow stays; empty it or reset it instead")
         self.charts.remove(chart, request.actor)
         return Response.json({"removed": chart.id})
 
@@ -60,9 +60,10 @@ class ChartController:
         return Response.json(self.trial.run(request.body.get("trigger", "idle"), environment))
 
     def reset(self, request: Request) -> Response:
-        if int(request.params["id"]) != self.charts.the().id:
-            return Response.refused("only the shipped workflow has a shipped state to go back to")
-        return Response.json(self.drawn(self.shipped.reset(request.actor)))
+        chart = self.charts.find(int(request.params["id"]))
+        if not chart.shipped:
+            return Response.refused("only a shipped workflow has a shipped drawing to go back to")
+        return Response.json(self.drawn(self.shipped.reset(chart, request.actor)))
 
     @staticmethod
     def named(chart: Chart) -> dict:
@@ -73,7 +74,7 @@ class ChartController:
 
     def drawn(self, chart: Chart) -> dict:
         return {
-            **self.named(chart), "shipped": chart.id == self.charts.the().id,
+            **self.named(chart), "shipped": chart.shipped,
             "nodes": [{"id": n.id, "kind": n.kind.value, "key": n.key, "text": n.text, "x": n.x, "y": n.y, "shipped": n.shipped} for n in self.charts.nodes_of(chart)],
             "lines": [{"from": line.source.id, "to": line.target.id, "port": line.kind} for line in self.charts.lines_of(chart)],
             "catalogue": self.entries(),

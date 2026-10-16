@@ -9,6 +9,10 @@ class Chart(Model):
 
     title: str = ""
     revision: int = 0
+    shipped: bool = False
+    """True for a workflow the journal ships: it carries the conduct for one event and can be reset to its shipped drawing."""
+    event: str = ""
+    """The event a shipped workflow is for, the key of its trigger."""
 
     def saved_again(self) -> "Chart":
         return self.with_(revision=self.revision + 1)
