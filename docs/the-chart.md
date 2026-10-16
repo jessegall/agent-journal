@@ -39,7 +39,8 @@ journal clears the compiled graphs, so the next walk reads the edit.
   about to use, block its stop, type a line into its terminal, start a sequence by its title. The line may name
   rows with placeholders: `{{next_task}}`, `{{next_task_title}}`, `{{parked_tasks}}`, `{{parked_n}}`, `{{parked_title}}`, `{{parked_why}}`,
   `{{inbox}}`, `{{unread_count}}`, `{{unread_numbers}}`, `{{owed}}`, `{{task}}`, `{{task_edits}}`, `{{log_command}}`, `{{awaited}}`,
-  `{{quiet_minutes}}`, `{{row}}`, `{{worker_n}}`, `{{worker_name}}` and `{{question_n}}`. A say or type line that opens with a nudge's key
+  `{{quiet_minutes}}`, `{{row}}`, `{{worker_n}}`, `{{worker_name}}`, `{{question_n}}`, `{{sequence_n}}`, `{{sequence_step}}` and
+  `{{sequence_step_text}}`. A say or type line that opens with a nudge's key
   in brackets, `[messages.new]`, speaks as that nudge.
 
 Lines join the boxes: then from a trigger or an action, yes or no from a check.

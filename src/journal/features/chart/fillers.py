@@ -2,6 +2,7 @@ import re
 
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.context import Context
+from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.working import Working
 from journal.models.question import Question
@@ -61,6 +62,19 @@ class Fillers:
     def awaited(self, ctx: Context) -> str:
         state = self.state(ctx)
         return state.what if isinstance(state, Expecting) else ""
+
+    def sequence_n(self, ctx: Context) -> str:
+        state = self.state(ctx)
+        return str(state.sequence_id) if isinstance(state, RunningSequence) else ""
+
+    def sequence_step(self, ctx: Context) -> str:
+        """The step in hand, counted from one, as the running state says it at a stop."""
+        state = self.state(ctx)
+        return str(state.step + 1) if isinstance(state, RunningSequence) else ""
+
+    def sequence_step_text(self, ctx: Context) -> str:
+        state = self.state(ctx)
+        return state.text if isinstance(state, RunningSequence) else ""
 
     def quiet_minutes(self, ctx: Context) -> str:
         return str(int(ctx.event.quiet_for // 60)) if isinstance(ctx.event, Ticked) else "0"

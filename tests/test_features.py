@@ -2101,3 +2101,18 @@ def test_the_rules_doc_rules_on_every_state_the_engine_knows(app):
     names = app.container.get(StatesCatalogue).names()
     assert "subagent" not in names, "the state nothing entered is gone"
     assert [n for n in names if f"| {n} |" not in table] == [], "every state the engine knows has a ruling in the rules doc"
+
+
+def test_the_fillers_name_the_sequence_in_hand(app):
+    from journal.events.agent.idle import Idle
+    from journal.features.chart.context import Context
+    from journal.features.chart.fillers import Fillers
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    made = console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out
+    n = int(made.split()[1].rstrip(":"))
+    console.run(["sequence", "run", str(n)], AGENT)
+    machine = app.container.get(Machine)
+    ctx = Context(event=Idle(session="s1", environment_id=1), session="s1", environment_id=1, state=machine.current("s1"))
+    assert app.container.get(Fillers).fill("sequence {{sequence_n}}, step {{sequence_step}}: {{sequence_step_text}}", ctx) == f"sequence {n}, step 1: tag it", "as the running state says it at a stop"
