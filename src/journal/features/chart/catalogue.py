@@ -61,6 +61,7 @@ ACTIONS = (
     ("start_sequence", "Start sequence", "starts the sequence named in the text at its first step", True),
     ("count_start", "Start a count", "sets the agent's count named in the text to nought; a check at a later event reads it", True),
     ("count_one", "Count one", "adds one to the agent's count named in the text", True),
+    ("stop_here", "Stop here", "ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs", False),
     ("show_card", "Show a card in the chat", "a card in the chat with the message, so the user sees what the journal did", True),
     ("move_to", "Change the agent's state", "moves the agent through the engine's machine: to idle from a state that owns nothing, or into expecting or stuck over what it is doing, with the words after the state's name as what it waits for; a state that owns a row is entered by what makes that row", True),
     ("release", "End the agent's wait", "an agent paused for a worker, a question or anything outside goes back to what it was doing, told with the message; an agent not paused is left as it is", True),

@@ -135,7 +135,7 @@ class ChartCommand(Command):
 
     def line(self, args: Namespace, where: Where) -> int:
         source, target = self.charts.nodes.find(args.source), self.charts.nodes.find(args.target)
-        fault = self.validation.port_fault({"id": source.id, "kind": source.kind}, {"id": target.id, "kind": target.kind}, args.port)
+        fault = self.validation.port_fault({"id": source.id, "kind": source.kind, "key": source.key}, {"id": target.id, "kind": target.kind}, args.port)
         if fault:
             raise Refused(fault[0])
         chart = self.editable(self.charts.chart_of(source), args)

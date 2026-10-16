@@ -2591,3 +2591,34 @@ def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run
     assert refused.data["node"] == stuck and f"node {away} moved the agent first" in refused.data["fault"], "the second move in the event is refused and recorded naming both nodes"
     walked = entries.of_kind(WALKED, 3)[0]
     assert walked.data["moved_by"] == [away] and "expecting speaks at its place" in walked.data["said"], "the new state's workflow later in the order ran at its place"
+
+
+def test_a_stop_here_node_ends_the_events_walk_so_no_later_workflow_runs(app):
+    from journal.features.chart.validation import Validation
+    from journal.features.chart.walk import WALKED
+    from journal.repositories.charts import Charts
+    from journal.repositories.entries import Entries
+    console, charts, entries = app.console(), app.container.get(Charts), app.container.get(Entries)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    link = lambda a, b: console.run(["chart", "line", str(a), str(b)], USER)
+    first, t1 = own_workflow(console, charts, "idle", "tool_finished")
+    speaks = add(first, "action", "say", "--text", "[chart] first speaks")
+    stop = add(first, "action", "stop_here")
+    after = add(first, "action", "say", "--text", "[chart] never said")
+    link(t1, speaks)
+    link(speaks, stop)
+    assert "leads out of Stop here" in console.run(["chart", "line", str(stop), str(after)], USER).err, "nothing follows a Stop here"
+    second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    t2 = next(n.id for n in charts.nodes_of(charts.find(second)) if n.key == "tool_finished")
+    later = add(second, "action", "say", "--text", "[chart] the later one speaks")
+    link(t2, later)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    assert "first speaks" in said(body) and "the later one speaks" not in said(body) and "never said" not in said(body), "the walk ends at Stop here: nothing after it, no later workflow"
+    walked = entries.of_kind(WALKED, 3)[0]
+    assert walked.data["stopped_at"] == stop and walked.data["workflows"] == [first], "the record says where the walk stopped and that the later workflow never ran"
+    assert any("Stop here in this workflow skips" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Stop here skips, by name"
+    out = console.run(["chart", "try", "tool_finished"], AGENT).out
+    assert "would stop here: no later workflow of the event runs" in out and "the later one speaks" not in out, "the dry run says where it would stop"

@@ -57,11 +57,13 @@ class Walk:
             moves_before = len(ctx.moves)
             for start in graph.triggers.get(key, ()):
                 decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
-            if len(ctx.moves) > moves_before:
+            if ctx.stopped:
+                queue = []
+            elif len(ctx.moves) > moves_before:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
                 queue = [c for c in self.workflows_for(ctx, key) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves]}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0}), Actor.system())
         return decision
 
     @staticmethod
@@ -100,7 +102,7 @@ class Walk:
 
     def follow(self, start: Node, nodes: dict, after: dict, ctx: Context, passed: list) -> Decision:
         decision, at, steps = Decision(), [start.id], 0
-        while at and steps < STEPS:
+        while at and steps < STEPS and not ctx.stopped:
             steps += 1
             node = nodes[at.pop(0)]
             passed.append(node.id)
@@ -110,7 +112,7 @@ class Walk:
                 self.failed(node, ctx, fault)
                 port = NO if node.kind == NodeKind.CHECK else THEN
             at += after.get((node.id, port), [])
-        if at:
+        if at and not ctx.stopped:
             self.failed(node, ctx, RuntimeError(f"the path ran past {STEPS} nodes and was cut off"))
         return decision
 
@@ -120,6 +122,9 @@ class Walk:
             return (YES if self.checks.answer(node.key, ctx, node.text) else NO), decision
         if node.kind != NodeKind.ACTION:
             return THEN, decision
+        if node.key == "stop_here":
+            ctx.stopped.append(node.id)
+            return THEN, decision.merged(self.actions.perform(node.key, node.text, ctx))
         if node.key in MOVERS and ctx.moves:
             return THEN, decision.merged(self.second_move(node, ctx))
         acted = self.actions.perform(node.key, node.text, ctx)

@@ -49,7 +49,16 @@ class Validation:
         return faults
 
     def warnings(self, chart: Chart) -> list[str]:
-        """What a saved workflow should still hear about: a state that waits on something outside with nothing in any of its workflows to release the agent."""
+        """What a saved workflow should still hear about: a Stop here that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
+        return self.stop_warnings(chart) + self.wait_warnings(chart)
+
+    def stop_warnings(self, chart: Chart) -> list[str]:
+        if not any(n.key == "stop_here" for n in self.charts.nodes_of(chart)):
+            return []
+        skipped = [c.title for c in self.charts.for_event(chart.event) if c.place > chart.place]
+        return [f"Stop here in this workflow skips what comes after it at {chart.event}: {', '.join(skipped)}"] if skipped else []
+
+    def wait_warnings(self, chart: Chart) -> list[str]:
         if chart.state not in self.states.waits():
             return []
         own = [c for c in self.charts.all() if c.state == chart.state]
@@ -108,6 +117,8 @@ class Validation:
     def port_fault(source: dict, target: dict, port: str) -> list[Fault]:
         if target.get("kind") == NodeKind.TRIGGER:
             return [Fault(f"a line leads into trigger {target.get('id')}: a trigger only starts a path", str(target.get("id", "")))]
+        if source.get("key") == "stop_here":
+            return [Fault(f"a line leads out of Stop here {source.get('id')}: it ends the walk, nothing follows it", str(source.get("id", "")))]
         if source.get("kind") == NodeKind.CHECK and port not in (YES, NO):
             return [Fault(f"check {source.get('id')} leaves by yes or no, not {port}", str(source.get("id", "")))]
         if source.get("kind") != NodeKind.CHECK and port != THEN:

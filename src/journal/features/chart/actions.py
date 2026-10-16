@@ -90,6 +90,10 @@ class Actions:
             ctx.spoken.add(line)
             self.supervisor.type(ctx.environment_id, line)
 
+    def stop_here(self, text: str, ctx: Context) -> Decision:
+        """Nothing to do: the walk ends the event at this node."""
+        return Decision()
+
     def count_start(self, text: str, ctx: Context) -> Decision:
         """The agent's count by that name back at nought."""
         if ctx.session and text.strip():

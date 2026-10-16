@@ -259,7 +259,7 @@ function setText(node, text) {
 }
 
 // the flow reads down the page: a line leaves a card by its bottom edge and enters the next by its top; a check's Yes and No sit side by side
-const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
+const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
 const heightOf = (node) => (entryOf(node).takes_text ? CARD.text : CARD.plain);
 const sizing = {width: CARD.width, heightOf: (node) => heightOf(node)};
 
@@ -833,6 +833,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                     selected: selected === node.id,
                                     target: drawing && drawing.target && drawing.target.id === node.id,
                                     lit: isLit(node.id),
+                                    end: node.key === 'stop_here',
                                 },
                             ]"
                             :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
@@ -1438,6 +1439,10 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 .chart-runs-empty {
     margin: 0;
     color: var(--text-3);
+}
+.chart-node.end {
+    border-bottom-width: 3px;
+    border-bottom-color: var(--text-3);
 }
 .chart-node.lit {
     border-color: var(--tone-good);

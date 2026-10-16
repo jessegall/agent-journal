@@ -44,7 +44,7 @@ const entryOf = (node) => entries.value[`${node.kind}:${node.key}`] || {title: n
 const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.id), n])));
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
 const dirty = computed(() => past.value.length > 0);
-const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
+const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
 const numberOf = (node) => nodes.value.indexOf(node) + 1;
 const named = (node) => `${numberOf(node)} · ${entryOf(node).title}`;
 const lineOf = (node, port) => lines.value.find((l) => String(l.from) === String(node.id) && l.port === port);

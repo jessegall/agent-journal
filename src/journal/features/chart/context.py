@@ -21,5 +21,7 @@ class Context:
     """The moves made in this event, each the node that made it and the state it left the agent in: one per event, a second is refused."""
     held: list = field(default_factory=list)
     """The node whose hold answers this event, the first to hold; empty while nothing holds."""
+    stopped: list = field(default_factory=list)
+    """The Stop here node that ended this event's walk, when one did: nothing after it ran, in its workflow or a later one."""
     unanswered: list = field(default_factory=list)
     """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""

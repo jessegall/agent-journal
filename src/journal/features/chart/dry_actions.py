@@ -11,6 +11,8 @@ class DryActions:
 
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
         from journal.features.chart.actions import NAMED
+        if key == "stop_here":
+            return Decision.tell("would stop here: no later workflow of the event runs")
         named = NAMED.match(text)
         words = named.group(2) if named else text
         return Decision.tell(f"would {key.replace('_', ' ')}{f' as {named.group(1)}' if named else ''}: {self.fillers.fill(words, ctx)}")

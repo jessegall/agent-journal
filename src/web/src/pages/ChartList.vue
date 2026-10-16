@@ -15,7 +15,7 @@ const HELP = "{{name}}";
 const PORT = {then: "Next step", yes: "If yes, go to", no: "If no, go to"};
 const END = "End here (nothing follows)";
 
-const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
+const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
 const numberOf = (node) => props.nodes.indexOf(node) + 1;
 const targetOf = (node, port) => props.lines.find((l) => String(l.from) === String(node.id) && l.port === port);
 const named = (node) => `${numberOf(node)} · ${props.entryOf(node).title}`;
