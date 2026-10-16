@@ -152,7 +152,9 @@ at a prompt while a skill is owed, a wait is released by its row event while a m
 what it must: a write, through the guards at Tool about to run, and a stop, through Always at Agent stops, each
 naming what it awaits; the read, the command or the decision that pays it goes through. The phase-two replays
 freeze this: working_rules carries the tick's line under the look owed, loading_skill_rules the inbox named under
-the skill owed, owed_pause_rules the stop held and the wait kept.
+the skill owed, owed_pause_rules the stop held and the wait kept. The three holds hold under Codex as under Claude,
+through its pre-tool hook, as the codex records show; the only event Codex never sends is the agent writing to you,
+which the page marks Claude only.
 
 ## Locks
 

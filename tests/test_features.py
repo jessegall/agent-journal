@@ -3045,3 +3045,16 @@ def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(
     seed.run()
     kept = charts.find(mine.id)
     assert kept.state == "" and "turned off, its state is the look owed now" in kept.title and not any(n.kind == NodeKind.TRIGGER for n in charts.nodes_of(kept)) and any(n.key == "say" for n in charts.nodes_of(kept)), "kept, turned off, and the title says what became of its state"
+
+
+def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show():
+    """The skill, the look and the mark hold a Codex write through its pre-tool hook, as the records frozen on today's conduct show; nothing here is Claude only."""
+    import json
+    records = Path(__file__).with_name("replays")
+    held = lambda name: {s["name"]: s["answer"]["error"] for s in json.loads((records / f"{name}_codex.json").read_text())["steps"] if isinstance(s["answer"], dict) and "error" in s["answer"]}
+    assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
+    assert "journal environment here" in held("orienting_rules")["a write before the look"]
+    assert "decide what survives the context" in held("at_mark_rules")["a write at the mark"]
+    from journal.features.chart.catalogue import Catalogue
+    by_key = {e.key: e for e in Catalogue().triggers()}
+    assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
