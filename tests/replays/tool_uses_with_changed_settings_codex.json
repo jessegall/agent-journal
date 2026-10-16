@@ -8,31 +8,21 @@
         "[journal] new message 1"
       ],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice",
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 0,
-        "uses": 0
-      }
+      "counts": {}
     },
     {
       "name": "read 1 while owed",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "read 2 while owed",
@@ -46,24 +36,14 @@
       "nudges": [
         "messages.answer"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "read 3 while owed",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 3,
-        "uses": 3
-      }
+      "counts": {}
     },
     {
       "name": "read 4 while owed",
@@ -72,12 +52,7 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 4,
-        "uses": 4
-      }
+      "counts": {}
     },
     {
       "name": "read 5 while owed",
@@ -86,48 +61,28 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 5,
-        "uses": 5
-      }
+      "counts": {}
     },
     {
       "name": "the reply",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 5,
-        "uses": 5
-      }
+      "counts": {}
     },
     {
       "name": "write 1",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 0,
-        "owed": 6,
-        "uses": 6
-      }
+      "counts": {}
     },
     {
       "name": "write 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 2,
-        "namings": 0,
-        "owed": 7,
-        "uses": 7
-      }
+      "counts": {}
     },
     {
       "name": "write 3",
@@ -141,12 +96,7 @@
       "nudges": [
         "tasks.in_hand"
       ],
-      "counts": {
-        "edits": 3,
-        "namings": 0,
-        "owed": 8,
-        "uses": 8
-      }
+      "counts": {}
     },
     {
       "name": "write 4",
@@ -160,12 +110,7 @@
       "nudges": [
         "tasks.log_soon"
       ],
-      "counts": {
-        "edits": 4,
-        "namings": 0,
-        "owed": 9,
-        "uses": 9
-      }
+      "counts": {}
     },
     {
       "name": "write 5",
@@ -179,24 +124,14 @@
       "nudges": [
         "tasks.in_hand"
       ],
-      "counts": {
-        "edits": 5,
-        "namings": 0,
-        "owed": 10,
-        "uses": 10
-      }
+      "counts": {}
     },
     {
       "name": "write 6",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 6,
-        "namings": 0,
-        "owed": 11,
-        "uses": 11
-      }
+      "counts": {}
     },
     {
       "name": "write 7",
@@ -204,13 +139,10 @@
         "error": "6 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "edits": 6,
-        "namings": 0,
-        "owed": 12,
-        "uses": 12
-      }
+      "nudges": [
+        "tasks.in_hand"
+      ],
+      "counts": {}
     }
   ]
 }

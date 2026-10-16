@@ -6,887 +6,575 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "write 1",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "write 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 2,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "write 3",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 3,
-        "owed": 3,
-        "uses": 3
-      }
+      "counts": {}
     },
     {
       "name": "write 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 4,
-        "owed": 4,
-        "uses": 4
-      }
+      "counts": {}
     },
     {
       "name": "write 5",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 5,
-        "owed": 5,
-        "uses": 5
-      }
+      "counts": {}
     },
     {
       "name": "write 6",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 6,
-        "owed": 6,
-        "uses": 6
-      }
+      "counts": {}
     },
     {
       "name": "write 7",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 7,
-        "owed": 7,
-        "uses": 7
-      }
+      "counts": {}
     },
     {
       "name": "write 8",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 8,
-        "owed": 8,
-        "uses": 8
-      }
+      "counts": {}
     },
     {
       "name": "write 9",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 9,
-        "owed": 9,
-        "uses": 9
-      }
+      "counts": {}
     },
     {
       "name": "write 10",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 10,
-        "owed": 10,
-        "uses": 10
-      }
+      "counts": {}
     },
     {
       "name": "write 11",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 11,
-        "owed": 11,
-        "uses": 11
-      }
+      "counts": {}
     },
     {
       "name": "write 12",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 12,
-        "owed": 12,
-        "uses": 12
-      }
+      "counts": {}
     },
     {
       "name": "write 13",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 13,
-        "owed": 13,
-        "uses": 13
-      }
+      "counts": {}
     },
     {
       "name": "write 14",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 14,
-        "owed": 14,
-        "uses": 14
-      }
+      "counts": {}
     },
     {
       "name": "write 15",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 15,
-        "owed": 15,
-        "uses": 15
-      }
+      "counts": {}
     },
     {
       "name": "write 16",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 16,
-        "owed": 16,
-        "uses": 16
-      }
+      "counts": {}
     },
     {
       "name": "write 17",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 17,
-        "owed": 17,
-        "uses": 17
-      }
+      "counts": {}
     },
     {
       "name": "write 18",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 18,
-        "owed": 18,
-        "uses": 18
-      }
+      "counts": {}
     },
     {
       "name": "write 19",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 19,
-        "owed": 19,
-        "uses": 19
-      }
+      "counts": {}
     },
     {
       "name": "write 20",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 20,
-        "owed": 20,
-        "uses": 20
-      }
+      "counts": {}
     },
     {
       "name": "write 21",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 21,
-        "owed": 21,
-        "uses": 21
-      }
+      "counts": {}
     },
     {
       "name": "write 22",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 22,
-        "owed": 22,
-        "uses": 22
-      }
+      "counts": {}
     },
     {
       "name": "write 23",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 23,
-        "owed": 23,
-        "uses": 23
-      }
+      "counts": {}
     },
     {
       "name": "write 24",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 24,
-        "owed": 24,
-        "uses": 24
-      }
+      "counts": {}
     },
     {
       "name": "write 25",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 25,
-        "owed": 25,
-        "uses": 25
-      }
+      "counts": {}
     },
     {
       "name": "write 26",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
+          "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
         }
       },
       "typed": [],
       "nudges": [
-        "tasks.log_soon"
+        "tasks.log_soon",
+        "tasks.in_hand"
       ],
-      "counts": {
-        "edits": 26,
-        "owed": 26,
-        "uses": 26
-      }
+      "counts": {}
     },
     {
       "name": "write 27",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 27,
-        "owed": 27,
-        "uses": 27
-      }
+      "counts": {}
     },
     {
       "name": "logged",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 27,
-        "uses": 27
-      }
+      "counts": {}
     },
     {
       "name": "write 1 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "owed": 28,
-        "uses": 28
-      }
+      "counts": {}
     },
     {
       "name": "write 2 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 2,
-        "owed": 29,
-        "uses": 29
-      }
+      "counts": {}
     },
     {
       "name": "write 3 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 3,
-        "owed": 30,
-        "uses": 30
-      }
+      "counts": {}
     },
     {
       "name": "write 4 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 4,
-        "owed": 31,
-        "uses": 31
-      }
+      "counts": {}
     },
     {
       "name": "write 5 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 5,
-        "owed": 32,
-        "uses": 32
-      }
+      "counts": {}
     },
     {
       "name": "write 6 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 6,
-        "owed": 33,
-        "uses": 33
-      }
+      "counts": {}
     },
     {
       "name": "write 7 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 7,
-        "owed": 34,
-        "uses": 34
-      }
+      "counts": {}
     },
     {
       "name": "write 8 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 8,
-        "owed": 35,
-        "uses": 35
-      }
+      "counts": {}
     },
     {
       "name": "write 9 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 9,
-        "owed": 36,
-        "uses": 36
-      }
+      "counts": {}
     },
     {
       "name": "write 10 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 10,
-        "owed": 37,
-        "uses": 37
-      }
+      "counts": {}
     },
     {
       "name": "write 11 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 11,
-        "owed": 38,
-        "uses": 38
-      }
+      "counts": {}
     },
     {
       "name": "write 12 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 12,
-        "owed": 39,
-        "uses": 39
-      }
+      "counts": {}
     },
     {
       "name": "write 13 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 13,
-        "owed": 40,
-        "uses": 40
-      }
+      "counts": {}
     },
     {
       "name": "write 14 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 14,
-        "owed": 41,
-        "uses": 41
-      }
+      "counts": {}
     },
     {
       "name": "write 15 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 15,
-        "owed": 42,
-        "uses": 42
-      }
+      "counts": {}
     },
     {
       "name": "write 16 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 16,
-        "owed": 43,
-        "uses": 43
-      }
+      "counts": {}
     },
     {
       "name": "write 17 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 17,
-        "owed": 44,
-        "uses": 44
-      }
+      "counts": {}
     },
     {
       "name": "write 18 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 18,
-        "owed": 45,
-        "uses": 45
-      }
+      "counts": {}
     },
     {
       "name": "write 19 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 19,
-        "owed": 46,
-        "uses": 46
-      }
+      "counts": {}
     },
     {
       "name": "write 20 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 20,
-        "owed": 47,
-        "uses": 47
-      }
+      "counts": {}
     },
     {
       "name": "write 21 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 21,
-        "owed": 48,
-        "uses": 48
-      }
+      "counts": {}
     },
     {
       "name": "write 22 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 22,
-        "owed": 49,
-        "uses": 49
-      }
+      "counts": {}
     },
     {
       "name": "write 23 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 23,
-        "owed": 50,
-        "uses": 50
-      }
+      "counts": {}
     },
     {
       "name": "write 24 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 24,
-        "owed": 51,
-        "uses": 51
-      }
+      "counts": {}
     },
     {
       "name": "write 25 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 25,
-        "owed": 52,
-        "uses": 52
-      }
+      "counts": {}
     },
     {
       "name": "write 26 after the log",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
+          "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
         }
       },
       "typed": [],
       "nudges": [
-        "tasks.log_soon"
+        "tasks.log_soon",
+        "tasks.in_hand"
       ],
-      "counts": {
-        "edits": 26,
-        "owed": 53,
-        "uses": 53
-      }
+      "counts": {}
     },
     {
       "name": "write 27 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 27,
-        "owed": 54,
-        "uses": 54
-      }
+      "counts": {}
     },
     {
       "name": "write 28 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 28,
-        "owed": 55,
-        "uses": 55
-      }
+      "counts": {}
     },
     {
       "name": "write 29 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 29,
-        "owed": 56,
-        "uses": 56
-      }
+      "counts": {}
     },
     {
       "name": "write 30 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 30,
-        "owed": 57,
-        "uses": 57
-      }
+      "counts": {}
     },
     {
       "name": "write 31 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 31,
-        "owed": 58,
-        "uses": 58
-      }
+      "counts": {}
     },
     {
       "name": "write 32 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 32,
-        "owed": 59,
-        "uses": 59
-      }
+      "counts": {}
     },
     {
       "name": "write 33 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 33,
-        "owed": 60,
-        "uses": 60
-      }
+      "counts": {}
     },
     {
       "name": "write 34 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 34,
-        "owed": 61,
-        "uses": 61
-      }
+      "counts": {}
     },
     {
       "name": "write 35 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 35,
-        "owed": 62,
-        "uses": 62
-      }
+      "counts": {}
     },
     {
       "name": "write 36 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 36,
-        "owed": 63,
-        "uses": 63
-      }
+      "counts": {}
     },
     {
       "name": "write 37 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 37,
-        "owed": 64,
-        "uses": 64
-      }
+      "counts": {}
     },
     {
       "name": "write 38 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 38,
-        "owed": 65,
-        "uses": 65
-      }
+      "counts": {}
     },
     {
       "name": "write 39 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 39,
-        "owed": 66,
-        "uses": 66
-      }
+      "counts": {}
     },
     {
       "name": "write 40 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 40,
-        "owed": 67,
-        "uses": 67
-      }
+      "counts": {}
     },
     {
       "name": "write 41 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 41,
-        "owed": 68,
-        "uses": 68
-      }
+      "counts": {}
     },
     {
       "name": "write 42 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 42,
-        "owed": 69,
-        "uses": 69
-      }
+      "counts": {}
     },
     {
       "name": "write 43 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 43,
-        "owed": 70,
-        "uses": 70
-      }
+      "counts": {}
     },
     {
       "name": "write 44 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 44,
-        "owed": 71,
-        "uses": 71
-      }
+      "counts": {}
     },
     {
       "name": "write 45 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 45,
-        "owed": 72,
-        "uses": 72
-      }
+      "counts": {}
     },
     {
       "name": "write 46 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 46,
-        "owed": 73,
-        "uses": 73
-      }
+      "counts": {}
     },
     {
       "name": "write 47 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 47,
-        "owed": 74,
-        "uses": 74
-      }
+      "counts": {}
     },
     {
       "name": "write 48 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 48,
-        "owed": 75,
-        "uses": 75
-      }
+      "counts": {}
     },
     {
       "name": "write 49 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 49,
-        "owed": 76,
-        "uses": 76
-      }
+      "counts": {}
     },
     {
       "name": "write 50 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 50,
-        "owed": 77,
-        "uses": 77
-      }
+      "counts": {}
     },
     {
       "name": "write 51 after the log",
@@ -894,12 +582,10 @@
         "error": "50 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "edits": 50,
-        "owed": 78,
-        "uses": 78
-      }
+      "nudges": [
+        "tasks.in_hand"
+      ],
+      "counts": {}
     }
   ]
 }

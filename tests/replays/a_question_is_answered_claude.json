@@ -6,12 +6,13 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "answered",
@@ -19,7 +20,10 @@
       "typed": [
         "[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"
       ],
-      "nudges": []
+      "nudges": [
+        "chart.line"
+      ],
+      "counts": {}
     }
   ]
 }

@@ -6,12 +6,13 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "five quiet minutes",
@@ -21,19 +22,22 @@
       ],
       "nudges": [
         "tasks.check_awaited"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "five more",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     },
     {
       "name": "a tool use lifts the wait",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     }
   ]
 }

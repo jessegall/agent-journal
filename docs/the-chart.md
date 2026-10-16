@@ -38,6 +38,26 @@ journal clears the compiled graphs, so the next walk reads the edit.
 
 ## The shipped workflows
 
+Every shipped workflow holds one concern, and the run order and the end of a walk carry the design: at an event the
+Always workflows run first, then each state's in the order its state ships at, a child state before its parent (the
+agent following a plan runs its own workflows and then Working's), and the first workflow that keeps the agent from
+stopping, or says Stop here, ends the walk so nothing after it runs. No workflow keeps a count for another: the edits
+since the log, the tool uses since the newest unread message, the uses since a message was read and left unanswered
+are read from the journal's own record. What the agent owes the journal, the journal skill and a state's skill, the
+look at what is in flight, a decision at a context mark, is the engine's: the skills, briefing and memory features
+set each debt and hold a write and a stop on it, with no node on the canvas.
+
+At Session starts: tell the agent the journal's rules, facts and what waits; say what is unread; tell the agent how to
+talk to the user. At Prompt sent and Agent stops: say what is unread. At Tool about to run: hold a write while
+messages stay unread after N reminders; name the unread messages every N tool uses; hold the tools while a read
+message stays unanswered; ask for an answer after N tool uses; each on the agent's own tool use, never a subagent's.
+Idle at a stop holds it while a task is parked, then in auto mode while tasks are open; at a tick it asks about a
+parked task after a minute and checks in after half an hour in auto mode. Following a plan holds the stop at a
+checkpoint in auto mode, or says the user looks first and stops the walk. Working, at a stop and a start, tells the
+agent to carry on and asks for a log when the log is old; at a write it holds the write when the log is overdue,
+asks for a log after N edits and names the task in hand every N edits; at a tick it asks how the task stands after
+fifteen quiet minutes. The waits tell the agent a worker reported or a question was answered and send it back.
+
 The journal's guards come first: The guards, a locked workflow titled by what it does (Hold writes while something is owed, and over unread or unanswered messages), is bound to no state, at the head
 of the list in every journal, drawn back by any boot that finds it missing, where a skill owed holds a write
 until its file is read, a write before the look at what is in flight here is held until `journal environment

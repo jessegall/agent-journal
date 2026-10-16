@@ -62,6 +62,13 @@ drives the agent: the canvas shows what it does and why, a run lights the path i
 runs says what was said. Engine behaviour lives in the engine and never appears on the canvas, not as a node
 and not as a note; a workflow is drawn on the canvas, in the user's order, and can be edited.
 
+**One subject per workflow.** A workflow is about one thing: the inbox, the start block, the voice, a
+task's log, a plan's next step. Never a chain of subjects drawn as one workflow because they happen
+at the same event; each is its own workflow in the event's run order, and Stop here is the only thing
+that keeps a later one from running. What the agent owes the journal before it may write or stop,
+the journal skill, the look at what is in flight, a decision at a context mark, is the engine's:
+each feature sets its own debt and holds a write and a stop on it through listeners, and no node on the canvas carries it.
+
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script
 posts and prints. The server records the entry, runs the blocking listeners, replies, then
 runs the rest on one worker thread. A listener that must answer before the agent goes on

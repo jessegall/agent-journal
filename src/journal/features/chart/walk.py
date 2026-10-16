@@ -9,8 +9,8 @@ from journal.features.chart.actions import Actions
 from journal.features.chart.checks import COUNT_CHECKS, Checks
 from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
-from journal.features.skills.skill_files import SkillFiles
 from journal.hooks.decision import Decision
+from journal.hooks.floor import Floor
 from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
@@ -37,22 +37,16 @@ FAILED = "walk_failed"
 class Walk:
     """The engine walking every workflow for one event: each trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The workflows are read fresh each time, so an edit applies at the next event."""
 
-    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine, files: SkillFiles) -> None:
-        self.charts, self.checks, self.actions, self.entries, self.states, self.machine, self.files = charts, checks, actions, entries, states, machine, files
+    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine, floor: Floor) -> None:
+        self.charts, self.checks, self.actions, self.entries, self.states, self.machine, self.floor = charts, checks, actions, entries, states, machine, floor
 
     def dry(self, fillers, checks: Checks, ledger: dict) -> "Walk":
         """The same walk with nothing done: each action tells what it would do, the checks given answer, assumed or live, and the counts the dry walk makes are read through the ledger shared with them."""
-        return Walk(self.charts, checks, DryActions(fillers, ledger), self.entries, self.states, self.machine, self.files)
+        return Walk(self.charts, checks, DryActions(fillers, ledger), self.entries, self.states, self.machine, self.floor)
 
     def on(self, ctx: Context) -> Decision:
-        return self.floored(ctx, self.on_with_trace(ctx, []))
-
-    def floored(self, ctx: Context, decision: Decision) -> Decision:
-        """The engine's floor under every workflow: a journal command and the read of a skill's file are how a debt is paid, so no hold stops them; the hold's words still reach the agent."""
-        if decision.allowed or not isinstance(ctx.event, ToolStarting):
-            return decision
-        pays = self.checks.journal_command(ctx) or self.files.skill_read(self.checks.providers.named(ctx.provider).read_path(ctx.event.tool, ctx.event.input)) is not None
-        return Decision.tell("\n".join(line for line in (decision.context, decision.reason) if line)) if pays else decision
+        """The walk's decision under the floor: no workflow holds a journal command or the read of a skill's file, the ways a debt is paid; the hold's words still reach the agent."""
+        return self.floor.under(ctx.event, self.on_with_trace(ctx, []))
 
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
         """The walk, with the nodes it passes written into the list given: the event's workflows in their order; a move inside one re-reads the state, and the new state's workflows that come later in the order run at their place."""
@@ -86,13 +80,9 @@ class Walk:
         return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
-        """The event's workflows in the order the user set: the ones bound to no state always, and the ones bound to the agent's state, or to the nearest state it inherits from that has any at this event, whose workflows replace its parents' there."""
+        """The event's workflows in the order the user set: the ones bound to no state always, and the ones bound to the agent's state or to any state it inherits from, so following a plan runs Working's workflows and its own."""
         answering = self.charts.for_event(key)
-        bound = set()
-        for state in self.states_of(ctx):
-            nearest = next((name for name in self.lineage(state) if any(c.state == name for c in answering)), None)
-            if nearest:
-                bound.add(nearest)
+        bound = {name for state in self.states_of(ctx) for name in self.lineage(state)}
         return [c for c in answering if not c.state or c.state in bound]
 
     def states_of(self, ctx: Context) -> list[AgentState]:
@@ -145,6 +135,8 @@ class Walk:
                 acted = Decision.tell(acted.context)
             else:
                 ctx.held.append(node.id)
+                if node.key == "block_stop":
+                    ctx.stopped.append(node.id)
         return THEN, decision.merged(acted)
 
     def second_move(self, node: Node, ctx: Context) -> Decision:

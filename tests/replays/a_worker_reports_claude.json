@@ -6,12 +6,13 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "worker 1 reports",
@@ -21,7 +22,8 @@
       ],
       "nudges": [
         "workers.reported"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "worker 2 is stopped",
@@ -33,7 +35,8 @@
       "nudges": [
         "workers.stopped",
         "workers.returned"
-      ]
+      ],
+      "counts": {}
     }
   ]
 }

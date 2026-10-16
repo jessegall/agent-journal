@@ -40,6 +40,7 @@ from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
 from journal.repositories.agents import Agents
 from journal.repositories.questions import Questions
+from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
 
@@ -60,11 +61,12 @@ class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
-                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
         self.rules, self.facts, self.reminders, self.agents, self.questions = rules, facts, reminders, agents, questions
+        self.task_logs = task_logs
         self.requiring = requiring
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
@@ -77,8 +79,42 @@ class Checks:
         return bool(check(ctx, text.strip()) if key in WORD_CHECKS else check(ctx))
 
     def count_of(self, ctx: Context, name: str) -> int:
-        """The agent's count by that name, nought for no agent."""
-        return self.counts.named(ctx.session, name).value if ctx.session else 0
+        """The agent's count by that name: edits, uses, owed and namings are read from the journal's own record, so no workflow keeps them for another; any other name is a count a workflow started."""
+        if not ctx.session:
+            return 0
+        derived = getattr(self, f"derived_{name}", None)
+        return derived(ctx) if derived else self.counts.named(ctx.session, name).value
+
+    def derived_edits(self, ctx: Context) -> int:
+        """Writes since the task in hand was last logged, or started, a held one not counted; at a write, the ones before it, so the write in hand is read against the edits so far."""
+        state = ctx.state
+        if not isinstance(state, Working):
+            return 0
+        task = self.tasks.find(state.task_id)
+        logs = self.task_logs.of(task)
+        since = max([t for t in (task.started_at, *(log.created_at for log in logs)) if t], default=None)
+        provider = self.providers.named(ctx.provider)
+        before_this = self.tool_uses_since(ctx.session, since)[1:] if isinstance(ctx.event, ToolStarting) else self.tool_uses_since(ctx.session, since)
+        return sum(1 for e in before_this if not e.data.get("refused") and provider.writes(e.data.get("tool_name", ""), e.data.get("tool_input", {}) or {}))
+
+    def derived_uses(self, ctx: Context) -> int:
+        """Tool uses since the newest unread message came."""
+        unread = self.messages.unread()
+        return len(self.tool_uses_since(ctx.session, max(m.created_at for m in unread))) if unread else 0
+
+    def derived_owed(self, ctx: Context) -> int:
+        """Tool uses since the first message read and left unanswered was read."""
+        unanswered = [m for m in self.messages.unanswered() if m.read_at]
+        return len(self.tool_uses_since(ctx.session, min(m.read_at for m in unanswered))) if unanswered else 0
+
+    def derived_namings(self, ctx: Context) -> int:
+        """The reminders of the unread messages the agent has had: its tool uses since the newest one came, by the reminder interval; read from the record, so no workflow's lines change it."""
+        every = self.number("messages.remind_every")
+        return self.derived_uses(ctx) // every if every else 0
+
+    def tool_uses_since(self, session: str, since) -> list:
+        """The agent's own tool uses since the moment, newest first: a subagent's share the session and are not counted."""
+        return [e for e in self.entries.tool_starts(session) if not (e.data.get("agent_id") or e.data.get("subagent_id")) and (since is None or (e.created_at and e.created_at > since))]
 
     def count_over(self, ctx: Context, name: str, limit: int) -> bool:
         """The agent's count by that name has reached the number."""

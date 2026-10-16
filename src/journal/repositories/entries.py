@@ -15,6 +15,11 @@ class Entries(ScopedRepository[Entry]):
         row = self.connection.one(f"SELECT MAX(json_extract(data, '$.at')) AS at FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (self.scope.id, session, key, line))
         return float(row["at"] or 0.0) if row else 0.0
 
+    def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
+        """The newest tool uses of this session, newest first, as the hooks recorded them."""
+        rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (self.scope.id, f"agent:{session}", last))
+        return [self._load(row) for row in rows]
+
     def of_kind(self, kind: str, last: int = 50) -> list[Entry]:
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = ? ORDER BY id DESC LIMIT ?", (self.scope.id, kind, last))
         return [self._load(row) for row in rows]

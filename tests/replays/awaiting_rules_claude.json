@@ -12,9 +12,7 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "the first reports",
@@ -25,9 +23,7 @@
       "nudges": [
         "workers.reported"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "the last one back",
@@ -40,9 +36,7 @@
         "workers.reported",
         "workers.returned"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "a stop after",
@@ -54,9 +48,7 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     }
   ]
 }

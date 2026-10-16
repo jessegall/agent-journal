@@ -114,6 +114,10 @@ def clockless(text: str) -> str:
     return re.sub(r"\b\d\d:\d\d\b", "HH:MM", text)
 
 
+DERIVED = ("edits", "uses", "owed", "namings")
+"""The counts the shipped workflows read, now derived from the journal's record and kept by no workflow: what the agent heard proves them, not a row."""
+
+
 def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:
     """What differs between two records, step by step, in words; nothing when the agent would have seen the same: the same answer's lines, the same lines typed in order, and, when asked, the same nudges said."""
     found = []
@@ -124,7 +128,8 @@ def differences(left: list[dict], right: list[dict], nudges: bool = False) -> li
             found.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
         if nudges and sorted(a["nudges"]) != sorted(b["nudges"]):
             found.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
-        if "counts" in a and "counts" in b and a["counts"] != b["counts"]:
+        kept = lambda counts: {k: v for k, v in counts.items() if k not in DERIVED}
+        if "counts" in a and "counts" in b and kept(a["counts"]) != kept(b["counts"]):
             found.append(f"{a['name']}: the counts differ: {a['counts']} against {b['counts']}")
     if len(left) != len(right):
         found.append(f"{len(left)} steps against {len(right)}")

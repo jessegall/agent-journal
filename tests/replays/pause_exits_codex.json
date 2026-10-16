@@ -12,20 +12,14 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "a tool use lifts the await",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a stop back at work",
@@ -37,44 +31,28 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "edits": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "stuck",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a tool use lifts being stuck",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "waiting on a question",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "the answer releases the wait",
@@ -89,22 +67,14 @@
         "chart.line",
         "tasks.carry_on"
       ],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "awaiting a worker",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "the report releases the wait",
@@ -121,11 +91,7 @@
         "workers.returned",
         "tasks.carry_on"
       ],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "running a sequence",
@@ -137,11 +103,7 @@
       "nudges": [
         "sequences.step"
       ],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "the last step ends the sequence",
@@ -153,11 +115,7 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "edits": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     }
   ]
 }

@@ -37,7 +37,7 @@ class Tasks(Feature):
     )
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
-    CARRY_ON_LOG = Nudge(name, "carry_on_log", "{{name}} is in hand, {{logged}}: carry on", "log where it stands first, then continue; journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
+    LOG_OLD = Nudge(name, "log_old", "{{name}}, {{logged}}: log where it stands first", "{{log_command}} \"<where it stands>\"", repeat_after=0)
     OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
     NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
@@ -51,7 +51,7 @@ class Tasks(Feature):
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}}, {{title}}, is still parked: can you continue it now?", "it was parked because: {{why}}. journal task resume {{n}} picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: journal await again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
-    nudges = (CARRY_ON, CARRY_ON_LOG, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
+    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks

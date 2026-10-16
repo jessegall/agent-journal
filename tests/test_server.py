@@ -466,7 +466,7 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
 def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_when_none_does(server):
     manifest = call(server, "GET", "/api/manifest")[1]
     hold_after = next(s for s in manifest["features"]["messages"]["settings"] if s["name"] == "hold_after")
-    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold writes while something is owed, and over unread or unanswered messages"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
+    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold the tools while a read message stays unanswered"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
     auto = next(s for s in manifest["features"]["tasks"]["settings"] if s["name"] == "auto")
     assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
 
@@ -519,7 +519,7 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
 
 def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no_release_is_flagged(server):
     status, read = call(server, "GET", "/journal/chart")
-    awaiting = next(w for w in read["workflows"] if w["state"] == "awaiting" and w["event"] == "workers.updated")
+    awaiting = next(w for w in read["workflows"] if w["state"] == "awaiting" and w["event"] == "workers.updated" and w["title"].startswith("Send the agent back"))
     assert status == 200 and awaiting["warnings"] == [], "the shipped wait releases the agent"
     nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "h", "kind": "action", "key": "hold", "text": "wait"}]
     status, body = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "h"}]})

@@ -27,20 +27,14 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "the journal skill read",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a write before the look",
@@ -49,20 +43,14 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "looked at what is in flight",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "message 1 arrives",
@@ -73,11 +61,7 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "namings": 0,
-        "owed": 2,
-        "uses": 0
-      }
+      "counts": {}
     },
     {
       "name": "a prompt naming plans",
@@ -92,11 +76,7 @@
         "skills.required",
         "messages.new"
       ],
-      "counts": {
-        "namings": 0,
-        "owed": 2,
-        "uses": 0
-      }
+      "counts": {}
     },
     {
       "name": "a write before the plans skill is read",
@@ -105,33 +85,21 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "namings": 0,
-        "owed": 3,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "the plans skill read",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "namings": 0,
-        "owed": 3,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a write after",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "namings": 0,
-        "owed": 4,
-        "uses": 2
-      }
+      "counts": {}
     }
   ]
 }

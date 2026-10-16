@@ -19,20 +19,14 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a stop while ended",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "the session starts again",
@@ -50,40 +44,28 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "looked at what is in flight",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a write back at work",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "a stop back at work",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     }
   ]
 }

@@ -44,9 +44,7 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "a minute with a task parked",
@@ -57,27 +55,21 @@
       "nudges": [
         "tasks.parked_still"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "a minute more",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "awaiting the deploy",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "five quiet minutes awaiting",
@@ -88,29 +80,21 @@
       "nudges": [
         "tasks.check_awaited"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "five more awaiting",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "the agent's own tool use lifts the wait",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     }
   ]
 }

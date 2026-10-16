@@ -48,9 +48,8 @@ class ChartFeature(Feature):
 
     LINE = Nudge(name, "line", "{{text}}", repeat_after=0)
     """A chart line is said whenever its path is walked: when it repeats is the chart's own business, through its checks."""
-    AWAITING = Nudge(name, "awaiting", "you stopped while the journal awaits {{awaiting}}", "do that first, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     """A stop while the agent owes the journal something: the Always workflow at a stop says what it awaits."""
-    nudges = (LINE, AWAITING)
+    nudges = (LINE,)
 
     skill = Skill("chart", "The workflows of the journal's conduct; load it when a workflow is read or edited", """
 # The workflows

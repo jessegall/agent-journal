@@ -6,12 +6,13 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a stop at step one",
@@ -22,7 +23,8 @@
       "typed": [],
       "nudges": [
         "sequences.step"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a stop at step two",
@@ -33,7 +35,8 @@
       "typed": [],
       "nudges": [
         "sequences.step"
-      ]
+      ],
+      "counts": {}
     }
   ]
 }

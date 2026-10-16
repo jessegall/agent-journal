@@ -56,4 +56,8 @@ class Requiring:
         from journal.features.skills.feature import Skills
         for skill in skills:
             self.owe(agent, skill)
-        return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.about(skill=skill.name, path=self.files.path(skill).relative_to(self.files.config.root))))]
+        return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.about(skill=skill.name, path=self.path_of(skill))))]
+
+    def path_of(self, skill: Skill):
+        """Where the skill's file is, from the project's root."""
+        return self.files.path(skill).relative_to(self.files.config.root)

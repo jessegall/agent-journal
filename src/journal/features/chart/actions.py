@@ -63,32 +63,6 @@ class Actions:
         self.supervisor.type(ctx.environment_id, line)
         return Decision()
 
-    def hold_at_mark(self, text: str, ctx: Context) -> Decision:
-        """The highest mark crossed is taken and owed on the agent's row, and the agent is told to decide what to keep from the context."""
-        from journal.features.memory.feature import Memory
-        due = self.checks.marks_due(ctx)
-        if not due:
-            return Decision()
-        mark = max(due)
-        agent = self.agents.touch(self.machine.agent(ctx.session, ctx.environment_id), Actor.system(), context_mark=mark, mark_owed=mark)
-        line = self.nudger.say(agent, Memory.DECIDE.about(percent=mark))
-        if line and not ctx.answers_hook:
-            self.typed(line, ctx)
-            return Decision()
-        return Decision.tell(line) if line else Decision()
-
-    def mark_unoriented(self, text: str, ctx: Context) -> Decision:
-        """The agent owes a look at what is in flight here: the fact on its row, and the line that says so."""
-        from journal.features.briefing.feature import Briefing
-        if not ctx.session:
-            return Decision()
-        agent = self.agents.touch(self.machine.agent(ctx.session, ctx.environment_id), Actor.system(), oriented=False)
-        line = self.nudger.say(agent, Briefing.ORIENT.about())
-        if line and not ctx.answers_hook:
-            self.typed(line, ctx)
-            return Decision()
-        return Decision.tell(line) if line else Decision()
-
     def require_skill(self, text: str, ctx: Context) -> Decision:
         """The agent owes a read of a skill: the one named, or the ones the prompt names at a prompt, else the skill of its state; each owed one is a link from the agent and a line that says where its file is. With the skills switched off here, nothing is owed."""
         from journal.features.skills.feature import Skills

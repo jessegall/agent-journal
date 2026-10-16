@@ -12,9 +12,7 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "quiet for a quarter of an hour",
@@ -25,38 +23,28 @@
       "nudges": [
         "tasks.open"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "quiet for an hour: the session is ended",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "a stop while ended",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "a write while ended",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "the session starts again",
@@ -74,11 +62,7 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {
-        "edits": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     }
   ]
 }

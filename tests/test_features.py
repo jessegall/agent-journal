@@ -366,6 +366,7 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
     console.run(["trigger", "create", "deploy,release", "check the changelog first", "--do", "instruct"], USER)
     console.run(["trigger", "create", "rm -rf", "no recursive deletes here", "--do", "deny"], USER)
     hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
     assert "do this now: check the changelog first" in hook(app, "UserPromptSubmit", prompt="let's deploy it")[1]["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "rm -rf build"})
     assert status == 409 and "no recursive deletes here" in body["error"]
@@ -704,7 +705,8 @@ def test_a_word_from_the_user_frees_a_wait_whose_workflow_no_longer_releases_it(
     console = app.console()
     hook(app, "SessionStart")
     charts = app.container.get(Charts)
-    charts.replace(charts.for_pair("awaiting", "workers.updated"), [], [], Actor.user(1))
+    for chart in [c for c in charts.for_event("workers.updated") if c.state == "awaiting"]:
+        charts.replace(chart, [], [], Actor.user(1))
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
     console.run(["worker", "wait", "1"], AGENT)
@@ -1101,10 +1103,13 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
-    from journal.repositories.counts import Counts
+    from journal.features.chart.checks import Checks
+    from journal.features.chart.context import Context
+    from journal.events.agent.idle import Idle as IdleEvent
     from journal.repositories.scope import Scope
     with app.container.get(Scope).of(1):
-        assert app.container.get(Counts).named("s1", "edits").value == 1, "a shell line that writes counts as an edit toward the log; a read does not"
+        at = Context(event=IdleEvent(session="s1", environment_id=1), session="s1", environment_id=1, state=app.container.get(Machine).current("s1"))
+        assert app.container.get(Checks).count_of(at, "edits") == 1, "a shell line that writes counts as an edit toward the log; a read does not"
 
 
 def test_a_journal_command_chained_with_anything_else_is_refused(app):
@@ -1569,14 +1574,14 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_keeps_edited_ones
     from journal.repositories.charts import Charts
     charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.system()
     idle = charts.for_pair("idle", "idle")
-    assert idle.shipped and idle.title == "Keep the agent going while tasks are open or parked" and len(charts.nodes_of(idle)) > 5, "a state's workflow at an event carries the state's own steps"
+    assert idle.shipped and idle.title == "Hold the stop while a task is parked" and len(charts.nodes_of(idle)) >= 3, "a state's workflow at an event carries the state's own steps"
     for node in charts.nodes_of(idle)[3:]:
         charts.remove_node(node, by)
     seed.run()
     assert len(charts.nodes_of(charts.for_pair("idle", "idle"))) == 3, "an edited workflow is the user's: never overwritten, never doubled"
     charts.remove(charts.for_pair("idle", "idle"), by)
     seed.run()
-    assert charts.for_pair("idle", "idle") and len(charts.nodes_of(charts.for_pair("idle", "idle"))) > 5, "a journal lacking a shipped workflow gets it at boot"
+    assert charts.for_pair("idle", "idle") and len(charts.nodes_of(charts.for_pair("idle", "idle"))) >= 3, "a journal lacking a shipped workflow gets it at boot"
     assert len(charts.shipped()) == len(seed.drawings) and all(c.event and c.drawing for c in charts.shipped()), "one shipped workflow per drawing: a state's at a trigger it has steps at, an Always one or the guards at an event"
     unedited = charts.save(Chart(title="Agent stops", shipped=True, event="idle"), by)
     charts.add_node(unedited, Node(kind=NodeKind.TRIGGER, key="idle", shipped=True), by)
@@ -1758,7 +1763,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert listed["workflows"][0]["title"] == "Keep the agent going while tasks are open or parked" and all(w["event"] for w in listed["workflows"]) and listed["catalogue"]
+    assert listed["workflows"][0]["title"] == "Hold the stop while a task is parked" and all(w["event"] for w in listed["workflows"]) and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings", "state": "idle", "trigger": "tool_finished"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and [n["key"] for n in made["nodes"]] == ["tool_finished"], "born with its trigger"
@@ -1921,7 +1926,7 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     from journal.repositories.scope import Scope
     with app.container.get(Scope).of(env):
-        assert checks.answer("count_at", at, "edits tasks.log_after") and checks.answer("count_every", at, "edits 6") and not checks.answer("count_over", at, "edits 13"), "the edits count the Working workflow keeps: twelve writes counted, the rest held at the log threshold and not counted"
+        assert checks.answer("count_at", at, "edits tasks.log_after") and checks.answer("count_every", at, "edits 6") and not checks.answer("count_over", at, "edits 13"), "the edits read from the record: twelve writes counted, the rest held at the log threshold and not counted"
 
 
 def test_the_checks_for_quiet_time_workers_and_questions(app):
@@ -2013,10 +2018,10 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     assert fillers.fill("{{owed}}", tick) == "1"
     console.run(["task", "create", "the footer", "--start"], AGENT)
     app.runtime().deferred.drain()
-    for _ in range(3):
-        hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    write = at(ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env))
-    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", write) == "task 1 / 3 / journal task log 1"
+    held = [hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] for _ in range(3)]
+    from journal.events.agent.idle import Idle
+    stop = at(Idle(session="s1", environment_id=env))
+    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", stop) == f"task 1 / {held.count(200)} / journal task log 1", "the edits are the writes that went through, a held one not counted"
     console.run(["await", "the deploy"], AGENT)
     assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now: you have waited 5 min", "the context carries the state as it is when the walk starts"
     console.run(["task", "park", "1", "the header first"], AGENT)
@@ -2083,8 +2088,7 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     n, trigger = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
-    always = next(c.id for c in charts.for_event("tool_finished") if not c.state)
-    assert console.run(["chart", "order", "tool_finished", str(always), str(second), str(n)], USER).out.startswith("tool_finished: 1. Hold the agent at a context mark, 2. Yet another, 3. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(n)], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
     assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
     assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
@@ -2223,7 +2227,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert "a workflow holds one trigger, of the event it is for" in node(idle, "trigger", "tool_finished").err
     assert node(idle, "check", "open_tasks").code == 0
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {idle} [idle at idle, place 5], revision 1 by user:1: Keep the agent going while tasks are open or parked" in shown and f"workflow {working} [working at tool_starting, place" in shown
+    assert f"workflow {idle} [idle at idle, place 50], revision 1 by user:1: Hold the stop while a task is parked" in shown and f"workflow {working} [working at tool_starting, place" in shown
 
 def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
@@ -2334,9 +2338,9 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     console = app.console()
     base = app.container.get(Charts).for_pair("idle", "idle")
     refused = console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle"], USER)
-    assert refused.code == 1 and f"workflow {base.id}, Keep the agent going while tasks are open or parked, is a default one: add --edit-default" in refused.err
+    assert refused.code == 1 and f"workflow {base.id}, Hold the stop while a task is parked, is a default one: add --edit-default" in refused.err
     assert console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle", "--edit-default"], USER).code == 0
-    assert f"workflow {base.id} [idle at idle, place 5], revision 1 by user:1: Keep the agent going while tasks are open or parked" in console.run(["chart", "show"], USER).out
+    assert f"workflow {base.id} [idle at idle, place 50], revision 1 by user:1: Hold the stop while a task is parked" in console.run(["chart", "show"], USER).out
     own = int(console.run(["chart", "new", "mine", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert console.run(["chart", "node", "check", "open_tasks", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
@@ -2581,20 +2585,20 @@ def test_an_upgrade_keeps_a_users_edited_workflow_when_the_shipped_one_changes_s
     charts.save(charts.find(idle.id).with_(place=0, drawn_version=1), Actor.user(1))
     monkeypatch.setattr(shipped_chart, "DRAWINGS_VERSION", shipped_chart.DRAWINGS_VERSION + 1)
     app.container.get(ShippedChart).run()
-    assert charts.find(idle.id).place == ShippedChart.state_place("idle"), "redrawn, a state's workflow takes the place its state ships at, so a journal from before places has the waits first"
+    assert charts.find(idle.id).place == ShippedChart.state_place("idle") * 10, "redrawn, a state's workflow takes the place its state ships at, so a journal from before places has the waits first"
     named = {w["id"]: w for w in [app.container.get(ChartController).named(c) for c in charts.all()]}
     assert named[working.id]["behind"] is True and named[working.id]["edited"] is True, "the page says the shipping moved past the user's edit"
     assert named[idle.id]["behind"] is False
     app.container.get(ShippedChart).reset(kept, Actor.user(1))
     reset = charts.find(working.id)
     assert app.container.get(ChartController).named(reset)["behind"] is False and all(n.shipped for n in charts.nodes_of(reset)) and all(n.kind != NodeKind.ACTION or n.text != "my own line" for n in charts.nodes_of(reset)), "Reset to default takes the new shipped drawing"
-    assert reset.drawing == "working:tool_starting" and charts.find(idle.id).drawing == "idle:idle", "a shipped workflow is named after its drawing"
+    assert reset.drawing == "working:tool_starting:log_held" and charts.find(idle.id).drawing == "idle:idle:parked", "a shipped workflow is named after its drawing"
     app.container.get(ShippedChart).forget(charts.find(idle.id), Actor.user(1))
     app.container.get(ShippedChart).run()
-    assert charts.for_pair("idle", "idle") is None, "a shipped workflow taken out on purpose is not drawn again at boot"
+    assert not [c for c in charts.shipped() if c.drawing == "idle:idle:parked"], "a shipped workflow taken out on purpose is not drawn again at boot"
     assert console.run(["chart", "reset", "--for", "idle", "--on", "idle"], USER).code == 0
-    back = charts.for_pair("idle", "idle")
-    assert back is not None and back.shipped and back.drawing == "idle:idle" and all(n.shipped for n in charts.nodes_of(back)), "reset by state and event draws it again"
+    back = next((c for c in charts.shipped() if c.drawing == "idle:idle:parked"), None)
+    assert back is not None and all(n.shipped for n in charts.nodes_of(back)), "reset by state and event draws the forgotten one again"
 
 
 def test_a_triggers_workflows_run_in_the_users_order_stateless_ones_always_and_a_childs_in_place_of_its_parents(app):
@@ -2632,7 +2636,7 @@ def test_a_triggers_workflows_run_in_the_users_order_stateless_ones_always_and_a
     say4 = add(child, "[chart] the plan speaks")
     console.run(["chart", "line", str(t4), str(say4)], USER)
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "e"})
-    assert "the plan speaks" in said(body) and "working speaks" not in said(body), "a child's workflow at the event replaces its parent's there"
+    assert "the plan speaks" in said(body) and "working speaks" in said(body), "a child runs its own workflow and its parent's, in the run order"
 
 
 def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run_at_their_place(app):
@@ -2709,9 +2713,8 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
     first, t1 = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     charts.save(charts.find(second).with_(locked=True), USER.actor)
-    always = next(c.id for c in charts.for_event("tool_finished") if not c.state and not c.locked)
-    assert "is locked" in console.run(["chart", "order", "tool_finished", str(always), str(first), str(second)], USER).err, "the locked ones keep the head of the list"
-    assert console.run(["chart", "order", "tool_finished", str(second), str(always), str(first)], USER).code == 0
+    assert "is locked" in console.run(["chart", "order", "tool_finished", str(first), str(second)], USER).err, "the locked ones keep the head of the list"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(first)], USER).code == 0
     assert "is locked" in console.run(["chart", "drop", str(second)], USER).err, "a locked workflow stays"
     add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
     hold = add(first, "action", "say", "--text", "[chart] the law")
@@ -2724,68 +2727,8 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
     assert console.run(["chart", "line", str(hold), str(after)], USER).code == 0, "a step after it is the user's to add"
 
 
-def test_a_boot_adds_the_missing_locked_guards_at_the_head_of_the_list_and_leaves_the_users_edited_workflow_alone(app):
-    from journal.features.chart.seeds.shipped_chart import ShippedChart
-    from journal.http.controllers.chart import ChartController
-    from journal.repositories.charts import Charts
-    hook(app, "SessionStart")
-    console, charts, seed = app.console(), app.container.get(Charts), app.container.get(ShippedChart)
-    guards = next(c for c in charts.for_event("tool_starting") if c.locked)
-    assert guards.state == "" and guards.shipped and charts.for_event("tool_starting")[0].id == guards.id, "the guards are a locked workflow bound to no state, first at a tool use"
-    assert any(n.locked and n.text.startswith("[messages.") for n in charts.nodes_of(guards)) and not any(n.text.startswith("[messages.") for n in charts.nodes_of(charts.for_pair("working", "tool_starting"))), "the inbox holds live in the guards, not in a state's workflow"
-    working = charts.for_pair("working", "tool_starting")
-    mine = int(console.run(["chart", "node", "--edit-default", "action", "say", "--text", "my own line", "--in", str(working.id)], AGENT).out.split()[1].rstrip(":"))
-    own = int(console.run(["chart", "new", "Mine at a tool", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
-    edited, made = charts.find(working.id), charts.find(own)
-    charts.remove(guards, Actor.system())
-    seed.run()
-    seed.run()
-    back = next(c for c in charts.for_event("tool_starting") if c.locked)
-    assert back.id != guards.id and charts.for_event("tool_starting")[0].id == back.id, "a boot draws the guards it lacks, at the head, and a second boot keeps them"
-    assert charts.find(working.id).revision == edited.revision and any(n.id == mine for n in charts.nodes_of(charts.find(working.id))), "the user's edited workflow is not touched"
-    assert charts.find(own).revision == made.revision and charts.find(own).event == "tool_starting", "nor the user's own"
-    assert app.container.get(ChartController).named(back)["locked"] is True, "the page shows the insertion by its lock"
 
 
-def test_the_shared_conduct_is_an_always_workflow_per_event_after_the_locked_ones_and_a_state_ships_only_its_own(app):
-    from journal.features.chart.seeds.shipped_chart import KEPT, SHARED_EVENTS, SHARED_TITLES, ShippedChart
-    from journal.models.chart import Chart
-    from journal.models.node import Node
-    from journal.models.node_kind import NodeKind
-    from journal.repositories.charts import Charts
-    from journal.repositories.settings import Settings
-    charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.system()
-    for event in SHARED_EVENTS:
-        listed = charts.for_event(event)
-        always = next(c for c in listed if not c.state)
-        assert always.shipped and not always.locked and always.title == SHARED_TITLES[event] and listed.index(always) == 0, f"the conduct for every state at {event} is one Always workflow, first in the list"
-    tool = charts.for_event("tool_starting")
-    assert tool[0].locked and all(c.state for c in tool[1:]), "at a tool use the guards are the stateless one, locked at the head"
-    assert charts.for_pair("idle", "tool_starting") is None and charts.for_pair("awaiting", "idle") is None, "a state with nothing of its own at a shared event ships no workflow"
-    working = charts.for_pair("working", "idle")
-    assert working and not any(n.text.startswith("[messages.") for n in charts.nodes_of(working)), "a state's workflow carries only its own steps"
-    ids_before = {c.id: c.place for c in charts.for_event("idle")}
-    charts.remove(next(c for c in charts.for_event("idle") if not c.state), by)
-    seed.run()
-    seed.run()
-    after = charts.for_event("idle")
-    assert not after[0].state and after[0].title == "Keep the agent from stopping while something is owed, say what is unread" and all(ids_before[c.id] == c.place for c in after[1:]), "a re-seed puts a new Always workflow at the head and keeps every other position; two boots keep it"
-    assert len([c for c in charts.shipped() if not c.state]) == len(SHARED_EVENTS) + 1, "the stateless shipped workflows stand across boots, never retired as the older shape"
-    older = charts.save(Chart(title="Stuck at Agent stops", shipped=True, state="stuck", event="idle", drawing="stuck:idle", drawn_version=7), by)
-    seed.composed(None, seed.shared_inbox)(older)
-    edited = charts.save(Chart(title="Expecting at Agent stops", shipped=True, state="expecting", event="idle", drawing="expecting:idle", drawn_version=7), by)
-    seed.composed(None, seed.shared_inbox)(edited)
-    mine = charts.add_node(edited, Node(kind=NodeKind.ACTION, key="say", text="[chart] mine"), by)
-    seed.composed(seed.working_carries_on, seed.shared_inbox)(working)
-    theirs = charts.add_node(working, Node(kind=NodeKind.ACTION, key="say", text="[chart] theirs"), by)
-    charts.save(working.with_(drawn_version=7), by)
-    app.container.get(Settings).set("chart.drawings_version", 7, by)
-    seed.run()
-    assert charts.for_pair("stuck", "idle") is None, "an unedited copy of the older shape at an event the state has nothing at goes"
-    kept = charts.for_pair("expecting", "idle")
-    assert kept and not kept.shipped and kept.title.endswith(KEPT) and [n.id for n in charts.nodes_of(kept) if n.kind != NodeKind.TRIGGER] == [mine.id], "an edited one is kept as the user's, bound where it was, its shared conduct stripped"
-    nodes = charts.nodes_of(charts.find(working.id))
-    assert charts.find(working.id).shipped and any(n.id == theirs.id for n in nodes) and not any(n.text.startswith("[messages.") for n in nodes) and any(n.shipped and n.kind == NodeKind.CHECK for n in nodes), "an edited state's workflow loses the shipped shared nodes and keeps the user's and the state's own"
 
 
 def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_started_a_log_for_the_task_in_hand(app, monkeypatch):
@@ -2848,55 +2791,19 @@ def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_star
     assert said("[chart] task 1 just started by me") == 1, "finishing a task is an update that did not start it"
 
 
-def test_a_message_that_comes_starts_the_counts_of_uses_and_namings_and_the_first_owed_read_starts_owed(app):
-    from journal.repositories.charts import Charts
-    from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
-    console, charts, counts, scope = app.console(), app.container.get(Charts), app.container.get(Counts), app.container.get(Scope)
-    assert not [c for c in charts.for_event("messages.updated") if c.shipped], "the owed count starts in the engine, not in a shipped workflow"
-    hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    drain = lambda: app.runtime().deferred.drain()
-    standing = lambda: {c.name: c.value for c in (lambda: counts.where(session="s1"))()}
-    console.run(["message", "send", "one"], USER)
-    drain()
-    with scope.of(1):
-        assert standing() == {"uses": 0, "namings": 0}, "a message that comes puts the counts of uses and namings at nought"
-    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
-    console.run(["message", "read", "1"], AGENT)
-    drain()
-    with scope.of(1):
-        assert standing() == {"uses": 0, "namings": 0, "owed": 0}, "the first owed read puts the count of uses while owed at nought"
-    console.run(["message", "send", "two"], USER)
-    drain()
-    console.run(["message", "read", "2"], AGENT)
-    drain()
-    with scope.of(1):
-        counts.set("s1", "owed", 7, Actor.system())
-    console.run(["message", "send", "three"], USER)
-    drain()
-    console.run(["message", "read", "3"], AGENT)
-    drain()
-    with scope.of(1):
-        assert standing()["owed"] == 7, "with two or more messages already owed, a read starts no new count: the oldest debt stands"
 
 
-def test_working_counts_its_edits_on_the_canvas_the_task_named_the_log_asked_for_and_the_write_held(app):
-    from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
+def test_the_edits_since_the_log_are_read_from_the_record_the_task_named_the_log_asked_for_and_the_write_held(app):
     for key, value in (("tasks.log_after", 3), ("tasks.first_nudge_after", 1), ("tasks.name_every", 2), ("tasks.auto", False)):
         app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
-    console, counts, scope = app.console(), app.container.get(Counts), app.container.get(Scope)
+    console = app.console()
     console.run(["environment", "here"], AGENT)
     drain = lambda: app.runtime().deferred.drain()
-    edits = lambda: next((c.value for c in counts.where(session="s1", name="edits")), None)
     write = lambda name: hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": name})
     said = lambda body: json.dumps(body)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     drain()
-    with scope.of(1):
-        assert edits() == 0, "a task just started by this agent puts its edits at nought"
     status, body = write("a.py")
     assert status == 200 and "since you logged" not in said(body) and "in hand" not in said(body), "the first write: nothing to say yet"
     status, body = write("b.py")
@@ -2905,48 +2812,12 @@ def test_working_counts_its_edits_on_the_canvas_the_task_named_the_log_asked_for
     assert status == 200 and "task 1 in hand, 2 edits" in said(body), "the third write reads two: every second edit names the task"
     status, body = write("d.py")
     assert status == 409 and "3 edits since you logged task 1" in body["error"], "the fourth reads three: the write is held until the log"
-    with scope.of(1):
-        assert edits() == 3, "a held write does not count"
+    status, body = write("e.py")
+    assert status == 409 and "3 edits since you logged task 1" in body["error"], "a held write does not count: still three"
     console.run(["task", "log", "1", "halfway"], AGENT)
     drain()
-    with scope.of(1):
-        assert edits() == 0, "a log line for the task in hand puts the edits at nought"
-    assert write("d.py")[0] == 200, "logged, the write goes on"
+    assert write("d.py")[0] == 200, "logged, the edits since the log are none and the write goes on"
 
-
-def test_a_boot_carries_a_working_agents_edits_into_its_count_once_and_rewrites_a_retired_counter_check(app):
-    from journal.features.chart.seeds.shipped_chart import ShippedChart
-    from journal.models.node import Node
-    from journal.models.node_kind import NodeKind
-    from journal.repositories.agents import Agents
-    from journal.repositories.charts import Charts
-    from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
-    console, charts, counts, agents, seed, scope = app.console(), app.container.get(Charts), app.container.get(Counts), app.container.get(Agents), app.container.get(ShippedChart), app.container.get(Scope)
-    hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    console.run(["task", "create", "t", "--start"], AGENT)
-    with scope.of(1):
-        agent = agents.for_session("s1")
-        agents.save(agent.with_(data={**agent.data, "edits": 4}), Actor.system())
-        for count in counts.where(session="s1", name="edits"):
-            counts.delete(count, Actor.system())
-    seed.run()
-    with scope.of(1):
-        assert [c.value for c in counts.where(session="s1", name="edits")] == [4], "the engine's edits before the workflows counted them become the count"
-        counts.set("s1", "edits", 9, Actor.system())
-    seed.run()
-    with scope.of(1):
-        assert [c.value for c in counts.where(session="s1", name="edits")] == [9], "once: a standing count is not written over"
-    mine = int(console.run(["chart", "new", "Mine at a tool", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
-    trigger = next(n.id for n in charts.nodes_of(charts.find(mine)) if n.kind == NodeKind.TRIGGER)
-    old = charts.add_node(charts.find(mine), Node(kind=NodeKind.CHECK, key="tool_uses_since_unread_every", text="3"), Actor.user(1))
-    charts.connect(charts.nodes.find(trigger), old, "then", Actor.user(1))
-    seed.run()
-    kept = charts.find(mine)
-    node = charts.nodes.find(old.id)
-    assert node.key == "count_every" and node.text == "uses 3" and "rewrote tool_uses_since_unread_every to count checks" in kept.title, "a retired counter check is rewritten to its count check, the number kept, and the title says so"
-    assert any(n.kind == NodeKind.TRIGGER for n in charts.nodes_of(kept)), "the workflow is not stopped: it still answers its event"
 
 
 def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
@@ -3158,7 +3029,7 @@ def test_ended_ships_a_workflow_at_session_starts_with_nothing_of_its_own(app):
     ended = charts.for_pair("ended", "session_started")
     assert ended and ended.shipped and [n.kind for n in charts.nodes_of(ended)] == [NodeKind.TRIGGER], "Ended at Session starts is shipped with its trigger alone"
     named = app.container.get(ChartController).named(ended)
-    assert named["title"] == "Does nothing yet" and named["off"] is False and named["edited"] is False, "the page lists it with its marks"
+    assert named["title"] == "No workflow for this state yet" and named["off"] is False and named["edited"] is False, "the page lists it with its marks"
     assert any(s["key"] == "ended" for s in app.container.get(ChartController).listed_states()), "and Ended among the states"
 
 
@@ -3166,13 +3037,13 @@ def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_s
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.repositories.charts import Charts
     charts, shipped = app.container.get(Charts), app.container.get(ShippedChart)
-    idle = next(c for c in charts.shipped() if c.drawing == "idle:idle")
-    guards = next(c for c in charts.shipped() if c.drawing == ":tool_starting")
+    idle = next(c for c in charts.shipped() if c.drawing == "idle:idle:parked")
+    inbox = next(c for c in charts.shipped() if c.drawing == ":tool_starting:inbox")
     charts.save(idle.with_(title="Idle at Agent stops"), Actor.system())
-    charts.save(guards.with_(title="Guards at Tool about to run"), Actor.system())
+    charts.save(inbox.with_(title="Guards at Tool about to run"), Actor.system())
     shipped.run()
-    assert charts.find(idle.id).title == "Keep the agent going while tasks are open or parked", "the old title, never renamed by the user, becomes the plain one at boot"
-    assert charts.find(guards.id).title == "Hold writes while something is owed, and over unread or unanswered messages"
+    assert charts.find(idle.id).title == "Hold the stop while a task is parked", "the old title, never renamed by the user, becomes the plain one at boot"
+    assert charts.find(inbox.id).title == "Name the unread messages every N tool uses"
     charts.save(charts.find(idle.id).with_(title="My own stop rules"), Actor.system())
     shipped.run()
     assert charts.find(idle.id).title == "My own stop rules", "a title the user gave stays"
@@ -3216,3 +3087,32 @@ def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_f
     tick = lambda when: at(Ticked(at=when, quiet_for=0.0, session="s1", environment_id=1))
     assert checks.answer("time_between", tick(night), "22:00-06:00") and not checks.answer("time_between", tick(noon), "22:00-06:00") and checks.answer("time_between", tick(noon), "09:00-17:00"), "a span past midnight included"
     assert not checks.answer("time_between", tick(noon), "late"), "a span that is no span answers no"
+
+
+def test_the_counts_the_inbox_reminders_read_come_from_the_record_and_no_workflow_keeps_them(app):
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.features.chart.checks import Checks
+    from journal.features.chart.context import Context
+    from journal.repositories.charts import Charts
+    from journal.repositories.scope import Scope
+    console, checks, charts = app.console(), app.container.get(Checks), app.container.get(Charts)
+    assert not any(n.key in ("count_start", "count_one") for c in charts.shipped() for n in charts.nodes_of(c)), "no shipped workflow keeps a count: the ones they read come from the record"
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    drain = lambda: app.runtime().deferred.drain()
+    at = lambda: Context(event=ToolStarting(tool="Read", input={}, session="s1", environment_id=1), session="s1", environment_id=1, state=app.container.get(Machine).current("s1"))
+    with app.container.get(Scope).of(1):
+        assert checks.count_of(at(), "uses") == 0 and checks.count_of(at(), "owed") == 0 and checks.count_of(at(), "namings") == 0, "nothing unread, nothing owed: nought"
+    console.run(["message", "send", "one"], USER)
+    drain()
+    for _ in range(3):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    with app.container.get(Scope).of(1):
+        assert checks.count_of(at(), "uses") == 3, "tool uses since the newest unread message came"
+        assert checks.count_of(at(), "namings") >= 1, "the inbox was named since it came"
+    console.run(["message", "read", "1"], AGENT)
+    drain()
+    for _ in range(2):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b"})
+    with app.container.get(Scope).of(1):
+        assert checks.count_of(at(), "uses") == 0 and checks.count_of(at(), "owed") == 2, "read: nothing unread, two uses since the first unanswered was read"

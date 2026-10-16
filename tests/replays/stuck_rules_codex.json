@@ -6,24 +6,27 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a stop while stuck",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     },
     {
       "name": "a tool use while stuck",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     }
   ]
 }

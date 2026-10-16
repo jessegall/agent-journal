@@ -6,7 +6,6 @@ from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.refuse_truncated_read import RefuseTruncatedRead
 from journal.features.messages.listeners.run_tags import RunTags
-from journal.features.messages.listeners.start_owed_count import StartOwedCount
 from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.features.nudge import Nudge
 from journal.models.node_kind import NodeKind
@@ -25,7 +24,7 @@ class Messages(Feature):
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read; the guards' workflow reads it against the count of uses since the message came", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read; read against the count of namings", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS)
-    listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, DeliverMessage, StartOwedCount)
+    listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, DeliverMessage)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
         Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),

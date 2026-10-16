@@ -6,18 +6,20 @@
       "answer": {},
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "write 2",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     },
     {
       "name": "a message read and owed",
@@ -27,15 +29,19 @@
       ],
       "nudges": [
         "messages.new"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a write held twice over",
       "answer": {
-        "error": "2 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write\nyour tool calls are held: answer message 1 first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
-      "nudges": []
+      "nudges": [
+        "messages.answer"
+      ],
+      "counts": {}
     }
   ]
 }

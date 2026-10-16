@@ -6,18 +6,20 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a prompt while waiting",
       "answer": {},
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     }
   ]
 }

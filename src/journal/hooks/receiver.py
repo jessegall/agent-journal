@@ -49,11 +49,13 @@ class Receiver:
             listener.handle(event)
 
     def _blocking(self, event: AgentEvent) -> Decision:
+        """Every blocking listener runs; the first hold wins, and a later refusal adds its words to the answer without a second reason."""
         decision = Decision()
         for listener in self._split(event)[0]:
             said = self._guarded(listener, event)
-            if said is not None:
-                decision = decision.merged(said)
+            if said is None:
+                continue
+            decision = decision.merged(Decision.tell(said.reason) if not said.allowed and not decision.allowed else said)
         return decision
 
     def _guarded(self, listener: Listener, event: AgentEvent) -> Decision | None:

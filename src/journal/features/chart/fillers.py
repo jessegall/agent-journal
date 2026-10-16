@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import re
 
 from journal.events.agent.ticked import Ticked
+from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
 from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.tasks.states.expecting import Expecting
@@ -33,11 +34,11 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
         self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
-        self.chosen = chosen
+        self.chosen, self.checks = chosen, checks
 
     @classmethod
     def listed(cls) -> list[dict]:
@@ -135,8 +136,8 @@ class Fillers:
         return f"last logged {ago(state.logged_at)}" if state.logged_at else "nothing logged yet"
 
     def task_edits(self, ctx: Context) -> str:
-        """The agent's count of edits since the task in hand was logged, as the Working workflows keep it."""
-        return str(self.counts.named(ctx.session, "edits").value) if ctx.session else "0"
+        """The writes since the task in hand was logged, read from the journal's own record."""
+        return str(self.checks.derived_edits(ctx)) if ctx.session else "0"
 
     def log_command(self, ctx: Context) -> str:
         """The command that logs the task in hand."""
@@ -208,13 +209,8 @@ class Fillers:
         agent = self.agent(ctx)
         if agent is None:
             return ""
-        owed = []
-        if not agent.oriented:
-            owed.append("a look at what is in flight here")
-        if agent.mark_owed:
-            owed.append(f"a decision at the context mark, {agent.mark_owed}% full")
-        owed += [f"the {name} skill to be read" for name in self.requiring.owed_names(agent)]
-        return " and ".join(owed)
+        owed = (["a look at what is in flight here"] if not agent.oriented else []) + ([f"a decision at the context mark, {agent.mark_owed}% full"] if agent.mark_owed else [])
+        return " and ".join(owed + [f"the {name} skill to be read" for name in self.requiring.owed_names(agent)])
 
     def skill_owed(self, ctx: Context) -> str:
         """The first skill the agent owes a read of, by name."""

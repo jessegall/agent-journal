@@ -6,15 +6,13 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
       ],
-      "counts": {
-        "edits": 0
-      }
+      "counts": {}
     },
     {
       "name": "message 1 arrives",
@@ -25,35 +23,21 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "uses": 0
-      }
+      "counts": {}
     },
     {
       "name": "read 1",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "read 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 0,
-        "owed": 2,
-        "uses": 2
-      }
+      "counts": {}
     },
     {
       "name": "read 3",
@@ -67,36 +51,21 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 1,
-        "owed": 3,
-        "uses": 3
-      }
+      "counts": {}
     },
     {
       "name": "read 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 1,
-        "owed": 4,
-        "uses": 4
-      }
+      "counts": {}
     },
     {
       "name": "read 5",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 1,
-        "owed": 5,
-        "uses": 5
-      }
+      "counts": {}
     },
     {
       "name": "read 6",
@@ -110,36 +79,21 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 2,
-        "owed": 6,
-        "uses": 6
-      }
+      "counts": {}
     },
     {
       "name": "read 7",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 2,
-        "owed": 7,
-        "uses": 7
-      }
+      "counts": {}
     },
     {
       "name": "read 8",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 2,
-        "owed": 8,
-        "uses": 8
-      }
+      "counts": {}
     },
     {
       "name": "read 9",
@@ -153,36 +107,21 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 3,
-        "owed": 9,
-        "uses": 9
-      }
+      "counts": {}
     },
     {
       "name": "read 10",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 3,
-        "owed": 10,
-        "uses": 10
-      }
+      "counts": {}
     },
     {
       "name": "read 11",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 3,
-        "owed": 11,
-        "uses": 11
-      }
+      "counts": {}
     },
     {
       "name": "read 12",
@@ -196,36 +135,21 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 4,
-        "owed": 12,
-        "uses": 12
-      }
+      "counts": {}
     },
     {
       "name": "read 13",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 4,
-        "owed": 13,
-        "uses": 13
-      }
+      "counts": {}
     },
     {
       "name": "read 14",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 4,
-        "owed": 14,
-        "uses": 14
-      }
+      "counts": {}
     },
     {
       "name": "read 15",
@@ -239,24 +163,14 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {
-        "edits": 0,
-        "namings": 5,
-        "owed": 15,
-        "uses": 15
-      }
+      "counts": {}
     },
     {
       "name": "read 16",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 0,
-        "namings": 5,
-        "owed": 16,
-        "uses": 16
-      }
+      "counts": {}
     },
     {
       "name": "a write at 17",
@@ -265,24 +179,14 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 17,
-        "uses": 17
-      }
+      "counts": {}
     },
     {
       "name": "message 1 read",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 0,
-        "uses": 17
-      }
+      "counts": {}
     },
     {
       "name": "a read while owed",
@@ -290,61 +194,38 @@
         "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 1,
-        "uses": 18
-      }
+      "nudges": [
+        "messages.answer"
+      ],
+      "counts": {}
     },
     {
       "name": "a journal command while owed",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 2,
-        "uses": 19
-      }
+      "counts": {}
     },
     {
       "name": "a look at its files",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 3,
-        "uses": 20
-      }
+      "counts": {}
     },
     {
       "name": "the reply",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 3,
-        "uses": 20
-      }
+      "counts": {}
     },
     {
       "name": "a read after the reply",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "edits": 1,
-        "namings": 5,
-        "owed": 4,
-        "uses": 21
-      }
+      "counts": {}
     }
   ]
 }

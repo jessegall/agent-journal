@@ -28,8 +28,8 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (ChartFeature, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature)
-    """The workflows walk first, right after the machine and before the engine's holds, so they read the state the machine left: a session start walks as the state the agent resumes in, and the briefing's hold comes after."""
+    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature)
+    """The engine's own listeners first, the skill, the look and the mark each owed and held by its feature, and the workflows' walk last, so a workflow reads the facts the engine set at this very event."""
 
     @classmethod
     def registry(cls) -> Registry: ...

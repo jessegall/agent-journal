@@ -5,7 +5,7 @@
       "name": "a stop before orienting",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a look at what is in flight here. do that first, or journal stuck \"<why>\" if you are truly stuck"
+        "reason": "you stopped while the journal awaits a look at what is in flight here. run journal environment here first, or journal stuck \"<why>\" if you are truly stuck"
       },
       "typed": [],
       "nudges": [
@@ -29,23 +29,17 @@
       "nudges": [
         "memory.decide"
       ],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     },
     {
       "name": "a stop under the mark",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a decision at the context mark, 80% full. do that first, or journal stuck \"<why>\" if you are truly stuck"
+        "reason": "you stopped while the journal awaits a decision at the context mark, 80% full. journal fact create, journal rule create, or journal nothing \"<why>\" first, or journal stuck \"<why>\" if you are truly stuck"
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "owed": 1,
-        "uses": 1
-      }
+      "counts": {}
     }
   ]
 }

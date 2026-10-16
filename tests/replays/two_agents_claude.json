@@ -6,18 +6,19 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice",
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
         "briefing.takeover",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a message arrives",
@@ -27,7 +28,8 @@
       ],
       "nudges": [
         "messages.new"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "the worker reports",
@@ -39,7 +41,8 @@
       "nudges": [
         "workers.reported",
         "workers.returned"
-      ]
+      ],
+      "counts": {}
     }
   ]
 }

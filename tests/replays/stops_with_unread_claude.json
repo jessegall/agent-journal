@@ -8,13 +8,14 @@
         "[journal] new message 1"
       ],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice",
         "messages.new"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a stop with one unread",
@@ -25,7 +26,8 @@
       "typed": [],
       "nudges": [
         "messages.new"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "three more arrive",
@@ -39,7 +41,8 @@
         "messages.new",
         "messages.new",
         "messages.new"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a stop with four unread",
@@ -50,7 +53,8 @@
       "typed": [],
       "nudges": [
         "messages.many"
-      ]
+      ],
+      "counts": {}
     }
   ]
 }

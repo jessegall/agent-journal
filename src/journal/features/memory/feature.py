@@ -4,6 +4,9 @@ from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.nothing_command import NothingCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
 from journal.features.memory.commands.rule_command import RuleCommand
+from journal.features.memory.listeners.hold_at_mark import HoldAtMark
+from journal.features.memory.listeners.hold_writes_while_mark_owed import HoldWritesWhileMarkOwed
+from journal.features.memory.listeners.keep_from_stopping_while_mark_owed import KeepFromStoppingWhileMarkOwed
 from journal.features.memory.listeners.review_new_rule import ReviewNewRule
 from journal.features.memory.listeners.whisper import Whisper
 from journal.features.nudge import Nudge
@@ -19,14 +22,11 @@ class Memory(Feature):
     name = "memory"
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
-    listeners = (Whisper, ReviewNewRule)
+    listeners = (HoldAtMark, HoldWritesWhileMarkOwed, KeepFromStoppingWhileMarkOwed, Whisper, ReviewNewRule)
     checks = (
         Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
         Entry(NodeKind.CHECK, 'context_over', 'Context over N percent?', "the agent's context window is fuller than N percent, as the event reports it; the text is N or a setting's name", takes_text=True),
         Entry(NodeKind.CHECK, 'mark_owed', 'Has a context mark still to record?', 'the agent crossed a context mark and has not yet decided what survives it: a fact, a rule or nothing'),
-    )
-    actions = (
-        Entry(NodeKind.ACTION, 'hold_at_mark', 'Hold the agent until the mark is recorded', 'the mark crossed is taken and owed: the agent is told to decide what to keep from the context, and a fact, a rule or journal nothing pays it'),
     )
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
@@ -35,9 +35,10 @@ class Memory(Feature):
 
     DECIDE = Nudge(name, "decide", "context {{percent}}% full: decide what to keep from it", "journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do", repeat_after=0)
     HELD = Nudge(name, "held", "writes wait until you decide what to keep from the context", "journal fact create, journal rule create, or journal nothing \"<why>\"")
+    STOPPED_AT_MARK = Nudge(name, "stopped_at_mark", "you stopped while the journal awaits a decision at the context mark, {{percent}}% full", "journal fact create, journal rule create, or journal nothing \"<why>\" first, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     RULE_REVIEW = Nudge(name, "rule_review", "does rule {{n}} apply to the whole project?", "keep it only as Always or Never for every environment; otherwise delete it and record a fact or a reminder here")
     WHISPER = Nudge(name, "whisper", "{{noun}} {{n}}: {{text}}", repeat_after=ONCE)
-    nudges = (DECIDE, HELD, RULE_REVIEW, WHISPER)
+    nudges = (DECIDE, HELD, STOPPED_AT_MARK, RULE_REVIEW, WHISPER)
 
     skill = Skill("memory", 'Decide what to keep from the context window: a fact, a rule or a reminder; load it at a context mark', """
 # Memory

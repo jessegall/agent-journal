@@ -119,6 +119,10 @@ Idle from a state that owns something is refused, and no node enters a state tha
 - A guard that raises fails open: the event goes through as if the guard had said nothing, and the fault is
   reported loudly, an entry of kind guard_failed, a card in the chat and a line to the agent (hooks/receiver);
   a hold is never the result of a fault, and the law text says so.
+- What the agent owes the journal, each held by its own feature at a write and at a stop: the journal skill and
+  a state's skill (skills: skills.required at a write, skills.stopped_owing at a stop), the look at what is in
+  flight (briefing: briefing.orient, briefing.stopped_unoriented), a decision at a context mark (memory:
+  memory.held, memory.stopped_at_mark); engine code, never a node.
 - The floor under every hold: a journal command and the read of a skill's file always run, whatever a workflow
   holds; the engine drops the refusal and keeps the words (chart/walk).
 - A session's start: the journal skill and the look at what is in flight are owed by the Always workflow at
