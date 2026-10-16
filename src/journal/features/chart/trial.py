@@ -9,11 +9,18 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
+from journal.events.models.created import Created
+from journal.events.models.updated import Updated
 from journal.features.chart.context import Context
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.walk import Walk
+from journal.models.actor import Actor
+from journal.models.worker_state import WorkerState
 from journal.refused import Refused
 from journal.repositories.agents import Agents
+from journal.repositories.messages import Messages
+from journal.repositories.questions import Questions
+from journal.repositories.workers import Workers
 
 EVENTS = {
     "session_started": lambda s, e: SessionStarted(session=s, environment_id=e, source="startup"),
@@ -30,19 +37,38 @@ EVENTS = {
 }
 """An agent event of each kind as a trial stands it in: a tool starting is an edit of a file, so a hold on writes shows."""
 
+BEFORE = {"messages": lambda m: m, "workers": lambda w: w.with_(state=WorkerState.DISPATCHED), "questions": lambda q: q.with_(answer=None)}
+"""The rows a trial can stand a row event in for, each with the row as it stood before the change the event means: a worker dispatched, a question unanswered."""
+
 
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
 
-    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents) -> None:
+    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions) -> None:
+        self.repositories = {"messages": messages, "workers": workers, "questions": questions}
         self.walk, self.fillers, self.agents = walk, fillers, agents
 
-    def run(self, trigger: str, environment_id: int) -> dict:
-        if trigger not in EVENTS:
-            raise Refused(f"a trial stands in for an agent event: one of {', '.join(EVENTS)}")
+    def run(self, trigger: str, environment_id: int, row: int = 0) -> dict:
+        """A dry run for an agent event, or for a row event given the row: the path and what it would do, nothing done."""
         agent = self.agents.live(environment_id)
         session = agent.session if agent else ""
-        ctx = Context(event=EVENTS[trigger](session, environment_id), session=session, environment_id=environment_id, provider=(agent.provider or "claude") if agent else "claude", answers_hook=True)
+        provider = (agent.provider or "claude") if agent else "claude"
+        if trigger in EVENTS:
+            ctx = Context(event=EVENTS[trigger](session, environment_id), session=session, environment_id=environment_id, provider=provider, answers_hook=True)
+        else:
+            ctx = Context(event=self.row_event(trigger, row), session=session, environment_id=environment_id, provider=provider)
         passed: list[int] = []
         decision = self.walk.dry(self.fillers).on_with_trace(ctx, passed)
-        return {"trigger": trigger, "nodes": passed, "would": [line for line in decision.context.split("\n") if line]}
+        return {"trigger": trigger, "row": row, "nodes": passed, "would": [line for line in decision.context.split("\n") if line]}
+
+    def row_event(self, trigger: str, row: int):
+        """A row event stood in for the row named: created as it is, or updated from how it stood before the change the event means."""
+        table, _, moment = trigger.partition(".")
+        if table not in self.repositories or moment not in ("created", "updated"):
+            raise Refused(f"a trial stands in for an agent event, one of {', '.join(EVENTS)}, or a row event: messages.created, workers.updated or questions.updated, with --row <n>")
+        if not row:
+            raise Refused(f"a trial of {trigger} needs the row: --row <n>")
+        found = self.repositories[table].find(row)
+        if moment == "created":
+            return Created(model=found, by=Actor.system())
+        return Updated(model=found, by=Actor.system(), was=BEFORE[table](found))

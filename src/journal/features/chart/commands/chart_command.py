@@ -37,7 +37,9 @@ class ChartCommand(Command):
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
         self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
         self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone").add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number; the first shipped one unless given")
-        self.verb(verbs, "try", "a dry run for an agent event here: the path and what it would do, nothing done").add_argument("trigger")
+        try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
+        try_.add_argument("trigger")
+        try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.charts.all():
@@ -86,8 +88,8 @@ class ChartCommand(Command):
         return 0
 
     def try_(self, args: Namespace, where: Where) -> int:
-        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id)
-        print(f"{ran['trigger']}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
+        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row)
+        print(f"{ran['trigger']}{f' of row {args.row}' if args.row else ''}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
         for line in ran["would"]:
             print(f"  {line}")
         return 0

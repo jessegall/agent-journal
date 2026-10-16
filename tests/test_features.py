@@ -1350,6 +1350,11 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 3, 5, 6, 7" in out
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
+    console.run(["message", "send", "are you there?"], USER)
+    announced = len(sent)
+    assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
+    assert "messages.created of row 1: nodes none" in console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out, "a row event is tried with its row; no shipped workflow is on it yet"
+    assert len(sent) == announced, "the trial typed nothing"
 
 
 def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():
