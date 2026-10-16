@@ -521,33 +521,23 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     Delete workflow
                 </Btn>
             </template>
-            <Btn v-if="!unlocked" kind="ghost" small title="Changes alter how the journal drives the agent" @click="confirming = 'edit'">
-                Edit
-            </Btn>
-            <Btn
-                v-else
-                kind="ghost"
-                small
-                :disabled="dirty"
-                :title="dirty ? 'Save or discard your changes first' : ''"
-                @click="unlocked = false"
-            >
-                Stop editing
-            </Btn>
             <span class="chart-grow" />
-            <span v-if="dirty" class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
-            <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
-            <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
-            <Btn
-                kind="primary"
-                small
-                :busy="busy === 'save'"
-                :disabled="!dirty"
-                title="Takes effect at the agent's next event"
-                @click="save"
-            >
-                Save
-            </Btn>
+            <template v-if="unlocked">
+                <span v-if="dirty" class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
+                <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
+                <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
+                <Btn
+                    kind="primary"
+                    small
+                    :busy="busy === 'save'"
+                    :disabled="!dirty"
+                    title="Takes effect at the agent's next event"
+                    @click="save"
+                >
+                    Save
+                </Btn>
+            </template>
+            <Btn v-else kind="ghost" small title="Changes alter how the journal drives the agent" @click="confirming = 'edit'">Edit</Btn>
         </PageBar>
 
         <div class="chart-page">
