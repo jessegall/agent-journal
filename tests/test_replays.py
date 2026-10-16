@@ -9,6 +9,7 @@ from journal.app import App
 from journal.config import Config
 from journal.models.actor import Actor
 from journal.models.setting import Setting
+from journal.repositories.charts import Charts
 from journal.repositories.settings import Settings
 from tests.replay import Replay, differences
 from tests.test_features import AGENT, USER, hook
@@ -28,6 +29,14 @@ def journals(tmp_path: Path, monkeypatch):
         app.runtime().stop()
 
 
+def empty_shipped(app, event: str) -> None:
+    """The shipped workflow on an event with its nodes taken out, so the journal under replay runs the listener alone."""
+    charts = app.container.get(Charts)
+    for chart in charts.shipped_on(event):
+        for node in charts.nodes_of(chart):
+            charts.remove_node(node, Actor.system())
+
+
 def message_arrives(app, replay: Replay) -> None:
     """The steps: a session starts, the user leaves a message while the agent sits at its prompt."""
     hook(app, "SessionStart")
@@ -37,22 +46,14 @@ def message_arrives(app, replay: Replay) -> None:
     replay.step("a message arrives")
 
 
-def test_message_arrives_as_a_workflow_equals_the_listener(journals, monkeypatch):
+def test_message_arrives_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
     with_listener, with_workflow = journals
-    left = Replay(with_listener, monkeypatch)
     with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch)
+    empty_shipped(with_listener, "messages.created")
     message_arrives(with_listener, left)
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival",))
     with_workflow.runtime().start()
-    console = with_workflow.console()
-    made = console.run(["chart", "new", "Message arrives"], USER).out
-    n = int(made.split()[1].rstrip(":"))
-    node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
-    trigger = node("trigger", "messages.created")
-    check = node("check", "message_by_user")
-    action = node("action", "type", "--text", "[messages.new] new message {{row}}")
-    console.run(["chart", "line", str(trigger), str(check)], USER)
-    console.run(["chart", "line", str(check), str(action), "--port", "yes"], USER)
+    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival",))
     message_arrives(with_workflow, right)
     assert left.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"

@@ -11,7 +11,7 @@ from journal.app import App
 from journal.config import Config
 from journal.models.actor import Actor
 from journal.models.setting import Setting
-from journal.repositories.settings import Settings
+from journal.repositories.settings import PROJECT, Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.memory.states.at_mark import AtMark
@@ -1281,11 +1281,11 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_and_keeps_the_one
     charts.save(stop.with_(shipped=False, event="", title="The journal's conduct"), Actor.system())
     seed.run()
     claimed = charts.find(stop.id)
-    assert claimed.shipped and claimed.event == "idle" and claimed.title == "Agent stops" and len(charts.shipped()) == 1, "a journal from before workflows were marked: its old chart is claimed, not doubled"
+    assert claimed.shipped and claimed.event == "idle" and claimed.title == "Agent stops" and len(charts.shipped_on("idle")) == 1, "a journal from before workflows were marked: its old chart is claimed, not doubled"
     for node in charts.nodes_of(claimed)[1:]:
         charts.remove_node(node, Actor.system())
     seed.run()
-    assert len(charts.nodes_of(claimed)) == 1 and len(charts.shipped()) == 1, "an edited workflow is the user's: never overwritten, never doubled"
+    assert len(charts.nodes_of(claimed)) == 1 and len(charts.shipped_on("idle")) == 1, "an edited workflow is the user's: never overwritten, never doubled"
     charts.remove(claimed, Actor.system())
     seed.run()
     made = charts.shipped_on("idle")
@@ -1357,7 +1357,8 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["message", "send", "are you there?"], USER)
     announced = len(sent)
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
-    assert "messages.created of row 1: nodes none" in console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out, "a row event is tried with its row; no shipped workflow is on it yet"
+    tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
+    assert "messages.created of row 1: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
     assert len(sent) == announced, "the trial typed nothing"
     n = int(console.run(["chart", "new", "Waiting long"], USER).out.split()[1].rstrip(":"))
     node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
@@ -1438,13 +1439,13 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Agent stops"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
     second = made["id"]
     console.run(["chart", "node", "trigger", "prompt_submitted", "--in", str(second)], AGENT)
-    prompt = int(console.run(["chart", "show"], AGENT).out.split("workflow 2")[1].split()[4])
+    prompt = int(console.run(["chart", "show"], AGENT).out.split(f"workflow {second}")[1].split()[4])
     say = int(console.run(["chart", "node", "action", "say", "--text", "the second workflow says hello", "--in", str(second)], AGENT).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(prompt), str(say)], AGENT)
     console.run(["task", "create", "free work"], USER)
@@ -1775,3 +1776,18 @@ def test_one_workflow_per_event_a_second_is_refused_and_the_older_one_answers(ap
     status, body = hook(app, "Stop")
     assert "task 1 next" in body["reason"] and "the second one" not in json.dumps(body), "a journal that somehow holds two runs the older one"
     assert f"workflow {n}, revision 0: Another stop  (sidelined: workflow 1 answers its event)" in console.run(["chart", "show"], USER).out
+
+
+def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    assert "InboxOnArrival" in app.container.get(Settings).get(PROJECT, "listeners.off", []), "the seed switched the listener off when it made the workflow"
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["message", "send", "are you there?"], USER)
+    app.runtime().deferred.drain()
+    assert typed.count("[journal] new message 1") == 1, "named once, by the workflow"
+    console.run(["chart", "reset", "2"], USER)
+    assert "Message arrives" in console.run(["chart", "show"], USER).out

@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from journal.models.actor import Actor
-from journal.models.setting import Setting
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.settings import Settings
@@ -19,10 +18,10 @@ class Replay:
     """One journal under replay: the lines typed to its agent are caught, and each step closes with what the step answered, typed and said."""
 
     def __init__(self, app, monkeypatch, listeners_off: tuple[str, ...] = ()) -> None:
+        """On a started journal: the listeners named are off and every other on, whatever the shipped workflows switched off at boot."""
         self.app, self.typed, self.steps, self.seen = app, [], [], 0
         monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, instruction: self.typed.append(instruction["line"]))
-        if listeners_off:
-            app.container.get(Settings).save(Setting(environment_id=0, key="listeners.off", value=list(listeners_off)), Actor.system())
+        app.container.get(Settings).set("listeners.off", list(listeners_off), Actor.system())
 
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, and the nudges said since."""

@@ -45,7 +45,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | the quiet-for check exists; needs the parked filler |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the Expecting state's; moves only with the state rule |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
-| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the user-author check exists; needs the live-agent target |
+| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | shipped as the workflow Message arrives; the listener is off where it stands |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | the trigger feature's own words check |
 | Reaction created by the user | messages.reacted | a face on a message | type | a workflow: needs the check "reaction by the user" and the face and message fillers |
 | Rule created | memory.rule_review | a new rule | type once | needs the rule filler |

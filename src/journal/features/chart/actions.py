@@ -56,15 +56,16 @@ class Actions:
         return Decision.refuse(text) if ctx.answers_hook else self.say(text, ctx)
 
     def type(self, text: str, ctx: Context) -> Decision:
-        """Typed into the terminal; a text naming a nudge goes through the nudger first, so the record and the repeat window are the nudge's."""
+        """Typed into the terminal; a text naming a nudge goes through the nudger first, so the record and the repeat window are the nudge's, and is for a live agent only."""
         if not ctx.environment_id or not ctx.voiced:
             return Decision()
-        if NAMED.match(text) and ctx.session:
+        if not NAMED.match(text):
+            self.supervisor.type(ctx.environment_id, text)
+            return Decision()
+        if ctx.session:
             line = self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text))
             if line:
                 self.supervisor.type(ctx.environment_id, line)
-            return Decision()
-        self.supervisor.type(ctx.environment_id, text)
         return Decision()
 
     def show_card(self, text: str, ctx: Context) -> Decision:
