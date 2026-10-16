@@ -1281,7 +1281,7 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_and_keeps_the_one
     charts = app.container.get(Charts)
     seed = app.container.get(ShippedChart)
     stop = charts.shipped_on("idle")[0]
-    assert stop.shipped and stop.title == "Agent stops" and len(charts.nodes_of(stop)) == 7
+    assert stop.shipped and stop.title == "Agent stops" and len(charts.nodes_of(stop)) == 13
     charts.save(stop.with_(shipped=False, event="", title="The journal's conduct"), Actor.system())
     seed.run()
     claimed = charts.find(stop.id)
@@ -1293,7 +1293,7 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_and_keeps_the_one
     charts.remove(claimed, Actor.system())
     seed.run()
     made = charts.shipped_on("idle")
-    assert len(made) == 1 and len(charts.nodes_of(made[0])) == 7, "a journal lacking a shipped workflow gets it at boot"
+    assert len(made) == 1 and len(charts.nodes_of(made[0])) == 13, "a journal lacking a shipped workflow gets it at boot"
 
 
 def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(app):
@@ -1362,7 +1362,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 3, 5, 6, 7" in out
+    assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 8, 9, 11, 12, 13" in out, "the inbox branch is passed first and finds nothing unread; the stop branch then holds"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
     console.run(["message", "send", "are you there?"], USER)
@@ -1458,7 +1458,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent", "Tool about to run", "Clock ticks", "Worker reports", "Question answered"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Session starts", "Message arrives", "Prompt sent", "Tool about to run", "Clock ticks", "Worker reports", "Question answered"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []

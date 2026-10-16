@@ -211,6 +211,59 @@ def test_question_answered_as_the_shipped_workflow_equals_the_listener(journals,
     left.freeze("a_question_is_answered")
 
 
+def stops_with_unread(app, replay: Replay) -> None:
+    """The steps: the agent stops with one message unread, then with four."""
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["message", "send", "one"], USER)
+    replay.step("message 1 arrives")
+    replay.step("a stop with one unread", hook(app, "Stop")[1])
+    for words in ("two", "three", "four"):
+        console.run(["message", "send", words], USER)
+    replay.step("three more arrive")
+    replay.step("a stop with four unread", hook(app, "Stop")[1])
+
+
+def starts_with_unread(app, replay: Replay) -> None:
+    """The steps: two messages are left before any session, then a session starts."""
+    console = app.console()
+    console.run(["environment", "here"], USER)
+    console.run(["message", "send", "one"], USER)
+    console.run(["message", "send", "two"], USER)
+    replay.step("two messages wait")
+    replay.step("a session starts", hook(app, "SessionStart")[1])
+
+
+def test_the_stop_workflow_carries_the_inbox_equal_to_the_listener(journals, monkeypatch):
+    with_listener, with_workflow = journals
+    with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch, listeners_off=("InboxOnArrival",))
+    empty_shipped(with_listener, "idle")
+    stops_with_unread(with_listener, left)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtStop"))
+    stops_with_unread(with_workflow, right)
+    by_name = {s["name"]: s for s in left.record()}
+    assert "new message 1" in str(by_name["a stop with one unread"]["answer"]) and "4 messages unread" in str(by_name["a stop with four unread"]["answer"])
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    left.freeze("stops_with_unread")
+
+
+def test_the_start_workflow_carries_the_inbox_equal_to_the_listener(journals, monkeypatch):
+    with_listener, with_workflow = journals
+    with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch)
+    empty_shipped(with_listener, "session_started")
+    starts_with_unread(with_listener, left)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxAtStart",))
+    starts_with_unread(with_workflow, right)
+    assert "new messages 1, 2" in str(left.record()[-1]["answer"]), "the listener names the inbox at a start"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    left.freeze("starts_with_unread")
+
+
 TOOL_LISTENERS = ("HoldUnread", "HoldUnanswered", "LogCadence")
 
 

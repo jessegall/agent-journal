@@ -11,6 +11,7 @@ TITLE = "Agent stops"
 MESSAGE_TITLE = "Message arrives"
 NEW_MESSAGE = "[messages.new] new message {{row}}"
 PROMPT_TITLE = "Prompt sent"
+START_TITLE = "Session starts"
 ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
 SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
 MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
@@ -44,7 +45,8 @@ class ShippedChart(Seed):
     def __init__(self, charts: Charts, settings: Settings) -> None:
         self.charts, self.settings = charts, settings
         self.drawings = {
-            "idle": Drawing(TITLE, self.draw_stop),
+            "idle": Drawing(TITLE, self.draw_stop, ("InboxAtStop",)),
+            "session_started": Drawing(START_TITLE, self.draw_start, ("InboxAtStart",)),
             "messages.created": Drawing(MESSAGE_TITLE, self.draw_message, ("InboxOnArrival",)),
             "prompt_submitted": Drawing(PROMPT_TITLE, self.draw_prompt, ("InboxAtPrompt",)),
             "tool_starting": Drawing(TOOL_TITLE, self.draw_tool, ("HoldUnread", "HoldUnanswered", "LogCadence")),
@@ -88,20 +90,30 @@ class ShippedChart(Seed):
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
+        self.take_over(drawing.replaces, by)
         return self.charts.save(chart.saved_again().with_(title=drawing.title), by)
 
     def draw_prompt(self, chart: Chart) -> None:
-        """Today's conduct when a prompt is sent: what waits unread is named by number, one message by its number, a few by theirs, more than three by their count."""
+        """Today's conduct when a prompt is sent: what waits unread is named."""
+        prompt = self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key="prompt_submitted", x=400, y=0, shipped=True), Actor.system())
+        self.draw_inbox(chart, prompt, x=400, y=92)
+
+    def draw_start(self, chart: Chart) -> None:
+        """Today's conduct when a session starts, beside the engine's briefing: what waits unread is named."""
+        start = self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key="session_started", x=400, y=0, shipped=True), Actor.system())
+        self.draw_inbox(chart, start, x=400, y=92)
+
+    def draw_inbox(self, chart: Chart, after: Node, x: int, y: int) -> None:
+        """What waits unread, named from the node given: one message by its number, a few by theirs, more than three by their count."""
         by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        prompt = node(NodeKind.TRIGGER, "prompt_submitted", x=400, y=0)
-        unread = node(NodeKind.CHECK, "unread_messages", x=400, y=92)
-        many = node(NodeKind.CHECK, "unread_over", "4", x=400, y=184)
-        say_many = node(NodeKind.ACTION, "say", MANY_UNREAD, x=160, y=276)
-        some = node(NodeKind.CHECK, "unread_over", "2", x=400, y=276)
-        say_some = node(NodeKind.ACTION, "say", SOME_UNREAD, x=160, y=368)
-        say_one = node(NodeKind.ACTION, "say", ONE_UNREAD, x=400, y=368)
-        self.charts.connect(prompt, unread, THEN, by)
+        node = lambda kind, key, text="", dx=0, dy=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x + dx, y=y + dy, shipped=True), by)
+        unread = node(NodeKind.CHECK, "unread_messages")
+        many = node(NodeKind.CHECK, "unread_over", "4", dy=92)
+        say_many = node(NodeKind.ACTION, "say", MANY_UNREAD, dx=-240, dy=184)
+        some = node(NodeKind.CHECK, "unread_over", "2", dy=184)
+        say_some = node(NodeKind.ACTION, "say", SOME_UNREAD, dx=-240, dy=276)
+        say_one = node(NodeKind.ACTION, "say", ONE_UNREAD, dy=276)
+        self.charts.connect(after, unread, THEN if after.kind != NodeKind.CHECK else YES, by)
         self.charts.connect(unread, many, YES, by)
         self.charts.connect(many, say_many, YES, by)
         self.charts.connect(many, some, NO, by)
@@ -237,10 +249,11 @@ class ShippedChart(Seed):
         self.charts.connect(by_user, named, YES, by)
 
     def draw_stop(self, chart: Chart) -> None:
-        """Today's conduct at a stop: at rest, parked tasks hold the stop in any mode, and in auto mode the next open task holds it."""
+        """Today's conduct at a stop: what waits unread is named; at rest, parked tasks hold the stop in any mode, and in auto mode the next open task holds it."""
         by = Actor.system()
         node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
         stop = node(NodeKind.TRIGGER, "idle", x=400, y=0)
+        self.draw_inbox(chart, stop, x=80, y=92)
         at_rest = node(NodeKind.CHECK, "plain_idle", x=400, y=92)
         parked = node(NodeKind.CHECK, "parked_tasks", x=400, y=276)
         say_parked = node(NodeKind.ACTION, "block_stop", PARKED, x=160, y=368)
