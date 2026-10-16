@@ -1648,3 +1648,41 @@ def test_the_card_and_release_actions(app):
     actions.perform("show_card", "The journal did a thing", ctx)
     cards = [e for e in app.container.get(Entries).of_kind(env, "card", 10)]
     assert cards and cards[0].data["label"] == "The journal did a thing"
+
+
+def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_rows(app):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.events.models.updated import Updated
+    from journal.features.chart.fillers import Fillers
+    from journal.features.chart.context import Context
+    from journal.repositories.environments import Environments
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    fillers = app.container.get(Fillers)
+    env = app.container.get(Environments).named("main").id
+    at = lambda event: Context(event=event, session="s1", environment_id=env)
+    tick = at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))
+    console.run(["message", "send", "one"], USER)
+    assert fillers.fill("{{inbox}} / {{unread_count}} / {{unread_numbers}}", tick) == "new message 1 / 1 / 1"
+    console.run(["message", "send", "two"], USER)
+    console.run(["message", "send", "three"], USER)
+    console.run(["message", "send", "four"], USER)
+    assert fillers.fill("{{inbox}}", tick) == "4 messages unread: journal message unread"
+    console.run(["message", "read", "1"], AGENT)
+    assert fillers.fill("{{owed}}", tick) == "1"
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    for _ in range(3):
+        hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    write = at(ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env))
+    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", write) == "task 1 / 2 / journal task log 1"
+    console.run(["await", "the deploy"], AGENT)
+    assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", tick) == "check the deploy now: you have waited 5 min"
+    console.run(["task", "park", "1", "the header first"], AGENT)
+    assert fillers.fill("{{parked_n}}: {{parked_title}} ({{parked_why}})", tick) == "1: the footer (the header first)"
+    console.run(["task", "create", "t2", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    worker = app.container.get(Workers).find(1)
+    assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"

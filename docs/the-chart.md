@@ -16,7 +16,10 @@ workflows, each starting at one trigger. The journal ships it with today's condu
   unread, fifteen tool uses with a message unanswered, twenty edits since the last log.
 - An **action** is what the journal does, with the line it says: say a line to the agent, hold the tool it was
   about to use, block its stop, type a line into its terminal, start a sequence by its title. The line may name
-  rows with placeholders such as `{{next_task}}`, `{{next_task_title}}` and `{{parked_tasks}}`.
+  rows with placeholders: `{{next_task}}`, `{{next_task_title}}`, `{{parked_tasks}}`, `{{parked_n}}`, `{{parked_title}}`, `{{parked_why}}`,
+  `{{inbox}}`, `{{unread_count}}`, `{{unread_numbers}}`, `{{owed}}`, `{{task}}`, `{{task_edits}}`, `{{log_command}}`, `{{awaited}}`,
+  `{{quiet_minutes}}`, `{{row}}`, `{{worker_n}}`, `{{worker_name}}` and `{{question_n}}`. A say or type line that opens with a nudge's key
+  in brackets, `[messages.new]`, speaks as that nudge.
 
 Lines join the boxes: then from a trigger or an action, yes or no from a check.
 
