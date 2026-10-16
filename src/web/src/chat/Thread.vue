@@ -517,7 +517,7 @@ watch(
                 </div>
                 <Transition name="pane">
                     <template v-if="feeding">
-                        <FileFeed :key="feedKey" :agent="owner.n" />
+                        <FileFeed :key="feedKey" :agent="owner.n" :options="ui.threadFeed" @options="ui.threadFeed = $event" />
                     </template>
                 </Transition>
             </div>
