@@ -272,7 +272,7 @@ async function use(tool) {
             <div class="compose-quote">
                 <span class="compose-quote-label">{{ quoteLabel }}</span>
                 <TextDisplay class="compose-quote-text" :text="quote" />
-                <button type="button" class="compose-quote-x" title="Not a reply after all" @click="emit('unquote')">×</button>
+                <button type="button" class="compose-quote-x" title="Remove the quote" @click="emit('unquote')">×</button>
             </div>
         </template>
         <Transition name="note">

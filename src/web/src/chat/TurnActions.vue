@@ -44,7 +44,7 @@ function react(face) {
             <button type="button" class="thread-tool" title="Pin this over the chat" @click.stop="emit('pin', {text, ref: turn.ref})">
                 Pin
             </button>
-            <button type="button" class="thread-tool" title="Copy the text of this" @click.stop="copy">
+            <button type="button" class="thread-tool" title="Copy the text" @click.stop="copy">
                 {{ copied ? "Copied" : "Copy" }}
             </button>
             <template v-if="turn.who === 'user' && !turn.completed">

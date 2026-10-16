@@ -147,7 +147,13 @@ const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const recordedReader = {env: () => api.env(), transcript: (_agent, _session, fields) => api.helperTranscript(props.recorded, fields)};
 const transcriptViews = () => shown("transcript") || (subagent && shown("chat"));
-const transcript = useTranscript(() => props.recorded || (agent.value ? agent.value.n : 0), props.session, scroller, props.recorded ? recordedReader : there, transcriptViews);
+const transcript = useTranscript(
+    () => props.recorded || (agent.value ? agent.value.n : 0),
+    props.session,
+    scroller,
+    props.recorded ? recordedReader : there,
+    transcriptViews
+);
 refreshers.push([transcriptViews, transcript.refresh]);
 watch(
     () => (panes.value ? panes.value.shown.join() : ""),
@@ -265,7 +271,14 @@ const openSkills = () => go(route.value.env, "skills");
                 <SwitchCase :value="view">
                     <template #chat>
                         <template v-if="subagent">
-                            <SubagentChat :turns="turns" :loading="transcriptLoading" :session="chatSession || session" :earlier="earlier" :at-start="atStart" read-only />
+                            <SubagentChat
+                                :turns="turns"
+                                :loading="transcriptLoading"
+                                :session="chatSession || session"
+                                :earlier="earlier"
+                                :at-start="atStart"
+                                read-only
+                            />
                         </template>
                         <template v-else>
                             <Thread view="chat" />
@@ -289,7 +302,9 @@ const openSkills = () => go(route.value.env, "skills");
                     </template>
                     <template #history>
                         <template v-if="!works.length">
-                            <EmptyState :loading="!worksLoaded" title="No work logged yet">What this agent starts and finishes shows here.</EmptyState>
+                            <EmptyState :loading="!worksLoaded" title="No work logged yet">
+                                What this agent starts and finishes shows here.
+                            </EmptyState>
                         </template>
                         <div class="fill scroll">
                             <template v-for="w in works" :key="w.n">
@@ -338,12 +353,12 @@ const openSkills = () => go(route.value.env, "skills");
                     </template>
                     <template #subagents>
                         <p class="pane-note">
-                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent
-                            and you can't send it messages. Helper agents are different: separate agents with their own environment, listed
-                            under Helpers.
+                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent and you
+                            can't send it messages. Helper agents are different: separate agents with their own environment, listed under
+                            Helpers.
                         </p>
                         <template v-if="!subagents.length">
-                            <EmptyState :title="`No subagents yet`">The jobs this agent hands off show here.</EmptyState>
+                            <EmptyState :title="`No subagents yet`">Subagents this agent starts show here.</EmptyState>
                         </template>
                         <div class="fill scroll">
                             <template v-for="row in subagents" :key="row.session">

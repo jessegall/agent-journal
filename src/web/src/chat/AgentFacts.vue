@@ -172,7 +172,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                     icon="branch"
                     :href="data.branch_url"
                     target="_blank"
-                    title="the branch it works on — open it in the repository"
+                    title="Open the branch it works on in the repository"
                 >
                     {{ data.branch }}
                 </AgentFact>

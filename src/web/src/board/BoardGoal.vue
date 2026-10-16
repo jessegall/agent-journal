@@ -20,7 +20,7 @@ useOutside(band, () => (open.value = false));
             <button type="button" class="board-goal-text" :aria-expanded="open" @click="open = !open">{{ goal || "Done when" }}</button>
             <template v-if="clauses.length">
                 <button type="button" :class="['board-goal-count', {open}]" :aria-expanded="open" @click="open = !open">
-                    <span class="board-goal-done-when">Done when ·</span>
+                    <span class="board-goal-done-when">Done when:</span>
                     {{ points }}
                     <Icon name="caret" :size="12" :class="{flip: open}" />
                 </button>

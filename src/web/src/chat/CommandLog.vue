@@ -20,7 +20,7 @@ const {members: opened, toggle} = useToggledSet();
                 <span class="log-mark">{{ commandMark(c.tool) }}</span>
                 <span
                     :class="['log-text', {open: opened.has(c.at)}]"
-                    :title="opened.has(c.at) ? 'Click to fold this line' : 'Click to show the whole line'"
+                    :title="opened.has(c.at) ? 'Click to collapse this line' : 'Click to show the whole line'"
                     @click="toggle(c.at)"
                 >
                     {{ c.command }}
@@ -29,7 +29,7 @@ const {members: opened, toggle} = useToggledSet();
             <template v-if="c.output">
                 <pre
                     :class="['log-output', {open: opened.has(c.at)}]"
-                    :title="opened.has(c.at) ? 'Click to fold the output' : 'Click to show the whole output'"
+                    :title="opened.has(c.at) ? 'Click to collapse the output' : 'Click to show the whole output'"
                     @click="toggle(c.at)"
                     >{{ c.output }}</pre>
             </template>

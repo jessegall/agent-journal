@@ -29,7 +29,7 @@ const extension = computed(() => props.kind || props.file.name.split(".").pop())
             <span class="file-slip-meta">{{ meta || size }}</span>
         </span>
         <template v-if="removable">
-            <CloseButton title="Take the document away" @click.stop="emit('remove')" />
+            <CloseButton title="Remove the document" @click.stop="emit('remove')" />
         </template>
     </div>
 </template>

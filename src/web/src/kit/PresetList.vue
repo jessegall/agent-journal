@@ -153,7 +153,7 @@ function saved(name) {
                         <button
                             type="button"
                             :class="['preset-tool', {done: flashed === p.key}]"
-                            :title="flashed === p.key ? 'Saved' : 'Save the current layout into it'"
+                            :title="flashed === p.key ? 'Saved' : 'Save the current layout to this preset'"
                             @click.stop="updated(p.key)"
                         >
                             <Icon :name="flashed === p.key ? 'tick' : 'floppy'" :size="12" />
@@ -183,7 +183,7 @@ function saved(name) {
                     {{ flashed === `share:${p.key}` ? "Downloaded" : "Download file" }}
                 </MenuItem>
                 <div class="preset-link">
-                    <span class="preset-link-label">Or copy a link that works for</span>
+                    <span class="preset-link-label">Or copy a link for:</span>
                     <Segmented :options="LASTS" :value="lasting" @pick="(key) => (lasting = key)" />
                     <Btn small kind="primary" :busy="linking" @click="copyLink(p.key)">
                         <Icon name="copy" :size="12" />

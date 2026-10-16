@@ -44,9 +44,9 @@ async function draft(brief) {
 const facts = (role) =>
     [
         ["Does", role.responsible],
-        ["Leaves to others", role.not_responsible],
+        ["Not its job", role.not_responsible],
         ["Needs", (role.inputs || []).join(", ")],
-        ["Hands back", (role.outputs || []).join(", ")],
+        ["Produces", (role.outputs || []).join(", ")],
         ["Skills", (role.skills || []).join(", ")],
         ["Tools", (role.tools || []).join(", ")],
         ["How many at once", [CARDINALITY[role.cardinality] || role.cardinality, role.model].filter(Boolean).join(" · ")],

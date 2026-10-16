@@ -11,8 +11,8 @@ const emit = defineEmits(["stop", "keep", "close"]);
         <p class="text">It is working on {{ move.card.title }}. Its branch and its changes stay either way.</p>
         <div class="actions">
             <Btn small @click="emit('close')">Cancel</Btn>
-            <Btn small @click="emit('keep')">Move, keep it working</Btn>
-            <Btn kind="primary" small @click="emit('stop')">Stop its agent and move</Btn>
+            <Btn small @click="emit('keep')">Move and keep the agent working</Btn>
+            <Btn kind="primary" small @click="emit('stop')">Stop the agent and move</Btn>
         </div>
     </Dialog>
 </template>

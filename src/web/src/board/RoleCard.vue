@@ -22,7 +22,7 @@ const CARDINALITY = {worktree: "one per ticket", plural: "any number at once", p
                 <dd>{{ role.responsible }}</dd>
             </template>
             <template v-if="role.not_responsible">
-                <dt>Leaves to others</dt>
+                <dt>Not its job</dt>
                 <dd>{{ role.not_responsible }}</dd>
             </template>
             <template v-if="role.inputs.length">
@@ -30,7 +30,7 @@ const CARDINALITY = {worktree: "one per ticket", plural: "any number at once", p
                 <dd>{{ role.inputs.join(", ") }}</dd>
             </template>
             <template v-if="role.outputs.length">
-                <dt>Hands back</dt>
+                <dt>Produces</dt>
                 <dd>{{ role.outputs.join(", ") }}</dd>
             </template>
             <template v-if="role.skills.length">

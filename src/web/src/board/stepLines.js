@@ -24,7 +24,7 @@ export const STEP_WORDS = {
     "Name the goal (score 1)": "Naming the goal",
     "Set the scope (score 2)": "Setting the scope",
     "Say what done means (score 3)": "Saying what done means",
-    "Choose the first slice (score 4)": "Choosing the first slice",
+    "Choose the first slice (score 4)": "Choosing the first piece of work",
     "Guess the count": "Counting the tickets",
     "Map the work": "Mapping the work",
     "Draft the cards": "Drafting tickets",
