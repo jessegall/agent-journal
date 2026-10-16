@@ -664,3 +664,10 @@ off silences its holds as well as its lines. The environment scope (Baron Haussm
 Edison) are merged. What is left of phase 3 is the deletion of the listeners the workflows replaced (118, 142), the
 end of listeners.off (181) and the docs after it (119): that waits on the user's look at the Workflows page, the
 plan's checkpoint.
+
+Plan 3 complete on 2026-10-16, late evening: the eleven listeners the workflows replaced are deleted in five commits,
+one per workflow, each shown equal by the thirty-six replays; listeners.off, the take-over and the drawings' replaced
+names are gone; the settings page names the workflow node that reads each option; docs/the-rules.md and
+docs/the-chart.md say what the workflows carry and what stays in code. What stays in code: the machine and its
+states, the laws, the briefing and the owed pauses, the skills, the shell runner, delivery, and the few feature
+listeners that read what no check reads (voices, git, triggers, checks, mcp, plans, sequences, questions' own tool).

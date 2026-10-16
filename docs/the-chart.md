@@ -24,6 +24,24 @@ and the trial says everything it assumed.
 Each workflow is compiled once into a graph in memory and walked from there; a write to any workflow through the
 journal clears the compiled graphs, so the next walk reads the edit.
 
+## The shipped workflows
+
+- **For every state**: a message arriving is typed to the agent; the inbox named at a start, a prompt and a stop;
+  the unread inbox named every so many tool uses and the write held after so many namings; a read message
+  answered before the next tool, held after so many uses.
+- **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks,
+  the parked ask after a minute and the check-in after half an hour.
+- **Working**: the task in hand named back every so many edits, the log asked for and then held; carry on at a
+  stop and a start, with the log asked for when stale; the task still open after a quiet quarter hour.
+  Following a plan inherits it.
+- **Awaiting a worker**: a worker reporting or stopping is told, and the agent is released when its last worker
+  is back.
+- **Waiting on a question**: the answer releases the agent, told how to read it.
+- **Expecting something outside**: after five quiet minutes the agent is told to check what it awaits.
+- **Running a sequence**: the step in hand said at a stop.
+
+A workflow of your own is bound to one event and runs beside them; it is made with New workflow or `journal chart new`.
+
 ## Three kinds of box
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is
