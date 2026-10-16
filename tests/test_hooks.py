@@ -95,3 +95,14 @@ def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
     deferred.drain()
     deferred.stop()
     assert ran == ["after"] and "ZeroDivisionError" in capsys.readouterr().err
+
+
+def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path: Path):
+    from journal.hooks.context_file import ContextFile
+    context = ContextFile(tmp_path)
+    (tmp_path / "s1.json").write_text(json.dumps({"context_window": {"used_percentage": 40}}))
+    assert context.of("s1") == 0.4
+    (tmp_path / "s1.json").write_text('{"context_window": {"used_percentage": 5')
+    assert context.of("s1") == 0.4, "the statusline is still writing: the last whole reading stands"
+    (tmp_path / "s1.json").write_text(json.dumps({"context_window": {"used_percentage": 55}}))
+    assert context.of("s1") == 0.55

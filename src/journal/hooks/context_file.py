@@ -7,6 +7,8 @@ class ContextFile:
 
     def __init__(self, home: Path) -> None:
         self.home = home
+        self._whole: dict[str, dict] = {}
+        """The last whole reading per session: the statusline writes its file while this reads it, so a read may catch it half written."""
 
     def of(self, session: str) -> float | None:
         used = self.status(session).get("context_window", {}).get("used_percentage")
@@ -16,7 +18,11 @@ class ContextFile:
         path = self.home / f"{session}.json"
         if not path.is_file():
             return {}
-        return json.loads(path.read_text() or "{}")
+        try:
+            self._whole[session] = json.loads(path.read_text() or "{}")
+        except json.JSONDecodeError:
+            return self._whole.get(session, {})
+        return self._whole[session]
 
     def model(self, session: str) -> str:
         return self.status(session).get("model", {}).get("display_name", "")
