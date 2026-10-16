@@ -1,7 +1,7 @@
 import {beforeEach, expect, test, vi} from "vitest";
 import {momentDays} from "../src/domain/timeline.js";
 
-const api = {act: vi.fn(), dashboard: vi.fn(), env: () => "main"};
+const api = {act: vi.fn(), rows: vi.fn(), env: () => "main"};
 vi.mock("../src/api/client.js", () => ({api, onWrite: vi.fn()}));
 vi.mock("../src/chat/outbox.js", () => ({onOutboxChange: vi.fn()}));
 vi.mock("../src/domain/spec.js", () => ({word: (type, method) => ({approve: "approved", start: "started"})[method] || method}));
@@ -15,7 +15,7 @@ const statuses = () => rows("plan").map((p) => p.data.status);
 
 beforeEach(() => {
     api.act.mockReset().mockResolvedValue({});
-    api.dashboard.mockReset().mockResolvedValue({counts: {}, rows: {plan: {rows: [plan(1, "active"), plan(2, "approved")], more: false}}});
+    api.rows.mockReset().mockResolvedValue({counts: {}, rows: [plan(1, "active"), plan(2, "approved")], more: false});
     store.booted = true;
     store.rows.plan = [plan(1, "active"), plan(2, "waiting"), plan(3, "building")];
     store.paging = {size: {}, more: {}};
@@ -41,7 +41,7 @@ test("a refused approval is passed on and the rows are read again, so the card d
     api.act.mockRejectedValue(new Error("not yet"));
     const [, , building] = rows("plan");
     await expect(approvePlan(building)).rejects.toThrow("not yet");
-    expect(api.dashboard).toHaveBeenCalled();
+    expect(api.rows).toHaveBeenCalled();
     expect(statuses()).toEqual(["active", "approved"]);
 });
 

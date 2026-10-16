@@ -1,5 +1,6 @@
 from journal.container import Container
 from journal.http.router import Router
+from journal.http.v3.rows_controller import RowsController
 from journal.http.v3.v3_controller import V3Controller
 
 API = "/api"
@@ -24,7 +25,6 @@ class V3Routes:
         router.post(f"{API}/{{env}}/settings", c.post_settings)
         router.get(f"{API}/{{env}}/events", c.get_events)
         router.get(f"{API}/{{env}}/stream", c.get_stream)
-        router.get(f"{API}/{{env}}/dashboard", c.get_dashboard)
         router.get(f"{API}/{{env}}/files", c.get_empty)
         router.get(f"{API}/{{env}}/changes", c.get_empty_list)
         router.get(f"{API}/{{env}}/family", c.get_empty)
@@ -43,7 +43,7 @@ class V3Routes:
         router.get(f"{API}/{{env}}/agent/{{n}}/transcript", c.get_agent_transcript)
         router.post(f"{API}/{{env}}/agent/{{session}}/shell", c.post_agent_shell)
         router.post(f"{API}/{{env}}/agent/{{session}}/control", c.post_agent_control)
-        router.get(f"{API}/{{env}}/{{type}}", c.get_list)
+        router.get(f"{API}/{{env}}/{{type}}", self.container.get(RowsController).index)
         router.post(f"{API}/{{env}}/{{type}}", c.post_create)
         router.get(f"{API}/{{env}}/{{type}}/{{n}}", c.get_one)
         router.get(f"{API}/{{env}}/{{type}}/{{n}}/choices", c.get_choices)

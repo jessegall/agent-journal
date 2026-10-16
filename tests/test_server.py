@@ -131,8 +131,31 @@ def test_request_threads_leave_no_connection_behind(server):
     from journal.db.connection import Connection
     database = server.database
     for _ in range(40):
-        call(server, "GET", "/api/main/dashboard")
+        call(server, "GET", "/api/main/todo")
     assert len(database._open) <= 3, f"{len(database._open)} connections open after 40 requests: threads must return theirs to the pool"
+
+
+def test_each_type_is_read_alone_above_the_last_number_seen(server):
+    """A type's read answers its rows above `from`, the newest `last` of them, with its counts; a type whose rows will not load fails alone and the others still answer."""
+    for n in range(1, 5):
+        call(server, "POST", "/journal/tasks", {"title": f"task {n}"})
+        call(server, "POST", f"/journal/tasks/{n}/start")
+        call(server, "POST", f"/journal/tasks/{n}/finish", {"how": "done"})
+    for n in range(3):
+        call(server, "POST", "/api/main/message", {"brief": f"hello {n}", "idempotency": f"k{n}"})
+    todos = call(server, "GET", "/api/main/todo?from=1&last=2&completed=1")[1]
+    assert [r["n"] for r in todos["rows"]] == [3, 4] and todos["more"] is True
+    assert todos["counts"] == {"all": 4, "open": 0, "unread": 0}
+    messages = call(server, "GET", "/api/main/message?from=1&last=5")[1]
+    assert [r["n"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
+    assert call(server, "GET", "/api/main/message?from=3&last=5")[1]["rows"] == [], "a poll from the last number seen carries nothing when nothing is new"
+    call(server, "POST", "/journal/facts", {"text": "the sky is blue"})
+    with server.database.transaction():
+        server.database.execute("UPDATE facts SET keywords = '{broken' WHERE id = 1")
+    with pytest.raises(OSError):
+        call(server, "GET", "/api/main/fact")
+    assert call(server, "GET", "/api/main/todo?from=3&completed=1")[1]["rows"][0]["n"] == 4, "a fact that will not load leaves the tasks answering"
+    assert call(server, "GET", "/api/main/dashboard")[0] == 404, "the one call for every type is gone"
 
 
 def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):

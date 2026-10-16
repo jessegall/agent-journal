@@ -149,9 +149,12 @@ export async function load(type) {
     return store.rows[type];
 }
 
+const keptCounts = (type, counts) => (store.counts = {...store.counts, [type]: counts});
+
 async function caughtUp(type) {
     const since = Math.max(0, ...(store.rows[type] || []).map((r) => r.updated || 0));
     const got = await api.list(type, {last: PAGE, completed: true, since});
+    keptCounts(type, got.counts);
     if (got.more) return load(type);
     const held = store.rows[type] || [];
     const fresh = new Map(got.rows.map((r) => [r.n, r]));
@@ -211,20 +214,38 @@ async function fetched(types, whole = false) {
     }
 }
 
+async function paged(type) {
+    const got = await api.rows(type, {last: PAGE});
+    keptCounts(type, got.counts);
+    took(type, got);
+}
+
+async function counted(type) {
+    keptCounts(type, await api.counts(type));
+}
+
+function read(type) {
+    if (!watchedTypes.has(type)) return counted(type);
+    return (store.paging.size[type] || PAGE) === PAGE ? paged(type) : caughtUp(type);
+}
+
+async function eventsAndSettings() {
+    const [events, settings] = await Promise.all([api.recentEvents(RECENT), api.settings()]);
+    keepEvents([...remembered(eventsKey(), []), ...events]);
+    store.settings = settings;
+}
+
+const failedType = (type) =>
+    read(type).then(
+        () => null,
+        () => type
+    );
+
 async function pull(types, whole) {
-    const plain = types.filter((type) => (store.paging.size[type] || PAGE) === PAGE);
-    const sized = types.filter((type) => !plain.includes(type));
-    const [got] = await Promise.all([
-        plain.length || whole ? api.dashboard(plain, {last: PAGE, events: whole ? RECENT : null}) : null,
-        ...sized.map(caughtUp),
-    ]);
-    if (!got) return;
-    store.counts = {...store.counts, ...got.counts};
-    Object.entries(got.rows).forEach(([type, listed]) => took(type, listed));
-    if (whole) {
-        keepEvents([...remembered(eventsKey(), []), ...got.events]);
-        store.settings = got.settings;
-    }
+    const failed = (await Promise.all(types.map(failedType))).filter(Boolean);
+    failed.forEach((type) => (owed.add(type), changed.add(type)));
+    if (whole) await eventsAndSettings();
+    if (failed.length) throw new Error(`could not read ${failed.join(", ")}`);
 }
 
 const RETRY_FIRST = 1000;
@@ -238,15 +259,14 @@ async function drain() {
         while (owed.size || owedWhole) {
             const whole = owedWhole;
             const types = [...(whole ? Object.keys(store.rows) : owed)]
-                .filter((type) => watchedTypes.has(type))
-                .filter((type) => whole || changed.has(type) || !loaded.has(type));
+                .filter((type) => watchedTypes.has(type) || type in store.rows)
+                .filter((type) => whole || !watchedTypes.has(type) || changed.has(type) || !loaded.has(type));
             owed.clear();
             owedWhole = false;
             try {
                 await fetched(types, whole);
                 retryIn = RETRY_FIRST;
             } catch (e) {
-                types.forEach((type) => (owed.add(type), changed.add(type)));
                 owedWhole = owedWhole || whole;
                 await new Promise((settle) => setTimeout(settle, retryIn));
                 retryIn = Math.min(retryIn * 2, RETRY_LONGEST);

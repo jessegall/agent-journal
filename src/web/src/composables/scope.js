@@ -15,10 +15,7 @@ export function scopeIn(env) {
     const keep = (type, got) => (store.elsewhere[`${env}:${type}`] = merged(rowsThere(type), (got && got.rows) || []));
     const hold = async (type, ns) => ns.length && keep(type, await there.list(type, {only: ns, completed: true}));
     const recent = async (type, last) => keep(type, await there.list(type, {last, completed: true}));
-    async function recentAll(types, last) {
-        const got = await there.dashboard(types, {last});
-        types.forEach((type) => got.rows && got.rows[type] && keep(type, got.rows[type]));
-    }
+    const recentAll = (types, last) => Promise.all(types.map((type) => recent(type, last)));
     const more = {};
 
     async function earlierThere(...types) {

@@ -390,10 +390,10 @@ export class ApiClient {
         return this.post(`/agent-hooks/${provider}`, {hooks});
     }
 
-    list(type, {last, completed = false, closed = false, before = 0, since = 0, only = [], by = ""} = {}) {
+    list(type, {last, completed = false, closed = false, from = 0, before = 0, since = 0, only = [], by = ""} = {}) {
         return this.get(
             this.here(
-                `/${type}${query({last, completed: completed ? "1" : undefined, closed: closed ? "1" : undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined, by: by || undefined})}`
+                `/${type}${query({last, completed: completed ? "1" : undefined, closed: closed ? "1" : undefined, from: from || undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined, by: by || undefined})}`
             )
         );
     }
@@ -402,8 +402,12 @@ export class ApiClient {
         return this.list(type, {completed: true}).then((got) => got.rows);
     }
 
-    dashboard(types, {last, events = null} = {}) {
-        return this.get(this.here(`/dashboard${query({types: types.join(","), completed: "1", last, events})}`));
+    rows(type, {from = 0, last} = {}) {
+        return this.list(type, {last, completed: true, from});
+    }
+
+    counts(type) {
+        return this.list(type, {closed: true, last: 1}).then((got) => got.counts);
     }
 
     show(type, n) {

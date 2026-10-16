@@ -169,21 +169,22 @@ export class StandIn {
     list(type, query) {
         const since = query.get("since") ? this.unwalled(Number(query.get("since"))) : 0;
         const before = Number(query.get("before") || 0);
+        const from = Number(query.get("from") || 0);
         const only = (query.get("n") || "").split(",").filter(Boolean).map(Number);
         const last = Number(query.get("last") || PAGE);
         let rows = this.held(type).filter((r) => !r.deleted || since);
         if (!query.get("completed")) rows = rows.filter((r) => !r.completed);
         if (since) rows = rows.filter((r) => r.updated > since);
         if (before) rows = rows.filter((r) => r.n < before);
+        if (from) rows = rows.filter((r) => r.n > from);
         if (only.length) rows = rows.filter((r) => only.includes(r.n));
         rows = rows.sort((a, b) => a.n - b.n);
-        return {rows: rows.slice(-last).map(stripped), more: rows.length > last};
+        return {rows: rows.slice(-last).map(stripped), more: rows.length > last, counts: counts(this.held(type))};
     }
 
     read(parts, query) {
         const [first, second, third] = parts;
         if (parts.length === 1) return this.top(first);
-        if (second === "dashboard") return this.dashboard(query);
         if (second === "events")
             return this.state.events.filter((e) => e.id > Number(query.get("since") || 0)).slice(-Number(query.get("last") || 100));
         if (second === "settings") return this.state.settings;
@@ -203,18 +204,6 @@ export class StandIn {
         const since = this.unwalled(Number(query.get("since") || 0));
         const edits = feed.edits.filter((card) => card.at > since);
         return {cursor: edits.length ? edits.at(-1).at : since, edits, older: false};
-    }
-
-    dashboard(query) {
-        const types = (query.get("types") || "").split(",").filter(Boolean);
-        const events = query.get("events");
-        const got = {
-            rows: Object.fromEntries(
-                types.map((type) => [type, this.list(type, new URLSearchParams({last: query.get("last") || PAGE, completed: "1"}))])
-            ),
-            counts: Object.fromEntries(types.map((type) => [type, counts(this.held(type))])),
-        };
-        return events === null ? got : {...got, events: this.state.events.slice(-Number(events)), settings: this.state.settings};
     }
 
     write(parts, body) {
