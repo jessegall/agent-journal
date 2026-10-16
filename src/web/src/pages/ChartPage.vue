@@ -145,7 +145,7 @@ function fit() {
     const right = Math.max(...nodes.value.map((n) => n.x + CARD.width)) + 40;
     const bottom = Math.max(...nodes.value.map((n) => n.y + heightOf(n))) + 64;
     const scale = Math.min(1, plane.value.clientWidth / (right - left), plane.value.clientHeight / (bottom - top));
-    camera.scale = Math.max(0.4, scale);
+    camera.scale = Math.max(0.25, scale);
     camera.x = (plane.value.clientWidth - (right - left) * camera.scale) / 2 - left * camera.scale;
     camera.y = 24 - top * camera.scale;
 }
@@ -329,7 +329,7 @@ function zoom(event) {
     const box = plane.value.getBoundingClientRect();
     const at = {x: event.clientX - box.left, y: event.clientY - box.top};
     const delta = Math.max(-40, Math.min(40, event.deltaY));
-    const next = Math.min(2, Math.max(0.4, camera.scale * Math.exp(-delta * (event.ctrlKey ? 0.01 : 0.0025))));
+    const next = Math.min(2, Math.max(0.25, camera.scale * Math.exp(-delta * (event.ctrlKey ? 0.01 : 0.0025))));
     camera.x = at.x - ((at.x - camera.x) * next) / camera.scale;
     camera.y = at.y - ((at.y - camera.y) * next) / camera.scale;
     camera.scale = next;
