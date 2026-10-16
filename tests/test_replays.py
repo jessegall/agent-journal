@@ -267,6 +267,43 @@ def test_the_start_workflow_carries_the_inbox_equal_to_the_listener(journals, mo
 TOOL_LISTENERS = ("HoldUnread", "HoldUnanswered", "LogCadence")
 
 
+def tool_uses_with_changed_settings(app, replay: Replay) -> None:
+    """The steps, with the cadences changed: the answer asked for after two uses and held after four; the task named every two edits, the log asked for at three and held at six."""
+    settings = app.container.get(Settings)
+    for key, value in (("messages.nudge_after", 2), ("messages.hold_after", 4), ("tasks.name_every", 2), ("tasks.first_nudge_after", 3), ("tasks.log_after", 6)):
+        settings.set(key, value, Actor.system())
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["message", "send", "one"], USER)
+    console.run(["message", "read", "1"], AGENT)
+    replay.step("message 1 read")
+    for i in range(1, 6):
+        replay.step(f"read {i} while owed", hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[1])
+    console.run(["message", "send", "[!reply:1] here", "--reply-to", "1"], AGENT)
+    replay.step("the reply")
+    for i in range(1, 8):
+        replay.step(f"write {i}", hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[1])
+
+
+def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journals, monkeypatch):
+    with_listener, with_workflow = journals
+    with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtPrompt"))
+    empty_shipped(with_listener, "tool_starting")
+    tool_uses_with_changed_settings(with_listener, left)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtPrompt", *TOOL_LISTENERS))
+    tool_uses_with_changed_settings(with_workflow, right)
+    by_name = {s["name"]: s for s in left.record()}
+    assert by_name["read 1 while owed"]["answer"] == {} and "answer message 1 before you do anything else" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
+    assert "error" in by_name["read 4 while owed"]["answer"] and "error" in by_name["read 5 while owed"]["answer"], "and holds after four"
+    assert "in hand, 2 edits" in str(by_name["write 3"]["answer"]) and "3 edits since you logged task 1: say where it stands" in str(by_name["write 4"]["answer"]) and "in hand, 4 edits" in str(by_name["write 5"]["answer"]) and by_name["write 6"]["answer"] == {} and "error" in by_name["write 7"]["answer"], "the task is named every two edits, the log asked at three and held at six"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    left.freeze("tool_uses_with_changed_settings")
+
+
 def test_tool_about_to_run_as_the_shipped_workflow_equals_the_three_listeners_on_the_inbox(journals, monkeypatch):
     with_listener, with_workflow = journals
     with_listener.runtime().start()
