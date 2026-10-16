@@ -28,6 +28,7 @@ CHECKS = (
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
     ("message_by_user", "Message written by the user?", "the row is a message the user wrote, not the agent"),
     ("tool_reads_their_files", "Tool reads the message's own files?", "the tool about to run reads a file attached to a message read and left unanswered"),
+    ("own_tool", "The agent's own tool use?", "the tool use is the agent's own, not a subagent's"),
     ("auto_mode", "Auto mode on?", "the environment runs in auto mode"),
     ("plan_at_checkpoint", "Plan at a checkpoint?", "a started plan stands at a completed checkpoint phase, its next phase not begun"),
     ("tool_writes", "Tool changes files?", "the tool about to run changes a file or runs a writing command"),

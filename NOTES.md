@@ -691,3 +691,11 @@ File edits are rows since 2026-10-16 in the evening, on the user's word: `Edit` 
 by the edits feature when an editing tool finishes (`features/edits`, blocking so the pane's next poll sees it) and by
 the shell command for the files a part changed; the last five hundred per environment stay (`repositories/edits.py`);
 the edits endpoint reads the rows, so the File edits pane shows the same after a return to the journal.
+
+State changes on the agent's events, 2026-10-16 late: the wait lifted by the agent's own tool use moved from the
+Expecting and Stuck states into their workflows (trigger Tool about to run, check The agent's own tool use, action
+Release), Stuck gaining a shipped workflow of its own; the states keep only their data. What a state class still
+decides on an agent event: Working's bookkeeping of edits and reminders, the owed pauses' refusals, and the word
+from the user that frees any wait, which stays in the engine as the way out of an emptied workflow (task 139).
+The moves the commands make, a task started, a worker dispatched, a question asked, a sequence stepped, stay
+theirs. A workflow's move enters idle, or lays expecting or stuck over the agent's state (task 200).

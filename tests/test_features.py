@@ -1644,7 +1644,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Idle", "Working", "Awaiting a worker", "Waiting on a question", "Expecting something outside", "Running a sequence"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Idle", "Working", "Awaiting a worker", "Waiting on a question", "Expecting something outside", "Stuck", "Running a sequence"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []

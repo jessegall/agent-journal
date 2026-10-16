@@ -511,5 +511,5 @@ def test_the_page_refuses_a_second_workflow_of_the_older_shape_on_an_event_and_a
     status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
     assert status >= 400 and "one workflow per event" in json.dumps(body)
     status, listed = call(server, "GET", "/journal/chart")
-    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 8, "each answers its own event or its own state"
+    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 9, "each answers its own event or its own state"
 

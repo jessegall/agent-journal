@@ -181,6 +181,10 @@ class Checks:
         from journal.features.tasks.feature import Tasks
         return bool(self.settings.option(Tasks.AUTO))
 
+    def own_tool(self, ctx: Context) -> bool:
+        """The tool use is the agent's own, not a subagent's: a subagent's reads and writes are not the agent working again."""
+        return isinstance(ctx.event, ToolStarting) and not ctx.event.subagent
+
     def tool_writes(self, ctx: Context) -> bool:
         event = ctx.event
         return isinstance(event, ToolStarting) and self.providers.named(ctx.provider).writes(event.tool, event.input)

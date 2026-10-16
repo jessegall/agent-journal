@@ -13,11 +13,12 @@ WORKING_TITLE = "Working"
 AWAITING_TITLE = "Awaiting a worker"
 WAITING_TITLE = "Waiting on a question"
 EXPECTING_TITLE = "Expecting something outside"
+STUCK_TITLE = "Stuck"
 SEQUENCE_TITLE = "Running a sequence"
 KEPT = " (kept from the older shape)"
 FORMER_BASE = "base"
 """The state name the workflow for what every state shared was bound to, before each state's workflow carried it."""
-DRAWINGS_VERSION = 3
+DRAWINGS_VERSION = 4
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
@@ -58,6 +59,7 @@ class ShippedChart(Seed):
             "awaiting": Drawing(AWAITING_TITLE, self.draw_awaiting),
             "waiting": Drawing(WAITING_TITLE, self.draw_waiting),
             "expecting": Drawing(EXPECTING_TITLE, self.draw_expecting),
+            "stuck": Drawing(STUCK_TITLE, self.draw_stuck),
             "running_sequence": Drawing(SEQUENCE_TITLE, self.draw_running_sequence),
         }
         """The states the journal ships a workflow for, each with its drawing."""
@@ -282,12 +284,26 @@ class ShippedChart(Seed):
         self.draw_shared(chart, left=640)
 
     def draw_expecting(self, chart: Chart) -> None:
-        """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long; the wait lifts on its own next tool use, which is the state's move."""
+        """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long; its own next tool use is working again and lifts the wait."""
         tick = self.trigger(chart, "ticked", x=400, y=0)
         quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "300", x=400, y=92)
         check = self.node(chart, NodeKind.ACTION, "say", CHECK_AWAITED, x=400, y=184)
         self.line(tick, quiet, THEN)
         self.line(quiet, check, YES)
+        self.draw_working_again(chart, x=160)
+
+    def draw_stuck(self, chart: Chart) -> None:
+        """An agent that said it is truly stuck: nothing is said until its own next tool use, which is working again and lifts the wait; a word from the user lifts it too, as any wait."""
+        self.draw_working_again(chart, x=160)
+        self.draw_shared(chart, left=640)
+
+    def draw_working_again(self, chart: Chart, x: int) -> None:
+        """The agent's own tool use ends a wait on something outside: the wait is released, with no line."""
+        tool = self.trigger(chart, "tool_starting", x=x, y=0)
+        own = self.node(chart, NodeKind.CHECK, "own_tool", x=x, y=92)
+        back = self.node(chart, NodeKind.ACTION, "release", x=x, y=184)
+        self.line(tool, own, THEN)
+        self.line(own, back, YES)
         self.draw_shared(chart, left=640)
 
     def draw_running_sequence(self, chart: Chart) -> None:

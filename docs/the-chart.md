@@ -8,7 +8,7 @@ the agent, and should a journal somehow hold two, the older one answers and the 
 
 The walk reads the agent's state once, right after the engine's machine has answered the event and before the engine's
 holds, and every check and filler reads that same state; so a tool use that lifts a wait is walked as Working, and a
-session start is walked as the state the agent resumes in, before the briefing's hold takes it. The trace of a walk names the state it read and the workflows it ran, in the order they run: the
+session start is walked as the state the agent resumes in, before the briefing's hold takes it. A release or a move inside the walk hands the event on to the new state's workflow, once, so a tool use that lifts a wait is walked as working too. The trace of a walk names the state it ended in and the workflows it ran, in the order they run: the
 workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
@@ -42,7 +42,9 @@ namings; a read message answered before the next tool, held after so many uses. 
 - **Awaiting a worker**: a worker reporting or stopping is told, and the agent is released when its last worker
   is back.
 - **Waiting on a question**: the answer releases the agent, told how to read it.
-- **Expecting something outside**: after five quiet minutes the agent is told to check what it awaits.
+- **Expecting something outside**: after five quiet minutes the agent is told to check what it awaits; its own
+  next tool use is working again and releases it.
+- **Stuck**: nothing is said until the agent's own next tool use, which releases it.
 - **Running a sequence**: the step in hand said at a stop.
 
 A workflow of your own is bound to one event and runs beside them; it is made with New workflow or `journal chart new`.

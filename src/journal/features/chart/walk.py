@@ -1,4 +1,5 @@
 import re
+from dataclasses import replace
 
 from journal.events.agent.ticked import Ticked
 from journal.events.event import Event
@@ -9,6 +10,7 @@ from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
 from journal.hooks.decision import Decision
 from journal.engine.agent_state import AgentState
+from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.actor import Actor
@@ -31,12 +33,12 @@ FAILED = "walk_failed"
 class Walk:
     """The engine walking every workflow for one event: each trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The workflows are read fresh each time, so an edit applies at the next event."""
 
-    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue) -> None:
-        self.charts, self.checks, self.actions, self.entries, self.states = charts, checks, actions, entries, states
+    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine) -> None:
+        self.charts, self.checks, self.actions, self.entries, self.states, self.machine = charts, checks, actions, entries, states, machine
 
     def dry(self, fillers, checks: Checks) -> "Walk":
         """The same walk with nothing done: each action tells what it would do, and the checks given answer, assumed or live."""
-        return Walk(self.charts, checks, DryActions(fillers), self.entries, self.states)
+        return Walk(self.charts, checks, DryActions(fillers), self.entries, self.states, self.machine)
 
     def on(self, ctx: Context) -> Decision:
         return self.on_with_trace(ctx, [])
@@ -49,9 +51,24 @@ class Walk:
         for graph in graphs:
             for start in graph.triggers.get(key, ()):
                 decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
+        moved = self.moved_to(ctx)
+        if moved is not None:
+            for chart in [c for c in self.workflows_for(replace(ctx, state=moved), key) if c not in workflows]:
+                graph = self.charts.graph(chart)
+                graphs.append(graph)
+                workflows.append(chart)
+                for start in graph.triggers.get(key, ()):
+                    decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, replace(ctx, state=moved), passed))
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in workflows], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": (moved or ctx.state).name if ctx.state else "", "workflows": [c.id for c in workflows], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision
+
+    def moved_to(self, ctx: Context) -> AgentState | None:
+        """The state a release or a move inside the walk left the agent in, when it differs from the one the walk read: the event is handed on to that state's workflow once, so a tool use that lifts a wait is walked as working too; None when the agent stands where it stood, or the walk is dry or about no agent."""
+        if not ctx.session or not ctx.state or isinstance(self.actions, DryActions):
+            return None
+        now = self.machine.current(ctx.session)
+        return now if now.name != ctx.state.name else None
 
     @staticmethod
     def worth_recording(event: Event, graphs: list[Graph], passed: list) -> bool:
