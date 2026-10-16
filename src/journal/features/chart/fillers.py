@@ -10,6 +10,10 @@ from journal.models.question import Question
 from journal.models.task_state import TaskState
 from journal.models.worker import Worker
 from journal.repositories.counts import Counts
+from journal.features.registry import Registry
+from journal.features.skills.requiring import Requiring
+from journal.features.skills.skill_files import SkillFiles
+from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
@@ -21,13 +25,14 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
+        self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
 
     @classmethod
     def listed(cls) -> list[dict]:
         """Every placeholder a node's text may name, with what it stands for, for the page's insert panel."""
-        return [{"key": "{{" + name + "}}", "about": method.__doc__} for name, method in vars(cls).items() if not name.startswith("_") and name not in ("fill", "listed", "state", "plan_at_checkpoint") and method.__doc__]
+        return [{"key": "{{" + name + "}}", "about": method.__doc__} for name, method in vars(cls).items() if not name.startswith("_") and name not in ("fill", "listed", "state", "agent", "plan_at_checkpoint") and method.__doc__]
 
     def fill(self, text: str, ctx: Context) -> str:
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
@@ -145,6 +150,33 @@ class Fillers:
 
     def state(self, ctx: Context):
         return ctx.state
+
+    def agent(self, ctx: Context):
+        return self.agents.for_session(ctx.session) if ctx.session else None
+
+    def awaiting(self, ctx: Context) -> str:
+        """What the agent owes the journal, as its row says: a look at what is in flight, a decision at a context mark, a skill to be read."""
+        agent = self.agent(ctx)
+        if agent is None:
+            return ""
+        owed = []
+        if not agent.oriented:
+            owed.append("a look at what is in flight here")
+        if agent.mark_owed:
+            owed.append(f"a decision at the context mark, {agent.mark_owed}% full")
+        owed += [f"the {name} skill to be read" for name in self.requiring.owed_names(agent)]
+        return " and ".join(owed)
+
+    def skill_owed(self, ctx: Context) -> str:
+        """The first skill the agent owes a read of, by name."""
+        agent = self.agent(ctx)
+        names = self.requiring.owed_names(agent) if agent else []
+        return names[0] if names else ""
+
+    def skill_path(self, ctx: Context) -> str:
+        """Where the first owed skill's file is, from the project's root."""
+        skill = self.registry.skill_named(self.skill_owed(ctx))
+        return str(self.files.path(skill).relative_to(self.files.config.root)) if skill else ""
 
     def parked_tasks(self, ctx: Context) -> str:
         """The parked tasks, each with why it was parked."""

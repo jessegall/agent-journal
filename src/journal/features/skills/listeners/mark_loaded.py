@@ -2,6 +2,7 @@ from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.features.agent_listener import AgentListener
+from journal.features.skills.requiring import Requiring
 from journal.features.skills.states.loading_skill import LoadingSkill
 from journal.features.skills.skill_files import SkillFiles
 from journal.models.actor import Actor
@@ -13,15 +14,16 @@ class MarkLoaded(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, agents: Agents, files: SkillFiles, cards: Cards) -> None:
-        self.machine, self.agents, self.files, self.cards = machine, agents, files, cards
+    def __init__(self, machine: Machine, agents: Agents, files: SkillFiles, cards: Cards, requiring: Requiring) -> None:
+        self.machine, self.agents, self.files, self.cards, self.requiring = machine, agents, files, cards, requiring
 
     def handle(self, event: ToolFinished) -> None:
         skill = self.files.skill_read(event.read_path) if event.read_path else self.files.skill_in_folder(event.skill_loaded) if event.skill_loaded else None
         if skill is None:
             return
         agent = self.machine.agent(event.session, event.environment_id)
-        self.agents.save(agent.with_(skills_loaded={**(agent.skills_loaded or {}), skill.name: self.files.hash_of(skill)}), Actor.system())
+        self.agents.touch(agent, Actor.system(), skills_loaded={**(agent.skills_loaded or {}), skill.name: self.files.hash_of(skill)})
+        self.requiring.paid(agent, skill)
         self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good")
         current = self.machine.current(event.session)
         if isinstance(current, LoadingSkill) and current.is_(skill.folder):

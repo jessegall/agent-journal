@@ -63,6 +63,17 @@ class Repository(Generic[M]):
             self.bus.dispatch(Saved(model=saved, by=by))
             return saved
 
+    def touch(self, row: M, by: Actor, **fields) -> M:
+        """The named columns alone written, stamped, from the row as it stands in the database: two threads each touching their own column never write over each other."""
+        with self.connection.transaction():
+            was = self.find(row.id)
+            stamped = was.with_(**fields, updated_at=self._now(), updated_by=by)
+            names = [*fields, "updated_at", "updated_by"]
+            values = tuple(self._column(name).to_sql(getattr(stamped, name)) for name in names)
+            self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
+            self.bus.dispatch(Updated(model=stamped, by=by, was=was))
+            return stamped
+
     def delete(self, row: M, by: Actor) -> None:
         with self.connection.transaction():
             self.bus.dispatch(Deleting(model=row, by=by))

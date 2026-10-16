@@ -2920,3 +2920,42 @@ def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
     first = picture()
     seed.run()
     assert picture() == first, "a boot on a journal already seeded draws, resets, releases and strips nothing: the second run is a no-op"
+
+
+def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the_skills_owed(skilled):
+    from journal.features.chart.context import Context
+    from journal.features.chart.fillers import Fillers
+    from journal.features.skills.requiring import Requiring
+    from journal.repositories.agents import Agents
+    app = skilled
+    agents, requiring, fillers = app.container.get(Agents), app.container.get(Requiring), app.container.get(Fillers)
+    row = lambda: agents.for_session("s1")
+    from journal.events.agent.idle import Idle
+    at = Context(event=Idle(session="s1", environment_id=1), session="s1", environment_id=1)
+    hook(app, "SessionStart")
+    assert row().oriented is False and requiring.owed_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
+    assert fillers.fill("{{awaiting}} / {{skill_owed}} / {{skill_path}}", at) == "a look at what is in flight here and the journal skill to be read / journal / .claude/skills/journal/SKILL.md"
+    read_skill(app, "journal")
+    assert requiring.owed_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
+    app.console().run(["environment", "here"], AGENT)
+    assert row().oriented is True and fillers.fill("{{awaiting}}", at) == "", "the look sets oriented and nothing is owed"
+    hook(app, "UserPromptSubmit", prompt="make me a plan for the release")
+    assert requiring.owed_names(row()) == ["plans"] and fillers.fill("{{skill_path}}", at) == ".claude/skills/journal-plans/SKILL.md", "a prompt naming plans: the plans skill owed, with its path"
+    read_skill(app, "journal-plans")
+    assert requiring.owed_names(row()) == []
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    assert requiring.owed_names(row()) == ["tasks"], "entering Working owes its feature's skill"
+    read_skill(app, "journal-tasks")
+    context(app, 30)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    said = fillers.fill("{{awaiting}}", at).split(" and ")
+    assert row().mark_owed == 25 and row().context_mark == 25 and said[0] == "a decision at the context mark, 25% full" and said[1:] == [f"the {n} skill to be read" for n in requiring.owed_names(row())], "the crossing sets the mark owed; the mark's own skill is owed beside it"
+    app.console().run(["fact", "create", "the login is flaky"], AGENT)
+    assert row().mark_owed == 0 and row().context_mark == 25, "the fact clears the mark owed and keeps the mark taken"
+    context(app, 55)
+    hook(app, "Stop")
+    assert row().mark_owed == 50
+    app.console().run(["nothing", "survives", "all logged"], AGENT)
+    assert row().mark_owed == 0, "nothing survives clears it too"
+    status, body = hook(app, "SessionStart", source="compact")
+    assert row().oriented is False and row().mark_owed == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"

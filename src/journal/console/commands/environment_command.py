@@ -99,6 +99,7 @@ class EnvironmentCommand(Command):
             current = self.machine.current(where.session)
         except NotFound:
             return
+        self.agents.touch(self.agents.for_session(where.session), where.actor, oriented=True)
         if isinstance(current, Orienting):
             self.machine.move(where.session, self.scope.id, current.back().to)
 

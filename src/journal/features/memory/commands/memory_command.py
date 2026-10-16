@@ -5,6 +5,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.memory.states.at_mark import AtMark
+from journal.repositories.agents import Agents
 from journal.repositories.repository import Repository
 from journal.repositories.scope import Scope
 
@@ -15,8 +16,8 @@ class MemoryCommand(Command):
     repository: Repository
     scoped: ClassVar[bool] = True
 
-    def __init__(self, machine: Machine, scope: Scope) -> None:
-        self.machine, self.scope = machine, scope
+    def __init__(self, machine: Machine, scope: Scope, agents: Agents) -> None:
+        self.machine, self.scope, self.agents = machine, scope, agents
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", f"record a {self.noun}")
@@ -54,7 +55,7 @@ class MemoryCommand(Command):
         """An agent held at a mark has decided; it goes back to what it was doing."""
         if not where.session:
             return
-        agent = self.machine.agent(where.session, self.scope.id)
+        agent = self.agents.touch(self.machine.agent(where.session, self.scope.id), where.actor, mark_owed=0)
         state = self.machine.states.named(agent.state, agent.data)
         if isinstance(state, AtMark):
             self.machine.move(where.session, agent.environment_id, state.back().to)

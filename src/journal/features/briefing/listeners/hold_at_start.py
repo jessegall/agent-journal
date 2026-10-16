@@ -4,6 +4,8 @@ from journal.events.agent.session_started import SessionStarted
 from journal.features.agent_listener import AgentListener
 from journal.features.briefing.states.orienting import Orienting
 from journal.hooks.decision import Decision
+from journal.models.actor import Actor
+from journal.repositories.agents import Agents
 
 
 class HoldAtStart(AgentListener[SessionStarted]):
@@ -11,12 +13,12 @@ class HoldAtStart(AgentListener[SessionStarted]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger) -> None:
-        self.machine, self.nudger = machine, nudger
+    def __init__(self, machine: Machine, nudger: Nudger, agents: Agents) -> None:
+        self.machine, self.nudger, self.agents = machine, nudger, agents
 
     def handle(self, event: SessionStarted) -> Decision | None:
         from journal.features.briefing.feature import Briefing
-        agent = self.machine.agent(event.session, event.environment_id)
+        agent = self.agents.touch(self.machine.agent(event.session, event.environment_id), Actor.system(), oriented=False)
         current = self.machine.states.named(agent.state, agent.data)
         if not isinstance(current, Orienting):
             self.machine.move(event.session, event.environment_id, Orienting.leaving(current))

@@ -25,7 +25,7 @@ class HoldAtMark(AgentListener[AgentEvent]):
         if not due or isinstance(self.machine.current(event.session), AtMark):
             return None
         mark = max(due)
-        self.agents.save(agent.with_(context_mark=mark), Actor.system())
+        self.agents.touch(agent, Actor.system(), context_mark=mark, mark_owed=mark)
         current = self.machine.states.named(agent.state, agent.data)
         self.machine.move(event.session, event.environment_id, AtMark.leaving(current, mark=mark))
         line = self.nudger.say(agent, Memory.DECIDE.about(percent=mark))
