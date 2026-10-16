@@ -1,4 +1,5 @@
 from journal.engine.agent_state import AgentState
+from journal.engine.states.paused import Paused
 from journal.engine.states.ended import Ended
 from journal.features.registry import Registry
 
@@ -17,6 +18,10 @@ class StatesCatalogue:
 
     def names(self) -> list[str]:
         return sorted(self._states)
+
+    def waits(self) -> list[str]:
+        """The states that wait for something outside and are left only by a release: a workflow for one of them must hold one."""
+        return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.owed_by_agent)
 
     def named(self, name: str, data: dict) -> AgentState:
         state = self._states.get(name) or self._states["idle"]

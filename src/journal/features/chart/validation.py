@@ -7,6 +7,12 @@ from journal.repositories.charts import NO, THEN, YES, Charts
 TEXT_LIMIT = 500
 """A node's text becomes a prompt or a typed line: this many characters at most."""
 
+HOLDS = ("hold", "block_stop")
+"""The actions that stop the agent until what their message names is done."""
+
+RELEASES = ("release", "move_to")
+"""The actions that take a waiting agent out of its wait."""
+
 
 class Validation:
     """What makes a workflow wrong, found before it is saved: a node the catalogue does not know, more than one trigger, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
@@ -39,7 +45,37 @@ class Validation:
                 continue
             faults += self.port_fault(source, target, line.get("port", THEN))
         faults += self.check_faults(nodes, lines)
+        faults += self.hold_faults(nodes, lines)
         faults += self.cycle_faults(nodes, lines)
+        return faults
+
+    def warnings(self, chart: Chart) -> list[str]:
+        """What a saved workflow should still hear about: one for a state that waits on something outside, with nothing in it to release the agent."""
+        if chart.state not in self.states.waits():
+            return []
+        if any(n.kind == NodeKind.ACTION and n.key in RELEASES for n in self.charts.nodes_of(chart)):
+            return []
+        return [f"nothing in this workflow releases the agent: without a release or a move, an agent {chart.state} stays so until you release it by hand"]
+
+    @staticmethod
+    def hold_faults(nodes: list[dict], lines: list[dict]) -> list[str]:
+        """A hold that a trigger reaches through no check would hold the agent at every one of that event: the agent never gets past it."""
+        by_id = {str(n.get("id", "")): n for n in nodes}
+        then = {}
+        for line in lines:
+            if line.get("port", THEN) == THEN:
+                then.setdefault(str(line.get("from")), []).append(str(line.get("to")))
+        faults = []
+        for trigger in (n for n in nodes if n.get("kind") == NodeKind.TRIGGER):
+            ahead, seen = list(then.get(str(trigger.get("id", "")), [])), set()
+            while ahead:
+                node = by_id.get(ahead.pop())
+                if not node or str(node.get("id", "")) in seen or node.get("kind") != NodeKind.ACTION:
+                    continue
+                seen.add(str(node.get("id", "")))
+                if node.get("key") in HOLDS:
+                    faults.append(f"action {node.get('id')} holds the agent at every {trigger.get('key')}: put a check before it, or the agent never gets past")
+                ahead += then.get(str(node.get("id", "")), [])
         return faults
 
     @staticmethod

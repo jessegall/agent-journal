@@ -465,6 +465,19 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     assert [r["n"] for r in older["rows"]] == list(range(1, 11)) and not older["more"]
 
 
+def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no_release_is_flagged(server):
+    status, read = call(server, "GET", "/journal/chart")
+    awaiting = next(w for w in read["workflows"] if w["state"] == "awaiting")
+    assert status == 200 and awaiting["warnings"] == [], "the shipped wait releases the agent"
+    nodes = [{"id": "t", "kind": "trigger", "key": "tool_starting"}, {"id": "h", "kind": "action", "key": "hold", "text": "wait"}]
+    status, body = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "h"}]})
+    assert status == 409 and "action h holds the agent at every tool_starting: put a check before it" in body["error"]
+    nodes = [{"id": "t", "kind": "trigger", "key": "tool_starting"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
+    status, saved = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "s"}]})
+    assert status == 200 and saved["warnings"] == ["nothing in this workflow releases the agent: without a release or a move, an agent awaiting stays so until you release it by hand"]
+
+
+
 def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(server):
     status, read = call(server, "GET", "/journal/chart")
     base = next(w for w in read["workflows"] if w["state"] == "base")

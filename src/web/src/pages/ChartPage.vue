@@ -110,6 +110,7 @@ function take(got) {
     past.value = [];
     selected.value = null;
     loaded.value = true;
+    notice.value = got.warnings.join(" ");
 }
 
 // the whole workflow in view at first, as large as the canvas allows and never larger than life
