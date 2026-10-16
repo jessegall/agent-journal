@@ -34,8 +34,15 @@ class ChartController:
     def runs(self, request: Request) -> Response:
         """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
         titles = {c.id: c.title for c in self.charts.all()}
-        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]], "change": self.change_words(run)} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
+        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]], "change": self.change_words(run), "answer": self.answer_words(run)} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
+
+    @staticmethod
+    def answer_words(run: dict) -> str:
+        """The answer the walk gave the agent, in words: held with the line, or the line said."""
+        if not run["allowed"]:
+            return f"Held: {run['said']}" if run["said"] else "Held"
+        return f"Said: {run['said']}" if run["said"] else ""
 
     def change_words(self, run: dict) -> str:
         """A state change in words: by the step that moved the agent, or the engine's own move at a row event, before the list ran."""
@@ -116,7 +123,9 @@ class ChartController:
         environment = self.environments.named(request.body.get("environment", "main")).id
         body = request.body
         assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"), state=body.get("state"), provider=body.get("provider"))
-        return Response.json(self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed))
+        ran = self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed)
+        titles = {c.id: c.title for c in self.charts.all()}
+        return Response.json({**ran, "titles": [titles.get(n, f"workflow {n}") for n in ran["workflows"]]})
 
     def reset(self, request: Request) -> Response:
         chart = self.charts.find(request.number("id"))
@@ -135,10 +144,11 @@ class ChartController:
         return [{**asdict(e), "kind": e.kind.value, "tried": self.trial.stands_in_for(e.key)} for e in self.catalogue.all()]
 
     def drawn(self, chart: Chart) -> dict:
+        runs = self.traces.node_runs(chart)
         return {
             "state": chart.state,
             **self.named(chart), "shipped": chart.shipped,
-            "nodes": [{"id": n.id, "kind": n.kind.value, "key": n.key, "text": n.text, "x": n.x, "y": n.y, "shipped": n.shipped, "locked": n.locked} for n in self.charts.nodes_of(chart)],
+            "nodes": [{"id": n.id, "kind": n.kind.value, "key": n.key, "text": n.text, "x": n.x, "y": n.y, "shipped": n.shipped, "locked": n.locked, **runs.get(n.id, {"runs": 0, "last": 0})} for n in self.charts.nodes_of(chart)],
             "lines": [{"from": line.source.id, "to": line.target.id, "port": line.kind} for line in self.charts.lines_of(chart)],
             "catalogue": self.entries(),
         }

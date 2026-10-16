@@ -36,8 +36,16 @@ class Traces:
         runs = []
         for walk in self.entries.of_kind(WALKED, LOOK_BACK)[:limit]:
             at = walk.created_at.timestamp()
-            runs.append({"at": at, "workflows": walk.data.get("workflows", []), "nodes": walk.data.get("nodes", []), "trigger": self.trigger_title(walk.data["trigger"]), "event": walk.data["trigger"], "state": walk.data.get("state", ""), "started": walk.data.get("started", walk.data.get("state", "")), "moved_to": walk.data.get("moved_to", ""), "moved_by": walk.data.get("moved_by", []), "row": walk.data.get("row", 0), "said": walk.data.get("said", ""),
+            runs.append({"at": at, "workflows": walk.data.get("workflows", []), "nodes": walk.data.get("nodes", []), "trigger": self.trigger_title(walk.data["trigger"]), "event": walk.data["trigger"], "state": walk.data.get("state", ""), "started": walk.data.get("started", walk.data.get("state", "")), "moved_to": walk.data.get("moved_to", ""), "moved_by": walk.data.get("moved_by", []), "row": walk.data.get("row", 0), "read": walk.data.get("read", {}), "allowed": walk.data.get("allowed", True), "said": walk.data.get("said", ""),
                          "failed": any(abs(f.created_at.timestamp() - at) < 1 and f.data.get("workflow") in walk.data.get("workflows", []) for f in failures)})
+        return runs
+
+    def node_runs(self, chart: Chart) -> dict[int, dict]:
+        """How often each of the workflow's nodes ran and when last, from the walks on record."""
+        own, runs = {node.id for node in self.charts.nodes_of(chart)}, {}
+        for walk in self.entries.of_kind(WALKED, LOOK_BACK):
+            for n in set(walk.data.get("nodes", [])) & own:
+                runs.setdefault(n, {"runs": 0, "last": walk.created_at.timestamp()})["runs"] += 1
         return runs
 
     def trigger_title(self, key: str) -> str:

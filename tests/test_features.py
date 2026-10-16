@@ -325,7 +325,7 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"] and "in flight" not in body["error"], "the guards hold the write while a skill is owed: the first hold wins"
     read_skill(app, "journal")
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
-    assert status == 409 and "read what is in flight here before any other write: journal environment here" in body["error"], "the skill read, the start's look at what is in flight is still owed"
+    assert status == 409 and "before your first write, run journal environment here: it lists the task in hand, the open tasks, the facts and the reminders" in body["error"], "the skill read, the start's look at what is in flight is still owed"
     app.console().run(["environment", "here"], AGENT)
     assert machine.current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
@@ -675,7 +675,7 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["message", "send", "hi"], USER)
     status, body = hook(app, "SessionStart", source="compact")
-    assert "read what is in flight here before any other write" in body["hookSpecificOutput"]["additionalContext"]
+    assert "before your first write, run journal environment here" in body["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "journal environment here" in body["error"]
     shown = console.run(["environment", "here"], AGENT).out

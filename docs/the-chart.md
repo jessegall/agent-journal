@@ -47,7 +47,7 @@ before the next tool, held after so many uses. Every Always or Guards workflow a
 context mark, locked: the context crossing a quarter, a half or four fifths holds the agent at it, told to decide
 what survives, and the mark owed is a fact on its row until it does. Then the conduct for every
 state, one Always workflow per event, bound to no state and placed after the locked ones: Always at Session starts
-requires the journal skill (locked), names the inbox and marks the agent unoriented (locked), owing the look that
+requires the journal skill (locked), names the inbox and requires a look at what is in flight (locked), owing the look that
 `journal environment here` pays, Always at Prompt sent requires the skills a prompt names
 (locked) and names the inbox, Always at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox, Always at A message is created types a message
 that comes to the agent and starts its counts of tool uses and inbox namings, Always at A message is updated starts
@@ -138,7 +138,11 @@ nearest state's in the lineage, numbered by their place in the whole list; dragg
 workflow at the foot starts one at this event, always or for one state, at the last place. Above the list, in grey,
 the moves the engine makes itself at this event before the list runs, such as the journal moving the agent to
 Working when it starts a task, or a prompt freeing a wait: fixed lines, which no workflow edits. Recent runs names a
-state change in words, by the step that moved the agent or the journal's own move that came first. A mark says the one
+state change in words, by the step that moved the agent or the journal's own move that came first, and the answer
+the agent was given, said or held. On the canvas each card says how often it ran, and a count card carries its own
+number in its title. Opening a run lights its path and, on each count card it passed, the number the check read.
+Test run says which workflows it would run, in order, where it would stop, and reads the counts as the live walk
+would, a count started or counted on the dry path included. A mark says the one
 thing that sets a workflow apart: nothing for a default, a diamond for one changed or made by you, a crossed ring
 for one turned off, a red ring when its last run failed, a dash for none. Under the title the status and when the
 workflow runs, when it last ran and what it said, the last step that failed since, and the warning of a wait

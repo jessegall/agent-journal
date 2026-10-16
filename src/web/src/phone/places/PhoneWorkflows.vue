@@ -304,7 +304,7 @@ const test = () =>
         const ran = await api.chartTry({
             trigger: pickedEvent.value,
             environment: "",
-            state: currentWorkflow.value ? currentWorkflow.value.state : "",
+            ...(currentWorkflow.value && currentWorkflow.value.state ? {state: currentWorkflow.value.state} : {}),
         });
         trial.value = ran;
     });

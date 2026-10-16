@@ -3,6 +3,8 @@ import {ago} from "../format/time.js";
 import {overlapping, tidy} from "../domain/tidy.js";
 import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
 import {fixedLinesOf, markOf, pairs, statusOf} from "../domain/workflowPairs.js";
+import {nodeRunWords, readWords} from "../domain/workflowRuns.js";
+import {cardTitle} from "../domain/cardTitle.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -473,22 +475,26 @@ async function openRun(run) {
     if (!ran) return;
     await pick(ran.event, ran.id);
     lit.value = run.nodes;
+    litRead.value = run.read || {};
 }
 const test = () =>
     act("try", async () => {
         const ran = await api.chartTry({
             trigger: pickedEvent.value,
             environment: "",
-            state: currentWorkflow.value ? currentWorkflow.value.state : "",
+            ...(currentWorkflow.value && currentWorkflow.value.state ? {state: currentWorkflow.value.state} : {}),
         });
         trial.value = ran;
         lit.value = ran.nodes;
+        litRead.value = ran.read || {};
     });
 const trialWords = computed(() => {
     const ran = trial.value;
     if (!ran) return "";
     const would = ran.would.length ? ran.would.join(" ") : "the journal would do nothing.";
-    return `Test run: ${would}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""}`;
+    const order = ran.titles && ran.titles.length ? ` It would run ${ran.titles.join(", then ")}.` : "";
+    const stopped = ran.stopped_at ? ` It would stop at step ${ran.stopped_at}.` : "";
+    return `Test run: ${would}${order}${stopped}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""}`;
 });
 const states = ref([]);
 const pickedEvent = ref("idle");
@@ -499,6 +505,7 @@ const fixedLines = computed(() => fixedLinesOf(fixed.value, pickedEvent.value));
 const faults = ref([]);
 const conflict = ref(null);
 const lit = ref([]);
+const litRead = ref({});
 const trial = ref(null);
 const leaving = ref(null);
 const listsHidden = ref(false);
@@ -885,6 +892,9 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     changes.
                 </p>
                 <p v-if="trialWords" class="chart-trace">{{ trialWords }}</p>
+                <p v-if="currentWorkflow && !unlocked && !entries[`trigger:${pickedEvent}`]?.tried" class="chart-trace">
+                    Test run cannot stand in for {{ eventTitle.toLowerCase() }}: no trial of this event is possible from the rows.
+                </p>
                 <p v-if="stayOn(currentWorkflow)" class="chart-trace">{{ stayOn(currentWorkflow) }}</p>
                 <p v-if="selectedLocked" class="chart-trace">{{ LOCK_WHY }} {{ LOCK_RULE }}</p>
                 <p v-else-if="walkWords" class="chart-trace">{{ walkWords }}</p>
@@ -933,6 +943,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 <span :class="['chart-glyph', node.kind]" />
                                 <span>{{ KIND[node.kind] }}</span>
                                 <Icon v-if="node.locked" name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
+                                <span v-if="nodeRunWords(node)" class="chart-node-runs" :title="node.last ? `last ${ago(node.last)}` : ''">
+                                    {{ nodeRunWords(node) }}
+                                </span>
+                                <span v-if="isLit(node.id) && readWords(litRead, node.id)" class="chart-node-read">
+                                    {{ readWords(litRead, node.id) }}
+                                </span>
                                 <button
                                     v-if="selected === node.id && !node.locked"
                                     type="button"
@@ -944,7 +960,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                     <Icon name="close" :size="12" />
                                 </button>
                             </div>
-                            <div class="chart-node-title" :title="entryOf(node).about">{{ entryOf(node).title }}</div>
+                            <div class="chart-node-title" :title="entryOf(node).about">{{ cardTitle(entryOf(node), node) }}</div>
                             <template v-if="entryOf(node).takes_text">
                                 <button
                                     v-if="node.kind === 'action'"
@@ -1071,7 +1087,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                             </span>
                             <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
                             <span v-if="run.change" class="chart-run-said">{{ run.change }}</span>
-                            <span v-if="run.said" class="chart-run-said">{{ run.said }}</span>
+                            <span v-if="run.answer" class="chart-run-said">{{ run.answer }}</span>
                         </button>
                     </li>
                 </ul>
@@ -1317,6 +1333,17 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 .chart-node-lock {
     flex: none;
     color: var(--text-3);
+}
+.chart-node-runs,
+.chart-node-read {
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+.chart-node-read {
+    margin-left: 6px;
+    color: var(--accent);
 }
 .chart-node.locked .chart-node-text:disabled {
     opacity: 0.8;

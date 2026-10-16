@@ -6,7 +6,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
 from journal.features.chart.actions import Actions
-from journal.features.chart.checks import Checks
+from journal.features.chart.checks import COUNT_CHECKS, Checks
 from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
 from journal.features.skills.skill_files import SkillFiles
@@ -40,9 +40,9 @@ class Walk:
     def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine, files: SkillFiles) -> None:
         self.charts, self.checks, self.actions, self.entries, self.states, self.machine, self.files = charts, checks, actions, entries, states, machine, files
 
-    def dry(self, fillers, checks: Checks) -> "Walk":
-        """The same walk with nothing done: each action tells what it would do, and the checks given answer, assumed or live."""
-        return Walk(self.charts, checks, DryActions(fillers), self.entries, self.states, self.machine, self.files)
+    def dry(self, fillers, checks: Checks, ledger: dict) -> "Walk":
+        """The same walk with nothing done: each action tells what it would do, the checks given answer, assumed or live, and the counts the dry walk makes are read through the ledger shared with them."""
+        return Walk(self.charts, checks, DryActions(fillers, ledger), self.entries, self.states, self.machine, self.files)
 
     def on(self, ctx: Context) -> Decision:
         return self.floored(ctx, self.on_with_trace(ctx, []))
@@ -61,6 +61,7 @@ class Walk:
         while queue:
             chart = queue.pop(0)
             walked.append(chart)
+            ctx.walked.append(chart.id)
             graph = self.charts.graph(chart)
             graphs.append(graph)
             moves_before = len(ctx.moves)
@@ -72,7 +73,7 @@ class Walk:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
                 queue = [c for c in self.workflows_for(ctx, key) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, "read": {str(k): v for k, v in ctx.read.items()}}), Actor.system())
         return decision
 
     @staticmethod
@@ -123,6 +124,8 @@ class Walk:
     def step(self, node: Node, ctx: Context, decision: Decision) -> tuple[str, Decision]:
         """One node: a check answers with the port to leave by, an action acts and leaves by then, a trigger leaves by then. The first hold of the event wins and a later one is recorded unanswered; a second move in one event is refused."""
         if node.kind == NodeKind.CHECK:
+            if node.key in COUNT_CHECKS:
+                ctx.read[node.id] = self.checks.count_of(ctx, node.text.strip().partition(" ")[0])
             return (YES if self.checks.answer(node.key, ctx, node.text) else NO), decision
         if node.kind != NodeKind.ACTION:
             return THEN, decision

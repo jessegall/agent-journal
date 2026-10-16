@@ -24,4 +24,8 @@ class Context:
     stopped: list = field(default_factory=list)
     """The Stop here node that ended this event's walk, when one did: nothing after it ran, in its workflow or a later one."""
     unanswered: list = field(default_factory=list)
+    read: dict = field(default_factory=dict)
+    """What each count check read on this walk, by node: the value the check compared."""
+    walked: list = field(default_factory=list)
+    """The workflows walked, in order, by id."""
     """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""

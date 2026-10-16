@@ -81,8 +81,10 @@ class Trial:
         else:
             ctx = Context(event=self.row_event(trigger, row), session=session, environment_id=environment_id, provider=provider, state=state)
         passed: list[int] = []
-        decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions)).on_with_trace(ctx, passed)
-        return {"trigger": trigger, "row": row, "state": state.name if state else "", "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described()}
+        ledger: dict = {}
+        decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions, ledger), ledger).on_with_trace(ctx, passed)
+        return {"trigger": trigger, "row": row, "state": state.name if state else "", "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described(),
+                "workflows": list(ctx.walked), "read": {str(k): v for k, v in ctx.read.items()}, "stopped_at": ctx.stopped[0] if ctx.stopped else 0}
 
     def state_for(self, agent, assumptions: Assumptions):
         """The live agent's state, or the state assumed: with the live agent's data when it is in that state, else the state with nothing in hand."""

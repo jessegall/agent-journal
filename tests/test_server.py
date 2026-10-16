@@ -659,3 +659,32 @@ def test_the_index_serves_the_engines_own_moves_as_fixed_lines_and_a_run_names_a
     status, runs = call(server, "GET", "/journal/chart/runs?last=5")
     change = next((r["change"] for r in runs["runs"] if r["change"]), "")
     assert "Idle to Expecting something outside, by step" in change, f"a run names the state change in words: {[r['change'] for r in runs['runs']]}"
+
+
+def test_the_page_shows_each_nodes_runs_the_answer_given_and_the_count_a_check_read(server):
+    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Count the tools"})
+    trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
+    nodes = made["nodes"] + [
+        {"id": "c", "kind": "action", "key": "count_one", "text": "tools", "x": 0, "y": 0},
+        {"id": "k", "kind": "check", "key": "count_over", "text": "tools 2", "x": 0, "y": 0},
+        {"id": "s", "kind": "action", "key": "say", "text": "two tools now", "x": 0, "y": 0},
+    ]
+    lines = [{"from": trigger["id"], "to": "c", "port": "then"}, {"from": "c", "to": "k", "port": "then"}, {"from": "k", "to": "s", "port": "yes"}]
+    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
+    assert status == 200, saved
+    hooked = lambda kind, **body: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s8", **body})
+    hooked("SessionStart")
+    hooked("PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    hooked("PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    status, drawn = call(server, "GET", f"/journal/chart/{made['id']}")
+    runs = {n["key"]: n["runs"] for n in drawn["nodes"]}
+    assert runs["count_one"] == 2 and runs["count_over"] == 2 and runs["say"] == 1, "each node says how often it ran"
+    assert all(n["last"] > 0 for n in drawn["nodes"] if n["runs"]), "and when last"
+    status, recent = call(server, "GET", "/journal/chart/runs?last=5")
+    ours = [r for r in recent["runs"] if made["id"] in r["workflows"]]
+    check = next(n["id"] for n in drawn["nodes"] if n["key"] == "count_over")
+    assert [r["read"][str(check)] for r in ours] == [2, 1], "a run records the count the check read, newest first"
+    assert ours[0]["answer"] == "Said: two tools now" and ours[1]["answer"] == "", "the answer the agent was given, in words"
+    status, tried = call(server, "POST", "/journal/chart/try", {"trigger": "tool_finished", "environment": "main"})
+    assert status == 200 and made["id"] in tried["workflows"] and "Count the tools" in tried["titles"], f"a test run names the workflows it would run, in order: {tried}"
+    assert tried["read"][str(check)] == 3 and any("two tools now" in w for w in tried["would"]), "the dry count is read as the live walk would read it, one more than on record"

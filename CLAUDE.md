@@ -74,6 +74,13 @@ says so on its first line and is not in the default run.
 **Shell is for posting.** The hook script and the `journal` shim are a few lines of shell that
 curl the server; no Python starts per hook or per command when the server is up.
 
+**Plain English, never poetry.** Every name, title, label, heading, notice and line of this
+project says literally what the thing is or does, in ordinary words: "Has unread messages?",
+"Run order", "Context reached the next mark?". Never a riddle ("Something owed?"), a sentence
+where a noun belongs ("Runs in this order"), or a placeholder where the value is known ("N or
+more" on a card whose number is set). If a reader has to work out what a label means, the label
+is wrong.
+
 **Notes before memory.** NOTES.md holds what is decided and what is still open; update it
 when either changes, so the next session starts from the record and not from recall.
 
