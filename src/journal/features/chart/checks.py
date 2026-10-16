@@ -157,10 +157,10 @@ class Checks:
 
     def tool_reads_their_files(self, ctx: Context) -> bool:
         """The tool about to run reads a file attached to a message read and left unanswered: part of reading it, not work."""
-        if not isinstance(ctx.event, ToolStarting) or ctx.event.tool != "Read":
+        if not isinstance(ctx.event, ToolStarting):
             return False
-        path = str(ctx.event.input.get("file_path", ""))
-        return any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in self.messages.unanswered(ctx.environment_id))
+        path = self.providers.named(ctx.provider).read_path(ctx.event.tool, ctx.event.input)
+        return bool(path) and any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in self.messages.unanswered(ctx.environment_id))
 
     def unread_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unread(ctx.environment_id))
@@ -185,7 +185,7 @@ class Checks:
 
     def journal_command(self, ctx: Context) -> bool:
         event = ctx.event
-        if not isinstance(event, ToolStarting) or event.tool != "Bash":
+        if not isinstance(event, ToolStarting) or event.tool != self.providers.named(ctx.provider).shell_tool:
             return False
         journal, parts = Chain.journal_parts(event.input.get("command", ""))
         return parts > 0 and journal == parts

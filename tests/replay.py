@@ -3,7 +3,10 @@ that replaces it, and what the agent would have seen is compared step by step: t
 and, when asked, the keys of the nudges said. A record can be frozen to a file, so the comparison survives the listener's deletion."""
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
+from urllib.error import HTTPError
+from urllib.request import Request as HttpRequest, urlopen
 
 from journal.models.actor import Actor
 from journal.repositories.entries import Entries
@@ -12,6 +15,30 @@ from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 
 RECORDS = Path(__file__).with_name("replays")
+
+
+@dataclass(frozen=True)
+class Tools:
+    """The names a provider's agent uses for reading, writing and the shell."""
+
+    read: str
+    write: str
+    shell: str
+
+
+TOOLS = {"claude": Tools("Read", "Write", "Bash"), "codex": Tools("read_file", "write_file", "Bash")}
+PROVIDERS = tuple(TOOLS)
+
+
+def hook_as(app, provider: str, kind: str, **body):
+    """A hook as the provider's agent sends it: the status and the answer."""
+    data = json.dumps({"hook_event_name": kind, "session_id": "s1", **body}).encode()
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/{provider}", data=data, method="POST", headers={"Content-Type": "application/json"})
+    try:
+        with urlopen(request, timeout=5) as reply:
+            return reply.status, json.loads(reply.read())
+    except HTTPError as error:
+        return error.code, json.loads(error.read())
 
 
 class Replay:

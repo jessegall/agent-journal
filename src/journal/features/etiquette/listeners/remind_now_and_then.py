@@ -1,7 +1,8 @@
+from journal.engine.machine import Machine
+from journal.engine.nudger import Nudger
 from journal.events.models.created import Created
 from journal.features.listener import Listener
 from journal.models.entry import Entry
-from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.supervisor_link import SupervisorLink
 
@@ -10,10 +11,10 @@ EVERY = 50
 
 
 class RemindNowAndThen(Listener[Created]):
-    """Every fiftieth line the journal says to an agent is followed by the reminder of what a journal line is."""
+    """Every fiftieth line the journal says to an agent is followed by the reminder of what a journal line is, said as a nudge of its own, so its window holds however the count falls."""
 
-    def __init__(self, entries: Entries, agents: Agents, supervisor: SupervisorLink) -> None:
-        self.entries, self.agents, self.supervisor = entries, agents, supervisor
+    def __init__(self, entries: Entries, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
+        self.entries, self.machine, self.nudger, self.supervisor = entries, machine, nudger, supervisor
 
     def handle(self, event: Created) -> None:
         from journal.features.etiquette.feature import Etiquette
@@ -21,6 +22,8 @@ class RemindNowAndThen(Listener[Created]):
         if not isinstance(entry, Entry) or entry.kind != "nudge" or entry.data.get("key") == Etiquette.REMIND.key:
             return
         session = entry.data.get("session", "")
-        said = len([e for e in self.entries.of_kind(entry.environment_id, "nudge", 1000) if e.data.get("session") == session])
-        if said % EVERY == 0:
-            self.supervisor.type(entry.environment_id, Etiquette.REMIND.about().rendered())
+        if not session or self.entries.said_to(entry.environment_id, session) % EVERY:
+            return
+        line = self.nudger.say(self.machine.agent(session, entry.environment_id), Etiquette.REMIND.about())
+        if line:
+            self.supervisor.type(entry.environment_id, line)

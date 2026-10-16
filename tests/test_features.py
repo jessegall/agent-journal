@@ -1802,3 +1802,25 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     assert typed.count("[journal] new message 1") == 1, "named once, by the workflow"
     console.run(["chart", "reset", "2"], USER)
     assert "Message arrives" in console.run(["chart", "show"], USER).out
+
+
+def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, monkeypatch):
+    typed = []
+    from journal.engine.nudger import Nudger
+    from journal.repositories.entries import Entries
+    from journal.features.chart.feature import ChartFeature
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    machine, nudger = app.container.get(Machine), app.container.get(Nudger)
+    agent = machine.agent("s1", 1)
+    before = len([t for t in typed if "chat etiquette" in t])
+    said = app.container.get(Entries).said_to(1, "s1")
+    for i in range(said + 1, 101):
+        nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
+    reminders = [t for t in typed if "chat etiquette" in t]
+    assert len(reminders) - before == 1, "the fiftieth line brings the reminder; the hundredth falls inside its window"
+    for i in range(101, 1101):
+        nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
+    assert len([t for t in typed if "chat etiquette" in t]) - before == 1, "a thousand lines later the count is still exact: no flood once the entries outgrow a window"

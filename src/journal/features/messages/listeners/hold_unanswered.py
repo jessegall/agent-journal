@@ -6,6 +6,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
 from journal.features.option import Option
 from journal.hooks.decision import Decision
+from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.repositories.settings import PROJECT, Settings
@@ -17,8 +18,9 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings, config: Config) -> None:
+    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings, config: Config, providers: Providers) -> None:
         self.machine, self.nudger, self.messages, self.entries, self.settings, self.config = machine, nudger, messages, entries, settings, config
+        self.providers = providers
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
@@ -40,12 +42,10 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     def reads_their_files(self, event: ToolStarting, owed: list) -> bool:
         """A look at a file attached to the message being answered is part of reading it, not work."""
-        if event.tool != "Read":
-            return False
-        path = str(event.input.get("file_path", ""))
-        return any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in owed)
+        path = self.providers.named(event.provider or "claude").read_path(event.tool, event.input)
+        return bool(path) and any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in owed)
 
-    @staticmethod
-    def is_journal_command(event: ToolStarting) -> bool:
-        journal, parts = Chain.journal_parts(event.input.get("command", "")) if event.tool == "Bash" else (0, 0)
+    def is_journal_command(self, event: ToolStarting) -> bool:
+        shell = self.providers.named(event.provider or "claude").shell_tool
+        journal, parts = Chain.journal_parts(event.input.get("command", "")) if event.tool == shell else (0, 0)
         return parts > 0 and journal == parts

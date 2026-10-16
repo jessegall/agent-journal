@@ -5,6 +5,16 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Entries(ScopedRepository[Entry]):
     model = Entry
 
+    def said_to(self, environment_id: int, session: str) -> int:
+        """How many lines the journal has said to this session, counted whole: the nudge entries carrying it."""
+        row = self.connection.one(f"SELECT COUNT(*) AS n FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ?", (environment_id, session))
+        return int(row["n"]) if row else 0
+
+    def last_said(self, environment_id: int, session: str, key: str, line: str) -> float:
+        """When these words were last said to this session under this key, as the nudge entry recorded it; 0 when never."""
+        row = self.connection.one(f"SELECT MAX(json_extract(data, '$.at')) AS at FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (environment_id, session, key, line))
+        return float(row["at"] or 0.0) if row else 0.0
+
     def of_kind(self, environment_id: int, kind: str, last: int = 50) -> list[Entry]:
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = ? ORDER BY id DESC LIMIT ?", (environment_id, kind, last))
         return [self._load(row) for row in rows]
