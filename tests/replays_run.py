@@ -601,7 +601,42 @@ def ended_restarts(app, replay: Replay, provider: str) -> None:
     replay.step("a stop back at work", hook_as(app, provider, "Stop")[1])
 
 
-STATE_RULES = {"pause_exits": pause_exits, "ended_restarts": ended_restarts, "plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
+def session_starts(app, replay: Replay, provider: str) -> None:
+    """The steps: the whole start block as a session starts fresh with rules, facts, reminders and a task in hand on record; a second session taking the environment over; the first starting again after a compaction, then resumed."""
+    console = app.console()
+    console.run(["rule", "create", "Never skip the gate", "--reason", "it broke once"], USER)
+    console.run(["fact", "create", "the login is flaky"], USER)
+    console.run(["reminder", "create", "tag the release"], USER)
+    console.run(["task", "create", "the footer"], USER)
+    console.run(["message", "send", "one"], USER)
+    replay.step("a fresh start with rows on record", hook_as(app, provider, "SessionStart", source="startup")[1])
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "start", "1"], AGENT)
+    replay.step("a second session takes the environment over", hook_as(app, provider, "SessionStart", session="s2", source="startup")[1])
+    replay.step("the first starts again after a compaction", hook_as(app, provider, "SessionStart", source="compact")[1])
+    console.run(["environment", "here"], AGENT)
+    replay.step("the first resumed", hook_as(app, provider, "SessionStart", source="resume")[1])
+
+
+def silent_session_ends(app, replay: Replay, provider: str) -> None:
+    """The steps: a session with a task in hand goes quiet; the clock at a quarter of an hour, then at an hour, which ends it; a stop and a write after; the same session starting again."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    replay.step("a task in hand")
+    tick(app, 900.0)
+    app.runtime().deferred.drain()
+    replay.step("quiet for a quarter of an hour")
+    tick(app, 3601.0)
+    app.runtime().deferred.drain()
+    replay.step("quiet for an hour: the session is ended")
+    replay.step("a stop while ended", hook_as(app, provider, "Stop")[1])
+    replay.step("a write while ended", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
+    replay.step("the session starts again", hook_as(app, provider, "SessionStart")[1])
+
+
+STATE_RULES = {"session_starts": session_starts, "silent_session_ends": silent_session_ends, "pause_exits": pause_exits, "ended_restarts": ended_restarts, "plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
 """What the states say of their own, frozen before any of it moves into a workflow."""
 
 
