@@ -30,5 +30,15 @@ class Traces:
             return {}
         return {"at": failed.created_at.timestamp(), "node": failed.data["node"], "key": failed.data["key"], "fault": failed.data["fault"]}
 
+    def recent(self, limit: int) -> list[dict]:
+        """The newest walks across every workflow, newest first: when, which workflows, at which event, what was said, and whether a node failed in it."""
+        failures = self.entries.of_kind(FAILED, LOOK_BACK)
+        runs = []
+        for walk in self.entries.of_kind(WALKED, LOOK_BACK)[:limit]:
+            at = walk.created_at.timestamp()
+            runs.append({"at": at, "workflows": walk.data.get("workflows", []), "trigger": self.trigger_title(walk.data["trigger"]), "state": walk.data.get("state", ""), "said": walk.data.get("said", ""),
+                         "failed": any(abs(f.created_at.timestamp() - at) < 1 and f.data.get("workflow") in walk.data.get("workflows", []) for f in failures)})
+        return runs
+
     def trigger_title(self, key: str) -> str:
         return self.catalogue.entry(NodeKind.TRIGGER, key).title if self.catalogue.has(NodeKind.TRIGGER, key) else key

@@ -498,7 +498,26 @@ def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(serve
     assert next(w for w in read["workflows"] if w["id"] == base["id"])["off"], "an emptied workflow answers nothing and reads off"
 
 
-def test_the_page_refuses_a_second_workflow_for_a_state_at_an_event_and_a_trigger_of_another_event(server):
+def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and_on_and_lists_recent_runs(server):
+    status, read = call(server, "GET", "/journal/chart")
+    states = {s["key"]: s for s in read["states"]}
+    assert states["following_plan"]["parent"] == "working" and states["working"]["parent"] == "" and states["idle"]["title"] == "Idle"
+    idle = next(w for w in read["workflows"] if w["state"] == "idle" and w["event"] == "idle")
+    assert idle["edited"] is False and idle["failed"] is False and idle["off"] is False
+    status, off = call(server, "POST", f"/journal/chart/{idle['id']}/off", {})
+    assert status == 200 and off["off"] is True and all(n["kind"] != "trigger" for n in off["nodes"]), "turned off: the trigger is gone, the rest stays"
+    status, on = call(server, "POST", f"/journal/chart/{idle['id']}/on", {})
+    assert status == 200 and on["off"] is False and [n["key"] for n in on["nodes"] if n["kind"] == "trigger"] == ["idle"], "turned on: the trigger of its event is back"
+    stale = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": 0, "nodes": on["nodes"], "lines": on["lines"]})
+    assert stale[0] == 409 and stale[1]["conflict"] is True and stale[1]["revision"] == on["revision"]
+    bad = [{"id": "t", "kind": "trigger", "key": "idle"}, {"id": "c", "kind": "check", "key": "flying"}]
+    refused = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": on["revision"], "nodes": bad, "lines": [{"from": "t", "to": "c"}]})
+    assert refused[0] == 409 and any("flying" in f for f in refused[1]["faults"]) and any("check c has no line out" in f for f in refused[1]["faults"])
+    status, runs = call(server, "GET", "/journal/chart/runs?last=5")
+    assert status == 200 and runs == {"runs": []}, "nothing walked yet in this journal"
+
+
+
     status, body = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "idle", "title": "Another stop"})
     assert status >= 400 and "one workflow per state per trigger" in json.dumps(body)
     status, body = call(server, "POST", "/journal/chart", {"state": "flying", "trigger": "idle", "title": "Flying"})

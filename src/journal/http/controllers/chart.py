@@ -6,6 +6,8 @@ from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import Validation
+from journal.features.chart.walk import Walk
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.chart import Chart
@@ -19,12 +21,40 @@ from journal.repositories.environments import Environments
 class ChartController:
     """The workflow page: every workflow by title, one read whole with its nodes and lines, saved whole as the user, made, taken out, the shipped one reset, and any event tried dry."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces) -> None:
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue) -> None:
         self.charts, self.catalogue, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
-        self.traces = traces
+        self.traces, self.states = traces, states
 
     def index(self, request: Request) -> Response:
-        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": [{"key": key, "title": title} for key, title in STATE_TITLES.items()]})
+        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states()})
+
+    def listed_states(self) -> list[dict]:
+        """The states the page lists, each with its words and the state it inherits workflows from, when it has one."""
+        listed = []
+        for key, title in STATE_TITLES.items():
+            parents = [name for name in Walk.lineage(self.states.named(key, {}))[1:] if name in STATE_TITLES]
+            listed.append({"key": key, "title": title, "parent": parents[0] if parents else ""})
+        return listed
+
+    def runs(self, request: Request) -> Response:
+        """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
+        titles = {c.id: c.title for c in self.charts.all()}
+        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]]} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
+        return Response.json({"runs": runs})
+
+    def off(self, request: Request) -> Response:
+        """A workflow turned off: its trigger taken out, the rest kept, so it answers nothing until turned on again."""
+        chart = self.charts.find(request.number("id"))
+        for node in [n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.TRIGGER]:
+            self.charts.remove_node(node, request.actor)
+        return Response.json(self.drawn(self.charts.revised(chart, request.actor)))
+
+    def on(self, request: Request) -> Response:
+        """A workflow turned on again: its trigger put back, the one of the event it is for."""
+        chart = self.charts.find(request.number("id"))
+        if not any(n.kind == NodeKind.TRIGGER for n in self.charts.nodes_of(chart)):
+            self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=chart.event, x=400, y=0), request.actor)
+        return Response.json(self.drawn(self.charts.revised(chart, request.actor)))
 
     def one(self, request: Request) -> Response:
         try:
@@ -54,10 +84,10 @@ class ChartController:
     def save(self, request: Request) -> Response:
         chart = self.charts.find(request.number("id"))
         if int(request.body.get("revision", -1)) != chart.revision:
-            return Response.refused(f"the workflow changed since you read it: it is at revision {chart.revision}, read it again")
+            return Response.json({"error": f"the workflow changed since you opened it: it is at revision {chart.revision}, read it again", "revision": chart.revision, "conflict": True}, 409)
         faults = self.validation.faults(chart, request.body.get("nodes", []), request.body.get("lines", []))
         if faults:
-            return Response.refused("the workflow is not saved: " + "; ".join(faults))
+            return Response.json({"error": "the workflow is not saved: " + "; ".join(faults), "faults": faults}, 409)
         return Response.json(self.drawn(self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)))
 
     def try_(self, request: Request) -> Response:
@@ -74,7 +104,10 @@ class ChartController:
         return Response.json(self.drawn(self.shipped.reset(chart, request.actor)))
 
     def named(self, chart: Chart) -> dict:
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "off": not self.charts.graph(chart).triggers, "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": self.traces.last_walk(chart), "last_failure": self.traces.last_failure(chart)}
+        last_walk, last_failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
+        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "off": not self.charts.graph(chart).triggers,
+                "edited": not all(n.shipped for n in self.charts.nodes_of(chart)), "failed": bool(last_failure) and last_failure["at"] >= last_walk.get("at", 0),
+                "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": last_walk, "last_failure": last_failure}
 
     def entries(self) -> list[dict]:
         return [{**asdict(e), "kind": e.kind.value} for e in self.catalogue.all()]

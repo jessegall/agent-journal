@@ -170,6 +170,18 @@ export class ApiClient {
         return this.ownPost(`/chart/${id}/reset`, {});
     }
 
+    chartOff(id) {
+        return this.ownPost(`/chart/${id}/off`, {});
+    }
+
+    chartOn(id) {
+        return this.ownPost(`/chart/${id}/on`, {});
+    }
+
+    chartRuns(last = 10) {
+        return this.ownGet(`/chart/runs?last=${last}`);
+    }
+
     chartTry(trigger, environment) {
         return this.ownPost("/chart/try", {trigger, environment});
     }

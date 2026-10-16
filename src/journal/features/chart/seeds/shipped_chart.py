@@ -8,8 +8,10 @@ from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.settings import Settings
 
-STATE_TITLES = {"idle": "Idle", "working": "Working", "awaiting": "Awaiting a worker", "waiting": "Waiting on a question", "expecting": "Expecting something outside", "stuck": "Stuck", "running_sequence": "Running a sequence"}
-"""The states the journal ships workflows for, in the order the page lists them, each with its words."""
+STATE_TITLES = {"idle": "Idle", "working": "Working", "following_plan": "Following a plan", "awaiting": "Awaiting a worker", "waiting": "Waiting on a question", "expecting": "Expecting something outside", "stuck": "Stuck", "running_sequence": "Running a sequence"}
+"""The states the page lists, in order, each with its words; following a plan has no workflows of its own shipped, it uses Working's."""
+SHIPPED_STATES = ("idle", "working", "awaiting", "waiting", "expecting", "stuck", "running_sequence")
+"""The states the journal ships workflows for."""
 SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_starting", "messages.created")
 """The events every state's workflows carry the shared conduct on: the inbox and the answers owed."""
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "workers.updated", "questions.updated")
@@ -66,7 +68,7 @@ class ShippedChart(Seed):
         }
         shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "tool_starting": self.shared_at_tool, "messages.created": self.shared_at_message}
         self.drawings: dict[tuple[str, str], Drawing] = {}
-        for state in STATE_TITLES:
+        for state in SHIPPED_STATES:
             events = sorted({e for st, e in own if st == state} | set(SHARED_EVENTS), key=EVENT_ORDER.index)
             for event in events:
                 self.drawings[(state, event)] = Drawing(self.title_of(state, event), self.composed(own.get((state, event)), shared.get(event)))
