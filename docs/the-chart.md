@@ -84,7 +84,8 @@ tasks feature declares Has open tasks? and the log's age, the messages feature t
 feature Require a skill to be read, the chart feature the counts, the holds and the moves. The catalogue gathers
 them from the features and defines none itself; the chart's checks and actions answer and perform them. The checks
 that read the event's own content take words: Tool is one of Write, Edit; Tool input contains git push; Prompt contains
-deploy; Context over 60 percent; Time of day within 22:00-06:00, a tick reading its own time and any other event now.
+deploy; Context over 60 percent; Time of day within 22:00-06:00, a tick reading its own time and any other event now. A check
+on time takes its unit: Has the agent been quiet for 30 minutes?, Is the log older than 2 hours?; a bare number is seconds.
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is
   about to run, a tool finished, the agent stops, a subagent starts or ends, the context compacts, the session

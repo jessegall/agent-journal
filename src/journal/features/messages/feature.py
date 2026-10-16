@@ -28,7 +28,7 @@ class Messages(Feature):
     listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, DeliverMessage, StartOwedCount)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
-        Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N'),
+        Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),
         Entry(NodeKind.CHECK, 'unanswered_messages', 'Has unanswered messages?', 'a message was read and not yet replied to or given a face'),
         Entry(NodeKind.CHECK, 'unanswered_over', 'N or more messages unanswered?', "at least N messages read and not yet replied to or given a face; the text is N or a setting's name", takes_text=True),
         Entry(NodeKind.CHECK, 'message_by_user', 'Message written by you?', 'the row is a message the user wrote, not the agent'),

@@ -58,7 +58,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 9
+DRAWINGS_VERSION = 10
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -501,10 +501,10 @@ class ShippedChart(Seed):
     def idle_at_tick(self, chart: Chart, ends: list) -> list:
         """As the clock ticks on an agent at rest: the parked ask after a minute, then the check-in after half an hour."""
         parked_tick = self.node(chart, NodeKind.CHECK, "parked_tasks", x=240, y=92)
-        quiet_a_minute = self.node(chart, NodeKind.CHECK, "quiet_for_over", "60", x=240, y=184)
+        quiet_a_minute = self.node(chart, NodeKind.CHECK, "quiet_for_over", "1 minute", x=240, y=184)
         ask_parked = self.node(chart, NodeKind.ACTION, "type", PARKED_STILL, x=240, y=276)
         auto_tick = self.node(chart, NodeKind.CHECK, "auto_mode", x=560, y=92)
-        quiet_half_an_hour = self.node(chart, NodeKind.CHECK, "quiet_for_over", "1800", x=560, y=184)
+        quiet_half_an_hour = self.node(chart, NodeKind.CHECK, "quiet_for_over", "30 minutes", x=560, y=184)
         check_in = self.node(chart, NodeKind.ACTION, "type", CHECK_IN, x=560, y=276)
         self.chain(ends, parked_tick)
         self.line(parked_tick, quiet_a_minute, YES)
@@ -560,7 +560,7 @@ class ShippedChart(Seed):
 
     def carry_on(self, chart: Chart, ends: list, x: int, y: int) -> list:
         """The carry-on steps after the ends given: the log asked for when it is stale, else carry on."""
-        stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "600", x=x, y=y)
+        stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "10 minutes", x=x, y=y)
         carry_on_log = self.node(chart, NodeKind.ACTION, "say", CARRY_ON_LOG, x=x - 80, y=y + 92)
         carry_on = self.node(chart, NodeKind.ACTION, "say", CARRY_ON, x=x + 80, y=y + 92)
         self.chain(ends, stale)
@@ -570,7 +570,7 @@ class ShippedChart(Seed):
 
     def working_at_tick(self, chart: Chart, ends: list) -> list:
         """A task in hand as the clock ticks: still open after a quiet quarter hour."""
-        quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "900", x=400, y=92)
+        quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "15 minutes", x=400, y=92)
         still_open = self.node(chart, NodeKind.ACTION, "say", STILL_OPEN, x=400, y=184)
         self.chain(ends, quiet)
         self.line(quiet, still_open, YES)
@@ -604,7 +604,7 @@ class ShippedChart(Seed):
 
     def expecting_at_tick(self, chart: Chart, ends: list) -> list:
         """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long."""
-        quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "300", x=400, y=92)
+        quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "5 minutes", x=400, y=92)
         check = self.node(chart, NodeKind.ACTION, "say", CHECK_AWAITED, x=400, y=184)
         self.chain(ends, quiet)
         self.line(quiet, check, YES)

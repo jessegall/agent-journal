@@ -1939,6 +1939,7 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
     env = app.container.get(Environments).named("main").id
     tick = lambda quiet: Context(event=Ticked(at=0.0, quiet_for=quiet, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     assert checks.answer("quiet_for_over", tick(61), "60") and not checks.answer("quiet_for_over", tick(59), "60")
+    assert checks.answer("quiet_for_over", tick(61), "1 minute") and not checks.answer("quiet_for_over", tick(59), "1 min") and checks.answer("quiet_for_over", tick(7201), "2 hours") and not checks.answer("quiet_for_over", tick(1799), "30 minutes"), "a time with its unit"
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1"], AGENT)

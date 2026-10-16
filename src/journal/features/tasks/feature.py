@@ -31,7 +31,7 @@ class Tasks(Feature):
         Entry(NodeKind.CHECK, 'task_in_hand', 'Has a task in hand?', 'the agent has a task started'),
         Entry(NodeKind.CHECK, 'parked_tasks', 'Has parked tasks?', 'a task is parked'),
         Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task waits on something outside'),
-        Entry(NodeKind.CHECK, 'log_stale_over', 'Is the log older than N seconds?', 'the task in hand was last logged longer ago than N seconds, or never; the text is N'),
+        Entry(NodeKind.CHECK, 'log_stale_over', 'Is the log older than N?', 'the task in hand was last logged longer ago than the time in the text, with its unit: 10 minutes, 2 hours; a bare number is seconds; or never', takes_text=True),
         Entry(NodeKind.CHECK, 'task_just_started', 'Task just started by this agent?', 'the row is a task this agent has just started: this write set when it started, by the agent walking'),
         Entry(NodeKind.CHECK, 'log_for_task_in_hand', 'Log is for the task in hand?', 'the row is a log line of the task this agent has in hand'),
     )

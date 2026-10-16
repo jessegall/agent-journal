@@ -1,3 +1,4 @@
+import re
 import time
 from journal.config import Config
 from journal.engine.machine import Machine
@@ -35,6 +36,9 @@ from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
+UNITS = re.compile(r"^(\d+)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours)?$")
+SECONDS = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1, "m": 60, "min": 60, "mins": 60, "minute": 60, "minutes": 60, "h": 3600, "hr": 3600, "hrs": 3600, "hour": 3600, "hours": 3600}
+"""A time in a check's text, by its unit; a bare number is seconds."""
 COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over", "context_over")
 WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
@@ -78,9 +82,10 @@ class Checks:
         return limit > 0 and value > 0 and value % limit == 0
 
     def number(self, text: str) -> int:
-        """The node's text as a number, or the setting it names, read through its option so an unset key means the option's default, or nothing."""
-        if text.strip().isdigit():
-            return int(text)
+        """The node's text as a number, with a unit of time when it has one (30 seconds, 10 minutes, 2 hours; a bare number is seconds), or the setting it names, read through its option so an unset key means the option's default, or nothing."""
+        timed = UNITS.match(text.strip().lower())
+        if timed:
+            return int(timed.group(1)) * SECONDS[timed.group(2) or "s"]
         option = next((o for o in self.registry.options() if o.key == text.strip()), None)
         if option:
             return int(self.settings.option(option))
