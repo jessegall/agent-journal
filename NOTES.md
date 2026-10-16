@@ -790,3 +790,15 @@ re-frozen from the workflows, differing by the counts alone, with count_survives
 A task start moves the agent before the row is written, so the row's walk reads Working. A second boot on a seeded
 journal is a no-op (tested). The suite: 230 tests, 16 s of CPU, 35 s of wall on a box at load 5, replays 40 in
 about three minutes.
+
+Phase two, in progress on 2026-10-16 late: what the agent owes is a fact on its row. Agent.oriented (false from a
+start until journal environment here) and mark_owed (the mark crossed and not decided at) are columns touched
+narrowly; a skill owed is a link owes:<name> from the agent, set by the Require a skill node and removed by the read
+of the file; the fillers awaiting, skill_owed and skill_path read them. Always at Session starts requires the journal
+skill and marks the agent unoriented, Always at Prompt sent requires the skills a prompt names, a state's workflow at
+Session starts requires its own skill, every Always and Guards workflow at an agent event opens with the context mark,
+Guards at Tool about to run hold a write (writes only, after the lockout of 2026-10-16) while a skill, the look or a
+mark is owed, and Always at Agent stops holds a stop while anything is owed, naming it. The requiring, start and
+mark listeners are deleted; the three pause states are no longer entered and retire in task 368. Decided (task 367):
+a debt never changes which workflows run; it holds writes and stops only. The replays of phase two carry it. The
+journal's own commands must never be held, whatever a workflow says: task 406, on the user's ruling.

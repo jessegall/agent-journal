@@ -4,7 +4,7 @@ The Workflow page shows how the journal treats the agent as a flowchart, and let
 one event, the trigger it holds, and is bound to a state, running only while the agent is in that state, or to none,
 running always. An event may have any number of workflows, and they run in one order, the place each holds in the
 event's list, which the user sets; a workflow bound to a child state, Following a plan under Working, replaces its
-parent's at that event, and the state beneath an owed pause counts as the agent's. The conduct for every state, the inbox
+parent's at that event, and what the agent owes the journal never changes which workflows run. The conduct for every state, the inbox
 and the answers owed, is an Always workflow per event at the head of each list, after the locked guards, and a
 state's shipped workflow carries only the state's own steps. The journal ships them with today's conduct, so
 nothing changes until you edit them.
@@ -140,6 +140,17 @@ workflow it walked with the steps it took lit. Test run walks the saved workflow
 agent's rows as the picked workflow's state, nothing sent, and lights the path; it is offered for the events a
 trial can stand in for. The phone shows the same as an Event cell, a Workflow cell that opens the ordered list,
 and Run earlier and Run later on the open workflow.
+
+## While something is owed
+
+What the agent owes the journal, a skill to read, the look at what is in flight at a start, a decision at a context
+mark, is a fact on its row and never a state over the one it is in. So a state's own workflows run as they would:
+Working at a tick still says the task is open after a quiet quarter hour while the look is owed, the inbox is named
+at a prompt while a skill is owed, a wait is released by its row event while a mark is owed. The debt holds only
+what it must: a write, through the guards at Tool about to run, and a stop, through Always at Agent stops, each
+naming what it awaits; the read, the command or the decision that pays it goes through. The phase-two replays
+freeze this: working_rules carries the tick's line under the look owed, loading_skill_rules the inbox named under
+the skill owed, owed_pause_rules the stop held and the wait kept.
 
 ## Locks
 
