@@ -49,9 +49,7 @@ what survives, and the mark owed is a fact on its row until it does. Then the co
 state, one Always workflow per event, bound to no state and placed after the locked ones: the Always workflow at Session starts
 requires the journal skill (locked), names the inbox and requires a look at what is in flight (locked), owing the look that
 `journal environment here` pays, the Always workflow at Prompt sent requires the skills a prompt names
-(locked) and names the inbox, the Always workflow at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox, the Always workflow at A message is created types a message
-that comes to the agent and starts its counts of tool uses and inbox namings, the Always workflow at A message is updated starts
-the count of uses the agent owes an answer on, at the first message read and owed. A state whose feature has a
+(locked) and names the inbox, the Always workflow at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox. Delivering a message to the agent is the engine's, not a workflow: the messages feature types a message you leave into the agent's terminal by number and starts its counts of tool uses and inbox namings, and starts the count of uses it owes an answer on at the first message read and left unanswered; nothing is shipped at A message is created or A message is updated. A state whose feature has a
 skill requires it at Session starts in that state, in the state's own workflow there. Require a skill names the
 skill in its text; empty, it takes the skills the prompt names at a prompt and the state's skill elsewhere. A state's workflow at an event carries only the state's own
 steps, and a state with nothing of its own at an event has no workflow there; a copy from before, edited by you,

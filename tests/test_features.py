@@ -1666,7 +1666,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     announced = len(sent)
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
     tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
-    assert "A message is created of row 1, walked as the state idle: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
+    assert "A message is created of row 1, walked as the state idle: nodes none" in tried, "a row event is tried with its row; nothing is shipped at a message's creation, since delivery is the engine's"
     assert len(sent) == announced, "the trial typed nothing"
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
@@ -2099,11 +2099,12 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     console.run(["environment", "here"], AGENT)
     console.run(["message", "send", "are you there?"], USER)
     app.runtime().deferred.drain()
-    assert typed.count("[journal] new message 1") == 1, "named once, by the workflow"
+    assert typed.count("[journal] new message 1") == 1, "named once, by the engine's own delivery"
     from journal.repositories.charts import Charts
-    always = next(c for c in app.container.get(Charts).for_event("messages.created") if not c.state)
+    assert not [c for c in app.container.get(Charts).for_event("messages.created") if c.shipped], "delivery is not a workflow: nothing is shipped at a message's creation"
+    always = next(c for c in app.container.get(Charts).for_event("idle") if not c.state)
     assert "reset to the shipped one" in console.run(["chart", "reset", str(always.id)], USER).out
-    assert "[always at messages.created, place" in console.run(["chart", "show"], USER).out
+    assert "[always at idle, place" in console.run(["chart", "show"], USER).out
 
 
 def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, monkeypatch):
@@ -2305,7 +2306,7 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     app.runtime().deferred.drain()
     walks = entries.of_kind("walk", 1000)
     since = [w.data["trigger"] for w in walks[: len(walks) - before]]
-    assert set(since) == {"workers.updated", "messages.created"}, "the report's two rows were walked, the worker's and its message; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
+    assert set(since) == {"workers.updated"}, "the report's worker row was walked, its message is delivered by the engine and walks no workflow; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
 
 
 def test_every_command_line_write_to_a_workflow_raises_its_revision_so_a_page_save_from_an_older_read_is_refused(app):
@@ -2851,7 +2852,7 @@ def test_a_message_that_comes_starts_the_counts_of_uses_and_namings_and_the_firs
     from journal.repositories.counts import Counts
     from journal.repositories.scope import Scope
     console, charts, counts, scope = app.console(), app.container.get(Charts), app.container.get(Counts), app.container.get(Scope)
-    assert next(c for c in charts.for_event("messages.updated") if not c.state).title == "Start counting tool uses when a message is read and left unanswered", "the seed ships the read's workflow"
+    assert not [c for c in charts.for_event("messages.updated") if c.shipped], "the owed count starts in the engine, not in a shipped workflow"
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
     drain = lambda: app.runtime().deferred.drain()

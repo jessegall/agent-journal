@@ -49,7 +49,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in the workflow Idle; its listener is deleted |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the workflow Expecting, in phase 2 (task 165), with the frozen record as its proof |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
-| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | in the workflow the Always workflow at A message is created, which also starts the counts; its listener is deleted |
+| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the engine's own delivery: the messages feature's DeliverMessage listener types it and starts the counts; not a workflow, since nobody would open a canvas to decide whether the agent gets a message |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | stays with the triggers feature, as above |
 | Reaction created by the user | messages.reacted | a face on a message | type | a workflow later, in every state's on reactions.created, with the check reaction by the user and the face and message fillers |
 | Rule created | memory.rule_review | a new rule | type once | a workflow later, in every state's on rules.created, with the rule filler |

@@ -19,7 +19,7 @@ SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "e
 """The states the journal ships workflows for."""
 PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "working", "following_plan", "ended")
 """The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
-SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_finished", "messages.created", "messages.updated")
+SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_finished")
 """The events with conduct for every state, shipped as an Always workflow each: the inbox named at a stop, a start and a prompt, a message that comes named and the counts it starts, and a message read starting the count it is owed on."""
 GUARDS = {"tool_starting": "Hold writes while something is owed, and over unread or unanswered messages"}
 OWN_TITLES = {
@@ -48,8 +48,6 @@ SHARED_TITLES = {
     "prompt_submitted": "Require the skill the prompt names, say what is unread",
     "idle": "Keep the agent from stopping while something is owed, say what is unread",
     "tool_finished": "Hold the agent at a context mark",
-    "messages.created": "Type your message into the chat and start the reminder counts",
-    "messages.updated": "Start counting tool uses when a message is read and left unanswered",
 }
 """What the Always workflow of each shared event does, in plain words."""
 """The journal's guards, one locked workflow per event bound to no state, first in the event's list in every journal: at a tool use, the inbox named and the write held while a message waits, and the answer owed held."""
@@ -73,7 +71,6 @@ RETIRED_CHECKS = {"tool_uses_since_unread_every": ("count_every", "uses"), "tool
 """The shipped drawings taken out of a journal on purpose, by name, so a boot does not draw them again; Reset by their state and event brings one back."""
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
 
-NEW_MESSAGE = "[messages.new] new message {{row}}"
 ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
 SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
 MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
@@ -130,7 +127,7 @@ class ShippedChart(Seed):
         for state in SHIPPED_STATES:
             if self.registry.skill_required_in(state) and (state, "session_started") not in own:
                 own[(state, "session_started")] = self.state_skill
-        shared = {"session_started": self.mark_then(self.journal_skill_then(self.shared_inbox)), "prompt_submitted": self.mark_then(self.prompt_skill_then(self.shared_inbox)), "idle": self.owed_stop_then(self.mark_then(self.shared_inbox)), "tool_finished": self.mark_then(None), "messages.created": self.shared_at_message, "messages.updated": self.shared_at_message_read}
+        shared = {"session_started": self.mark_then(self.journal_skill_then(self.shared_inbox)), "prompt_submitted": self.mark_then(self.prompt_skill_then(self.shared_inbox)), "idle": self.owed_stop_then(self.mark_then(self.shared_inbox)), "tool_finished": self.mark_then(None)}
         self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
             for event in sorted({e for st, e in own if st == state}, key=EVENT_ORDER.index):
@@ -398,28 +395,6 @@ class ShippedChart(Seed):
             self.line(names, owed, YES)
             return shared(chart, [(names, NO), (owed, THEN)])
         return draw
-
-    def shared_at_message(self, chart: Chart, ends: list) -> list:
-        """A message the user leaves is named by number, typed into the terminal, and the counts of tool uses and inbox namings since it came start at nought."""
-        by_user = self.node(chart, NodeKind.CHECK, "message_by_user", x=400, y=92)
-        named = self.node(chart, NodeKind.ACTION, "type", NEW_MESSAGE, x=400, y=184)
-        uses = self.node(chart, NodeKind.ACTION, "count_start", "uses", x=400, y=276)
-        namings = self.node(chart, NodeKind.ACTION, "count_start", "namings", x=400, y=368)
-        self.chain(ends, by_user)
-        self.line(by_user, named, YES)
-        self.line(named, uses, THEN)
-        self.line(uses, namings, THEN)
-        return [(by_user, NO), (namings, THEN)]
-
-    def shared_at_message_read(self, chart: Chart, ends: list) -> list:
-        """A message just read, the first owed: the count of tool uses since the agent owes an answer starts at nought."""
-        read = self.node(chart, NodeKind.CHECK, "message_just_read", x=400, y=92)
-        more = self.node(chart, NodeKind.CHECK, "unanswered_over", "2", x=400, y=184)
-        owed = self.node(chart, NodeKind.ACTION, "count_start", "owed", x=400, y=276)
-        self.chain(ends, read)
-        self.line(read, more, YES)
-        self.line(more, owed, NO)
-        return [(read, NO), (more, YES), (owed, THEN)]
 
     def shared_inbox(self, chart: Chart, ends: list) -> list:
         """The inbox named at a start, a prompt and a stop."""
