@@ -19,7 +19,7 @@ class WatchMessage(Listener[Created]):
         if not isinstance(message, Message) or message.author != Author.USER:
             return
         met = self.triggers.met_by(message.text)
-        agent = self.agents.live(message.environment_id) if met else None
+        agent = self.agents.live() if met else None
         if agent is None:
             return
         for line in self.firing.lines(met, agent.session, message.environment_id):

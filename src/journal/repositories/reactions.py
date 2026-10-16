@@ -7,6 +7,7 @@ from journal.models.message import Message
 from journal.models.reaction import Reaction
 from journal.models.ref import Ref
 from journal.repositories.links import Links
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 REACTS = "reacts"
@@ -15,8 +16,8 @@ REACTS = "reacts"
 class Reactions(ScopedRepository[Reaction]):
     model = Reaction
 
-    def __init__(self, connection: Connection, bus: Bus, links: Links) -> None:
-        super().__init__(connection, bus)
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links) -> None:
+        super().__init__(connection, bus, scope)
         self.links = links
 
     def on(self, message: Message) -> list[Reaction]:

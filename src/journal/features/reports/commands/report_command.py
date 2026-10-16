@@ -6,7 +6,6 @@ from journal.console.where import Where
 from journal.models.link import Link
 from journal.models.ref import Ref
 from journal.models.report import Report
-from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.reports import Reports
@@ -15,8 +14,8 @@ from journal.repositories.reports import Reports
 class ReportCommand(Command):
     noun = "report"
 
-    def __init__(self, reports: Reports, links: Links, environments: Environments) -> None:
-        self.reports, self.links, self.environments = reports, links, environments
+    def __init__(self, reports: Reports, links: Links) -> None:
+        self.reports, self.links = reports, links
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "write a report: what was checked or researched now")
@@ -29,7 +28,7 @@ class ReportCommand(Command):
 
     def create(self, args: Namespace, where: Where) -> int:
         body = Path(args.file).read_text() if args.file else args.body
-        report = self.reports.save(Report(environment_id=self.environments.named(where.environment).id, title=args.title, body=body), where.actor)
+        report = self.reports.save(Report(title=args.title, body=body), where.actor)
         for about in args.about:
             self.links.save(Link(source=Ref.to(report), target=Ref.parse(about), kind=Messages.ABOUT), where.actor)
         print(f"report {report.id}: {report.title}" + (f", about {', '.join(args.about)}" if args.about else ""))
@@ -42,6 +41,6 @@ class ReportCommand(Command):
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for report in self.reports.in_(self.environments.named(where.environment).id):
+        for report in self.reports.in_():
             print(f"{report.id:>4}  {report.title}")
         return 0

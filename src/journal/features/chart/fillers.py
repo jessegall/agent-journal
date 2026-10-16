@@ -33,18 +33,18 @@ class Fillers:
     def inbox(self, ctx: Context) -> str:
         """The inbox as the listeners name it: one message by its number, a few by theirs, more than three by their count and the command that prints them."""
         from journal.features.messages.feature import Messages as MessagesFeature
-        unread = self.messages.unread(ctx.environment_id)
+        unread = self.messages.unread()
         return MessagesFeature.inbox(unread).rendered() if unread else ""
 
     def unread_count(self, ctx: Context) -> str:
-        return str(len(self.messages.unread(ctx.environment_id)))
+        return str(len(self.messages.unread()))
 
     def unread_numbers(self, ctx: Context) -> str:
-        return ", ".join(str(m.id) for m in self.messages.unread(ctx.environment_id))
+        return ", ".join(str(m.id) for m in self.messages.unread())
 
     def owed(self, ctx: Context) -> str:
         """The last three messages read and left unanswered, by number, as the answer hold names them."""
-        return ", ".join(str(m.id) for m in self.messages.unanswered(ctx.environment_id)[-3:])
+        return ", ".join(str(m.id) for m in self.messages.unanswered()[-3:])
 
     def task(self, ctx: Context) -> str:
         """The work in hand as the task lines name it: the task's number, with what the agent is on."""
@@ -100,27 +100,27 @@ class Fillers:
         return str(model.id) if isinstance(model, Question) else ""
 
     def parked_n(self, ctx: Context) -> str:
-        parked = self.tasks.in_state(ctx.environment_id, TaskState.PARKED)
+        parked = self.tasks.in_state(TaskState.PARKED)
         return str(parked[0].id) if parked else ""
 
     def parked_title(self, ctx: Context) -> str:
-        parked = self.tasks.in_state(ctx.environment_id, TaskState.PARKED)
+        parked = self.tasks.in_state(TaskState.PARKED)
         return parked[0].title if parked else ""
 
     def parked_why(self, ctx: Context) -> str:
-        parked = self.tasks.in_state(ctx.environment_id, TaskState.PARKED)
+        parked = self.tasks.in_state(TaskState.PARKED)
         return parked[0].parked_why if parked else ""
 
     def state(self, ctx: Context):
         return ctx.state
 
     def parked_tasks(self, ctx: Context) -> str:
-        return "; ".join(f"{t.id} {t.title} (parked because: {t.parked_why})" for t in self.tasks.in_state(ctx.environment_id, TaskState.PARKED))
+        return "; ".join(f"{t.id} {t.title} (parked because: {t.parked_why})" for t in self.tasks.in_state(TaskState.PARKED))
 
     def next_task(self, ctx: Context) -> str:
-        free = self.plans.free(ctx.environment_id)
+        free = self.plans.free()
         return str(free[0].id) if free else ""
 
     def next_task_title(self, ctx: Context) -> str:
-        free = self.plans.free(ctx.environment_id)
+        free = self.plans.free()
         return free[0].title if free else ""

@@ -9,7 +9,7 @@ from journal.hooks.decision import Decision
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 
@@ -24,11 +24,11 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
-        owed = self.messages.unanswered(event.environment_id)
+        owed = self.messages.unanswered()
         if not owed or self.is_journal_command(event) or self.reads_their_files(event, owed):
             return None
         since = min(m.read_at for m in owed)
-        uses = len([e for e in self.entries.of_kind(event.environment_id, "ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= since])
+        uses = len([e for e in self.entries.of_kind("ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= since])
         numbers = ", ".join(str(m.id) for m in owed[-3:])
         if uses >= self.after(MessagesFeature.HOLD_AFTER):
             return Decision.refuse(MessagesFeature.ANSWER_HELD.about(messages=numbers).rendered())
@@ -38,7 +38,7 @@ class HoldUnanswered(AgentListener[ToolStarting]):
         return Decision.tell(line) if line else None
 
     def after(self, option: Option) -> int:
-        return int(self.settings.option(PROJECT, option))
+        return int(self.settings.option(option))
 
     def reads_their_files(self, event: ToolStarting, owed: list) -> bool:
         """A look at a file attached to the message being answered is part of reading it, not work."""

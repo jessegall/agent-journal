@@ -421,7 +421,7 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
 
 def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_it(tmp_path: Path):
     from journal.features.tasks.feature import Tasks
-    from journal.repositories.settings import PROJECT, Settings
+    from journal.repositories.settings import Settings
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -432,9 +432,9 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         assert all(f in manifest["features"] for f in ("messages", "shell", "voices")) and "kanban" not in manifest["features"], "version 3's leftovers are gone"
         assert {g["key"] for g in manifest["groups"]} == set(manifest["features"]), "one group per feature"
         status, tree = call(server, "POST", "/api/settings", {"tasks": {"log_after": 60}})
-        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 60, "saved where the code reads it"
+        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
         tree = call(server, "POST", "/api/settings", {"tasks": {}})[1]
-        assert "tasks" not in tree and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
+        assert "tasks" not in tree and app.container.get(Settings).option(Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
     finally:
         app.runtime().stop()
 

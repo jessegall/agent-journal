@@ -3,7 +3,6 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.author import Author
 from journal.models.message import Message
-from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
 
@@ -11,11 +10,11 @@ from journal.repositories.not_found import NotFound
 class MessageController(Controller[Message]):
     """The chat: the user's messages are sent from here, as the user."""
 
-    def __init__(self, messages: Messages, environments: Environments) -> None:
-        self.repository, self.environments = messages, environments
+    def __init__(self, messages: Messages) -> None:
+        self.repository = messages
 
     def store(self, request: Request) -> Response:
-        message = Message(environment_id=self.environment_id(request), author=Author.USER, text=request.body.get("text", ""), reply_to=request.body.get("reply_to"))
+        message = Message(author=Author.USER, text=request.body.get("text", ""), reply_to=request.body.get("reply_to"))
         return Response.json(self.repository.save(message, request.actor), 201)
 
     def read(self, request: Request) -> Response:

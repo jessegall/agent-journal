@@ -13,14 +13,15 @@ from journal.features.registry import Registry
 from journal.features.switched import Switched
 from journal.hooks.deferred import Deferred
 from journal.container import Container
+from journal.repositories.scope import Scope
 from journal.http.server import Server
 
 
 class Runtime:
     """What the server process keeps alive: the HTTP server, the deferred worker and the clock, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry) -> None:
-        self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry = container, server, deferred, clock, machine, bus, registry
+    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope) -> None:
+        self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
 
     def boot(self) -> None:
         """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
@@ -30,7 +31,7 @@ class Runtime:
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:
             for listener in feature.listeners:
-                self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry))
+                self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry, self.scope))
             for seed in feature.seeds:
                 self.container.get(seed).run()
         from journal.repositories.environments import Environments

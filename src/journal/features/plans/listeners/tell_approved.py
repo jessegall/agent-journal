@@ -19,7 +19,7 @@ class TellApproved(Listener[Updated]):
         plan = event.model
         if not isinstance(plan, Plan) or plan.state != PlanState.APPROVED or event.by.kind != ActorKind.USER:
             return
-        agent = self.agents.live(plan.environment_id)
+        agent = self.agents.live()
         if agent is None:
             return
         line = self.nudger.say(agent, PlansFeature.APPROVED.about(n=plan.id))

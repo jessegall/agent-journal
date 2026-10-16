@@ -47,7 +47,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             quiet = Tags.kept_out(part) and not answered
             acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
             if text and not quiet:
-                reply = self.messages.save(Message(environment_id=event.environment_id, author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
                 for n in answered[1:]:
                     self._also_answers(reply, n, by)
             for n in answered:
@@ -73,17 +73,17 @@ class RecordTurn(AgentListener[TurnWritten]):
 
     def _answers_a_journal_line(self, event: TurnWritten) -> bool:
         """The turn's prompt was a line the journal typed whose answer is not for the user, and no file changed since: nothing in it is news."""
-        prompts = [e for e in self.entries.of_kind(event.environment_id, "PromptSubmitted") if e.actor and e.actor.id == event.session]
+        prompts = [e for e in self.entries.of_kind("PromptSubmitted") if e.actor and e.actor.id == event.session]
         prompt = prompts[-1].data.get("prompt", "") if prompts else ""
         if not prompt.startswith(JOURNAL_LINE) or self._answered_in_chat(event, prompt[len(JOURNAL_LINE):]):
             return False
         provider = self.providers.named(event.provider)
-        since = self.entries.since(event.environment_id, prompts[-1].id)
+        since = self.entries.since(prompts[-1].id)
         return not any(e.kind == "ToolStarting" and provider.writes(e.data.get("tool_name", ""), e.data.get("tool_input", {})) for e in since)
 
     def _answered_in_chat(self, event: TurnWritten, line: str) -> bool:
         """The nudge the typed line came from, when it is one whose answer belongs in the chat."""
-        said = [e for e in self.entries.of_kind(event.environment_id, "nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
+        said = [e for e in self.entries.of_kind("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
         nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
         return bool(nudge and nudge.answered_in_chat)
 

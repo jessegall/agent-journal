@@ -3,7 +3,7 @@ import subprocess
 from journal.config import Config
 from journal.features.voices.shipped import Shipped
 from journal.features.voices.voice import Voice
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 class ChosenVoice:
@@ -14,15 +14,15 @@ class ChosenVoice:
 
     def voice(self) -> Voice:
         from journal.features.voices.feature import Voices
-        return Shipped.named(str(self.settings.option(PROJECT, Voices.PROFILE)))
+        return Shipped.named(str(self.settings.option(Voices.PROFILE)))
 
     def title(self) -> str:
         from journal.features.voices.feature import Voices
-        return str(self.settings.option(PROJECT, Voices.TITLE))
+        return str(self.settings.option(Voices.TITLE))
 
     def first_name(self) -> str:
         from journal.features.voices.feature import Voices
-        return str(self.settings.option(PROJECT, Voices.NAME) or self.git_name())
+        return str(self.settings.option(Voices.NAME) or self.git_name())
 
     def instruction(self) -> str:
         return self.voice().instruction(self.title(), self.first_name())

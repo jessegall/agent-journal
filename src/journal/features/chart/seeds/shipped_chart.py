@@ -5,7 +5,7 @@ from journal.models.chart import BASE, Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 BASE_TITLE = "For every state"
 IDLE_TITLE = "Idle"
@@ -82,7 +82,7 @@ class ShippedChart(Seed):
 
     def take_over(self, listeners: tuple[str, ...], by: Actor) -> None:
         """The listeners a new shipped workflow carries the conduct of are switched off, so a line is said once."""
-        off = list(self.settings.get(PROJECT, LISTENERS_OFF, []) or [])
+        off = list(self.settings.project(LISTENERS_OFF, []) or [])
         missing = [name for name in listeners if name not in off]
         if missing:
             self.settings.set(LISTENERS_OFF, off + missing, by)

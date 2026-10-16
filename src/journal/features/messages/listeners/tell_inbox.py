@@ -20,7 +20,7 @@ class TellInbox(AgentListener[A]):
 
     def handle(self, event: A) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
-        unread = self.messages.unread(event.environment_id)
+        unread = self.messages.unread()
         if not unread:
             return None
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), MessagesFeature.inbox(unread))

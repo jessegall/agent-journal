@@ -5,15 +5,14 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
-from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
 
 class TaskController(Controller[Task]):
-    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments) -> None:
-        self.repository, self.logs, self.environments = tasks, logs, environments
+    def __init__(self, tasks: Tasks, logs: TaskLogs) -> None:
+        self.repository, self.logs = tasks, logs
 
     def start(self, request: Request) -> Response:
         return self._change(request, lambda task: task.started(self._now()))

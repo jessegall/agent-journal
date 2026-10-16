@@ -13,7 +13,6 @@ from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
 from journal.models.ref import Ref
 from journal.models.task import Task
-from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.refused import Refused
 from journal.repositories.phases import Phases
@@ -24,8 +23,8 @@ from journal.repositories.tasks import Tasks
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, environments: Environments, machine: Machine) -> None:
-        self.plans, self.phases, self.tasks, self.links, self.environments, self.machine = plans, phases, tasks, links, environments, machine
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine) -> None:
+        self.plans, self.phases, self.tasks, self.links, self.machine = plans, phases, tasks, links, machine
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "draft a plan")
@@ -57,7 +56,7 @@ class PlanCommand(Command):
         self.verb(verbs, "list", "every plan here")
 
     def create(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(Plan(environment_id=self.environments.named(where.environment).id, title=args.title, brief=args.brief), where.actor)
+        plan = self.plans.save(Plan(title=args.title, brief=args.brief), where.actor)
         print(f"plan {plan.id} {plan.state}: {plan.title}")
         return 0
 
@@ -168,6 +167,6 @@ class PlanCommand(Command):
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for plan in self.plans.in_(self.environments.named(where.environment).id):
+        for plan in self.plans.in_():
             print(f"{plan.id:>4}  {plan.state:<8} {plan.title}")
         return 0

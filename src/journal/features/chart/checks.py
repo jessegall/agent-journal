@@ -27,7 +27,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
 from journal.repositories.plans import Plans
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
@@ -52,8 +52,8 @@ class Checks:
             return int(text)
         option = next((o for o in self.registry.options() if o.key == text.strip()), None)
         if option:
-            return int(self.settings.option(PROJECT, option))
-        return int(self.settings.get(PROJECT, text.strip(), 0)) if text.strip() else 0
+            return int(self.settings.option(option))
+        return int(self.settings.project(text.strip(), 0)) if text.strip() else 0
 
     def tool_uses_since_unread_every(self, ctx: Context, every: int) -> bool:
         """Every so many tool uses since the oldest unread message came, counting the one about to run."""
@@ -64,7 +64,7 @@ class Checks:
         """So many namings of the unread inbox gone by: the tool uses since the oldest unread message came, in units of messages.remind_every."""
         from journal.features.messages.feature import Messages as MessagesFeature
         uses = self.uses_since(ctx, self.oldest_unread(ctx))
-        every = int(self.settings.option(PROJECT, MessagesFeature.REMIND_EVERY))
+        every = int(self.settings.option(MessagesFeature.REMIND_EVERY))
         return uses is not None and bool(every) and uses // every >= n
 
     def tool_uses_since_unread_over(self, ctx: Context, limit: int) -> bool:
@@ -73,7 +73,7 @@ class Checks:
 
     def tool_uses_since_read_over(self, ctx: Context, limit: int) -> bool:
         """So many tool uses since the oldest message was read and left unanswered."""
-        owed = self.messages.unanswered(ctx.environment_id)
+        owed = self.messages.unanswered()
         uses = self.uses_since(ctx, min(m.read_at for m in owed)) if owed else None
         return uses is not None and uses >= limit
 
@@ -98,29 +98,29 @@ class Checks:
         return state.edits - 1 if isinstance(state, Working) and state.edits else -1
 
     def oldest_unread(self, ctx: Context):
-        unread = self.messages.unread(ctx.environment_id)
+        unread = self.messages.unread()
         return min(m.created_at for m in unread) if unread else None
 
     def uses_since(self, ctx: Context, since) -> int | None:
         if since is None or not ctx.session:
             return None
-        return len([e for e in self.entries.of_kind(ctx.environment_id, "ToolStarting", 200) if e.actor and e.actor.id == ctx.session and e.created_at >= since])
+        return len([e for e in self.entries.of_kind("ToolStarting", 200) if e.actor and e.actor.id == ctx.session and e.created_at >= since])
 
     def plain_idle(self, ctx: Context) -> bool:
         return isinstance(self.state(ctx), IdleState)
 
     def open_tasks(self, ctx: Context) -> bool:
-        return bool(self.plans.free(ctx.environment_id))
+        return bool(self.plans.free())
 
     def task_in_hand(self, ctx: Context) -> bool:
         state = self.state(ctx)
         return isinstance(state, Working) and bool(state.task_id)
 
     def parked_tasks(self, ctx: Context) -> bool:
-        return bool(self.tasks.in_state(ctx.environment_id, TaskState.PARKED))
+        return bool(self.tasks.in_state(TaskState.PARKED))
 
     def blocked_tasks(self, ctx: Context) -> bool:
-        return bool(self.tasks.in_state(ctx.environment_id, TaskState.BLOCKED))
+        return bool(self.tasks.in_state(TaskState.BLOCKED))
 
     def quiet_for_over(self, ctx: Context, seconds: int) -> bool:
         """The clock ticks and the agent has been quiet for at least so many seconds."""
@@ -166,21 +166,21 @@ class Checks:
         if not isinstance(ctx.event, ToolStarting):
             return False
         path = self.providers.named(ctx.provider).read_path(ctx.event.tool, ctx.event.input)
-        return bool(path) and any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in self.messages.unanswered(ctx.environment_id))
+        return bool(path) and any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in self.messages.unanswered())
 
     def unread_messages(self, ctx: Context) -> bool:
-        return bool(self.messages.unread(ctx.environment_id))
+        return bool(self.messages.unread())
 
     def unread_over(self, ctx: Context, n: int) -> bool:
         """At least so many messages unread: the inbox line is chosen by the count."""
-        return len(self.messages.unread(ctx.environment_id)) >= n
+        return len(self.messages.unread()) >= n
 
     def unanswered_messages(self, ctx: Context) -> bool:
-        return bool(self.messages.unanswered(ctx.environment_id))
+        return bool(self.messages.unanswered())
 
     def auto_mode(self, ctx: Context) -> bool:
         from journal.features.tasks.feature import Tasks
-        return bool(self.settings.option(PROJECT, Tasks.AUTO))
+        return bool(self.settings.option(Tasks.AUTO))
 
     def following_plan(self, ctx: Context) -> bool:
         return isinstance(self.state(ctx), FollowingPlan)

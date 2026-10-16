@@ -14,9 +14,10 @@ from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, recorded
-from tests.test_features import AGENT, USER, context
+from tests.test_features import AGENT, MAIN, USER, context
 
 
 @pytest.fixture(params=PROVIDERS)
@@ -29,7 +30,8 @@ def journals(tmp_path: Path, monkeypatch, request):
         app = App(Config(tmp_path / name, port=0))
         app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
         apps.append(app)
-    yield [*apps, request.param]
+    with apps[0].container.get(Scope).of(MAIN):
+        yield [*apps, request.param]
     for app in apps:
         app.runtime().stop()
 

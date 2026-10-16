@@ -29,7 +29,7 @@ class App:
         self.container.instance(Bus, Bus())
         self.container.bind(ContextFile, lambda: ContextFile(config.status_home))
         self.container.bind(Connection, self.connection)
-        self.container.bind(Router, lambda: Routes(self.container).mount(Router()))
+        self.container.bind(Router, lambda: Routes(self.container).mount(self.container.call(Router)))
         self.container.bind(Console, self._console)
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(Settings)))
@@ -47,7 +47,7 @@ class App:
         return self.container.get(Console)
 
     def _console(self) -> Console:
-        console = Console(self.container)
+        console = self.container.call(Console)
         for command in StandardCommands.COMMANDS:
             console.add(command)
         for feature in self.container.get(Registry).features:

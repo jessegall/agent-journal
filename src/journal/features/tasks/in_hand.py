@@ -30,7 +30,7 @@ class InHand:
 
     def start(self, task: Task, where: Where) -> Task:
         """One task in progress at a time, by the tasks themselves and not the agent's state, so a restart cannot leave two: a second start is refused until the first is done or parked. Work declared without a task gives way to a task taken up."""
-        for other in self.tasks.in_state(task.environment_id, TaskState.STARTED):
+        for other in self.tasks.in_state(TaskState.STARTED):
             if other.id != task.id:
                 raise Refused(f"task {other.id} is in progress: finish it or park it before you start task {task.id}")
         started = self.tasks.save(task.started(datetime.now(timezone.utc)), where.actor)

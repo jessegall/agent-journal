@@ -8,9 +8,9 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Agents(ScopedRepository[Agent]):
     model = Agent
 
-    def live(self, environment_id: int) -> Agent | None:
+    def live(self) -> Agent | None:
         """The latest agent here whose session has not ended."""
-        alive = [a for a in self.in_(environment_id) if a.state != "ended"]
+        alive = [a for a in self.in_() if a.state != "ended"]
         return alive[-1] if alive else None
 
     def in_state(self, name: str) -> list[Agent]:
@@ -22,6 +22,6 @@ class Agents(ScopedRepository[Agent]):
             raise NotFound(self.table, session)
         return found[0]
 
-    def others_lately(self, environment_id: int, session: str, since: datetime) -> list[Agent]:
+    def others_lately(self, session: str, since: datetime) -> list[Agent]:
         """The other sessions that worked here since: a launch that ended within a minute of starting did no work and is not one."""
-        return [a for a in self.in_(environment_id) if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]
+        return [a for a in self.in_() if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]

@@ -8,6 +8,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.phases import Phases
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import Tasks
 
@@ -19,8 +20,8 @@ IN_PHASE = "in_phase"
 class Plans(ScopedRepository[Plan]):
     model = Plan
 
-    def __init__(self, connection: Connection, bus: Bus, links: Links, tasks: Tasks, phases: Phases) -> None:
-        super().__init__(connection, bus)
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, tasks: Tasks, phases: Phases) -> None:
+        super().__init__(connection, bus, scope)
         self.links, self.tasks, self.phases = links, tasks, phases
 
     def approve(self, plan: Plan, by: Actor) -> Plan:
@@ -60,9 +61,9 @@ class Plans(ScopedRepository[Plan]):
         ids = {t.id for t in phased}
         return phased + [t for t in self.tasks_of(plan) if t.id not in ids]
 
-    def free(self, environment_id: int) -> list[Task]:
+    def free(self) -> list[Task]:
         """The open tasks an agent may take up on its own: a plan hands out its own in its order, so those are never offered."""
-        return [t for t in self.tasks.in_state(environment_id, TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]
+        return [t for t in self.tasks.in_state(TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]
 
     def next_task(self, plan: Plan) -> Task | None:
         return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN), None)

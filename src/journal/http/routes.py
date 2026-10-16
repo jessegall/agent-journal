@@ -15,7 +15,6 @@ from journal.http.controllers.tasks import TaskController
 from journal.http.router import Router
 from journal.http.v3.v3_routes import V3Routes
 from journal.repositories.docs import Docs
-from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
 from journal.repositories.reports import Reports
@@ -47,7 +46,7 @@ class Routes:
         router.get(f"{API}/plans/{{id}}/tasks", get(PlanController).tasks_of)
         router.post(f"{API}/plans/{{id}}/tasks", get(PlanController).add_task)
         for name, repository in (("facts", Facts), ("reminders", Reminders), ("reports", Reports), ("docs", Docs), ("workers", Workers)):
-            self.resource(router, name, ResourceController(get(repository), get(Environments)))
+            self.resource(router, name, ResourceController(get(repository)))
         router.get(f"{API}/chart", get(ChartController).index)
         router.post(f"{API}/chart", get(ChartController).create)
         router.post(f"{API}/chart/try", get(ChartController).try_)

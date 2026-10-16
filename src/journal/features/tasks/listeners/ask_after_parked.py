@@ -19,7 +19,7 @@ class AskAfterParked(AgentListener[Ticked]):
     def handle(self, event: Ticked) -> None:
         from journal.features.tasks.feature import Tasks as TasksFeature
         agent = self.machine.agent(event.session, event.environment_id)
-        parked = self.tasks.in_state(event.environment_id, TaskState.PARKED)
+        parked = self.tasks.in_state(TaskState.PARKED)
         if event.quiet_for < QUIET_FOR or not parked or not isinstance(self.machine.states.named(agent.state, agent.data), Idle):
             return
         task = parked[0]

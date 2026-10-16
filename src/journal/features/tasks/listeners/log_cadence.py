@@ -5,7 +5,7 @@ from journal.features.agent_listener import AgentListener
 from journal.features.option import Option
 from journal.features.tasks.states.working import Working
 from journal.hooks.decision import Decision
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 
@@ -42,4 +42,4 @@ class LogCadence(AgentListener[ToolStarting]):
         return f"journal task log {state.task_id}" if state.task_id else "journal work log"
 
     def after(self, option: Option) -> int:
-        return int(self.settings.option(PROJECT, option))
+        return int(self.settings.option(option))

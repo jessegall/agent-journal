@@ -5,8 +5,8 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.memory.states.at_mark import AtMark
-from journal.repositories.environments import Environments
 from journal.repositories.repository import Repository
+from journal.repositories.scope import Scope
 
 
 class MemoryCommand(Command):
@@ -15,8 +15,8 @@ class MemoryCommand(Command):
     repository: Repository
     scoped: ClassVar[bool] = True
 
-    def __init__(self, environments: Environments, machine: Machine) -> None:
-        self.environments, self.machine = environments, machine
+    def __init__(self, machine: Machine, scope: Scope) -> None:
+        self.machine, self.scope = machine, scope
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", f"record a {self.noun}")
@@ -27,13 +27,13 @@ class MemoryCommand(Command):
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
 
     def create(self, args: Namespace, where: Where) -> int:
-        row = self.repository.save(self.new(args, self.environments.named(where.environment).id), where.actor)
+        row = self.repository.save(self.new(args), where.actor)
         self.decided(where)
         print(f"{self.noun} {row.id}: {row.text}")
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        rows = self.repository.in_(self.environments.named(where.environment).id) if self.scoped else self.repository.all()
+        rows = self.repository.in_() if self.scoped else self.repository.all()
         for row in rows:
             print(f"{row.id:>4}  {row.text}")
         return 0
@@ -43,8 +43,8 @@ class MemoryCommand(Command):
         print(f"{self.noun} {args.n} struck")
         return 0
 
-    def new(self, args: Namespace, environment_id: int):
-        return self.repository.model(environment_id=environment_id, text=args.text, keywords=self.keywords(args))
+    def new(self, args: Namespace):
+        return self.repository.model(text=args.text, keywords=self.keywords(args))
 
     @staticmethod
     def keywords(args: Namespace) -> tuple[str, ...]:
@@ -54,7 +54,7 @@ class MemoryCommand(Command):
         """An agent held at a mark has decided; it goes back to what it was doing."""
         if not where.session:
             return
-        agent = self.machine.agent(where.session, self.environments.named(where.environment).id)
+        agent = self.machine.agent(where.session, self.scope.id)
         state = self.machine.states.named(agent.state, agent.data)
         if isinstance(state, AtMark):
             self.machine.move(where.session, agent.environment_id, state.back().to)

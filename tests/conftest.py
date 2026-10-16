@@ -10,6 +10,8 @@ from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.features.bus import Bus
 from journal.models.all_models import AllModels
+from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 
 
 @pytest.fixture
@@ -40,3 +42,8 @@ def journal_root(tmp_path: Path, template_journal: Path) -> Path:
     """The test's own journal folder, a copy of the booted template."""
     shutil.copytree(template_journal, tmp_path, dirs_exist_ok=True)
     return tmp_path
+
+
+@pytest.fixture
+def scope(connection: Connection, bus: Bus) -> Scope:
+    return Scope(Environments(connection, bus))

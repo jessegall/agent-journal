@@ -1,6 +1,5 @@
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import V3Row, seconds
-from journal.models.environment import Environment
 from journal.models.task_state import TaskState
 from journal.repositories.tasks import Tasks
 
@@ -15,8 +14,8 @@ class TodosShaper(Shaper):
     def __init__(self, tasks: Tasks) -> None:
         self.tasks = tasks
 
-    def rows(self, environment: Environment) -> list[V3Row]:
-        return [self.row(t) for t in self.tasks.in_(environment.id)]
+    def rows(self) -> list[V3Row]:
+        return [self.row(t) for t in self.tasks.in_()]
 
     @staticmethod
     def row(t) -> V3Row:

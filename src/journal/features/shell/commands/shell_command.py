@@ -12,9 +12,9 @@ from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
-from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.scope import Scope
+from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 
 TAIL = 2000
@@ -27,9 +27,9 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, environments: Environments, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink) -> None:
-        self.entries, self.environments, self.messages, self.settings, self.agents = entries, environments, messages, settings, agents
-        self.cards, self.nudger, self.supervisor = cards, nudger, supervisor
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope) -> None:
+        self.entries, self.messages, self.settings, self.agents = entries, messages, settings, agents
+        self.cards, self.nudger, self.supervisor, self.scope = cards, nudger, supervisor, scope
 
     def arguments(self, verbs) -> None:
         split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder; one line per part: R or S for the agent's own or the shell's wrapping, ; or & for how it follows, & or ; for what follows, w or - for whether it writes")
@@ -67,15 +67,14 @@ class ShellCommand(Command):
 
     def limit(self, args: Namespace, where: Where) -> int:
         """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say."""
-        environment = self.environments.named(where.environment).id
-        waiting = bool(self.messages.unread(environment))
+        waiting = bool(self.messages.unread())
         from journal.features.shell.feature import Shell
-        print(int(self.settings.option(PROJECT, Shell.WHILE_WAITING if waiting else Shell.FOREGROUND)))
+        print(int(self.settings.option(Shell.WHILE_WAITING if waiting else Shell.FOREGROUND)))
         return 0
 
     def cap(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
-        print(int(self.settings.option(PROJECT, Shell.SHOWN)))
+        print(int(self.settings.option(Shell.SHOWN)))
         return 0
 
     def started(self, args: Namespace, where: Where) -> int:
@@ -89,25 +88,22 @@ class ShellCommand(Command):
 
     def moved(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
-        environment = self.environments.named(where.environment).id
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
-        self.cards.show(environment, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part)
+        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part)
         print(Shell.MOVED.about(part=args.part, file=args.file).rendered())
         return 0
 
     def ended(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
-        environment = self.environments.named(where.environment).id
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         outcome = "ended" if args.status == 0 else f"failed with code {args.status}"
-        self.cards.show(environment, where.session, f"Background command {outcome}", "terminal", "good" if args.status == 0 else "bad", args.last)
-        live = self.agents.live(environment)
+        self.cards.show(self.scope.id, where.session, f"Background command {outcome}", "terminal", "good" if args.status == 0 else "bad", args.last)
+        live = self.agents.live()
         if live:
             line = self.nudger.say(live, Shell.ENDED.about(outcome=outcome, last=args.last[-300:], file=args.file))
             if line:
-                self.supervisor.type(environment, line)
+                self.supervisor.type(self.scope.id, line)
         return 0
 
     def record(self, where: Where, kind: str, data: dict) -> None:
-        environment = self.environments.named(where.environment).id
-        self.entries.save(Entry(environment_id=environment, kind=kind, actor=where.actor, data={**data, "session": where.session, "at": datetime.now(timezone.utc).timestamp()}), where.actor)
+        self.entries.save(Entry(environment_id=self.scope.id, kind=kind, actor=where.actor, data={**data, "session": where.session, "at": datetime.now(timezone.utc).timestamp()}), where.actor)

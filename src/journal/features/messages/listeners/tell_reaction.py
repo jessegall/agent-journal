@@ -20,7 +20,7 @@ class TellReaction(Listener[Created]):
         if not isinstance(link, Link) or link.kind != REACTS:
             return
         reaction = self.reactions.find(link.source.id)
-        agent = self.agents.live(reaction.environment_id)
+        agent = self.agents.live()
         if reaction.author != Author.USER or agent is None:
             return
         line = self.nudger.say(agent, MessagesFeature.REACTED.about(face=reaction.face, n=link.target.id))

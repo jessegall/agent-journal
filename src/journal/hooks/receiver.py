@@ -12,23 +12,25 @@ from journal.models.actor import Actor
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 
 
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred) -> None:
-        self.environments, self.entries, self.translation, self.bus, self.deferred = environments, entries, translation, bus, deferred
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope) -> None:
+        self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
 
     def receive(self, hook: Hook) -> Decision:
-        """The hook's decision: what the blocking listeners say, the rest deferred."""
+        """The hook's decision: what the blocking listeners say, the rest deferred; all of it in the environment the hook names."""
         environment = self.environments.named(hook.environment)
-        event = self.translation.event(hook, environment)
-        entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
-        decision = self._blocking(event)
-        if not decision.allowed:
-            self.entries.save(entry.with_(data={**entry.data, "refused": decision.reason}), Actor.agent(hook.session))
-        self._defer(event)
+        with self.scope.of(environment.id):
+            event = self.translation.event(hook, environment)
+            entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
+            decision = self._blocking(event)
+            if not decision.allowed:
+                self.entries.save(entry.with_(data={**entry.data, "refused": decision.reason}), Actor.agent(hook.session))
+            self._defer(event)
         return decision
 
     def _blocking(self, event: AgentEvent) -> Decision:

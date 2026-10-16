@@ -6,20 +6,20 @@ from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
-from journal.repositories.environments import Environments
 from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
 from journal.models.chart import BASE, Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import PORTS, THEN, Charts
+from journal.repositories.scope import Scope
 
 
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments) -> None:
-        self.charts, self.entries, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope) -> None:
+        self.charts, self.entries, self.validation, self.shipped, self.trial, self.scope = charts, catalogue, validation, shipped, trial, scope
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "every workflow: its nodes and lines")
@@ -128,7 +128,7 @@ class ChartCommand(Command):
         return 0
 
     def try_(self, args: Namespace, where: Where) -> int:
-        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread, state=args.state, provider=args.provider))
+        ran = self.trial.run(args.trigger, self.scope.id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread, state=args.state, provider=args.provider))
         title = self.entries.entry(NodeKind.TRIGGER, args.trigger).title
         print(f"{title}{f' of row {args.row}' if args.row else ''}, walked as the state {ran['state'] or 'of no agent'}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
         if ran["assumed"]:

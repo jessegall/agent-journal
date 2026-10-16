@@ -7,7 +7,6 @@ from journal.models.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.ref import Ref
-from journal.repositories.environments import Environments
 from journal.config import Config
 from journal.features.messages.faces import Faces
 from journal.repositories.not_found import NotFound
@@ -21,8 +20,8 @@ RECENT = 20
 class MessageCommand(Command):
     noun = "message"
 
-    def __init__(self, messages: Messages, environments: Environments, reactions: Reactions, links: Links, config: Config) -> None:
-        self.messages, self.environments, self.reactions, self.links, self.config = messages, environments, reactions, links, config
+    def __init__(self, messages: Messages, reactions: Reactions, links: Links, config: Config) -> None:
+        self.messages, self.reactions, self.links, self.config = messages, reactions, links, config
 
     def arguments(self, verbs) -> None:
         send = self.verb(verbs, "send", "leave a message")
@@ -42,14 +41,14 @@ class MessageCommand(Command):
 
     def send(self, args: Namespace, where: Where) -> int:
         author = Author.AGENT if where.actor.kind == ActorKind.AGENT else Author.USER
-        message = self.messages.save(Message(environment_id=self.environments.named(where.environment).id, author=author, text=args.text, reply_to=args.reply_to), where.actor)
+        message = self.messages.save(Message(author=author, text=args.text, reply_to=args.reply_to), where.actor)
         if args.reply_to and author == Author.AGENT:
             self.messages.mark_read(self.messages.find(args.reply_to), where.actor)
         print(f"message {message.id} sent")
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for message in self.messages.in_(self.environments.named(where.environment).id):
+        for message in self.messages.in_():
             mark = " " if message.read_at else "*"
             print(f"{mark}{message.id:>4}  {message.author:<5} {message.text}")
         return 0
@@ -60,7 +59,7 @@ class MessageCommand(Command):
         return 0
 
     def unread(self, args: Namespace, where: Where) -> int:
-        waiting = self.messages.unread(self.environments.named(where.environment).id)
+        waiting = self.messages.unread()
         if not waiting:
             print("nothing unread")
         for message in waiting:
@@ -68,8 +67,7 @@ class MessageCommand(Command):
         return 0
 
     def recent(self, args: Namespace, where: Where) -> int:
-        environment = self.environments.named(where.environment)
-        for message in self.messages.recent(environment.id, RECENT):
+        for message in self.messages.recent(RECENT):
             print(f"{message.id:>4}  {message.author:<5} {message.text}")
         return 0
 

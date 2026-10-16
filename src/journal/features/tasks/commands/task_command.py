@@ -16,7 +16,6 @@ from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
-from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
@@ -28,8 +27,8 @@ from journal.repositories.tasks import Tasks
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, environments: Environments, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand) -> None:
-        self.tasks, self.logs, self.environments, self.machine, self.messages, self.links, self.plans, self.in_hand = tasks, logs, environments, machine, messages, links, plans, in_hand
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand) -> None:
+        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand = tasks, logs, machine, messages, links, plans, in_hand
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -55,7 +54,7 @@ class TaskCommand(Command):
         self.verb(verbs, "list", "every open task here")
 
     def create(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(Task(environment_id=self.environments.named(where.environment).id, title=args.title, brief=args.brief), where.actor)
+        task = self.tasks.save(Task(title=args.title, brief=args.brief), where.actor)
         if args.message:
             self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), where.actor)
         if args.start:
@@ -107,13 +106,13 @@ class TaskCommand(Command):
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for task in self.tasks.in_(self.environments.named(where.environment).id):
+        for task in self.tasks.in_():
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0
 
     def _name_next(self, done: Task) -> None:
         from journal.features.tasks.feature import Tasks
-        open_ = self.plans.free(done.environment_id)
+        open_ = self.plans.free()
         if open_:
             print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())
 

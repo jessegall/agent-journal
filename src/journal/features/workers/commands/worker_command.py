@@ -7,17 +7,17 @@ from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.worker_reports import WorkerReports
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker import Worker
-from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
+from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
 
 
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, environments: Environments, machine: Machine, runner: WorkerRunner, reports: WorkerReports) -> None:
-        self.workers, self.messages, self.environments, self.machine = workers, messages, environments, machine
-        self.runner, self.reports = runner, reports
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope) -> None:
+        self.workers, self.messages, self.machine = workers, messages, machine
+        self.runner, self.reports, self.scope = runner, reports, scope
 
     def arguments(self, verbs) -> None:
         dispatch = self.verb(verbs, "dispatch", "send a worker to write one bounded job")
@@ -34,8 +34,7 @@ class WorkerCommand(Command):
         self.verb(verbs, "list", "every worker out")
 
     def dispatch(self, args: Namespace, where: Where) -> int:
-        environment = self.environments.named(where.environment).id
-        worker = Worker(environment_id=environment, name=args.name, brief=args.brief, provider=args.provider, model=args.model, worktree=args.worktree, dispatched_by=where.session)
+        worker = Worker(name=args.name, brief=args.brief, provider=args.provider, model=args.model, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
         self.runner.start(worker, where.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
@@ -48,7 +47,7 @@ class WorkerCommand(Command):
         return 0
 
     def wait(self, args: Namespace, where: Where) -> int:
-        environment = self.environments.named(where.environment).id
+        environment = self.scope.id
         agent = self.machine.agent(where.session, environment)
         current = self.machine.states.named(agent.state, agent.data)
         self.machine.move(where.session, environment, Awaiting.leaving(current, workers=tuple(args.on)))
@@ -62,6 +61,6 @@ class WorkerCommand(Command):
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for worker in self.workers.in_(self.environments.named(where.environment).id):
+        for worker in self.workers.in_():
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")
         return 0

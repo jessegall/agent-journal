@@ -41,8 +41,8 @@ class SayNo(Listener[Creating]):
         raise Refused("not today")
 
 
-def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus):
-    tasks = Tasks(connection, bus)
+def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus, scope):
+    tasks = Tasks(connection, bus, scope)
     task = tasks.save(Task(environment_id=1, title="write the release notes"), by=USER)
     assert task.id == 1
     assert task.created_by == USER and task.updated_by == USER
@@ -50,10 +50,10 @@ def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus):
     assert tasks.find(1) == task
 
 
-def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus):
+def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus, scope):
     heard = Heard()
     bus.listen(ModelEvent, heard)
-    tasks = Tasks(connection, bus)
+    tasks = Tasks(connection, bus, scope)
     task = tasks.save(Task(environment_id=1, title="t"), by=USER)
     tasks.save(task.with_(state=TaskState.STARTED), by=AGENT)
     tasks.delete(task, by=USER)
@@ -64,16 +64,16 @@ def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus):
         tasks.find(task.id)
 
 
-def test_a_refusing_listener_stops_the_write(connection, bus):
+def test_a_refusing_listener_stops_the_write(connection, bus, scope):
     bus.listen(Creating, SayNo())
-    tasks = Tasks(connection, bus)
+    tasks = Tasks(connection, bus, scope)
     with pytest.raises(Refused):
         tasks.save(Task(environment_id=1, title="t"), by=USER)
     assert tasks.all() == []
 
 
-def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus):
-    tasks, links = Tasks(connection, bus), Links(connection, bus)
+def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, scope):
+    tasks, links = Tasks(connection, bus, scope), Links(connection, bus)
     bus.listen(Deleted, UnlinkDeleted(links))
     a = tasks.save(Task(environment_id=1, title="a"), by=USER)
     b = tasks.save(Task(environment_id=1, title="b"), by=USER)
@@ -85,16 +85,18 @@ def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus):
     assert links.of(a) == []
 
 
-def test_where_reads_typed_values_back(connection, bus):
-    tasks = Tasks(connection, bus)
+def test_where_reads_typed_values_back(connection, bus, scope):
+    tasks = Tasks(connection, bus, scope)
     tasks.save(Task(environment_id=1, title="open"), by=USER)
     started = tasks.save(Task(environment_id=1, title="started", state=TaskState.STARTED), by=USER)
-    assert tasks.in_state(1, TaskState.STARTED) == [started]
-    assert tasks.in_(2) == []
+    with scope.of(1):
+        assert tasks.in_state(TaskState.STARTED) == [started]
+    with scope.of(2):
+        assert tasks.in_() == []
 
 
-def test_writes_from_many_threads_all_land(connection, bus):
-    tasks = Tasks(connection, bus)
+def test_writes_from_many_threads_all_land(connection, bus, scope):
+    tasks = Tasks(connection, bus, scope)
 
     def write(n):
         tasks.save(Task(environment_id=1, title=f"t{n}"), by=USER)
@@ -139,22 +141,25 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
     from journal.repositories.links import Links
+    from journal.repositories.environments import Environments
+    from journal.repositories.scope import Scope
     old = Connection(tmp_path / "old.db")
     with old.transaction() as db:
         db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER, author TEXT, text TEXT, created_at TEXT, updated_at TEXT, created_by TEXT, updated_by TEXT)")
         db.execute("INSERT INTO messages (environment_id, author, text, created_at, updated_at, created_by, updated_by) VALUES (1, 'user', 'old', '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', 'user:1', 'user:1')")
     Schema(old, AllModels.MODELS).create()
     bus = Bus()
-    message = Messages(old, bus, Reactions(old, bus, Links(old, bus)), Links(old, bus)).find(1)
+    scope = Scope(Environments(old, bus))
+    message = Messages(old, bus, scope, Reactions(old, bus, scope, Links(old, bus)), Links(old, bus)).find(1)
     assert message.files == () and message.acknowledgement is False and message.idempotency == "" and message.read_at is None
 
 
-def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one_is_left_alone(connection, bus):
+def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one_is_left_alone(connection, bus, scope):
     from journal.models.actor import Actor
     from journal.models.task import Task
     from journal.refused import Refused
     from journal.repositories.tasks import Tasks
-    tasks = Tasks(connection, bus)
+    tasks = Tasks(connection, bus, scope)
     with pytest.raises(Refused, match="at most 80 characters"):
         tasks.save(Task(environment_id=1, title="x" * 81), Actor.system())
     with pytest.raises(Refused, match="no colon"):

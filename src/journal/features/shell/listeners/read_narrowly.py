@@ -3,7 +3,7 @@ from pathlib import Path
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 
@@ -25,7 +25,7 @@ class ReadNarrowly(AgentListener[ToolStarting]):
 
     def cap(self) -> int:
         from journal.features.shell.feature import Shell
-        return int(self.settings.option(PROJECT, Shell.SHOWN))
+        return int(self.settings.option(Shell.SHOWN))
 
     @staticmethod
     def lines(path: Path) -> int:
