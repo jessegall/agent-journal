@@ -4,7 +4,6 @@ from journal.features.option import Option
 from journal.features.voices.shipped import Shipped
 from journal.features.voices.commands.voice_command import VoiceCommand
 from journal.features.voices.listeners.introduce_at_start import IntroduceAtStart
-from journal.features.voices.listeners.say_voice_at_start import SayVoiceAtStart
 from journal.features.voices.listeners.say_voice_when_changed import SayVoiceWhenChanged
 
 
@@ -23,7 +22,7 @@ class Voices(Feature):
     AVATAR = Option("voices.avatar", "Show a figure in the chat", "A small figure beside the chat shows what the agent is doing, in the voice it speaks", True, kind="switch")
     AVATAR_SHOWN = Option("voices.avatar_shown", "Show the figure", "Always, only while the agent works, or never", "always", kind="choice", choices=("always", "working", "never"))
     options = (PROFILE, TITLE, NAME, AVATAR, AVATAR_SHOWN)
-    listeners = (SayVoiceAtStart, SayVoiceWhenChanged, IntroduceAtStart)
+    listeners = (SayVoiceWhenChanged, IntroduceAtStart)
 
     VOICE = Nudge(name, "voice", "how to talk to the user", "{{voice}}", repeat_after=0)
     INTRODUCE = Nudge(name, "introduce", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do; nothing else", repeat_after=0, answered_in_chat=True)

@@ -58,7 +58,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 11
+DRAWINGS_VERSION = 12
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -84,6 +84,7 @@ RULES = "[briefing.rules] {{rule_count}} rules in force: {{rules}}"
 FACTS = "[briefing.facts] facts about this environment: {{facts}}"
 REMINDERS = "[briefing.reminders] reminders here: {{reminders}}"
 WAITING = "[briefing.waiting] waiting for you here: {{waiting}}. journal task list, journal message unread, journal question list"
+VOICE = "[voices.voice] how to talk to the user. {{voice}}"
 ORIENT_HELD = "[briefing.orient] before your first write, run journal environment here: it lists the task in hand, the open tasks, the facts and the reminders"
 SKILL_HELD = "[skills.required] read the {{skill_owed}} skill before anything else: {{skill_path}}. writes wait until you have"
 UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages. journal message unread before any other write"
@@ -395,7 +396,7 @@ class ShippedChart(Seed):
         return draw
 
     def start_block(self, chart: Chart, ends: list) -> list:
-        """The start block, line by line: ready, quiet, the laws (locked), a takeover when another session worked here lately, the rules, facts and reminders when there are any, and what waits."""
+        """The start block, line by line: ready, quiet, the laws (locked), a takeover when another session worked here lately, the rules, facts and reminders when there are any, what waits, and how to talk to the user."""
         x, y = 720, 736
         ready = self.node(chart, NodeKind.ACTION, "say", READY, x=x, y=y)
         quiet = self.node(chart, NodeKind.ACTION, "say", QUIET, x=x, y=y + 92)
@@ -412,7 +413,9 @@ class ShippedChart(Seed):
             self.line(asked, said, YES)
             ends = [(asked, NO), (said, THEN)]
             y += 184
-        return ends
+        voice = self.node(chart, NodeKind.ACTION, "say", VOICE, x=x, y=y)
+        self.chain(ends, voice)
+        return [(voice, THEN)]
 
     def prompt_skill_then(self, shared):
         """A prompt naming a skill's keyword owes that skill, locked, before the shared conduct."""

@@ -50,7 +50,8 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Agent stops | chart.awaiting: "you stopped while the journal awaits ..." | something owed: a skill, the look at what is in flight, a decision at a mark | block the stop, naming the debt | in the workflow the Always workflow at Agent stops (Something owed?, locked); the pause's own stop rule is deleted |
 | Session starts | briefing.ready, quiet, laws (locked), takeover, rules, facts, reminders, waiting | always; the rows that exist; another session lately | say | in the Always workflow at Session starts, the start block drawn line by line after the look is owed (plan 7, task 395); its listener is deleted; the orient line is the Require a look node's |
 | Session starts | messages.new / some / many | messages unread | say | in the workflow the Always workflow at Session starts; its listener is deleted |
-| Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | stays with the voices feature: the voice's own words |
+| Session starts | voices.voice | the voice chosen | say | the last node of the start block in the Always workflow at Session starts, with the filler {{voice}} (plan 7, task 396); its listener is deleted |
+| Session starts | voices.introduce | a fresh conversation | type, after a delay | stays with the voices feature: a typed line after a delay, which no node does |
 | Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in Idle's workflows; its listener is deleted |
 | Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in Idle's workflows; its listener is deleted |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | Expecting's workflows, in phase 2 (task 165), with the frozen record as its proof |

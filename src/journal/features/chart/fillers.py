@@ -14,6 +14,7 @@ from journal.repositories.counts import Counts
 from journal.features.registry import Registry
 from journal.features.skills.requiring import Requiring
 from journal.features.skills.skill_files import SkillFiles
+from journal.features.voices.chosen_voice import ChosenVoice
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.models.plan_state import PlanState
@@ -32,10 +33,11 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
         self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
+        self.chosen = chosen
 
     @classmethod
     def listed(cls) -> list[dict]:
@@ -70,6 +72,10 @@ class Fillers:
     def reminders(self, ctx: Context) -> str:
         """The reminders here, numbered."""
         return self.numbered(r.text for r in self.reminder_rows.in_())
+
+    def voice(self, ctx: Context) -> str:
+        """How the agent talks to the user: the chosen voice's instruction, with the user's title and name."""
+        return self.chosen.instruction()
 
     def waiting(self, ctx: Context) -> str:
         """What waits for the agent, by count: open tasks, unread messages, open questions."""
