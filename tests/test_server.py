@@ -152,8 +152,8 @@ def test_each_type_is_read_alone_above_the_last_number_seen(server):
     call(server, "POST", "/journal/facts", {"text": "the sky is blue"})
     with server.database.transaction():
         server.database.execute("UPDATE facts SET keywords = '{broken' WHERE id = 1")
-    with pytest.raises(OSError):
-        call(server, "GET", "/api/main/fact")
+    status, body = call(server, "GET", "/api/main/fact")
+    assert status == 500 and "error" in body, "a type whose rows will not load fails alone, with the fault named"
     assert call(server, "GET", "/api/main/todo?from=3&completed=1")[1]["rows"][0]["n"] == 4, "a fact that will not load leaves the tasks answering"
     assert call(server, "GET", "/api/main/dashboard")[0] == 404, "the one call for every type is gone"
 

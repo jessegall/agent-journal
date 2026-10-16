@@ -1911,17 +1911,17 @@ def test_approving_a_started_plan_leaves_it_started(app):
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a second word from the page cannot set a running plan back to approved"
 
 
-def test_the_dashboard_shows_a_cancelled_plan_and_a_failing_handler_still_answers(app):
+def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     import json as j
     from urllib.request import urlopen
     console = app.console()
     console.run(["plan", "create", "old", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "its own"], USER)
     console.run(["plan", "cancel", "1"], USER)
-    with urlopen(f"http://127.0.0.1:{app.server().port}/api/main/dashboard?types=plan%2Ctodo&completed=1&last=50", timeout=5) as reply:
-        assert reply.status == 200, "a cancelled plan and its task are shaped for the page"
-        shown = j.loads(reply.read())
-    assert "abandoned" in j.dumps(shown)
+    for kind in ("plan", "todo"):
+        with urlopen(f"http://127.0.0.1:{app.server().port}/api/main/{kind}?last=50", timeout=5) as reply:
+            assert reply.status == 200, f"a cancelled {kind} is shaped for the page"
+            assert "abandoned" in j.dumps(j.loads(reply.read()))
 
 
 def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
