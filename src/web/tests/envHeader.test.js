@@ -45,3 +45,17 @@ test("two environments reading the same path are two calls, each with its own he
 test("an address the browser opens itself names the environment in its query", () => {
     expect(client().fileUrl("message", 7, "shot.png")).toBe("/api/message/7/files/shot.png?env=main");
 });
+
+test("the journal's own routes, the workflows and the MCP servers, carry the header too", async () => {
+    const fetched = answering();
+    vi.stubGlobal("fetch", fetched);
+    await client().chart();
+    await client().chartOne(1);
+    await client().chartSave(1, {revision: 0, nodes: [], lines: []});
+    await client().mcp();
+    expect(fetched.mock.calls).toHaveLength(4);
+    for (const [url, sent] of fetched.mock.calls) {
+        expect(sent.headers[ENV_HEADER]).toBe("main");
+        expect(url.startsWith("/journal/")).toBe(true);
+    }
+});

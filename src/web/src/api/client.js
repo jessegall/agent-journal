@@ -133,60 +133,69 @@ export class ApiClient {
         return this.get("/journals");
     }
 
+    // the journal's own routes, the workflows and the MCP servers, are scoped like the rest: every call carries the environment header
     own(path) {
         return `${this.base}/journal${path}`;
     }
 
+    ownGet(path) {
+        return transport.request("GET", this.own(path), undefined, 0, this.headers());
+    }
+
+    ownPost(path, body = {}) {
+        return transport.request("POST", this.own(path), body, 0, this.headers());
+    }
+
     chart() {
-        return transport.request("GET", this.own("/chart"));
+        return this.ownGet("/chart");
     }
 
     chartOne(id) {
-        return transport.request("GET", this.own(`/chart/${id}`));
+        return this.ownGet(`/chart/${id}`);
     }
 
     chartNew(body) {
-        return transport.request("POST", this.own("/chart"), body);
+        return this.ownPost("/chart", body);
     }
 
     chartSave(id, body) {
-        return transport.request("POST", this.own(`/chart/${id}`), body);
+        return this.ownPost(`/chart/${id}`, body);
     }
 
     chartRemove(id) {
-        return transport.request("POST", this.own(`/chart/${id}/remove`), {});
+        return this.ownPost(`/chart/${id}/remove`, {});
     }
 
     chartReset(id) {
-        return transport.request("POST", this.own(`/chart/${id}/reset`), {});
+        return this.ownPost(`/chart/${id}/reset`, {});
     }
 
     chartTry(trigger, environment) {
-        return transport.request("POST", this.own("/chart/try"), {trigger, environment});
+        return this.ownPost("/chart/try", {trigger, environment});
     }
 
     mcp() {
-        return transport.request("GET", this.own("/mcp"));
+        return this.ownGet("/mcp");
     }
 
     mcpInstall(name) {
-        return transport.request("POST", this.own("/mcp/install"), {name});
+        return this.ownPost("/mcp/install", {name});
     }
 
     mcpKey(name, value) {
-        return transport.request("POST", this.own(`/mcp/${encoded(name)}/key`), {value});
+        return this.ownPost(`/mcp/${encoded(name)}/key`, {value});
     }
 
     mcpSignIn(name) {
-        return transport.request("POST", this.own(`/mcp/${encoded(name)}/sign-in`), {});
+        return this.ownPost(`/mcp/${encoded(name)}/sign-in`, {});
     }
 
     mcpRemove(name) {
-        return transport.request("POST", this.own(`/mcp/${encoded(name)}/remove`), {});
+        return this.ownPost(`/mcp/${encoded(name)}/remove`, {});
     }
 
     mcpCheck() {
-        return transport.request("POST", this.own("/mcp/check"), {}, LONG_WAIT_MS);
+        return this.ownPost("/mcp/check", {}, LONG_WAIT_MS);
     }
 
     startJournal(root, agent) {

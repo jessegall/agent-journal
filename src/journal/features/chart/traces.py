@@ -3,6 +3,7 @@ from journal.features.chart.walk import FAILED, WALKED
 from journal.models.chart import Chart
 from journal.models.entry import Entry
 from journal.models.node_kind import NodeKind
+from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 
 LOOK_BACK = 400
@@ -12,14 +13,16 @@ LOOK_BACK = 400
 class Traces:
     """What the page says about a workflow's last walk and its last failure, read from the entries the walk leaves."""
 
-    def __init__(self, entries: Entries, catalogue: Catalogue) -> None:
-        self.entries, self.catalogue = entries, catalogue
+    def __init__(self, entries: Entries, catalogue: Catalogue, charts: Charts) -> None:
+        self.entries, self.catalogue, self.charts = entries, catalogue, charts
 
     def last_walk(self, chart: Chart) -> dict:
-        walk = next((e for e in self.entries.of_kind(WALKED, LOOK_BACK) if chart.id in e.data.get("workflows", [])), None)
+        """The newest walk that passed through one of this workflow's own nodes, with those nodes alone: a walk that consulted it and found no trigger for the event is not its."""
+        own = {node.id for node in self.charts.nodes_of(chart)}
+        walk = next((e for e in self.entries.of_kind(WALKED, LOOK_BACK) if own.intersection(e.data.get("nodes", []))), None)
         if walk is None:
             return {}
-        return {"at": walk.created_at.timestamp(), "trigger": self.trigger_title(walk.data["trigger"]), "nodes": walk.data["nodes"], "said": walk.data.get("said", ""), "allowed": walk.data.get("allowed", True)}
+        return {"at": walk.created_at.timestamp(), "trigger": self.trigger_title(walk.data["trigger"]), "nodes": [n for n in walk.data["nodes"] if n in own], "said": walk.data.get("said", ""), "allowed": walk.data.get("allowed", True)}
 
     def last_failure(self, chart: Chart) -> dict:
         failed = next((e for e in self.entries.of_kind(FAILED, LOOK_BACK) if e.data.get("workflow") == chart.id), None)
