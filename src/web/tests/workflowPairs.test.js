@@ -13,10 +13,11 @@ const catalogue = [
     {kind: "trigger", key: "plans.created", title: "A plan is created", group: "plan", providers: ["claude", "codex"]},
     {kind: "check", key: "open_tasks", title: "Has open tasks?", group: ""},
 ];
-const shipped = (id, state, event, more = {}) => ({
+const shipped = (id, state, event, place, more = {}) => ({
     id,
     state,
     event,
+    place,
     shipped: true,
     edited: false,
     off: false,
@@ -25,45 +26,45 @@ const shipped = (id, state, event, more = {}) => ({
     ...more,
 });
 const workflows = [
-    shipped(1, "idle", "idle"),
-    shipped(2, "working", "idle", {edited: true}),
-    shipped(3, "working", "tasks.created", {off: true}),
-    {...shipped(4, "following_plan", "ticked"), shipped: false},
+    shipped(1, "idle", "idle", 2),
+    shipped(2, "working", "idle", 1, {edited: true}),
+    shipped(3, "working", "tasks.created", 0, {off: true}),
+    {...shipped(4, "following_plan", "ticked", 0), shipped: false},
+    shipped(5, "", "idle", 0),
 ];
 
-describe("one workflow per state per event", () => {
+describe("an event's workflows in the order they run", () => {
     const paired = pairs(workflows, states, catalogue);
 
-    it("answers an event with the state's own workflow, or its parent's where it has none", () => {
-        expect(paired.ownFor("working", "idle").id).toBe(2);
-        expect(paired.servingFor("following_plan", "idle").id).toBe(2);
-        expect(paired.ownFor("following_plan", "idle")).toBeNull();
-        expect(paired.servingFor("following_plan", "ticked").id).toBe(4);
-        expect(paired.servingFor("idle", "ticked")).toBeNull();
+    it("lists an event's workflows by place, every state's together", () => {
+        expect(paired.answering("idle").map((w) => w.id)).toEqual([5, 2, 1]);
     });
 
-    it("lists every agent event and only the row events the state or its parent answers", () => {
-        expect(paired.eventsFor("idle").map((e) => e.key)).toEqual(["idle", "ticked"]);
-        expect(paired.eventsFor("following_plan").map((e) => e.key)).toEqual(["idle", "ticked", "tasks.created"]);
-        expect(paired.addableFor("working").map((e) => e.key)).toEqual(["plans.created"]);
+    it("filtered on a state, shows the stateless ones and the nearest state's in the lineage", () => {
+        expect(paired.listFor("idle", "idle").map((w) => w.id)).toEqual([5, 1]);
+        expect(paired.listFor("idle", "following_plan").map((w) => w.id)).toEqual([5, 2]);
+        expect(paired.listFor("ticked", "following_plan").map((w) => w.id)).toEqual([4]);
+        expect(paired.listFor("ticked", "idle")).toEqual([]);
     });
 
-    it("words the rows by the one thing that sets them apart", () => {
-        expect(paired.wordsFor("working", "idle")).toBe("Changed by you");
-        expect(paired.wordsFor("working", "tasks.created")).toBe("Turned off");
-        expect(paired.wordsFor("following_plan", "idle")).toBe("Working's");
-        expect(paired.wordsFor("idle", "idle")).toBe("");
-        expect(paired.wordsFor("idle", "ticked")).toBe("");
+    it("lists every agent event and the row events something answers; the rest can be added", () => {
+        expect(paired.events().map((e) => e.key)).toEqual(["idle", "ticked", "tasks.created"]);
+        expect(paired.addable().map((e) => e.key)).toEqual(["plans.created"]);
     });
 
-    it("marks a default, yours, off, failed, borrowed and none, each named in the key", () => {
-        expect(markOf(workflows[0], false)).toBe("default");
-        expect(markOf(workflows[1], false)).toBe("yours");
-        expect(markOf(workflows[2], false)).toBe("off");
-        expect(markOf(shipped(9, "idle", "idle", {failed: true}), false)).toBe("failed");
-        expect(markOf(workflows[1], true)).toBe("borrowed");
-        expect(markOf(null, false)).toBe("none");
-        expect(MARKS.map((m) => m.mark)).toEqual(["default", "yours", "off", "failed", "borrowed", "none"]);
-        expect(statusOf(workflows[3])).toBe("Made by you");
+    it("says when a workflow runs and what a row says about it", () => {
+        expect(paired.whoOf(workflows[4])).toBe("always");
+        expect(paired.whoOf(workflows[3])).toBe("when the agent is following a plan");
+        expect(statusOf(workflows[1])).toBe("Changed by you");
+        expect(statusOf(workflows[2])).toBe("Turned off");
+        expect(statusOf(workflows[4])).toBe("");
+    });
+
+    it("marks a row by what was done to it", () => {
+        expect(markOf(workflows[0])).toBe("default");
+        expect(markOf(workflows[1])).toBe("yours");
+        expect(markOf(workflows[2])).toBe("off");
+        expect(markOf(null)).toBe("none");
+        expect(MARKS.map((m) => m.mark)).toEqual(["default", "yours", "off", "failed", "none"]);
     });
 });

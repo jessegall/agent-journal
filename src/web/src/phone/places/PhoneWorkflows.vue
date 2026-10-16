@@ -76,7 +76,7 @@ onMounted(async () => {
         workflows.value = got.workflows;
         catalogue.value = got.catalogue;
         states.value = got.states;
-        await pick(pickedState.value, pickedEvent.value);
+        await pick(pickedEvent.value);
     } catch (error) {
         failed.value = error.message;
     } finally {
@@ -84,14 +84,11 @@ onMounted(async () => {
     }
 });
 
-async function pick(state, event) {
-    pickedState.value = state;
+async function pick(event, id = 0) {
     pickedEvent.value = event;
     sheet.value = "";
-    const own = ownFor(state, event);
-    const serving = servingFor(state, event);
-    borrowed.value = !own && Boolean(serving);
-    if (serving) await open(serving.id);
+    const first = id ? workflows.value.find((w) => w.id === id) : pairing.value.answering(event)[0];
+    if (first) await open(first.id);
     else empty();
 }
 
@@ -210,7 +207,7 @@ const removeWorkflow = () =>
     act("remove", async () => {
         await api.chartRemove(current.value);
         await refreshList();
-        await pick(pickedState.value, pickedEvent.value);
+        await pick(pickedEvent.value);
     });
 const turnOff = () =>
     act("off", async () => {
@@ -222,73 +219,89 @@ const turnOn = () =>
         take(await api.chartOn(current.value));
         await refreshList();
     });
-const start = () =>
+const start = (state) =>
     act("create", async () => {
-        const made = await api.chartNew({title: "", trigger: pickedEvent.value, state: pickedState.value});
+        const made = await api.chartNew({title: "", trigger: pickedEvent.value, state});
         await refreshList();
-        borrowed.value = false;
         await open(made.id);
     });
 const states = ref([]);
-const pickedState = ref("idle");
 const pickedEvent = ref("idle");
-const borrowed = ref(false);
 const conflict = ref(null);
 const pairing = computed(() => pairs(workflows.value, states.value, catalogue.value));
-const ownFor = (state, event) => pairing.value.ownFor(state, event);
-const servingFor = (state, event) => pairing.value.servingFor(state, event);
-const stateTitle = computed(() => pairing.value.titleOf(pickedState.value));
 const eventTitle = computed(() => entries.value[`trigger:${pickedEvent.value}`]?.title || pickedEvent.value);
 const currentWorkflow = computed(() => workflows.value.find((w) => w.id === current.value) || null);
-const parentWords = computed(() =>
-    pairing.value.parentOf(pickedState.value)
-        ? `${pairing.value.titleOf(pairing.value.parentOf(pickedState.value))}'s runs here again.`
-        : ""
-);
+const parentWords = computed(() => {
+    const workflow = currentWorkflow.value;
+    const parent = workflow && workflow.state ? pairing.value.parentOf(workflow.state) : "";
+    return parent ? `${pairing.value.titleOf(parent)}'s runs here again.` : "";
+});
 const statusWords = computed(() => {
     const workflow = currentWorkflow.value;
     if (!workflow) return "No workflow";
-    if (borrowed.value) return `${pairing.value.titleOf(workflow.state)}'s, used where ${stateTitle.value} has none of its own`;
-    return statusOf(workflow) || "Default";
+    return `${statusOf(workflow) || "Default"}, runs ${pairing.value.whoOf(workflow)}`;
 });
 const canTry = computed(
     () => Boolean(entries.value[`trigger:${pickedEvent.value}`]?.tried) && Boolean(currentWorkflow.value) && !dirty.value
 );
-const stateActions = computed(() =>
-    states.value.map((s) => ({
-        key: s.key,
-        label: s.title,
-        check: s.key === pickedState.value,
-        run: () => pick(s.key, pickedEvent.value),
-    }))
-);
 const eventActions = computed(() =>
     pairing.value
-        .eventsFor(pickedState.value)
+        .events()
         .map((e) => ({
             key: e.key,
             label: e.title,
-            sub: pairing.value.wordsFor(pickedState.value, e.key) || (e.providers.includes("codex") ? "" : "Claude only"),
+            sub: `${pairing.value.answering(e.key).length || "no"} ${pairing.value.answering(e.key).length === 1 ? "workflow" : "workflows"}`,
             check: e.key === pickedEvent.value,
-            run: () => pick(pickedState.value, e.key),
+            run: () => pick(e.key),
         }))
-        .concat([
-            {
-                key: "add",
-                label: "Add an event",
-                sub: "A row event this state has no workflow for yet",
-                run: () => (sheet.value = "add-event"),
-            },
-        ])
+        .concat([{key: "add", label: "Add an event", sub: "A row event nothing answers yet", run: () => (sheet.value = "add-event")}])
 );
 const addEventActions = computed(() =>
-    pairing.value
-        .addableFor(pickedState.value)
-        .map((e) => ({key: e.key, label: e.title, sub: e.group, run: () => pick(pickedState.value, e.key)}))
+    pairing.value.addable().map((e) => ({key: e.key, label: e.title, sub: e.group, run: () => pick(e.key)}))
 );
+const listActions = computed(() =>
+    pairing.value.answering(pickedEvent.value).map((w, i) => ({
+        key: String(w.id),
+        label: `${i + 1}. ${w.title}`,
+        sub: `${pairing.value.whoOf(w)}${statusOf(w) ? ` · ${statusOf(w)}` : ""}`,
+        check: w.id === current.value,
+        run: () => pick(pickedEvent.value, w.id),
+    }))
+);
+const newActions = computed(() =>
+    [
+        {key: "", label: "Always", sub: "whatever the agent is doing"},
+        ...states.value.map((s) => ({key: s.key, label: s.title, sub: "only in this state"})),
+    ].map((item) => ({
+        ...item,
+        run: () => start(item.key),
+    }))
+);
+const reorder = (ids) =>
+    act("order", async () => {
+        const revisions = Object.fromEntries(workflows.value.map((w) => [w.id, w.revision]));
+        await api.chartOrder(
+            pickedEvent.value,
+            ids.map((id) => ({id, revision: revisions[id]}))
+        );
+        await refreshList();
+    });
+const moveBy = (by) => {
+    const ids = pairing.value.answering(pickedEvent.value).map((w) => w.id);
+    const at = ids.indexOf(current.value);
+    const to = Math.min(Math.max(at + by, 0), ids.length - 1);
+    if (at < 0 || to === at) return;
+    ids.splice(at, 1);
+    ids.splice(to, 0, current.value);
+    return reorder(ids);
+};
 const test = () =>
     act("try", async () => {
-        const ran = await api.chartTry({trigger: pickedEvent.value, environment: "", state: pickedState.value});
+        const ran = await api.chartTry({
+            trigger: pickedEvent.value,
+            environment: "",
+            state: currentWorkflow.value ? currentWorkflow.value.state : "",
+        });
         trial.value = ran;
     });
 const nodeActions = computed(() =>
@@ -314,11 +327,7 @@ const portActions = computed(() => {
 });
 const workflowOwn = computed(() => {
     const workflow = currentWorkflow.value;
-    if (!workflow) return [{key: "start", label: "Start a workflow here", sub: "The journal does nothing here yet", run: start}];
-    if (borrowed.value)
-        return [
-            {key: "own", label: "Make its own", sub: `A copy of ${pairing.value.titleOf(workflow.state)}'s to change here`, run: start},
-        ];
+    if (!workflow) return [{key: "new", label: "New workflow", sub: "Always, or for one state", run: () => (sheet.value = "new")}];
     const off = workflow.off
         ? {key: "on", label: "Turn on", sub: "Its steps come back as they were", run: turnOn}
         : {
@@ -327,7 +336,11 @@ const workflowOwn = computed(() => {
               sub: "Its steps are kept; the journal stops answering here",
               run: () => (sheet.value = "confirm-off"),
           };
-    const own = [off];
+    const own = [
+        {key: "up", label: "Run earlier", sub: "One place up in the event's order", run: () => moveBy(-1)},
+        {key: "down", label: "Run later", sub: "One place down in the event's order", run: () => moveBy(1)},
+        off,
+    ];
     if (shipped.value && (workflow.edited || workflow.off)) {
         own.push({
             key: "reset",
@@ -393,8 +406,8 @@ const steps = computed(() => {
         </template>
         <template v-else-if="loaded">
             <CellGroup>
-                <Cell label="When the agent is" :sub="stateTitle" icon="bolt" @pick="sheet = 'states'" />
-                <Cell label="And this happens" :sub="eventTitle" icon="bolt" @pick="sheet = 'events'" />
+                <Cell label="Event" :sub="eventTitle" icon="bolt" @pick="sheet = 'events'" />
+                <Cell label="Workflow" :sub="currentWorkflow ? currentWorkflow.title : 'none yet'" icon="bolt" @pick="sheet = 'list'" />
             </CellGroup>
             <p class="wf-status">{{ statusWords }}</p>
             <p v-if="currentWorkflow && currentWorkflow.behind" class="wf-status">
@@ -406,7 +419,7 @@ const steps = computed(() => {
                 <EmptyList
                     icon="bolt"
                     title="Nothing is set up here"
-                    :reason="`The journal does nothing when the agent is ${stateTitle.toLowerCase()} and ${eventTitle.toLowerCase()}.`"
+                    :reason="`No workflow answers ${eventTitle.toLowerCase()} yet. New workflow starts one.`"
                 />
             </template>
             <template v-else-if="!trigger">
@@ -471,35 +484,44 @@ const steps = computed(() => {
                     <Button kind="link" :disabled="!dirty" @click="discard">Discard changes</Button>
                 </div>
                 <div class="wf-row">
-                    <Button kind="plain" fill :disabled="!currentWorkflow || borrowed" @click="sheet = 'nodes'">Add step</Button>
+                    <Button kind="plain" fill :disabled="!currentWorkflow" @click="sheet = 'nodes'">Add step</Button>
                     <Button kind="primary" fill :busy="busy === 'save'" :disabled="!dirty" @click="save">Save</Button>
                 </div>
             </div>
         </template>
     </PlaceScreen>
 
-    <template v-if="sheet === 'states'">
+    <template v-if="sheet === 'events'">
         <ActionSheet
-            title="When the agent is"
-            :about="stateTitle"
-            line="the state whose workflows to see"
-            :actions="stateActions"
+            title="Event"
+            :about="eventTitle"
+            line="the event whose workflows to see"
+            :actions="eventActions"
             @close="sheet = ''"
         />
     </template>
-    <template v-if="sheet === 'events'">
+    <template v-if="sheet === 'list'">
         <ActionSheet
-            title="And this happens"
-            :about="stateTitle"
-            line="the event the workflow answers"
-            :actions="eventActions"
+            title="Runs in this order"
+            :about="eventTitle"
+            line="first to last; Run earlier and Run later move the open one"
+            :actions="listActions"
+            @close="sheet = ''"
+        />
+    </template>
+    <template v-if="sheet === 'new'">
+        <ActionSheet
+            title="New workflow"
+            :about="eventTitle"
+            line="always, or only in one state"
+            :actions="newActions"
             @close="sheet = ''"
         />
     </template>
     <template v-if="sheet === 'add-event'">
         <ActionSheet
             title="Add an event"
-            :about="stateTitle"
+            :about="eventTitle"
             line="a row event to start a workflow at"
             :actions="addEventActions"
             @close="sheet = ''"
@@ -536,9 +558,7 @@ const steps = computed(() => {
         <PhoneSheet label="Test with event" tall @close="sheet = ''">
             <template #head>
                 <h2 class="wf-sheet-title">Test with event</h2>
-                <p class="wf-sheet-sub">
-                    {{ stateTitle }} at {{ eventTitle }} · the saved workflow, against what the agent has now; nothing is sent
-                </p>
+                <p class="wf-sheet-sub">{{ eventTitle }} · the saved workflows, against what the agent has now; nothing is sent</p>
             </template>
             <div class="wf-sheet-body">
                 <Button kind="primary" fill :busy="busy === 'try'" @click="test">Test</Button>

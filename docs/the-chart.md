@@ -104,24 +104,29 @@ switching messages or tasks off still silences their conduct.
 
 ## The page
 
-The Workflows page is two lists and the one workflow they pick. The left list is the states, "When the agent is",
-each with a strip of marks, one per event, and a count of how many of its events do something; the right list is
-the events of the picked state, "And this happens": every agent event, then the row events the state has a
-workflow for, then Add an event for the rest. A mark or a row's word says the one thing that sets a workflow
-apart: nothing for a default, a diamond for one changed or made by you, a crossed ring for one turned off, a red
-ring when its last run failed, a faded dot for one borrowed from the parent state, a dash for none. A state with
-a parent, Following a plan under Working, uses the parent's workflow where it has none of its own, says so, and
-offers Make its own, a copy to change; a pair with no workflow offers Start a workflow here. Under the title the
-status, when the workflow last ran and what it said, the last step that failed since, and the warning of a wait
-nothing ends. Recent runs in the bar opens the last ten runs across every workflow, each opening its workflow
-with the steps it took lit. Test run walks the saved workflow for the pair against the agent's rows, nothing
-sent, and lights its path; it is offered for the events a trial can stand in for.
+The Workflows page is an event list, the event's workflows in the order they run, and the one workflow picked.
+The left list is the events: every agent event, then the row events something answers, then Add an event for the
+rest; each shows how many workflows answer it, a dash when none. The middle list, "Runs in this order", is the
+event's workflows numbered first to last, each saying when it runs, always or when the agent is in its state, and
+the one thing that sets it apart: changed or made by you, turned off, failed. Dragging a row onto another puts it
+there; the order is saved at once, for every agent from the next event, and refused with who saved first when the
+list changed under you. A filter at the top shows the list as it runs for one state: the always ones and the
+nearest state's in the lineage, numbered by their place in the whole list; dragging waits for Every state. New
+workflow at the foot starts one at this event, always or for one state, at the last place. A mark says the one
+thing that sets a workflow apart: nothing for a default, a diamond for one changed or made by you, a crossed ring
+for one turned off, a red ring when its last run failed, a dash for none. Under the title the status and when the
+workflow runs, when it last ran and what it said, the last step that failed since, and the warning of a wait
+nothing ends. Recent runs in the bar opens the last ten runs across every workflow, each opening the first
+workflow it walked with the steps it took lit. Test run walks the saved workflows of the event against the
+agent's rows as the picked workflow's state, nothing sent, and lights the path; it is offered for the events a
+trial can stand in for. The phone shows the same as an Event cell, a Workflow cell that opens the ordered list,
+and Run earlier and Run later on the open workflow.
 
 ## Editing
 
 The page opens read-only. Edit switches editing on, folds the lists into two crumbs and says in the bar that
 saving changes this for every agent from the next event, and for the child states that use it; Done switches
-it off again, asking first when changes are unsaved, as does picking another pair. By command the same guard is
+it off again, asking first when changes are unsaved, as does picking another workflow. By command the same guard is
 `--edit-default` on a default workflow. Drag a line from a port onto a card; drop it on empty canvas and Add step
 opens where it fell; click a line to take it out; drag a card to move it; type an action's message in its card,
 with the values the server offers to insert. Add step puts a step below the selected one, connected to its first

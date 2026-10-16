@@ -1,7 +1,7 @@
 <script setup>
 import {ago} from "../format/time.js";
 import {overlapping, tidy} from "../domain/tidy.js";
-import {MARKS, markOf, pairs, statusOf} from "../domain/workflowPairs.js";
+import {markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -151,7 +151,7 @@ async function load() {
     workflows.value = got.workflows;
     catalogue.value = got.catalogue;
     states.value = got.states;
-    await pick(pickedState.value, pickedEvent.value);
+    await pick(pickedEvent.value, current.value);
 }
 onMounted(load);
 onMounted(() => window.addEventListener("resize", fit));
@@ -436,7 +436,7 @@ const removeWorkflow = () =>
         confirming.value = "";
         await api.chartRemove(current.value);
         await refreshList();
-        await pick(pickedState.value, pickedEvent.value);
+        await pick(pickedEvent.value);
     });
 const turnOff = () =>
     act("off", async () => {
@@ -451,11 +451,10 @@ const turnOn = () =>
         await nextTick();
         fit();
     });
-const start = () =>
+const start = (state) =>
     act("create", async () => {
-        const made = await api.chartNew({title: "", trigger: pickedEvent.value, state: pickedState.value});
+        const made = await api.chartNew({title: "", trigger: pickedEvent.value, state});
         await refreshList();
-        borrowed.value = false;
         await open(made.id);
         unlocked.value = true;
     });
@@ -463,17 +462,21 @@ const openRuns = () =>
     act("runs", async () => {
         runs.value = (await api.chartRuns(10)).runs;
     });
-// a run opens the workflow it ran, the state's own or the parent's it borrowed, with the steps it took lit
+// a run opens the first workflow it ran, with the steps it took lit
 async function openRun(run) {
     const ran = run.workflows.map((n) => workflows.value.find((w) => w.id === n)).find(Boolean);
     runs.value = null;
     if (!ran) return;
-    await pick(ran.state, ran.event);
+    await pick(ran.event, ran.id);
     lit.value = run.nodes;
 }
 const test = () =>
     act("try", async () => {
-        const ran = await api.chartTry({trigger: pickedEvent.value, environment: "", state: pickedState.value});
+        const ran = await api.chartTry({
+            trigger: pickedEvent.value,
+            environment: "",
+            state: currentWorkflow.value ? currentWorkflow.value.state : "",
+        });
         trial.value = ran;
         lit.value = ran.nodes;
     });
@@ -484,9 +487,8 @@ const trialWords = computed(() => {
     return `Test run: ${would}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""}`;
 });
 const states = ref([]);
-const pickedState = ref("idle");
 const pickedEvent = ref("idle");
-const borrowed = ref(false);
+const stateFilter = ref("");
 const runs = ref(null);
 const faults = ref([]);
 const conflict = ref(null);
@@ -494,68 +496,78 @@ const lit = ref([]);
 const trial = ref(null);
 const leaving = ref(null);
 const listsHidden = ref(false);
+const dragging = ref(0);
 const pairing = computed(() => pairs(workflows.value, states.value, catalogue.value));
 const titleOf = (key) => pairing.value.titleOf(key);
-const parentOf = (key) => pairing.value.parentOf(key);
-const ownFor = (state, event) => pairing.value.ownFor(state, event);
-const servingFor = (state, event) => pairing.value.servingFor(state, event);
-const stateRows = computed(() =>
-    states.value.map((s) => {
-        const events = pairing.value.eventsFor(s.key);
-        const own = events.filter((e) => ownFor(s.key, e.key));
+const eventRows = computed(() =>
+    pairing.value.events().map((e) => {
+        const answering = pairing.value.answering(e.key);
         return {
-            key: s.key,
-            title: s.title,
-            marks: events.map((e) => ({key: e.key, title: e.title, mark: markOf(servingFor(s.key, e.key), !ownFor(s.key, e.key))})),
-            failed: own.some((e) => ownFor(s.key, e.key).failed),
-            warning: own.some((e) => ownFor(s.key, e.key).warnings.length > 0),
+            key: e.key,
+            title: e.title,
+            count: answering.length,
+            failed: answering.some((w) => w.failed),
+            off: answering.length > 0 && answering.every((w) => w.off),
+            claudeOnly: !e.providers.includes("codex"),
         };
     })
 );
-const eventRows = computed(() =>
-    pairing.value.eventsFor(pickedState.value).map((e) => ({
-        key: e.key,
-        title: e.title,
-        mark: markOf(servingFor(pickedState.value, e.key), !ownFor(pickedState.value, e.key)),
-        words: pairing.value.wordsFor(pickedState.value, e.key),
-        claudeOnly: !e.providers.includes("codex"),
+const addableEvents = computed(() => pairing.value.addable().map((e) => ({key: e.key, label: e.title, note: e.group})));
+const listRows = computed(() =>
+    pairing.value.listFor(pickedEvent.value, stateFilter.value).map((w) => ({
+        id: w.id,
+        place: pairing.value.answering(pickedEvent.value).findIndex((x) => x.id === w.id) + 1,
+        title: w.title,
+        who: pairing.value.whoOf(w),
+        words: statusOf(w),
+        mark: markOf(w),
+        locked: Boolean(w.locked),
+        warnings: w.warnings,
     }))
 );
-const addableEvents = computed(() => pairing.value.addableFor(pickedState.value).map((e) => ({key: e.key, label: e.title, note: e.group})));
+const filterItems = computed(() => [{key: "", label: "Every state"}, ...states.value.map((s) => ({key: s.key, label: s.title}))]);
+const filterLabel = computed(() => (stateFilter.value ? titleOf(stateFilter.value) : "Every state"));
+const newItems = computed(() => [
+    {key: "", label: "Always", note: "whatever the agent is doing"},
+    ...states.value.map((s) => ({key: s.key, label: s.title, note: "only in this state"})),
+]);
 const currentWorkflow = computed(() => workflows.value.find((w) => w.id === current.value) || null);
 const eventTitle = computed(() => entries.value[`trigger:${pickedEvent.value}`]?.title || pickedEvent.value);
-const pageTitle = computed(() => `${titleOf(pickedState.value)} at ${eventTitle.value}`);
+const pageTitle = computed(() => (currentWorkflow.value ? currentWorkflow.value.title : eventTitle.value));
 const statusWords = computed(() => {
     const workflow = currentWorkflow.value;
     if (!workflow) return "No workflow";
-    if (borrowed.value) return `${titleOf(workflow.state)}'s, used where ${titleOf(pickedState.value)} has none of its own`;
-    return statusOf(workflow) || "Default";
+    return `${statusOf(workflow) || "Default"}, runs ${pairing.value.whoOf(workflow)}`;
 });
 const alsoWords = computed(() => {
-    const children = states.value
-        .filter((s) => s.parent === pickedState.value && !ownFor(s.key, pickedEvent.value))
-        .map((s) => s.title.toLowerCase());
-    return children.length ? `Also used while the agent is ${children.join(" or ")}.` : "";
+    const workflow = currentWorkflow.value;
+    if (!workflow || !workflow.state) return "";
+    const children = states.value.filter((s) => s.parent === workflow.state).map((s) => s.title.toLowerCase());
+    return children.length ? `Also used while the agent is ${children.join(" or ")}, unless that state has its own here.` : "";
 });
 const canTry = computed(
     () => Boolean(entries.value[`trigger:${pickedEvent.value}`]?.tried) && !unlocked.value && Boolean(currentWorkflow.value)
 );
-const parentWords = computed(() => (parentOf(pickedState.value) ? `${titleOf(parentOf(pickedState.value))}'s runs here again.` : ""));
+const parentWords = computed(() => {
+    const workflow = currentWorkflow.value;
+    const parent = workflow && workflow.state ? pairing.value.parentOf(workflow.state) : "";
+    return parent ? `${titleOf(parent)}'s runs here again.` : "";
+});
 
-async function pick(state, event) {
+// picking an event opens the first workflow of its list; picking a row opens that workflow
+async function pick(event, id = 0) {
     if (dirty.value) {
-        leaving.value = {state, event};
+        leaving.value = {event, id};
         return;
     }
-    pickedState.value = state;
     pickedEvent.value = event;
     faults.value = [];
     conflict.value = null;
     trial.value = null;
-    const own = ownFor(state, event);
-    const serving = servingFor(state, event);
-    borrowed.value = !own && Boolean(serving);
-    if (serving) await open(serving.id);
+    const first = id
+        ? workflows.value.find((w) => w.id === id)
+        : listRows.value[0] && workflows.value.find((w) => w.id === listRows.value[0].id);
+    if (first) await open(first.id);
     else empty();
 }
 
@@ -579,17 +591,45 @@ function leaveAnyway() {
     past.value = [];
     const to = leaving.value;
     leaving.value = null;
-    pick(to.state, to.event);
+    pick(to.event, to.id);
 }
 
 function stopEditing() {
     if (dirty.value) {
-        leaving.value = {state: pickedState.value, event: pickedEvent.value};
+        leaving.value = {event: pickedEvent.value, id: current.value};
         return;
     }
     unlocked.value = false;
 }
 
+// a row dragged over another takes its place: the whole list goes to the server in its new order, at the revisions read
+async function dropOn(target) {
+    const from = dragging.value;
+    dragging.value = 0;
+    if (!from || from === target.id) return;
+    const ids = pairing.value.answering(pickedEvent.value).map((w) => w.id);
+    const moved = ids.splice(ids.indexOf(from), 1)[0];
+    ids.splice(ids.indexOf(target.id), 0, moved);
+    await reorder(ids);
+}
+const reorder = (ids) =>
+    act("order", async () => {
+        const revisions = Object.fromEntries(workflows.value.map((w) => [w.id, w.revision]));
+        await api.chartOrder(
+            pickedEvent.value,
+            ids.map((id) => ({id, revision: revisions[id]}))
+        );
+        await refreshList();
+    });
+const moveBy = (id, by) => {
+    const ids = pairing.value.answering(pickedEvent.value).map((w) => w.id);
+    const at = ids.indexOf(id);
+    const to = Math.min(Math.max(at + by, 0), ids.length - 1);
+    if (to === at) return;
+    ids.splice(at, 1);
+    ids.splice(to, 0, id);
+    return reorder(ids);
+};
 const isLit = (id) => lit.value.map(String).includes(String(id));
 const litWire = (line) =>
     isLit(line.from) &&
@@ -666,56 +706,28 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
         <div :class="['chart-page', {folded: unlocked}]">
             <template v-if="unlocked">
                 <div class="chart-crumbs">
-                    <button type="button" class="chart-crumb" @click="stopEditing">{{ titleOf(pickedState) }}</button>
-                    <span class="chart-crumb-sep">›</span>
                     <button type="button" class="chart-crumb" @click="stopEditing">{{ eventTitle }}</button>
+                    <span class="chart-crumb-sep">›</span>
+                    <button type="button" class="chart-crumb" @click="stopEditing">{{ pageTitle }}</button>
                 </div>
             </template>
             <template v-else-if="!listsHidden">
-                <aside class="chart-col chart-states" aria-label="State">
-                    <h2 class="chart-col-head">State</h2>
-                    <button
-                        v-for="row in stateRows"
-                        :key="row.key"
-                        type="button"
-                        :class="['chart-row', 'chart-state', {on: row.key === pickedState}]"
-                        :aria-current="row.key === pickedState ? 'true' : null"
-                        :aria-label="`${row.title}${row.failed ? ', a run failed' : ''}${row.warning ? ', nothing ends its wait' : ''}`"
-                        @click="pick(row.key, pickedEvent)"
-                    >
-                        <span class="chart-row-name">{{ row.title }}</span>
-                        <span class="chart-marks" aria-hidden="true">
-                            <span
-                                v-for="mark in row.marks"
-                                :key="mark.key"
-                                :class="['chart-mark', mark.mark, {on: mark.key === pickedEvent}]"
-                                :title="mark.title"
-                                @click.stop="pick(row.key, mark.key)"
-                            />
-                        </span>
-                        <span v-if="row.failed" class="chart-row-bad">A run failed</span>
-                        <span v-else-if="row.warning" class="chart-row-warn">Nothing ends its wait</span>
-                    </button>
-                    <ul class="chart-key" aria-label="What the marks mean">
-                        <li v-for="legend in MARKS" :key="legend.mark">
-                            <span :class="['chart-mark', legend.mark]" aria-hidden="true" />
-                            {{ legend.words }}
-                        </li>
-                    </ul>
-                </aside>
                 <aside class="chart-col chart-events" aria-label="Event">
                     <h2 class="chart-col-head">Event</h2>
                     <button
                         v-for="row in eventRows"
                         :key="row.key"
                         type="button"
-                        :class="['chart-row', 'chart-event', row.mark, {on: row.key === pickedEvent}]"
+                        :class="['chart-row', 'chart-event', {on: row.key === pickedEvent, none: !row.count}]"
                         :aria-current="row.key === pickedEvent ? 'true' : null"
-                        @click="pick(pickedState, row.key)"
+                        @click="pick(row.key)"
                     >
-                        <span :class="['chart-mark', row.mark]" aria-hidden="true" />
+                        <span
+                            :class="['chart-mark', row.failed ? 'failed' : row.off ? 'off' : row.count ? 'default' : 'none']"
+                            aria-hidden="true"
+                        />
                         <span class="chart-row-name">{{ row.title }}</span>
-                        <span v-if="row.words" class="chart-row-words">{{ row.words }}</span>
+                        <span v-if="row.count" class="chart-row-words">{{ row.count }}</span>
                         <span v-else-if="row.claudeOnly" class="chart-row-words">Claude only</span>
                     </button>
                     <DropList
@@ -725,7 +737,63 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         :items="addableEvents"
                         :menu-width="300"
                         searchable
-                        @pick="pick(pickedState, $event.key)"
+                        @pick="pick($event.key)"
+                    />
+                </aside>
+                <aside class="chart-col chart-list" aria-label="Workflows, in the order they run">
+                    <div class="chart-col-top">
+                        <h2 class="chart-col-head">Runs in this order</h2>
+                        <DropList
+                            :label="filterLabel"
+                            :items="filterItems"
+                            :picked="stateFilter"
+                            :menu-width="220"
+                            @pick="stateFilter = $event.key"
+                        />
+                    </div>
+                    <p v-if="!listRows.length" class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
+                    <button
+                        v-for="row in listRows"
+                        :key="row.id"
+                        type="button"
+                        :class="[
+                            'chart-row',
+                            'chart-item',
+                            row.mark,
+                            {on: row.id === current, dragging: dragging === row.id, locked: row.locked},
+                        ]"
+                        :aria-current="row.id === current ? 'true' : null"
+                        :draggable="!row.locked && !stateFilter"
+                        :title="
+                            row.locked
+                                ? 'Locked: this one always runs here'
+                                : stateFilter
+                                  ? 'Pick Every state to drag the order'
+                                  : 'Drag to change the order'
+                        "
+                        @dragstart="dragging = row.id"
+                        @dragend="dragging = 0"
+                        @dragover.prevent
+                        @drop.prevent="dropOn(row)"
+                        @click="pick(pickedEvent, row.id)"
+                    >
+                        <span class="chart-item-place">{{ row.place }}</span>
+                        <span class="chart-item-words">
+                            <span class="chart-row-name">{{ row.title }}</span>
+                            <span class="chart-row-sub">
+                                {{ row.who }}
+                                <template v-if="row.words">· {{ row.words }}</template>
+                            </span>
+                        </span>
+                        <span :class="['chart-mark', row.mark]" aria-hidden="true" />
+                    </button>
+                    <DropList
+                        class="chart-add-event"
+                        label="New workflow"
+                        icon="plus"
+                        :items="newItems"
+                        :menu-width="260"
+                        @pick="start($event.key)"
                     />
                 </aside>
             </template>
@@ -734,14 +802,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 <header class="chart-head">
                     <div class="chart-head-words">
                         <h1>{{ pageTitle }}</h1>
-                        <span
-                            :class="[
-                                'chart-status',
-                                currentWorkflow && !borrowed ? markOf(currentWorkflow, false) : borrowed ? 'borrowed' : 'none',
-                            ]"
-                        >
-                            {{ statusWords }}
-                        </span>
+                        <span :class="['chart-status', currentWorkflow ? markOf(currentWorkflow) : 'none']">{{ statusWords }}</span>
                     </div>
                     <div class="chart-acts">
                         <template v-if="unlocked">
@@ -760,8 +821,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                             </Btn>
                         </template>
                         <template v-else>
-                            <Btn v-if="borrowed" kind="ghost" small :busy="busy === 'create'" @click="start">Make its own</Btn>
-                            <template v-else-if="currentWorkflow">
+                            <template v-if="currentWorkflow">
                                 <Btn
                                     v-if="canTry"
                                     kind="ghost"
@@ -921,12 +981,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 
                     <template v-if="loaded && !currentWorkflow">
                         <EmptyState class="chart-empty" title="Nothing is set up here">
-                            The journal does nothing when the agent is {{ titleOf(pickedState).toLowerCase() }} and
-                            {{ eventTitle.toLowerCase() }}.
+                            No workflow answers {{ eventTitle.toLowerCase() }} yet.
                             <br />
-                            <Btn class="chart-empty-add" kind="primary" :busy="busy === 'create'" @click.stop="start">
-                                Start a workflow here
-                            </Btn>
+                            <DropList
+                                class="chart-empty-add"
+                                label="New workflow"
+                                icon="plus"
+                                :items="newItems"
+                                :menu-width="260"
+                                @pick="start($event.key)"
+                            />
                         </EmptyState>
                     </template>
                     <template v-else-if="loaded && !nodes.length">
@@ -1179,8 +1243,51 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     overflow: auto;
     border-right: 1px solid var(--line);
 }
-.chart-states {
-    width: 236px;
+.chart-list {
+    width: 272px;
+}
+.chart-col-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-right: 4px;
+}
+.chart-col-top .chart-col-head {
+    margin: 0;
+}
+.chart-list-empty {
+    margin: 8px 10px;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+.chart-item {
+    align-items: center;
+    gap: 10px;
+    cursor: grab;
+}
+.chart-item[draggable="false"] {
+    cursor: pointer;
+}
+.chart-item.dragging {
+    opacity: 0.5;
+}
+.chart-item.locked .chart-item-place::after {
+    content: " 🔒";
+}
+.chart-item-place {
+    flex: none;
+    width: 18px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    text-align: right;
+}
+.chart-item-words {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 .chart-events {
     width: 268px;
@@ -1213,10 +1320,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 .chart-row.on {
     border-left-color: var(--accent-text);
     background: var(--sel);
-}
-.chart-state {
-    flex-direction: column;
-    gap: 5px;
 }
 .chart-event {
     align-items: center;
@@ -1254,11 +1357,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     color: var(--warn);
     font-size: 11.5px;
     font-weight: 400;
-}
-.chart-marks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
 }
 .chart-mark {
     position: relative;
@@ -1305,37 +1403,11 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     border: 2px solid var(--danger-soft);
     border-radius: 50%;
 }
-.chart-mark.borrowed::before {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--text-2);
-    opacity: 0.4;
-}
 .chart-mark.none::before {
     width: 6px;
     height: 2px;
     border-radius: 1px;
     background: var(--text-3);
-}
-.chart-marks .chart-mark.on::before {
-    outline: 1.5px solid var(--accent-text);
-    outline-offset: 2px;
-}
-.chart-key {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 10px;
-    margin: auto 0 0;
-    padding: 14px 10px 0;
-    color: var(--text-3);
-    font-size: 11.5px;
-    list-style: none;
-}
-.chart-key li {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
 }
 .chart-add-event {
     margin-top: 8px;
