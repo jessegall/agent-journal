@@ -108,8 +108,17 @@ class Validation:
         return seen
 
     def warnings(self, chart: Chart) -> list[str]:
-        """What a saved workflow should still hear about: a Stop here that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
-        return self.stop_warnings(chart) + self.wait_warnings(chart)
+        """What a saved workflow should still hear about: a hold at a tool use that no check narrows, a Stop here that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
+        return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart)
+
+    def hold_warnings(self, chart: Chart) -> list[str]:
+        """A Hold the tool at Tool about to run with neither Tool changes files? nor Journal command? on its path holds every tool, reads included; the engine still lets a journal command and the read of a skill's file through, the rest waits."""
+        if chart.event != "tool_starting":
+            return []
+        nodes = self.charts.nodes_of(chart)
+        lines = [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in self.charts.lines_of(chart)]
+        narrowing = {str(n.id) for n in nodes if n.kind == NodeKind.CHECK and n.key in ("tool_writes", "journal_command")}
+        return [f"Hold the tool at step {n.id} holds every tool, reads included: put Tool changes files? or Journal command? before it; a journal command and the read of a skill's file go through regardless" for n in nodes if n.kind == NodeKind.ACTION and n.key == "hold" and not narrowing & self.before(lines, {str(n.id)})]
 
     def off_fault(self, chart: Chart) -> list[Fault]:
         """A locked workflow, or one holding a locked step, is not turned off: that would switch off the journal's law."""

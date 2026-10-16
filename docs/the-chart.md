@@ -150,7 +150,10 @@ the state it held with the fact set. So a state's own workflows run as they woul
 Working at a tick still says the task is open after a quiet quarter hour while the look is owed, the inbox is named
 at a prompt while a skill is owed, a wait is released by its row event while a mark is owed. The debt holds only
 what it must: a write, through the guards at Tool about to run, and a stop, through Always at Agent stops, each
-naming what it awaits; the read, the command or the decision that pays it goes through. The phase-two replays
+naming what it awaits; the read, the command or the decision that pays it goes through. Beneath every workflow the
+engine keeps a floor: a journal command and the read of a skill's file are never held, whatever a hold says, since
+they are how a debt is paid; the hold's words still reach the agent. The save warns of a Hold the tool at Tool
+about to run with neither Tool changes files? nor Journal command? before it, since it holds every other tool. The phase-two replays
 freeze this: working_rules carries the tick's line under the look owed, loading_skill_rules the inbox named under
 the skill owed, owed_pause_rules the stop held and the wait kept. The three holds hold under Codex as under Claude,
 through its pre-tool hook, as the codex records show; the only event Codex never sends is the agent writing to you,

@@ -101,6 +101,8 @@ A state not in this table does not exist: the subagent state nothing ever entere
 
 ## Kept in code, by design
 
+- The floor under every hold: a journal command and the read of a skill's file always run, whatever a workflow
+  holds; the engine drops the refusal and keeps the words (chart/walk).
 - A session's start: the briefing (briefing); the journal skill and the look at what is in flight are owed by
   the workflow Always at Session starts, as facts on the agent's row, and held by the guards until the read and
   `journal environment here`.

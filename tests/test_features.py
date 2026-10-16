@@ -3058,3 +3058,24 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show():
     from journal.features.chart.catalogue import Catalogue
     by_key = {e.key: e for e in Catalogue().triggers()}
     assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
+
+
+def test_no_workflow_holds_a_journal_command_or_the_read_of_a_skills_file(skilled):
+    from journal.features.chart.validation import Validation
+    from journal.repositories.charts import Charts
+    app = skilled
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    mine = int(console.run(["chart", "new", "Hold everything", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in charts.nodes_of(charts.find(mine)) if n.kind == "trigger")
+    hold = int(console.run(["chart", "node", "action", "hold", "--text", "[chart] every tool held", "--in", str(mine)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(hold)], USER)
+    assert any("holds every tool" in w for w in app.container.get(Validation).warnings(charts.find(mine))), "the save warns of a hold no check narrows"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 409, "the user's hold holds a read"
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 409
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list"})
+    assert status == 200 and "every tool held" in json.dumps(body), "a journal command runs whatever a workflow holds; the hold's words still reach the agent"
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal/SKILL.md")})
+    assert status == 200, "the read of a skill's file goes through: it pays the skill owed"
+    read_skill(app, "journal")
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal environment here"})[0] == 200

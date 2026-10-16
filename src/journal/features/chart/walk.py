@@ -2,12 +2,14 @@ import re
 from dataclasses import replace
 
 from journal.events.agent.ticked import Ticked
+from journal.events.agent.tool_starting import ToolStarting
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
 from journal.features.chart.actions import Actions
 from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
+from journal.features.skills.skill_files import SkillFiles
 from journal.hooks.decision import Decision
 from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
@@ -35,15 +37,22 @@ FAILED = "walk_failed"
 class Walk:
     """The engine walking every workflow for one event: each trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The workflows are read fresh each time, so an edit applies at the next event."""
 
-    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine) -> None:
-        self.charts, self.checks, self.actions, self.entries, self.states, self.machine = charts, checks, actions, entries, states, machine
+    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine, files: SkillFiles) -> None:
+        self.charts, self.checks, self.actions, self.entries, self.states, self.machine, self.files = charts, checks, actions, entries, states, machine, files
 
     def dry(self, fillers, checks: Checks) -> "Walk":
         """The same walk with nothing done: each action tells what it would do, and the checks given answer, assumed or live."""
-        return Walk(self.charts, checks, DryActions(fillers), self.entries, self.states, self.machine)
+        return Walk(self.charts, checks, DryActions(fillers), self.entries, self.states, self.machine, self.files)
 
     def on(self, ctx: Context) -> Decision:
-        return self.on_with_trace(ctx, [])
+        return self.floored(ctx, self.on_with_trace(ctx, []))
+
+    def floored(self, ctx: Context, decision: Decision) -> Decision:
+        """The engine's floor under every workflow: a journal command and the read of a skill's file are how a debt is paid, so no hold stops them; the hold's words still reach the agent."""
+        if decision.allowed or not isinstance(ctx.event, ToolStarting):
+            return decision
+        pays = self.checks.journal_command(ctx) or self.files.skill_read(self.checks.providers.named(ctx.provider).read_path(ctx.event.tool, ctx.event.input)) is not None
+        return Decision.tell("\n".join(line for line in (decision.context, decision.reason) if line)) if pays else decision
 
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
         """The walk, with the nodes it passes written into the list given: the event's workflows in their order; a move inside one re-reads the state, and the new state's workflows that come later in the order run at their place."""
