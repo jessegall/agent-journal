@@ -4,6 +4,7 @@ and, when asked, the keys of the nudges said. A record can be frozen to a file, 
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.error import HTTPError
@@ -101,11 +102,16 @@ def lines_of(answer) -> object:
     flat = dict(answer)
     output = flat.get("hookSpecificOutput")
     if isinstance(output, dict) and "additionalContext" in output:
-        flat["hookSpecificOutput"] = {**output, "additionalContext": sorted(output["additionalContext"].split("\n"))}
+        flat["hookSpecificOutput"] = {**output, "additionalContext": sorted(clockless(output["additionalContext"]).split("\n"))}
     for key in ("reason", "error"):
         if key in flat:
-            flat[key] = sorted(str(flat[key]).split("\n"))
+            flat[key] = sorted(clockless(str(flat[key])).split("\n"))
     return flat
+
+
+def clockless(text: str) -> str:
+    """A time of day in a line, such as the hour another agent left, is the clock's and not the conduct's: the comparison reads it as the same."""
+    return re.sub(r"\b\d\d:\d\d\b", "HH:MM", text)
 
 
 def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:

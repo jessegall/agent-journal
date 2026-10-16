@@ -6,18 +6,20 @@
       "answer": null,
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "quiet for a minute",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     },
     {
       "name": "quiet for half an hour",
@@ -27,19 +29,24 @@
       ],
       "nudges": [
         "tasks.check_in"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "quiet for half an hour again",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {}
     },
     {
       "name": "a task parked",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0
+      }
     },
     {
       "name": "a minute with a task parked",
@@ -49,13 +56,61 @@
       ],
       "nudges": [
         "tasks.parked_still"
-      ]
+      ],
+      "counts": {
+        "edits": 0
+      }
     },
     {
       "name": "a minute more",
       "answer": null,
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "edits": 0
+      }
+    },
+    {
+      "name": "awaiting the deploy",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 0
+      }
+    },
+    {
+      "name": "five quiet minutes awaiting",
+      "answer": null,
+      "typed": [
+        "[journal] check the deploy now: you have waited 5 min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
+      ],
+      "nudges": [
+        "tasks.check_awaited"
+      ],
+      "counts": {
+        "edits": 0
+      }
+    },
+    {
+      "name": "five more awaiting",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 0
+      }
+    },
+    {
+      "name": "the agent's own tool use lifts the wait",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 0,
+        "owed": 1,
+        "uses": 1
+      }
     }
   ]
 }

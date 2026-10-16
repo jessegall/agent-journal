@@ -119,7 +119,7 @@ def writes_over_the_log(app, replay: Replay, provider: str) -> None:
 
 
 def the_clock_ticks(app, replay: Replay, provider: str) -> None:
-    """The steps: an idle agent in auto mode hears the clock at a minute, at half an hour and at half an hour again; then with a task parked, at a minute, twice."""
+    """The steps: an idle agent in auto mode hears the clock at a minute, at half an hour and at half an hour again; then with a task parked, at a minute, twice; then awaiting something outside, at five minutes, twice, until its own tool use lifts the wait."""
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus
     hook_as(app, provider, "SessionStart")
@@ -139,6 +139,13 @@ def the_clock_ticks(app, replay: Replay, provider: str) -> None:
     for name in ("a minute with a task parked", "a minute more"):
         tick(60.0)
         replay.step(name)
+    console.run(["task", "resume", "1"], AGENT)
+    console.run(["await", "the deploy"], AGENT)
+    replay.step("awaiting the deploy")
+    for name in ("five quiet minutes awaiting", "five more awaiting"):
+        tick(300.0)
+        replay.step(name)
+    replay.step("the agent's own tool use lifts the wait", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
 
 
 def test_clock_ticks_as_the_shipped_workflow_equals_the_two_listeners(journals, monkeypatch):
@@ -482,7 +489,66 @@ def at_mark_rules(app, replay: Replay, provider: str) -> None:
     replay.step("a write after", write())
 
 
-STATE_RULES = {"loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
+def plan_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a plan of two phases, the first a checkpoint, approved and started; its first task done, a stop with auto off then on, the next phase started, a second session starting under the plan, the plan parked, then a second plan started and cancelled."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "add", "1", "second"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w", "--checkpoint"], USER)
+    console.run(["plan", "phase", "1", "two", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    console.run(["plan", "todos", "1", "2", "2"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    replay.step("the plan is started")
+    console.run(["task", "done", "1"], AGENT)
+    app.runtime().deferred.drain()
+    replay.step("the first task is done, the phase a checkpoint")
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    replay.step("a stop at the checkpoint, auto off", hook_as(app, provider, "Stop")[1])
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
+    replay.step("a stop at the checkpoint, auto on", hook_as(app, provider, "Stop")[1])
+    console.run(["plan", "start", "1"], AGENT)
+    replay.step("the next phase started")
+    replay.step("a second session starts under the plan", hook_as(app, provider, "SessionStart", session="s2")[1])
+    console.run(["plan", "park", "1"], AGENT)
+    app.runtime().deferred.drain()
+    replay.step("the plan is parked")
+    console.run(["plan", "create", "q", "--brief", "b"], USER)
+    console.run(["plan", "add", "2", "third"], USER)
+    console.run(["plan", "ready", "2"], USER)
+    console.run(["plan", "approve", "2"], USER)
+    console.run(["plan", "start", "2"], AGENT)
+    console.run(["plan", "cancel", "2"], USER)
+    app.runtime().deferred.drain()
+    replay.step("a second plan started and cancelled")
+    replay.step("a stop after", hook_as(app, provider, "Stop")[1])
+
+
+def awaiting_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: two workers dispatched and awaited; a stop while awaiting; the first reports and the agent still waits; the last reports and the agent is released; a stop after."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1", "2"], AGENT)
+    replay.step("awaiting two workers", hook_as(app, provider, "Stop")[1])
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    app.runtime().deferred.drain()
+    replay.step("the first reports", hook_as(app, provider, "Stop")[1])
+    console.run(["worker", "report", "2", "profiled"], Where("main", "w2"))
+    app.runtime().deferred.drain()
+    replay.step("the last one back")
+    replay.step("a stop after", hook_as(app, provider, "Stop")[1])
+
+
+STATE_RULES = {"plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
 """What the states say of their own, frozen before any of it moves into a workflow."""
 
 
