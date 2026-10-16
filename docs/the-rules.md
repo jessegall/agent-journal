@@ -92,7 +92,9 @@ title and the state by its name.
 | every wait above | the engine, as the way out | a word from the user frees any wait that is not the agent's own doing, ruled once in Paused; so a wait whose workflow was emptied or edited still ends, and the page warns when a wait's workflow releases nothing |
 | running_sequence | the workflow Running a sequence | the step held at a stop is conduct; the stepping stays the state's move |
 | stuck | the workflow Stuck | the journal stays quiet until the agent's own tool use lifts the wait; the shared conduct runs under it |
-| orienting, at_mark, loading_skill | retired as states | each is a fact on the agent's row now, set by a locked node and paid by a command or a read, held by the guards; an agent standing in one at boot is unwrapped to the state it held with the fact set, and a user's workflow bound to one is kept turned off, its title saying so |
+| orienting | a fact, held in the Always workflow | the look at what is in flight is a fact on the agent's row, marked by Always at Session starts, held at a write by the guards and at a stop by Always at Agent stops, paid by journal environment here |
+| at_mark | a fact, held in the Always workflow | the mark owed is a fact on the agent's row, taken by Hold the agent at a context mark in every Always and Guards workflow, held the same way, paid by fact, rule or nothing |
+| loading_skill | a fact, held in the Always workflow | a skill owed is a link from the agent's row, set by Require a skill, held the same way, paid by the read of the file; an agent standing in one of the three at boot is unwrapped with its fact set, a user's workflow bound to one kept turned off and named |
 | ended | the engine, nothing | a session that ended says nothing and walks nothing |
 
 A state not in this table does not exist: the subagent state nothing ever entered is gone.

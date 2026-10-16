@@ -29,9 +29,9 @@ workflows do not carry the states and listeners below still do; the-rules.md lis
                                 · "another agent worked here until HH:MM" (takeover)
                                 · "waiting for you: N tasks, N messages, N questions"
                                                  ▼
-                       state ─► LoadingSkill(journal), then Orienting
-                       writes refused until the journal skill is read
-                       writes refused until `journal environment here` is run
+                       facts on the row ─► the journal skill owed, the look owed
+                       a write held by the guards until the journal skill is read
+                       a write held until `journal environment here` is run
                                                  ▼
                      ┌──────────────────────── WORK LOOP ─────────────────────────┐
                      │                                                             │
@@ -102,7 +102,7 @@ the user; the agent acts on it and says nothing about it in the chat.
 
 ```
    PreCompact ──► the skills read are forgotten; nothing is said
-   SessionStart(compact) ──► the start block again, then Orienting: writes wait for
+   SessionStart(compact) ──► the start block again, the look owed again: writes wait for
                             `journal environment here`, which names the task in hand, open and parked
                             tasks, unread and unanswered messages, questions, workers, background runs,
                             rules, facts and reminders

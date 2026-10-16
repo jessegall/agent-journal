@@ -32,9 +32,12 @@ request and a command know theirs. Nothing is written anonymously, so a shared j
 many users needs no change to the base.
 
 **The state is the truth.** What an agent is doing is its row's state column, one flat state
-at a time, no substates. A state is a class with a method per event, named after the event.
-No `if state ==`, no `if event.kind ==`: dispatch is by class and by method name. What two
-states share is inherited, one level. Going back from a pause is data (`resume`), not a stack.
+at a time, no substates; what it owes the journal, a skill to read, the look at what is in
+flight, a decision at a context mark, is a fact beside it on the same row, never a state over
+it. A state is a class with a method per event, named after the event. No `if state ==`, no
+`if event.kind ==`: dispatch is by class and by method name. What two states share is
+inherited, one level. Going back from a pause is data (`resume`), not a stack: the pauses are
+the waits, on a worker, on a question, on something outside, on being stuck, and a sequence.
 
 **Features bring their states; the engine knows no feature.** A feature owns its states, its
 nudges, its state-free listeners and its commands. The engine holds the machine, the base
