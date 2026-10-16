@@ -25,5 +25,9 @@ class StatusLine:
         self.path.write_text(self.text())
 
     def settings(self) -> str:
-        """The settings handed to Claude Code at launch: its status line reads the file."""
-        return json.dumps({"statusLine": {"type": "command", "command": f"cat '{self.path}'"}})
+        """The settings handed to Claude Code at launch: its status line runs the journal's status script, which keeps the session's status JSON and prints this file's words."""
+        return json.dumps({"statusLine": {"type": "command", "command": f"sh '{self.script}'", "padding": 0}})
+
+    @property
+    def script(self) -> Path:
+        return self.path.parents[1] / "src" / "journal" / "hooks" / "status.sh"

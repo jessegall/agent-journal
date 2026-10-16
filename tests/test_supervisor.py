@@ -103,7 +103,7 @@ def test_the_status_line_names_the_project_the_environment_and_the_url_in_a_file
     assert status.path.read_text() == "agent-journal · agent-journal · main · journal starting…"
     status.set_url("http://127.0.0.1:8420/")
     assert status.path.read_text().endswith("http://127.0.0.1:8420/")
-    assert json.loads(status.settings())["statusLine"]["command"] == f"cat '{status.path}'"
+    assert json.loads(status.settings())["statusLine"]["command"] == f"sh '{tmp_path / '.journal' / 'src' / 'journal' / 'hooks' / 'status.sh'}'", "one status script keeps the session's JSON and prints the bar"
 
 
 def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_agent_works(tmp_path: Path, monkeypatch):
