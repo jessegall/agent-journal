@@ -42,6 +42,7 @@ export function useNavigation() {
                 ...(demo ? [] : [pageLink("plugins")]),
                 pageLink("integrations"),
                 pageLink("chart"),
+                pageLink("profiles"),
                 pageLink("secrets"),
                 pageLink("resources"),
                 pageLink("settings"),

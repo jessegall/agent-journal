@@ -19,6 +19,7 @@ import SearchPage from "./pages/SearchPage.vue";
 import SecretsPage from "./pages/SecretsPage.vue";
 import SettingsPage from "./pages/SettingsPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
+import AgentProfilesPage from "./pages/AgentProfilesPage.vue";
 import {route} from "./route.js";
 
 defineProps({page: {type: String, required: true}});
@@ -33,6 +34,7 @@ defineProps({page: {type: String, required: true}});
         <template #code><CodePage /></template>
         <template #commit><CommitPage /></template>
         <template #skills><SkillsPage /></template>
+        <template #profiles><AgentProfilesPage /></template>
         <template #about><AboutPage /></template>
         <template #plugins><PluginsPage /></template>
         <template #secrets><SecretsPage /></template>

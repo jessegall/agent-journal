@@ -535,3 +535,17 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     assert status >= 400 and "the trigger is idle, but this workflow is for idle at tool_finished" in json.dumps(body)
 
 
+
+
+def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude_reads_it(server, journal_root):
+    status, read = call(server, "GET", "/journal/profiles")
+    assert status == 200 and read == {"profiles": []}, "a fresh journal has no agents folder yet"
+    status, saved = call(server, "POST", "/journal/profiles/critic", {"description": "Reads a design through one lens.", "tools": "Read, Grep", "model": "sonnet", "body": "You are a critic.\n\nSay what is wrong."})
+    assert status == 200 and saved["name"] == "critic" and saved["shipped"] is False and saved["path"] == ".claude/agents/critic.md"
+    assert (journal_root / ".claude/agents/critic.md").read_text() == "---\nname: critic\ndescription: Reads a design through one lens.\ntools: Read, Grep\nmodel: sonnet\n---\n\nYou are a critic.\n\nSay what is wrong.\n"
+    status, read = call(server, "GET", "/journal/profiles")
+    assert [p["name"] for p in read["profiles"]] == ["critic"] and read["profiles"][0]["uses"] == 0 and read["profiles"][0]["body"] == "You are a critic.\n\nSay what is wrong."
+    status, one = call(server, "GET", "/journal/profiles/critic")
+    assert status == 200 and one["model"] == "sonnet" and one["tools"] == "Read, Grep"
+    assert call(server, "GET", "/journal/profiles/nobody")[0] == 404
+    assert call(server, "POST", "/journal/profiles/bad.name", {})[0] == 409

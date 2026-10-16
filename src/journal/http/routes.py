@@ -8,6 +8,7 @@ from journal.http.controllers.chart import ChartController
 from journal.http.controllers.mcp import McpController
 from journal.http.controllers.messages import MessageController
 from journal.http.controllers.plans import PlanController
+from journal.http.controllers.profiles import ProfileController
 from journal.http.controllers.questions import QuestionController
 from journal.http.controllers.resource_controller import ResourceController
 from journal.http.controllers.settings import SettingController
@@ -57,6 +58,9 @@ class Routes:
         router.post(f"{API}/chart/{{id}}/remove", get(ChartController).remove)
         router.post(f"{API}/chart/{{id}}/off", get(ChartController).off)
         router.post(f"{API}/chart/{{id}}/on", get(ChartController).on)
+        router.get(f"{API}/profiles", get(ProfileController).index)
+        router.get(f"{API}/profiles/{{name}}", get(ProfileController).one)
+        router.post(f"{API}/profiles/{{name}}", get(ProfileController).save)
         router.get(f"{API}/mcp", get(McpController).index)
         router.post(f"{API}/mcp/install", get(McpController).install)
         router.post(f"{API}/mcp/check", get(McpController).check)

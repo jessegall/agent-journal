@@ -178,6 +178,18 @@ export class ApiClient {
         return this.ownPost(`/chart/${id}/on`, {});
     }
 
+    agentProfiles() {
+        return this.ownGet("/profiles");
+    }
+
+    agentProfile(name) {
+        return this.ownGet(`/profiles/${name}`);
+    }
+
+    saveAgentProfile(name, body) {
+        return this.ownPost(`/profiles/${name}`, body);
+    }
+
     chartRuns(last = 10) {
         return this.ownGet(`/chart/runs?last=${last}`);
     }

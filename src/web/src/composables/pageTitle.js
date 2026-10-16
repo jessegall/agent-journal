@@ -9,6 +9,7 @@ const PAGES = {
     files: "Files",
     commit: "Commit",
     skills: "Skills",
+    profiles: "Profiles",
     about: "About",
     plugins: "Plugins",
     integrations: "Integrations",
@@ -23,5 +24,7 @@ const PAGES = {
 };
 
 export const pageTitle = computed(() =>
-    !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? pluralTitle(meta(route.value.page).title) : route.value.page)
+    !route.value.page
+        ? "Home"
+        : PAGES[route.value.page] || (meta(route.value.page) ? pluralTitle(meta(route.value.page).title) : route.value.page)
 );

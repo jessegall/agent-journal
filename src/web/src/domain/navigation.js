@@ -5,6 +5,7 @@ export const PAGES = {
     kanban: {title: "Board", icon: "board", text: ""},
     resources: {title: "Resources", icon: "tiles", text: "Every type of item the journal keeps"},
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
+    profiles: {title: "Profiles", icon: "agents", text: "The subagents the agent can dispatch, each with its job, tools and model"},
     code: {title: "Code", icon: "file", text: "The project's files, as they are on disk"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
     secrets: {title: "Secrets", icon: "key", text: "Keys and logins the agent may use without ever seeing them"},
@@ -16,7 +17,7 @@ export const PAGES = {
 
 export const RESOURCE_GROUPS = [
     {key: "results", title: "Results", pages: []},
-    {key: "workings", title: "Agent", pages: ["skills"]},
+    {key: "workings", title: "Agent", pages: ["skills", "profiles"]},
     {key: "setup", title: "Project", pages: ["organization"]},
 ];
 

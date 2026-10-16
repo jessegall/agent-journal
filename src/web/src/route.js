@@ -139,6 +139,7 @@ export const PAGES = [
     "files",
     "commit",
     "skills",
+    "profiles",
     "plugins",
     "secrets",
     "integrations",

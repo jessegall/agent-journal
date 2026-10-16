@@ -41,6 +41,13 @@ class Entries(ScopedRepository[Entry]):
             (self.scope.id, session))
         return [self._load(row) for row in rows]
 
+    def agent_calls(self, last: int = 500) -> list[Entry]:
+        """The newest dispatches of a subagent here, across every session: the Agent tool's starts, newest first."""
+        rows = self.connection.all(
+            f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = 'ToolStarting' AND json_extract(data, '$.tool_name') IN ('Agent', 'Task') ORDER BY id DESC LIMIT ?",
+            (self.scope.id, last))
+        return [self._load(row) for row in rows]
+
     def since(self, id: int) -> list[Entry]:
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND id > ? ORDER BY id", (self.scope.id, id))
         return [self._load(row) for row in rows]

@@ -713,3 +713,11 @@ the stale save naming who saved first, Recent runs as a side panel lighting a ru
 through its sheets; the pair logic lives in web/domain/workflowPairs.js for both. The server serves the states
 with parents, edited and failed flags, off and on, faults as {node, words}, fillers, a tried flag per trigger
 and runs with their nodes; row events are titled in the model's own noun with the right article.
+
+The Profiles page, 2026-10-16 on the user's word (task 209): the agent profiles in .claude/agents listed in the
+sidebar after Workflows, each with its model and how often and when last the agent dispatched it (counted from the
+Agent tool's calls by subagent_type), opened in a side panel that edits when it is used (the description), its
+tools, its model and its instructions, and New profile; the server reads and writes the front-matter files through
+ProfileFiles and serves them at /journal/profiles. The journal's own three (researcher, planner, debugger) are marked
+shipped and setup puts them back. The critic profile is gone and the designer profile has no critique rounds: a
+design is one designer's work, judged by the orchestrator against what the user wants.
