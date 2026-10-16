@@ -7,7 +7,7 @@ import {fallOf} from "../domain/falls.js";
 import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, legEnded, slideAt, underWalker} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors} from "../figure/floors.js";
 import {useFigureBody} from "../composables/figureBody.js";
-import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
+import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt, withSystemCards} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, walkingMoment, workMoments} from "../figure/reactions.js";
@@ -80,6 +80,8 @@ let drawn = "stand";
 // whether the legs on screen walk, as the page marks it for whoever measures the figure, beside the name of the clip on screen
 const walking = ref(false);
 
+// the agent's row with the system's cards that are its own, which the figure's beats are read from
+const lead = computed(() => withSystemCards(agent.value, rows("message")));
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
 // whether the figure belongs in the chat now: its agent is here, in a state Settings shows it in
 const belongs = computed(() => Boolean(agent.value) && shownIn(store.settings?.voices?.avatar_shown, held.value.state));
@@ -455,9 +457,9 @@ function look() {
     now.value = Date.now() / 1000;
     waitingSince.value = waitingSinceAt(counts.value, waitingSince.value, now.value);
     const happened = [
-        ...beatsAfter(agent.value, seenAt),
-        ...cardsAfter(agent.value, knownCards),
-        ...testResultsAfter(agent.value, testStates),
+        ...beatsAfter(lead.value, seenAt),
+        ...cardsAfter(lead.value, knownCards),
+        ...testResultsAfter(lead.value, testStates),
         ...facesAfter(rows("reaction"), seenAt),
     ];
     if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.at));
@@ -580,8 +582,8 @@ async function load(name) {
         const {FigurePlayer} = await import("../figure/player.js");
         clips = module.CLIPS.filter((clip) => !clip.voices || clip.voices.includes(name));
         hands = [...loaded.stance.free];
-        testResultsAfter(agent.value, testStates);
-        cardsAfter(agent.value, knownCards);
+        testResultsAfter(lead.value, testStates);
+        cardsAfter(lead.value, knownCards);
         below.value = module.GROUND;
         canvas.value.width = canvas.value.height = Math.round(SIZE * (window.devicePixelRatio || 1));
         player = new FigurePlayer(loaded, canvas.value);

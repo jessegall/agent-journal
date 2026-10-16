@@ -428,8 +428,9 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   line's start; `RunTags` runs the command each stands for through the console with the turn's words
   as its text (`todo`, `log`, `end`, `fact`, `rule`, `reminder`), and a refusal is typed back. The
   recorder strips every tag and keeps a `log` turn out of the chat. `Cards` (engine) is the one funnel
-  for marks on the agent's timeline, as `card` entries: a check run, a trigger met, a question
-  answered, a skill loaded, a halt; the agent shaper draws them beside the commit cards. The console
+  for marks in the chat: a check run, a trigger met, a question answered, a skill loaded, a halt.
+  Each is a message of author `system`, its label the text and its kind, icon, tone, detail, row and
+  session on `Message.data`, so `/api/<env>/message` serves the whole chat in one stream by number. The console
   now answers a missing row or a refusal with code 1 and the reason instead of raising.
 - **A deferred failure never stops the worker.** `Deferred._work` logs a failing piece of work to the
   server log and runs the next; before, one exception ended the thread and every later deferred listener

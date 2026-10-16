@@ -141,6 +141,21 @@ export function testResultsAfter(agent, known) {
     }));
 }
 
+// The agent's row with the system's cards for its session, or for no session, among its own, as messages carry them
+export const withSystemCards = (agent, messages) =>
+    agent && {
+        ...agent,
+        data: {
+            ...agent.data,
+            cards: [
+                ...(agent.data.cards || []),
+                ...messages
+                    .filter((m) => !m.deleted && m.data.author === "system" && ["", agent.title].includes(m.data.card.session))
+                    .map((m) => ({key: m.ref, at: m.created, icon: m.data.card.icon, tone: m.data.card.tone, label: m.brief})),
+            ],
+        },
+    };
+
 export function cardsAfter(agent, known) {
     const cards = (agent?.data.cards || []).filter((card) => card.key && !known.has(card.key));
     cards.forEach((card) => known.add(card.key));

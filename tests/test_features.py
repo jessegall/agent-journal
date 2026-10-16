@@ -506,13 +506,13 @@ def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, m
     assert typed[-1].startswith("[journal] the [!end] tag did not run:")
 
 
-def test_notable_moments_are_cards_on_the_agents_timeline(app):
-    from journal.repositories.entries import Entries
+def test_notable_moments_are_cards_in_the_chat(app):
+    from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "stuck on the login"], AGENT)
-    cards = [e.data for e in app.container.get(Entries).of_kind(1, "card")]
-    assert [c["label"] for c in cards] == ["Agent stuck"] and cards[0]["detail"] == "stuck on the login" and cards[0]["tone"] == "bad"
+    cards = [m for m in app.container.get(Messages).in_(1) if m.author == "system"]
+    assert [c.text for c in cards] == ["Agent stuck"] and cards[0].data["detail"] == "stuck on the login" and cards[0].data["tone"] == "bad"
 
 
 def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_not(app, monkeypatch):
@@ -753,8 +753,7 @@ def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app
 
 def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app, monkeypatch):
     from urllib.request import urlopen
-    from journal.engine.cards import CARD
-    from journal.repositories.entries import Entries
+    from journal.repositories.messages import Messages
     from journal.supervisor_link import SupervisorLink
     typed = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
@@ -775,7 +774,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
     assert "failed with code 1" in typed[-1] and "2 failed" in typed[-1]
-    assert len(app.container.get(Entries).of_kind(1, CARD, 10)) == 2
+    assert len([m for m in app.container.get(Messages).in_(1) if m.author == "system"]) == 2
 
 
 def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
@@ -1690,8 +1689,9 @@ def test_the_card_and_release_actions(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.chart.actions import Actions
     from journal.features.chart.context import Context
-    from journal.repositories.entries import Entries
+    from journal.models.actor import Actor
     from journal.repositories.environments import Environments
+    from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -1707,8 +1707,9 @@ def test_the_card_and_release_actions(app):
     actions.perform("release", "the build came back: carry on", ctx())
     assert machine.current("s1").task_id == 1, "released to what it was doing"
     actions.perform("show_card", "The journal did a thing", ctx())
-    cards = [e for e in app.container.get(Entries).of_kind(env, "card", 10)]
-    assert cards and cards[0].data["label"] == "The journal did a thing"
+    card = app.container.get(Messages).in_(env)[-1]
+    assert card.author == "system" and card.created_by == Actor.system() and card.text == "The journal did a thing"
+    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": ""}
 
 
 def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_rows(app):

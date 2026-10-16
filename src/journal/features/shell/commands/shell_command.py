@@ -91,7 +91,7 @@ class ShellCommand(Command):
         from journal.features.shell.feature import Shell
         environment = self.environments.named(where.environment).id
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
-        self.cards.show(environment, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part, key=f"chain:{args.chain}")
+        self.cards.show(environment, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part)
         print(Shell.MOVED.about(part=args.part, file=args.file).rendered())
         return 0
 
@@ -100,7 +100,7 @@ class ShellCommand(Command):
         environment = self.environments.named(where.environment).id
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         outcome = "ended" if args.status == 0 else f"failed with code {args.status}"
-        self.cards.show(environment, where.session, f"Background command {outcome}", "terminal", "good" if args.status == 0 else "bad", args.last, key=f"chain:{args.chain}")
+        self.cards.show(environment, where.session, f"Background command {outcome}", "terminal", "good" if args.status == 0 else "bad", args.last)
         live = self.agents.live(environment)
         if live:
             line = self.nudger.say(live, Shell.ENDED.about(outcome=outcome, last=args.last[-300:], file=args.file))
