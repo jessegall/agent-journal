@@ -63,7 +63,7 @@ class ChartController:
         """A dry run: the path the chart would take for an agent event in an environment, and what it would do, nothing done."""
         environment = self.environments.named(request.body.get("environment", "main")).id
         body = request.body
-        assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"))
+        assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"), state=body.get("state"), provider=body.get("provider"))
         return Response.json(self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed))
 
     def reset(self, request: Request) -> Response:

@@ -45,6 +45,8 @@ class ChartCommand(Command):
         try_.add_argument("--quiet", type=float, default=None, help="how long the agent has been quiet, in seconds, for ticked")
         try_.add_argument("--edits", type=int, default=None, help="the edits since the task in hand was logged, instead of the live count")
         try_.add_argument("--unread", type=int, default=None, help="how many messages are unread, instead of the live inbox")
+        try_.add_argument("--state", default=None, help="the state to walk as, instead of the live agent's: working, awaiting, idle and the rest")
+        try_.add_argument("--provider", default=None, help="the provider whose agent is tried, claude or codex, whose tool names the tool event takes")
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.charts.all():
@@ -104,8 +106,8 @@ class ChartCommand(Command):
         return 0
 
     def try_(self, args: Namespace, where: Where) -> int:
-        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread))
-        print(f"{ran['trigger']}{f' of row {args.row}' if args.row else ''}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
+        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread, state=args.state, provider=args.provider))
+        print(f"{ran['trigger']}{f' of row {args.row}' if args.row else ''}, walked as {ran['state'] or 'no agent'}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
         if ran["assumed"]:
             print(f"  assumed: {', '.join(ran['assumed'])}")
         for line in ran["would"]:

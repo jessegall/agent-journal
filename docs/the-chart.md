@@ -16,6 +16,11 @@ A workflow may move the agent, through the engine's machine: a release sends a p
 doing, and a move to idle is allowed from a state that owns nothing. An agent with a task in hand, a wait with its
 way back, or a step it owes the journal stays where it is, and the walk records why.
 
+A trial, `journal chart try <event>`, walks the workflows dry and says the path and what it would do, nothing done; it
+walks as the live agent, or as the state given with `--state`, with the agent's own data when it is in that state, and as
+a `--provider` whose tool names the tool event takes; `--quiet`, `--edits` and `--unread` lay a state over the live rows,
+and the trial says everything it assumed.
+
 ## Three kinds of box
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is

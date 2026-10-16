@@ -20,6 +20,9 @@ from journal.features.chart.fillers import Fillers
 from journal.features.chart.walk import Walk
 from journal.models.actor import Actor
 from journal.models.worker_state import WorkerState
+from dataclasses import replace
+
+from journal.providers.providers import Providers
 from journal.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
@@ -48,27 +51,38 @@ BEFORE = {"messages": lambda m: m, "workers": lambda w: w.with_(state=WorkerStat
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
 
-    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: Machine) -> None:
+    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: Machine, providers: Providers) -> None:
         self.repositories = {"messages": messages, "workers": workers, "questions": questions}
-        self.checks, self.machine = checks, machine
+        self.checks, self.machine, self.providers = checks, machine, providers
         self.walk, self.fillers, self.agents = walk, fillers, agents
 
     def run(self, trigger: str, environment_id: int, row: int = 0, assumptions: Assumptions = Assumptions()) -> dict:
         """A dry run for an agent event, or for a row event given the row, against the live rows or the state assumed: the path and what it would do, nothing done."""
         agent = self.agents.live(environment_id)
         session = agent.session if agent else ""
-        provider = (agent.provider or "claude") if agent else "claude"
-        state = self.machine.states.named(agent.state, agent.data) if agent else None
+        provider = assumptions.provider or ((agent.provider or "claude") if agent else "claude")
+        state = self.state_for(agent, assumptions)
         if trigger in EVENTS:
             event = EVENTS[trigger](session, environment_id)
             if isinstance(event, Ticked) and assumptions.quiet is not None:
                 event = Ticked(session=session, environment_id=environment_id, at=0.0, quiet_for=assumptions.quiet)
+            if isinstance(event, ToolStarting):
+                event = replace(event, tool=sorted(self.providers.named(provider).write_tools)[0], provider=provider)
             ctx = Context(event=event, session=session, environment_id=environment_id, provider=provider, answers_hook=True, state=state)
         else:
             ctx = Context(event=self.row_event(trigger, row), session=session, environment_id=environment_id, provider=provider, state=state)
         passed: list[int] = []
         decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions)).on_with_trace(ctx, passed)
-        return {"trigger": trigger, "row": row, "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described()}
+        return {"trigger": trigger, "row": row, "state": state.name if state else "", "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described()}
+
+    def state_for(self, agent, assumptions: Assumptions):
+        """The live agent's state, or the state assumed: with the live agent's data when it is in that state, else the state with nothing in hand."""
+        if assumptions.state is None:
+            return self.machine.states.named(agent.state, agent.data) if agent else None
+        if not self.machine.states.known(assumptions.state):
+            raise Refused(f"no state is called {assumptions.state}: one of {', '.join(self.machine.states.names())}")
+        data = agent.data if agent and agent.state == assumptions.state else {}
+        return self.machine.states.named(assumptions.state, data)
 
     def row_event(self, trigger: str, row: int):
         """A row event stood in for the row named: created as it is, or updated from how it stood before the change the event means."""

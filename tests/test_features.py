@@ -1389,7 +1389,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     announced = len(sent)
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
     tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
-    assert "messages.created of row 1: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
+    assert "messages.created of row 1, walked as idle: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
     assert len(sent) == announced, "the trial typed nothing"
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
@@ -1408,6 +1408,10 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     assert f"nodes {trigger}, {quiet}" in live and "assumed" not in live, "against the live state the tick is not quiet"
     scripted = console.run(["chart", "try", "ticked", "--quiet", "400"], AGENT).out
     assert f"nodes {trigger}, {quiet}, {say}" in scripted and "assumed: quiet for 400 s" in scripted, "the trial takes a quiet time and says it assumed it"
+    assert "no state is called flying" in console.run(["chart", "try", "ticked", "--state", "flying"], AGENT).err
+    as_working = console.run(["chart", "try", "tool_starting", "--state", "working", "--provider", "codex"], AGENT).out
+    assert "walked as working" in as_working and "assumed: the agent working, a codex agent" in as_working, "the trial walks as the state given, with the provider's tool names"
+    assert "walked as idle" in console.run(["chart", "try", "tool_starting"], AGENT).out
 
 
 def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():

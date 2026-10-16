@@ -8,6 +8,8 @@ class Assumptions:
     quiet: float | None = None
     edits: int | None = None
     unread: int | None = None
+    state: str | None = None
+    provider: str | None = None
 
     def described(self) -> list[str]:
         """Each assumption in words, so the trial's output says what it did not read from the rows."""
@@ -18,4 +20,8 @@ class Assumptions:
             said.append(f"{self.edits} edits since the log")
         if self.unread is not None:
             said.append(f"{self.unread} unread messages")
+        if self.state is not None:
+            said.append(f"the agent {self.state}")
+        if self.provider is not None:
+            said.append(f"a {self.provider} agent")
         return said
