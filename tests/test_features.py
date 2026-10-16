@@ -2801,3 +2801,36 @@ def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_star
     console.run(["task", "done", "1"], AGENT)
     drain()
     assert said("[chart] task 1 just started by me") == 1, "finishing a task is an update that did not start it"
+
+
+def test_a_message_that_comes_starts_the_counts_of_uses_and_namings_and_the_first_owed_read_starts_owed(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    console, charts, counts, scope = app.console(), app.container.get(Charts), app.container.get(Counts), app.container.get(Scope)
+    assert next(c for c in charts.for_event("messages.updated") if not c.state).title == "Always at A message is updated", "the seed ships the read's workflow"
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    drain = lambda: app.runtime().deferred.drain()
+    standing = lambda: {c.name: c.value for c in (lambda: counts.where(session="s1"))()}
+    console.run(["message", "send", "one"], USER)
+    drain()
+    with scope.of(1):
+        assert standing() == {"uses": 0, "namings": 0}, "a message that comes puts the counts of uses and namings at nought"
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    console.run(["message", "read", "1"], AGENT)
+    drain()
+    with scope.of(1):
+        assert standing() == {"uses": 0, "namings": 0, "owed": 0}, "the first owed read puts the count of uses while owed at nought"
+    console.run(["message", "send", "two"], USER)
+    drain()
+    console.run(["message", "read", "2"], AGENT)
+    drain()
+    with scope.of(1):
+        counts.set("s1", "owed", 7, Actor.system())
+    console.run(["message", "send", "three"], USER)
+    drain()
+    console.run(["message", "read", "3"], AGENT)
+    drain()
+    with scope.of(1):
+        assert standing()["owed"] == 7, "with two or more messages already owed, a read starts no new count: the oldest debt stands"

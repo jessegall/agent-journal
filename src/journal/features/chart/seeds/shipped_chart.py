@@ -14,15 +14,15 @@ SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "e
 """The states the journal ships workflows for."""
 PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "working", "following_plan")
 """The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
-SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "messages.created")
-"""The events with conduct for every state, shipped as an Always workflow each: the inbox named at a stop, a start and a prompt, and a message that comes named."""
+SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "messages.created", "messages.updated")
+"""The events with conduct for every state, shipped as an Always workflow each: the inbox named at a stop, a start and a prompt, a message that comes named and the counts it starts, and a message read starting the count it is owed on."""
 GUARDS = {"tool_starting": "Guards at Tool about to run"}
 """The journal's guards, one locked workflow per event bound to no state, first in the event's list in every journal: at a tool use, the inbox named and the write held while a message waits, and the answer owed held."""
 HEAD = -1000
 """Where a locked workflow is placed: before anything the user orders."""
 ALWAYS_PLACE = -500
 """Where an Always workflow is placed when drawn: after the locked ones, before the states' and the user's, until the user drags it."""
-EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "workers.updated", "questions.updated")
+EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "messages.updated", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
 DRAWINGS_VERSION = 8
@@ -79,7 +79,7 @@ class ShippedChart(Seed):
             ("stuck", "tool_starting"): self.working_again,
             ("running_sequence", "idle"): self.sequence_at_stop,
         }
-        shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "messages.created": self.shared_at_message}
+        shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "messages.created": self.shared_at_message, "messages.updated": self.shared_at_message_read}
         self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
             for event in sorted({e for st, e in own if st == state}, key=EVENT_ORDER.index):
@@ -252,12 +252,26 @@ class ShippedChart(Seed):
             self.line(source, target, port)
 
     def shared_at_message(self, chart: Chart, ends: list) -> list:
-        """A message the user leaves is named by number, typed into the terminal."""
+        """A message the user leaves is named by number, typed into the terminal, and the counts of tool uses and inbox namings since it came start at nought."""
         by_user = self.node(chart, NodeKind.CHECK, "message_by_user", x=400, y=92)
         named = self.node(chart, NodeKind.ACTION, "type", NEW_MESSAGE, x=400, y=184)
+        uses = self.node(chart, NodeKind.ACTION, "count_start", "uses", x=400, y=276)
+        namings = self.node(chart, NodeKind.ACTION, "count_start", "namings", x=400, y=368)
         self.chain(ends, by_user)
         self.line(by_user, named, YES)
-        return [(by_user, NO), (named, THEN)]
+        self.line(named, uses, THEN)
+        self.line(uses, namings, THEN)
+        return [(by_user, NO), (namings, THEN)]
+
+    def shared_at_message_read(self, chart: Chart, ends: list) -> list:
+        """A message just read, the first owed: the count of tool uses since the agent owes an answer starts at nought."""
+        read = self.node(chart, NodeKind.CHECK, "message_just_read", x=400, y=92)
+        more = self.node(chart, NodeKind.CHECK, "unanswered_over", "2", x=400, y=184)
+        owed = self.node(chart, NodeKind.ACTION, "count_start", "owed", x=400, y=276)
+        self.chain(ends, read)
+        self.line(read, more, YES)
+        self.line(more, owed, NO)
+        return [(read, NO), (more, YES), (owed, THEN)]
 
     def shared_inbox(self, chart: Chart, ends: list) -> list:
         """The inbox named at a start, a prompt and a stop."""

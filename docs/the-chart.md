@@ -41,7 +41,8 @@ of the list in every journal, drawn back by any boot that finds it missing, wher
 so many tool uses and the write held after so many namings, and a read message answered before the next tool, held
 after so many uses. Then the conduct for every state, one Always workflow per event, bound to no state and placed
 after the locked ones: Always at Agent stops, Session starts and Prompt sent name the inbox, Always at A message is
-created types a message that comes to the agent. A state's workflow at an event carries only the state's own
+created types a message that comes to the agent and starts its counts of tool uses and inbox namings, Always at A
+message is updated starts the count of uses the agent owes an answer on, at the first message read and owed. A state's workflow at an event carries only the state's own
 steps, and a state with nothing of its own at an event has no workflow there; a copy from before, edited by you,
 keeps your steps and the state's and loses the shared ones at the boot that moves them. Each state's own:
 
