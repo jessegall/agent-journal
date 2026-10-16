@@ -2,7 +2,6 @@ from journal.features.feature import Feature
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
-from journal.features.workers.listeners.release_awaiting import ReleaseAwaiting
 from journal.features.workers.states.awaiting import Awaiting
 
 
@@ -14,7 +13,7 @@ class Workers(Feature):
     help = "Agents sent to write one bounded job; the agent waits for their reports."
     states = (Awaiting,)
     commands = (WorkerCommand,)
-    listeners = (ReleaseAwaiting,)
+    listeners = ()
 
     REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
     STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
