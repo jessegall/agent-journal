@@ -22,7 +22,7 @@ class RemindNowAndThen(Listener[Created]):
         if not isinstance(entry, Entry) or entry.kind != "nudge" or entry.data.get("key") == Etiquette.REMIND.key:
             return
         session = entry.data.get("session", "")
-        if not session or self.entries.said_to(entry.environment_id, session) % EVERY:
+        if not session or self.entries.said_to(session) % EVERY:
             return
         line = self.nudger.say(self.machine.agent(session, entry.environment_id), Etiquette.REMIND.about())
         if line:

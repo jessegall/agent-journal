@@ -5,7 +5,7 @@ from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 class HoldUnread(AgentListener[ToolStarting]):
@@ -18,12 +18,12 @@ class HoldUnread(AgentListener[ToolStarting]):
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
-        unread = self.messages.unread(event.environment_id)
+        unread = self.messages.unread()
         if not unread:
             return None
         oldest = min(m.created_at for m in unread)
-        uses = len([e for e in self.entries.of_kind(event.environment_id, "ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= oldest])
-        every, patience = int(self.settings.option(PROJECT, MessagesFeature.REMIND_EVERY)), int(self.settings.option(PROJECT, MessagesFeature.HOLD_AFTER_REMINDERS))
+        uses = len([e for e in self.entries.of_kind("ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= oldest])
+        every, patience = int(self.settings.option(MessagesFeature.REMIND_EVERY)), int(self.settings.option(MessagesFeature.HOLD_AFTER_REMINDERS))
         if uses // every >= patience and event.writes:
             return Decision.refuse(MessagesFeature.UNREAD_HELD.about(count=len(unread)).rendered())
         if uses % every:

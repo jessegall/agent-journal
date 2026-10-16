@@ -33,7 +33,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         if not head:
             return
         sha, subject, branch, body = head
-        if any(e.data.get("sha") == sha for e in self.entries.of_kind(event.environment_id, COMMIT, 20)):
+        if any(e.data.get("sha") == sha for e in self.entries.of_kind(COMMIT, 20)):
             return
         by = Actor.agent(event.session)
         self.entries.save(Entry(environment_id=event.environment_id, kind=COMMIT, actor=by, data={"sha": sha, "subject": subject, "branch": branch, "session": event.session}), by)

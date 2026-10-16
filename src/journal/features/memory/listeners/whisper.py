@@ -26,7 +26,7 @@ class Whisper(AgentListener[AgentEvent]):
             return None
         words = set(re.findall(r"[a-z][a-z0-9_-]*", text.lower()))
         agent = self.machine.agent(event.session, event.environment_id)
-        for noun, row in self.rows(event.environment_id):
+        for noun, row in self.rows():
             if words & set(row.keywords) and (line := self.nudger.say(agent, self.said(noun, row))):
                 self.supervisor.type(event.environment_id, line)
                 self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", f"{noun}:{row.id}", key=f"whisper:{noun}:{row.id}")
@@ -40,8 +40,8 @@ class Whisper(AgentListener[AgentEvent]):
             return event.input.get("command", "") if event.tool == "Bash" else ""
         return ""
 
-    def rows(self, environment_id: int):
-        return [*(("fact", f) for f in self.facts.in_(environment_id)), *(("rule", r) for r in self.rules.all()), *(("reminder", r) for r in self.reminders.in_(environment_id))]
+    def rows(self):
+        return [*(("fact", f) for f in self.facts.in_()), *(("rule", r) for r in self.rules.all()), *(("reminder", r) for r in self.reminders.in_())]
 
     @staticmethod
     def said(noun: str, row):

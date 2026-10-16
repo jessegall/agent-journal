@@ -38,8 +38,8 @@ class BriefAtStart(AgentListener[SessionStarted]):
             Briefing.LAWS.about(),
             self.takeover(event),
             Briefing.RULES.about(count=len(rules), rows=self.numbered(r.text for r in rules)) if rules else None,
-            Briefing.FACTS.about(rows=self.numbered(f.text for f in self.facts.in_(agent.environment_id))) if self.facts.in_(agent.environment_id) else None,
-            Briefing.REMINDERS.about(rows=self.numbered(r.text for r in self.reminders.in_(agent.environment_id))) if self.reminders.in_(agent.environment_id) else None,
+            Briefing.FACTS.about(rows=self.numbered(f.text for f in self.facts.in_())) if self.facts.in_() else None,
+            Briefing.REMINDERS.about(rows=self.numbered(r.text for r in self.reminders.in_())) if self.reminders.in_() else None,
             self.waiting(event),
         ]
         return Decision.tell("\n".join(line for said in lines if said and (line := self.nudger.say(agent, said))))
@@ -50,12 +50,12 @@ class BriefAtStart(AgentListener[SessionStarted]):
         if event.source == "compact":
             return None
         since = datetime.now(timezone.utc) - TAKEN_OVER_WITHIN
-        others = self.agents.others_lately(event.environment_id, event.session, since)
+        others = self.agents.others_lately(event.session, since)
         return Briefing.TAKEOVER.about(at=others[-1].updated_at.astimezone().strftime("%H:%M")) if others else None
 
     def waiting(self, event: SessionStarted):
         from journal.features.briefing.feature import Briefing
-        counts = {"tasks": len(self.tasks.in_state(event.environment_id, TaskState.OPEN)), "messages": len(self.messages.unread(event.environment_id)), "questions": len(self.questions.open(event.environment_id))}
+        counts = {"tasks": len(self.tasks.in_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
         parts = [f"{n} {name}" for name, n in counts.items() if n]
         return Briefing.WAITING.about(rows=", ".join(parts)) if parts else None
 

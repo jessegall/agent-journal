@@ -3,7 +3,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.features.profiles.profile import Profile
 from journal.providers.providers import Providers
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 
@@ -28,7 +28,7 @@ class ProfileFiles:
             if provider.name != "claude" and not (self.config.root / provider.home).is_dir():
                 continue
             from journal.features.profiles.feature import Profiles
-            model = str(self.settings.option(PROJECT, Profiles.CLAUDE_MODEL if provider.name == "claude" else Profiles.CODEX_MODEL))
+            model = str(self.settings.option(Profiles.CLAUDE_MODEL if provider.name == "claude" else Profiles.CODEX_MODEL))
             for profile in self.PROFILES:
                 path = self.config.root / provider.home / "agents" / (f"{profile.name}.md" if provider.name == "claude" else f"{profile.name}.toml")
                 text = profile.claude_text(model) if provider.name == "claude" else profile.codex_text(model)

@@ -5,7 +5,7 @@ from journal.features.said import Said
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 from journal.models.task_state import TaskState
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 

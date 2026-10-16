@@ -18,7 +18,7 @@ class InboxOnArrival(Listener[Created]):
         message = event.model
         if not isinstance(message, Message) or message.author != Author.USER:
             return
-        agent = self.agents.live(message.environment_id)
+        agent = self.agents.live()
         if agent is None:
             return
         line = self.nudger.say(agent, MessagesFeature.NEW.about(n=message.id))

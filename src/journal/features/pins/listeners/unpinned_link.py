@@ -22,7 +22,7 @@ class UnpinnedLink(AgentListener[TurnWritten]):
         from journal.features.pins.feature import Pins
         if not event.final:
             return
-        pinned = {n.link.rstrip("/") for n in self.notices.open_in(event.environment_id)}
+        pinned = {n.link.rstrip("/") for n in self.notices.open_in()}
         loose = [url.rstrip(".,;:") for url in LINK.findall(event.text) if not OWN.match(url) and url.rstrip(".,;:").rstrip("/") not in pinned]
         agent = self.machine.agent(event.session, event.environment_id)
         for url in dict.fromkeys(loose):

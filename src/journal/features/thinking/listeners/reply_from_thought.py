@@ -18,7 +18,7 @@ class ReplyFromThought(AgentListener[ToolStarting]):
         self.config, self.providers, self.messages, self.bus = config, providers, messages, bus
 
     def handle(self, event: ToolStarting) -> None:
-        unanswered = {m.id for m in self.messages.unanswered(event.environment_id)}
+        unanswered = {m.id for m in self.messages.unanswered()}
         if not unanswered:
             return
         for thought in self.providers.named(event.provider).thoughts_this_turn(self.config.root, event.session):

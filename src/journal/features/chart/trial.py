@@ -27,6 +27,7 @@ from journal.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
+from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
 
 EVENTS = {
@@ -51,14 +52,18 @@ BEFORE = {"messages": lambda m: m, "workers": lambda w: w.with_(state=WorkerStat
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
 
-    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: Machine, providers: Providers) -> None:
+    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: Machine, providers: Providers, scope: Scope) -> None:
         self.repositories = {"messages": messages, "workers": workers, "questions": questions}
         self.checks, self.machine, self.providers = checks, machine, providers
-        self.walk, self.fillers, self.agents = walk, fillers, agents
+        self.walk, self.fillers, self.agents, self.scope = walk, fillers, agents, scope
 
     def run(self, trigger: str, environment_id: int, row: int = 0, assumptions: Assumptions = Assumptions()) -> dict:
         """A dry run for an agent event, or for a row event given the row, against the live rows or the state assumed: the path and what it would do, nothing done."""
-        agent = self.agents.live(environment_id)
+        with self.scope.of(environment_id):
+            return self.dry_run(trigger, environment_id, row, assumptions)
+
+    def dry_run(self, trigger: str, environment_id: int, row: int, assumptions: Assumptions) -> dict:
+        agent = self.agents.live()
         session = agent.session if agent else ""
         provider = assumptions.provider or ((agent.provider or "claude") if agent else "claude")
         state = self.state_for(agent, assumptions)
