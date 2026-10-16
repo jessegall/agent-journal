@@ -5,7 +5,7 @@ from journal.console.where import Where
 from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.features.tasks.states.stuck import Stuck
-from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 
 
 class StuckCommand(Command):
@@ -14,14 +14,14 @@ class StuckCommand(Command):
     noun = "stuck"
     default_verb = "now"
 
-    def __init__(self, machine: Machine, environments: Environments, cards: Cards) -> None:
-        self.machine, self.environments, self.cards = machine, environments, cards
+    def __init__(self, machine: Machine, cards: Cards, scope: Scope) -> None:
+        self.machine, self.cards, self.scope = machine, cards, scope
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "now", "say why you are stuck").add_argument("why")
 
     def now(self, args: Namespace, where: Where) -> int:
-        environment = self.environments.named(where.environment).id
+        environment = self.scope.id
         current = self.machine.agent(where.session, environment)
         self.machine.move(where.session, environment, Stuck.leaving(self.machine.states.named(current.state, current.data), why=args.why))
         self.cards.show(environment, where.session, "Agent stuck", "warn", "bad", args.why)

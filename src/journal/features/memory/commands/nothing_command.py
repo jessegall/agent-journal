@@ -4,7 +4,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.memory.commands.memory_command import MemoryCommand
-from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 
 
 class NothingCommand(Command):
@@ -12,8 +12,8 @@ class NothingCommand(Command):
 
     noun = "nothing"
 
-    def __init__(self, environments: Environments, machine: Machine) -> None:
-        self.environments, self.machine = environments, machine
+    def __init__(self, machine: Machine, scope: Scope) -> None:
+        self.machine, self.scope = machine, scope
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "survives", "say why nothing needs recording").add_argument("why")

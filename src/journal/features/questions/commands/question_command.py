@@ -7,17 +7,17 @@ from journal.features.questions.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.models.question import Question
 from journal.models.ref import Ref
-from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
+from journal.repositories.scope import Scope
 
 
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, environments: Environments, machine: Machine, answering: Answering, messages: Messages, links: Links) -> None:
-        self.questions, self.environments, self.machine, self.answering, self.messages, self.links = questions, environments, machine, answering, messages, links
+    def __init__(self, questions: Questions, machine: Machine, answering: Answering, messages: Messages, links: Links, scope: Scope) -> None:
+        self.questions, self.machine, self.answering, self.messages, self.links, self.scope = questions, machine, answering, messages, links, scope
 
     def arguments(self, verbs) -> None:
         ask = self.verb(verbs, "ask", "ask the user something and wait")
@@ -30,9 +30,9 @@ class QuestionCommand(Command):
         self.verb(verbs, "show", "a question whole: its words, its choices, the answer and the messages linked to it").add_argument("n", type=int)
 
     def ask(self, args: Namespace, where: Where) -> int:
-        environment = self.environments.named(where.environment).id
+        environment = self.scope.id
         options = tuple(o.strip() for o in args.options.split(",") if o.strip())
-        question = self.questions.save(Question(environment_id=environment, text=args.text, options=options), where.actor)
+        question = self.questions.save(Question(text=args.text, options=options), where.actor)
         if where.session:
             agent = self.machine.agent(where.session, environment)
             self.machine.move(where.session, environment, Waiting.leaving(self.machine.states.named(agent.state, agent.data), question_id=question.id))
@@ -62,7 +62,7 @@ class QuestionCommand(Command):
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for question in self.questions.open(self.environments.named(where.environment).id):
+        for question in self.questions.open():
             choices = f"  [{' / '.join(question.options)}]" if question.options else ""
             print(f"{question.id:>4}  {question.text}{choices}")
         return 0

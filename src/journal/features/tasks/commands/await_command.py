@@ -4,7 +4,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.tasks.states.expecting import Expecting
-from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 
 
 class AwaitCommand(Command):
@@ -13,14 +13,14 @@ class AwaitCommand(Command):
     noun = "await"
     default_verb = "now"
 
-    def __init__(self, machine: Machine, environments: Environments) -> None:
-        self.machine, self.environments = machine, environments
+    def __init__(self, machine: Machine, scope: Scope) -> None:
+        self.machine, self.scope = machine, scope
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "now", "say what you wait for").add_argument("what")
 
     def now(self, args: Namespace, where: Where) -> int:
-        environment = self.environments.named(where.environment).id
+        environment = self.scope.id
         current = self.machine.agent(where.session, environment)
         self.machine.move(where.session, environment, Expecting.leaving(self.machine.states.named(current.state, current.data), what=args.what))
         print(f"waiting for {args.what}; working again lifts it")

@@ -6,15 +6,15 @@ from journal.engine.machine import Machine
 from journal.features.sequences.running import Running
 from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.models.sequence import Sequence
-from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 from journal.repositories.sequences import Sequences
 
 
 class SequenceCommand(Command):
     noun = "sequence"
 
-    def __init__(self, sequences: Sequences, environments: Environments, machine: Machine, running: Running) -> None:
-        self.sequences, self.environments, self.machine, self.running = sequences, environments, machine, running
+    def __init__(self, sequences: Sequences, machine: Machine, running: Running, scope: Scope) -> None:
+        self.sequences, self.machine, self.running, self.scope = sequences, machine, running, scope
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "write a sequence of steps")
@@ -32,12 +32,12 @@ class SequenceCommand(Command):
         return 0
 
     def run(self, args: Namespace, where: Where) -> int:
-        print(self.running.start(self.sequences.find(args.n), where.session, self.environments.named(where.environment).id))
+        print(self.running.start(self.sequences.find(args.n), where.session, self.scope.id))
         return 0
 
     def next(self, args: Namespace, where: Where) -> int:
         from journal.features.sequences.feature import Sequences as SequencesFeature
-        environment = self.environments.named(where.environment).id
+        environment = self.scope.id
         agent = self.machine.agent(where.session, environment)
         state = self.machine.states.named(agent.state, agent.data)
         if not isinstance(state, RunningSequence):
