@@ -8,7 +8,7 @@ from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
-from journal.models.chart import BASE, Chart
+from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import PORTS, THEN, Charts
@@ -26,14 +26,14 @@ class ChartCommand(Command):
         self.verb(verbs, "catalogue", "everything a node may be")
         new = self.verb(verbs, "new", "a new, empty workflow, for a state or the base")
         new.add_argument("title")
-        new.add_argument("--state", default="", help="the state this workflow is for, or base for what every state shares; left out, a workflow of the older shape bound to one event")
+        new.add_argument("--state", default="", help="the state this workflow is for; left out, a workflow of the older shape bound to one event")
         self.verb(verbs, "drop", "take a workflow out, with its nodes").add_argument("n", type=int)
         node = self.verb(verbs, "node", "add a node naming a catalogue entry")
         node.add_argument("kind", choices=[k.value for k in NodeKind])
         node.add_argument("key")
         node.add_argument("--text", default="", help="the line an action says, holds with, blocks with or types, or the sequence it starts")
         node.add_argument("--in", dest="chart", type=int, default=0, help="the workflow by its number")
-        node.add_argument("--for", dest="state", default="", help="the workflow by its state, or base")
+        node.add_argument("--for", dest="state", default="", help="the workflow by its state")
         line = self.verb(verbs, "line", "draw a line from one node to another")
         line.add_argument("source", type=int)
         line.add_argument("target", type=int)
@@ -44,7 +44,7 @@ class ChartCommand(Command):
             editing.add_argument("--edit-default", dest="edit_default", action="store_true", help="allowed on a default workflow: an edit changes how the journal drives the agent")
         reset = self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone")
         reset.add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number")
-        reset.add_argument("--for", dest="state", default="", help="the workflow by its state, or base")
+        reset.add_argument("--for", dest="state", default="", help="the workflow by its state")
         try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
         try_.add_argument("trigger")
         try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
@@ -67,8 +67,8 @@ class ChartCommand(Command):
         return 0
 
     def in_order(self) -> list[Chart]:
-        """The base first, then the states' workflows by name, then those of the older shape."""
-        bound = sorted((c for c in self.charts.all() if c.bound_to_a_state), key=lambda c: (c.state != BASE, c.state))
+        """The states' workflows by name, then those of the older shape."""
+        bound = sorted((c for c in self.charts.all() if c.bound_to_a_state), key=lambda c: c.state)
         return bound + self.charts.by_event()
 
     def named_workflow(self, number: int, state: str) -> Chart:

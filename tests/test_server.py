@@ -422,7 +422,7 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
 def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_when_none_does(server):
     manifest = call(server, "GET", "/api/manifest")[1]
     hold_after = next(s for s in manifest["features"]["messages"]["settings"] if s["name"] == "hold_after")
-    assert hold_after["read_by"] and all(r["workflow"] == "For every state" and r["node"] > 0 for r in hold_after["read_by"]), "the base workflow's check reads the hold cadence"
+    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} >= {"Idle", "Working"} and all(r["node"] > 0 for r in hold_after["read_by"]), "every state's workflow has the check that reads the hold cadence"
     auto = next(s for s in manifest["features"]["tasks"]["settings"] if s["name"] == "auto")
     assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
 
@@ -488,7 +488,7 @@ def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no
 
 def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(server):
     status, read = call(server, "GET", "/journal/chart")
-    base = next(w for w in read["workflows"] if w["state"] == "base")
+    base = next(w for w in read["workflows"] if w["state"] == "idle")
     assert status == 200 and not base["off"], "a shipped workflow with its drawing answers its events"
     status, body = call(server, "POST", f"/journal/chart/{base['id']}/remove", {})
     assert status == 409 and "empty it or reset it" in body["error"], "a shipped workflow stays"
@@ -511,5 +511,5 @@ def test_the_page_refuses_a_second_workflow_of_the_older_shape_on_an_event_and_a
     status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
     assert status >= 400 and "one workflow per event" in json.dumps(body)
     status, listed = call(server, "GET", "/journal/chart")
-    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 9, "each answers its own event or its own state"
+    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 8, "each answers its own event or its own state"
 

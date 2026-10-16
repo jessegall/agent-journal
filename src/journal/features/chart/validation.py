@@ -1,6 +1,6 @@
 from journal.features.chart.catalogue import Catalogue
 from journal.engine.states_catalogue import StatesCatalogue
-from journal.models.chart import BASE, Chart
+from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 
@@ -21,11 +21,11 @@ class Validation:
         self.catalogue, self.charts, self.states = catalogue, charts, states
 
     def binding_faults(self, chart: Chart) -> list[str]:
-        """A workflow is bound to the base or to a state the engine knows, and a state has one workflow: a second on the same state, or a state nobody has heard of, is refused."""
+        """A workflow is bound to a state the engine knows, and a state has one workflow: a second on the same state, or a state nobody has heard of, is refused."""
         if not chart.bound_to_a_state:
             return []
-        if chart.state != BASE and not self.states.known(chart.state):
-            return [f"no state is called {chart.state}: base, or one of {', '.join(self.states.names())}"]
+        if not self.states.known(chart.state):
+            return [f"no state is called {chart.state}: one of {', '.join(self.states.names())}"]
         other = self.charts.for_state(chart.state)
         if other and other.id != chart.id:
             return [f"workflow {other.id}, {other.title}, is already the workflow for {chart.state}: one workflow per state"]

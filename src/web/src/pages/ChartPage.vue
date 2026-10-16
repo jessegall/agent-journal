@@ -26,8 +26,7 @@ const FILLERS = [
     {key: "{{next_task_title}}", about: "The title of the next open task"},
 ];
 const LEAD =
-    "The journal ships one workflow for every state the agent can be in, and one for what every state shares. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
-const STATE_PLACE = {base: "Default · every state"};
+    "The journal ships one workflow for every state the agent can be in, each carrying what every state shares as well as its own. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
 
 // where a workflow runs, as a note beside its title: a shipped one at its state, one of your own at its event; one with no trigger is off
 function placeOf(workflow) {
@@ -35,7 +34,7 @@ function placeOf(workflow) {
     return workflow.off ? `${place} · off` : place;
 }
 function placeWords(workflow) {
-    if (workflow.state) return STATE_PLACE[workflow.state] || `Default · the ${workflow.state.replace("_", " ")} state`;
+    if (workflow.state) return `Default · the ${workflow.state.replace("_", " ")} state`;
     if (workflow.event) return `Yours · at ${entries.value[`trigger:${workflow.event}`]?.title || workflow.event}`;
     return "Yours";
 }

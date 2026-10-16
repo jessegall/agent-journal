@@ -1308,7 +1308,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     at = [wf[0]]
     add = lambda kind, key, *text: int(console.run(["chart", "node", "--edit-default", kind, key, *text, "--in", str(at[0])], AGENT).out.split()[1].rstrip(":"))
     line = lambda a, b, port="then": console.run(["chart", "line", "--edit-default", str(a), str(b), "--port", port], AGENT)
-    stop = next(n.id for n in charts.nodes_of(charts.for_state("base")) if n.kind == NodeKind.TRIGGER and n.key == "idle")
+    stop = next(n.id for n in charts.nodes_of(charts.for_state("idle")) if n.kind == NodeKind.TRIGGER and n.key == "idle")
     open_, hold_stop, rest = add("check", "open_tasks"), add("action", "block_stop", "--text", "the chart says: tasks are open, carry on"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(stop, open_)
     line(open_, hold_stop, "yes")
@@ -1322,7 +1322,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     status, body = hook(app, "Stop")
     assert "the chart says: nothing is open, rest" in body["reason"], "the no line is followed; a line said at a stop holds the stop, as any line does"
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again at the next stop: there is no repeated-stop escape"
-    at[0] = charts.for_state("base").id
+    at[0] = charts.for_state("working").id
     tool = next(n.id for n in charts.nodes_of(charts.find(at[0])) if n.kind == NodeKind.TRIGGER and n.key == "tool_starting")
     writes, hold, calm = add("check", "tool_writes"), add("action", "hold", "--text", "no writes today"), add("action", "say", "--text", "the chart says: nothing is open, rest")
     line(tool, writes)
@@ -1368,15 +1368,16 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_keeps_edited_ones
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
     charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.system()
-    base = charts.for_state("base")
-    assert base.shipped and base.title == "For every state" and len(charts.nodes_of(base)) > 30
-    for node in charts.nodes_of(base)[5:]:
+    idle = charts.for_state("idle")
+    assert idle.shipped and idle.title == "Idle" and len(charts.nodes_of(idle)) > 40, "a state's workflow carries the shared conduct as well as its own"
+    for node in charts.nodes_of(idle)[5:]:
         charts.remove_node(node, by)
     seed.run()
-    assert len(charts.nodes_of(charts.for_state("base"))) == 5, "an edited workflow is the user's: never overwritten, never doubled"
+    assert len(charts.nodes_of(charts.for_state("idle"))) == 5, "an edited workflow is the user's: never overwritten, never doubled"
     charts.remove(charts.for_state("idle"), by)
     seed.run()
-    assert charts.for_state("idle") and len(charts.nodes_of(charts.for_state("idle"))) == 13, "a journal lacking a shipped workflow gets it at boot"
+    assert charts.for_state("idle") and len(charts.nodes_of(charts.for_state("idle"))) > 40, "a journal lacking a shipped workflow gets it at boot"
+    assert charts.for_state("base") is None, "no workflow for what every state shares: each state's own carries it"
     unedited = charts.save(Chart(title="Agent stops", shipped=True, event="idle"), by)
     charts.add_node(unedited, Node(kind=NodeKind.TRIGGER, key="idle", shipped=True), by)
     edited = charts.save(Chart(title="Tool about to run", shipped=True, event="tool_starting"), by)
@@ -1417,7 +1418,7 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
     charts = app.container.get(Charts)
-    shipped = charts.for_state("base")
+    shipped = charts.for_state("working")
     for node in charts.nodes_of(shipped):
         if node.kind != NodeKind.TRIGGER:
             charts.remove_node(node, Actor.system())
@@ -1453,7 +1454,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 18, 19, 44, 45, 47, 48, 49" in out, "the base passes its inbox branch first and finds nothing unread; the Idle workflow then holds"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 31, 4, 5, 6" in out, "the stop branch holds, then the inbox branch finds nothing unread"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
     console.run(["message", "send", "are you there?"], USER)
@@ -1552,7 +1553,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["For every state", "Idle", "Working", "Awaiting a worker", "Waiting on a question", "Expecting something outside", "Running a sequence"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Idle", "Working", "Awaiting a worker", "Waiting on a question", "Expecting something outside", "Running a sequence"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
@@ -1887,8 +1888,8 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     console.run(["message", "send", "are you there?"], USER)
     app.runtime().deferred.drain()
     assert typed.count("[journal] new message 1") == 1, "named once, by the workflow"
-    console.run(["chart", "reset", "--for", "base"], USER)
-    assert "For every state" in console.run(["chart", "show"], USER).out
+    console.run(["chart", "reset", "--for", "idle"], USER)
+    assert "[idle]" in console.run(["chart", "show"], USER).out
 
 
 def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, monkeypatch):
@@ -1997,17 +1998,17 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     console.run(["environment", "here"], AGENT)
     assert "no state is called flying" in console.run(["chart", "new", "Flying", "--state", "flying"], USER).err
     assert "already the workflow for working: one workflow per state" in console.run(["chart", "new", "Working twice", "--state", "working"], USER).err
-    assert "already the workflow for base: one workflow per state" in console.run(["chart", "new", "Base twice", "--state", "base"], USER).err
+    assert "already the workflow for idle: one workflow per state" in console.run(["chart", "new", "Idle twice", "--state", "idle"], USER).err
     charts = app.container.get(Charts)
-    working, base = charts.for_state("working").id, charts.for_state("base").id
+    working, idle = charts.for_state("working").id, charts.for_state("idle").id
     node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
     assert node(working, "trigger", "tool_finished").code == 0, "a state's workflow holds a trigger per event it answers"
     assert "one trigger per event; tool_starting is in this one 2 times" in node(working, "trigger", "tool_starting").err
-    assert node(base, "trigger", "tool_finished").code == 0, "the base and a state may both answer an event"
+    assert node(idle, "trigger", "tool_finished").code == 0, "two states may both answer an event, each in its own workflow"
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {base} [base], revision 1 by user:1: For every state" in shown and f"workflow {working} [working]" in shown and "sidelined" not in shown
+    assert f"workflow {idle} [idle], revision 1 by user:1: Idle" in shown and f"workflow {working} [working]" in shown and "sidelined" not in shown
 
-def test_the_walk_runs_the_base_then_the_state_workflow_found_by_the_state_and_its_parents(app):
+def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
     from journal.features.chart.walk import Walk
     hook(app, "SessionStart")
@@ -2015,16 +2016,16 @@ def test_the_walk_runs_the_base_then_the_state_workflow_found_by_the_state_and_i
     console.run(["environment", "here"], AGENT)
     from journal.repositories.charts import Charts
     charts = app.container.get(Charts)
-    base, working = charts.for_state("base").id, charts.for_state("working").id
-    for chart, words in ((base, "from the base"), (working, "from working")):
+    idle, working = charts.for_state("idle").id, charts.for_state("working").id
+    for chart, words in ((idle, "from idle"), (working, "from working")):
         node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER).out.split()[1].rstrip(":"))
         trigger, say = node("trigger", "tool_finished"), node("action", "say", "--text", words)
         console.run(["chart", "line", "--edit-default", str(trigger), str(say)], USER)
     read = lambda: json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")[1])
-    assert "from the base" in read() and "from working" not in read(), "idle: the base alone"
+    assert "from idle" in read() and "from working" not in read(), "idle: the Idle workflow alone"
     console.run(["task", "create", "the footer", "--start"], AGENT)
     answer = read()
-    assert answer.index("from the base") < answer.index("from working"), "working: the base first, then the state's own"
+    assert "from working" in answer and "from idle" not in answer, "working: the state's own workflow alone"
     console.run(["plan", "create", "p", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "step one"], USER)
     console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
@@ -2044,12 +2045,16 @@ def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(
     console = app.console()
     console.run(["environment", "here"], AGENT)
     from journal.repositories.charts import Charts as ChartRows
-    base = app.container.get(ChartRows).for_state("base").id
-    node = lambda *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(base)], USER)
-    assert "moves the agent to working: a workflow moves the agent to idle only" in node("action", "move_to", "--text", "working").err
-    trigger = int(node("trigger", "tool_finished").out.split()[1].rstrip(":"))
-    move = int(node("action", "move_to", "--text", "idle").out.split()[1].rstrip(":"))
-    console.run(["chart", "line", "--edit-default", str(trigger), str(move)], USER)
+    charts = app.container.get(ChartRows)
+    node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
+    assert "moves the agent to working: a workflow moves the agent to idle only" in node(charts.for_state("idle").id, "action", "move_to", "--text", "working").err
+    moves = {}
+    for state in ("working", "expecting"):
+        chart = charts.for_state(state).id
+        trigger = int(node(chart, "trigger", "tool_finished").out.split()[1].rstrip(":"))
+        moves[state] = int(node(chart, "action", "move_to", "--text", "idle").out.split()[1].rstrip(":"))
+        console.run(["chart", "line", "--edit-default", str(trigger), str(moves[state])], USER)
+    move = moves["working"]
     console.run(["task", "create", "the footer", "--start"], AGENT)
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     machine = app.container.get(Machine)
@@ -2073,7 +2078,7 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     console = app.console()
     console.run(["environment", "here"], AGENT)
     from journal.repositories.charts import Charts as ChartRows
-    base = app.container.get(ChartRows).for_state("base").id
+    base = app.container.get(ChartRows).for_state("idle").id
     for own in ("agents.updated", "entries.created", "links.created"):
         assert f"has no trigger named {own}" in console.run(["chart", "node", "--edit-default", "trigger", own, "--in", str(base)], USER).err, own
     console.run(["task", "create", "the parser", "--start"], AGENT)
@@ -2110,11 +2115,11 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     from journal.repositories.charts import Charts
     hook(app, "SessionStart")
     console = app.console()
-    base = app.container.get(Charts).for_state("base")
-    refused = console.run(["chart", "node", "check", "open_tasks", "--for", "base"], USER)
-    assert refused.code == 1 and f"workflow {base.id}, For every state, is a default one: add --edit-default" in refused.err
-    assert console.run(["chart", "node", "check", "open_tasks", "--for", "base", "--edit-default"], USER).code == 0
-    assert f"workflow {base.id} [base], revision 1 by user:1: For every state" in console.run(["chart", "show"], USER).out
+    base = app.container.get(Charts).for_state("idle")
+    refused = console.run(["chart", "node", "check", "open_tasks", "--for", "idle"], USER)
+    assert refused.code == 1 and f"workflow {base.id}, Idle, is a default one: add --edit-default" in refused.err
+    assert console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--edit-default"], USER).code == 0
+    assert f"workflow {base.id} [idle], revision 1 by user:1: Idle" in console.run(["chart", "show"], USER).out
     own = int(console.run(["chart", "new", "mine"], USER).out.split()[1].rstrip(":"))
     assert console.run(["chart", "node", "trigger", "idle", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
@@ -2126,7 +2131,7 @@ def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monke
     read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))["workflows"]
     assert all(w["last_walk"] == {} and w["last_failure"] == {} for w in read()), "nothing walked yet"
     hook(app, "SessionStart")
-    base = next(w for w in read() if w["state"] == "base")
+    base = next(w for w in read() if w["state"] == "idle")
     assert base["last_walk"]["trigger"] == "Session starts" and base["last_walk"]["at"] > 0 and base["last_failure"] == {}
     app.console().run(["message", "send", "a word for the agent"], USER)
 
@@ -2134,7 +2139,7 @@ def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monke
         raise RuntimeError("the typist is out")
     monkeypatch.setattr(Actions, "say", broken)
     hook(app, "UserPromptSubmit", prompt="hello")
-    base = next(w for w in read() if w["state"] == "base")
+    base = next(w for w in read() if w["state"] == "idle")
     assert base["last_failure"]["key"] == "say" and "RuntimeError: the typist is out" in base["last_failure"]["fault"] and base["last_failure"]["at"] > 0
 
 
@@ -2168,7 +2173,7 @@ def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "working"], USER).out
     assert "is a shipped one and stays" in console.run(["chart", "drop", "1"], USER).err
     shown = console.run(["chart", "show"], USER).out
-    assert shown.index("[base]") < shown.index("[working]") < shown.index(f"workflow {mine}, revision"), "the base first, then the states, then the older shape"
+    assert shown.index("[awaiting]") < shown.index("[working]") < shown.index(f"workflow {mine}, revision"), "the states by name, then the older shape"
 
 def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, monkeypatch):
     import json
@@ -2177,8 +2182,8 @@ def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, m
     console = app.console()
     console.run(["environment", "here"], AGENT)
     from journal.repositories.charts import Charts as ChartRows
-    base = app.container.get(ChartRows).for_state("base").id
-    node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--for", "base"], USER).out.split()[1].rstrip(":"))
+    base = app.container.get(ChartRows).for_state("idle").id
+    node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--for", "idle"], USER).out.split()[1].rstrip(":"))
     trigger, say = node("trigger", "tool_finished"), node("action", "say", "--text", "first words")
     console.run(["chart", "line", "--edit-default", str(trigger), str(say)], USER)
     finished = lambda: json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")[1])
@@ -2213,8 +2218,7 @@ def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_
     walk = entries.of_kind("walk", 1)[0]
     assert len(walk.data["nodes"]) < STEPS and took < 0.5, f"the shipped tool workflow walks {len(walk.data['nodes'])} nodes in {took * 1000:.0f} ms"
     from journal.repositories.charts import Charts as ChartRows
-    base = app.container.get(ChartRows).for_state("base").id
-    node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--for", "base"], USER).out.split()[1].rstrip(":"))
+    node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--for", "working"], USER).out.split()[1].rstrip(":"))
     previous = node("trigger", "tool_finished")
     for i in range(STEPS + 5):
         following = node("action", "show_card", "--text", f"step {i}")

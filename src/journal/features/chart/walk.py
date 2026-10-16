@@ -12,7 +12,7 @@ from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.actor import Actor
-from journal.models.chart import BASE, Chart
+from journal.models.chart import Chart
 from journal.models.entry import Entry
 from journal.models.graph import Graph
 from journal.models.node import Node
@@ -63,8 +63,8 @@ class Walk:
         return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
-        """In the order they run: the base, then the workflow of the agent's state or of the nearest state it inherits from, then the workflow of the older shape that answers the event by itself."""
-        found = [chart for chart in [self.charts.for_state(BASE)] if chart]
+        """In the order they run: the workflow of the agent's state or of the nearest state it inherits from, the wait beneath an owed pause, then the workflow of the older shape that answers the event by itself."""
+        found: list[Chart] = []
         for state in self.states_of(ctx):
             own = next((chart for name in self.lineage(state) if (chart := self.charts.for_state(name))), None)
             if own and own not in found:
@@ -73,11 +73,13 @@ class Walk:
         return found + [legacy] if legacy else found
 
     def states_of(self, ctx: Context) -> list[AgentState]:
-        """The state the walk read, and beneath a pause the agent owes the journal the wait it buries, so a row event about that wait still reaches its workflow."""
+        """The state the walk read, and beneath a pause the agent owes the journal the state it interrupted, so the conduct of that state, its inbox, its holds, its waits, still runs under the pause. A tick is about the agent's quiet, and under an owed pause the quiet is the pause's: the state beneath says nothing on it."""
         if not ctx.state:
             return []
-        beneath = self.states.wait_in(ctx.state) if isinstance(ctx.state, Paused) and ctx.state.owed_by_agent else None
-        return [ctx.state, beneath] if beneath else [ctx.state]
+        beneath = self.states.beneath(ctx.state)
+        if beneath is ctx.state or isinstance(ctx.event, Ticked):
+            return [ctx.state]
+        return [ctx.state, beneath]
 
     @staticmethod
     def lineage(state: AgentState) -> list[str]:

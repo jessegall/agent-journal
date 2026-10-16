@@ -182,13 +182,12 @@ const test = () =>
     });
 
 // the sheets: every choice is an action sheet, as the phone does it
-const STATE_PLACE = {base: "Default · every state"};
 function placeOf(workflow) {
     const place = placeWords(workflow);
     return workflow.off ? `${place} · off` : place;
 }
 function placeWords(workflow) {
-    if (workflow.state) return STATE_PLACE[workflow.state] || `Default · the ${workflow.state.replace("_", " ")} state`;
+    if (workflow.state) return `Default · the ${workflow.state.replace("_", " ")} state`;
     if (workflow.event)
         return `Yours · at ${catalogue.value.find((e) => e.kind === "trigger" && e.key === workflow.event)?.title || workflow.event}`;
     return "Yours";
@@ -371,7 +370,7 @@ const steps = computed(() => {
         <ActionSheet
             title="New workflow"
             about="Pick the event it starts at"
-            line="a workflow of your own; the default ones are one per state, with one for every state"
+            line="a workflow of your own; the default ones are one per state"
             :actions="eventActions"
             @close="sheet = ''"
         />

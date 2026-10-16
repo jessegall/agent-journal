@@ -671,3 +671,10 @@ names are gone; the settings page names the workflow node that reads each option
 docs/the-chart.md say what the workflows carry and what stays in code. What stays in code: the machine and its
 states, the laws, the briefing and the owed pauses, the skills, the shell runner, delivery, and the few feature
 listeners that read what no check reads (voices, git, triggers, checks, mcp, plans, sequences, questions' own tool).
+
+Ruling, 2026-10-16 in the evening, on the user's word: no base workflow. Each state's workflow carries what every
+state shares, drawn by one shared drawing off the state's own triggers, so every workflow reads whole on its own; the
+walk runs the state's workflow and, beneath a pause the agent owes the journal, the workflow of the state it
+interrupted, so the inbox, the holds and the waits run under Orienting, AtMark and LoadingSkill. An unedited shipped
+workflow is redrawn at boot when the shipping's drawings are newer (`chart.drawings_version`); an edited one is the
+user's and stays. The former base is retired at boot like the older shape.

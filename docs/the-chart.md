@@ -1,14 +1,14 @@
 # The chart: the journal's conduct, drawn
 
 The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. A workflow is bound
-to a state, or to the base that holds what every state shares, and holds one trigger per event it answers; a state has
-one workflow. Workflows of the older shape, bound to one event each, answer by their event until they retire: a journal holds one such workflow
+to a state and holds one trigger per event it answers; a state has one workflow, and each carries what every state
+shares, the inbox and the answers owed, as well as the state's own conduct. Workflows of the older shape, bound to one event each, answer by their event until they retire: a journal holds one such workflow
 per event, each starting at its event's trigger; a second on the same event is refused, since two would both drive
 the agent, and should a journal somehow hold two, the older one answers and the page marks the other sidelined. The journal ships it with today's conduct, so nothing changes until you edit it.
 
 The walk reads the agent's state once, right after the engine's machine has answered the event and before the engine's
 holds, and every check and filler reads that same state; so a tool use that lifts a wait is walked as Working, and a
-session start is walked as the state the agent resumes in, before the briefing's hold takes it. The trace of a walk names the state it read and the workflows it ran, in the order they run: the base first, then the
+session start is walked as the state the agent resumes in, before the briefing's hold takes it. The trace of a walk names the state it read and the workflows it ran, in the order they run: the
 workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
@@ -26,9 +26,10 @@ journal clears the compiled graphs, so the next walk reads the edit.
 
 ## The shipped workflows
 
-- **For every state**: a message arriving is typed to the agent; the inbox named at a start, a prompt and a stop;
-  the unread inbox named every so many tool uses and the write held after so many namings; a read message
-  answered before the next tool, held after so many uses.
+Every one of them carries the shared conduct: a message arriving is typed to the agent; the inbox named at a
+start, a prompt and a stop; the unread inbox named every so many tool uses and the write held after so many
+namings; a read message answered before the next tool, held after so many uses. And each adds its own:
+
 - **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks,
   the parked ask after a minute and the check-in after half an hour.
 - **Working**: the task in hand named back every so many edits, the log asked for and then held; carry on at a
