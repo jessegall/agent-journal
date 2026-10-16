@@ -21,6 +21,9 @@ walks as the live agent, or as the state given with `--state`, with the agent's 
 a `--provider` whose tool names the tool event takes; `--quiet`, `--edits` and `--unread` lay a state over the live rows,
 and the trial says everything it assumed.
 
+Each workflow is compiled once into a graph in memory and walked from there; a write to any workflow through the
+journal clears the compiled graphs, so the next walk reads the edit.
+
 ## Three kinds of box
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is

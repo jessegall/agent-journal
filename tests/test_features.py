@@ -2037,3 +2037,26 @@ def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
     shown = console.run(["chart", "show"], USER).out
     assert shown.index(f"workflow {base} [base]") < shown.index(f"workflow {working} [working]") < shown.index("workflow 1, revision"), "the base first, then the states, then the older shape"
+
+
+def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, monkeypatch):
+    import json
+    from journal.repositories.charts import Charts
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    node = lambda *args: int(console.run(["chart", "node", *args, "--for", "base"], USER).out.split()[1].rstrip(":"))
+    trigger, say = node("trigger", "tool_finished"), node("action", "say", "--text", "first words")
+    console.run(["chart", "line", str(trigger), str(say)], USER)
+    finished = lambda: json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")[1])
+    assert "first words" in finished()
+    charts = app.container.get(Charts)
+    monkeypatch.setattr(Charts, "nodes_of", lambda self, chart: (_ for _ in ()).throw(AssertionError("the rows were read again")))
+    assert "first words" in finished(), "the second walk reads no chart rows: the workflow is compiled"
+    monkeypatch.undo()
+    console.run(["chart", "remove", str(say)], USER)
+    node("action", "say", "--text", "second words")
+    console.run(["chart", "line", str(trigger), str(trigger + 2)], USER)
+    answer = finished()
+    assert "second words" in answer and "first words" not in answer, "a write through the repository clears the compiled workflow, and the next walk sees the edit"

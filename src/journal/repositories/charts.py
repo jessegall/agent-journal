@@ -2,6 +2,7 @@ from journal.db.connection import Connection
 from journal.features.bus import Bus
 from journal.models.actor import Actor
 from journal.models.chart import Chart
+from journal.models.graph import Graph
 from journal.models.link import Link
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
@@ -22,6 +23,17 @@ class Charts(Repository[Chart]):
     def __init__(self, connection: Connection, bus: Bus, links: Links, nodes: Nodes) -> None:
         super().__init__(connection, bus)
         self.links, self.nodes = links, nodes
+        self._graphs: dict[int, Graph] = {}
+
+    def graph(self, chart: Chart) -> Graph:
+        """The workflow compiled for walking, built from its rows the first time and kept until a write through this repository changes any workflow."""
+        if chart.id not in self._graphs:
+            self._graphs[chart.id] = Graph.of(self.nodes_of(chart), self.lines_of(chart))
+        return self._graphs[chart.id]
+
+    def save(self, row: Chart, by: Actor) -> Chart:
+        self._graphs.clear()
+        return super().save(row, by)
 
     def shipped(self) -> list[Chart]:
         """The workflows the journal ships, one per event, in the order they were made."""
@@ -41,7 +53,7 @@ class Charts(Repository[Chart]):
     def answering(self, event: str) -> Chart | None:
         """The one workflow of the older shape that answers an event: the oldest whose trigger is on it; should a journal somehow hold two, the oldest runs and the rest are sidelined."""
         for chart in self.by_event():
-            if any(n.kind == NodeKind.TRIGGER and n.key == event for n in self.nodes_of(chart)):
+            if event in self.graph(chart).triggers:
                 return chart
         return None
 
@@ -52,6 +64,7 @@ class Charts(Repository[Chart]):
         return answering if answering and answering.id != chart.id else None
 
     def remove(self, chart: Chart, by: Actor) -> None:
+        self._graphs.clear()
         for node in self.nodes_of(chart):
             self.remove_node(node, by)
         self.delete(chart, by)
@@ -63,18 +76,22 @@ class Charts(Repository[Chart]):
         return [link for node in self.nodes_of(chart) for link in self.links.of(node) if link.kind in PORTS and link.source == Ref.to(node)]
 
     def add_node(self, chart: Chart, node: Node, by: Actor) -> Node:
+        self._graphs.clear()
         added = self.nodes.save(node, by)
         self.links.save(Link(source=Ref.to(added), target=Ref.to(chart), kind=NODE_OF), by)
         return added
 
     def remove_node(self, node: Node, by: Actor) -> None:
+        self._graphs.clear()
         self.links.remove_all_of(node)
         self.nodes.delete(node, by)
 
     def connect(self, source: Node, target: Node, port: str, by: Actor) -> Link:
+        self._graphs.clear()
         return self.links.save(Link(source=Ref.to(source), target=Ref.to(target), kind=port), by)
 
     def replace(self, chart: Chart, nodes: list[dict], lines: list[dict], by: Actor) -> Chart:
+        self._graphs.clear()
         """The chart saved whole: nodes given with an id it has are kept and updated, others made, those left out removed; every line drawn anew. One more revision."""
         present = {node.id: node for node in self.nodes_of(chart)}
         kept = {}

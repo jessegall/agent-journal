@@ -42,12 +42,9 @@ class Walk:
         key, decision = self.trigger_key(ctx.event), Decision()
         workflows = self.workflows_for(ctx, key)
         for chart in workflows:
-            nodes = {node.id: node for node in self.charts.nodes_of(chart)}
-            after = {}
-            for line in self.charts.lines_of(chart):
-                after.setdefault((line.source.id, line.kind), []).append(line.target.id)
-            for start in [n for n in nodes.values() if n.kind == NodeKind.TRIGGER and n.key == key]:
-                decision = decision.merged(self.follow(start, nodes, after, ctx, passed))
+            graph = self.charts.graph(chart)
+            for start in graph.triggers.get(key, ()):
+                decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
         if passed and not isinstance(self.actions, DryActions):
             self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in workflows], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision
