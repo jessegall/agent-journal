@@ -48,10 +48,10 @@ COUNTER_CHECKS = (
     ("edits_since_log_at", "Exactly N edits since the last log?", "true once, when the edits since the task in hand was logged, before this one, are exactly N; the text is N or a setting's name, such as tasks.first_nudge_after"),
 )
 ACTIONS = (
-    ("say", "Send message to agent", "sends the message to the agent once; repeats are skipped for a set time", True),
+    ("say", "Send message to agent", "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", True),
     ("hold", "Block tool use", "stops the tool and sends the message, until what the message names is done", True),
     ("block_stop", "Block stop", "the agent carries on, with the message", True),
-    ("type", "Type into terminal", "types the text into the agent's terminal as its next prompt", True),
+    ("type", "Type into terminal", "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", True),
     ("start_sequence", "Start sequence", "starts the sequence named in the text at its first step", True),
     ("show_card", "Show a card in the chat", "a card in the chat with the message, so the user sees what the journal did", True),
     ("release", "Release the agent from its wait", "an agent paused for a worker, a question or anything outside goes back to what it was doing, told with the message; an agent not paused is left as it is", True),

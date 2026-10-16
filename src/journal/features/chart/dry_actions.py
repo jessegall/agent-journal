@@ -10,4 +10,7 @@ class DryActions:
         self.fillers = fillers
 
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
-        return Decision.tell(f"would {key.replace('_', ' ')}: {self.fillers.fill(text, ctx)}")
+        from journal.features.chart.actions import NAMED
+        named = NAMED.match(text)
+        words = named.group(2) if named else text
+        return Decision.tell(f"would {key.replace('_', ' ')}{f' as {named.group(1)}' if named else ''}: {self.fillers.fill(words, ctx)}")

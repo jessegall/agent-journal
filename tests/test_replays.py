@@ -50,11 +50,11 @@ def test_message_arrives_as_a_workflow_equals_the_listener(journals, monkeypatch
     node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
     trigger = node("trigger", "messages.created")
     check = node("check", "message_by_user")
-    action = node("action", "type", "--text", "new message {{row}}")
+    action = node("action", "type", "--text", "[messages.new] new message {{row}}")
     console.run(["chart", "line", str(trigger), str(check)], USER)
     console.run(["chart", "line", str(check), str(action), "--port", "yes"], USER)
     message_arrives(with_workflow, right)
     assert left.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
-    assert differences(left.record(), right.record()) == [], "the agent would have seen the same"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
     left.freeze("message_arrives")
     assert differences(left.record(), Replay.frozen("message_arrives")) == [], "the frozen record reads back equal"
