@@ -466,7 +466,7 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
 def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_when_none_does(server):
     manifest = call(server, "GET", "/api/manifest")[1]
     hold_after = next(s for s in manifest["features"]["messages"]["settings"] if s["name"] == "hold_after")
-    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Guards at Tool about to run"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
+    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold writes while something is owed, and over unread or unanswered messages"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
     auto = next(s for s in manifest["features"]["tasks"]["settings"] if s["name"] == "auto")
     assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
 
@@ -573,7 +573,7 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     status, body = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "idle", "title": "Another stop"})
     assert status == 201 and body["place"] > 0, "a second workflow for the same state at the same event takes its place after the first"
     status, body = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle"})
-    assert status == 201 and body["title"] == "Always at Agent stops" and body["state"] == "", "a workflow bound to no state always runs"
+    assert status == 201 and body["title"] == "New workflow" and body["state"] == "", "a workflow bound to no state always runs"
     status, body = call(server, "POST", "/journal/chart", {"state": "flying", "trigger": "idle", "title": "Flying"})
     assert status >= 400 and "no state is called flying" in json.dumps(body)
     status, made = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "tool_finished", "title": "After a tool"})
@@ -688,3 +688,14 @@ def test_the_page_shows_each_nodes_runs_the_answer_given_and_the_count_a_check_r
     status, tried = call(server, "POST", "/journal/chart/try", {"trigger": "tool_finished", "environment": "main"})
     assert status == 200 and made["id"] in tried["workflows"] and "Count the tools" in tried["titles"], f"a test run names the workflows it would run, in order: {tried}"
     assert tried["read"][str(check)] == 3 and any("two tools now" in w for w in tried["would"]), "the dry count is read as the live walk would read it, one more than on record"
+
+
+def test_a_new_workflow_is_titled_by_its_first_action_until_the_user_names_it(server):
+    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished"})
+    assert status == 201 and made["title"] == "New workflow"
+    trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
+    nodes = made["nodes"] + [{"id": "s", "kind": "action", "key": "say", "text": "a word", "x": 0, "y": 0}]
+    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": [{"from": trigger["id"], "to": "s", "port": "then"}]})
+    assert status == 200 and saved["title"] == "Send the agent a message", "the first action names it"
+    status, named = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Mine"})
+    assert status == 201 and named["title"] == "Mine", "a title given is kept"

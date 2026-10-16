@@ -772,7 +772,7 @@ to reorder, filtered by state; a locked workflow or step is the journal's law: t
 locked workflow keeps the head of its event's list and is neither deleted nor turned off, a locked step is neither
 taken out, reworded (its numbers may change) nor gated by a check or a Stop here of the user's, and the
 DRAWINGS_VERSION bump that locks the holds in a standing journal came with the Always workflows: the tool conduct
-is the locked Guards at Tool about to run (whole, the holds and the naming around them, since one path cannot be
+is the locked the guards at Tool about to run (whole, the holds and the naming around them, since one path cannot be
 split), the inbox and the message named are Always workflows per shared event after the locked ones, a state's
 shipped workflow carries only its own steps and a state with nothing own at an event ships none there, a standing
 journal's copies are released at boot (unedited gone, edited kept as the user's with the shared nodes stripped),
@@ -781,7 +781,7 @@ and A message is updated has no conduct to ship, so no Always workflow stands th
 Phase one closed on 2026-10-16 late: the counts replaced the engine's hidden counters. Is a count at every Nth joined
 the count checks; the row checks Message just read, Task just started by this agent and Log is for the task in hand
 read the event's row; counts are the engine's own table, walked by no row event, gone with the session; Always at A
-message is created starts uses and namings, Always at A message is updated (now shipped) starts owed at the first
+message is created starts uses and namings, the Always workflow at A message is updated (now shipped) starts owed at the first
 read owed; the guards count uses, owed and namings on the canvas and Working counts its edits, a held write not
 counted, started at nought by a task start and a log line; Working keeps no edits or reminders and the seven counter
 checks are gone from the catalogue, a user's workflow naming one rewritten to its count check at boot with the
@@ -794,11 +794,11 @@ about three minutes.
 Phase two, in progress on 2026-10-16 late: what the agent owes is a fact on its row. Agent.oriented (false from a
 start until journal environment here) and mark_owed (the mark crossed and not decided at) are columns touched
 narrowly; a skill owed is a link owes:<name> from the agent, set by the Require a skill node and removed by the read
-of the file; the fillers awaiting, skill_owed and skill_path read them. Always at Session starts requires the journal
-skill and marks the agent unoriented, Always at Prompt sent requires the skills a prompt names, a state's workflow at
+of the file; the fillers awaiting, skill_owed and skill_path read them. the Always workflow at Session starts requires the journal
+skill and marks the agent unoriented, the Always workflow at Prompt sent requires the skills a prompt names, a state's workflow at
 Session starts requires its own skill, every Always and Guards workflow at an agent event opens with the context mark,
-Guards at Tool about to run hold a write (writes only, after the lockout of 2026-10-16) while a skill, the look or a
-mark is owed, and Always at Agent stops holds a stop while anything is owed, naming it. The requiring, start and
+the guards at Tool about to run hold a write (writes only, after the lockout of 2026-10-16) while a skill, the look or a
+mark is owed, and the Always workflow at Agent stops holds a stop while anything is owed, naming it. The requiring, start and
 mark listeners are deleted; the three pause states are no longer entered and retire in task 368. Decided (task 367):
 a debt never changes which workflows run; it holds writes and stops only. The replays of phase two carry it. The
 journal's own commands must never be held, whatever a workflow says: task 406, on the user's ruling.

@@ -21,7 +21,37 @@ PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", 
 """The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
 SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_finished", "messages.created", "messages.updated")
 """The events with conduct for every state, shipped as an Always workflow each: the inbox named at a stop, a start and a prompt, a message that comes named and the counts it starts, and a message read starting the count it is owed on."""
-GUARDS = {"tool_starting": "Guards at Tool about to run"}
+GUARDS = {"tool_starting": "Hold writes while something is owed, and over unread or unanswered messages"}
+OWN_TITLES = {
+    ("idle", "idle"): "Keep the agent going while tasks are open or parked",
+    ("idle", "ticked"): "Type a reminder when the agent sits quiet with tasks waiting",
+    ("working", "tool_starting"): "Ask for a task log as the edits add up, and hold a write when it is overdue",
+    ("working", "tasks.updated"): "Start the edit count anew when a task starts",
+    ("working", "task_logs.created"): "Start the edit count anew when the task is logged",
+    ("working", "idle"): "Tell the agent to carry on with its task, and to log it when the log is old",
+    ("working", "session_started"): "Require the skill for this state, then tell the agent to carry on with its task",
+    ("working", "ticked"): "Say something when the agent has been quiet for fifteen minutes with a task",
+    ("following_plan", "idle"): "Keep the agent going through the plan, and say what comes next",
+    ("following_plan", "session_started"): "Require the skill for this state, then say where the plan stands",
+    ("awaiting", "workers.updated"): "Type a worker's report in, and send the agent back when the last worker is back",
+    ("waiting", "questions.updated"): "Send the agent back to its work when the question is answered",
+    ("expecting", "ticked"): "Remind the agent what it waits for after five minutes of quiet",
+    ("expecting", "tool_starting"): "Send the agent back to its work when it uses a tool itself",
+    ("stuck", "tool_starting"): "Send the agent back to its work when it uses a tool itself",
+    ("running_sequence", "idle"): "Say the next step of the sequence when the agent stops",
+    ("ended", "session_started"): "Does nothing yet",
+}
+"""What each state's own shipped workflow does, in plain words: the title on the page; a state's skill workflow at a start is titled by its one node."""
+STATE_SKILL_TITLE = "Require the skill for this state at the start"
+SHARED_TITLES = {
+    "session_started": "Require the journal skill and a look at what is in flight, say what is unread",
+    "prompt_submitted": "Require the skill the prompt names, say what is unread",
+    "idle": "Keep the agent from stopping while something is owed, say what is unread",
+    "tool_finished": "Hold the agent at a context mark",
+    "messages.created": "Type your message into the chat and start the reminder counts",
+    "messages.updated": "Start counting tool uses when a message is read and left unanswered",
+}
+"""What the Always workflow of each shared event does, in plain words."""
 """The journal's guards, one locked workflow per event bound to no state, first in the event's list in every journal: at a tool use, the inbox named and the write held while a message waits, and the answer owed held."""
 HEAD = -1000
 """Where a locked workflow is placed: before anything the user orders."""
@@ -106,12 +136,23 @@ class ShippedChart(Seed):
             for event in sorted({e for st, e in own if st == state}, key=EVENT_ORDER.index):
                 self.drawings[self.key_of(state, event)] = Drawing(self.title_of(state, event), self.composed(own[(state, event)], None))
         for event in SHARED_EVENTS:
-            self.drawings[self.key_of("", event)] = Drawing(f"Always at {self.catalogue.entry(NodeKind.TRIGGER, event).title}", self.composed(None, shared[event]))
+            self.drawings[self.key_of("", event)] = Drawing(SHARED_TITLES[event], self.composed(None, shared[event]))
         self.drawings[self.key_of("", "tool_starting")] = Drawing(GUARDS["tool_starting"], self.composed(None, self.mark_then(self.shared_at_tool)), locked=True)
         """One drawing per state per trigger it has steps of its own at, named state:event; then the conduct for every state as an Always workflow per shared event and the journal's guards, named :event, bound to no state."""
 
     def title_of(self, state: str, event: str) -> str:
-        return f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
+        return OWN_TITLES.get((state, event), STATE_SKILL_TITLE)
+
+    def old_title(self, chart: Chart) -> str:
+        """The title a shipped workflow carried before titles said what a workflow does: its state, or Always or Guards, at its event."""
+        event = self.catalogue.entry(NodeKind.TRIGGER, chart.event).title if self.catalogue.has(NodeKind.TRIGGER, chart.event) else chart.event
+        whose = self.states.title_of(chart.state) if chart.state else ("Guards" if chart.event == "tool_starting" else "Always")
+        return f"{whose} at {event}"
+
+    def retitle_the_shipped(self, by: Actor) -> None:
+        """A shipped workflow still titled by its state and event, which the user never renamed, takes the title that says what it does."""
+        for chart in [c for c in self.charts.shipped() if c.drawing in self.drawings and c.title == self.old_title(c)]:
+            self.charts.save(chart.with_(title=self.drawings[chart.drawing].title), by)
 
     def composed(self, own, shared):
         """One path from the trigger: the state's own steps first, then the shared conduct of the event, joined at every open end."""
@@ -134,6 +175,7 @@ class ShippedChart(Seed):
         self.stop_what_names_an_unknown_entry(by)
         self.carry_working_edits(by)
         self.name_the_shipped(by)
+        self.retitle_the_shipped(by)
         retired = self.retired()
         for key, drawing in self.drawings.items():
             standing = self.shipped_named(key)

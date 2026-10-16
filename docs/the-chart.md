@@ -38,7 +38,7 @@ journal clears the compiled graphs, so the next walk reads the edit.
 
 ## The shipped workflows
 
-The journal's guards come first: Guards at Tool about to run is a locked workflow bound to no state, at the head
+The journal's guards come first: The guards, a locked workflow titled by what it does (Hold writes while something is owed, and over unread or unanswered messages), is bound to no state, at the head
 of the list in every journal, drawn back by any boot that finds it missing, where a skill owed holds a write
 until its file is read, a write before the look at what is in flight here is held until `journal environment
 here`, a write at a context mark not decided at is held until a fact, a rule or `journal nothing`, the unread
@@ -46,11 +46,11 @@ inbox is named every so many tool uses and the write held after so many namings,
 before the next tool, held after so many uses. Every Always or Guards workflow at an agent event opens with the
 context mark, locked: the context crossing a quarter, a half or four fifths holds the agent at it, told to decide
 what survives, and the mark owed is a fact on its row until it does. Then the conduct for every
-state, one Always workflow per event, bound to no state and placed after the locked ones: Always at Session starts
+state, one Always workflow per event, bound to no state and placed after the locked ones: the Always workflow at Session starts
 requires the journal skill (locked), names the inbox and requires a look at what is in flight (locked), owing the look that
-`journal environment here` pays, Always at Prompt sent requires the skills a prompt names
-(locked) and names the inbox, Always at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox, Always at A message is created types a message
-that comes to the agent and starts its counts of tool uses and inbox namings, Always at A message is updated starts
+`journal environment here` pays, the Always workflow at Prompt sent requires the skills a prompt names
+(locked) and names the inbox, the Always workflow at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox, the Always workflow at A message is created types a message
+that comes to the agent and starts its counts of tool uses and inbox namings, the Always workflow at A message is updated starts
 the count of uses the agent owes an answer on, at the first message read and owed. A state whose feature has a
 skill requires it at Session starts in that state, in the state's own workflow there. Require a skill names the
 skill in its text; empty, it takes the skills the prompt names at a prompt and the state's skill elsewhere. A state's workflow at an event carries only the state's own
@@ -135,7 +135,11 @@ the one thing that sets it apart: changed or made by you, turned off, failed. Dr
 there; the order is saved at once, for every agent from the next event, and refused with who saved first when the
 list changed under you. A filter at the top shows the list as it runs for one state: the always ones and the
 nearest state's in the lineage, numbered by their place in the whole list; dragging waits for Every state. New
-workflow at the foot starts one at this event, always or for one state, at the last place. Above the list, in grey,
+workflow at the foot starts one at this event, always or for one state, at the last place. A shipped workflow is titled by what it does, in plain words ("Keep the agent going while tasks are open or
+parked"); the line under it says when it runs (always, or when the agent is in its state). A workflow of your own
+is born "New workflow", takes the title of its first action when you save one, and keeps the name you give it.
+A journal whose shipped workflows still carry the older "State at Event" titles, never renamed, takes the plain
+titles at boot. Above the list, in grey,
 the moves the engine makes itself at this event before the list runs, such as the journal moving the agent to
 Working when it starts a task, or a prompt freeing a wait: fixed lines, which no workflow edits. Recent runs names a
 state change in words, by the step that moved the agent or the journal's own move that came first, and the answer
@@ -160,7 +164,7 @@ skill are no states, the engine lists nine, and a journal whose agent stood in o
 the state it held with the fact set. So a state's own workflows run as they would:
 Working at a tick still says the task is open after a quiet quarter hour while the look is owed, the inbox is named
 at a prompt while a skill is owed, a wait is released by its row event while a mark is owed. The debt holds only
-what it must: a write, through the guards at Tool about to run, and a stop, through Always at Agent stops, each
+what it must: a write, through the guards at Tool about to run, and a stop, through the Always workflow at Agent stops, each
 naming what it awaits; the read, the command or the decision that pays it goes through. Beneath every workflow the
 engine keeps a floor: a journal command and the read of a skill's file are never held, whatever a hold says, since
 they are how a debt is paid; the hold's words still reach the agent. The save warns of a Hold the tool at Tool

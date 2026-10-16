@@ -10,12 +10,17 @@ from journal.features.chart.validation import LOCK_WHY, Validation
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.http.request import Request
 from journal.http.response import Response
+from journal.models.actor import Actor
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
 from journal.models.node import Node
 from journal.repositories.charts import Charts
 from journal.repositories.not_found import NotFound
 from journal.repositories.environments import Environments
+
+
+NEW_TITLE = "New workflow"
+"""The title a workflow is born with until its first action or the user names it."""
 
 
 class ChartController:
@@ -89,8 +94,7 @@ class ChartController:
     def create(self, request: Request) -> Response:
         """A workflow of the user's own for a state at an event, or for every state when no state is named, born with its trigger, after the others of its event, with a title that names it unless given."""
         state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
-        whose = self.states.title_of(state) if state else "Always"
-        title = request.body.get("title", "").strip() or f"{whose} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
+        title = request.body.get("title", "").strip() or NEW_TITLE
         chart = Chart(title=title, state=state, event=event, place=self.charts.next_place(event))
         faults = self.validation.binding_faults(chart)
         if faults:
@@ -116,7 +120,15 @@ class ChartController:
         faults = self.validation.faults(chart, request.body.get("nodes", []), request.body.get("lines", []))
         if faults:
             return Response.json({"error": "the workflow is not saved: " + "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
-        return Response.json(self.drawn(self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)))
+        saved = self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)
+        return Response.json(self.drawn(self.titled_by_its_first_action(saved, request.actor)))
+
+    def titled_by_its_first_action(self, chart: Chart, by: Actor) -> Chart:
+        """A workflow the user has not named yet takes the title of its first action, so the list says what it does until the user says better."""
+        first = next((n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.ACTION), None)
+        if chart.title != NEW_TITLE or first is None:
+            return chart
+        return self.charts.save(chart.with_(title=self.catalogue.entry(NodeKind.ACTION, first.key).title), by)
 
     def try_(self, request: Request) -> Response:
         """A dry run: the path the chart would take for an agent event in an environment, and what it would do, nothing done."""

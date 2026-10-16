@@ -1569,7 +1569,7 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_keeps_edited_ones
     from journal.repositories.charts import Charts
     charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.system()
     idle = charts.for_pair("idle", "idle")
-    assert idle.shipped and idle.title == "Idle at Agent stops" and len(charts.nodes_of(idle)) > 5, "a state's workflow at an event carries the state's own steps"
+    assert idle.shipped and idle.title == "Keep the agent going while tasks are open or parked" and len(charts.nodes_of(idle)) > 5, "a state's workflow at an event carries the state's own steps"
     for node in charts.nodes_of(idle)[3:]:
         charts.remove_node(node, by)
     seed.run()
@@ -1758,7 +1758,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert listed["workflows"][0]["title"] == "Idle at Agent stops" and all(w["event"] for w in listed["workflows"]) and listed["catalogue"]
+    assert listed["workflows"][0]["title"] == "Keep the agent going while tasks are open or parked" and all(w["event"] for w in listed["workflows"]) and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings", "state": "idle", "trigger": "tool_finished"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and [n["key"] for n in made["nodes"]] == ["tool_finished"], "born with its trigger"
@@ -2083,7 +2083,7 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
     always = next(c.id for c in charts.for_event("tool_finished") if not c.state)
-    assert console.run(["chart", "order", "tool_finished", str(always), str(second), str(n)], USER).out.startswith("tool_finished: 1. Always at Tool finished, 2. Yet another, 3. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
+    assert console.run(["chart", "order", "tool_finished", str(always), str(second), str(n)], USER).out.startswith("tool_finished: 1. Hold the agent at a context mark, 2. Yet another, 3. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
     assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
     assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
@@ -2221,7 +2221,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert "a workflow holds one trigger, of the event it is for" in node(idle, "trigger", "tool_finished").err
     assert node(idle, "check", "open_tasks").code == 0
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {idle} [idle at idle, place 5], revision 1 by user:1: Idle at Agent stops" in shown and f"workflow {working} [working at tool_starting, place" in shown
+    assert f"workflow {idle} [idle at idle, place 5], revision 1 by user:1: Keep the agent going while tasks are open or parked" in shown and f"workflow {working} [working at tool_starting, place" in shown
 
 def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
@@ -2332,9 +2332,9 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     console = app.console()
     base = app.container.get(Charts).for_pair("idle", "idle")
     refused = console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle"], USER)
-    assert refused.code == 1 and f"workflow {base.id}, Idle at Agent stops, is a default one: add --edit-default" in refused.err
+    assert refused.code == 1 and f"workflow {base.id}, Keep the agent going while tasks are open or parked, is a default one: add --edit-default" in refused.err
     assert console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle", "--edit-default"], USER).code == 0
-    assert f"workflow {base.id} [idle at idle, place 5], revision 1 by user:1: Idle at Agent stops" in console.run(["chart", "show"], USER).out
+    assert f"workflow {base.id} [idle at idle, place 5], revision 1 by user:1: Keep the agent going while tasks are open or parked" in console.run(["chart", "show"], USER).out
     own = int(console.run(["chart", "new", "mine", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert console.run(["chart", "node", "check", "open_tasks", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
@@ -2746,7 +2746,7 @@ def test_a_boot_adds_the_missing_locked_guards_at_the_head_of_the_list_and_leave
 
 
 def test_the_shared_conduct_is_an_always_workflow_per_event_after_the_locked_ones_and_a_state_ships_only_its_own(app):
-    from journal.features.chart.seeds.shipped_chart import KEPT, SHARED_EVENTS, ShippedChart
+    from journal.features.chart.seeds.shipped_chart import KEPT, SHARED_EVENTS, SHARED_TITLES, ShippedChart
     from journal.models.chart import Chart
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
@@ -2756,7 +2756,7 @@ def test_the_shared_conduct_is_an_always_workflow_per_event_after_the_locked_one
     for event in SHARED_EVENTS:
         listed = charts.for_event(event)
         always = next(c for c in listed if not c.state)
-        assert always.shipped and not always.locked and always.title.startswith("Always at") and listed.index(always) == 0, f"the conduct for every state at {event} is one Always workflow, first in the list"
+        assert always.shipped and not always.locked and always.title == SHARED_TITLES[event] and listed.index(always) == 0, f"the conduct for every state at {event} is one Always workflow, first in the list"
     tool = charts.for_event("tool_starting")
     assert tool[0].locked and all(c.state for c in tool[1:]), "at a tool use the guards are the stateless one, locked at the head"
     assert charts.for_pair("idle", "tool_starting") is None and charts.for_pair("awaiting", "idle") is None, "a state with nothing of its own at a shared event ships no workflow"
@@ -2767,7 +2767,7 @@ def test_the_shared_conduct_is_an_always_workflow_per_event_after_the_locked_one
     seed.run()
     seed.run()
     after = charts.for_event("idle")
-    assert not after[0].state and after[0].title == "Always at Agent stops" and all(ids_before[c.id] == c.place for c in after[1:]), "a re-seed puts a new Always workflow at the head and keeps every other position; two boots keep it"
+    assert not after[0].state and after[0].title == "Keep the agent from stopping while something is owed, say what is unread" and all(ids_before[c.id] == c.place for c in after[1:]), "a re-seed puts a new Always workflow at the head and keeps every other position; two boots keep it"
     assert len([c for c in charts.shipped() if not c.state]) == len(SHARED_EVENTS) + 1, "the stateless shipped workflows stand across boots, never retired as the older shape"
     older = charts.save(Chart(title="Stuck at Agent stops", shipped=True, state="stuck", event="idle", drawing="stuck:idle", drawn_version=7), by)
     seed.composed(None, seed.shared_inbox)(older)
@@ -2851,7 +2851,7 @@ def test_a_message_that_comes_starts_the_counts_of_uses_and_namings_and_the_firs
     from journal.repositories.counts import Counts
     from journal.repositories.scope import Scope
     console, charts, counts, scope = app.console(), app.container.get(Charts), app.container.get(Counts), app.container.get(Scope)
-    assert next(c for c in charts.for_event("messages.updated") if not c.state).title == "Always at A message is updated", "the seed ships the read's workflow"
+    assert next(c for c in charts.for_event("messages.updated") if not c.state).title == "Start counting tool uses when a message is read and left unanswered", "the seed ships the read's workflow"
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
     drain = lambda: app.runtime().deferred.drain()
@@ -3156,5 +3156,21 @@ def test_ended_ships_a_workflow_at_session_starts_with_nothing_of_its_own(app):
     ended = charts.for_pair("ended", "session_started")
     assert ended and ended.shipped and [n.kind for n in charts.nodes_of(ended)] == [NodeKind.TRIGGER], "Ended at Session starts is shipped with its trigger alone"
     named = app.container.get(ChartController).named(ended)
-    assert named["title"] == "Ended at Session starts" and named["off"] is False and named["edited"] is False, "the page lists it with its marks"
+    assert named["title"] == "Does nothing yet" and named["off"] is False and named["edited"] is False, "the page lists it with its marks"
     assert any(s["key"] == "ended" for s in app.container.get(ChartController).listed_states()), "and Ended among the states"
+
+
+def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_says_what_it_does(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.repositories.charts import Charts
+    charts, shipped = app.container.get(Charts), app.container.get(ShippedChart)
+    idle = next(c for c in charts.shipped() if c.drawing == "idle:idle")
+    guards = next(c for c in charts.shipped() if c.drawing == ":tool_starting")
+    charts.save(idle.with_(title="Idle at Agent stops"), Actor.system())
+    charts.save(guards.with_(title="Guards at Tool about to run"), Actor.system())
+    shipped.run()
+    assert charts.find(idle.id).title == "Keep the agent going while tasks are open or parked", "the old title, never renamed by the user, becomes the plain one at boot"
+    assert charts.find(guards.id).title == "Hold writes while something is owed, and over unread or unanswered messages"
+    charts.save(charts.find(idle.id).with_(title="My own stop rules"), Actor.system())
+    shipped.run()
+    assert charts.find(idle.id).title == "My own stop rules", "a title the user gave stays"

@@ -50,6 +50,16 @@ to a state runs while the agent is in it, one bound to none always.
 first hold of an event wins and a later one is recorded unanswered; one move per event, a
 second refused. Every line and every move has one decider, and the record names it.
 
+**Workflows drive the agent; the engine keeps it safe.** A workflow is anything that makes the
+agent do something, or stops it at a moment you might want to change: a reminder, a hold on a
+write, a skill to read, a state to move to. It is drawn on the canvas, in your order, and you can
+edit it. The engine keeps what has nothing to decide and nothing you would want to tune: how a
+shell command runs, that a journal command is never mixed with other shell or piped, that a long
+output is cut, that a slow command goes to the background, the moves the journal makes when a
+task starts or a session ends. Those are fixed, shown as grey lines at the head of the list, and
+never a node. Unsure which a thing is? Ask whether a user would ever open it to change it: if
+yes, it is a workflow.
+
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script
 posts and prints. The server records the entry, runs the blocking listeners, replies, then
 runs the rest on one worker thread. A listener that must answer before the agent goes on
