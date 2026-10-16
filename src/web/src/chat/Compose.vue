@@ -96,6 +96,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
     takeFromBox();
+    ui.drafts[draftKey.value] = draft.text;
     window.removeEventListener("focus", takeFromBox);
     document.removeEventListener("visibilitychange", takeFromBox);
 });
