@@ -61,13 +61,17 @@ ACTIONS = (
 )
 
 
+OWN = ("agents", "entries", "links")
+"""The engine's own tables, which a walk writes itself when it moves an agent, records itself or draws a line: a trigger on them would walk without end, so no workflow may name them."""
+
+
 class Catalogue:
     """Everything a node may be: a trigger for each agent event and each row event, the checks the journal can answer, and the actions it can take."""
 
     def triggers(self) -> list[Entry]:
         agent = [Entry(NodeKind.TRIGGER, key, title, about, providers=("claude",) if key == "turn_written" else ("claude", "codex")) for key, title, about in AGENT_EVENTS]
         rows = [Entry(NodeKind.TRIGGER, f"{model.table()}.{moment}", f"A {model.__name__.lower()} is {moment}", f"a row of {model.table()} is {moment} by anyone")
-                for model in AllModels.MODELS for moment in ("created", "updated", "deleted")]
+                for model in AllModels.MODELS if model.table() not in OWN for moment in ("created", "updated", "deleted")]
         return agent + rows
 
     def checks(self) -> list[Entry]:

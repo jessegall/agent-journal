@@ -2,6 +2,7 @@ from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
+from journal.features.chart.catalogue import OWN
 from journal.features.chart.context import Context
 from journal.engine.machine import Machine
 from journal.features.chart.walk import Walk
@@ -17,7 +18,7 @@ class WalkRowEvents(Listener[ModelEvent]):
         self.walk, self.agents, self.machine = walk, agents, machine
 
     def handle(self, event: ModelEvent) -> None:
-        if not isinstance(event, (Created, Updated, Deleted)):
+        if not isinstance(event, (Created, Updated, Deleted)) or event.model.table() in OWN:
             return
         environment_id = event.model.environment_id if isinstance(event.model, Scoped) else 0
         agents = [a for a in self.agents.in_(environment_id) if a.state != "ended"] if environment_id else []

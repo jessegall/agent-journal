@@ -2002,3 +2002,23 @@ def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(
     assert machine.current("s1").name == "idle"
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     assert machine.current("s1").name == "idle", "idle to idle is nothing"
+
+
+def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    for own in ("agents.updated", "entries.created", "links.created"):
+        assert f"has no trigger named {own}" in console.run(["chart", "node", "trigger", own, "--in", str(base)], USER).err, own
+    console.run(["task", "create", "the parser", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1"], AGENT)
+    entries = app.container.get(Entries)
+    before = len(entries.of_kind(1, "walk", 1000))
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    app.runtime().deferred.drain()
+    walks = entries.of_kind(1, "walk", 1000)
+    since = [w.data["trigger"] for w in walks[: len(walks) - before]]
+    assert set(since) == {"workers.updated", "messages.created"}, "the report's two rows were walked, the worker's and its message; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
