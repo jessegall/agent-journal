@@ -3,6 +3,14 @@ import {beforeEach, expect, test} from "vitest";
 import {threadTurns} from "../src/domain/thread.js";
 import {store} from "../src/state/store.js";
 
+globalThis.ResizeObserver ??= class {
+    observe() {}
+
+    unobserve() {}
+
+    disconnect() {}
+};
+
 const TYPES = {message: {title: "Message"}, todo: {title: "To-do"}};
 const base = {deleted: 0, completed: 0, refs: [], sections: [], title: "", abstract: "", updated: 0};
 const message = (n, created, who, brief, fields = {}) => ({

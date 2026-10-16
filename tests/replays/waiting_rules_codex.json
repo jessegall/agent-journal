@@ -1,0 +1,23 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "waiting on the question",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "a prompt while waiting",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

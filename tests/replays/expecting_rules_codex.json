@@ -1,0 +1,39 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "awaiting the deploy",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "five quiet minutes",
+      "answer": null,
+      "typed": [
+        "[journal] check the deploy now: you have waited 5 min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
+      ],
+      "nudges": [
+        "tasks.check_awaited"
+      ]
+    },
+    {
+      "name": "five more",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a tool use lifts the wait",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

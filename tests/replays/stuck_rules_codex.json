@@ -1,0 +1,29 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "stuck",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "a stop while stuck",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a tool use while stuck",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

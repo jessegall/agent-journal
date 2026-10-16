@@ -12,17 +12,16 @@ from journal.engine.machine import Machine
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.actor import Actor
 from journal.models.setting import Setting
-from journal.repositories.charts import Charts
 from journal.repositories.environments import Environments
 from journal.repositories.settings import Settings
 from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, recorded
-from tests.test_features import AGENT, USER
+from tests.test_features import AGENT, USER, context
 
 
 @pytest.fixture(params=PROVIDERS)
 def journals(tmp_path: Path, monkeypatch, request):
     """Two fresh journals, one for the listener and one for the workflow, and the provider whose agent the steps play; both start and stop together."""
-    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
     apps = []
     for name in ("listener", "workflow"):
@@ -311,4 +310,103 @@ def test_message_arrives_as_the_shipped_workflow_equals_the_listener(journals, m
     right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival",))
     message_arrives(with_workflow, right, provider)
     assert left.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+
+
+def tick(app, quiet: float) -> None:
+    """A tick as the clock gives it: dispatched to every listener, and what a state says on it typed into the terminal."""
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.hooks.decision import Decision
+    from journal.supervisor_link import SupervisorLink
+    env = app.container.get(Environments).named("main").id
+    for answer in app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=0.0, quiet_for=quiet)):
+        if isinstance(answer, Decision) and answer.context:
+            app.container.get(SupervisorLink).type(env, answer.context)
+
+
+def working_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a task in hand, then a stop, a session starting again and a quarter of an hour's quiet: what the Working state says of its own."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    replay.step("a task in hand")
+    replay.step("a stop with the task in hand", hook_as(app, provider, "Stop")[1])
+    replay.step("the session starts again", hook_as(app, provider, "SessionStart")[1])
+    tick(app, 900.0)
+    replay.step("quiet for a quarter of an hour")
+
+
+def expecting_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a task in hand awaiting something outside, five quiet minutes twice, then a tool use that lifts the wait."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["await", "the deploy"], AGENT)
+    replay.step("awaiting the deploy")
+    for name in ("five quiet minutes", "five more"):
+        tick(app, 330.0)
+        replay.step(name)
+    replay.step("a tool use lifts the wait", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
+
+
+def sequence_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a sequence of two steps run, a stop at each step."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER)
+    console.run(["sequence", "run", "1"], AGENT)
+    replay.step("the sequence runs")
+    replay.step("a stop at step one", hook_as(app, provider, "Stop")[1])
+    console.run(["sequence", "next"], AGENT)
+    replay.step("a stop at step two", hook_as(app, provider, "Stop")[1])
+
+
+def owed_pause_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a stop before the agent has looked at what is in flight, then a context mark reached and a stop under it."""
+    hook_as(app, provider, "SessionStart")
+    replay.step("a stop before orienting", hook_as(app, provider, "Stop")[1])
+    app.console().run(["environment", "here"], AGENT)
+    context(app, 95)
+    replay.step("a tool use at the mark", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
+    replay.step("a stop under the mark", hook_as(app, provider, "Stop")[1])
+
+
+def waiting_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a question asked and waited on, then a prompt from the user's side while it waits."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    replay.step("waiting on the question")
+    replay.step("a prompt while waiting", hook_as(app, provider, "UserPromptSubmit", prompt="carry on with the rest")[1])
+
+
+def stuck_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a task in hand, the agent declares itself stuck, stops, then works again."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["stuck", "the build is broken"], AGENT)
+    replay.step("stuck")
+    replay.step("a stop while stuck", hook_as(app, provider, "Stop")[1])
+    replay.step("a tool use while stuck", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
+
+
+STATE_RULES = {"working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
+"""What the states say of their own, frozen before any of it moves into a workflow."""
+
+
+@pytest.mark.parametrize("name", sorted(STATE_RULES))
+def test_a_state_rule_frozen_before_it_moves_still_holds(journals, monkeypatch, name):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"{name}_{provider}", with_listener, monkeypatch, STATE_RULES[name], provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch)
+    STATE_RULES[name](with_workflow, right, provider)
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
