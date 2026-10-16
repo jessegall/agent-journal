@@ -8,7 +8,7 @@ from journal.supervisor_link import SupervisorLink
 
 
 class SayVoiceWhenChanged(Listener[Saved]):
-    """A change to the voice, title or name reaches the running agent at once, typed in."""
+    """A change to the voice, title or name reaches the running agent at once, typed in; a change to the figure's look is no change of voice."""
 
     def __init__(self, chosen: ChosenVoice, agents: Agents, supervisor: SupervisorLink) -> None:
         self.chosen, self.agents, self.supervisor = chosen, agents, supervisor
@@ -16,7 +16,7 @@ class SayVoiceWhenChanged(Listener[Saved]):
     def handle(self, event: Saved) -> None:
         from journal.features.voices.feature import Voices
         setting = event.model
-        if not isinstance(setting, Setting) or setting.key not in {o.key for o in Voices.options}:
+        if not isinstance(setting, Setting) or setting.key not in {o.key for o in Voices.SPOKEN}:
             return
         for agent in self.agents.all():
             if agent.state != Ended.name:

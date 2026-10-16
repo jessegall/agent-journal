@@ -430,6 +430,12 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     console.run(["voice", "choose", "squire"], AGENT)
     assert typed and "changed how you talk" in typed[-1] and 'Address me as "my liege"' in typed[-1]
     assert "* squire" in console.run(["voice", "list"], USER).out
+    said = len(typed)
+    app.container.get(Settings).save(Setting(environment_id=0, key="voices.avatar_shown", value="never"), Actor.user(1))
+    app.container.get(Settings).save(Setting(environment_id=0, key="voices.avatar", value=False), Actor.user(1))
+    assert len(typed) == said, "a change to the figure's look is no change of voice: nothing is typed"
+    app.container.get(Settings).save(Setting(environment_id=0, key="voices.title", value="Captain"), Actor.user(1))
+    assert len(typed) == said + 1 and "changed how you talk" in typed[-1], "a change to the words is typed once"
 
 
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, monkeypatch):
