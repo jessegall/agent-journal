@@ -77,7 +77,11 @@ A workflow of your own is for a state at an event no default covers, made with N
   `{{sequence_step_text}}`. A say or type line that opens with a nudge's key
   in brackets, `[messages.new]`, speaks as that nudge.
 
-Lines join the boxes: then from a trigger or an action, yes or no from a check.
+Lines join the boxes: then from a trigger or an action, yes or no from a check, and one line per port, so a
+workflow is one path read top to bottom and nothing runs side by side. The shipped workflows chain the state's own
+steps first and the event's shared conduct after them, every open end leading on to the next part. A step that
+raises is recorded where the page shows it and the path goes on past it, by no from a check and by then from an
+action, so one broken step never silences what follows.
 
 ## When the chart is walked
 

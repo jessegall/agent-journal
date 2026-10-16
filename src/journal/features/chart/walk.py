@@ -113,7 +113,7 @@ class Walk:
                 port, decision = self.step(node, ctx, decision)
             except Exception as fault:
                 self.failed(node, ctx, fault)
-                continue
+                port = NO if node.kind == NodeKind.CHECK else THEN
             at += after.get((node.id, port), [])
         if at:
             self.failed(node, ctx, RuntimeError(f"the path ran past {STEPS} nodes and was cut off"))
@@ -128,7 +128,7 @@ class Walk:
         return THEN, decision
 
     def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
-        """A node that raised ends its own path, nothing follows it, and leaves what happened where the page can show it: the paths beside it, from the same trigger too, still answer. The ruling behind the catch is in NOTES, under the chart."""
+        """A node that raised is recorded where the page can show it, and the path goes on past it, by no from a check and by then from an action, so one broken step never silences what follows. The ruling behind the catch is in NOTES, under the chart."""
         self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data={"session": ctx.session, "workflow": self.charts.chart_of(node).id, "node": node.id, "key": node.key, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
 
     @staticmethod

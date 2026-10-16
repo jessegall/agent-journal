@@ -46,6 +46,7 @@ class Validation:
                 continue
             faults += self.port_fault(source, target, line.get("port", THEN))
         faults += self.check_faults(nodes, lines)
+        faults += self.port_twice_faults(lines)
         faults += self.hold_faults(nodes, lines)
         faults += self.cycle_faults(nodes, lines)
         return faults
@@ -115,6 +116,14 @@ class Validation:
         if source.get("kind") != NodeKind.CHECK and port != THEN:
             return [Fault(f"{source.get('kind')} {source.get('id')} leaves by then, not {port}", str(source.get("id", "")))]
         return []
+
+    @staticmethod
+    def port_twice_faults(lines: list[dict]) -> list[Fault]:
+        """A node leaves each port by one line, so a workflow runs in one order: a trigger and an action lead on to one step, a check to one on yes and one on no."""
+        seen: dict[tuple[str, str], int] = {}
+        for line in lines:
+            seen[(str(line.get("from")), line.get("port", THEN))] = seen.get((str(line.get("from")), line.get("port", THEN)), 0) + 1
+        return [Fault(f"node {source} leaves by {port} {n} times: one line per port, the next step leads on", source) for (source, port), n in seen.items() if n > 1]
 
     @staticmethod
     def check_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:

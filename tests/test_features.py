@@ -1611,7 +1611,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 7, 4, 5, 6" in out, "the stop branch holds, the inbox branch finds nothing unread"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 1, 2, 4, 5, 6, 7" in out, "one path: the parked check, auto mode, the open task held, then the inbox check finds nothing unread"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
     console.run(["message", "send", "are you there?"], USER)
@@ -1975,10 +1975,10 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"
 
 
-def test_a_failing_node_ends_its_path_is_recorded_and_the_walk_goes_on(app):
+def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
-    from journal.repositories.charts import THEN, Charts
+    from journal.repositories.charts import NO, THEN, Charts
     from journal.repositories.entries import Entries
     from journal.repositories.environments import Environments
     hook(app, "SessionStart")
@@ -1988,11 +1988,13 @@ def test_a_failing_node_ends_its_path_is_recorded_and_the_walk_goes_on(app):
     env = app.container.get(Environments).named("main").id
     shipped = charts.for_pair("idle", "idle")
     trigger = next(n for n in charts.nodes_of(shipped) if n.kind == NodeKind.TRIGGER and n.key == "idle")
+    first = next(n for n in charts.nodes_of(shipped) if n.key == "parked_tasks")
     bad = charts.add_node(shipped, Node(kind=NodeKind.CHECK, key="no_such_check"), Actor.user(1))
     charts.connect(trigger, bad, THEN, Actor.user(1))
+    charts.connect(bad, first, NO, Actor.user(1))
     console.run(["task", "create", "free work"], USER)
     status, body = hook(app, "Stop")
-    assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the shipped path beside the broken one still answers the stop"
+    assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the broken check is passed by its no line and the shipped path after it still answers the stop"
     failed = app.container.get(Entries).of_kind("walk_failed", 5)
     assert failed and failed[0].data["node"] == bad.id and "no_such_check" in failed[0].data["fault"], "the fault is on record, naming the node"
 

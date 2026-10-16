@@ -747,3 +747,11 @@ over N and Is a count at N read it, the text naming the count then the number or
 behaviour laid out in a workflow, nothing hidden in a check; task 215 rewrites the shipped conduct onto counts and
 retires the hidden tool-use and edit counters, and task 216 is the proposal for moving the engine's remaining state
 into workflows.
+
+One line per port, 2026-10-16 at night on the user's word (task 217): a trigger and an action lead on by one line,
+a check by one yes and one no, so a workflow is one path read top to bottom and nothing runs side by side; a
+second line from a port is refused on save and replaced by command. The shipped workflows chain the state's own
+steps first and the event's shared conduct after, every open end joined to the next part (DRAWINGS_VERSION 7). A
+step that raises is recorded and passed by its no or then line, so one broken step never silences the chain.
+The proposal for moving the engine's state into workflows is report 4, adjusted after four agents' discussion
+as report 5; it waits on the user's word before a plan.

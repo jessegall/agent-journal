@@ -71,6 +71,9 @@ class Charts(Repository[Chart]):
         self._graphs.clear()
 
     def connect(self, source: Node, target: Node, port: str, by: Actor) -> Link:
+        """One line per port: a new line from a port that has one takes its place."""
+        for standing in [l for l in self.lines_of(self.chart_of(source)) if l.source == Ref.to(source) and l.kind == port]:
+            self.links.delete(standing, by)
         line = self.links.save(Link(source=Ref.to(source), target=Ref.to(target), kind=port), by)
         self._graphs.clear()
         return line

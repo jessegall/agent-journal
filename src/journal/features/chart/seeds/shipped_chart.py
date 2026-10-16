@@ -18,7 +18,7 @@ SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_starting",
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 6
+DRAWINGS_VERSION = 7
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
@@ -82,13 +82,16 @@ class ShippedChart(Seed):
     def title_of(self, state: str, event: str) -> str:
         return f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
 
-    @staticmethod
-    def composed(own, shared):
+    def composed(self, own, shared):
+        """One path from the trigger: the state's own steps first, then the shared conduct of the event, joined at every open end."""
+        trigger = self.trigger
+
         def draw(chart: Chart) -> None:
+            ends = [(trigger(chart), THEN)]
             if own:
-                own(chart)
+                ends = own(chart, ends)
             if shared:
-                shared(chart)
+                shared(chart, ends)
         return draw
 
     def run(self) -> None:
@@ -151,41 +154,45 @@ class ShippedChart(Seed):
         return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), Actor.system())
 
     def trigger(self, chart: Chart) -> Node:
-        """The workflow's one trigger, the event it is for, made where it is not yet: the state's own branch and the shared one hang off the same trigger."""
+        """The workflow's one trigger, the event it is for, made where it is not yet."""
         standing = next((n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.TRIGGER), None)
         return standing or self.node(chart, NodeKind.TRIGGER, chart.event, x=400, y=0)
 
     def line(self, source: Node, target: Node, port: str) -> None:
         self.charts.connect(source, target, port, Actor.system())
 
-    def shared_at_message(self, chart: Chart) -> None:
+    def chain(self, ends: list, target: Node) -> None:
+        """Every open end given leads on to the node: a check's unused answer, an action's then, so one path runs through every part in order."""
+        for source, port in ends:
+            self.line(source, target, port)
+
+    def shared_at_message(self, chart: Chart, ends: list) -> list:
         """A message the user leaves is named by number, typed into the terminal."""
-        arrives = self.trigger(chart)
         by_user = self.node(chart, NodeKind.CHECK, "message_by_user", x=400, y=92)
         named = self.node(chart, NodeKind.ACTION, "type", NEW_MESSAGE, x=400, y=184)
-        self.line(arrives, by_user, THEN)
+        self.chain(ends, by_user)
         self.line(by_user, named, YES)
+        return [(by_user, NO), (named, THEN)]
 
-    def shared_inbox(self, chart: Chart) -> None:
+    def shared_inbox(self, chart: Chart, ends: list) -> list:
         """The inbox named at a start, a prompt and a stop."""
-        self.draw_inbox(chart, self.trigger(chart), x=720, y=92)
+        return self.draw_inbox(chart, ends, x=720, y=92)
 
-    def shared_at_tool(self, chart: Chart) -> None:
-        """At a tool use the inbox is named every few uses and the write held after enough namings; a read message is answered before the next tool, held after enough uses."""
+    def shared_at_tool(self, chart: Chart, ends: list) -> list:
+        """At a tool use the inbox is named every few uses and the write held after enough namings; then a read message is answered before the next tool, held after enough uses."""
         left = 720
-        tool = self.trigger(chart)
         unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=left + 80, y=92)
         reminders = self.node(chart, NodeKind.CHECK, "unread_reminders_over", "messages.hold_after_reminders", x=left + 80, y=184)
         writes = self.node(chart, NodeKind.CHECK, "tool_writes", x=left, y=276)
         hold_unread = self.node(chart, NodeKind.ACTION, "hold", UNREAD_HELD, x=left, y=368)
         every = self.node(chart, NodeKind.CHECK, "tool_uses_since_unread_every", "messages.remind_every", x=left + 160, y=368)
-        self.line(tool, unread, THEN)
+        self.chain(ends, unread)
         self.line(unread, reminders, YES)
         self.line(reminders, writes, YES)
         self.line(writes, hold_unread, YES)
         self.line(writes, every, NO)
         self.line(reminders, every, NO)
-        self.draw_inbox(chart, every, x=left + 160, y=460)
+        named = self.draw_inbox(chart, [(every, YES)], x=left + 160, y=460)
         owed = self.node(chart, NodeKind.CHECK, "unanswered_messages", x=left + 400, y=92)
         journal = self.node(chart, NodeKind.CHECK, "journal_command", x=left + 400, y=184)
         theirs = self.node(chart, NodeKind.CHECK, "tool_reads_their_files", x=left + 400, y=276)
@@ -193,75 +200,75 @@ class ShippedChart(Seed):
         hold_owed = self.node(chart, NodeKind.ACTION, "hold", ANSWER_HELD, x=left + 320, y=460)
         ask_after = self.node(chart, NodeKind.CHECK, "tool_uses_since_read_over", "messages.nudge_after", x=left + 480, y=460)
         say_owed = self.node(chart, NodeKind.ACTION, "say", ANSWER, x=left + 480, y=552)
-        self.line(tool, owed, THEN)
+        self.chain([(unread, NO), (hold_unread, THEN), (every, NO), *named], owed)
         self.line(owed, journal, YES)
         self.line(journal, theirs, NO)
         self.line(theirs, held_after, NO)
         self.line(held_after, hold_owed, YES)
         self.line(held_after, ask_after, NO)
         self.line(ask_after, say_owed, YES)
+        return [(owed, NO), (journal, YES), (theirs, YES), (hold_owed, THEN), (ask_after, NO), (say_owed, THEN)]
 
-    def draw_inbox(self, chart: Chart, after: Node, x: int, y: int) -> None:
-        """What waits unread, named from the node given: one message by its number, a few by theirs, more than three by their count."""
+    def draw_inbox(self, chart: Chart, ends: list, x: int, y: int) -> list:
+        """What waits unread, named after the ends given: one message by its number, a few by theirs, more than three by their count."""
         unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=x, y=y)
         many = self.node(chart, NodeKind.CHECK, "unread_over", "4", x=x, y=y + 92)
         say_many = self.node(chart, NodeKind.ACTION, "say", MANY_UNREAD, x=x - 160, y=y + 184)
         some = self.node(chart, NodeKind.CHECK, "unread_over", "2", x=x, y=y + 184)
         say_some = self.node(chart, NodeKind.ACTION, "say", SOME_UNREAD, x=x - 160, y=y + 276)
         say_one = self.node(chart, NodeKind.ACTION, "say", ONE_UNREAD, x=x, y=y + 276)
-        self.line(after, unread, THEN if after.kind != NodeKind.CHECK else YES)
+        self.chain(ends, unread)
         self.line(unread, many, YES)
         self.line(many, say_many, YES)
         self.line(many, some, NO)
         self.line(some, say_some, YES)
         self.line(some, say_one, NO)
+        return [(unread, NO), (say_many, THEN), (say_some, THEN), (say_one, THEN)]
 
-    def idle_at_stop(self, chart: Chart) -> None:
+    def idle_at_stop(self, chart: Chart, ends: list) -> list:
         """An agent at rest stopping: parked tasks hold it in any mode and in auto mode the next open task holds it."""
-        stop = self.trigger(chart)
         parked = self.node(chart, NodeKind.CHECK, "parked_tasks", x=160, y=92)
         say_parked = self.node(chart, NodeKind.ACTION, "block_stop", PARKED, x=0, y=184)
         auto = self.node(chart, NodeKind.CHECK, "auto_mode", x=160, y=276)
         open_ = self.node(chart, NodeKind.CHECK, "open_tasks", x=160, y=368)
         hold_stop = self.node(chart, NodeKind.ACTION, "block_stop", NEXT, x=160, y=460)
-        self.line(stop, parked, THEN)
+        self.chain(ends, parked)
         self.line(parked, say_parked, YES)
         self.line(parked, auto, NO)
         self.line(auto, open_, YES)
         self.line(open_, hold_stop, YES)
+        return [(say_parked, THEN), (auto, NO), (open_, NO), (hold_stop, THEN)]
 
-    def following_at_stop(self, chart: Chart) -> None:
+    def following_at_stop(self, chart: Chart, ends: list) -> list:
         """An agent following a plan, at a stop or a session start: at a checkpoint it waits for the user's look, or in auto mode holds the stop and carries on; with a task in hand it carries on as Working does."""
-        trigger = self.trigger(chart)
         checkpoint = self.node(chart, NodeKind.CHECK, "plan_at_checkpoint", x=240, y=92)
         auto_at_checkpoint = self.node(chart, NodeKind.CHECK, "auto_mode", x=80, y=184)
         passed = self.node(chart, NodeKind.ACTION, "block_stop", CHECKPOINT_PASSED, x=0, y=276)
         looks = self.node(chart, NodeKind.ACTION, "say", CHECKPOINT, x=160, y=276)
-        self.line(trigger, checkpoint, THEN)
+        self.chain(ends, checkpoint)
         self.line(checkpoint, auto_at_checkpoint, YES)
         self.line(auto_at_checkpoint, passed, YES)
         self.line(auto_at_checkpoint, looks, NO)
-        self.carry_on(chart, checkpoint, NO, x=400)
+        return [(passed, THEN), (looks, THEN), *self.carry_on(chart, [(checkpoint, NO)], x=400, y=184)]
 
-    def idle_at_tick(self, chart: Chart) -> None:
-        """As the clock ticks on an agent at rest: the parked ask after a minute and the check-in after half an hour."""
-        tick = self.trigger(chart)
+    def idle_at_tick(self, chart: Chart, ends: list) -> list:
+        """As the clock ticks on an agent at rest: the parked ask after a minute, then the check-in after half an hour."""
         parked_tick = self.node(chart, NodeKind.CHECK, "parked_tasks", x=240, y=92)
         quiet_a_minute = self.node(chart, NodeKind.CHECK, "quiet_for_over", "60", x=240, y=184)
         ask_parked = self.node(chart, NodeKind.ACTION, "type", PARKED_STILL, x=240, y=276)
         auto_tick = self.node(chart, NodeKind.CHECK, "auto_mode", x=560, y=92)
         quiet_half_an_hour = self.node(chart, NodeKind.CHECK, "quiet_for_over", "1800", x=560, y=184)
         check_in = self.node(chart, NodeKind.ACTION, "type", CHECK_IN, x=560, y=276)
-        self.line(tick, parked_tick, THEN)
+        self.chain(ends, parked_tick)
         self.line(parked_tick, quiet_a_minute, YES)
         self.line(quiet_a_minute, ask_parked, YES)
-        self.line(tick, auto_tick, THEN)
+        self.chain([(parked_tick, NO), (quiet_a_minute, NO), (ask_parked, THEN)], auto_tick)
         self.line(auto_tick, quiet_half_an_hour, YES)
         self.line(quiet_half_an_hour, check_in, YES)
+        return [(auto_tick, NO), (quiet_half_an_hour, NO), (check_in, THEN)]
 
-    def working_at_tool(self, chart: Chart) -> None:
+    def working_at_tool(self, chart: Chart, ends: list) -> list:
         """A task in hand at a tool use that writes: the task is named every so many edits, the log asked for at the first threshold and the write held when the log is overdue."""
-        tool = self.trigger(chart)
         writes = self.node(chart, NodeKind.CHECK, "tool_writes", x=160, y=92)
         overdue = self.node(chart, NodeKind.CHECK, "edits_since_log_over", "tasks.log_after", x=160, y=184)
         hold_log = self.node(chart, NodeKind.ACTION, "hold", LOG_OVERDUE, x=0, y=276)
@@ -269,78 +276,81 @@ class ShippedChart(Seed):
         say_soon = self.node(chart, NodeKind.ACTION, "say", LOG_SOON, x=160, y=368)
         named = self.node(chart, NodeKind.CHECK, "edits_since_log_every", "tasks.name_every", x=320, y=368)
         say_in_hand = self.node(chart, NodeKind.ACTION, "say", IN_HAND, x=320, y=460)
-        self.line(tool, writes, THEN)
+        self.chain(ends, writes)
         self.line(writes, overdue, YES)
         self.line(overdue, hold_log, YES)
         self.line(overdue, first, NO)
         self.line(first, say_soon, YES)
         self.line(first, named, NO)
         self.line(named, say_in_hand, YES)
+        return [(writes, NO), (hold_log, THEN), (say_soon, THEN), (named, NO), (say_in_hand, THEN)]
 
-    def working_carries_on(self, chart: Chart) -> None:
+    def working_carries_on(self, chart: Chart, ends: list) -> list:
         """A task in hand at a stop or a session start: carry on, with the log asked for when it is stale."""
-        self.carry_on(chart, self.trigger(chart), THEN, x=240)
+        return self.carry_on(chart, ends, x=240, y=92)
 
-    def carry_on(self, chart: Chart, after: Node, port: str, x: int) -> None:
-        """The carry-on branch below a node: the log asked for when it is stale, else carry on."""
-        stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "600", x=x, y=92 if after.kind == NodeKind.TRIGGER else 184)
-        carry_on_log = self.node(chart, NodeKind.ACTION, "say", CARRY_ON_LOG, x=x - 80, y=stale.y + 92)
-        carry_on = self.node(chart, NodeKind.ACTION, "say", CARRY_ON, x=x + 80, y=stale.y + 92)
-        self.line(after, stale, port)
+    def carry_on(self, chart: Chart, ends: list, x: int, y: int) -> list:
+        """The carry-on steps after the ends given: the log asked for when it is stale, else carry on."""
+        stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "600", x=x, y=y)
+        carry_on_log = self.node(chart, NodeKind.ACTION, "say", CARRY_ON_LOG, x=x - 80, y=y + 92)
+        carry_on = self.node(chart, NodeKind.ACTION, "say", CARRY_ON, x=x + 80, y=y + 92)
+        self.chain(ends, stale)
         self.line(stale, carry_on_log, YES)
         self.line(stale, carry_on, NO)
+        return [(carry_on_log, THEN), (carry_on, THEN)]
 
-    def working_at_tick(self, chart: Chart) -> None:
+    def working_at_tick(self, chart: Chart, ends: list) -> list:
         """A task in hand as the clock ticks: still open after a quiet quarter hour."""
-        tick = self.trigger(chart)
         quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "900", x=400, y=92)
         still_open = self.node(chart, NodeKind.ACTION, "say", STILL_OPEN, x=400, y=184)
-        self.line(tick, quiet, THEN)
+        self.chain(ends, quiet)
         self.line(quiet, still_open, YES)
+        return [(quiet, NO), (still_open, THEN)]
 
-    def awaiting_at_worker(self, chart: Chart) -> None:
-        """An agent awaiting workers: one reporting or stopping is told, and the agent goes back to its work when its last worker is back."""
-        worker = self.trigger(chart)
+    def awaiting_at_worker(self, chart: Chart, ends: list) -> list:
+        """An agent awaiting workers: one reporting is told, then one stopping, and the agent goes back to its work when its last worker is back."""
         for column, came, told in ((240, "worker_reported", REPORTED), (560, "worker_stopped", STOPPED)):
             now = self.node(chart, NodeKind.CHECK, came, x=column, y=92)
             awaited = self.node(chart, NodeKind.CHECK, "agent_awaits_the_worker", x=column, y=184)
             tell = self.node(chart, NodeKind.ACTION, "type", told, x=column, y=276)
             last = self.node(chart, NodeKind.CHECK, "last_worker_back", x=column, y=368)
             back = self.node(chart, NodeKind.ACTION, "release", RETURNED, x=column, y=460)
-            self.line(worker, now, THEN)
+            self.chain(ends, now)
             self.line(now, awaited, YES)
             self.line(awaited, tell, YES)
             self.line(tell, last, THEN)
             self.line(last, back, YES)
+            ends = [(now, NO), (awaited, NO), (last, NO), (back, THEN)]
+        return ends
 
-    def waiting_at_question(self, chart: Chart) -> None:
+    def waiting_at_question(self, chart: Chart, ends: list) -> list:
         """An agent waiting on a question: when it is answered the agent goes back to its work, told how to read the answer."""
-        question = self.trigger(chart)
         answered = self.node(chart, NodeKind.CHECK, "question_answered", x=400, y=92)
         waits = self.node(chart, NodeKind.CHECK, "agent_waits_on_the_question", x=400, y=184)
         back = self.node(chart, NodeKind.ACTION, "release", ANSWERED, x=400, y=276)
-        self.line(question, answered, THEN)
+        self.chain(ends, answered)
         self.line(answered, waits, YES)
         self.line(waits, back, YES)
+        return [(answered, NO), (waits, NO), (back, THEN)]
 
-    def expecting_at_tick(self, chart: Chart) -> None:
+    def expecting_at_tick(self, chart: Chart, ends: list) -> list:
         """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long."""
-        tick = self.trigger(chart)
         quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "300", x=400, y=92)
         check = self.node(chart, NodeKind.ACTION, "say", CHECK_AWAITED, x=400, y=184)
-        self.line(tick, quiet, THEN)
+        self.chain(ends, quiet)
         self.line(quiet, check, YES)
+        return [(quiet, NO), (check, THEN)]
 
-    def working_again(self, chart: Chart) -> None:
+    def working_again(self, chart: Chart, ends: list) -> list:
         """The agent's own tool use ends a wait on something outside: the wait is released, with no line."""
-        tool = self.trigger(chart)
         own = self.node(chart, NodeKind.CHECK, "own_tool", x=160, y=92)
         back = self.node(chart, NodeKind.ACTION, "release", x=160, y=184)
-        self.line(tool, own, THEN)
+        self.chain(ends, own)
         self.line(own, back, YES)
+        return [(own, NO), (back, THEN)]
 
-    def sequence_at_stop(self, chart: Chart) -> None:
+    def sequence_at_stop(self, chart: Chart, ends: list) -> list:
         """An agent working through a sequence: a stop is told the step in hand; stepping on is the state's move."""
-        stop = self.trigger(chart)
         step = self.node(chart, NodeKind.ACTION, "say", STEP, x=400, y=92)
-        self.line(stop, step, THEN)
+        self.chain(ends, step)
+        return [(step, THEN)]
