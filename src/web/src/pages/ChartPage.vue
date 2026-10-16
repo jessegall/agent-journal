@@ -1,7 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
-import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import DropList from "../kit/DropList.vue";
@@ -20,7 +19,6 @@ const CARD = {width: 208, plain: 48, text: 84};
 const PORT_AT = {then: 50, yes: 30, no: 70};
 const WORD = {then: "Next", yes: "Yes", no: "No"};
 const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
-const TEST_LINE = "Runs this workflow for its event against the journal as it is now. Nothing is done: the steps and the result open beside the canvas, and the path lights up.";
 const FILLERS = [
     {key: "{{parked_tasks}}", about: "The parked tasks, each with why it was parked"},
     {key: "{{next_task}}", about: "The number of the next open task"},
@@ -60,7 +58,6 @@ const showLead = ref(false);
 const editing = ref(null);
 const messageText = ref("");
 const messageBox = ref(null);
-const trial = reactive({nodes: [], would: [], ran: false});
 let fresh = 0;
 
 const entries = computed(() => Object.fromEntries(catalogue.value.map((e) => [`${e.kind}:${e.key}`, e])));
@@ -95,7 +92,6 @@ function take(got) {
     lines.value = got.lines.map((l) => ({...l}));
     past.value = [];
     selected.value = null;
-    trial.ran = false;
     loaded.value = true;
 }
 
@@ -233,12 +229,6 @@ const wires = computed(() =>
         .filter((l) => byId.value[String(l.from)] && byId.value[String(l.to)])
         .map((l) => ({line: l, d: path(portAt(byId.value[String(l.from)], l.port), inAt(byId.value[String(l.to)]))}))
 );
-const onPath = (node) => trial.ran && trial.nodes.includes(node.id);
-const stepOf = (node) => trial.nodes.indexOf(node.id) + 1;
-const wireOnPath = (line) => {
-    const at = trial.nodes.indexOf(line.from);
-    return at >= 0 && trial.nodes[at + 1] === line.to;
-};
 const isHover = (node, port) => hovered.value && hovered.value.node === node.id && hovered.value.port === port;
 const isDrawingFrom = (node, port) => drawing.value && String(drawing.value.from) === String(node.id) && drawing.value.port === port;
 
@@ -374,36 +364,8 @@ const startNaming = () => {
     naming.value = {trigger: "idle", title: ""};
 };
 const namingLabel = computed(() => (naming.value ? entries.value[`trigger:${naming.value.trigger}`]?.title || naming.value.trigger : ""));
-const tryIt = () =>
-    act("try", async () => {
-        const ran = await api.chartTry(trigger.value ? trigger.value.key : "idle", route.value.env);
-        trial.nodes = ran.nodes;
-        trial.would = ran.would;
-        trial.ran = true;
-    });
 
-// the test's steps: each node on the path with how it was left, Yes or No for a check, its kind otherwise
-const steps = computed(() =>
-    trial.nodes.map((id, i) => {
-        const node = byId.value[String(id)];
-        const next = trial.nodes[i + 1];
-        const line = node && next !== undefined ? lines.value.find((l) => String(l.from) === String(id) && String(l.to) === String(next)) : null;
-        const answer = node && node.kind === "check" ? (line ? WORD[line.port] : "") : node ? KIND[node.kind] : "";
-        return {id, title: node ? entryOf(node).title : String(id), answer, tone: node && node.kind === "check" ? (line ? line.port : "") : "kind"};
-    })
-);
-const skipped = computed(() => {
-    const checks = steps.value.filter((s) => s.tone === "yes" || s.tone === "no");
-    return checks
-        .map((s) => {
-            const node = byId.value[String(s.id)];
-            const other = lineOf(node, s.tone === "yes" ? "no" : "yes");
-            const target = other && byId.value[String(other.to)];
-            return target && target.kind === "action" ? `${s.title} was ${s.answer}, so ${entryOf(target).title} was skipped.` : "";
-        })
-        .filter(Boolean);
-});
-const triggerTitle = computed(() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet"));
+(() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet"));
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
 // the message is written in the side panel and lands on the card as one change when the panel closes
 function openMessage(node) {
@@ -447,7 +409,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             </template>
             <template v-else>
                 <DropList :label="title || 'Workflow'" icon="bolt" :items="workflowItems" :picked="String(current)" :menu-width="260" @pick="open(Number($event.key))" />
-                <span v-if="shipped" class="chart-default" title="Comes with the journal; Reset to default restores it">Default</span>
                 <Btn kind="ghost" small @click="startNaming">New workflow</Btn>
                 <Btn
                     kind="danger"
@@ -471,14 +432,13 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             <header class="chart-head">
                 <div class="chart-head-words">
                     <h1>Workflows</h1>
-                    <button type="button" class="chart-help" @click="showLead = !showLead">{{ showLead ? "Hide how it works" : "How it works" }}</button>
+                    <button type="button" class="chart-help" @click="showLead = true">How it works</button>
                 </div>
                 <div class="chart-acts">
                     <Btn ref="addButton" kind="ghost" small :class="{on: adding && !adding.at}" @click.stop="openAdd(null)">Add node</Btn>
                     <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                 </div>
             </header>
-            <p v-if="showLead" class="chart-lead">{{ LEAD }}</p>
             <p v-if="notice" class="chart-notice">{{ notice }}</p>
 
             <ChartList v-if="view === 'list'" :nodes="nodes" :lines="lines" :entry-of="entryOf" @text="setText" @line="connect" @unline="disconnect" @remove="remove" />
@@ -486,7 +446,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
                     <svg class="chart-wires" overflow="visible">
                         <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
-                            <path :class="['chart-wire', wire.line.port, {dim: trial.ran && !wireOnPath(wire.line)}]" :d="wire.d" />
+                            <path :class="['chart-wire', wire.line.port]" :d="wire.d" />
                             <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
                                 <title>Click to delete this connection</title>
                             </path>
@@ -497,13 +457,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         v-for="node in nodes"
                         :key="node.id"
                         :data-node="node.id"
-                        :class="['chart-node', node.kind, {selected: selected === node.id, lit: onPath(node), dim: trial.ran && !onPath(node), target: drawing && drawing.target && drawing.target.id === node.id}]"
+                        :class="['chart-node', node.kind, {selected: selected === node.id, target: drawing && drawing.target && drawing.target.id === node.id}]"
                         :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
                         @pointerdown="dragNode(node, $event)"
                     >
                         <div class="chart-node-kind">
-                            <span v-if="onPath(node)" class="chart-step">{{ stepOf(node) }}</span>
-                            <span v-else :class="['chart-glyph', node.kind]" />
+                            <span :class="['chart-glyph', node.kind]" />
                             <span>{{ KIND[node.kind] }}</span>
                             <button v-if="selected === node.id" type="button" class="chart-node-x" title="Delete node" @pointerdown.stop @click.stop="remove(node)">
                                 <Icon name="close" :size="12" />
@@ -552,13 +511,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </div>
                 <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
 
-                <div class="chart-test" v-tip="{title: 'Test', line: TEST_LINE}">
-                    <span class="chart-test-label">Test with event</span>
-                    <span class="chart-test-event"><span class="chart-glyph trigger" />{{ triggerTitle }}</span>
-                    <span class="chart-test-note">Dry run, changes nothing</span>
-                    <Btn kind="ghost" small :busy="busy === 'try'" :disabled="!trigger" @click="tryIt">Test</Btn>
-                </div>
-
                 <template v-if="loaded && !nodes.length">
                     <EmptyState class="chart-empty" title="No nodes yet">
                         Start with a trigger: the event that starts this workflow.
@@ -596,29 +548,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             </MenuPanel>
         </template>
 
-        <template v-if="trial.ran">
-            <SidePanel title="Test result" :abstract="`Ran for ${triggerTitle} against the journal as it is now. Nothing was changed; the lit path on the canvas is what would have run.`" @close="trial.ran = false">
-                <MenuLabel>Steps</MenuLabel>
-                <ol v-if="steps.length" class="chart-steps">
-                    <li v-for="(step, i) in steps" :key="`${step.id}-${i}`">
-                        <span class="chart-step">{{ i + 1 }}</span>
-                        <span class="chart-step-title">{{ step.title }}</span>
-                        <span :class="['chart-step-answer', step.tone]">{{ step.answer }}</span>
-                    </li>
-                </ol>
-                <p v-else class="chart-result">No trigger for this event. Nothing happens.</p>
-                <MenuLabel>Result</MenuLabel>
-                <p v-if="!trial.would.length" class="chart-result">Nothing is done: the path ends without an action.</p>
-                <p v-for="line in trial.would" :key="line" class="chart-result-line">{{ line }}</p>
-                <p v-for="line in skipped" :key="line" class="chart-skipped">{{ line }}</p>
-                <template #foot>
-                    <span class="chart-test-label">Test with event</span>
-                    <span class="chart-test-event"><span class="chart-glyph trigger" />{{ triggerTitle }}</span>
-                    <span class="chart-grow" />
-                    <Btn kind="ghost" small :busy="busy === 'try'" @click="tryIt">Test</Btn>
-                </template>
-            </SidePanel>
-        </template>
 
         <template v-if="editing">
             <SidePanel title="Message to the agent" :abstract="`${entryOf(editing).title}: what the journal says to the agent at this step`" @close="closeMessage">
@@ -637,6 +566,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     <Btn kind="primary" small @click="closeMessage">Done</Btn>
                 </template>
             </SidePanel>
+        </template>
+        <template v-if="showLead">
+            <Dialog title="How workflows work" fits @close="showLead = false">
+                <p class="chart-dialog-text">{{ LEAD }}</p>
+                <p class="chart-dialog-text">A trigger is an event, such as the agent stopping. A check is a yes or no question the journal answers from what it knows, and the flow goes on by the Yes or the No line. An action is what the journal does: send a message to the agent, block its stop, block a tool, type into its terminal or start a sequence.</p>
+                <p class="chart-dialog-text">Add node puts a node below the selected one and connects it. Drag from a port onto another node to connect them, click a line to remove it, and drag a node to move it. Nothing changes until you save.</p>
+                <template #foot>
+                    <Btn kind="primary" @click="showLead = false">Close</Btn>
+                </template>
+            </Dialog>
         </template>
         <template v-if="confirming === 'reset'">
             <Dialog :title="`Replace ‘${title}’ with the default version?`" fits @close="confirming = ''">
@@ -674,16 +613,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 
 .chart-grow {
     flex: 1;
-}
-
-.chart-default {
-    margin-left: -4px;
-    padding: 0 5px;
-    border: 1px solid var(--border-2);
-    border-radius: 4px;
-    color: var(--text-3);
-    font-size: 10.5px;
-    line-height: 15px;
 }
 
 .chart-unsaved {
@@ -734,12 +663,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 .chart-head h1 {
     margin: 0;
     font-size: 18px;
-}
-
-.chart-lead {
-    max-width: 720px;
-    margin: -4px 0 0;
-    color: var(--text-dim, #9aa0a6);
 }
 
 .chart-message {
@@ -852,10 +775,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     stroke: var(--danger-soft);
 }
 
-.chart-wire.dim {
-    opacity: 0.22;
-}
-
 .chart-wire.drafting {
     stroke: var(--accent-text);
     stroke-dasharray: 4 4;
@@ -886,13 +805,6 @@ g:hover .chart-wire {
 }
 
 .chart-node.selected,
-.chart-node.lit {
-    border-color: var(--accent);
-}
-
-.chart-node.dim {
-    opacity: 0.4;
-}
 
 .chart-node.target {
     border-color: var(--border-3);
@@ -999,21 +911,6 @@ button.chart-node-text:hover {
     height: 6px;
     margin: 0 0.5px;
     border-radius: 1.5px;
-}
-
-.chart-step {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-    font-size: 9.5px;
-    font-weight: 600;
-    letter-spacing: 0;
 }
 
 .chart-in,
@@ -1133,46 +1030,6 @@ button.chart-node-text:hover {
     height: 1px;
 }
 
-.chart-test {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 5px 5px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--raised);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-}
-
-.chart-test-label {
-    color: var(--text-2);
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.chart-test-event {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 1px 7px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    color: var(--text);
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-.chart-test-note {
-    color: var(--text-4);
-    font-size: 11.5px;
-    white-space: nowrap;
-}
-
 .chart-empty {
     position: absolute;
     inset: 0;
@@ -1251,71 +1108,6 @@ button.chart-node-text:hover {
     text-transform: none;
 }
 
-.chart-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0 0 20px;
-    padding: 0;
-    list-style: none;
-}
-
-.chart-steps li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-}
-
-.chart-steps .chart-step {
-    width: 18px;
-    height: 18px;
-    font-size: 10.5px;
-}
-
-.chart-step-title {
-    flex: 1;
-}
-
-.chart-step-answer {
-    font-size: 12px;
-}
-
-.chart-step-answer.yes {
-    color: var(--tone-good);
-}
-
-.chart-step-answer.no {
-    color: var(--danger-soft);
-}
-
-.chart-step-answer.kind {
-    color: var(--text-4);
-}
-
-.chart-result {
-    margin: 0 0 8px;
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.chart-result-line {
-    margin: 0 0 14px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--raised);
-    color: var(--text);
-    font-size: 13px;
-    white-space: pre-wrap;
-}
-
-.chart-skipped {
-    margin: 0 0 6px;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
 .chart-dialog-text {
     margin: 0;
     color: var(--text-2);
@@ -1330,10 +1122,5 @@ button.chart-node-text:hover {
         flex-direction: column;
     }
 
-    .chart-test {
-        right: 8px;
-        left: 8px;
-        flex-wrap: wrap;
-    }
 }
 </style>
