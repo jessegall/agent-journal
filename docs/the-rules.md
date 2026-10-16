@@ -85,6 +85,7 @@ title and the state by its name.
 | awaiting | the workflow Awaiting | a worker reporting or stopping and the release are conduct |
 | waiting | the workflow Waiting | a question answered and the release are conduct |
 | expecting | the workflow Expecting | the check on the awaited thing is conduct; the wait's lifting by a tool use stays the state's move |
+| a wait under a pause the agent owes | the wait's workflow, through the pause | a row event about a question or a worker reaches the wait beneath Orienting, AtMark or LoadingSkill: its workflow runs, its checks see the wait, and a release takes the wait out from under the pause, which keeps standing |
 | every wait above | the engine, as the way out | a word from the user frees any wait that is not the agent's own doing, ruled once in Paused; so a wait whose workflow was emptied or edited still ends, and the page warns when a wait's workflow releases nothing |
 | running_sequence | the workflow Running a sequence | the step held at a stop is conduct; the stepping stays the state's move |
 | stuck | the engine, silent | the journal stays quiet by design until the agent works again; nothing to draw |

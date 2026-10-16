@@ -645,6 +645,26 @@ def test_a_word_from_the_user_frees_a_wait_whose_workflow_no_longer_releases_it(
     assert machine.current("s1").name == "working", "the user's word is the engine's way out of the wait"
 
 
+def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_beneath_it(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["question", "ask", "Which name?"], AGENT)
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "waiting"
+    hook(app, "SessionStart")
+    assert machine.current("s1").name == "orienting" and machine.current("s1").resume["state"] == "waiting", "a new session holds the agent over its wait"
+    console.run(["question", "answer", "1", "beta"], USER)
+    app.runtime().deferred.drain()
+    held = machine.current("s1")
+    assert held.name == "orienting" and held.resume["state"] == "working", "the answer reached the wait beneath the pause and released it; the pause still stands"
+    console.run(["environment", "here"], AGENT)
+    assert machine.current("s1").name == "working", "oriented again, the agent goes on with its work, not back into a wait already answered"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus

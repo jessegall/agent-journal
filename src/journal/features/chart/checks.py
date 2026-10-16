@@ -1,6 +1,7 @@
 import time
 from journal.config import Config
 from journal.engine.machine import Machine
+from journal.engine.states.paused import Paused
 from journal.events.agent.idle import Idle
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
@@ -200,5 +201,7 @@ class Checks:
         return isinstance(self.state(ctx), RunningSequence)
 
     def state(self, ctx: Context):
-        """The agent's state as the walk read it once, or None when the walk is about no agent."""
+        """The agent's state as the walk read it once, looking through the pauses the agent owes the journal to the wait beneath, since a row event is about that wait; None when the walk is about no agent."""
+        if isinstance(ctx.state, Paused) and ctx.state.owed_by_agent:
+            return self.machine.states.wait_in(ctx.state) or ctx.state
         return ctx.state

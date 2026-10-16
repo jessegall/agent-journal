@@ -19,6 +19,14 @@ class StatesCatalogue:
     def names(self) -> list[str]:
         return sorted(self._states)
 
+    def wait_in(self, state: AgentState) -> AgentState | None:
+        """The wait a row event is about: the state itself when it waits on something outside, else the first such wait beneath the pauses the agent owes the journal, rebuilt from the resume chain; None when the agent waits on nothing."""
+        while isinstance(state, Paused):
+            if not state.owed_by_agent:
+                return state
+            state = self.named(state.resume.get("state", "idle"), state.resume.get("data", {}))
+        return None
+
     def waits(self) -> list[str]:
         """The states that wait for something outside and are left only by a release: a workflow for one of them must hold one."""
         return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.owed_by_agent)

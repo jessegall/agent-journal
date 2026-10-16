@@ -1,10 +1,12 @@
 import re
+from dataclasses import replace
 
 from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.nudger import Nudger
+from journal.engine.resume import Resume
 from journal.features.chart.context import Context
 from journal.features.chart.fillers import Fillers
 from journal.features.registry import Registry
@@ -90,13 +92,19 @@ class Actions:
         """An agent paused for something outside goes back to what it was doing, told with the line; an agent not paused is left as it is."""
         if not ctx.session:
             return Decision()
-        state = ctx.state
-        if not isinstance(state, Paused):
+        wait = self.machine.states.wait_in(ctx.state) if ctx.state else None
+        if wait is None:
             return Decision()
-        if state.owed_by_agent:
-            raise Refused(f"the agent is {state.name}, a pause it owes the journal a step for: the engine keeps it, a workflow does not release it")
-        self.machine.move(ctx.session, ctx.environment_id, state.back().to)
+        self.machine.move(ctx.session, ctx.environment_id, self.without(ctx.state, wait))
         return self.say(text, ctx) if text else Decision()
+
+    def without(self, state: AgentState, wait: Paused):
+        """The agent's state with the wait taken out of it: the wait itself goes back to what it was doing; a pause the agent owes the journal keeps standing, over what the wait would go back to."""
+        if state == wait:
+            return wait.back().to
+        beneath = self.machine.states.named(state.resume.get("state", "idle"), state.resume.get("data", {}))
+        released = self.without(beneath, wait)
+        return replace(state, resume={"state": released.state, "data": released.data} if isinstance(released, Resume) else {"state": released.name, "data": released.to_data()})
 
     def move_to(self, text: str, ctx: Context) -> Decision:
         """The agent moved to the state named, through the machine: idle, from a state that owns nothing; a state with a task in hand, a wait or a step owed stays, and the walk records why."""

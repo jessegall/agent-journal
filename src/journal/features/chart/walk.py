@@ -9,6 +9,8 @@ from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
 from journal.hooks.decision import Decision
 from journal.engine.agent_state import AgentState
+from journal.engine.states.paused import Paused
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.actor import Actor
 from journal.models.chart import BASE, Chart
 from journal.models.entry import Entry
@@ -29,12 +31,12 @@ FAILED = "walk_failed"
 class Walk:
     """The engine walking every workflow for one event: each trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The workflows are read fresh each time, so an edit applies at the next event."""
 
-    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries) -> None:
-        self.charts, self.checks, self.actions, self.entries = charts, checks, actions, entries
+    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue) -> None:
+        self.charts, self.checks, self.actions, self.entries, self.states = charts, checks, actions, entries, states
 
     def dry(self, fillers, checks: Checks) -> "Walk":
         """The same walk with nothing done: each action tells what it would do, and the checks given answer, assumed or live."""
-        return Walk(self.charts, checks, DryActions(fillers), self.entries)
+        return Walk(self.charts, checks, DryActions(fillers), self.entries, self.states)
 
     def on(self, ctx: Context) -> Decision:
         return self.on_with_trace(ctx, [])
@@ -63,12 +65,19 @@ class Walk:
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
         """In the order they run: the base, then the workflow of the agent's state or of the nearest state it inherits from, then the workflow of the older shape that answers the event by itself."""
         found = [chart for chart in [self.charts.for_state(BASE)] if chart]
-        if ctx.state:
-            own = next((chart for name in self.lineage(ctx.state) if (chart := self.charts.for_state(name))), None)
-            if own:
+        for state in self.states_of(ctx):
+            own = next((chart for name in self.lineage(state) if (chart := self.charts.for_state(name))), None)
+            if own and own not in found:
                 found.append(own)
         legacy = self.charts.answering(key)
         return found + [legacy] if legacy else found
+
+    def states_of(self, ctx: Context) -> list[AgentState]:
+        """The state the walk read, and beneath a pause the agent owes the journal the wait it buries, so a row event about that wait still reaches its workflow."""
+        if not ctx.state:
+            return []
+        beneath = self.states.wait_in(ctx.state) if isinstance(ctx.state, Paused) and ctx.state.owed_by_agent else None
+        return [ctx.state, beneath] if beneath else [ctx.state]
 
     @staticmethod
     def lineage(state: AgentState) -> list[str]:
