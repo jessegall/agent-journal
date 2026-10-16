@@ -2834,3 +2834,36 @@ def test_a_message_that_comes_starts_the_counts_of_uses_and_namings_and_the_firs
     drain()
     with scope.of(1):
         assert standing()["owed"] == 7, "with two or more messages already owed, a read starts no new count: the oldest debt stands"
+
+
+def test_working_counts_its_edits_on_the_canvas_the_task_named_the_log_asked_for_and_the_write_held(app):
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    for key, value in (("tasks.log_after", 3), ("tasks.first_nudge_after", 1), ("tasks.name_every", 2), ("tasks.auto", False)):
+        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
+    hook(app, "SessionStart")
+    console, counts, scope = app.console(), app.container.get(Counts), app.container.get(Scope)
+    console.run(["environment", "here"], AGENT)
+    drain = lambda: app.runtime().deferred.drain()
+    edits = lambda: next((c.value for c in counts.where(session="s1", name="edits")), None)
+    write = lambda name: hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": name})
+    said = lambda body: json.dumps(body)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    drain()
+    with scope.of(1):
+        assert edits() == 0, "a task just started by this agent puts its edits at nought"
+    status, body = write("a.py")
+    assert status == 200 and "since you logged" not in said(body) and "in hand" not in said(body), "the first write: nothing to say yet"
+    status, body = write("b.py")
+    assert status == 200 and "1 edits since you logged task 1: say where it stands" in said(body), "the second write reads one edit before it: the log is asked for at the first threshold"
+    status, body = write("c.py")
+    assert status == 200 and "task 1 in hand, 2 edits" in said(body), "the third write reads two: every second edit names the task"
+    status, body = write("d.py")
+    assert status == 409 and "3 edits since you logged task 1" in body["error"], "the fourth reads three: the write is held until the log"
+    with scope.of(1):
+        assert edits() == 3, "a held write does not count"
+    console.run(["task", "log", "1", "halfway"], AGENT)
+    drain()
+    with scope.of(1):
+        assert edits() == 0, "a log line for the task in hand puts the edits at nought"
+    assert write("d.py")[0] == 200, "logged, the write goes on"

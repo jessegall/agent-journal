@@ -48,9 +48,11 @@ keeps your steps and the state's and loses the shared ones at the boot that move
 
 - **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks, the
   parked ask after a minute and the check-in after half an hour.
-- **Working**: the task in hand named back every so many edits, the log asked for and then held; carry on at a
-  stop and a start, with the log asked for when stale; the task still open after a quiet quarter hour.
-  Following a plan inherits it.
+- **Working**: the edits since the log counted on the canvas, started at nought when this agent starts a task and
+  when a log line comes for the task in hand; at a write the task is named every so many edits, the log asked for
+  at the first threshold and the write held when the log is overdue, a held write not counted; carry on at a stop
+  and a start, with the log asked for when stale; the task still open after a quiet quarter hour. Following a plan
+  inherits it.
 - **Following a plan**: the plan's state for the plan's whole life; at a stop or a start, a plan standing at a
   checkpoint waits for the user's look, or in auto mode holds the stop and carries on, and with a task in hand it
   carries on as Working does; what a wait or a sequence interrupts it comes back to it.

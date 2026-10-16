@@ -22,7 +22,7 @@ HEAD = -1000
 """Where a locked workflow is placed: before anything the user orders."""
 ALWAYS_PLACE = -500
 """Where an Always workflow is placed when drawn: after the locked ones, before the states' and the user's, until the user drags it."""
-EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "messages.updated", "workers.updated", "questions.updated")
+EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
 DRAWINGS_VERSION = 8
@@ -67,6 +67,8 @@ class ShippedChart(Seed):
             ("idle", "idle"): self.idle_at_stop,
             ("idle", "ticked"): self.idle_at_tick,
             ("working", "tool_starting"): self.working_at_tool,
+            ("working", "tasks.updated"): self.working_at_task_start,
+            ("working", "task_logs.created"): self.working_at_log,
             ("working", "idle"): self.working_carries_on,
             ("working", "session_started"): self.working_carries_on,
             ("following_plan", "idle"): self.following_at_stop,
@@ -373,14 +375,15 @@ class ShippedChart(Seed):
         return [(auto_tick, NO), (quiet_half_an_hour, NO), (check_in, THEN)]
 
     def working_at_tool(self, chart: Chart, ends: list) -> list:
-        """A task in hand at a tool use that writes: the task is named every so many edits, the log asked for at the first threshold and the write held when the log is overdue."""
+        """A task in hand at a tool use that writes: the edits since the log are read before this write counts; the write is held when the log is overdue and a held write does not count, the log asked for at the first threshold, the task named every so many edits."""
         writes = self.node(chart, NodeKind.CHECK, "tool_writes", x=160, y=92)
-        overdue = self.node(chart, NodeKind.CHECK, "edits_since_log_over", "tasks.log_after", x=160, y=184)
+        overdue = self.node(chart, NodeKind.CHECK, "count_over", "edits tasks.log_after", x=160, y=184)
         hold_log = self.node(chart, NodeKind.ACTION, "hold", LOG_OVERDUE, x=0, y=276)
-        first = self.node(chart, NodeKind.CHECK, "edits_since_log_at", "tasks.first_nudge_after", x=240, y=276)
+        first = self.node(chart, NodeKind.CHECK, "count_at", "edits tasks.first_nudge_after", x=240, y=276)
         say_soon = self.node(chart, NodeKind.ACTION, "say", LOG_SOON, x=160, y=368)
-        named = self.node(chart, NodeKind.CHECK, "edits_since_log_every", "tasks.name_every", x=320, y=368)
+        named = self.node(chart, NodeKind.CHECK, "count_every", "edits tasks.name_every", x=320, y=368)
         say_in_hand = self.node(chart, NodeKind.ACTION, "say", IN_HAND, x=320, y=460)
+        edit = self.node(chart, NodeKind.ACTION, "count_one", "edits", x=160, y=552)
         self.chain(ends, writes)
         self.line(writes, overdue, YES)
         self.line(overdue, hold_log, YES)
@@ -388,7 +391,24 @@ class ShippedChart(Seed):
         self.line(first, say_soon, YES)
         self.line(first, named, NO)
         self.line(named, say_in_hand, YES)
-        return [(writes, NO), (hold_log, THEN), (say_soon, THEN), (named, NO), (say_in_hand, THEN)]
+        self.chain([(say_soon, THEN), (named, NO), (say_in_hand, THEN)], edit)
+        return [(writes, NO), (hold_log, THEN), (edit, THEN)]
+
+    def working_at_task_start(self, chart: Chart, ends: list) -> list:
+        """A task this agent has just started: its edits since the log start at nought."""
+        started = self.node(chart, NodeKind.CHECK, "task_just_started", x=400, y=92)
+        edits = self.node(chart, NodeKind.ACTION, "count_start", "edits", x=400, y=184)
+        self.chain(ends, started)
+        self.line(started, edits, YES)
+        return [(started, NO), (edits, THEN)]
+
+    def working_at_log(self, chart: Chart, ends: list) -> list:
+        """A log line for the task in hand: its edits since the log start at nought again."""
+        mine = self.node(chart, NodeKind.CHECK, "log_for_task_in_hand", x=400, y=92)
+        edits = self.node(chart, NodeKind.ACTION, "count_start", "edits", x=400, y=184)
+        self.chain(ends, mine)
+        self.line(mine, edits, YES)
+        return [(mine, NO), (edits, THEN)]
 
     def working_carries_on(self, chart: Chart, ends: list) -> list:
         """A task in hand at a stop or a session start: carry on, with the log asked for when it is stale."""
