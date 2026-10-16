@@ -25,7 +25,7 @@ from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.entries import Entries
 
 STEPS = 50
-MOVERS = ("release", "move_to")
+MOVERS = ("release", "wait_outside", "mark_stuck", "go_idle")
 """The actions that move the agent: one of them per event, the first to act."""
 """A path is at most this long: a longer one is a loop the validation missed, and it stops here."""
 WALKED = "walk"

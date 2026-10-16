@@ -70,7 +70,9 @@ ACTIONS = (
     ("count_one", "Count one", "adds one to the agent's count named in the text", True),
     ("stop_here", "Stop here", "ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs", False),
     ("show_card", "Show a card in the chat", "a card in the chat with the message, so the user sees what the journal did", True),
-    ("move_to", "Change the agent's state", "moves the agent through the engine's machine: to idle from a state that owns nothing, or into expecting or stuck over what it is doing, with the words after the state's name as what it waits for; a state that owns a row is entered by what makes that row", True),
+    ("wait_outside", "Wait for something outside", "the agent waits for what the text names, laid over what it is doing until its own next tool use, a word from you or Send the agent back; one wait at a time", True),
+    ("mark_stuck", "Mark the agent stuck", "the agent is stuck for the reason in the text, over what it is doing, and the journal stays quiet until its own next tool use; one wait at a time", True),
+    ("go_idle", "Change state to Idle", "the agent is idle, from a state that owns nothing: a task in hand or a wait with its way back is not dropped", False),
     ("release", "Send the agent back to what it was doing", "an agent paused, on a worker, a question, something outside, being stuck or a sequence, goes back to the state the pause keeps, told with the message; an agent not paused is left as it is", True),
 )
 

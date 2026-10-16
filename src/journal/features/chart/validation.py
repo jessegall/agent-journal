@@ -2,7 +2,6 @@ import re
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.checks import COUNT_CHECKS
 from journal.features.chart.fault import Fault
-from journal.features.chart.moves import Moves
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
@@ -17,7 +16,7 @@ LOCK_RULE = "a locked step cannot be taken out, reworded or turned off, and no c
 """What a user can and cannot do around a locked node, said in every refusal."""
 """The actions that stop the agent until what their message names is done."""
 
-RELEASES = ("release", "move_to")
+RELEASES = ("release", "wait_outside", "mark_stuck", "go_idle")
 """The actions that take a waiting agent out of its wait."""
 
 
@@ -166,7 +165,7 @@ class Validation:
         return faults
 
     def action_faults(self, nodes: list[dict]) -> list[Fault]:
-        """A move names idle, or a wait a workflow may make, expecting or stuck, with the words it waits for after the name; a count node names its count, and a count check the number after it."""
+        """A wait names what for and being stuck why; a count node names its count, and a count check the number after it."""
         faults = []
         for n in (n for n in nodes if n.get("key") in ("count_start", "count_one", *COUNT_CHECKS)):
             words = n.get("text", "").split()
@@ -174,12 +173,8 @@ class Validation:
                 faults.append(Fault(f"node {n.get('id')} names no count: its text is the count's name", str(n.get("id", ""))))
             elif n.get("kind") == NodeKind.CHECK and len(words) < 2:
                 faults.append(Fault(f"node {n.get('id')} names no number: its text is the count's name, then N or a setting's name", str(n.get("id", ""))))
-        for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") == "move_to"):
-            name = n.get("text", "").strip().partition(" ")[0]
-            if not name or not self.states.known(name):
-                faults.append(Fault(f"node {n.get('id')} moves the agent to {name or 'nowhere'}: no state is called that", str(n.get("id", ""))))
-            elif name != "idle" and not Moves.words_field(self.states.named(name, {})):
-                faults.append(Fault(f"node {n.get('id')} moves the agent to {name}: {Moves.refusal(name)}", str(n.get("id", ""))))
+        for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") in ("wait_outside", "mark_stuck") and not n.get("text", "").strip()):
+            faults.append(Fault(f"node {n.get('id')} says nothing: {'what the agent waits for' if n.get('key') == 'wait_outside' else 'why the agent is stuck'} goes in its text", str(n.get("id", ""))))
         return faults
 
     @staticmethod

@@ -828,7 +828,7 @@ def test_a_workflow_moves_an_idle_agent_into_a_wait_with_its_words_and_a_release
     console.run(["environment", "here"], AGENT)
     idle, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
     node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(idle)], USER).out.split()[1].rstrip(":"))
-    move = node("action", "move_to", "--text", "expecting the deploy to finish")
+    move = node("action", "wait_outside", "--text", "the deploy to finish")
     console.run(["chart", "line", str(trigger), str(move)], USER)
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     machine = app.container.get(Machine)
@@ -2261,12 +2261,13 @@ def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(
     from journal.repositories.charts import Charts as ChartRows
     charts = app.container.get(ChartRows)
     node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
-    assert "moves the agent to working: a workflow moves the agent to idle, or into expecting or stuck" in node(charts.for_pair("idle", "idle").id, "action", "move_to", "--text", "working").err
-    assert "moves the agent to flying: no state is called that" in node(charts.for_pair("idle", "idle").id, "action", "move_to", "--text", "flying").err
+    assert "says nothing: what the agent waits for goes in its text" in node(charts.for_pair("idle", "idle").id, "action", "wait_outside").err
+    assert "says nothing: why the agent is stuck goes in its text" in node(charts.for_pair("idle", "idle").id, "action", "mark_stuck").err
+    assert "has no action named move_to" in node(charts.for_pair("idle", "idle").id, "action", "move_to", "--text", "working").err, "the older move is no node: the state changes are named by their outcome"
     moves = {}
     for state in ("working", "expecting"):
         chart, trigger = own_workflow(console, charts, state, "tool_finished")
-        moves[state] = int(node(chart, "action", "move_to", "--text", "idle").out.split()[1].rstrip(":"))
+        moves[state] = int(node(chart, "action", "go_idle").out.split()[1].rstrip(":"))
         console.run(["chart", "line", "--edit-default", str(trigger), str(moves[state])], USER)
     move = moves["working"]
     console.run(["task", "create", "the footer", "--start"], AGENT)
@@ -2652,8 +2653,8 @@ def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run
     assert status == 409 and "the first hold" in body["error"] and "the second hold" not in body["error"], "the first hold wins"
     assert entries.of_kind(WALKED, 3)[0].data["unanswered"] == [hold2], "the later hold is recorded as not answered"
     first, t1 = own_workflow(console, charts, "idle", "tool_finished")
-    away = add(first, "action", "move_to", "--text", "expecting the build")
-    stuck = add(first, "action", "move_to", "--text", "stuck for good")
+    away = add(first, "action", "wait_outside", "--text", "the build")
+    stuck = add(first, "action", "mark_stuck", "--text", "for good")
     link(t1, away)
     link(away, stuck)
     landed, t3 = own_workflow(console, charts, "expecting", "tool_finished")
@@ -3124,3 +3125,24 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     assert machine.current("s1").name == "running_sequence"
     send_back()
     assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from a sequence, to the task it keeps"
+
+
+def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at_boot_and_still_walks(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.features.chart.validation import Validation
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    console, charts, seed = app.console(), app.container.get(Charts), app.container.get(ShippedChart)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    mine, trigger = own_workflow(console, charts, "idle", "tool_finished")
+    old = charts.add_node(charts.find(mine), Node(kind=NodeKind.ACTION, key="move_to", text="expecting the deploy"), Actor.user(1))
+    charts.connect(charts.nodes.find(trigger), old, "then", Actor.user(1))
+    seed.run()
+    node = charts.nodes.find(old.id)
+    assert node.key == "wait_outside" and node.text == "the deploy" and "rewrote move_to" in charts.find(mine).title, "the older move is the outcome-named action now, its words kept"
+    assert app.container.get(Validation).faults(charts.find(mine), [{"id": n.id, "kind": n.kind, "key": n.key, "text": n.text} for n in charts.nodes_of(charts.find(mine))], [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in charts.lines_of(charts.find(mine))]) == [], "it still compiles"
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    state = app.container.get(Machine).current("s1")
+    assert state.name == "expecting" and state.what == "the deploy", "and it still walks"

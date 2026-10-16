@@ -36,6 +36,8 @@ DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
 RETIRED_STATES = {"orienting": "its state is the look owed now", "at_mark": "its state is the mark owed now", "loading_skill": "its state is the skill owed now"}
 """The pause states that became facts: a user's workflow bound to one is kept, turned off, its title saying what became of its state."""
+RETIRED_MOVES = {"idle": ("go_idle", ""), "expecting": ("wait_outside", ""), "stuck": ("mark_stuck", "")}
+"""The one move node of the older shape, Change the agent's state, by the state it named: each is an outcome-named action now, the words after the name kept as its text."""
 RETIRED_CHECKS = {"tool_uses_since_unread_every": ("count_every", "uses"), "tool_uses_since_unread_over": ("count_over", "uses"), "tool_uses_since_read_over": ("count_over", "owed"), "unread_reminders_over": ("count_over", "namings"), "edits_since_log_over": ("count_over", "edits"), "edits_since_log_every": ("count_every", "edits"), "edits_since_log_at": ("count_at", "edits")}
 """The counter checks that read the engine's hidden counts, each now a count check on the count the workflows keep: a user's workflow naming one is rewritten at boot."""
 """The shipped drawings taken out of a journal on purpose, by name, so a boot does not draw them again; Reset by their state and event brings one back."""
@@ -235,13 +237,18 @@ class ShippedChart(Seed):
         self.charts.save(chart.with_(shipped=False, state="", event="", title=chart.title + KEPT), by)
 
     def rewrite_retired_checks(self, by: Actor) -> None:
-        """A user's workflow naming a counter check that read a hidden count is rewritten to the count check on the count the workflows keep, its number kept, and its title says what was rewritten."""
+        """A user's workflow naming a counter check that read a hidden count is rewritten to the count check on the count the workflows keep, its number kept, and one naming the older move is rewritten to the outcome-named action; its title says what was rewritten."""
         for chart in [c for c in self.charts.all() if not c.shipped]:
             rewritten = []
             for node in [n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.CHECK and n.key in RETIRED_CHECKS]:
                 key, name = RETIRED_CHECKS[node.key]
                 self.charts.nodes.save(node.with_(key=key, text=f"{name} {node.text}".strip()), by)
                 rewritten.append(node.key)
+            for node in [n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.ACTION and n.key == "move_to"]:
+                state, _, words = node.text.strip().partition(" ")
+                key, _ = RETIRED_MOVES.get(state, ("go_idle", ""))
+                self.charts.nodes.save(node.with_(key=key, text=words.strip() if key != "go_idle" else ""), by)
+                rewritten.append("move_to")
             if rewritten:
                 self.charts.save(chart.with_(title=f"{chart.title} (upgrade rewrote {', '.join(rewritten)} to count checks)"), by)
                 self.charts.revised(chart, by)

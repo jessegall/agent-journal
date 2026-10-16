@@ -5,6 +5,8 @@ from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
+from journal.features.tasks.states.expecting import Expecting
+from journal.features.tasks.states.stuck import Stuck
 from journal.engine.nudger import Nudger
 from journal.features.chart.context import Context
 from journal.events.agent.prompt_submitted import PromptSubmitted
@@ -14,7 +16,6 @@ from journal.features.skills.requiring import Requiring
 from journal.models.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts
-from journal.features.chart.moves import Moves
 from journal.features.registry import Registry
 from journal.features.said import Said
 from journal.features.sequences.running import Running
@@ -169,22 +170,27 @@ class Actions:
         """The agent's state with the wait taken out of it: the wait goes back to what it was doing."""
         return wait.back().to
 
-    def move_to(self, text: str, ctx: Context) -> Decision:
-        """The agent moved to the state named, through the machine. Idle, from a state that owns nothing; or a wait on something outside, expecting or stuck, laid over what the agent is doing with the words after the state's name as what it waits for. A state that owns a row, a task, a question, a worker, a sequence, is entered by what makes that row, and the walk records why a move there was refused."""
+    def wait_outside(self, text: str, ctx: Context) -> Decision:
+        """The agent waits for what the text names, the wait laid over what it is doing."""
+        return self.pause(ctx, Expecting, what=text.strip())
+
+    def mark_stuck(self, text: str, ctx: Context) -> Decision:
+        """The agent is stuck for the reason in the text, the pause laid over what it is doing."""
+        return self.pause(ctx, Stuck, why=text.strip())
+
+    def pause(self, ctx: Context, kind, **words) -> Decision:
         if not ctx.session or not ctx.state:
             return Decision()
-        name, _, words = text.strip().partition(" ")
-        target = self.machine.states.named(name, {})
-        if target.name != name:
-            raise Refused(f"no state is called {name}")
-        field = Moves.words_field(target)
-        if field:
-            if isinstance(ctx.state, Paused):
-                raise Refused(f"the agent is {ctx.state.name} already: one wait at a time, and a release ends it")
-            self.machine.move(ctx.session, ctx.environment_id, type(target).leaving(ctx.state, **{field: words.strip()}))
+        if isinstance(ctx.state, Paused):
+            raise Refused(f"the agent is {ctx.state.name} already: one wait at a time, and Send the agent back ends it")
+        self.machine.move(ctx.session, ctx.environment_id, kind.leaving(ctx.state, **words))
+        return Decision()
+
+    def go_idle(self, text: str, ctx: Context) -> Decision:
+        """The agent is idle, from a state that owns nothing."""
+        if not ctx.session or not ctx.state:
             return Decision()
-        if name != "idle":
-            raise Refused(Moves.refusal(name))
+        target = self.machine.states.named("idle", {})
         self.leaving(ctx.state, target)
         if ctx.state.name != target.name:
             self.machine.move(ctx.session, ctx.environment_id, target)
@@ -192,9 +198,9 @@ class Actions:
 
     @staticmethod
     def leaving(state: AgentState, target: AgentState) -> None:
-        """What a move may leave behind: nothing. A task in hand, a wait with its way back, or a step owed to the journal is not dropped by a workflow."""
+        """What a change to idle may leave behind: nothing. A task in hand or a wait with its way back is not dropped by a workflow."""
         if isinstance(state, Paused):
-            raise Refused(f"the agent is {state.name} and would lose its way back: a release returns it, a move to {target.name} would not")
+            raise Refused(f"the agent is {state.name} and would lose its way back: Send the agent back returns it, a change to {target.name} would not")
         if state.to_data():
             raise Refused(f"the agent is {state.name} with {', '.join(f'{k} {v}' for k, v in state.to_data().items() if v)}: a move to {target.name} would leave that with nobody on it")
 

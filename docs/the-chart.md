@@ -19,12 +19,14 @@ before the states they go back to, so a tool use that lifts a wait is walked as 
 workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
-A workflow may move the agent, through the engine's machine: Send the agent back to what it was doing sends an agent in any pause back to what it was
-doing; a move to idle is allowed from a state that owns nothing; and a move into expecting or stuck lays that wait
-over what the agent is doing, with the words after the state's name as what it waits for, so a workflow can make
-the agent wait on something outside. A state that owns a row, working, following a plan, waiting on a question,
-awaiting a worker, running a sequence, is entered by what makes that row, and a move there is refused with the
-reason, before the save and on the walk.
+A workflow may change the agent's state, through the engine's machine, by what the change comes to: Send the
+agent back to what it was doing sends an agent in any pause back to what it was doing; Change state to Idle is
+allowed from a state that owns nothing; Wait for something outside lays that wait over what the agent is doing,
+with what it waits for in the text, and Mark the agent stuck lays being stuck over it, with why in the text, so a
+workflow can make the agent wait on something outside; a wait or a stuck with no words is refused at the save. A
+state that owns a row, working, following a plan, waiting on a question, awaiting a worker, running a sequence,
+is entered by what makes that row, and no node enters it. A workflow of the older shape that named a state to move
+to is rewritten at boot to the action its outcome names.
 
 A trial, `journal chart try <event>`, walks the workflows dry and says the path and what it would do, nothing done; it
 walks as the live agent, or as the state given with `--state`, with the agent's own data when it is in that state, and as
