@@ -3,7 +3,7 @@ import {ui} from "../state/ui.js";
 import {route} from "../route.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
-import {computed, nextTick, onBeforeUnmount, onBeforeUpdate, onMounted, onUnmounted, onUpdated, reactive, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 
@@ -58,21 +58,28 @@ watch(
 );
 const area = ref(null);
 
-// text put into the box without an input event, as dictation through the accessibility API does, is in the box and not in the
-// draft; before any redraw, which would write the draft back over it, and before a send, the box is read as the truth. What the
-// draft itself last showed in the box is remembered, so a preset, a quote or a clearing set in code is not undone by this reading.
+// words put in without an input event, as dictation does, are in the box and not in the draft; the box sits in the waiting edge's slot,
+// which redraws it on its own, so its own directive takes a box changed since it last showed the draft, and else shows the draft
 let shown = "";
 function takeFromBox() {
-    if (area.value && area.value.value !== shown) draft.text = area.value.value;
+    if (area.value && area.value.value !== shown) shown = draft.text = area.value.value;
 }
+
+const vDraft = {
+    created(el, {value}) {
+        el.value = shown = value;
+    },
+    beforeUpdate(el, {value}) {
+        if (el.value !== shown) takeFromBox();
+        else if (el.value !== value) el.value = shown = value;
+    },
+};
 
 // typing is the draft taking the box's words, so what the box shows is known at once, before any redraw
 function typed(event) {
     draft.text = event.target.value;
     shown = draft.text;
 }
-onBeforeUpdate(takeFromBox);
-onUpdated(() => (shown = area.value ? area.value.value : ""));
 const kept = ref(0);
 const resting = computed(() => Boolean(props.idle) && !draft.text.trim() && !draft.files.length);
 const ready = computed(() => Boolean(draft.text.trim()));
@@ -87,7 +94,6 @@ function measure() {
 }
 
 onMounted(() => nextTick(measure));
-onMounted(() => (shown = area.value ? area.value.value : ""));
 // words put in without an input event, by dictation, are read from the box at every moment they could be lost or needed: coming back
 // to the window, before the box is taken off the page, and before the send button decides whether there is anything to send
 // dictation pastes into the focused field only, and coming back to the window leaves nothing focused: the box takes the focus back
@@ -296,7 +302,7 @@ async function use(tool) {
                 </template>
                 <textarea
                     ref="area"
-                    :value="draft.text"
+                    v-draft="draft.text"
                     @input="typed"
                     @focus="takeFromBox"
                     @keyup="takeFromBox"
