@@ -6,6 +6,8 @@ from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 
 TITLE = "Agent stops"
+OLD_TITLE = "The journal's conduct"
+"""The shipped workflow's name before it was named after its event; a journal still carrying it is renamed at boot."""
 PARKED = "parked tasks, still open: {{parked_tasks}}. journal task resume <n> picks one up; leave them parked only on purpose"
 NEXT = "tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck"
 
@@ -19,6 +21,8 @@ class ShippedChart(Seed):
     def run(self) -> None:
         charts = self.charts.all()
         chart = charts[0] if charts else self.charts.save(Chart(title=TITLE), Actor.system())
+        if chart.title == OLD_TITLE:
+            chart = self.charts.save(chart.with_(title=TITLE), Actor.system())
         if self.charts.nodes_of(chart):
             return
         self.draw(chart)
