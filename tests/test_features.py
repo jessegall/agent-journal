@@ -36,7 +36,7 @@ def app(tmp_path: Path, monkeypatch):
 
 def hook(app, kind: str, **body):
     data = json.dumps({"hook_event_name": kind, "session_id": "s1", **body}).encode()
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"})
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
     try:
         with urlopen(request, timeout=5) as reply:
             return reply.status, json.loads(reply.read())
@@ -524,7 +524,7 @@ def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_
     assert sent[-1]["line"].startswith("[journal] introduce yourself to the user in the chat") and sent[-1]["after"] == 4.0
     count = len(sent)
     data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s2", "source": "resume"}).encode()
-    urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+    urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     app.runtime().deferred.drain()
     assert not any("introduce yourself" in s["line"] for s in sent[count:])
 
@@ -552,7 +552,7 @@ def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_wai
     app.console().run(["message", "send", "hello"], USER)
     app.console().run(["task", "create", "t"], USER)
     data = json.dumps({"hook_event_name": "SessionStart", "session_id": "earlier"}).encode()
-    urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+    urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     told = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
     assert "handle the journal quietly" in told and "laws L1 to L9" in told and "another agent worked this environment until" in told
     assert "waiting for you here: 1 tasks, 1 messages" in told
@@ -701,8 +701,8 @@ def test_reading_a_message_names_its_files_links_and_captions(app):
     console.run(["message", "send", "see the picture"], USER)
     boundary = "b1"
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"shot one.png\"\r\nContent-Type: image/png\r\n\r\nPNG\r\n--{boundary}--\r\n").encode()
-    u(R(f"http://127.0.0.1:{app.server().port}/api/main/message/1/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}), timeout=5).read()
-    with u(f"http://127.0.0.1:{app.server().port}/api/main/message/1/files/shot%20one.png", timeout=5) as reply:
+    u(R(f"http://127.0.0.1:{app.server().port}/api/message/1/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"}), timeout=5).read()
+    with u(f"http://127.0.0.1:{app.server().port}/api/message/1/files/shot%20one.png?env=main", timeout=5) as reply:
         assert reply.read() == b"PNG", "a file name with a space is found"
     shown = console.run(["message", "read", "1"], AGENT).out
     assert "file " in shown and "shot one.png" in shown and "journal message tag 1" in shown
@@ -765,11 +765,11 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
-    bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"]
+    bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/bar?env=main", timeout=5))["queue"]
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
     console.run(["shell", "ran", "git commit -m done", "--chain", "c1", "--status", "0", "--seconds", "2", "--output", "[main 1a2b3c4] done"], AGENT)
-    assert json.load(urlopen(f"http://127.0.0.1:{port}/api/main/bar", timeout=5))["queue"][-1]["done"] is True
-    line = json.load(urlopen(f"http://127.0.0.1:{port}/api/main/agent/1/terminal", timeout=5))["lines"][-1]
+    assert json.load(urlopen(f"http://127.0.0.1:{port}/api/bar?env=main", timeout=5))["queue"][-1]["done"] is True
+    line = json.load(urlopen(f"http://127.0.0.1:{port}/api/agent/1/terminal?env=main", timeout=5))["lines"][-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
     moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
     assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
@@ -796,13 +796,13 @@ def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking
     console.run(["message", "read", "1"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.runtime().deferred.drain()
-    agent = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent", timeout=5))["rows"][-1]["data"]
+    agent = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", timeout=5))["rows"][-1]["data"]
     assert agent["thinking"] == "Now the next step."
     reply = app.container.get(Messages).all()[-1]
     assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered(1) == []
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
-    assert json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent", timeout=5))["rows"][-1]["data"]["thinking"] == ""
+    assert json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", timeout=5))["rows"][-1]["data"]["thinking"] == ""
     assert "no journal is running" in console.run(["setup", "restart"], USER).out
 
 
@@ -840,7 +840,7 @@ def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
     from urllib.request import urlopen
     hook(app, "SessionStart")
     app.console().run(["shell", "ran", "sed -i '' s/a/b/ notes.md", "--chain", "c2", "--status", "0", "--changed", "3\t1\tnotes.md\n0\t0\tsame.md"], AGENT)
-    edits = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/main/agent/1/edits", timeout=5))["edits"]
+    edits = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/agent/1/edits?env=main", timeout=5))["edits"]
     assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 1), ("same.md", 0, 0)] and edits[0]["command"].startswith("sed")
 
 
@@ -1581,7 +1581,7 @@ def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it
     app.console().run(["environment", "here"], AGENT)
     hook(app, "Stop")
     data = json.dumps({"brief": "are you there?", "idempotency": "v1"}).encode()
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/main/message", data=data, method="POST", headers={"Content-Type": "application/json"})
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/message", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
         n = json.loads(reply.read())["n"]
     assert any(line == f"[journal] new message {n}" for line in typed), "named by number the moment it arrives, so it is not left for the next hook"
@@ -1923,7 +1923,7 @@ def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     console.run(["plan", "add", "1", "its own"], USER)
     console.run(["plan", "cancel", "1"], USER)
     for kind in ("plan", "todo"):
-        with urlopen(f"http://127.0.0.1:{app.server().port}/api/main/{kind}?last=50", timeout=5) as reply:
+        with urlopen(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main", timeout=5) as reply:
             assert reply.status == 200, f"a cancelled {kind} is shaped for the page"
             assert "abandoned" in j.dumps(j.loads(reply.read()))
 

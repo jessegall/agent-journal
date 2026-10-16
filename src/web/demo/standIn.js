@@ -184,16 +184,16 @@ export class StandIn {
 
     read(parts, query) {
         const [first, second, third] = parts;
-        if (parts.length === 1) return this.top(first);
-        if (second === "events")
+        if (parts.length === 1 && !this.manifest.types[first]) return this.top(first);
+        if (first === "events")
             return this.state.events.filter((e) => e.id > Number(query.get("since") || 0)).slice(-Number(query.get("last") || 100));
-        if (second === "settings") return this.state.settings;
-        if (second === "bar") return this.moment.bar;
-        if (second === "family") return this.moment.family;
-        if (second === "agent" && parts[3] === "edits") return this.edits(third, parts[4], query);
-        if (!this.manifest.types[second]) return undefined;
-        if (!third) return this.list(second, query);
-        const row = this.held(second).find((r) => r.n === Number(third));
+        if (first === "settings") return this.state.settings;
+        if (first === "bar") return this.moment.bar;
+        if (first === "family") return this.moment.family;
+        if (first === "agent" && third === "edits") return this.edits(second, parts[3], query);
+        if (!this.manifest.types[first]) return undefined;
+        if (!second) return this.list(first, query);
+        const row = this.held(first).find((r) => r.n === Number(second));
         return row && stripped(row);
     }
 
@@ -207,15 +207,15 @@ export class StandIn {
     }
 
     write(parts, body) {
-        const [, second, third, fourth] = parts;
-        if (second === "settings") return this.change(() => this.saved(body));
-        if (second === "mode")
+        const [first, second, third] = parts;
+        if (first === "settings") return this.change(() => this.saved(body));
+        if (first === "mode")
             return this.change(() => (this.state.settings.work_modes = {...this.state.settings.work_modes, mode: body.mode}));
-        if (parts.length === 1 || !this.manifest.types[second]) return undefined;
-        if (!third) return this.create(second, body);
-        if (third === "linked_to") return [];
-        const row = this.held(second).find((r) => r.n === Number(third));
-        return row && fourth ? this.act(row, fourth, body) : undefined;
+        if (!this.manifest.types[first]) return undefined;
+        if (!second) return this.create(first, body);
+        if (second === "linked_to") return [];
+        const row = this.held(first).find((r) => r.n === Number(second));
+        return row && third ? this.act(row, third, body) : undefined;
     }
 
     saved(body) {

@@ -398,7 +398,7 @@ class V3Controller:
 
     def environment_of(self, request: Request) -> Environment:
         """The environment the request names; a read never makes one, so a stray address is answered not found."""
-        return self.environments.existing(request.params.get("env") or request.environment)
+        return self.environments.existing(request.environment)
 
     def first_environment(self) -> Environment:
         return (self.environments.all() or [self.environments.named("main")])[0]

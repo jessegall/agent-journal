@@ -13,7 +13,7 @@ describe("a file the agent names", () => {
     test("shows the picture of an attachment named on a line of its own", () => {
         const html = render("Here is the screen:\nmessage 17785 IMG_1201.png\nIt is cut off.", context);
         expect(html).toContain('<img class="file-card-image" src="');
-        expect(html).toContain("/main/message/17785/files/IMG_1201.png");
+        expect(html).toContain("/api/message/17785/files/IMG_1201.png?env=main");
         expect(html).toContain("Here is the screen:");
     });
 

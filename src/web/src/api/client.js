@@ -13,6 +13,8 @@ function query(fields) {
 
 const NO_ENV = "the page does not know its environment yet";
 
+export const ENV_HEADER = "X-Journal-Env";
+
 // What a board asks for beyond its first page: one lane, the cursor its last page ended at, how many, the words to match, one card by number.
 const pagedBody = ({lane, after, size, query, only} = {}) => ({
     ...(lane ? {lane} : {}),
@@ -45,16 +47,25 @@ export class ApiClient {
         return `${this.base}/api${path}`;
     }
 
+    headers() {
+        return this.env() ? {[ENV_HEADER]: this.env()} : {};
+    }
+
     get(path) {
-        return path === NO_ENV ? Promise.reject(new Error(NO_ENV)) : transport.request("GET", this.url(path));
+        return path === NO_ENV ? Promise.reject(new Error(NO_ENV)) : transport.request("GET", this.url(path), undefined, 0, this.headers());
     }
 
     post(path, body = {}, wait = 0) {
-        return path === NO_ENV ? Promise.reject(new Error(NO_ENV)) : transport.request("POST", this.url(path), body, wait);
+        return path === NO_ENV ? Promise.reject(new Error(NO_ENV)) : transport.request("POST", this.url(path), body, wait, this.headers());
     }
 
     here(path) {
-        return this.env() ? `/${this.env()}${path}` : NO_ENV;
+        return this.env() ? path : NO_ENV;
+    }
+
+    // an address the browser opens itself, a link, a picture or a stream, cannot carry a header, so it names the environment in its query
+    address(path) {
+        return this.url(`${this.here(path)}${path.includes("?") ? "&" : "?"}env=${encoded(this.env())}`);
     }
 
     newFeatures() {
@@ -759,11 +770,11 @@ export class ApiClient {
     }
 
     markdownUrl(type, n) {
-        return this.url(this.here(`/${type}/${n}/markdown`));
+        return this.address(`/${type}/${n}/markdown`);
     }
 
     fileUrl(type, n, name) {
-        return this.url(this.here(`/${type}/${n}/files/${encoded(name)}`));
+        return this.address(`/${type}/${n}/files/${encoded(name)}`);
     }
 
     events(since = 0) {
@@ -973,7 +984,7 @@ export class ApiClient {
     }
 
     editedImageUrl(agent, id) {
-        return this.url(this.here(`/agent/${agent}/edits/image${query({id})}`));
+        return this.address(`/agent/${agent}/edits/image${query({id})}`);
     }
 
     terminal(agent, level, after = 0) {
@@ -981,7 +992,7 @@ export class ApiClient {
     }
 
     stream() {
-        return new EventSource(this.url(this.here("/stream")));
+        return new EventSource(this.address("/stream"));
     }
 
     page(env, page = "") {

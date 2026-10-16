@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field, replace
 
 from journal.models.actor import Actor
+from journal.refused import Refused
+
+ENV_HEADER = "X-Journal-Env"
 
 
 @dataclass(frozen=True)
@@ -21,4 +24,8 @@ class Request:
 
     @property
     def environment(self) -> str:
-        return self.headers.get("x-journal-env", "main")
+        """The environment the header names; an address the browser opens itself, a picture or a stream, names it as ?env= since it cannot carry a header."""
+        named = self.headers.get(ENV_HEADER.lower()) or self.query.get("env")
+        if not named:
+            raise Refused(f"no environment: send it in the {ENV_HEADER} header")
+        return named

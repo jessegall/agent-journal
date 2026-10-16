@@ -110,18 +110,18 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
     app.runtime().start()
     server = app.server()
     try:
-        status, message = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k1"})
+        status, message = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k1"})
         assert status in (200, 201)
         n = message.get("n") or message.get("row", {}).get("n") or 1
-        call(server, "POST", f"/api/main/message/{n}/react", {"face": "👍"})
-        listed = json.dumps(call(server, "GET", "/api/main/reaction")[1], ensure_ascii=False)
+        call(server, "POST", f"/api/message/{n}/react", {"face": "👍"})
+        listed = json.dumps(call(server, "GET", "/api/reaction")[1], ensure_ascii=False)
         assert '"face": "👍"' in listed and f'"message:{n}"' in listed
-        call(server, "POST", f"/api/main/message/{n}/react", {"face": "👍"})
-        assert "\"face\"" not in json.dumps(call(server, "GET", "/api/main/reaction")[1], ensure_ascii=False), "the same face again takes it off"
+        call(server, "POST", f"/api/message/{n}/react", {"face": "👍"})
+        assert "\"face\"" not in json.dumps(call(server, "GET", "/api/reaction")[1], ensure_ascii=False), "the same face again takes it off"
         hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
         for kind, extra in (("SessionStart", {}), ("PreToolUse", {"tool_name": "Agent", "tool_input": {"description": "review the login", "prompt": "read the login flow and report", "subagent_type": "reviewer", "model": "sonnet"}}), ("PostToolUse", {"tool_name": "Agent", "tool_input": {}, "tool_response": "fine"})):
             urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
-        agents = json.dumps(call(server, "GET", "/api/main/agent")[1])
+        agents = json.dumps(call(server, "GET", "/api/agent")[1])
         assert '"task": "review the login"' in agents and '"type": "reviewer"' in agents and '"status": "done"' in agents
     finally:
         app.runtime().stop()
@@ -131,7 +131,7 @@ def test_request_threads_leave_no_connection_behind(server):
     from journal.db.connection import Connection
     database = server.database
     for _ in range(40):
-        call(server, "GET", "/api/main/todo")
+        call(server, "GET", "/api/todo")
     assert len(database._open) <= 3, f"{len(database._open)} connections open after 40 requests: threads must return theirs to the pool"
 
 
@@ -142,20 +142,31 @@ def test_each_type_is_read_alone_above_the_last_number_seen(server):
         call(server, "POST", f"/journal/tasks/{n}/start")
         call(server, "POST", f"/journal/tasks/{n}/finish", {"how": "done"})
     for n in range(3):
-        call(server, "POST", "/api/main/message", {"brief": f"hello {n}", "idempotency": f"k{n}"})
-    todos = call(server, "GET", "/api/main/todo?from=1&last=2&completed=1")[1]
+        call(server, "POST", "/api/message", {"brief": f"hello {n}", "idempotency": f"k{n}"})
+    todos = call(server, "GET", "/api/todo?from=1&last=2&completed=1")[1]
     assert [r["n"] for r in todos["rows"]] == [3, 4] and todos["more"] is True
     assert todos["counts"] == {"all": 4, "open": 0, "unread": 0}
-    messages = call(server, "GET", "/api/main/message?from=1&last=5")[1]
+    messages = call(server, "GET", "/api/message?from=1&last=5")[1]
     assert [r["n"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
-    assert call(server, "GET", "/api/main/message?from=3&last=5")[1]["rows"] == [], "a poll from the last number seen carries nothing when nothing is new"
+    assert call(server, "GET", "/api/message?from=3&last=5")[1]["rows"] == [], "a poll from the last number seen carries nothing when nothing is new"
     call(server, "POST", "/journal/facts", {"text": "the sky is blue"})
     with server.database.transaction():
         server.database.execute("UPDATE facts SET keywords = '{broken' WHERE id = 1")
-    status, body = call(server, "GET", "/api/main/fact")
+    status, body = call(server, "GET", "/api/fact")
     assert status == 500 and "error" in body, "a type whose rows will not load fails alone, with the fault named"
-    assert call(server, "GET", "/api/main/todo?from=3&completed=1")[1]["rows"][0]["n"] == 4, "a fact that will not load leaves the tasks answering"
-    assert call(server, "GET", "/api/main/dashboard")[0] == 404, "the one call for every type is gone"
+    assert call(server, "GET", "/api/todo?from=3&completed=1")[1]["rows"][0]["n"] == 4, "a fact that will not load leaves the tasks answering"
+    assert call(server, "GET", "/api/dashboard")[0] == 404, "the one call for every type is gone"
+
+
+def test_the_environment_header_scopes_each_read_and_a_request_without_it_is_refused(server):
+    call(server, "POST", "/journal/environments", {"name": "other"})
+    call(server, "POST", "/api/todo", {"title": "main's own"})
+    call(server, "POST", "/api/todo", {"title": "other's own"}, env="other")
+    assert [r["title"] for r in call(server, "GET", "/api/todo")[1]["rows"]] == ["main's own"]
+    assert [r["title"] for r in call(server, "GET", "/api/todo", env="other")[1]["rows"]] == ["other's own"]
+    with pytest.raises(HTTPError) as refused:
+        urlopen(f"http://127.0.0.1:{server.port}/api/todo", timeout=5)
+    assert refused.value.code == 409 and "X-Journal-Env" in json.loads(refused.value.read())["error"]
 
 
 def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
@@ -168,33 +179,33 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
     app.runtime().start()
     server = app.server()
     try:
-        status, tree = call(server, "POST", "/api/main/settings", {"features": {"thinking": False}})
+        status, tree = call(server, "POST", "/api/settings", {"features": {"thinking": False}})
         assert status == 200 and tree["features"]["thinking"] is False and len(tree["features"]) > 10
-        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k1"})[1]["n"]
-        call(server, "POST", f"/api/main/message/{n}/read", {})
-        row = call(server, "GET", f"/api/main/message/{n}")[1]
+        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k1"})[1]["n"]
+        call(server, "POST", f"/api/message/{n}/read", {})
+        row = call(server, "GET", f"/api/message/{n}")[1]
         assert row["seen"] == ["user", "agent"] and row["completed"] == 0 and row["data"]["delivered"] is True, "read, delivered, not closed"
-        call(server, "POST", f"/api/main/message/{n}/react", {"face": "👍"})
+        call(server, "POST", f"/api/message/{n}/react", {"face": "👍"})
         app.console().run(["message", "react", str(n), "🎉"], Where("main", "s1"))
-        assert call(server, "GET", f"/api/main/message/{n}")[1]["completed"] > 0, "a face from the agent answers it"
+        assert call(server, "GET", f"/api/message/{n}")[1]["completed"] > 0, "a face from the agent answers it"
         app.console().run(["plan", "create", "p"], Where("main"))
         app.console().run(["plan", "approve", "1"], Where("main"))
         app.console().run(["plan", "start", "1"], Where("main", "s1"))
-        assert call(server, "GET", "/api/main/plan/1")[1]["data"]["status"] == "active"
+        assert call(server, "GET", "/api/plan/1")[1]["data"]["status"] == "active"
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
         app.console().run(["check", "run", "1"], Where("main"))
-        check = call(server, "GET", "/api/main/check/1")[1]
+        check = call(server, "GET", "/api/check/1")[1]
         assert check["data"]["last"]["ok"] is True and "runs" in check["data"]
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
-        assert [s["title"] for s in call(server, "GET", f"/api/main/sequence/{release}")[1]["sections"]] == ["tag", "push"]
+        assert [s["title"] for s in call(server, "GET", f"/api/sequence/{release}")[1]["sections"]] == ["tag", "push"]
         counts = call(server, "GET", "/api/summary")[1]["environments"][0]["counts"]
         assert {"messages", "suggestions", "todos", "questions"} <= set(counts)
         (tmp_path / "hello.py").write_text("print('hi')\n")
-        assert call(server, "GET", "/api/main/file?path=hello.py")[1]["lines"] == 1
-        assert "diff" in call(server, "GET", "/api/main/diff?path=hello.py")[1]
-        assert call(server, "GET", "/api/main/project-files/find?q=hello")[1][0]["name"] == "hello.py"
-        assert call(server, "POST", "/api/main/agent/s1/pause", {})[0] == 409, "an act by session is refused, not a server error"
-        listed = call(server, "GET", f"/api/main/message?n={n}")[1]["rows"]
+        assert call(server, "GET", "/api/file?path=hello.py")[1]["lines"] == 1
+        assert "diff" in call(server, "GET", "/api/diff?path=hello.py")[1]
+        assert call(server, "GET", "/api/project-files/find?q=hello")[1][0]["name"] == "hello.py"
+        assert call(server, "POST", "/api/agent/s1/pause", {})[0] == 409, "an act by session is refused, not a server error"
+        listed = call(server, "GET", f"/api/message?n={n}")[1]["rows"]
         assert [r["n"] for r in listed] == [n]
     finally:
         app.runtime().stop()
@@ -212,10 +223,10 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
         data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode()
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         app.console().run(["task", "create", "the footer", "--start"], Where("main", "s1"))
-        work = call(server, "GET", "/api/main/work")[1]["rows"][0]
+        work = call(server, "GET", "/api/work")[1]["rows"][0]
         assert work["title"] == "the footer" and work["data"]["awaiting"] == "" and work["data"]["todo"] == 1
         app.console().run(["stuck", "stuck on the login"], Where("main", "s1"))
-        work = call(server, "GET", "/api/main/work")[1]["rows"][0]
+        work = call(server, "GET", "/api/work")[1]["rows"][0]
         assert work["data"]["awaiting"] == "stuck on the login" and work["data"]["awaiting_since"] > 0
         assert call(server, "GET", "/api/summary")[1]["environments"][0]["work"]["awaiting"] == "stuck on the login"
     finally:
@@ -238,28 +249,28 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         return urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
     try:
         hook("SessionStart")
-        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "k"})[1]["n"]
+        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k"})[1]["n"]
         app.console().run(["message", "read", str(n)], Where("main", "s1"))
         app.console().run(["task", "create", "t", "--start"], Where("main", "s1"))
         app.console().run(["task", "done", "1", "--how", "shipped"], Where("main", "s1"))
-        events = call(server, "GET", "/api/main/events?last=50")[1]
+        events = call(server, "GET", "/api/events?last=50")[1]
         assert any(e["type"] == "message" and e["action"] == "updated" and e["data"]["by"] == "read" for e in events)
         assert any(e["type"] == "todo" and e["action"] == "completed" for e in events)
         assert any(e["type"] == "agent" and e["data"]["hook"] == "SessionStart" for e in events)
         hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(tmp_path / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
-        edit = call(server, "GET", "/api/main/agent/1/edits")[1]["edits"][0]
+        edit = call(server, "GET", "/api/agent/1/edits")[1]["edits"][0]
         assert [r["kind"] for r in edit["rows"]] == ["ctx", "del", "add", "ctx"] and edit["first_line"] == 7 and edit["last_line"] == 9
         call(server, "POST", "/cli", {"argv": ["shell", "ran", "journal task list", "--chain", "c1", "--status", "0", "--output", "1 t"], "env": "main", "session": "s1", "agent": True})
-        assert call(server, "GET", "/api/main/agent/1/terminal")[1]["lines"][-1]["tool"] == "Journal"
-        assert call(server, "POST", "/api/main/agent/s1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
-        doc = call(server, "POST", "/api/main/doc", {"title": "Design", "brief": "Intro\n\n## Goals\n\nShip it"})[1]
+        assert call(server, "GET", "/api/agent/1/terminal")[1]["lines"][-1]["tool"] == "Journal"
+        assert call(server, "POST", "/api/agent/s1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
+        doc = call(server, "POST", "/api/doc", {"title": "Design", "brief": "Intro\n\n## Goals\n\nShip it"})[1]
         assert [s["title"] for s in doc["sections"]] == ["Goals"]
-        doc = call(server, "POST", f"/api/main/doc/{doc['n']}/section", {"title": "Risks", "body": "None"})[1]
+        doc = call(server, "POST", f"/api/doc/{doc['n']}/section", {"title": "Risks", "body": "None"})[1]
         assert [s["title"] for s in doc["sections"]] == ["Goals", "Risks"]
-        assert call(server, "POST", f"/api/main/doc/{doc['n']}/update", {"title": "Design v2", "brief": doc["brief"]})[1]["title"] == "Design v2"
+        assert call(server, "POST", f"/api/doc/{doc['n']}/update", {"title": "Design v2", "brief": doc["brief"]})[1]["title"] == "Design v2"
         app.console().run(["task", "create", "later", "--start"], Where("main", "s1"))
         app.console().run(["task", "park", "2", "waiting"], Where("main", "s1"))
-        assert call(server, "GET", "/api/main/todo/2")[1]["data"]["status"] == "parked"
+        assert call(server, "GET", "/api/todo/2")[1]["data"]["status"] == "parked"
     finally:
         app.runtime().stop()
 
@@ -274,35 +285,35 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
     server = app.server()
     try:
         app.console().run(["plan", "create", "p"], Where("main"))
-        assert call(server, "POST", "/api/main/plan/1/finish", {})[1]["data"]["status"] == "done"
+        assert call(server, "POST", "/api/plan/1/finish", {})[1]["data"]["status"] == "done"
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
-        assert call(server, "POST", "/api/main/check/1/run", {})[1]["data"]["last"]["ok"] is True
-        assert call(server, "POST", "/api/main/check/1/set", {"key": "every", "value": "5"})[1]["data"]["every"] == 5
+        assert call(server, "POST", "/api/check/1/run", {})[1]["data"]["last"]["ok"] is True
+        assert call(server, "POST", "/api/check/1/set", {"key": "every", "value": "5"})[1]["data"]["every"] == 5
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
-        assert [s["title"] for s in call(server, "POST", f"/api/main/sequence/{release}/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]
+        assert [s["title"] for s in call(server, "POST", f"/api/sequence/{release}/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]
         app.console().run(["trigger", "create", "deploy", "say so"], Where("main"))
-        updated = call(server, "POST", "/api/main/trigger/1/update", {"words": "deploy, release", "does": "deny", "text": "wait"})[1]
+        updated = call(server, "POST", "/api/trigger/1/update", {"words": "deploy, release", "does": "deny", "text": "wait"})[1]
         assert updated["data"]["words"] == ["deploy", "release"] and updated["data"]["action"] == "deny"
-        skills = call(server, "GET", "/api/main/skills?agent=1")[1]
-        assert any(s["name"] == "journal" for s in skills) and "text" in call(server, "GET", "/api/main/skills/journal")[1]
-        call(server, "POST", "/api/main/environment", {"title": "spike"})
-        n = next(r["n"] for r in call(server, "GET", "/api/main/environment")[1]["rows"] if r["title"] == "spike")
-        assert call(server, "POST", f"/api/main/environment/{n}/remove", {})[0] == 200
-        assert all(r["title"] != "spike" for r in call(server, "GET", "/api/main/environment")[1]["rows"])
+        skills = call(server, "GET", "/api/skills?agent=1")[1]
+        assert any(s["name"] == "journal" for s in skills) and "text" in call(server, "GET", "/api/skills/journal")[1]
+        call(server, "POST", "/api/environment", {"title": "spike"})
+        n = next(r["n"] for r in call(server, "GET", "/api/environment")[1]["rows"] if r["title"] == "spike")
+        assert call(server, "POST", f"/api/environment/{n}/remove", {})[0] == 200
+        assert all(r["title"] != "spike" for r in call(server, "GET", "/api/environment")[1]["rows"])
         assert call(server, "GET", "/api/summary")[1]["environments"][0]["silent"] is False
     finally:
         app.runtime().stop()
 
 
 def test_a_file_attached_to_a_message_is_stored_and_served(server):
-    n = call(server, "POST", "/api/main/message", {"brief": "see the picture", "idempotency": "f1"})[1]["n"]
+    n = call(server, "POST", "/api/message", {"brief": "see the picture", "idempotency": "f1"})[1]["n"]
     boundary = "b0undary"
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"note.txt\"\r\nContent-Type: text/plain\r\n\r\nhello there\r\n--{boundary}--\r\n").encode()
-    request = HttpRequest(f"http://127.0.0.1:{server.port}/api/main/message/{n}/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    request = HttpRequest(f"http://127.0.0.1:{server.port}/api/message/{n}/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
         row = json.loads(reply.read())
     assert row["data"]["files"] == {"note.txt": ""}
-    with urlopen(f"http://127.0.0.1:{server.port}/api/main/message/{n}/files/note.txt", timeout=5) as reply:
+    with urlopen(f"http://127.0.0.1:{server.port}/api/message/{n}/files/note.txt?env=main", timeout=5) as reply:
         assert reply.read() == b"hello there" and reply.headers["Content-Type"].startswith("text/plain")
 
 
@@ -311,8 +322,8 @@ def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_
     app.runtime().start()
     server = app.server()
     try:
-        call(server, "POST", "/api/main/message", {"brief": "after the reset", "idempotency": "r1"})
-        events = call(server, "GET", "/api/main/events?since=999999")[1]
+        call(server, "POST", "/api/message", {"brief": "after the reset", "idempotency": "r1"})
+        events = call(server, "GET", "/api/events?since=999999")[1]
         assert events and events[-1]["type"] == "message", "an id from a journal that was reset still gets the recent events"
     finally:
         app.runtime().stop()
@@ -332,13 +343,13 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
     try:
         controls = call(server, "GET", "/api/agent-controls/claude?model=opus&effort=high")[1]
         assert [g["key"] for g in controls["groups"]] == ["model", "effort", "context"] and controls["groups"][0]["current"] == "opus"
-        assert call(server, "POST", "/api/main/agent/s1/control", {"action": "effort", "value": "max"})[1]["queued"] is True and typed[-1] == "/effort max"
-        assert call(server, "POST", "/api/main/agent/s1/control", {"action": "model", "value": "gpt"})[0] == 409
-        n = call(server, "POST", "/api/main/message", {"brief": "is the footer fixed?\nand the header?", "idempotency": "q"})[1]["n"]
+        assert call(server, "POST", "/api/agent/s1/control", {"action": "effort", "value": "max"})[1]["queued"] is True and typed[-1] == "/effort max"
+        assert call(server, "POST", "/api/agent/s1/control", {"action": "model", "value": "gpt"})[0] == 409
+        n = call(server, "POST", "/api/message", {"brief": "is the footer fixed?\nand the header?", "idempotency": "q"})[1]["n"]
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         app.runtime().deferred.drain()
-        reply = call(server, "GET", "/api/main/message")[1]["rows"][-1]
+        reply = call(server, "GET", "/api/message")[1]["rows"][-1]
         assert reply["brief"] == "Both are." and reply["refs"] == [f"message:{n}"] and reply["data"]["reply_to"] == n
     finally:
         app.runtime().stop()
@@ -353,33 +364,33 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
     app.runtime().start()
     server = app.server()
     try:
-        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
+        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         app.runtime().deferred.drain()
-        rows = [r for r in call(server, "GET", "/api/main/message?completed=1")[1]["rows"] if n in (r["n"], r["data"]["reply_to"])]
+        rows = [r for r in call(server, "GET", "/api/message?completed=1")[1]["rows"] if n in (r["n"], r["data"]["reply_to"])]
         assert [(r["type"], r["data"]["author"], r["data"]["reply_to"], r["brief"]) for r in rows] == [("message", "user", 0, "hello"), ("message", "agent", n, "Hello back.")]
         assert rows[0]["data"]["actor"].startswith("user") and rows[1]["data"]["actor"] == "agent:s1" and rows[1]["data"]["acknowledgement"] is False
-        assert call(server, "GET", "/api/main/comment")[1]["rows"] == [], "a reply is no comment"
-        kinds = [(e["type"], e["action"]) for e in call(server, "GET", "/api/main/events?since=0")[1]]
+        assert call(server, "GET", "/api/comment")[1]["rows"] == [], "a reply is no comment"
+        kinds = [(e["type"], e["action"]) for e in call(server, "GET", "/api/events?since=0")[1]]
         assert ("message", "created") in kinds and "comment" not in {kind for kind, _ in kinds}
     finally:
         app.runtime().stop()
 
 
 def test_the_board_is_off_and_stays_off(server):
-    assert "kanban" not in call(server, "GET", "/api/main/settings")[1]["features"]
-    assert "kanban" not in call(server, "POST", "/api/main/settings", {"features": {"kanban": True}})[1]["features"], "a switch of a feature version 4 does not have is not kept"
+    assert "kanban" not in call(server, "GET", "/api/settings")[1]["features"]
+    assert "kanban" not in call(server, "POST", "/api/settings", {"features": {"kanban": True}})[1]["features"], "a switch of a feature version 4 does not have is not kept"
 
 
 def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linked_to_it(server):
     from journal.console.where import Where
-    call(server, "POST", "/api/main/todo", {"title": "the footer", "idempotency": "t1"})
-    status, made = call(server, "POST", "/api/main/todo/1/comment", {"text": "please also check the header"})
+    call(server, "POST", "/api/todo", {"title": "the footer", "idempotency": "t1"})
+    status, made = call(server, "POST", "/api/todo/1/comment", {"text": "please also check the header"})
     assert status == 200 and made["refs"] == ["todo:1"] and made["brief"] == "please also check the header"
-    rows = call(server, "GET", "/api/main/comment")[1]["rows"]
+    rows = call(server, "GET", "/api/comment")[1]["rows"]
     assert [(r["refs"], r["seen"]) for r in rows] == [(["todo:1"], ["user"])]
-    messages = call(server, "GET", "/api/main/message")[1]["rows"]
+    messages = call(server, "GET", "/api/message")[1]["rows"]
     assert messages[-1]["brief"] == "please also check the header" and messages[-1]["seen"] == ["user"]
 
 
@@ -395,9 +406,9 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         assert [s["name"] for s in tasks["settings"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
         assert all(f in manifest["features"] for f in ("messages", "shell", "voices")) and "kanban" not in manifest["features"], "version 3's leftovers are gone"
         assert {g["key"] for g in manifest["groups"]} == set(manifest["features"]), "one group per feature"
-        status, tree = call(server, "POST", "/api/main/settings", {"tasks": {"log_after": 60}})
+        status, tree = call(server, "POST", "/api/settings", {"tasks": {"log_after": 60}})
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 60, "saved where the code reads it"
-        tree = call(server, "POST", "/api/main/settings", {"tasks": {}})[1]
+        tree = call(server, "POST", "/api/settings", {"tasks": {}})[1]
         assert "tasks" not in tree and app.container.get(Settings).option(PROJECT, Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
     finally:
         app.runtime().stop()
