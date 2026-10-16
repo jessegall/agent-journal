@@ -830,3 +830,14 @@ English and Workflows drive the agent, the engine keeps it safe, the latter arou
 different, or want to watch it happen". Task 414 sorts the plan's remaining phases by that test before phase four
 closes: 388 to 393, 398 and 399 are engine behaviour, 385, 395, 396, 397 and 401 stay workflows. The floor of 406
 is in: a journal command and a skill's read are never held. The suite: 245 tests; the replays: 58.
+
+Phase four of plan 7, closed on 2026-10-17 before dawn: each feature declares the checks and actions a workflow
+may name, beside its states and nudges, and the chart's catalogue gathers them from the registry and defines none
+itself, Entry having moved up to features/entry.py (383); a blocking listener that raises fails open, with an entry
+guard_failed, a card in the chat and a line to the agent, and the law text says a hold is never the result of a
+fault (384); the content checks Tool is one of, Tool input contains, Prompt contains, Time of day within and
+Context over N percent read the event's own content, answered the same for Claude and Codex in one bounded test
+(385); a check on time takes its unit and the shipped workflows say minutes, DRAWINGS_VERSION 10 (386); the phone
+shows the locks and a card's own number in its title. Phase five has nothing to build: its guards are engine
+behaviour by the user's ruling and stay where they are, listed under Kept in code. The suite: 248 tests; the
+replays: 58; the dev journal after the restart: 9 states, 27 shipped workflows, none behind, 142 catalogue entries.

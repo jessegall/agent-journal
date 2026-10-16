@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {LOCK_WHY, stayOn} from "../../domain/workflowLocks.js";
 import {pairs, statusOf} from "../../domain/workflowPairs.js";
+import {cardTitle} from "../../domain/cardTitle.js";
 import Icon from "../../kit/Icon.vue";
 import ActionSheet from "../kit/ActionSheet.vue";
 import Button from "../kit/Button.vue";
@@ -47,7 +48,7 @@ const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || 
 const dirty = computed(() => past.value.length > 0);
 const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
 const numberOf = (node) => nodes.value.indexOf(node) + 1;
-const named = (node) => `${numberOf(node)} · ${entryOf(node).title}`;
+const named = (node) => `${numberOf(node)} · ${cardTitle(entryOf(node), node)}`;
 const lineOf = (node, port) => lines.value.find((l) => String(l.from) === String(node.id) && l.port === port);
 const targetOf = (node, port) => {
     const line = lineOf(node, port);
@@ -388,7 +389,7 @@ const steps = computed(() => {
             node && next !== undefined ? lines.value.find((l) => String(l.from) === String(id) && String(l.to) === String(next)) : null;
         return {
             id,
-            title: node ? entryOf(node).title : String(id),
+            title: node ? cardTitle(entryOf(node), node) : String(id),
             answer: node && node.kind === "check" ? (line ? WORD[line.port] : "") : node ? KIND[node.kind] : "",
             tone: node && node.kind === "check" ? (line ? line.port : "") : "kind",
         };
@@ -436,8 +437,8 @@ const steps = computed(() => {
                     :head="`${numberOf(node)} · ${KIND[node.kind]}`"
                     :foot="entryOf(node).takes_text && node.kind === 'action' ? `Insert values with ${HELP}` : ''"
                 >
-                    <SwipeRow :label="entryOf(node).title" :trail="deleteNode(node)">
-                        <Cell :label="entryOf(node).title" :sub="node.locked ? LOCK_WHY : described(entryOf(node))" still />
+                    <SwipeRow :label="cardTitle(entryOf(node), node)" :trail="deleteNode(node)">
+                        <Cell :label="cardTitle(entryOf(node), node)" :sub="node.locked ? LOCK_WHY : described(entryOf(node))" still />
                     </SwipeRow>
                     <Cell v-if="node.locked && node.text" :label="node.text" sub="Locked: this text cannot be changed" still />
                     <template v-if="entryOf(node).takes_text && !node.locked">
