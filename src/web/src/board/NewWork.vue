@@ -12,6 +12,7 @@ import ChatPanel from "../kit/ChatPanel.vue";
 import FocusStage from "../kit/FocusStage.vue";
 import Icon from "../kit/Icon.vue";
 import {quoted} from "../format/quote.js";
+import {answered} from "../domain/replies.js";
 import {rows} from "../sync/rows.js";
 import {useFloatingChat} from "../composables/floatingChat.js";
 import {useStepAbout} from "../composables/sequenceRuns.js";
@@ -62,7 +63,7 @@ const measured = () => (viewHeight.value = window.visualViewport ? window.visual
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
     const refs = asked.value.map((m) => m.ref);
-    return rows("comment").filter((c) => c.refs.some((ref) => refs.includes(ref)));
+    return rows("message").filter((m) => m.seen[0] === "agent" && refs.includes(answered(m)));
 });
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));

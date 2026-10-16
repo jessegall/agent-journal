@@ -1,11 +1,12 @@
 import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
 import {turnKind, visibleIn} from "./chatVisibility.js";
+import {answered} from "./replies.js";
 
 const PROMISED_WITHIN = 5;
 
 const acknowledged = (m, rows) =>
-    rows.comment.some((c) => !c.deleted && c.refs.includes(m.ref) && c.seen[0] === "agent") ||
+    rows.message.some((r) => !r.deleted && r.seen[0] === "agent" && answered(r) === m.ref) ||
     rows.reaction.some((r) => !r.deleted && r.refs.includes(m.ref) && r.seen[0] === "agent");
 
 const QUOTED = ["message", "comment"];
@@ -32,7 +33,11 @@ function onItsRow(c, comments) {
     const row = parent && onItsRow(parent, comments);
     if (!row) return null;
     const passage = quotesOf(row) || quotedLines(row.brief);
-    return {...c, refs: [...c.refs, ...row.refs.filter((ref) => ref !== c.ref)], brief: c.brief.startsWith(">") ? c.brief : `${passage}\n\n${c.brief}`};
+    return {
+        ...c,
+        refs: [...c.refs, ...row.refs.filter((ref) => ref !== c.ref)],
+        brief: c.brief.startsWith(">") ? c.brief : `${passage}\n\n${c.brief}`,
+    };
 }
 
 const receipt = (m) => {
@@ -88,7 +93,9 @@ const compactions = (agents) =>
 const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
 
 const whispers = (agents) =>
-    sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref, words: w.words, shows: w.shows})));
+    sessions(agents).flatMap((a) =>
+        (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref, words: w.words, shows: w.shows}))
+    );
 
 const cards = (agents) =>
     sessions(agents).flatMap((a) =>
@@ -184,7 +191,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         .filter((t) => t.type === "message" || t.created >= floor)
         .filter(visibleIn(hidden))
         .sort((a, b) => a.created - b.created);
-    return {turns: grouped(mergedReplies(turns)), keys};
+    return {turns: grouped(turns), keys};
 }
 
 const GROUP_FROM = 4;
@@ -243,30 +250,8 @@ function grouped(turns) {
     return out;
 }
 
-const SAME_REPLY_WITHIN = 120;
-const answerOf = (t) =>
-    (t.brief || "")
-        .split("\n")
-        .filter((line) => !line.startsWith(">"))
-        .join("\n")
-        .trim();
 const quotesOf = (t) =>
     (t.brief || "")
         .split("\n")
         .filter((line) => line.startsWith(">"))
         .join("\n");
-const agentReply = (t) => t.type === "comment" && t.who === "agent";
-
-function mergedReplies(turns) {
-    const out = [];
-    for (const turn of turns) {
-        const last = out[out.length - 1];
-        const same = last && agentReply(turn) && agentReply(last) && turn.created - last.created < SAME_REPLY_WITHIN;
-        if (same && answerOf(turn) && answerOf(turn) === answerOf(last)) {
-            out[out.length - 1] = {...last, brief: `${quotesOf(last)}\n>\n${quotesOf(turn)}\n\n${answerOf(turn)}`};
-            continue;
-        }
-        out.push(turn);
-    }
-    return out;
-}
