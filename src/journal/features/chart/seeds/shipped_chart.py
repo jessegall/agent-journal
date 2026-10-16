@@ -1,3 +1,4 @@
+from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.seed import Seed
 from journal.models.actor import Actor
@@ -47,8 +48,8 @@ LISTENERS_OFF = "listeners.off"
 class ShippedChart(Seed):
     """The workflows the journal ships, one per state and one for what every state shares: each is made at boot where it is absent and left alone where it stands, edited or not. A workflow of the older shape, bound to one event, retires at boot: taken out when unedited, kept without its triggers when the user edited it. A reset redraws one by its state."""
 
-    def __init__(self, charts: Charts, settings: Settings) -> None:
-        self.charts, self.settings = charts, settings
+    def __init__(self, charts: Charts, settings: Settings, catalogue: Catalogue) -> None:
+        self.charts, self.settings, self.catalogue = charts, settings, catalogue
         self.drawings = {
             BASE: Drawing(BASE_TITLE, self.draw_base, ("InboxOnArrival", "InboxAtStart", "InboxAtPrompt", "InboxAtStop", "HoldUnread", "HoldUnanswered")),
             "idle": Drawing(IDLE_TITLE, self.draw_idle, ("AskAfterParked", "CheckIn")),
@@ -63,11 +64,24 @@ class ShippedChart(Seed):
     def run(self) -> None:
         by = Actor.system()
         self.retire_the_older_shape(by)
+        self.stop_what_names_an_unknown_entry(by)
         for state, drawing in self.drawings.items():
             if self.charts.for_state(state):
                 continue
             drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, state=state), by))
             self.take_over(drawing.replaces, by)
+
+    def stop_what_names_an_unknown_entry(self, by: Actor) -> None:
+        """A kept or user workflow naming a check, action or trigger the catalogue no longer has is stopped at boot, its triggers taken out and its title saying why, rather than left to fail on every walk."""
+        for chart in [c for c in self.charts.all() if not c.shipped]:
+            nodes = self.charts.nodes_of(chart)
+            unknown = next((n for n in nodes if not self.catalogue.has(n.kind, n.key)), None)
+            triggers = [n for n in nodes if n.kind == NodeKind.TRIGGER]
+            if unknown is None or not triggers:
+                continue
+            for trigger in triggers:
+                self.charts.remove_node(trigger, by)
+            self.charts.save(chart.with_(title=f"{chart.title} (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)"), by)
 
     def retire_the_older_shape(self, by: Actor) -> None:
         """A shipped workflow bound to one event goes: whole when every node is still as shipped, else its triggers alone, so the user's edits stay to be drawn into a state's workflow."""

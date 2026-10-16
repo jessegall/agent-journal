@@ -2,6 +2,7 @@ import threading
 import time
 
 from journal.engine.states.ended import Ended
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.events.agent.ticked import Ticked
 from journal.events.clock_ticked import ClockTicked
 from journal.features.bus import Bus
@@ -15,8 +16,8 @@ from journal.supervisor_link import SupervisorLink
 class Clock:
     """A thread that tells the bus Ticked for every live agent, every interval, in that agent's environment, as long as the server runs; what the machine says to a tick is typed in through the supervisor."""
 
-    def __init__(self, agents: Agents, bus: Bus, supervisor: SupervisorLink, scope: Scope, interval: float = 5.0) -> None:
-        self.agents, self.bus, self.supervisor, self.scope, self.interval = agents, bus, supervisor, scope, interval
+    def __init__(self, agents: Agents, bus: Bus, supervisor: SupervisorLink, scope: Scope, states: StatesCatalogue, interval: float = 5.0) -> None:
+        self.agents, self.bus, self.supervisor, self.scope, self.states, self.interval = agents, bus, supervisor, scope, states, interval
         self._stopping = threading.Event()
         self._thread: threading.Thread | None = None
 
@@ -28,7 +29,7 @@ class Clock:
         now = time.time()
         self.bus.dispatch(ClockTicked(at=now))
         for agent in self.agents.all():
-            if agent.state == Ended.name:
+            if isinstance(self.states.named(agent.state, agent.data), Ended):
                 continue
             with self.scope.of(agent.environment_id):
                 self._tick(agent, now)

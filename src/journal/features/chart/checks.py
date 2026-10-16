@@ -8,11 +8,8 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
 from journal.features.chart.context import Context
-from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.registry import Registry
-from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.shell.chain import Chain
-from journal.features.tasks.states.idle import Idle as IdleState
 from journal.features.tasks.states.working import Working
 from journal.features.questions.states.waiting import Waiting
 from journal.features.workers.states.awaiting import Awaiting
@@ -107,9 +104,6 @@ class Checks:
             return None
         return len([e for e in self.entries.of_kind("ToolStarting", 200) if e.actor and e.actor.id == ctx.session and e.created_at >= since])
 
-    def plain_idle(self, ctx: Context) -> bool:
-        return isinstance(self.state(ctx), IdleState)
-
     def open_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.free())
 
@@ -183,9 +177,6 @@ class Checks:
         from journal.features.tasks.feature import Tasks
         return bool(self.settings.option(Tasks.AUTO))
 
-    def following_plan(self, ctx: Context) -> bool:
-        return isinstance(self.state(ctx), FollowingPlan)
-
     def tool_writes(self, ctx: Context) -> bool:
         event = ctx.event
         return isinstance(event, ToolStarting) and self.providers.named(ctx.provider).writes(event.tool, event.input)
@@ -196,9 +187,6 @@ class Checks:
             return False
         journal, parts = Chain.journal_parts(event.input.get("command", ""))
         return parts > 0 and journal == parts
-
-    def running_sequence(self, ctx: Context) -> bool:
-        return isinstance(self.state(ctx), RunningSequence)
 
     def state(self, ctx: Context):
         """The agent's state as the walk read it once, looking through the pauses the agent owes the journal to the wait beneath, since a row event is about that wait; None when the walk is about no agent."""

@@ -17,7 +17,6 @@ AGENT_EVENTS = (
     ("ticked", "Clock ticks", "every few seconds for each live agent"),
 )
 CHECKS = (
-    ("plain_idle", "Agent idle?", "no current work, nothing awaited, not stuck"),
     ("open_tasks", "Has open tasks?", "the environment has open tasks the agent may take up, outside a plan not yet started"),
     ("task_in_hand", "Has a task in hand?", "the agent has a task started"),
     ("parked_tasks", "Has parked tasks?", "a task is parked"),
@@ -30,10 +29,8 @@ CHECKS = (
     ("message_by_user", "Message written by the user?", "the row is a message the user wrote, not the agent"),
     ("tool_reads_their_files", "Tool reads the message's own files?", "the tool about to run reads a file attached to a message read and left unanswered"),
     ("auto_mode", "Auto mode on?", "the environment runs in auto mode"),
-    ("following_plan", "Following a plan?", "the agent is on a plan's task"),
     ("tool_writes", "Tool changes files?", "the tool about to run changes a file or runs a writing command"),
     ("journal_command", "Tool is a journal command?", "the tool about to run is a journal command"),
-    ("running_sequence", "In a sequence?", "the agent is on a step of a sequence"),
     ("worker_reported", "Worker reported?", "the row is a worker that just reported"),
     ("worker_stopped", "Worker stopped?", "the row is a worker that just stopped before reporting"),
     ("agent_awaits_the_worker", "Agent awaits this worker?", "the agent waits on the worker of this row"),

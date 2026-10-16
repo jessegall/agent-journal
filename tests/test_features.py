@@ -2139,6 +2139,24 @@ def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monke
     assert base["last_failure"]["key"] == "say" and "RuntimeError: the typist is out" in base["last_failure"]["fault"] and base["last_failure"]["at"] > 0
 
 
+def test_a_workflow_naming_a_check_the_catalogue_no_longer_has_is_stopped_at_boot_with_the_reason(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.models.chart import Chart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import THEN, Charts
+    charts = app.container.get(Charts)
+    own = charts.save(Chart(title="From before"), Actor.user(1))
+    trigger = charts.add_node(own, Node(kind=NodeKind.TRIGGER, key="idle"), Actor.user(1))
+    old = charts.add_node(own, Node(kind=NodeKind.CHECK, key="plain_idle"), Actor.user(1))
+    charts.connect(trigger, old, THEN, Actor.user(1))
+    app.container.get(ShippedChart).run()
+    stopped = charts.find(own.id)
+    assert stopped.title == "From before (stopped, check plain_idle is no longer in the catalogue)"
+    assert [n.kind for n in charts.nodes_of(stopped)] == [NodeKind.CHECK], "its trigger is gone, so it never walks; the rest is left for the user to see"
+    assert not charts.graph(stopped).triggers
+
+
 def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     hook(app, "SessionStart")
     console = app.console()

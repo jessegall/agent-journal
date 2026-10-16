@@ -22,7 +22,7 @@ class HoldAtMark(AgentListener[AgentEvent]):
             return None
         agent = self.machine.agent(event.session, event.environment_id)
         due = [mark for mark in Memory.MARKS if event.context * 100 >= mark > agent.context_mark]
-        if not due or agent.state == AtMark.name:
+        if not due or isinstance(self.machine.current(event.session), AtMark):
             return None
         mark = max(due)
         self.agents.save(agent.with_(context_mark=mark), Actor.system())
