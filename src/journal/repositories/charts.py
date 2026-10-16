@@ -40,8 +40,16 @@ class Charts(Repository[Chart]):
         return [c for c in self.all() if c.shipped]
 
     def for_pair(self, state: str, event: str) -> Chart | None:
-        """The one workflow for a state at an event, when the journal holds one."""
-        return next((c for c in self.all() if c.state == state and c.event == event), None)
+        """The first workflow in order for a state at an event, when the journal holds one."""
+        return next((c for c in self.for_event(event) if c.state == state), None)
+
+    def for_event(self, event: str) -> list[Chart]:
+        """Every workflow that answers the event, in the order they run."""
+        return sorted((c for c in self.all() if c.event == event), key=lambda c: (c.place, c.id))
+
+    def next_place(self, event: str) -> int:
+        """The place after the last workflow of the event."""
+        return max((c.place for c in self.for_event(event)), default=-1) + 1
 
     def remove(self, chart: Chart, by: Actor) -> None:
         for node in self.nodes_of(chart):

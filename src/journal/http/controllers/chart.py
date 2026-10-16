@@ -58,10 +58,11 @@ class ChartController:
             return Response.not_found(str(missing))
 
     def create(self, request: Request) -> Response:
-        """A workflow of the user's own for a state at an event, born with its trigger and a title that names the pair unless given."""
+        """A workflow of the user's own for a state at an event, or for every state when no state is named, born with its trigger, after the others of its event, with a title that names it unless given."""
         state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
-        title = request.body.get("title", "").strip() or f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
-        chart = Chart(title=title, state=state, event=event)
+        whose = self.states.title_of(state) if state else "Always"
+        title = request.body.get("title", "").strip() or f"{whose} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
+        chart = Chart(title=title, state=state, event=event, place=self.charts.next_place(event))
         faults = self.validation.binding_faults(chart)
         if faults:
             return Response.refused(faults[0])
@@ -101,7 +102,7 @@ class ChartController:
 
     def named(self, chart: Chart) -> dict:
         last_walk, last_failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "off": not self.charts.graph(chart).triggers,
+        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "place": chart.place, "off": not self.charts.graph(chart).triggers,
                 "edited": not all(n.shipped for n in self.charts.nodes_of(chart)), "failed": bool(last_failure) and last_failure["at"] >= last_walk.get("at", 0),
                 "behind": self.shipped.behind(chart),
                 "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": last_walk, "last_failure": last_failure}

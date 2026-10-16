@@ -527,7 +527,9 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
 
 
     status, body = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "idle", "title": "Another stop"})
-    assert status >= 400 and "one workflow per state per trigger" in json.dumps(body)
+    assert status == 201 and body["place"] > 0, "a second workflow for the same state at the same event takes its place after the first"
+    status, body = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle"})
+    assert status == 201 and body["title"] == "Always at Agent stops" and body["state"] == "", "a workflow bound to no state always runs"
     status, body = call(server, "POST", "/journal/chart", {"state": "flying", "trigger": "idle", "title": "Flying"})
     assert status >= 400 and "no state is called flying" in json.dumps(body)
     status, made = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "tool_finished", "title": "After a tool"})

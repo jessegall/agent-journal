@@ -2034,7 +2034,8 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     from journal.repositories.charts import Charts
     charts = app.container.get(Charts)
     n, trigger = own_workflow(console, charts, "idle", "tool_finished")
-    assert "already the workflow for idle at tool_finished: one workflow per state per trigger" in console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).err
+    second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
     assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(trigger), str(say)], USER)
@@ -2051,7 +2052,7 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     app.runtime().deferred.drain()
     assert typed.count("[journal] new message 1") == 1, "named once, by the workflow"
     assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "idle", "--on", "messages.created"], USER).out
-    assert "[idle at messages.created]" in console.run(["chart", "show"], USER).out
+    assert "[idle at messages.created, place" in console.run(["chart", "show"], USER).out
 
 
 def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, monkeypatch):
@@ -2160,15 +2161,16 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     console.run(["environment", "here"], AGENT)
     assert "no state is called flying" in console.run(["chart", "new", "Flying", "--for", "flying", "--on", "idle"], USER).err
     assert "no event is called landing" in console.run(["chart", "new", "Landing", "--for", "idle", "--on", "landing"], USER).err
-    assert "already the workflow for working at tool_starting: one workflow per state per trigger" in console.run(["chart", "new", "Working twice", "--for", "working", "--on", "tool_starting"], USER).err
+    twice = console.run(["chart", "new", "Working twice", "--for", "working", "--on", "tool_starting"], USER)
     charts = app.container.get(Charts)
+    assert twice.code == 0 and charts.find(int(twice.out.split()[1].rstrip(":"))).place > charts.for_pair("working", "tool_starting").place, "a second workflow for a state at an event takes its place after the shipped one"
     working, idle = charts.for_pair("working", "tool_starting").id, charts.for_pair("idle", "idle").id
     node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
     assert "a workflow holds one trigger, of the event it is for; this one has 2" in node(working, "trigger", "tool_starting").err
     assert "a workflow holds one trigger, of the event it is for" in node(idle, "trigger", "tool_finished").err
     assert node(idle, "check", "open_tasks").code == 0
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {idle} [idle at idle], revision 1 by user:1: Idle at Agent stops" in shown and f"workflow {working} [working at tool_starting]" in shown
+    assert f"workflow {idle} [idle at idle, place 0], revision 1 by user:1: Idle at Agent stops" in shown and f"workflow {working} [working at tool_starting, place" in shown
 
 def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
@@ -2280,7 +2282,7 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     refused = console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle"], USER)
     assert refused.code == 1 and f"workflow {base.id}, Idle at Agent stops, is a default one: add --edit-default" in refused.err
     assert console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle", "--edit-default"], USER).code == 0
-    assert f"workflow {base.id} [idle at idle], revision 1 by user:1: Idle at Agent stops" in console.run(["chart", "show"], USER).out
+    assert f"workflow {base.id} [idle at idle, place 0], revision 1 by user:1: Idle at Agent stops" in console.run(["chart", "show"], USER).out
     own = int(console.run(["chart", "new", "mine", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert console.run(["chart", "node", "check", "open_tasks", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
@@ -2334,7 +2336,7 @@ def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     assert "reset to the shipped one" in console.run(["chart", "reset", "--for", "working", "--on", "tool_starting"], USER).out
     assert "is a shipped one and stays" in console.run(["chart", "drop", "1"], USER).err
     shown = console.run(["chart", "show"], USER).out
-    assert shown.index("[awaiting at") < shown.index("[working at") < shown.index(f"workflow {mine} ["), "the states by name and event, your own last"
+    assert shown.index("[idle at idle") < shown.index("[working at") < shown.index("[awaiting at") < shown.index(f"workflow {mine} ["), "by event in the order the events come, then in the order the workflows run; your own at an event no default has comes last"
 
 def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, monkeypatch):
     import json
@@ -2516,3 +2518,41 @@ def test_an_upgrade_keeps_a_users_edited_workflow_when_the_shipped_one_changes_s
     assert console.run(["chart", "reset", "--for", "idle", "--on", "idle"], USER).code == 0
     back = charts.for_pair("idle", "idle")
     assert back is not None and back.shipped and back.drawing == "idle:idle" and all(n.shipped for n in charts.nodes_of(back)), "reset by state and event draws it again"
+
+
+def test_a_triggers_workflows_run_in_the_users_order_stateless_ones_always_and_a_childs_in_place_of_its_parents(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
+    first, t1 = own_workflow(console, charts, "idle", "tool_finished")
+    always = int(console.run(["chart", "new", "Always after a tool", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    t2 = next(n.id for n in charts.nodes_of(charts.find(always)) if n.key == "tool_finished")
+    add = lambda wf, *text: int(console.run(["chart", "node", "action", "say", "--text", *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    say1, say2 = add(first, "[chart] idle says first"), add(always, "[chart] always says")
+    console.run(["chart", "line", str(t1), str(say1)], USER)
+    console.run(["chart", "line", str(t2), str(say2)], USER)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    assert said(body).index("idle says first") < said(body).index("always says"), "both run, in the order they were made: the state's own first, then the stateless one"
+    charts.save(charts.find(always).with_(place=-1), Actor.user(1))
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})
+    assert said(body).index("always says") < said(body).index("idle says first"), "the order is the user's: moved first, the stateless one speaks first"
+    console.run(["task", "create", "t", "--start"], AGENT)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "c"})
+    assert "always says" in said(body) and "idle says first" not in said(body), "a stateless workflow runs in any state; Idle's own does not run while Working"
+    working, t3 = own_workflow(console, charts, "working", "tool_finished")
+    say3 = add(working, "[chart] working speaks")
+    console.run(["chart", "line", str(t3), str(say3)], USER)
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "a task"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "d"})
+    assert "working speaks" in said(body), "following a plan has none of its own at this event, so Working's runs"
+    child, t4 = own_workflow(console, charts, "following_plan", "tool_finished")
+    say4 = add(child, "[chart] the plan speaks")
+    console.run(["chart", "line", str(t4), str(say4)], USER)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "e"})
+    assert "the plan speaks" in said(body) and "working speaks" not in said(body), "a child's workflow at the event replaces its parent's there"

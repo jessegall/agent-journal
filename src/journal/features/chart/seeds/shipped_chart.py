@@ -128,7 +128,7 @@ class ShippedChart(Seed):
         """A shipped drawing drawn anew as its own workflow, named after it."""
         state, event = key.split(":", 1)
         drawing = self.drawings[key]
-        chart = self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION), by)
+        chart = self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=list(self.drawings).index(key)), by)
         drawing.draw(chart)
         return chart
 

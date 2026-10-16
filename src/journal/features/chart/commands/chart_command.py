@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.chart.seeds.shipped_chart import EVENT_ORDER, ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import TEXT_LIMIT, Validation
@@ -26,7 +26,7 @@ class ChartCommand(Command):
         self.verb(verbs, "catalogue", "everything a node may be")
         new = self.verb(verbs, "new", "a new, empty workflow, for a state or the base")
         new.add_argument("title")
-        new.add_argument("--for", dest="state", required=True, help="the state this workflow is for")
+        new.add_argument("--for", dest="state", default="", help="the state this workflow is for; none means it always runs")
         new.add_argument("--on", dest="event", required=True, help="the event it answers, a trigger of the catalogue")
         self.verb(verbs, "drop", "take a workflow out, with its nodes").add_argument("n", type=int)
         node = self.verb(verbs, "node", "add a node naming a catalogue entry")
@@ -59,7 +59,7 @@ class ChartCommand(Command):
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.in_order():
-            bound = f" [{chart.state} at {chart.event}]"
+            bound = f" [{chart.state or 'always'} at {chart.event}, place {chart.place}]"
             print(f"workflow {chart.id}{bound}, revision {chart.revision} by {chart.updated_by.stamp if chart.updated_by else 'nobody'}: {chart.title}")
             for node in self.charts.nodes_of(chart):
                 shown = f"{node.key} ({self.entries.entry(node.kind, node.key).title})" if node.kind == NodeKind.TRIGGER else node.key
@@ -69,8 +69,8 @@ class ChartCommand(Command):
         return 0
 
     def in_order(self) -> list[Chart]:
-        """By state and then by event, the user's own last."""
-        return sorted(self.charts.all(), key=lambda c: (not c.shipped, c.state, c.event))
+        """By event, in the order the events come, and within one in the order the workflows run."""
+        return sorted(self.charts.all(), key=lambda c: (EVENT_ORDER.index(c.event) if c.event in EVENT_ORDER else len(EVENT_ORDER), c.event, c.place, c.id))
 
     def named_workflow(self, number: int, state: str, event: str) -> Chart:
         """The workflow a command means: by its number, or by the state and the event it is for."""
@@ -85,7 +85,7 @@ class ChartCommand(Command):
 
     def new(self, args: Namespace, where: Where) -> int:
         """A workflow of your own for a state at an event, born with its trigger."""
-        chart = Chart(title=args.title, state=args.state, event=args.event)
+        chart = Chart(title=args.title, state=args.state, event=args.event, place=self.charts.next_place(args.event))
         faults = self.validation.binding_faults(chart)
         if faults:
             raise Refused(str(faults[0]))

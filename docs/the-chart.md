@@ -1,11 +1,13 @@
 # The chart: the journal's conduct, drawn
 
-The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. A workflow is bound
-to a state at an event and holds that one trigger: one workflow per state per trigger, picked by the state and then
-the event, and each carries the shared conduct of its event, the inbox and the answers owed, as well as the state's
-own. Workflows of the older shape, bound to one event each, answer by their event until they retire: a journal holds one such workflow
-per event, each starting at its event's trigger; a second on the same event is refused, since two would both drive
-the agent, and should a journal somehow hold two, the older one answers and the page marks the other sidelined. The journal ships it with today's conduct, so nothing changes until you edit it.
+The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. A workflow answers
+one event, the trigger it holds, and is bound to a state, running only while the agent is in that state, or to none,
+running always. An event may have any number of workflows, and they run in one order, the place each holds in the
+event's list, which the user sets; a workflow bound to a child state, Following a plan under Working, replaces its
+parent's at that event, and the state beneath an owed pause counts as the agent's. Each shipped workflow carries the
+shared conduct of its event, the inbox and the answers owed, as well as the state's own, until the shared conduct
+becomes workflows of its own at the head of each list. The journal ships them with today's conduct, so nothing
+changes until you edit them.
 
 The walk reads the agent's state once, right after the engine's machine has answered the event and before the engine's
 holds, and every check and filler reads that same state; so a tool use that lifts a wait is walked as Working, and a

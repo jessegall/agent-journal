@@ -23,14 +23,11 @@ class Validation:
         self.catalogue, self.charts, self.states = catalogue, charts, states
 
     def binding_faults(self, chart: Chart) -> list[Fault]:
-        """A workflow is bound to a state the engine knows at an event the catalogue has, and the pair has one workflow: a second on the same pair, or a state or event nobody has heard of, is refused."""
-        if not self.states.known(chart.state):
-            return [Fault(f"no state is called {chart.state}: one of {', '.join(self.states.names())}")]
+        """A workflow answers an event the catalogue has, bound to a state the engine knows or to none, which means always; a state or event nobody has heard of is refused."""
+        if chart.state and not self.states.known(chart.state):
+            return [Fault(f"no state is called {chart.state}: one of {', '.join(self.states.names())}, or none for a workflow that always runs")]
         if not self.catalogue.has(NodeKind.TRIGGER, chart.event):
             return [Fault(f"no event is called {chart.event}: journal chart catalogue lists them")]
-        other = self.charts.for_pair(chart.state, chart.event)
-        if other and other.id != chart.id:
-            return [Fault(f"workflow {other.id}, {other.title}, is already the workflow for {chart.state} at {chart.event}: one workflow per state per trigger")]
         return []
 
     def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[Fault]:

@@ -17,7 +17,9 @@ class Chart(Model):
     event: str = ""
     """The event this workflow answers, the key of its one trigger."""
     state: str = ""
-    """The state this workflow is for, by name: a state at an event has one workflow."""
+    """The state this workflow is for, by name; empty means always, whatever the agent is doing."""
+    place: int = 0
+    """Its place in its trigger's list, lower first: the order the workflows of one event run in, which the user drags."""
     drawing: str = ""
     """The name of the shipped drawing this workflow came from, the state and the event it was shipped for; empty on one of the user's own."""
     drawn_version: int = 0

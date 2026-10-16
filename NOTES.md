@@ -755,3 +755,12 @@ steps first and the event's shared conduct after, every open end joined to the n
 step that raises is recorded and passed by its no or then line, so one broken step never silences the chain.
 The proposal for moving the engine's state into workflows is report 4, adjusted after four agents' discussion
 as report 5; it waits on the user's word before a plan.
+
+Plan 7, Everything through the workflow, approved on 2026-10-16 late at night after the user redrew the model
+(messages 1133 to 1143) and three Opus reads were folded in: a workflow answers one trigger and is bound to a state
+or to none (always); an event's workflows run in the place order the user drags; the laws and guards become locked
+workflows at the head; Stop here ends an event's walk; Orienting, Loading a skill and At a context mark become facts
+the agent owes. Phase one so far: a shipped workflow remembers its shipping (drawn_version) and an edited one the
+shipping moved past is kept and told so; shipped workflows are named after their drawing (state:event), a retired
+one is remembered and reset by state and event draws it back; Chart.place orders an event's workflows, a state is
+optional, the walk runs the event's list in order with the nearest state in the lineage replacing its parents'.
