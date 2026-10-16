@@ -23,11 +23,11 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | --- | --- | --- | --- | --- |
 | Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | counters and the cadence options exist; needs the say to carry the key and the unread count filler |
 | Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | checks exist; needs the owed-numbers filler |
-| Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | needs "command pipes a read" |
+| Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | stays in code: a shell-syntax guard, with the mixed-journal and narrow-read refusals |
 | Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | counters exist, the exact-N form too, settings read through their option; needs the task name and edit fillers |
-| Tool about to run | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | needs "same command N times" from the entries |
+| Tool about to run | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | a workflow: needs the check "same command N times running" from the entries, and the command filler |
 | Tool about to run | laws.no_model / no_job | the tool dispatches a subagent; the dispatch names no model or no job | hold | needs checks on the tool's input |
-| Tool about to run | questions.own_tool | the tool is the agent's own question tool | hold | needs "tool is named X" |
+| Tool about to run | questions.own_tool | the tool is the agent's own question tool | hold | a workflow: needs the check "tool is named X", the text being the name |
 | Tool about to run | shell.alone | a journal command chained with other commands | hold | needs "command chains a journal part" |
 | Tool about to run | shell.narrow | a whole read of a file over twice the shown lines | hold | needs "file longer than N" |
 | Tool about to run | triggers.denied | a trigger of the user's matches the tool | hold | the trigger feature's own words check |
@@ -47,7 +47,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
 | Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the user-author check exists; needs the live-agent target |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | the trigger feature's own words check |
-| Reaction created by the user | messages.reacted | a face on a message | type | needs a reactions row trigger and the face filler |
+| Reaction created by the user | messages.reacted | a face on a message | type | a workflow: needs the check "reaction by the user" and the face and message fillers |
 | Rule created | memory.rule_review | a new rule | type once | needs the rule filler |
 | Message by the agent created | etiquette.remind | now and then | type | needs "now and then" |
 | Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | the worker checks exist; needs the release action and reaching every awaiting agent |
@@ -60,8 +60,10 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 
 What stays in code by design, with why: the briefing and the hold until oriented (a start is the engine's), the
 context marks and their hold (a mark is the engine's), skills owed, delivery of typed lines, the shell runner's
-parts and limits, the reading of the agent's turn for etiquette and faces, and the state rules (carry on in hand,
-the awaited check) until each moves with its state.
+parts and limits with its three refusals (a mixed journal chain, a whole read of a long file, a piped read of the
+user's words: each a guard on shell syntax), the reading of the agent's turn for etiquette and faces, and the state
+rules (carry on in hand, the awaited check) until each moves with its state. Every other line in the table above is
+a workflow's to carry; the rows that say "a workflow" with a check still to build are phase 2's work.
 
 ## Kept by a state or a listener, by design
 
