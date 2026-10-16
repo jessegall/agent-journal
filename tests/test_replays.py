@@ -11,6 +11,7 @@ from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.charts import Charts
+from journal.repositories.environments import Environments
 from journal.repositories.settings import Settings
 from tests.replay import Replay, differences
 from tests.test_features import AGENT, USER, hook
@@ -102,6 +103,45 @@ def writes_over_the_log(app, replay: Replay) -> None:
     replay.step("logged")
     for i in range(1, 52):
         replay.step(f"write {i} after the log", hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[1])
+
+
+def the_clock_ticks(app, replay: Replay) -> None:
+    """The steps: an idle agent in auto mode hears the clock at a minute, at half an hour and at half an hour again; then with a task parked, at a minute, twice."""
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    env = app.container.get(Environments).named("main").id
+    tick = lambda quiet: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=0.0, quiet_for=quiet))
+    hook(app, "Stop")
+    replay.step("idle")
+    for name, quiet in (("a minute", 60.0), ("half an hour", 1800.0), ("half an hour again", 1800.0)):
+        tick(quiet)
+        replay.step(f"quiet for {name}")
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "park", "1", "the header first"], AGENT)
+    hook(app, "Stop")
+    replay.step("a task parked")
+    for name in ("a minute with a task parked", "a minute more"):
+        tick(60.0)
+        replay.step(name)
+
+
+def test_clock_ticks_as_the_shipped_workflow_equals_the_two_listeners(journals, monkeypatch):
+    with_listener, with_workflow = journals
+    with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch)
+    empty_shipped(with_listener, "ticked")
+    the_clock_ticks(with_listener, left)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("AskAfterParked", "CheckIn"))
+    the_clock_ticks(with_workflow, right)
+    by_name = {s["name"]: s for s in left.record()}
+    assert by_name["quiet for a minute"]["typed"] == [] and "nothing has happened for half an hour" in str(by_name["quiet for half an hour"]["typed"]) and by_name["quiet for half an hour again"]["typed"] == [], "the listener checks in at half an hour, once inside the window"
+    assert "task 1, the footer, is still parked" in str(by_name["a minute with a task parked"]["typed"]) and by_name["a minute more"]["typed"] == [], "and asks after the parked task, once inside the window"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    left.freeze("the_clock_ticks")
 
 
 TOOL_LISTENERS = ("HoldUnread", "HoldUnanswered", "LogCadence")

@@ -1371,9 +1371,17 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
     assert "messages.created of row 1: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
     assert len(sent) == announced, "the trial typed nothing"
-    n = int(console.run(["chart", "new", "Waiting long"], USER).out.split()[1].rstrip(":"))
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    clock = charts.shipped_on("ticked")[0]
+    for shipped_node in charts.nodes_of(clock):
+        if shipped_node.kind != NodeKind.TRIGGER:
+            charts.remove_node(shipped_node, Actor.system())
+    n = clock.id
     node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
-    trigger, quiet, say = node("trigger", "ticked"), node("check", "quiet_for_over", "--text", "300"), node("action", "say", "--text", "check {{awaited}} now")
+    trigger = next(x.id for x in charts.nodes_of(clock) if x.kind == NodeKind.TRIGGER)
+    quiet, say = node("check", "quiet_for_over", "--text", "300"), node("action", "say", "--text", "check {{awaited}} now")
     console.run(["chart", "line", str(trigger), str(quiet)], USER)
     console.run(["chart", "line", str(quiet), str(say), "--port", "yes"], USER)
     live = console.run(["chart", "try", "ticked"], AGENT).out
@@ -1450,7 +1458,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent", "Tool about to run"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent", "Tool about to run", "Clock ticks"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []

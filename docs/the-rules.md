@@ -41,8 +41,8 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
 | Session starts | messages.new / some / many | messages unread | say | as at a prompt |
 | Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | needs the voice filler; the introduction stays with the voice |
-| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | the quiet-for check exists; needs the idle-and-auto reading |
-| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | the quiet-for check exists; needs the parked filler |
+| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | shipped as the workflow Clock ticks; the listener is off where it stands |
+| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | shipped as the workflow Clock ticks; the listener is off where it stands |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the Expecting state's; moves only with the state rule |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
 | Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | shipped as the workflow Message arrives; the listener is off where it stands |

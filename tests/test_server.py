@@ -405,10 +405,10 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
 def test_the_page_refuses_a_second_workflow_on_an_event(server):
     status, body = call(server, "POST", "/journal/chart", {"trigger": "idle", "title": "Another stop"})
     assert status >= 400 and "one workflow per event" in json.dumps(body)
-    status, made = call(server, "POST", "/journal/chart", {"trigger": "ticked", "title": "On the tick"})
+    status, made = call(server, "POST", "/journal/chart", {"trigger": "tool_finished", "title": "After a tool"})
     assert status == 201
     moved = [{**node, "key": "idle"} for node in made["nodes"]]
     status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
     assert status >= 400 and "one workflow per event" in json.dumps(body)
     status, listed = call(server, "GET", "/journal/chart")
-    assert [w["sidelined_by"] for w in listed["workflows"]] == [None, None, None, None, None], "each answers its own event"
+    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 6, "each answers its own event"
