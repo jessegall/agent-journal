@@ -581,3 +581,11 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   canvas; the list form with DropLists, no native select; the catalogue in plain words (Agent stops, Agent idle?, Send
   message to agent). The phone screen (design P1 to P5) is task 90.
 - **The branch is on origin** as draft pull request 26.
+
+## A failing node in a walk (ruling of 2026-10-16, plan 2)
+
+The walk runs inside the hook's answer. A node that raises, a check on a state nobody foresaw or an action on a row that is gone,
+would otherwise fail the whole answer and skip every listener after it, so one bad node could take the inbox, the holds and the
+check-ins down with it. The walk therefore catches a node's fault, writes a `walk_failed` entry naming the node, its key and the
+fault's words, ends that path and goes on with the others. This is the one place a `try/except` is allowed to catch broadly, and it
+does not swallow: the entry is the fault made visible, and the page is to show it per workflow (plan 2, phase 3).

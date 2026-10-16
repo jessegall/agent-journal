@@ -1572,6 +1572,8 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     checks = app.container.get(Checks)
     env = app.container.get(Environments).named("main").id
     assert checks.number("tasks.log_after") == 50 and checks.number("7") == 7, "a setting's name reads through its option, so an unset key is the default, never 0"
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.log_after", value=12), Actor.system())
+    assert checks.number("tasks.log_after") == 12, "and the user's value once set"
     console.run(["message", "send", "look at the picture, the chart and the footer please"], USER)
     console.run(["message", "read", "1"], AGENT)
     own = str(app.config.home / "files" / "message" / "1" / "shot.png")
@@ -1686,3 +1688,26 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
     worker = app.container.get(Workers).find(1)
     assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"
+
+
+def test_a_failing_node_ends_its_path_is_recorded_and_the_walk_goes_on(app):
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import THEN, Charts
+    from journal.repositories.entries import Entries
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    charts = app.container.get(Charts)
+    env = app.container.get(Environments).named("main").id
+    made = console.run(["chart", "new", "A broken one"], USER).out
+    broken = charts.find(int(made.split()[1].rstrip(":")))
+    trigger = charts.add_node(broken, Node(kind=NodeKind.TRIGGER, key="idle"), Actor.user(1))
+    bad = charts.add_node(broken, Node(kind=NodeKind.CHECK, key="no_such_check"), Actor.user(1))
+    charts.connect(trigger, bad, THEN, Actor.user(1))
+    console.run(["task", "create", "free work"], USER)
+    status, body = hook(app, "Stop")
+    assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the shipped workflow still answers the stop"
+    failed = app.container.get(Entries).of_kind(env, "walk_failed", 5)
+    assert failed and failed[0].data["node"] == bad.id and "no_such_check" in failed[0].data["fault"], "the fault is on record, naming the node"

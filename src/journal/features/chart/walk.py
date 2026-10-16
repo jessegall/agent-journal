@@ -17,6 +17,8 @@ from journal.repositories.entries import Entries
 STEPS = 50
 """A path is at most this long: a longer one is a loop the validation missed, and it stops here."""
 WALKED = "walk"
+FAILED = "walk_failed"
+"""The entry a node leaves when answering or acting raised: the node, its key and the fault's words, so the page can show it; the path ends there and the walk goes on."""
 """The entry a walk leaves when a trigger fired: the nodes it passed and what it did, so the viewer can say why."""
 
 
@@ -53,14 +55,25 @@ class Walk:
             steps += 1
             node = nodes[at.pop(0)]
             passed.append(node.id)
-            if node.kind == NodeKind.CHECK:
-                port = YES if self.checks.answer(node.key, ctx, node.text) else NO
-            else:
-                port = THEN
-                if node.kind == NodeKind.ACTION:
-                    decision = decision.merged(self.actions.perform(node.key, node.text, ctx))
+            try:
+                port, decision = self.step(node, ctx, decision)
+            except Exception as fault:
+                self.failed(node, ctx, fault)
+                break
             at += after.get((node.id, port), [])
         return decision
+
+    def step(self, node: Node, ctx: Context, decision: Decision) -> tuple[str, Decision]:
+        """One node: a check answers with the port to leave by, an action acts and leaves by then, a trigger leaves by then."""
+        if node.kind == NodeKind.CHECK:
+            return (YES if self.checks.answer(node.key, ctx, node.text) else NO), decision
+        if node.kind == NodeKind.ACTION:
+            return THEN, decision.merged(self.actions.perform(node.key, node.text, ctx))
+        return THEN, decision
+
+    def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
+        """A node that raised ends its path, and leaves what happened where the page can show it: the other paths still answer. The ruling behind the catch is in NOTES, under the chart."""
+        self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data={"session": ctx.session, "node": node.id, "key": node.key, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
 
     @staticmethod
     def trigger_key(event: Event) -> str:
