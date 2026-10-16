@@ -327,10 +327,12 @@ Still to do, in rough order:
   and removed) and the terminal (shell commands and their output). Still served empty:
   collections, suggestions, dumps, plugins, integrations, secrets, phone, sharing, the hub
   when the project is under a throwaway path. Each is a shaper or a stub in `http/v3/` away.
-- Chat marks drawn today: commit badges (from the git feature's entries), replies as comments,
-  skills loaded; not yet: subagent marks, thoughts, whispers, test-run cards, reactions.
+- Chat marks drawn today: commit badges (from the git feature's entries), skills loaded; not yet: subagent marks, thoughts, whispers, test-run cards, reactions.
 - Install from a clone or a release (`install.sh`), upgrade and migrations; the `.pyz` build.
 - `v3.bak/` can go once nothing is left to read from it.
+- A message is one shape whoever wrote it: GET /api/<env>/message serves the user's and the agent's
+  alike, with author, actor, reply_to and acknowledgement in data, and the chat draws a reply at its own
+  number with a one-line quote of what it answers. The comment type is only a user's comment under a row.
 
 ## The plan
 

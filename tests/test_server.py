@@ -318,7 +318,7 @@ def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_
         app.runtime().stop()
 
 
-def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_quotes_what_it_answers(tmp_path: Path, monkeypatch):
+def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_what_it_answers(tmp_path: Path, monkeypatch):
     from journal.models.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.settings import Settings
@@ -338,13 +338,13 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_quotes_wh
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         app.runtime().deferred.drain()
-        comment = call(server, "GET", "/api/main/comment")[1]["rows"][-1]
-        assert comment["brief"] == "> is the footer fixed?\n> and the header?\n\nBoth are." and comment["refs"] == [f"message:{n}"]
+        reply = call(server, "GET", "/api/main/message")[1]["rows"][-1]
+        assert reply["brief"] == "Both are." and reply["refs"] == [f"message:{n}"] and reply["data"]["reply_to"] == n
     finally:
         app.runtime().stop()
 
 
-def test_an_agents_reply_is_a_comment_event_so_the_chat_refreshes_it(tmp_path: Path):
+def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_path: Path):
     from journal.models.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.settings import Settings
@@ -357,8 +357,12 @@ def test_an_agents_reply_is_a_comment_event_so_the_chat_refreshes_it(tmp_path: P
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
         app.runtime().deferred.drain()
+        rows = [r for r in call(server, "GET", "/api/main/message?completed=1")[1]["rows"] if n in (r["n"], r["data"]["reply_to"])]
+        assert [(r["type"], r["data"]["author"], r["data"]["reply_to"], r["brief"]) for r in rows] == [("message", "user", 0, "hello"), ("message", "agent", n, "Hello back.")]
+        assert rows[0]["data"]["actor"].startswith("user") and rows[1]["data"]["actor"] == "agent:s1" and rows[1]["data"]["acknowledgement"] is False
+        assert call(server, "GET", "/api/main/comment")[1]["rows"] == [], "a reply is no comment"
         kinds = [(e["type"], e["action"]) for e in call(server, "GET", "/api/main/events?since=0")[1]]
-        assert ("comment", "created") in kinds and ("message", "created") in kinds
+        assert ("message", "created") in kinds and "comment" not in {kind for kind, _ in kinds}
     finally:
         app.runtime().stop()
 

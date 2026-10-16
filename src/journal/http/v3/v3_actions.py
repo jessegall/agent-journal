@@ -202,7 +202,7 @@ class V3Actions:
         return self.reports.find(n)
 
     def comment_react(self, n: int, body: dict, by):
-        """A reply is a message row drawn as a comment: a face on it is a face on that message."""
+        """A comment is a message linked to a row: a face on it is a face on that message."""
         return self.message_react(n, body, by)
 
     def message_react(self, n: int, body: dict, by):

@@ -58,9 +58,9 @@ describe("a receipt for filed work", () => {
         expect(got[1].title).toBe("Filed to-do 3 from your message.");
     });
 
-    test("is left out once the agent reacted or commented on the message", () => {
-        const reply = comment(1, 12, "ok", "agent", {refs: ["message:7"]});
-        expect(refs(turns({message: [filedMessage], comment: [reply]}))).not.toContain("receipt:7");
+    test("is left out once the agent reacted or replied to the message", () => {
+        const reply = message(9, 12, {seen: ["agent"], brief: "ok", refs: ["message:7"], data: {reply_to: 7}});
+        expect(refs(turns({message: [filedMessage, reply]}))).not.toContain("receipt:7");
     });
 
     test("is left out when the message only quoted another message", () => {
@@ -68,20 +68,7 @@ describe("a receipt for filed work", () => {
     });
 });
 
-describe("agent replies", () => {
-    test("the same answer twice in two minutes becomes one with both quotes", () => {
-        const first = comment(1, 100, "> one\nSure");
-        const second = comment(2, 110, "> two\nSure");
-        const got = turns({comment: [first, second]});
-        expect(got).toHaveLength(1);
-        expect(got[0].brief).toBe("> one\n>\n> two\n\nSure");
-    });
-
-    test("different answers, or the same one long apart, stay apart", () => {
-        expect(turns({comment: [comment(1, 100, "Sure"), comment(2, 110, "Nope")]})).toHaveLength(2);
-        expect(turns({comment: [comment(1, 100, "Sure"), comment(2, 400, "Sure")]})).toHaveLength(2);
-    });
-
+describe("comments", () => {
     test("a comment on nothing known is not shown, and a visitor's comment becomes a card", () => {
         const loose = comment(3, 5, "lost", "agent", {refs: ["nothing:1"]});
         const visitor = comment(4, 6, "hi", "user", {data: {visitor: "Ann"}});

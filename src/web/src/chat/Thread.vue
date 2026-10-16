@@ -21,6 +21,7 @@ import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
+import {answered} from "../domain/replies.js";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
@@ -177,7 +178,7 @@ const boardRequests = computed(
 const thread = computed(() => {
     const made = threadTurns(
         {
-            message: rows("message").filter((m) => !boardRequests.value.has(m.ref)),
+            message: rows("message").filter((m) => !boardRequests.value.has(m.ref) && !boardRequests.value.has(answered(m))),
             comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
             question: rows("question").filter((q) => !q.env),
             suggestion: rows("suggestion"),

@@ -89,8 +89,7 @@ const commentParent = computed(() => {
     const [type, n] = parent.split(":");
     return {type, n: Number(n), label: `${meta(type).title.toLowerCase()} ${n}`};
 });
-const messageReply = computed(() => commentParent.value?.type === "message");
-const resourceComment = computed(() => !!commentParent.value && !messageReply.value);
+const resourceComment = computed(() => !!commentParent.value);
 
 function openComment() {
     if (commentParent.value) open(commentParent.value.type, commentParent.value.n, props.turn.n);
