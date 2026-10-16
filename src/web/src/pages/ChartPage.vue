@@ -28,8 +28,12 @@ const LEAD =
     "The journal ships one workflow for every state the agent can be in, and one for what every state shares. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
 const STATE_PLACE = {base: "Default · every state"};
 
-// where a workflow runs, as a note beside its title: a shipped one at its state, one of your own at its event
+// where a workflow runs, as a note beside its title: a shipped one at its state, one of your own at its event; one with no trigger is off
 function placeOf(workflow) {
+    const place = placeWords(workflow);
+    return workflow.off ? `${place} · off` : place;
+}
+function placeWords(workflow) {
     if (workflow.state) return STATE_PLACE[workflow.state] || `Default · the ${workflow.state.replace("_", " ")} state`;
     if (workflow.event) return `Yours · at ${entries.value[`trigger:${workflow.event}`]?.title || workflow.event}`;
     return "Yours";
@@ -624,8 +628,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
 
                 <template v-if="loaded && !nodes.length">
-                    <EmptyState class="chart-empty" title="No nodes yet">
-                        Start with a trigger: the event that starts this workflow.
+                    <EmptyState class="chart-empty" :title="shipped ? 'This workflow is off' : 'No nodes yet'">
+                        {{
+                            shipped
+                                ? "It has no nodes, so the journal does nothing here. Add a trigger, or reset it to the default."
+                                : "Start with a trigger: the event that starts this workflow."
+                        }}
                         <br />
                         <Btn class="chart-empty-add" @click.stop="openAdd(null)">Add node</Btn>
                     </EmptyState>

@@ -184,6 +184,10 @@ const test = () =>
 // the sheets: every choice is an action sheet, as the phone does it
 const STATE_PLACE = {base: "Default · every state"};
 function placeOf(workflow) {
+    const place = placeWords(workflow);
+    return workflow.off ? `${place} · off` : place;
+}
+function placeWords(workflow) {
     if (workflow.state) return STATE_PLACE[workflow.state] || `Default · the ${workflow.state.replace("_", " ")} state`;
     if (workflow.event)
         return `Yours · at ${catalogue.value.find((e) => e.kind === "trigger" && e.key === workflow.event)?.title || workflow.event}`;
@@ -288,7 +292,15 @@ const steps = computed(() => {
             <p v-if="failed" class="wf-failed">{{ failed }}</p>
 
             <template v-if="!nodes.length">
-                <EmptyList icon="bolt" title="No nodes yet" reason="Start with a trigger: the event that starts this workflow." />
+                <EmptyList
+                    icon="bolt"
+                    :title="shipped ? 'This workflow is off' : 'No nodes yet'"
+                    :reason="
+                        shipped
+                            ? 'It has no nodes, so the journal does nothing here. Add a trigger, or reset it to the default.'
+                            : 'Start with a trigger: the event that starts this workflow.'
+                    "
+                />
             </template>
             <template v-for="node in nodes" :key="node.id">
                 <CellGroup

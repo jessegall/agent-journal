@@ -465,6 +465,18 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     assert [r["n"] for r in older["rows"]] == list(range(1, 11)) and not older["more"]
 
 
+def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(server):
+    status, read = call(server, "GET", "/journal/chart")
+    base = next(w for w in read["workflows"] if w["state"] == "base")
+    assert status == 200 and not base["off"], "a shipped workflow with its drawing answers its events"
+    status, body = call(server, "POST", f"/journal/chart/{base['id']}/remove", {})
+    assert status == 409 and "empty it or reset it" in body["error"], "a shipped workflow stays"
+    status, saved = call(server, "POST", f"/journal/chart/{base['id']}", {"revision": base["revision"], "nodes": [], "lines": []})
+    assert status == 200 and saved["nodes"] == []
+    status, read = call(server, "GET", "/journal/chart")
+    assert next(w for w in read["workflows"] if w["id"] == base["id"])["off"], "an emptied workflow answers nothing and reads off"
+
+
 def test_the_page_refuses_a_second_workflow_of_the_older_shape_on_an_event_and_a_second_on_a_state(server):
     status, first = call(server, "POST", "/journal/chart", {"trigger": "idle", "title": "Another stop"})
     assert status == 201, "a workflow of the older shape on an event no other such workflow answers"
