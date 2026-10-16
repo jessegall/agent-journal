@@ -10,7 +10,7 @@ from journal.repositories.agents import Agents
 
 
 class WalkRowEvents(Listener[ModelEvent]):
-    """Every row created, updated or deleted walks the chart on the worker thread, about every agent of the row's environment that has not ended, the live one first and the only one that speaks; no hook waits, so a line is typed once and nothing is refused."""
+    """Every row created, updated or deleted walks the chart on the worker thread, about every agent of the row's environment that has not ended, the live one first; no hook waits, so a line is typed, once per environment, and nothing is refused."""
 
     def __init__(self, walk: Walk, agents: Agents) -> None:
         self.walk, self.agents = walk, agents
@@ -23,5 +23,6 @@ class WalkRowEvents(Listener[ModelEvent]):
         if not agents:
             self.walk.on(Context(event=event, environment_id=environment_id))
             return
-        for voiced, agent in enumerate(reversed(agents)):
-            self.walk.on(Context(event=event, session=agent.session, environment_id=environment_id, provider=agent.provider or "claude", voiced=voiced == 0))
+        spoken: set = set()
+        for agent in reversed(agents):
+            self.walk.on(Context(event=event, session=agent.session, environment_id=environment_id, provider=agent.provider or "claude", spoken=spoken))

@@ -1458,7 +1458,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent", "Tool about to run", "Clock ticks"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent", "Tool about to run", "Clock ticks", "Worker reports", "Question answered"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
@@ -1759,21 +1759,13 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     console.run(["task", "create", "t", "--start"], Where("main", "s2"))
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], Where("main", "s2"))
     console.run(["worker", "wait", "1"], Where("main", "s2"))
-    n = int(console.run(["chart", "new", "Worker reports"], USER).out.split()[1].rstrip(":"))
-    node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
-    trigger, check = node("trigger", "workers.updated"), node("check", "agent_awaits_the_worker")
-    release, told = node("action", "release", "--text", "worker {{worker_n}}, {{worker_name}}, is back: carry on"), node("action", "type", "--text", "worker {{worker_n}} reported")
-    console.run(["chart", "line", str(trigger), str(check)], USER)
-    console.run(["chart", "line", str(check), str(release), "--port", "yes"], USER)
-    console.run(["chart", "line", str(trigger), str(told)], USER)
-    app.container.get(Settings).save(Setting(environment_id=0, key="listeners.off", value=["ReleaseAwaiting"]), Actor.system())
     typed.clear()
     machine = app.container.get(Machine)
     assert machine.current("s2").name == "awaiting"
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
     app.runtime().deferred.drain()
-    assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released"
-    assert typed.count("[journal] worker 1 reported") == 1, "the line is typed once for the environment"
+    assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released by the shipped workflow"
+    assert typed == ["[journal] worker 1, Lady Lovelace, reported in the chat", "[journal] what you waited on came back: carry on"], "told once, on the walk about the agent that waits"
 
 
 def test_one_workflow_per_event_a_second_is_refused_and_the_older_one_answers(app):

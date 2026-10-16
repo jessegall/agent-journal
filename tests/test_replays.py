@@ -7,6 +7,8 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.console.where import Where
+from journal.engine.machine import Machine
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.actor import Actor
 from journal.models.setting import Setting
@@ -142,6 +144,71 @@ def test_clock_ticks_as_the_shipped_workflow_equals_the_two_listeners(journals, 
     assert "task 1, the footer, is still parked" in str(by_name["a minute with a task parked"]["typed"]) and by_name["a minute more"]["typed"] == [], "and asks after the parked task, once inside the window"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
     left.freeze("the_clock_ticks")
+
+
+def a_worker_reports(app, replay: Replay) -> None:
+    """The steps: two workers dispatched and awaited; one reports, the other is stopped."""
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1", "2"], AGENT)
+    hook(app, "Stop")
+    replay.step("awaiting two workers")
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    app.runtime().deferred.drain()
+    replay.step("worker 1 reports")
+    console.run(["worker", "stop", "2"], USER)
+    app.runtime().deferred.drain()
+    replay.step("worker 2 is stopped")
+
+
+def a_question_is_answered(app, replay: Replay) -> None:
+    """The steps: a question asked and waited on, then answered by the user."""
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    hook(app, "Stop")
+    replay.step("waiting on the question")
+    console.run(["question", "answer", "1", "blue"], USER)
+    app.runtime().deferred.drain()
+    replay.step("answered")
+
+
+def test_worker_reports_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
+    with_listener, with_workflow = journals
+    with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch)
+    empty_shipped(with_listener, "workers.updated")
+    a_worker_reports(with_listener, left)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("ReleaseAwaiting",))
+    a_worker_reports(with_workflow, right)
+    by_name = {s["name"]: s for s in left.record()}
+    assert by_name["worker 1 reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
+    assert by_name["worker 2 is stopped"]["typed"] == ["[journal] worker 2, Dr. Einstein, stopped before it reported", "[journal] what you waited on came back: carry on"]
+    assert with_workflow.container.get(Machine).current("s1").task_id == 1, "the workflow released the agent"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    left.freeze("a_worker_reports")
+
+
+def test_question_answered_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
+    with_listener, with_workflow = journals
+    with_listener.runtime().start()
+    left = Replay(with_listener, monkeypatch)
+    empty_shipped(with_listener, "questions.updated")
+    a_question_is_answered(with_listener, left)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("ReleaseWaiting",))
+    a_question_is_answered(with_workflow, right)
+    assert left.record()[-1]["typed"] == ["[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"]
+    assert with_workflow.container.get(Machine).current("s1").task_id == 1, "the workflow released the agent"
+    assert differences(left.record(), right.record()) == [], "the agent would have seen the same; the workflow's line is on record too, which the listener never left"
+    left.freeze("a_question_is_answered")
 
 
 TOOL_LISTENERS = ("HoldUnread", "HoldUnanswered", "LogCadence")

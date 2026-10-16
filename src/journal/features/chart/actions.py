@@ -38,9 +38,13 @@ class Actions:
         return getattr(self, key)(self.fillers.fill(text, ctx), ctx)
 
     def say(self, text: str, ctx: Context) -> Decision:
-        if not ctx.session or not ctx.voiced:
+        """Said to the agent once inside the nudge's window: on the hook's answer when one waits, else typed into its terminal."""
+        if not ctx.session:
             return Decision()
         line = self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text))
+        if not ctx.answers_hook:
+            self.typed(line, ctx)
+            return Decision()
         if not line:
             return Decision()
         if ctx.answers_hook:
@@ -57,20 +61,24 @@ class Actions:
 
     def type(self, text: str, ctx: Context) -> Decision:
         """Typed into the terminal; a text naming a nudge goes through the nudger first, so the record and the repeat window are the nudge's, and is for a live agent only."""
-        if not ctx.environment_id or not ctx.voiced:
+        if not ctx.environment_id:
             return Decision()
         if not NAMED.match(text):
-            self.supervisor.type(ctx.environment_id, text)
-            return Decision()
-        if ctx.session:
-            line = self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text))
-            if line:
-                self.supervisor.type(ctx.environment_id, line)
+            self.typed(text, ctx)
+        elif ctx.session:
+            self.typed(self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text)), ctx)
         return Decision()
+
+    def typed(self, line: str | None, ctx: Context) -> None:
+        """Into the environment's terminal, once per event: a walk about a second agent does not repeat it."""
+        if line and line not in ctx.spoken:
+            ctx.spoken.add(line)
+            self.supervisor.type(ctx.environment_id, line)
 
     def show_card(self, text: str, ctx: Context) -> Decision:
         """A card in the chat with the line, so the user sees what the journal did."""
-        if ctx.environment_id and ctx.voiced:
+        if ctx.environment_id and text not in ctx.spoken:
+            ctx.spoken.add(text)
             self.cards.show(ctx.environment_id, ctx.session, text, "bolt")
         return Decision()
 

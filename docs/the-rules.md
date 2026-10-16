@@ -50,8 +50,8 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Reaction created by the user | messages.reacted | a face on a message | type | a workflow: needs the check "reaction by the user" and the face and message fillers |
 | Rule created | memory.rule_review | a new rule | type once | needs the rule filler |
 | Message by the agent created | etiquette.remind | now and then | type | needs "now and then" |
-| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | the worker checks exist; needs the release action and reaching every awaiting agent |
-| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | the question checks exist; needs the release action |
+| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | shipped as the workflow Worker reports; the listener is off where it stands |
+| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | shipped as the workflow Question answered; the listener is off where it stands |
 | Plan updated | plans.approved, next, done, parked | the plan's state changed | type | needs plan-state checks and fillers |
 | Setting saved | voices.changed | a voice setting changed | type | needs "setting X changed" |
 | Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |

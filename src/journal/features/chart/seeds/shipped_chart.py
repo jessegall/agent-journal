@@ -17,6 +17,12 @@ MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message
 CLOCK_TITLE = "Clock ticks"
 PARKED_STILL = "[tasks.parked_still] task {{parked_n}}, {{parked_title}}, is still parked: can you continue it now?. it was parked because: {{parked_why}}. journal task resume {{parked_n}} picks it up again"
 CHECK_IN = "[tasks.check_in] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
+WORKER_TITLE = "Worker reports"
+REPORTED = "[workers.reported] worker {{worker_n}}, {{worker_name}}, reported in the chat"
+STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
+RETURNED = "[workers.returned] what you waited on came back: carry on"
+QUESTION_TITLE = "Question answered"
+ANSWERED = "question {{question_n}} is answered. journal question show {{question_n}} reads it whole, with the messages linked to it; act on the answer"
 TOOL_TITLE = "Tool about to run"
 UNREAD_HELD = "your inbox is unread: {{unread_count}} waiting. journal message unread before any other write"
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
@@ -43,6 +49,8 @@ class ShippedChart(Seed):
             "prompt_submitted": Drawing(PROMPT_TITLE, self.draw_prompt, ("InboxAtPrompt",)),
             "tool_starting": Drawing(TOOL_TITLE, self.draw_tool, ("HoldUnread", "HoldUnanswered", "LogCadence")),
             "ticked": Drawing(CLOCK_TITLE, self.draw_clock, ("AskAfterParked", "CheckIn")),
+            "workers.updated": Drawing(WORKER_TITLE, self.draw_worker, ("ReleaseAwaiting",)),
+            "questions.updated": Drawing(QUESTION_TITLE, self.draw_question, ("ReleaseWaiting",)),
         }
         """The events the journal ships a workflow for, each with its drawing."""
 
@@ -99,6 +107,45 @@ class ShippedChart(Seed):
         self.charts.connect(many, some, NO, by)
         self.charts.connect(some, say_some, YES, by)
         self.charts.connect(some, say_one, NO, by)
+
+    def draw_worker(self, chart: Chart) -> None:
+        """Today's conduct when a worker reports or stops: every agent awaiting it is told, and the one whose last worker is back goes on with what it was doing."""
+        by = Actor.system()
+        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
+        line = lambda source, target, port: self.charts.connect(source, target, port, by)
+        worker = node(NodeKind.TRIGGER, "workers.updated", x=400, y=0)
+        reported = node(NodeKind.CHECK, "worker_reported", x=240, y=92)
+        awaited_r = node(NodeKind.CHECK, "agent_awaits_the_worker", x=240, y=184)
+        tell_reported = node(NodeKind.ACTION, "type", REPORTED, x=240, y=276)
+        last_r = node(NodeKind.CHECK, "last_worker_back", x=240, y=368)
+        back_r = node(NodeKind.ACTION, "release", RETURNED, x=240, y=460)
+        stopped = node(NodeKind.CHECK, "worker_stopped", x=560, y=92)
+        awaited_s = node(NodeKind.CHECK, "agent_awaits_the_worker", x=560, y=184)
+        tell_stopped = node(NodeKind.ACTION, "type", STOPPED, x=560, y=276)
+        last_s = node(NodeKind.CHECK, "last_worker_back", x=560, y=368)
+        back_s = node(NodeKind.ACTION, "release", RETURNED, x=560, y=460)
+        line(worker, reported, THEN)
+        line(reported, awaited_r, YES)
+        line(awaited_r, tell_reported, YES)
+        line(tell_reported, last_r, THEN)
+        line(last_r, back_r, YES)
+        line(worker, stopped, THEN)
+        line(stopped, awaited_s, YES)
+        line(awaited_s, tell_stopped, YES)
+        line(tell_stopped, last_s, THEN)
+        line(last_s, back_s, YES)
+
+    def draw_question(self, chart: Chart) -> None:
+        """Today's conduct when a question is answered: every agent waiting on it goes back to its work and is told how to read the answer."""
+        by = Actor.system()
+        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
+        question = node(NodeKind.TRIGGER, "questions.updated", x=400, y=0)
+        answered = node(NodeKind.CHECK, "question_answered", x=400, y=92)
+        waits = node(NodeKind.CHECK, "agent_waits_on_the_question", x=400, y=184)
+        back = node(NodeKind.ACTION, "release", ANSWERED, x=400, y=276)
+        self.charts.connect(question, answered, THEN, by)
+        self.charts.connect(answered, waits, YES, by)
+        self.charts.connect(waits, back, YES, by)
 
     def draw_clock(self, chart: Chart) -> None:
         """Today's conduct as the clock ticks: an idle agent with a parked task is asked now and then whether it can go on with it, and in auto mode one quiet for half an hour whether anything is left to do."""
