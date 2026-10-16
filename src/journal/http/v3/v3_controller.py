@@ -30,6 +30,7 @@ from journal.http.v3.v3_settings import V3Settings
 from journal.models.entry import Entry
 from journal.models.environment import Environment
 from journal.repositories.agents import Agents
+from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
@@ -50,10 +51,11 @@ SILENT_AFTER = 900.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events, scope: Scope) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events, scope: Scope, edits: Edits) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
         self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files, self.providers = messages, files, current, supervisor, registry, skill_files, providers
         self.events = events
+        self.edits = edits
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen, self.scope = environments, entries, agents, tasks, machine, chosen, scope
 
     # the journal
@@ -270,58 +272,9 @@ class V3Controller:
         if agent is None:
             return Response.json({"cursor": time.time(), "edits": [], "older": False})
         since = float(request.query.get("since", 0) or 0)
-        edits = []
-        for e in reversed(self.entries.of_kind_in(400)):
-            tool = e.data.get("tool_name", "")
-            if not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= since:
-                continue
-            if e.kind == RAN:
-                edits += self.edits_of_part(e)
-            elif e.kind == "ToolFinished" and tool in ("Edit", "Write", "MultiEdit") and (edit := self.edit_of(e, tool)):
-                edits.append(edit)
+        edits = [{"id": f"{e.path}@{e.at}", "path": e.path, "kind": e.kind, "at": e.at, "added": e.added, "removed": e.removed, "first_line": e.first_line, "last_line": e.last_line,
+                  "rows": list(e.rows), "image": False, **({"command": e.command} if e.command else {})} for e in self.edits.of_agent(agent.session, since)]
         return Response.json({"cursor": time.time(), "edits": edits[-50:], "older": False})
-
-    @staticmethod
-    def edits_of_part(entry) -> list[dict]:
-        """The files a shell part changed, as the tree moved while it ran: counted, not shown line by line."""
-        at = entry.data["at"]
-        return [{"id": f"{c['path']}@{at}", "path": c["path"], "kind": "edit", "at": at, "added": c["added"], "removed": c["removed"], "first_line": 1, "last_line": 1, "rows": [], "image": False, "command": entry.data["part"][:80]}
-                for c in entry.data.get("changed", [])]
-
-    def edit_of(self, entry, tool: str) -> dict | None:
-        input_ = entry.data.get("tool_input", {})
-        path = input_.get("file_path", "")
-        if not path:
-            return None
-        try:
-            path = str(Path(path).resolve().relative_to(self.config.root.resolve()))
-        except ValueError:
-            path = Path(path).name
-        rows = self.patch_rows(entry.data.get("tool_response", {}), input_, tool)
-        at = seconds(entry.created_at)
-        numbered = [r["line"] for r in rows if r["line"]]
-        return {"id": f"{path}@{at}", "path": path, "kind": "create" if tool == "Write" else "edit", "at": at, "added": len([r for r in rows if r["kind"] == "add"]), "removed": len([r for r in rows if r["kind"] == "del"]),
-                "first_line": min(numbered) if numbered else 1, "last_line": max(numbered) if numbered else len(rows), "rows": rows[:200], "image": False}
-
-    @staticmethod
-    def patch_rows(response, input_: dict, tool: str) -> list[dict]:
-        """The changed lines with their numbers from the provider's structured patch; a whole write is all added lines from one."""
-        hunks = response.get("structuredPatch", []) if isinstance(response, dict) else []
-        if not hunks:
-            added = (input_.get("new_string", "") if tool == "Edit" else input_.get("content", "")).splitlines()
-            return [{"kind": "add", "line": n, "text": line, "hidden": 0} for n, line in enumerate(added, 1)]
-        rows = []
-        for hunk in hunks:
-            old, new = hunk.get("oldStart", 1), hunk.get("newStart", 1)
-            for text in hunk.get("lines", []):
-                mark, body = text[:1], text[1:]
-                if mark == "+":
-                    rows.append({"kind": "add", "line": new, "text": body, "hidden": 0}); new += 1
-                elif mark == "-":
-                    rows.append({"kind": "del", "line": old, "text": body, "hidden": 0}); old += 1
-                else:
-                    rows.append({"kind": "ctx", "line": new, "text": body, "hidden": 0}); new += 1; old += 1
-        return rows
 
     def get_agent_edited_file(self, request: Request) -> Response:
         path = request.query.get("id", "").split("@")[0]

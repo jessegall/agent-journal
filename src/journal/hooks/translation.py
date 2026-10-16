@@ -25,7 +25,7 @@ class Translation:
         HookKind.SESSION_START: lambda hook, provider: SessionStarted(source=hook.source),
         HookKind.USER_PROMPT: lambda hook, provider: PromptSubmitted(prompt=hook.text),
         HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool, hook.input)),
-        HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output, read_path=provider.read_path(hook.tool, hook.input), skill_loaded=provider.skill_loaded(hook.tool, hook.input)),
+        HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output, response=hook.response, read_path=provider.read_path(hook.tool, hook.input), skill_loaded=provider.skill_loaded(hook.tool, hook.input)),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
         HookKind.STOP: lambda hook, provider: Idle(),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),

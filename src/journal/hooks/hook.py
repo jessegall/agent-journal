@@ -29,6 +29,11 @@ class Hook:
     def output(self) -> str:
         return self.printed(self.body.get("tool_response", ""))
 
+    @property
+    def response(self) -> dict:
+        got = self.body.get("tool_response", "")
+        return got if isinstance(got, dict) else {}
+
     @staticmethod
     def printed(response) -> str:
         """What a tool call printed: Claude hands a shell's output as a dict of stdout and stderr, other tools as text."""

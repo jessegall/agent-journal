@@ -730,6 +730,24 @@ def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_th
     assert len([m for m in messages.in_() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]) == 1, "the display hook's copy of the same block is no second message"
 
 
+def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_parts_change_is_one_too(app):
+    from journal.models.edit import Edit
+    from journal.repositories.edits import KEEP, Edits
+    hook(app, "SessionStart")
+    hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
+    app.runtime().deferred.drain()
+    edits = app.container.get(Edits)
+    kept = edits.of_agent("s1", 0)
+    assert [e.path for e in kept] == ["a.py"] and kept[0].added == 1 and kept[0].removed == 1 and kept[0].first_line == 7 and [r["kind"] for r in kept[0].rows] == ["ctx", "del", "add", "ctx"]
+    app.console().run(["shell", "ran", "sed -i s/x/y/ b.py", "--chain", "c1", "--status", "0", "--output", "", "--changed", "3\t1\tb.py"], AGENT)
+    kept = edits.of_agent("s1", 0)
+    assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 3 and kept[1].removed == 1 and kept[1].command and kept[1].rows == ()
+    for i in range(KEEP):
+        edits.record(Edit(session="s1", path=f"f{i}.py", at=float(i + 10)), Actor.agent("s1"))
+    assert len(edits.in_()) == KEEP, "the oldest go as new ones come"
+    assert edits.in_()[0].path == "f0.py" and edits.in_()[-1].path == f"f{KEEP - 1}.py", "the two oldest went"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus

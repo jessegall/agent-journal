@@ -1,6 +1,7 @@
 from journal.features.briefing.feature import Briefing
 from journal.features.chart.feature import ChartFeature
 from journal.features.checks.feature import Checks
+from journal.features.edits.feature import EditsFeature
 from journal.features.etiquette.feature import Etiquette
 from journal.features.git.feature import Git
 from journal.features.workers.feature import Workers
@@ -27,7 +28,7 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (ChartFeature, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, Pins, Etiquette, Voices, Profiles, Git)
+    FEATURES = (ChartFeature, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Skills, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature)
     """The workflows walk first, right after the machine and before the engine's holds, so they read the state the machine left: a session start walks as the state the agent resumes in, and the briefing's hold comes after."""
 
     @classmethod

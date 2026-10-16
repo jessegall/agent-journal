@@ -686,3 +686,8 @@ the byte it left off at, and handles each block written since as a whole turn be
 written before a command answers its message at that command. The display hook's copy of the last block is matched
 by its visible words and recorded once. Codex has no transcript reading yet: its replies still come only from the
 display hook.
+
+File edits are rows since 2026-10-16 in the evening, on the user's word: `Edit` is a model (`models/edit.py`), written
+by the edits feature when an editing tool finishes (`features/edits`, blocking so the pane's next poll sees it) and by
+the shell command for the files a part changed; the last five hundred per environment stay (`repositories/edits.py`);
+the edits endpoint reads the rows, so the File edits pane shows the same after a return to the journal.

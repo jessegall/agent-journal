@@ -11,6 +11,8 @@ from journal.features.shell.doing import Doing
 from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
+from journal.models.edit import Edit
+from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
@@ -27,8 +29,9 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope) -> None:
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope, edits: Edits) -> None:
         self.entries, self.messages, self.settings, self.agents = entries, messages, settings, agents
+        self.edits = edits
         self.cards, self.nudger, self.supervisor, self.scope = cards, nudger, supervisor, scope
 
     def arguments(self, verbs) -> None:
@@ -84,6 +87,9 @@ class ShellCommand(Command):
     def ran(self, args: Namespace, where: Where) -> int:
         changed = [{"added": int(a) if a.isdigit() else 0, "removed": int(r) if r.isdigit() else 0, "path": path} for a, r, path in (line.split("\t", 2) for line in args.changed.splitlines() if line.count("\t") == 2)]
         self.record(where, RAN, {"chain": args.chain, "part": args.part, "doing": Doing.of(args.part), "status": args.status, "seconds": args.seconds, "output": args.output[-TAIL:], "changed": changed})
+        now = datetime.now(timezone.utc).timestamp()
+        for change in changed:
+            self.edits.record(Edit(session=where.session, path=change["path"], at=now, added=change["added"], removed=change["removed"], command=args.part), where.actor)
         return 0
 
     def moved(self, args: Namespace, where: Where) -> int:
