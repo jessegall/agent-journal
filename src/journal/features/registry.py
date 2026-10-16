@@ -19,10 +19,6 @@ class Registry:
     def skill_required_in(self, state: str) -> Skill | None:
         return next((skill for skill in self.skills() if state in skill.required_in), None)
 
-    def listener_off(self, listener: object) -> bool:
-        """A listener named in the setting listeners.off runs nowhere: the switch a workflow takes over by, and the kill switch for one that misbehaves."""
-        return type(listener).__name__ in (self.settings.project("listeners.off", []) or [])
-
     def options(self) -> list:
         """Every option a feature declares, across features."""
         return [option for feature in self.features for option in feature.options]

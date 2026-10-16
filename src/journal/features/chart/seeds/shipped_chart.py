@@ -6,7 +6,6 @@ from journal.models.chart import BASE, Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
-from journal.repositories.settings import Settings
 
 BASE_TITLE = "For every state"
 IDLE_TITLE = "Idle"
@@ -41,21 +40,17 @@ RETURNED = "[workers.returned] what you waited on came back: carry on"
 ANSWERED = "question {{question_n}} is answered. journal question show {{question_n}} reads it whole, with the messages linked to it; act on the answer"
 CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
 STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequence_step_text}}. journal sequence next when it is done"
-LISTENERS_OFF = "listeners.off"
-"""The setting naming the listeners in code that run nowhere: a shipped workflow that carries one's conduct adds it when the workflow is made."""
-
-
 class ShippedChart(Seed):
     """The workflows the journal ships, one per state and one for what every state shares: each is made at boot where it is absent and left alone where it stands, edited or not. A workflow of the older shape, bound to one event, retires at boot: taken out when unedited, kept without its triggers when the user edited it. A reset redraws one by its state."""
 
-    def __init__(self, charts: Charts, settings: Settings, catalogue: Catalogue) -> None:
-        self.charts, self.settings, self.catalogue = charts, settings, catalogue
+    def __init__(self, charts: Charts, catalogue: Catalogue) -> None:
+        self.charts, self.catalogue = charts, catalogue
         self.drawings = {
-            BASE: Drawing(BASE_TITLE, self.draw_base, ("InboxOnArrival", "InboxAtStart", "InboxAtPrompt", "InboxAtStop", "HoldUnread", "HoldUnanswered")),
-            "idle": Drawing(IDLE_TITLE, self.draw_idle, ("AskAfterParked", "CheckIn")),
-            "working": Drawing(WORKING_TITLE, self.draw_working, ("LogCadence",)),
-            "awaiting": Drawing(AWAITING_TITLE, self.draw_awaiting, ("ReleaseAwaiting",)),
-            "waiting": Drawing(WAITING_TITLE, self.draw_waiting, ("ReleaseWaiting",)),
+            BASE: Drawing(BASE_TITLE, self.draw_base),
+            "idle": Drawing(IDLE_TITLE, self.draw_idle),
+            "working": Drawing(WORKING_TITLE, self.draw_working),
+            "awaiting": Drawing(AWAITING_TITLE, self.draw_awaiting),
+            "waiting": Drawing(WAITING_TITLE, self.draw_waiting),
             "expecting": Drawing(EXPECTING_TITLE, self.draw_expecting),
             "running_sequence": Drawing(SEQUENCE_TITLE, self.draw_running_sequence),
         }
@@ -69,7 +64,6 @@ class ShippedChart(Seed):
             if self.charts.for_state(state):
                 continue
             drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, state=state), by))
-            self.take_over(drawing.replaces, by)
 
     def stop_what_names_an_unknown_entry(self, by: Actor) -> None:
         """A kept or user workflow naming a check, action or trigger the catalogue no longer has is stopped at boot, its triggers taken out and its title saying why, rather than left to fail on every walk."""
@@ -94,20 +88,12 @@ class ShippedChart(Seed):
                 self.charts.remove_node(node, by)
             self.charts.save(chart.with_(shipped=False, event="", title=chart.title + KEPT), by)
 
-    def take_over(self, listeners: tuple[str, ...], by: Actor) -> None:
-        """The listeners a new shipped workflow carries the conduct of are switched off, so a line is said once."""
-        off = list(self.settings.project(LISTENERS_OFF, []) or [])
-        missing = [name for name in listeners if name not in off]
-        if missing:
-            self.settings.set(LISTENERS_OFF, off + missing, by)
-
     def reset(self, chart: Chart, by: Actor) -> Chart:
         """A shipped workflow as shipped again: every node and line gone, its state's drawing drawn anew, one more revision."""
         drawing = self.drawings[chart.state]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
-        self.take_over(drawing.replaces, by)
         return self.charts.save(chart.saved_again().with_(title=drawing.title), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:

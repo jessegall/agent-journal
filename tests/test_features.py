@@ -1881,7 +1881,6 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     typed = []
     from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
-    assert "InboxOnArrival" in app.container.get(Settings).project("listeners.off", []), "the seed switched the listener off when it made the workflow"
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)

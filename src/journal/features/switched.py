@@ -16,7 +16,7 @@ class Switched(Listener[Event]):
 
     def handle(self, event: Event) -> object:
         with self.scope.of(self.environment_of(event)):
-            if self.registry.listener_off(self.inner) or not self.registry.is_on(self.feature):
+            if not self.registry.is_on(self.feature):
                 return None
             return self.inner.handle(event)
 

@@ -25,6 +25,15 @@ const sorted = (value) =>
 
 export const same = (a, b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 
+// an option's words, with the workflow node that reads it, or the plain fact that none does
+function readBy(setting) {
+    const readers = setting.read_by || [];
+    if (!readers.length)
+        return `${setting.abstract}. No workflow reads this setting now, so it changes nothing until a check node names it.`;
+    const where = readers.map((r) => `${r.workflow}, node ${r.node}`).join("; ");
+    return `${setting.abstract}. Read by ${where}.`;
+}
+
 const hasTiming = (when) => Boolean(when && (when.unit || when.on));
 
 export function timingWords(when) {
@@ -157,7 +166,7 @@ function settingRow(f, setting, settings) {
         key: `${f.name}:${setting.name}`,
         kind: setting.kind,
         label: setting.title,
-        hint: setting.abstract,
+        hint: readBy(setting),
         unit: setting.unit,
         indent: Boolean(setting.under),
         options: setting.kind === "choice" ? choiceOptions(setting) : [],
