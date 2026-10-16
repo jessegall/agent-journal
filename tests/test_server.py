@@ -388,12 +388,12 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
     app.runtime().start()
     server = app.server()
     try:
-        n = call(server, "POST", "/api/main/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
+        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
-            urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+            urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
         app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "check:3")
-        rows = [r for r in call(server, "GET", "/api/main/message?completed=1")[1]["rows"] if r["n"] >= n]
+        rows = [r for r in call(server, "GET", "/api/message?completed=1")[1]["rows"] if r["n"] >= n]
         assert [r["n"] for r in rows] == sorted(r["n"] for r in rows)
         assert [(r["data"]["author"], r["brief"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
