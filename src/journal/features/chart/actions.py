@@ -38,7 +38,7 @@ class Actions:
         return getattr(self, key)(self.fillers.fill(text, ctx), ctx)
 
     def say(self, text: str, ctx: Context) -> Decision:
-        if not ctx.session:
+        if not ctx.session or not ctx.voiced:
             return Decision()
         line = self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text))
         if not line:
@@ -57,7 +57,7 @@ class Actions:
 
     def type(self, text: str, ctx: Context) -> Decision:
         """Typed into the terminal; a text naming a nudge goes through the nudger first, so the record and the repeat window are the nudge's."""
-        if not ctx.environment_id:
+        if not ctx.environment_id or not ctx.voiced:
             return Decision()
         if NAMED.match(text) and ctx.session:
             line = self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text))
@@ -69,7 +69,7 @@ class Actions:
 
     def show_card(self, text: str, ctx: Context) -> Decision:
         """A card in the chat with the line, so the user sees what the journal did."""
-        if ctx.environment_id:
+        if ctx.environment_id and ctx.voiced:
             self.cards.show(ctx.environment_id, ctx.session, text, "bolt")
         return Decision()
 

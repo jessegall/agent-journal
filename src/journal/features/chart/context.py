@@ -12,3 +12,5 @@ class Context:
     environment_id: int = 0
     provider: str = "claude"
     answers_hook: bool = False
+    voiced: bool = True
+    """Whether this walk may speak to the environment's terminal: a row event walks about every agent of the environment, and only the first walk speaks, so a line is typed once while every agent's wait is reached."""

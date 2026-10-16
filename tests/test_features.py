@@ -1711,3 +1711,33 @@ def test_a_failing_node_ends_its_path_is_recorded_and_the_walk_goes_on(app):
     assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the shipped workflow still answers the stop"
     failed = app.container.get(Entries).of_kind(env, "walk_failed", 5)
     assert failed and failed[0].data["node"] == bad.id and "no_such_check" in failed[0].data["fault"], "the fault is on record, naming the node"
+
+
+def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(app, monkeypatch):
+    typed = []
+    from journal.console.where import Where
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    hook(app, "SessionStart", session_id="s2")
+    console.run(["environment", "here"], Where("main", "s2"))
+    console.run(["task", "create", "t", "--start"], Where("main", "s2"))
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], Where("main", "s2"))
+    console.run(["worker", "wait", "1"], Where("main", "s2"))
+    n = int(console.run(["chart", "new", "Worker reports"], USER).out.split()[1].rstrip(":"))
+    node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
+    trigger, check = node("trigger", "workers.updated"), node("check", "agent_awaits_the_worker")
+    release, told = node("action", "release", "--text", "worker {{worker_n}}, {{worker_name}}, is back: carry on"), node("action", "type", "--text", "worker {{worker_n}} reported")
+    console.run(["chart", "line", str(trigger), str(check)], USER)
+    console.run(["chart", "line", str(check), str(release), "--port", "yes"], USER)
+    console.run(["chart", "line", str(trigger), str(told)], USER)
+    app.container.get(Settings).save(Setting(environment_id=0, key="listeners.off", value=["ReleaseAwaiting"]), Actor.system())
+    typed.clear()
+    machine = app.container.get(Machine)
+    assert machine.current("s2").name == "awaiting"
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    app.runtime().deferred.drain()
+    assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released"
+    assert typed.count("[journal] worker 1 reported") == 1, "the line is typed once for the environment"
