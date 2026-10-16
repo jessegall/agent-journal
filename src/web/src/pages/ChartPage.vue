@@ -1,4 +1,5 @@
 <script setup>
+import {ago} from "../format/time.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -55,6 +56,19 @@ const lines = ref([]);
 const past = ref([]);
 const busy = ref("");
 const notice = ref("");
+const lastWalk = ref({});
+const lastFailure = ref({});
+const walkWords = computed(() => {
+    const walk = lastWalk.value;
+    if (!walk.at) return "";
+    const nodes = walk.nodes.length ? `nodes ${walk.nodes.join(", ")}` : "no node";
+    const said = walk.said ? `, and said: ${walk.said}` : "";
+    return `Last ran ${ago(walk.at)} at ${walk.trigger}: ${nodes}${said}.`;
+});
+const failureWords = computed(() => {
+    const failure = lastFailure.value;
+    return failure.at ? `Node ${failure.node} (${failure.key}) failed ${ago(failure.at)}: ${failure.fault}.` : "";
+});
 const selected = ref(null);
 const hovered = ref(null);
 const camera = reactive({x: 40, y: 40, scale: 1});
@@ -111,6 +125,8 @@ function take(got) {
     selected.value = null;
     loaded.value = true;
     notice.value = got.warnings.join(" ");
+    lastWalk.value = got.last_walk;
+    lastFailure.value = got.last_failure;
 }
 
 // the whole workflow in view at first, as large as the canvas allows and never larger than life
@@ -518,6 +534,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </div>
             </header>
             <p v-if="notice" class="chart-notice">{{ notice }}</p>
+            <p v-if="failureWords" class="chart-notice">{{ failureWords }}</p>
+            <p v-if="walkWords" class="chart-trace">{{ walkWords }}</p>
 
             <ChartList
                 v-if="view === 'list'"
@@ -898,6 +916,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 .chart-notice {
     margin: -8px 0 0;
     color: var(--danger-soft);
+    font-size: 12.5px;
+}
+
+.chart-trace {
+    margin: -8px 0 0;
+    color: var(--text-muted);
     font-size: 12.5px;
 }
 

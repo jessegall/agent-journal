@@ -102,7 +102,7 @@ class Walk:
 
     def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
         """A node that raised ends its own path, nothing follows it, and leaves what happened where the page can show it: the paths beside it, from the same trigger too, still answer. The ruling behind the catch is in NOTES, under the chart."""
-        self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data={"session": ctx.session, "node": node.id, "key": node.key, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
+        self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data={"session": ctx.session, "workflow": self.charts.chart_of(node).id, "node": node.id, "key": node.key, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
 
     @staticmethod
     def trigger_key(event: Event) -> str:

@@ -2070,6 +2070,25 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     assert console.run(["chart", "node", "trigger", "idle", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
 
+def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monkeypatch):
+    import json as j
+    from urllib.request import urlopen
+    from journal.features.chart.actions import Actions
+    read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))["workflows"]
+    assert all(w["last_walk"] == {} and w["last_failure"] == {} for w in read()), "nothing walked yet"
+    hook(app, "SessionStart")
+    base = next(w for w in read() if w["state"] == "base")
+    assert base["last_walk"]["trigger"] == "Session starts" and base["last_walk"]["at"] > 0 and base["last_failure"] == {}
+    app.console().run(["message", "send", "a word for the agent"], USER)
+
+    def broken(self, ctx, text):
+        raise RuntimeError("the typist is out")
+    monkeypatch.setattr(Actions, "say", broken)
+    hook(app, "UserPromptSubmit", prompt="hello")
+    base = next(w for w in read() if w["state"] == "base")
+    assert base["last_failure"]["key"] == "say" and "RuntimeError: the typist is out" in base["last_failure"]["fault"] and base["last_failure"]["at"] > 0
+
+
 def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
     hook(app, "SessionStart")
     console = app.console()
