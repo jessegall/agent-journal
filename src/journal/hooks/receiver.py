@@ -7,6 +7,7 @@ from journal.features.listener import Listener
 from journal.hooks.decision import Decision
 from journal.hooks.deferred import Deferred
 from journal.hooks.hook import Hook
+from journal.hooks.transcript_turns import TranscriptTurns
 from journal.hooks.translation import Translation
 from journal.models.actor import Actor
 from journal.models.entry import Entry
@@ -18,13 +19,16 @@ from journal.repositories.scope import Scope
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
+        self.transcript = transcript
 
     def receive(self, hook: Hook) -> Decision:
         """The hook's decision: what the blocking listeners say, the rest deferred; all of it in the environment the hook names."""
         environment = self.environments.named(hook.environment)
         with self.scope.of(environment.id):
+            for written in self.transcript.events(hook, environment):
+                self._now(written)
             event = self.translation.event(hook, environment)
             entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
             decision = self._blocking(event)
@@ -32,6 +36,12 @@ class Receiver:
                 self.entries.save(entry.with_(data={**entry.data, "refused": decision.reason}), Actor.agent(hook.session))
             self._defer(event)
         return decision
+
+    def _now(self, event: AgentEvent) -> None:
+        """A turn read from the transcript is handled whole and at once, by every listener, so a reply in it answers its message before the hook's own event is judged."""
+        blocking, deferred = self._split(event)
+        for listener in [*blocking, *deferred]:
+            listener.handle(event)
 
     def _blocking(self, event: AgentEvent) -> Decision:
         decision = Decision()

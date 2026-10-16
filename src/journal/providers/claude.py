@@ -48,6 +48,22 @@ class Claude(Provider):
                 thoughts += [b["thinking"] for b in content if isinstance(b, dict) and b.get("type") == "thinking"]
         return thoughts
 
+    def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
+        """Every text block of an assistant row written since the byte read last, whole lines only; the first look at a transcript starts at its end, so a session's past is not replayed."""
+        path = self.transcript(project, session)
+        if path is None:
+            return [], read
+        size = path.stat().st_size
+        if read < 0 or read > size:
+            return [], size
+        with path.open("rb") as file:
+            file.seek(read)
+            raw = file.read()
+        whole = raw.rfind(b"\n") + 1
+        rows = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
+        texts = [block["text"] for row in rows if row.get("type") == "assistant" for block in row.get("message", {}).get("content", []) if isinstance(block, dict) and block.get("type") == "text" and block.get("text", "").strip()]
+        return texts, read + whole
+
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 

@@ -678,3 +678,11 @@ walk runs the state's workflow and, beneath a pause the agent owes the journal, 
 interrupted, so the inbox, the holds and the waits run under Orienting, AtMark and LoadingSkill. An unedited shipped
 workflow is redrawn at boot when the shipping's drawings are newer (`chart.drawings_version`); an edited one is the
 user's and stays. The former base is retired at boot like the older shape.
+
+Found on 2026-10-16 in the evening, from the hook's own entries: Claude Code's MessageDisplay hook delivers only a
+turn's last text block; a block followed by a tool call in the same turn never reaches it. So the journal reads the
+agent's transcript at every other hook (`hooks/transcript_turns.py`, through the provider's `texts_written`), from
+the byte it left off at, and handles each block written since as a whole turn before the hook's own event; a reply
+written before a command answers its message at that command. The display hook's copy of the last block is matched
+by its visible words and recorded once. Codex has no transcript reading yet: its replies still come only from the
+display hook.

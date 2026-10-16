@@ -705,6 +705,31 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1").name == "following_plan", "plan start goes on past the checkpoint"
 
 
+def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app, monkeypatch, tmp_path):
+    import json as j
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages
+    transcript = tmp_path / "s1.jsonl"
+    transcript.write_text("")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript if session == "s1" else None)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["message", "send", "are you there?"], USER)
+    app.console().run(["message", "read", "1"], AGENT)
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    assert status == 409 and "answer message 1 first" in body["error"], "the message is read and unanswered: the write is held"
+    row = {"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:1]\nHere, Sir Jesse, and writing."}, {"type": "tool_use", "name": "Write"}]}}
+    with transcript.open("a") as file:
+        file.write(j.dumps(row) + "\n")
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "the reply in the transcript answered the message before the call was judged"
+    messages = app.container.get(Messages)
+    replies = [m for m in messages.in_() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]
+    assert len(replies) == 1 and replies[0].reply_to == 1
+    hook(app, "MessageDisplay", message="[!reply:1]\nHere, Sir Jesse, and writing.")
+    app.runtime().deferred.drain()
+    assert len([m for m in messages.in_() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]) == 1, "the display hook's copy of the same block is no second message"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus

@@ -33,6 +33,10 @@ class Provider:
         """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""
         return []
 
+    def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
+        """The text blocks the agent wrote for the user since the byte of its transcript read last, and the byte to read from next; a provider with no transcript writes none."""
+        return [], read
+
     def resume(self, session: str) -> tuple[str, ...]: ...
 
     controls: ClassVar[dict] = {"groups": [], "note": ""}

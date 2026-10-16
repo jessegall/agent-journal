@@ -43,6 +43,8 @@ class RecordTurn(AgentListener[TurnWritten]):
     def _record(self, event: TurnWritten, whole: str) -> None:
         by = Actor.agent(event.session)
         for answered, part in self.sections(whole):
+            if self.already_recorded(part):
+                continue
             text = Tags.visible(part)
             quiet = Tags.kept_out(part) and not answered
             acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
@@ -55,6 +57,11 @@ class RecordTurn(AgentListener[TurnWritten]):
         stray = STRAY_TAG.search(Tags.visible(whole))
         if stray:
             self.supervisor.type(event.environment_id, f"the [!reply:{stray.group(1)}] tag must open a line of your turn; message {stray.group(1)} is still unanswered")
+
+    def already_recorded(self, part: str) -> bool:
+        """A block reaches the journal twice when it is the turn's last, once from the transcript and once from the display hook: the second is the same words and is not a second message."""
+        text = Tags.visible(part)
+        return any(m.author == Author.AGENT and m.text == text for m in self.messages.recent(30))
 
     @staticmethod
     def sections(whole: str) -> list[tuple[list[int], str]]:
