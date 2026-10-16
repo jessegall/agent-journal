@@ -18,7 +18,9 @@ class Voices(Feature):
     PROFILE = Option("voices.profile", "Voice", "How the agent talks to you", "butler", kind="choice", choices=tuple(v.name for v in Shipped.ALL))
     TITLE = Option("voices.title", "Your title", "Sir, Madam, Captain: what the voice calls you before your name", "Sir", kind="text")
     NAME = Option("voices.name", "Your first name", "Empty takes the name git knows you by", "", kind="text")
-    options = (PROFILE, TITLE, NAME)
+    AVATAR = Option("voices.avatar", "Show a figure in the chat", "A small figure beside the chat shows what the agent is doing, in the voice it speaks", True, kind="switch")
+    AVATAR_SHOWN = Option("voices.avatar_shown", "Show the figure", "Always, only while the agent works, or never", "always", kind="choice", choices=("always", "working", "never"))
+    options = (PROFILE, TITLE, NAME, AVATAR, AVATAR_SHOWN)
     listeners = (SayVoiceAtStart, SayVoiceWhenChanged, IntroduceAtStart)
 
     VOICE = Nudge(name, "voice", "how to talk to the user", "{{voice}}", repeat_after=0)

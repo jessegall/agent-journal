@@ -24,7 +24,7 @@ export const person = computed(() => `${voices().title}|${voices().name}`);
 
 export const voiceOf = (row) => row.data.voice;
 
-export const avatarOn = computed(() => Boolean(store.settings?.features?.avatar));
+export const avatarOn = computed(() => Boolean(store.settings) && store.settings.voices?.avatar !== false);
 
 // the voice whose figure stands on the chat, or none while the avatar is off or the profile names no voice
 export const figureVoice = computed(() => (avatarOn.value && standing.value?.data.voice) || "");
