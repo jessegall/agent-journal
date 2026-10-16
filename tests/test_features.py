@@ -2478,7 +2478,13 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     link(finishing, finish_trigger, one)
     link(finishing, one, over)
     link(finishing, over, enough, "yes")
+    every = add(finishing, "check", "count_every", "--text", "subs 2")
+    second = add(finishing, "action", "say", "--text", "[chart] every second tool")
+    link(finishing, over, every, "no")
+    link(finishing, enough, every)
+    link(finishing, every, second, "yes")
     assert "names no number" in console.run(["chart", "node", "check", "count_at", "--text", "subs", "--in", str(finishing)], USER).err
+    assert "names no number" in console.run(["chart", "node", "check", "count_every", "--text", "subs", "--in", str(finishing)], USER).err
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
     from journal.repositories.counts import Counts
@@ -2491,12 +2497,14 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
     with scope.of(1):
         assert [c.value for c in counts.where(session="s1", name="subs")] == [1], "one tool use counted"
-    assert "two tools" not in said(body), "one tool use: the count stands at one"
+    assert "two tools" not in said(body) and "every second tool" not in said(body), "one tool use: the count stands at one, no multiple of two"
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})
-    assert "two tools since the subagent started" in said(body), "the second tool use reaches two: the check answers yes and the line rides the hook's answer"
+    assert "two tools since the subagent started" in said(body) and "every second tool" in said(body), "the second tool use reaches two: the checks answer yes and the lines ride the hook's answer"
     hook(app, "SubagentStart", agent_id="a2")
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "c"})
-    assert "two tools" not in said(body), "a new start puts the count back at nought"
+    assert "two tools" not in said(body) and "every second tool" not in said(body), "a new start puts the count back at nought, and nought is no Nth"
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "d"})
+    assert "every second tool" in said(body), "the second use since the new start is an Nth again"
     assert not typed, "nothing was typed: every line rode a hook's answer"
 
 

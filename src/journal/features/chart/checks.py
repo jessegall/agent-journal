@@ -32,7 +32,7 @@ from journal.repositories.tasks import Tasks
 
 COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over", "log_stale_over")
 """The checks that take a number: the node's text, or the setting named there."""
-COUNT_CHECKS = ("count_over", "count_at")
+COUNT_CHECKS = ("count_over", "count_at", "count_every")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
 
 
@@ -57,6 +57,11 @@ class Checks:
 
     def count_at(self, ctx: Context, name: str, limit: int) -> bool:
         return bool(ctx.session) and self.counts.named(ctx.session, name).value == limit
+
+    def count_every(self, ctx: Context, name: str, limit: int) -> bool:
+        """The count stands at a multiple of the number, and not at nought: every Nth time, so a cadence reads one check."""
+        value = self.counts.named(ctx.session, name).value if ctx.session else 0
+        return limit > 0 and value > 0 and value % limit == 0
 
     def number(self, text: str) -> int:
         """The node's text as a number, or the setting it names, read through its option so an unset key means the option's default, or nothing."""

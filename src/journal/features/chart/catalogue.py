@@ -52,6 +52,7 @@ COUNTER_CHECKS = (
 COUNT_CHECKS = (
     ("count_over", "Is a count over N?", "the agent's count named first in the text has reached N; the text is the count's name, then N or a setting's name, such as reads messages.hold_after"),
     ("count_at", "Is a count at N?", "the agent's count named first in the text stands at exactly N; the text is the count's name, then N or a setting's name"),
+    ("count_every", "Is a count at every Nth?", "the agent's count named first in the text stands at a multiple of N, not at nought; the text is the count's name, then N or a setting's name, such as uses messages.remind_every"),
 )
 ACTIONS = (
     ("say", "Send the agent a message", "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", True),

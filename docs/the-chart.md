@@ -75,7 +75,7 @@ A workflow of your own is for a state at an event no default covers, made with N
   checks take a number in their text, or the name of a setting that holds it: every third tool use with a message
   unread, fifteen tool uses with a message unanswered, twenty edits since the last log. A count check reads a
   count the workflow keeps for the agent, named first in its text, against the number after it: is the count
-  over N, is it at N.
+  over N, is it at N, is it at every Nth (a multiple of N, never nought).
 - An **action** is what the journal does, with the line it says: say a line to the agent, hold the tool it was
   about to use, block its stop, type a line into its terminal, start a sequence by its title. Start a count and
   Count one keep a number for the agent between events, named in their text, so what one event starts a later
