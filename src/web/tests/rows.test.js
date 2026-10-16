@@ -39,9 +39,9 @@ describe("paging rows", () => {
     });
 
     test("loading a window held past a page asks one page at a time and keeps the scrollback", async () => {
-        const all = Array.from({length: 60}, (_, i) => row(i + 1, {completed: 1}));
+        const all = Array.from({length: 2 * PAGE + 10}, (_, i) => row(i + 1, {completed: 1}));
         store.rows.todo = all.slice(10);
-        store.paging.size.todo = 50;
+        store.paging.size.todo = 2 * PAGE;
         api.list.mockImplementation(async (type, query) => {
             const below = all.filter((r) => !query.before || r.n < query.before);
             const page = below.slice(-query.last);
@@ -50,7 +50,7 @@ describe("paging rows", () => {
         await load("todo");
         expect(api.list.mock.calls.map(([, query]) => query.last)).toEqual([PAGE, PAGE]);
         expect(store.rows.todo.map((r) => r.n)).toEqual(all.slice(10).map((r) => r.n));
-        expect(store.paging.size.todo).toBe(50);
+        expect(store.paging.size.todo).toBe(2 * PAGE);
     });
 
     test("an earlier page goes in front, sorted, with no row twice", async () => {
