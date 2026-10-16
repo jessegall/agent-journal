@@ -1,7 +1,6 @@
 from journal.http.v3.current_work import CurrentWork
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import V3Row, seconds
-from journal.models.environment import Environment
 from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
 from journal.repositories.task_logs import TaskLogs
@@ -16,10 +15,10 @@ class WorksShaper(Shaper):
     def __init__(self, tasks: Tasks, logs: TaskLogs, agents: Agents, current: CurrentWork) -> None:
         self.tasks, self.logs, self.agents, self.current = tasks, logs, agents, current
 
-    def rows(self, environment: Environment) -> list[V3Row]:
-        live = self.agents.live(environment.id)
+    def rows(self) -> list[V3Row]:
+        live = self.agents.live()
         held = self.current.of(live) if live else None
-        return [self.row(t, held if held and held.task.id == t.id else None) for t in self.tasks.in_(environment.id) if t.state not in (TaskState.OPEN, TaskState.BLOCKED)]
+        return [self.row(t, held if held and held.task.id == t.id else None) for t in self.tasks.in_() if t.state not in (TaskState.OPEN, TaskState.BLOCKED)]
 
     def row(self, t, held) -> V3Row:
         logged = self.logs.of(t)

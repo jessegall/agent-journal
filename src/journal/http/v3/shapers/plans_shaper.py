@@ -1,6 +1,5 @@
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import V3Row, seconds
-from journal.models.environment import Environment
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
 
@@ -13,8 +12,8 @@ class PlansShaper(Shaper):
     def __init__(self, plans: Plans) -> None:
         self.plans = plans
 
-    def rows(self, environment: Environment) -> list[V3Row]:
-        return [self.row(p) for p in self.plans.in_(environment.id)]
+    def rows(self) -> list[V3Row]:
+        return [self.row(p) for p in self.plans.in_()]
 
     def row(self, p) -> V3Row:
         tasks, phases = self.plans.tasks_of(p), self.plans.phases_of(p)

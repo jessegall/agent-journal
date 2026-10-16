@@ -9,14 +9,14 @@ class V3Settings:
     def __init__(self, settings: Settings, registry: Registry) -> None:
         self.settings, self.registry = settings, registry
 
-    def tree(self, environment_id: int) -> dict:
-        tree = self.settings.tree(environment_id)
-        tree["features"] = {f.name: self.registry.is_on(f, environment_id) for f in self.registry.features}
+    def tree(self) -> dict:
+        tree = self.settings.tree()
+        tree["features"] = {f.name: self.registry.is_on(f) for f in self.registry.features}
         return tree
 
     def save(self, values: dict, by: Actor) -> None:
         """What the viewer sends for a top is that top whole, with the defaults left out: a key it drops goes back to its default."""
-        stored = self.settings.tree(0)
+        stored = self.settings.project_tree()
         for top, inner in values.items():
             if not isinstance(inner, dict):
                 continue

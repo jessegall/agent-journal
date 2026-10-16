@@ -2,7 +2,6 @@ from journal.features.messages.mentions import Mentions
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import AGENT, USER, V3Row, seconds
 from journal.models.author import Author
-from journal.models.environment import Environment
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 
@@ -17,10 +16,10 @@ class MessagesShaper(Shaper):
     def __init__(self, messages: Messages, links: Links) -> None:
         self.messages, self.links = messages, links
 
-    def rows(self, environment: Environment) -> list[V3Row]:
+    def rows(self) -> list[V3Row]:
         """Every message, the user's and the agent's alike, a reply standing at its own number with the message it answers in reply_to."""
-        open_ = {m.id for m in self.messages.unanswered(environment.id)} | {m.id for m in self.messages.unread(environment.id)}
-        return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in self.links.targets(m, "about")]) for m in self.messages.in_(environment.id)]
+        open_ = {m.id for m in self.messages.unanswered()} | {m.id for m in self.messages.unread()}
+        return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in self.links.targets(m, "about")]) for m in self.messages.in_()]
 
     @staticmethod
     def row(m, answered: bool, filed: list[str]) -> V3Row:

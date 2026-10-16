@@ -2,7 +2,6 @@ import re
 
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import V3Row, viewer_ref
-from journal.models.environment import Environment
 from journal.repositories.links import Links
 from journal.repositories.scoped_repository import ScopedRepository
 
@@ -15,9 +14,9 @@ class WritingShaper(Shaper):
     def __init__(self, repository: ScopedRepository, links: Links, type: str, data: dict) -> None:
         self.repository, self.links, self.type, self.data = repository, links, type, data
 
-    def rows(self, environment: Environment) -> list[V3Row]:
+    def rows(self) -> list[V3Row]:
         return [V3Row.of(self.type, r, title=r.title, brief=r.body, sections=self.sections(r.body), refs=[viewer_ref(ref) for ref in self.links.targets(r)], data=dict(self.data))
-                for r in self.repository.in_(environment.id)]
+                for r in self.repository.in_()]
 
     @staticmethod
     def sections(body: str) -> list[dict]:

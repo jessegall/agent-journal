@@ -32,6 +32,7 @@ from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
@@ -49,11 +50,11 @@ SILENT_AFTER = 900.0
 class V3Controller:
     """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events, scope: Scope) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
         self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files, self.providers = messages, files, current, supervisor, registry, skill_files, providers
         self.events = events
-        self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen = environments, entries, agents, tasks, machine, chosen
+        self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen, self.scope = environments, entries, agents, tasks, machine, chosen, scope
 
     # the journal
 
@@ -73,26 +74,31 @@ class V3Controller:
                               "environments": environments, "countdown": 0, "updating": False, "ready": True, "helpers": [], "tickets": [], "step": ""})
 
     def environment_summary(self, environment: Environment) -> dict:
-        live = self.agents.live(environment.id)
+        with self.scope.of(environment.id):
+            return self.summarised(environment)
+
+    def summarised(self, environment: Environment) -> dict:
+        live = self.agents.live()
         agent = {"status": "stopped", "provider": "claude", "model": "", "context": 0, "uses": 0, "started": 0, "at": 0, "tool": "", "file": "", "asking": False, "background_run": "", "says": "", "doing": ""}
         work = None
         if live:
-            row = self.shapers.named("agent").row(live, list(reversed(self.entries.of_kind_in(environment.id, 200))))
+            row = self.shapers.named("agent").row(live, list(reversed(self.entries.of_kind_in(200))))
             d = row.data
             agent = {"status": d["status"], "provider": live.provider or "claude", "model": d["model"], "context": live.context_mark, "uses": 0, "started": d["started"], "at": d["at"], "tool": d["tool"], "file": "", "asking": bool(d["asking"]), "background_run": "", "says": d["last_message"], "doing": d["doing"]}
             held = self.current.of(live)
             work = {"n": held.task.id, "title": held.task.title, "todo": held.task.id, "parked": False, "awaiting": held.awaiting} if held else None
-        counts = {"questions": self.open_count("question", environment), "messages": len(self.messages.unread(environment.id)), "suggestions": 0, "todos": self.open_count("todo", environment), "prompts": 0, "routed": 0}
+        counts = {"questions": self.open_count("question"), "messages": len(self.messages.unread()), "suggestions": 0, "todos": self.open_count("todo"), "prompts": 0, "routed": 0}
         silent = agent["status"] in ("busy", "working") and time.time() - agent["at"] > SILENT_AFTER
         return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": counts, "silent": silent}
 
-    def open_count(self, type_: str, environment: Environment) -> int:
-        return len([r for r in self.shapers.named(type_).rows(environment) if r.is_open])
+    def open_count(self, type_: str) -> int:
+        return len([r for r in self.shapers.named(type_).rows() if r.is_open])
 
     def get_agents(self, request: Request) -> Response:
         online = []
         for environment in self.environments.all():
-            live = self.agents.live(environment.id)
+            with self.scope.of(environment.id):
+                live = self.agents.live()
             if live:
                 online.append({"session": live.session, "provider": live.provider or "claude", "model": "", "status": "idle", "environment": environment.name, "at": seconds(live.updated_at), "terminal": ""})
         return Response.json(online)
@@ -119,11 +125,10 @@ class V3Controller:
 
     def get_bar(self, request: Request) -> Response:
         """The status bar's queue: each tool call and each shell part the live agent ran, as it opened and as it closed."""
-        environment = self.environment_of(request)
-        live = self.agents.live(environment.id)
+        live = self.agents.live()
         if not live:
             return Response.json({"queue": []})
-        recent = [e for e in reversed(self.entries.of_kind_in(environment.id, 60)) if e.actor and e.actor.id == live.session and BarRow.shows(e)]
+        recent = [e for e in reversed(self.entries.of_kind_in(60)) if e.actor and e.actor.id == live.session and BarRow.shows(e)]
         queue, open_ = [], {}
         for row in map(BarRow.of, recent):
             if not row.ended:
@@ -136,33 +141,31 @@ class V3Controller:
     # settings
 
     def get_settings(self, request: Request) -> Response:
-        return Response.json(self.settings.tree(self.environment_of(request).id))
+        return Response.json(self.settings.tree())
 
     def post_settings(self, request: Request) -> Response:
         """The viewer keeps the answer as its whole settings tree, so a toggle answers with all of it."""
         self.settings.save(request.body, request.actor)
-        return Response.json(self.settings.tree(self.environment_of(request).id))
+        return Response.json(self.settings.tree())
 
     # rows
 
     def get_one(self, request: Request) -> Response:
         shaper = self.shapers.named(request.params["type"])
         n = request.number("n")
-        row = next((r for r in (shaper.rows(self.environment_of(request)) if shaper else []) if r.n == n), None)
+        row = next((r for r in (shaper.rows() if shaper else []) if r.n == n), None)
         return Response.json(row.to_json()) if row else Response.not_found(f"no {request.params['type']} {n}")
 
     def get_choices(self, request: Request) -> Response:
         return Response.json([])
 
     def post_create(self, request: Request) -> Response:
-        environment = self.environment_of(request)
-        made = self.actions.create(request.params["type"], environment, request.body, request)
+        made = self.actions.create(request.params["type"], request.body, request)
         if made is None:
             return Response.refused(f"the viewer cannot make a {request.params['type']} here")
-        return Response.json(self.row_of(request.params["type"], made.id, environment), 201)
+        return Response.json(self.row_of(request.params["type"], made.id), 201)
 
     def post_act(self, request: Request) -> Response:
-        environment = self.environment_of(request)
         type_, action = request.params["type"], request.params["action"]
         if not request.params["n"].isdigit():
             return Response.refused(f"{action} on a {type_} by its session is not something the viewer can do here yet")
@@ -173,10 +176,9 @@ class V3Controller:
             return Response.not_found(str(missing))
         if done is None:
             return Response.refused(f"{action} is not something the viewer can do to a {type_} here")
-        return Response.json(done if isinstance(done, V3Row) else self.row_of(type_, n, environment) or {})
+        return Response.json(done if isinstance(done, V3Row) else self.row_of(type_, n) or {})
 
     def post_upload(self, request: Request) -> Response:
-        environment = self.environment_of(request)
         type_, n = request.params["type"], request.number("n")
         try:
             done = self.actions.upload(type_, n, request)
@@ -184,7 +186,7 @@ class V3Controller:
             return Response.not_found(str(missing))
         if done is None:
             return Response.refused(f"a {type_} takes no files here")
-        return Response.json(self.row_of(type_, n, environment) or {})
+        return Response.json(self.row_of(type_, n) or {})
 
     def get_attached_file(self, request: Request):
         found = self.actions.attachments.read(request.params["type"], request.number("n"), request.params["name"])
@@ -228,7 +230,7 @@ class V3Controller:
         choice = next((c for g in provider.controls["groups"] if g["key"] == action for c in g["choices"] if c["value"] == value), None)
         if choice is None:
             return Response.refused(f"{action} {value} is not a choice the agent bar offers")
-        self.supervisor.type_raw(self.environment_of(request).id, choice["command"])
+        self.supervisor.type_raw(self.scope.id, choice["command"])
         return Response.json({"queued": True})
 
     def get_skills(self, request: Request) -> Response:
@@ -245,7 +247,7 @@ class V3Controller:
         skill = self.registry.skill_named(request.params["name"])
         if skill is None:
             return Response.not_found("no such skill")
-        self.supervisor.type(self.environment_of(request).id, f"read the {skill.name} skill now: {self.skill_files.path(skill)}")
+        self.supervisor.type(self.scope.id, f"read the {skill.name} skill now: {self.skill_files.path(skill)}")
         return Response.json({"queued": True})
 
     def get_file(self, request: Request) -> Response:
@@ -263,14 +265,13 @@ class V3Controller:
 
     def get_agent_edits(self, request: Request) -> Response:
         """The files the agent wrote or edited, newest last, with the lines each change added and removed, as the file edits pane draws them."""
-        environment = self.environment_of(request)
         n = request.number("n")
-        agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
+        agent = next((a for a in self.agents.in_() if a.id == n), None)
         if agent is None:
             return Response.json({"cursor": time.time(), "edits": [], "older": False})
         since = float(request.query.get("since", 0) or 0)
         edits = []
-        for e in reversed(self.entries.of_kind_in(environment.id, 400)):
+        for e in reversed(self.entries.of_kind_in(400)):
             tool = e.data.get("tool_name", "")
             if not (e.actor and e.actor.id == agent.session) or seconds(e.created_at) <= since:
                 continue
@@ -331,13 +332,12 @@ class V3Controller:
 
     def get_agent_terminal(self, request: Request) -> Response:
         """The shell commands the agent ran, part by part, with what each printed and how long it took, as the terminal pane shows them."""
-        environment = self.environment_of(request)
         n = request.number("n")
-        agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
+        agent = next((a for a in self.agents.in_() if a.id == n), None)
         if agent is None:
             return Response.json({"lines": []})
         after = float(request.query.get("after", 0) or 0)
-        ran = [e for e in reversed(self.entries.of_kind(environment.id, RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["at"] > after]
+        ran = [e for e in reversed(self.entries.of_kind(RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["at"] > after]
         return Response.json({"lines": [self.terminal_line(n, e) for e in ran][-200:]})
 
     @staticmethod
@@ -350,7 +350,7 @@ class V3Controller:
         """A command typed in the terminal pane goes to the agent's own terminal, as the user would type it."""
         command = request.body.get("command", "").strip()
         if command:
-            self.supervisor.type_raw(self.environment_of(request).id, command)
+            self.supervisor.type_raw(self.scope.id, command)
         return Response.json({"queued": bool(command)})
 
     def get_agent_transcript(self, request: Request) -> Response:
@@ -359,30 +359,35 @@ class V3Controller:
     # events
 
     def get_events(self, request: Request) -> Response:
-        environment = self.environment_of(request)
+        environment = self.here()
         since = int(request.query.get("since", 0) or 0)
         return Response.json(self.events_since(environment, since, int(request.query.get("last", 0) or 0)))
 
     def events_since(self, environment: Environment, since: int, last: int = 0) -> list[dict]:
         """The events after an id; a viewer asking from an id ahead of the record remembers a journal that was reset, and is given the recent page so it falls back in step."""
-        if since > self.entries.last_id(environment.id):
+        if since > self.entries.last_id():
             since = 0
-        entries = self.entries.since(environment.id, since) if since else list(reversed(self.entries.of_kind_in(environment.id, last or 100)))
-        agent_n = {a.session: a.id for a in self.agents.in_(environment.id)}
+        entries = self.entries.since(since) if since else list(reversed(self.entries.of_kind_in(last or 100)))
+        agent_n = {a.session: a.id for a in self.agents.in_()}
         found = [self.events.of(e, environment.name, agent_n.get(e.actor.id if e.actor else "", 0)) for e in entries]
         return [e for e in found if e]
 
     def get_stream(self, request: Request) -> StreamResponse:
-        environment = self.environment_of(request)
+        environment = self.here()
+
+        def read(entries):
+            """The stream is read after the request has left its scope: each read names the environment again."""
+            with self.scope.of(environment.id):
+                return entries()
 
         def chunks() -> Iterator[bytes]:
             yield b": open\n\n"
-            last = self.entries.last_id(environment.id)
+            last = read(self.entries.last_id)
             quiet = 0.0
             while True:
                 time.sleep(0.5)
                 quiet += 0.5
-                fresh = self.entries.since(environment.id, last)
+                fresh = read(lambda: self.entries.since(last))
                 for entry in fresh:
                     last = entry.id
                     event = self.events.of(entry, environment.name)
@@ -396,14 +401,13 @@ class V3Controller:
 
     # helpers
 
-    def environment_of(self, request: Request) -> Environment:
-        """The environment the request names; a read never makes one, so a stray address is answered not found."""
-        return self.environments.existing(request.environment)
+    def here(self) -> Environment:
+        return self.environments.find(self.scope.id)
 
     def first_environment(self) -> Environment:
         return (self.environments.all() or [self.environments.named("main")])[0]
 
-    def row_of(self, type_: str, n: int, environment: Environment) -> dict | None:
+    def row_of(self, type_: str, n: int) -> dict | None:
         shaper = self.shapers.named(type_)
-        row = next((r for r in (shaper.rows(environment) if shaper else []) if r.n == n), None)
+        row = next((r for r in (shaper.rows() if shaper else []) if r.n == n), None)
         return row.to_json() if row else None

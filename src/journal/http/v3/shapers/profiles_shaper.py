@@ -2,7 +2,8 @@ from journal.features.voices.chosen_voice import ChosenVoice
 from journal.features.voices.shipped import Shipped
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import AGENT, SYSTEM, V3Row
-from journal.models.environment import Environment
+from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 
 NUMBERED = {voice.name: n for n, voice in enumerate(Shipped.ALL, 1)}
 
@@ -12,11 +13,12 @@ class ProfilesShaper(Shaper):
 
     type = "profile"
 
-    def __init__(self, chosen: ChosenVoice) -> None:
-        self.chosen = chosen
+    def __init__(self, chosen: ChosenVoice, environments: Environments, scope: Scope) -> None:
+        self.chosen, self.environments, self.scope = chosen, environments, scope
 
-    def rows(self, environment: Environment) -> list[V3Row]:
+    def rows(self) -> list[V3Row]:
         chosen = self.chosen.voice().name
+        environment = self.environments.find(self.scope.id)
         rows = []
         for n, voice in enumerate(Shipped.ALL, 1):
             row = V3Row(type="profile", n=n, title=voice.name.capitalize(), brief=voice.text, seen=[SYSTEM, AGENT], created=1.0, updated=1.0,

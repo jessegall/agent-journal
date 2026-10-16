@@ -5,15 +5,14 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.question import Question
 from journal.repositories.agents import Agents
-from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
 from journal.repositories.questions import Questions
 from journal.supervisor_link import SupervisorLink
 
 
 class QuestionController(Controller[Question]):
-    def __init__(self, questions: Questions, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink) -> None:
-        self.repository, self.agents, self.environments, self.machine, self.supervisor = questions, agents, environments, machine, supervisor
+    def __init__(self, questions: Questions, agents: Agents, machine: Machine, supervisor: SupervisorLink) -> None:
+        self.repository, self.agents, self.machine, self.supervisor = questions, agents, machine, supervisor
 
     def answer(self, request: Request) -> Response:
         from journal.features.questions.feature import Questions as QuestionsFeature

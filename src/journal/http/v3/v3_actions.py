@@ -8,7 +8,6 @@ from journal.features.tasks.states.working import Working
 from journal.http.request import Request
 from journal.http.v3.attachments import Attachments
 from journal.models.author import Author
-from journal.models.environment import Environment
 from journal.models.fact import Fact
 from journal.models.doc import Doc
 from journal.models.message import Message
@@ -54,7 +53,7 @@ class V3Actions:
         self.notices, self.answering = notices, answering
         self.launcher = launcher
 
-    def create(self, type: str, environment: Environment, body: dict, request: Request):
+    def create(self, type: str, body: dict, request: Request):
         title, brief = body.get("title", "") or body.get("brief", "")[:80], body.get("brief", "")
         by = request.actor
         if type == "message":
@@ -62,26 +61,26 @@ class V3Actions:
             reply_to = int(about.split(":")[1]) if about.startswith("message:") else None
             text = f"{title}\n\n{brief}".strip() if title and brief and not brief.startswith(title) else (brief or title)
             key = str(body.get("idempotency", ""))
-            already = [m for m in self.messages.in_(environment.id) if key and m.idempotency == key]
+            already = [m for m in self.messages.in_() if key and m.idempotency == key]
             if already:
                 return already[0]
-            return self.messages.save(Message(environment_id=environment.id, author=Author.USER, text=text, reply_to=reply_to, idempotency=key), by)
+            return self.messages.save(Message(author=Author.USER, text=text, reply_to=reply_to, idempotency=key), by)
         if type == "todo":
-            return self.tasks.save(Task(environment_id=environment.id, title=title, brief=brief), by)
+            return self.tasks.save(Task(title=title, brief=brief), by)
         if type == "question":
-            return self.questions.save(Question(environment_id=environment.id, text=title, options=tuple(o.get("title", o) if isinstance(o, dict) else o for o in body.get("options", []))), by)
+            return self.questions.save(Question(text=title, options=tuple(o.get("title", o) if isinstance(o, dict) else o for o in body.get("options", []))), by)
         if type == "fact":
-            return self.facts.save(Fact(environment_id=environment.id, text=title), by)
+            return self.facts.save(Fact(text=title), by)
         if type == "reminder":
-            return self.reminders.save(Reminder(environment_id=environment.id, text=title), by)
+            return self.reminders.save(Reminder(text=title), by)
         if type == "rule":
             return self.rules.save(Rule(text=title, reason=brief), by)
         if type == "plan":
-            return self.plans.save(Plan(environment_id=environment.id, title=title, brief=brief), by)
+            return self.plans.save(Plan(title=title, brief=brief), by)
         if type == "doc":
-            return self.docs.save(Doc(environment_id=environment.id, title=body.get("title", ""), body=body.get("brief", "")), by)
+            return self.docs.save(Doc(title=body.get("title", ""), body=body.get("brief", "")), by)
         if type == "report":
-            return self.reports.save(Report(environment_id=environment.id, title=body.get("title", ""), body=body.get("brief", "")), by)
+            return self.reports.save(Report(title=body.get("title", ""), body=body.get("brief", "")), by)
         if type == "environment":
             return self.environments.named(title)
         return None
@@ -232,7 +231,7 @@ class V3Actions:
 
     def todo_start(self, n: int, body: dict, by):
         task = self.tasks.save(self.tasks.find(n).started(self._now()), by)
-        live = self.agents.live(task.environment_id)
+        live = self.agents.live()
         if live:
             self.machine.move(live.session, task.environment_id, Working(task_id=task.id, logged_at=time.time()))
         return task

@@ -1,6 +1,5 @@
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import AGENT, USER, V3Row, seconds
-from journal.models.environment import Environment
 from journal.repositories.questions import Questions
 
 
@@ -10,8 +9,8 @@ class QuestionsShaper(Shaper):
     def __init__(self, questions: Questions) -> None:
         self.questions = questions
 
-    def rows(self, environment: Environment) -> list[V3Row]:
-        return [self.row(q) for q in self.questions.in_(environment.id)]
+    def rows(self) -> list[V3Row]:
+        return [self.row(q) for q in self.questions.in_()]
 
     @staticmethod
     def row(q) -> V3Row:

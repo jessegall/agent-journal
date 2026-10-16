@@ -4,7 +4,6 @@ from typing import Generic, TypeVar
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.scoped import Scoped
-from journal.repositories.environments import Environments
 from journal.repositories.not_found import NotFound
 from journal.repositories.scoped_repository import ScopedRepository
 
@@ -15,13 +14,12 @@ class Controller(Generic[S]):
     """One per model: index, show, store and update over its repository, within the request's environment."""
 
     repository: ScopedRepository[S]
-    environments: Environments
 
     PAGE = 50
 
     def index(self, request: Request) -> Response:
         """A page, newest first: ?limit= caps it and ?before=<id> asks for older rows."""
-        return Response.json(self.repository.page_in(self.environment_id(request), self.limit(request), self.before(request)))
+        return Response.json(self.repository.page_in(self.limit(request), self.before(request)))
 
     def limit(self, request: Request) -> int:
         return min(int(request.query.get("limit", self.PAGE)), 500)
@@ -37,7 +35,7 @@ class Controller(Generic[S]):
             return Response.not_found(str(missing))
 
     def store(self, request: Request) -> Response:
-        row = self.repository.model(environment_id=self.environment_id(request), **self.fields_of(request.body))
+        row = self.repository.model(**self.fields_of(request.body))
         return Response.json(self.repository.save(row, request.actor), 201)
 
     def update(self, request: Request) -> Response:
@@ -46,9 +44,6 @@ class Controller(Generic[S]):
         except NotFound as missing:
             return Response.not_found(str(missing))
         return Response.json(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor))
-
-    def environment_id(self, request: Request) -> int:
-        return self.environments.existing(request.environment).id
 
     def fields_of(self, body: dict) -> dict:
         """Only the model's own fields, never its id or its stamps."""

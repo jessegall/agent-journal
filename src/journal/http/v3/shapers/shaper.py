@@ -1,5 +1,4 @@
 from journal.http.v3.v3_row import V3Row
-from journal.models.environment import Environment
 
 
 class Shaper:
@@ -7,8 +6,8 @@ class Shaper:
 
     type: str
 
-    def rows(self, environment: Environment) -> list[V3Row]:
+    def rows(self) -> list[V3Row]:
         return []
 
-    def count_all(self, environment: Environment) -> int:
-        return len(self.rows(environment))
+    def count_all(self) -> int:
+        return len(self.rows())
