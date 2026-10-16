@@ -64,7 +64,6 @@ class Charts(Repository[Chart]):
         return answering if answering and answering.id != chart.id else None
 
     def remove(self, chart: Chart, by: Actor) -> None:
-        self._graphs.clear()
         for node in self.nodes_of(chart):
             self.remove_node(node, by)
         self.delete(chart, by)
@@ -76,6 +75,9 @@ class Charts(Repository[Chart]):
     def lines_of(self, chart: Chart) -> list[Link]:
         return [link for node in self.nodes_of(chart) for link in self.links.of(node) if link.kind in PORTS and link.source == Ref.to(node)]
 
+    def chart_of(self, node: Node) -> Chart:
+        return self.find(self.links.targets(node, NODE_OF)[0].id)
+
     def add_node(self, chart: Chart, node: Node, by: Actor) -> Node:
         """A node made and linked to its workflow; the compiled graphs go after the link is in, since a walk set off by the node's own row would compile the workflow without it."""
         added = self.nodes.save(node, by)
@@ -84,19 +86,22 @@ class Charts(Repository[Chart]):
         return added
 
     def remove_node(self, node: Node, by: Actor) -> None:
-        self._graphs.clear()
         self.links.remove_all_of(node)
         self.nodes.delete(node, by)
         self._graphs.clear()
 
     def connect(self, source: Node, target: Node, port: str, by: Actor) -> Link:
+        line = self.links.save(Link(source=Ref.to(source), target=Ref.to(target), kind=port), by)
         self._graphs.clear()
+        return line
+
+    def revised(self, chart: Chart, by: Actor) -> Chart:
+        """One more revision at the end of a write to a workflow, by page or by command, so a page save from an older read is refused."""
         self._graphs.clear()
-        return self.links.save(Link(source=Ref.to(source), target=Ref.to(target), kind=port), by)
+        return self.save(self.find(chart.id).saved_again(), by)
 
     def replace(self, chart: Chart, nodes: list[dict], lines: list[dict], by: Actor) -> Chart:
-        self._graphs.clear()
-        """The chart saved whole: nodes given with an id it has are kept and updated, others made, those left out removed; every line drawn anew. One more revision."""
+        """The chart saved whole: nodes given with an id it has are kept and updated, others made, those left out removed; every line drawn anew."""
         present = {node.id: node for node in self.nodes_of(chart)}
         kept = {}
         for given in nodes:
@@ -110,5 +115,4 @@ class Charts(Repository[Chart]):
             self.links.delete(line, by)
         for line in lines:
             self.connect(kept[str(line["from"])], kept[str(line["to"])], line.get("port", THEN), by)
-        self._graphs.clear()
-        return self.save(chart.saved_again(), by)
+        return self.revised(chart, by)

@@ -115,6 +115,7 @@ class ChartCommand(Command):
             if faults:
                 raise Refused(faults[0])
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
+        self.charts.revised(chart, where.actor)
         print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))
         return 0
 
@@ -124,6 +125,7 @@ class ChartCommand(Command):
         if fault:
             raise Refused(fault[0])
         self.charts.connect(source, target, args.port, where.actor)
+        self.charts.revised(self.charts.chart_of(source), where.actor)
         print(f"line {source.id} --{args.port}--> {target.id}")
         return 0
 
@@ -147,6 +149,8 @@ class ChartCommand(Command):
 
     def remove(self, args: Namespace, where: Where) -> int:
         node = self.charts.nodes.find(args.n)
+        chart = self.charts.chart_of(node)
         self.charts.remove_node(node, where.actor)
+        self.charts.revised(chart, where.actor)
         print(f"node {node.id} removed")
         return 0

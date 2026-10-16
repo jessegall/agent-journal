@@ -1160,7 +1160,8 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     assert f"{t} --then--> {c}" in shown and f"{c} --yes--> {a}" in shown and "block_stop: tasks are open" in shown
     port = app.server().port
     read = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/{wf}", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["tool_finished", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
+    assert read["revision"] == 5, "three nodes and two lines by command, each one revision"
+    assert [n["key"] for n in read["nodes"]][shipped:] == ["tool_finished", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
     def post(body):
         try:
             with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{wf}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
@@ -1169,8 +1170,8 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
             return error.code, j.loads(error.read())
     nodes = [{"id": t, "kind": "trigger", "key": "tool_finished", "x": 10, "y": 10}, {"id": c, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
     lines = [{"from": t, "to": c}, {"from": c, "to": "new", "port": "yes"}, {"from": c, "to": "new", "port": "no"}]
-    status, saved = post({"revision": 0, "nodes": nodes, "lines": lines})
-    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["tool_finished", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
+    status, saved = post({"revision": 5, "nodes": nodes, "lines": lines})
+    assert status == 200 and saved["revision"] == 6 and [n["key"] for n in saved["nodes"]] == ["tool_finished", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
     assert [(l["from"], l["port"]) for l in saved["lines"]] == [(t, "then"), (c, "yes"), (c, "no")], "lines drawn anew, the removed node gone"
     assert post({"revision": 0, "nodes": nodes, "lines": []})[0] == 409, "a stale revision is refused"
 
@@ -1942,7 +1943,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert "one trigger per event; tool_starting is in this one 2 times" in node(working, "trigger", "tool_starting").err
     assert node(base, "trigger", "tool_finished").code == 0, "the base and a state may both answer an event"
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {base} [base], revision 0: For every state" in shown and f"workflow {working} [working]" in shown and "sidelined" not in shown
+    assert f"workflow {base} [base], revision 1: For every state" in shown and f"workflow {working} [working]" in shown and "sidelined" not in shown
 
 def test_the_walk_runs_the_base_then_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
@@ -2023,6 +2024,24 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     walks = entries.of_kind("walk", 1000)
     since = [w.data["trigger"] for w in walks[: len(walks) - before]]
     assert set(since) == {"workers.updated", "messages.created"}, "the report's two rows were walked, the worker's and its message; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
+
+
+def test_every_command_line_write_to_a_workflow_raises_its_revision_so_a_page_save_from_an_older_read_is_refused(app):
+    from journal.repositories.charts import Charts
+    hook(app, "SessionStart")
+    console = app.console()
+    charts = app.container.get(Charts)
+    workflow = charts.shipped()[0]
+    read = workflow.revision
+    assert console.run(["chart", "node", "check", "open_tasks", "--in", str(workflow.id)], USER).code == 0
+    after_node = charts.find(workflow.id).revision
+    assert after_node > read, "adding a node by command raises the revision"
+    nodes = charts.nodes_of(workflow)
+    assert console.run(["chart", "line", str(nodes[0].id), str(nodes[-1].id)], USER).code == 0
+    after_line = charts.find(workflow.id).revision
+    assert after_line > after_node, "connecting two nodes by command raises the revision"
+    assert console.run(["chart", "remove", str(nodes[-1].id)], USER).code == 0
+    assert charts.find(workflow.id).revision > after_line, "removing a node by command raises the revision"
 
 
 def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
