@@ -10,11 +10,15 @@ export function useFileHandIn({active, take, pastedText = false}) {
         take(file);
     }
 
+    // A paste into a field that carries text is the field's, whatever else rides on the clipboard: a dictation tool
+    // pastes its words with a file beside them, and taking that file would eat the words.
     function pasted(event) {
         if (!active() || !event.clipboardData) return;
         const file = event.clipboardData.files[0];
-        const text = pastedText ? event.clipboardData.getData("text") : "";
-        if (!file && (!text.trim() || event.target.closest(TYPING))) return;
+        const words = event.clipboardData.getData("text");
+        if (event.target.closest(TYPING) && (words.trim() || !file)) return;
+        const text = pastedText ? words : "";
+        if (!file && !text.trim()) return;
         event.preventDefault();
         take(file || new File([text], "Pasted document.md", {type: "text/markdown"}));
     }

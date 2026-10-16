@@ -5,6 +5,7 @@ import LineList from "../kit/LineList.vue";
 import Switch from "../kit/Switch.vue";
 import Segmented from "../kit/Segmented.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import TextArea from "../kit/TextArea.vue";
 import TextInput from "../kit/TextInput.vue";
 import SecretPicker from "../kit/SecretPicker.vue";
 
@@ -48,12 +49,11 @@ const segments = computed(() => props.setting.options.map((option) => ({key: Str
                         />
                     </template>
                     <template #textarea>
-                        <textarea
+                        <TextArea
                             :id="id"
                             class="setting-value"
                             rows="4"
                             :value="setting.value"
-                            spellcheck="false"
                             @change="emit('change', setting.key, $event.target.value)"
                         />
                     </template>

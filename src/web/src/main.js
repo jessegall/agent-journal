@@ -5,9 +5,11 @@ import {tip} from "./kit/tip.js";
 import "./tokens.css";
 import {watchPresses} from "./platform/pressed.js";
 import {followPage} from "./state/updating.js";
+import {pasteByHand} from "./platform/pasteByHand.js";
 
 watchConsole();
 watchPresses();
+pasteByHand(window);
 followPage(document);
 
 function start({root = App, given = new Map()} = {}) {

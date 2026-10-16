@@ -1,18 +1,21 @@
 <script setup>
 import {computed, useAttrs} from "vue";
 import DropList from "./DropList.vue";
+import {ownValue as vOwnValue} from "./ownValue.js";
 
 defineOptions({inheritAttrs: false});
 const props = defineProps({unit: {type: String, default: ""}, units: {type: Array, default: () => []}});
 const emit = defineEmits(["unit"]);
 const attrs = useAttrs();
-const inputAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "class" && key !== "style")));
+const inputAttrs = computed(() =>
+    Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "class" && key !== "style" && key !== "value"))
+);
 const picked = computed(() => props.units.find((choice) => choice.key === props.unit));
 </script>
 
 <template>
     <label :class="['unit-field', attrs.class]" :style="attrs.style">
-        <input class="unit-field-input" spellcheck="false" v-bind="inputAttrs" />
+        <input v-own-value="attrs.value" class="unit-field-input" spellcheck="false" v-bind="inputAttrs" />
         <template v-if="units.length > 1">
             <span class="unit-field-unit picking">
                 <DropList

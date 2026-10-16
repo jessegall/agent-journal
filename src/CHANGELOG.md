@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.3.4 — A paste lands in the field, and stays there
+
+- A paste into a text field is inserted by the page from the words the paste carries, so a dictation tool that empties the clipboard right after pasting no longer leaves the field blank; a field you are in keeps what you typed or pasted when the page refreshes around it, and the viewer's own reloads wait until you leave a field with words in it.
+
 ## 3.3.3 — Auto-update stays on version 3
 
 - The update check now looks only at releases of the installed major line: a journal on 3.x is told of 3.x releases and installs those, whatever the auto-update setting says. A move to version 4 happens only when you name it: `journal upgrade 4.0.0`. Before, a 4.0.0 tag would have been installed by itself.
