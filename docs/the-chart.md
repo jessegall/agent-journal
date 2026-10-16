@@ -12,6 +12,10 @@ finds the agent orienting. The trace of a walk names the state it read and the w
 workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
+A workflow may move the agent, through the engine's machine: a release sends a paused agent back to what it was
+doing, and a move to idle is allowed from a state that owns nothing. An agent with a task in hand, a wait with its
+way back, or a step it owes the journal stays where it is, and the walk records why.
+
 ## Three kinds of box
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is

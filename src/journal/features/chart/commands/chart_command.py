@@ -82,6 +82,9 @@ class ChartCommand(Command):
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
         chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
+        wrong = self.validation.action_faults([{"kind": kind, "key": args.key, "text": args.text}])
+        if wrong:
+            raise Refused(wrong[0])
         if kind == NodeKind.TRIGGER:
             present = [{"kind": n.kind, "key": n.key} for n in self.charts.nodes_of(chart)]
             faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}]) + self.validation.taken_faults(chart, [{"kind": kind, "key": args.key}])

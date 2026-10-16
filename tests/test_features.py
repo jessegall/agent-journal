@@ -1693,16 +1693,16 @@ def test_the_card_and_release_actions(app):
     console.run(["environment", "here"], AGENT)
     actions = app.container.get(Actions)
     env = app.container.get(Environments).named("main").id
-    ctx = Context(event=Ticked(at=0.0, quiet_for=0.0, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     machine = app.container.get(Machine)
-    actions.perform("release", "nothing to release", ctx)
+    ctx = lambda: Context(event=Ticked(at=0.0, quiet_for=0.0, session="s1", environment_id=env), session="s1", environment_id=env, state=machine.current("s1"))
+    actions.perform("release", "nothing to release", ctx())
     assert machine.current("s1").name == "idle", "an agent not paused is left as it is"
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["await", "the build"], AGENT)
     assert machine.current("s1").name == "expecting"
-    actions.perform("release", "the build came back: carry on", ctx)
+    actions.perform("release", "the build came back: carry on", ctx())
     assert machine.current("s1").task_id == 1, "released to what it was doing"
-    actions.perform("show_card", "The journal did a thing", ctx)
+    actions.perform("show_card", "The journal did a thing", ctx())
     cards = [e for e in app.container.get(Entries).of_kind(env, "card", 10)]
     assert cards and cards[0].data["label"] == "The journal did a thing"
 
@@ -1970,3 +1970,31 @@ def test_the_walk_runs_the_base_then_the_state_workflow_found_by_the_state_and_i
     assert app.container.get(Machine).current("s1").name == "following_plan"
     assert "from working" in read(), "following a plan is a kind of working: it inherits Working's workflow"
     assert Walk.lineage(app.container.get(Machine).current("s1"))[:2] == ["following_plan", "working"]
+
+
+def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(app):
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    node = lambda *args: console.run(["chart", "node", *args, "--in", str(base)], USER)
+    assert "moves the agent to working: a workflow moves the agent to idle only" in node("action", "move_to", "--text", "working").err
+    trigger = int(node("trigger", "tool_finished").out.split()[1].rstrip(":"))
+    move = int(node("action", "move_to", "--text", "idle").out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(move)], USER)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "working", "a task in hand is not left with nobody on it"
+    failed = app.container.get(Entries).of_kind(1, "walk_failed", 3)
+    assert failed and failed[0].data["node"] == move and "would leave that with nobody on it" in failed[0].data["fault"], "the walk records why the move was refused"
+    console.run(["await", "the deploy"], AGENT)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    assert machine.current("s1").name == "expecting", "a wait keeps its way back: a workflow does not move it"
+    assert "would lose its way back" in app.container.get(Entries).of_kind(1, "walk_failed", 1)[0].data["fault"]
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})
+    console.run(["task", "done", "1"], AGENT)
+    assert machine.current("s1").name == "idle"
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    assert machine.current("s1").name == "idle", "idle to idle is nothing"

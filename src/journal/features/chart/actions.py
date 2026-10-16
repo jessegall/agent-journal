@@ -2,6 +2,7 @@ import re
 
 from journal.engine.cards import Cards
 from journal.engine.machine import Machine
+from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.nudger import Nudger
 from journal.features.chart.context import Context
@@ -10,6 +11,7 @@ from journal.features.registry import Registry
 from journal.features.said import Said
 from journal.features.sequences.running import Running
 from journal.hooks.decision import Decision
+from journal.refused import Refused
 from journal.repositories.sequences import Sequences
 from journal.supervisor_link import SupervisorLink
 
@@ -86,12 +88,33 @@ class Actions:
         """An agent paused for something outside goes back to what it was doing, told with the line; an agent not paused is left as it is."""
         if not ctx.session:
             return Decision()
-        agent = self.machine.agent(ctx.session, ctx.environment_id)
-        state = self.machine.states.named(agent.state, agent.data)
+        state = ctx.state
         if not isinstance(state, Paused):
             return Decision()
+        if state.owed_by_agent:
+            raise Refused(f"the agent is {state.name}, a pause it owes the journal a step for: the engine keeps it, a workflow does not release it")
         self.machine.move(ctx.session, ctx.environment_id, state.back().to)
         return self.say(text, ctx) if text else Decision()
+
+    def move_to(self, text: str, ctx: Context) -> Decision:
+        """The agent moved to the state named, through the machine: idle, from a state that owns nothing; a state with a task in hand, a wait or a step owed stays, and the walk records why."""
+        if not ctx.session or not ctx.state:
+            return Decision()
+        target = self.machine.states.named(text.strip(), {})
+        if target.name != text.strip():
+            raise Refused(f"no state is called {text.strip()}")
+        self.leaving(ctx.state, target)
+        if ctx.state.name != target.name:
+            self.machine.move(ctx.session, ctx.environment_id, target)
+        return Decision()
+
+    @staticmethod
+    def leaving(state: AgentState, target: AgentState) -> None:
+        """What a move may leave behind: nothing. A task in hand, a wait with its way back, or a step owed to the journal is not dropped by a workflow."""
+        if isinstance(state, Paused):
+            raise Refused(f"the agent is {state.name} and would lose its way back: a release returns it, a move to {target.name} would not")
+        if state.to_data():
+            raise Refused(f"the agent is {state.name} with {', '.join(f'{k} {v}' for k, v in state.to_data().items() if v)}: a move to {target.name} would leave that with nobody on it")
 
     def start_sequence(self, text: str, ctx: Context) -> Decision:
         if not ctx.session:

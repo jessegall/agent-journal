@@ -31,6 +31,7 @@ class Validation:
         faults += self.taken_faults(chart, nodes)
         faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
         faults += self.trigger_faults(chart, nodes)
+        faults += self.action_faults(nodes)
         for line in lines:
             source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
             if not source or not target:
@@ -40,6 +41,11 @@ class Validation:
         faults += self.check_faults(nodes, lines)
         faults += self.cycle_faults(nodes, lines)
         return faults
+
+    @staticmethod
+    def action_faults(nodes: list[dict]) -> list[str]:
+        """A move names idle, the one state the machine enters with nothing in hand."""
+        return [f"node {n.get('id')} moves the agent to {n.get('text', '').strip() or 'nowhere'}: a workflow moves the agent to idle only" for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") == "move_to" and n.get("text", "").strip() != "idle"]
 
     @staticmethod
     def trigger_faults(chart: Chart, nodes: list[dict]) -> list[str]:
