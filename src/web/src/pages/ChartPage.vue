@@ -29,7 +29,7 @@ const FILLERS = [
     {key: "{{checkpoint_phase}}", about: "The title of the checkpoint phase that plan stands at"},
 ];
 const LEAD =
-    "The journal ships one workflow for every state the agent can be in, each carrying what every state shares as well as its own. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
+    "The journal ships one workflow per state per trigger, picked by the state and then the event, each carrying the shared conduct of its event as well as the state's own. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
 
 // where a workflow runs, as a note beside its title: a shipped one at its state, one of your own at its event; one with no trigger is off
 function placeOf(workflow) {
@@ -37,9 +37,7 @@ function placeOf(workflow) {
     return workflow.off ? `${place} · off` : place;
 }
 function placeWords(workflow) {
-    if (workflow.state) return `Default · the ${workflow.state.replace("_", " ")} state`;
-    if (workflow.event) return `Yours · at ${entries.value[`trigger:${workflow.event}`]?.title || workflow.event}`;
-    return "Yours";
+    return workflow.shipped ? "Default" : "Yours";
 }
 const VIEWS = [
     {key: "canvas", label: "Canvas"},
@@ -166,6 +164,7 @@ async function load() {
     const got = await api.chart();
     workflows.value = got.workflows;
     catalogue.value = got.catalogue;
+    states.value = got.states || [];
     const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
     if (first) await open(first.id);
     else loaded.value = true;
@@ -437,17 +436,22 @@ const removeWorkflow = () =>
         await api.chartRemove(current.value);
         await load();
     });
+const states = ref([]);
+const stateItems = computed(() => states.value.map((s) => ({key: s.key, label: s.title})));
 const create = () =>
     act("create", async () => {
-        const made = await api.chartNew({title: naming.value.title.trim(), trigger: naming.value.trigger});
+        const made = await api.chartNew({title: naming.value.title.trim(), trigger: naming.value.trigger, state: naming.value.state});
         naming.value = null;
         await refreshList();
         await open(made.id);
     });
 const startNaming = () => {
-    naming.value = {trigger: "idle", title: ""};
+    naming.value = {state: "idle", trigger: "idle", title: ""};
 };
 const namingLabel = computed(() => (naming.value ? entries.value[`trigger:${naming.value.trigger}`]?.title || naming.value.trigger : ""));
+const namingState = computed(() =>
+    naming.value ? states.value.find((s) => s.key === naming.value.state)?.title || naming.value.state : ""
+);
 
 () => (trigger.value ? entryOf(trigger.value).title : "No trigger yet");
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
@@ -479,6 +483,14 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     <section class="chart">
         <PageBar class="chart-bar">
             <template v-if="naming">
+                <DropList
+                    :label="namingState"
+                    icon="bolt"
+                    :items="stateItems"
+                    :picked="naming.state"
+                    :menu-width="220"
+                    @pick="naming.state = $event.key"
+                />
                 <DropList
                     :label="namingLabel"
                     icon="bolt"

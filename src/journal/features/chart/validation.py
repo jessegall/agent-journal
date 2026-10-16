@@ -22,20 +22,19 @@ class Validation:
         self.catalogue, self.charts, self.states = catalogue, charts, states
 
     def binding_faults(self, chart: Chart) -> list[str]:
-        """A workflow is bound to a state the engine knows, and a state has one workflow: a second on the same state, or a state nobody has heard of, is refused."""
-        if not chart.bound_to_a_state:
-            return []
+        """A workflow is bound to a state the engine knows at an event the catalogue has, and the pair has one workflow: a second on the same pair, or a state or event nobody has heard of, is refused."""
         if not self.states.known(chart.state):
             return [f"no state is called {chart.state}: one of {', '.join(self.states.names())}"]
-        other = self.charts.for_state(chart.state)
+        if not self.catalogue.has(NodeKind.TRIGGER, chart.event):
+            return [f"no event is called {chart.event}: journal chart catalogue lists them"]
+        other = self.charts.for_pair(chart.state, chart.event)
         if other and other.id != chart.id:
-            return [f"workflow {other.id}, {other.title}, is already the workflow for {chart.state}: one workflow per state"]
+            return [f"workflow {other.id}, {other.title}, is already the workflow for {chart.state} at {chart.event}: one workflow per state per trigger"]
         return []
 
     def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[str]:
         by_id = {str(n.get("id", "")): n for n in nodes}
         faults = [f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}" for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
-        faults += self.taken_faults(chart, nodes)
         faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
         faults += self.trigger_faults(chart, nodes)
         faults += self.action_faults(nodes)
@@ -51,12 +50,13 @@ class Validation:
         return faults
 
     def warnings(self, chart: Chart) -> list[str]:
-        """What a saved workflow should still hear about: one for a state that waits on something outside, with nothing in it to release the agent."""
+        """What a saved workflow should still hear about: a state that waits on something outside with nothing in any of its workflows to release the agent."""
         if chart.state not in self.states.waits():
             return []
-        if any(n.kind == NodeKind.ACTION and n.key in RELEASES for n in self.charts.nodes_of(chart)):
+        own = [c for c in self.charts.all() if c.state == chart.state]
+        if any(n.kind == NodeKind.ACTION and n.key in RELEASES for c in own for n in self.charts.nodes_of(c)):
             return []
-        return [f"nothing in this workflow releases the agent: without a release or a move, an agent {chart.state} stays so until you release it by hand"]
+        return [f"nothing in the {chart.state} workflows releases the agent: without a release or a move at some event, an agent {chart.state} stays so until you release it by hand"]
 
     @staticmethod
     def hold_faults(nodes: list[dict], lines: list[dict]) -> list[str]:
@@ -92,23 +92,11 @@ class Validation:
 
     @staticmethod
     def trigger_faults(chart: Chart, nodes: list[dict]) -> list[str]:
-        """A workflow bound to a state holds one trigger per event it answers; one of the older shape holds one trigger."""
+        """A workflow holds one trigger, of the event it is for."""
         keys = [n.get("key", "") for n in nodes if n.get("kind") == NodeKind.TRIGGER]
-        if not chart.bound_to_a_state:
-            return [f"a workflow holds one trigger; this one has {len(keys)}"] if len(keys) > 1 else []
-        twice = sorted({k for k in keys if keys.count(k) > 1})
-        return [f"a workflow holds one trigger per event; {k} is in this one {keys.count(k)} times" for k in twice]
-
-    def taken_faults(self, chart: Chart, nodes: list[dict]) -> list[str]:
-        """One workflow of the older shape per event: a trigger on an event another such workflow already answers is refused, since two on one event would both drive the agent."""
-        faults = []
-        if chart.bound_to_a_state:
-            return faults
-        for trigger in [n for n in nodes if n.get("kind") == NodeKind.TRIGGER]:
-            other = self.charts.answering(trigger.get("key", ""))
-            if other and other.id != chart.id:
-                faults.append(f"workflow {other.id}, {other.title}, already answers {trigger.get('key')}: one workflow per event")
-        return faults
+        if len(keys) > 1:
+            return [f"a workflow holds one trigger, of the event it is for; this one has {len(keys)}"]
+        return [f"the trigger is {keys[0]}, but this workflow is for {chart.state} at {chart.event}" for k in keys[:1] if k != chart.event]
 
     @staticmethod
     def port_fault(source: dict, target: dict, port: str) -> list[str]:

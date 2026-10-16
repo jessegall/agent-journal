@@ -80,14 +80,13 @@ class Walk:
         return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
-        """In the order they run: the workflow of the agent's state or of the nearest state it inherits from, the wait beneath an owed pause, then the workflow of the older shape that answers the event by itself."""
+        """In the order they run: the workflow of the agent's state at the event, or of the nearest state it inherits from, then that of the state beneath an owed pause."""
         found: list[Chart] = []
         for state in self.states_of(ctx):
-            own = next((chart for name in self.lineage(state) if (chart := self.charts.for_state(name))), None)
+            own = next((chart for name in self.lineage(state) if (chart := self.charts.for_pair(name, key))), None)
             if own and own not in found:
                 found.append(own)
-        legacy = self.charts.answering(key)
-        return found + [legacy] if legacy else found
+        return found
 
     def states_of(self, ctx: Context) -> list[AgentState]:
         """The state the walk read, and beneath a pause the agent owes the journal the state it interrupted, so the conduct of that state, its inbox, its holds, its waits, still runs under the pause. A tick is about the agent's quiet, and under an owed pause the quiet is the pause's: the state beneath says nothing on it."""

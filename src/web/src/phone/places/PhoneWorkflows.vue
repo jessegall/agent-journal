@@ -74,6 +74,7 @@ onMounted(async () => {
         const got = await api.chart();
         workflows.value = got.workflows;
         catalogue.value = got.catalogue;
+        states.value = got.states || [];
         const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
         if (first) await open(first.id);
     } catch (error) {
@@ -169,9 +170,14 @@ const removeWorkflow = () =>
         const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
         if (first) await open(first.id);
     });
+const states = ref([]);
+const picking = ref("");
+const stateActions = computed(() =>
+    states.value.map((s) => ({key: s.key, label: s.title, run: () => ((picking.value = s.key), (sheet.value = "events"))}))
+);
 const create = (event) =>
     act("create", async () => {
-        const made = await api.chartNew({title: "", trigger: event.key});
+        const made = await api.chartNew({title: "", trigger: event.key, state: picking.value});
         workflows.value = (await api.chart()).workflows;
         await open(made.id);
     });
@@ -187,10 +193,7 @@ function placeOf(workflow) {
     return workflow.off ? `${place} · off` : place;
 }
 function placeWords(workflow) {
-    if (workflow.state) return `Default · the ${workflow.state.replace("_", " ")} state`;
-    if (workflow.event)
-        return `Yours · at ${catalogue.value.find((e) => e.kind === "trigger" && e.key === workflow.event)?.title || workflow.event}`;
-    return "Yours";
+    return workflow.shipped ? "Default" : "Yours";
 }
 const workflowActions = computed(() =>
     workflows.value.map((w) => ({key: String(w.id), label: w.title, sub: placeOf(w), check: w.id === current.value, run: () => open(w.id)}))
@@ -286,7 +289,7 @@ const steps = computed(() => {
                 />
             </CellGroup>
             <div class="wf-row">
-                <Button kind="plain" @click="sheet = 'events'">New workflow</Button>
+                <Button kind="plain" @click="sheet = 'states'">New workflow</Button>
             </div>
             <p v-if="failed" class="wf-failed">{{ failed }}</p>
 
@@ -366,11 +369,20 @@ const steps = computed(() => {
     <template v-if="sheet === 'workflows'">
         <ActionSheet title="Workflow" :about="title" line="the one to edit" :actions="workflowActions" @close="sheet = ''" />
     </template>
+    <template v-if="sheet === 'states'">
+        <ActionSheet
+            title="New workflow"
+            about="Pick its state"
+            line="the state the agent is in when it runs"
+            :actions="stateActions"
+            @close="sheet = ''"
+        />
+    </template>
     <template v-if="sheet === 'events'">
         <ActionSheet
             title="New workflow"
             about="Pick the event it starts at"
-            line="a workflow of your own; the default ones are one per state"
+            line="a workflow of your own for that state at this event"
             :actions="eventActions"
             @close="sheet = ''"
         />

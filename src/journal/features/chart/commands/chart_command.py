@@ -26,14 +26,16 @@ class ChartCommand(Command):
         self.verb(verbs, "catalogue", "everything a node may be")
         new = self.verb(verbs, "new", "a new, empty workflow, for a state or the base")
         new.add_argument("title")
-        new.add_argument("--state", default="", help="the state this workflow is for; left out, a workflow of the older shape bound to one event")
+        new.add_argument("--for", dest="state", required=True, help="the state this workflow is for")
+        new.add_argument("--on", dest="event", required=True, help="the event it answers, a trigger of the catalogue")
         self.verb(verbs, "drop", "take a workflow out, with its nodes").add_argument("n", type=int)
         node = self.verb(verbs, "node", "add a node naming a catalogue entry")
         node.add_argument("kind", choices=[k.value for k in NodeKind])
         node.add_argument("key")
         node.add_argument("--text", default="", help="the line an action says, holds with, blocks with or types, or the sequence it starts")
         node.add_argument("--in", dest="chart", type=int, default=0, help="the workflow by its number")
-        node.add_argument("--for", dest="state", default="", help="the workflow by its state")
+        node.add_argument("--for", dest="state", default="", help="the workflow by its state, with --on")
+        node.add_argument("--on", dest="event", default="", help="the event of the workflow named by --for")
         line = self.verb(verbs, "line", "draw a line from one node to another")
         line.add_argument("source", type=int)
         line.add_argument("target", type=int)
@@ -44,7 +46,8 @@ class ChartCommand(Command):
             editing.add_argument("--edit-default", dest="edit_default", action="store_true", help="allowed on a default workflow: an edit changes how the journal drives the agent")
         reset = self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone")
         reset.add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number")
-        reset.add_argument("--for", dest="state", default="", help="the workflow by its state")
+        reset.add_argument("--for", dest="state", default="", help="the workflow by its state, with --on")
+        reset.add_argument("--on", dest="event", default="", help="the event of the workflow named by --for")
         try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
         try_.add_argument("trigger")
         try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
@@ -56,9 +59,8 @@ class ChartCommand(Command):
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.in_order():
-            sidelined = self.charts.sidelined_by(chart)
-            bound = f" [{chart.state}]" if chart.bound_to_a_state else ""
-            print(f"workflow {chart.id}{bound}, revision {chart.revision} by {chart.updated_by.stamp if chart.updated_by else 'nobody'}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
+            bound = f" [{chart.state} at {chart.event}]"
+            print(f"workflow {chart.id}{bound}, revision {chart.revision} by {chart.updated_by.stamp if chart.updated_by else 'nobody'}: {chart.title}")
             for node in self.charts.nodes_of(chart):
                 shown = f"{node.key} ({self.entries.entry(node.kind, node.key).title})" if node.kind == NodeKind.TRIGGER else node.key
                 print(f"{node.id:>4}  {node.kind:<8} {shown}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
@@ -67,26 +69,28 @@ class ChartCommand(Command):
         return 0
 
     def in_order(self) -> list[Chart]:
-        """The states' workflows by name, then those of the older shape."""
-        bound = sorted((c for c in self.charts.all() if c.bound_to_a_state), key=lambda c: c.state)
-        return bound + self.charts.by_event()
+        """By state and then by event, the user's own last."""
+        return sorted(self.charts.all(), key=lambda c: (not c.shipped, c.state, c.event))
 
-    def named_workflow(self, number: int, state: str) -> Chart:
-        """The workflow a command means: by its number, or by the state it is for."""
+    def named_workflow(self, number: int, state: str, event: str) -> Chart:
+        """The workflow a command means: by its number, or by the state and the event it is for."""
         if number:
             return self.charts.find(number)
-        if state:
-            found = self.charts.for_state(state)
+        if state and event:
+            found = self.charts.for_pair(state, event)
             if found is None:
-                raise Refused(f"no workflow is for {state}: journal chart new \"<title>\" --for {state} makes one")
+                raise Refused(f"no workflow is for {state} at {event}: journal chart new \"<title>\" --for {state} --on {event} makes one")
             return found
-        raise Refused("name the workflow: --in <n> by its number, or --for <state>")
+        raise Refused("name the workflow: --in <n> by its number, or --for <state> --on <event>")
 
     def new(self, args: Namespace, where: Where) -> int:
-        faults = self.validation.binding_faults(Chart(title=args.title, state=args.state))
+        """A workflow of your own for a state at an event, born with its trigger."""
+        chart = Chart(title=args.title, state=args.state, event=args.event)
+        faults = self.validation.binding_faults(chart)
         if faults:
             raise Refused(faults[0])
-        chart = self.charts.save(Chart(title=args.title, state=args.state), where.actor)
+        chart = self.charts.save(chart, where.actor)
+        self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=args.event, x=400, y=0), where.actor)
         print(f"workflow {chart.id}: {chart.title}")
         return 0
 
@@ -115,13 +119,13 @@ class ChartCommand(Command):
         entry = self.entries.entry(kind, args.key)
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
-        chart = self.editable(self.named_workflow(args.chart, args.state), args)
+        chart = self.editable(self.named_workflow(args.chart, args.state, args.event), args)
         wrong = self.validation.action_faults([{"kind": kind, "key": args.key, "text": args.text}])
         if wrong:
             raise Refused(wrong[0])
         if kind == NodeKind.TRIGGER:
             present = [{"kind": n.kind, "key": n.key} for n in self.charts.nodes_of(chart)]
-            faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}]) + self.validation.taken_faults(chart, [{"kind": kind, "key": args.key}])
+            faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}])
             if faults:
                 raise Refused(faults[0])
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
@@ -151,7 +155,7 @@ class ChartCommand(Command):
         return 0
 
     def reset(self, args: Namespace, where: Where) -> int:
-        chart = self.named_workflow(args.chart, args.state)
+        chart = self.named_workflow(args.chart, args.state, args.event)
         if not chart.shipped:
             raise Refused(f"workflow {chart.id} is not a shipped one: only a shipped workflow has a drawing to go back to")
         chart = self.shipped.reset(chart, where.actor)

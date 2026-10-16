@@ -36,32 +36,12 @@ class Charts(Repository[Chart]):
         return super().save(row, by)
 
     def shipped(self) -> list[Chart]:
-        """The workflows the journal ships, one per event, in the order they were made."""
+        """The workflows the journal ships, in the order they were made."""
         return [c for c in self.all() if c.shipped]
 
-    def shipped_on(self, event: str) -> list[Chart]:
-        return [c for c in self.shipped() if c.event == event]
-
-    def for_state(self, state: str) -> Chart | None:
-        """The workflow bound to a state, base among them, when the journal holds one."""
-        return next((c for c in self.all() if c.state == state), None)
-
-    def by_event(self) -> list[Chart]:
-        """The workflows of the older shape, bound to one event each, which answer by their event until they retire."""
-        return [c for c in self.all() if not c.bound_to_a_state]
-
-    def answering(self, event: str) -> Chart | None:
-        """The one workflow of the older shape that answers an event: the oldest whose trigger is on it; should a journal somehow hold two, the oldest runs and the rest are sidelined."""
-        for chart in self.by_event():
-            if event in self.graph(chart).triggers:
-                return chart
-        return None
-
-    def sidelined_by(self, chart: Chart) -> Chart | None:
-        """The older workflow that answers this one's event instead, when there is one."""
-        trigger = next((n for n in self.nodes_of(chart) if n.kind == NodeKind.TRIGGER), None) if not chart.bound_to_a_state else None
-        answering = self.answering(trigger.key) if trigger else None
-        return answering if answering and answering.id != chart.id else None
+    def for_pair(self, state: str, event: str) -> Chart | None:
+        """The one workflow for a state at an event, when the journal holds one."""
+        return next((c for c in self.all() if c.state == state and c.event == event), None)
 
     def remove(self, chart: Chart, by: Actor) -> None:
         for node in self.nodes_of(chart):

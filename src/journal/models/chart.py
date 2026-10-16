@@ -9,15 +9,11 @@ class Chart(Model):
     title: str = ""
     revision: int = 0
     shipped: bool = False
-    """True for a workflow the journal ships: it carries the conduct for one event and can be reset to its shipped drawing."""
+    """True for a workflow the journal ships: it carries the conduct of its state at its event and can be reset to its shipped drawing."""
     event: str = ""
-    """The event a shipped workflow is for, the key of its trigger."""
+    """The event this workflow answers, the key of its one trigger."""
     state: str = ""
-    """The state this workflow is for, by name; empty for a workflow of the older shape, bound to one event, which answers by its event until it retires."""
-
-    @property
-    def bound_to_a_state(self) -> bool:
-        return bool(self.state)
+    """The state this workflow is for, by name: a state at an event has one workflow."""
 
     def saved_again(self) -> "Chart":
         return self.with_(revision=self.revision + 1)

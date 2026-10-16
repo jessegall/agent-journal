@@ -699,3 +699,10 @@ decides on an agent event: Working's bookkeeping of edits and reminders, the owe
 from the user that frees any wait, which stays in the engine as the way out of an emptied workflow (task 139).
 The moves the commands make, a task started, a worker dispatched, a question asked, a sequence stepped, stay
 theirs. A workflow's move enters idle, or lays expecting or stuck over the agent's state (task 200).
+
+Ruling, 2026-10-16 at night, on the user's word: one workflow per state per trigger. A chart is bound to a state at an
+event and holds that one trigger; the pair has one workflow, forty of them shipped (seven states at the shared events
+plus each state's own), titled "Idle at Agent stops" and so on; the walk runs the workflow of the agent's state at
+the event, through the state's parents, then the state beneath an owed pause; a workflow of the user's own is for a
+pair no default covers. The per-state shape and the older per-event shape retire at boot. The page's picker is being
+designed by Mr. Eames in Claude Design (task 208) and the page is rebuilt to that design next.

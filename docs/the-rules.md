@@ -22,8 +22,8 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 
 | Event | Line (nudge key) | Checks it needs | Action | Catalogue today |
 | --- | --- | --- | --- | --- |
-| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | in every state's workflow; its listener is deleted |
-| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | in every state's workflow; its listener is deleted |
+| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | in every state's workflow at that event; its listener is deleted |
+| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | in every state's workflow at that event; its listener is deleted |
 | Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | stays in code: a shell-syntax guard, with the mixed-journal and narrow-read refusals |
 | Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | in the workflow Working; its listener is deleted |
 | Tool about to run | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | a workflow in phase 3, in the base at a tool use, with the check same command N times running and the command filler |
@@ -34,20 +34,20 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Tool about to run | triggers.denied | a trigger of the user's matches the tool | hold | stays with the triggers feature: the user's own watch words are conduct of their own kind, edited on their page |
 | Tool finished | laws.large_result | the result ran over N lines | say | stays in code: a law of the journal, L3 |
 | Tool finished | git.closed_by_commit | a commit's message named tasks | say | stays with the git feature: it reads commit messages, which no check reads |
-| Prompt sent | messages.new / some / many | messages unread, by count | say | in every state's workflow; its listener is deleted |
+| Prompt sent | messages.new / some / many | messages unread, by count | say | in every state's workflow at that event; its listener is deleted |
 | Prompt sent | skills.required | a skill owed in this state | hold | stays in the engine: skills |
 | Agent stops | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the workflow Working at a stop, in phase 2 (task 162), with the frozen record of the Working rules as its proof |
 | Agent stops | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Idle; the plan's advance stops at the checkpoint in the plans feature |
-| Agent stops | messages.new / some / many | messages unread | say on the stop | in every state's workflow; its listener is deleted |
+| Agent stops | messages.new / some / many | messages unread | say on the stop | in every state's workflow at that event; its listener is deleted |
 | Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | the workflow Idle, in phase 2 (task 161) |
 | Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
-| Session starts | messages.new / some / many | messages unread | say | in every state's workflow; its listener is deleted |
+| Session starts | messages.new / some / many | messages unread | say | in every state's workflow at that event; its listener is deleted |
 | Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | stays with the voices feature: the voice's own words |
 | Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in the workflow Idle; its listener is deleted |
 | Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in the workflow Idle; its listener is deleted |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the workflow Expecting, in phase 2 (task 165), with the frozen record as its proof |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
-| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | in every state's workflow; its listener is deleted |
+| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | in every state's workflow at that event; its listener is deleted |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | stays with the triggers feature, as above |
 | Reaction created by the user | messages.reacted | a face on a message | type | a workflow later, in every state's on reactions.created, with the check reaction by the user and the face and message fillers |
 | Rule created | memory.rule_review | a new rule | type once | a workflow later, in every state's on rules.created, with the rule filler |
@@ -73,7 +73,7 @@ check is built, and the rows marked phase 2 move into their state's workflow wit
 
 ## Every state, and who holds its conduct
 
-One workflow per state, each carrying what every state shares; a state's workflow is found by the
+One workflow per state per trigger, each carrying the shared conduct of its event; a state's workflow at an event is found by the
 state's class and then its parents, so following a plan takes Working's workflow and every wait takes its own
 before Paused's. The event the Stop hook sends is keyed `idle` in the catalogue, where its title is Agent stops;
 the state the agent rests in is also called idle, so the trial, the commands and the page name the event by its

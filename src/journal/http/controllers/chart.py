@@ -1,7 +1,7 @@
 from dataclasses import asdict
 
 from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.chart.seeds.shipped_chart import STATE_TITLES, ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
@@ -24,7 +24,7 @@ class ChartController:
         self.traces = traces
 
     def index(self, request: Request) -> Response:
-        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries()})
+        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": [{"key": key, "title": title} for key, title in STATE_TITLES.items()]})
 
     def one(self, request: Request) -> Response:
         try:
@@ -33,16 +33,15 @@ class ChartController:
             return Response.not_found(str(missing))
 
     def create(self, request: Request) -> Response:
-        """A workflow is born with its trigger: the event it starts at, named by its key, and a title that is the event's unless given."""
-        trigger = next((e for e in self.catalogue.all() if e.kind == NodeKind.TRIGGER and e.key == request.body.get("trigger", "")), None)
-        title = request.body.get("title", "").strip() or (trigger.title if trigger else "A workflow")
-        chart = Chart(title=title, state=request.body.get("state", "").strip())
-        faults = self.validation.binding_faults(chart) + (self.validation.taken_faults(chart, [{"kind": NodeKind.TRIGGER, "key": trigger.key}]) if trigger else [])
+        """A workflow of the user's own for a state at an event, born with its trigger and a title that names the pair unless given."""
+        state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
+        title = request.body.get("title", "").strip() or f"{state} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
+        chart = Chart(title=title, state=state, event=event)
+        faults = self.validation.binding_faults(chart)
         if faults:
             return Response.refused(faults[0])
         chart = self.charts.save(chart, request.actor)
-        if trigger:
-            self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=trigger.key, x=400, y=0), request.actor)
+        self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=event, x=400, y=0), request.actor)
         return Response.json(self.drawn(chart), 201)
 
     def remove(self, request: Request) -> Response:
@@ -75,8 +74,7 @@ class ChartController:
         return Response.json(self.drawn(self.shipped.reset(chart, request.actor)))
 
     def named(self, chart: Chart) -> dict:
-        sidelined = self.charts.sidelined_by(chart)
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "sidelined_by": sidelined.id if sidelined else None, "off": not self.charts.graph(chart).triggers, "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": self.traces.last_walk(chart), "last_failure": self.traces.last_failure(chart)}
+        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "off": not self.charts.graph(chart).triggers, "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": self.traces.last_walk(chart), "last_failure": self.traces.last_failure(chart)}
 
     def entries(self) -> list[dict]:
         return [{**asdict(e), "kind": e.kind.value} for e in self.catalogue.all()]
