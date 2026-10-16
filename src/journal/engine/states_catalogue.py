@@ -19,20 +19,13 @@ class StatesCatalogue:
     def names(self) -> list[str]:
         return sorted(self._states)
 
-    def beneath(self, state: AgentState) -> AgentState:
-        """The state the agent's conduct is about: the state itself, or beneath the pauses the agent owes the journal the state they interrupted, rebuilt from the resume chain; an owed pause has no conduct of its own."""
-        while isinstance(state, Paused) and state.owed_by_agent:
-            state = self.named(state.resume.get("state", "idle"), state.resume.get("data", {}))
-        return state
-
     def wait_in(self, state: AgentState) -> AgentState | None:
-        """The wait a row event is about: the state beneath the owed pauses when it waits on something outside; None when the agent waits on nothing."""
-        found = self.beneath(state)
-        return found if isinstance(found, Paused) else None
+        """The wait a row event is about: the state itself when it waits on something outside; None when the agent waits on nothing."""
+        return state if isinstance(state, Paused) else None
 
     def waits(self) -> list[str]:
         """The states that wait for something outside and are left only by a release: a workflow for one of them must hold one."""
-        return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.owed_by_agent and not state.leaves_by_itself)
+        return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.leaves_by_itself)
 
     def title_of(self, name: str) -> str:
         return self._states[name].title if name in self._states else name

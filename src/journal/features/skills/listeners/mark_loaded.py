@@ -3,7 +3,6 @@ from journal.engine.machine import Machine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.features.agent_listener import AgentListener
 from journal.features.skills.requiring import Requiring
-from journal.features.skills.states.loading_skill import LoadingSkill
 from journal.features.skills.skill_files import SkillFiles
 from journal.models.actor import Actor
 from journal.repositories.agents import Agents
@@ -25,6 +24,3 @@ class MarkLoaded(AgentListener[ToolFinished]):
         self.agents.touch(agent, Actor.system(), skills_loaded={**(agent.skills_loaded or {}), skill.name: self.files.hash_of(skill)})
         self.requiring.paid(agent, skill)
         self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good")
-        current = self.machine.current(event.session)
-        if isinstance(current, LoadingSkill) and current.is_(skill.folder):
-            self.machine.move(event.session, event.environment_id, current.back().to)

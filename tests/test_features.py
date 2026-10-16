@@ -17,7 +17,6 @@ from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
-from journal.features.memory.states.at_mark import AtMark
 from journal.features.tasks.states.working import Working
 
 AGENT = Where("main", "s1")
@@ -3000,3 +2999,49 @@ def test_a_stop_while_something_is_owed_is_held_by_the_always_workflow_naming_wh
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "awaits a decision at the context mark, 25% full" in body["reason"], "a stop at a mark not decided is held too"
+
+
+def test_an_agent_standing_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set(tmp_path: Path, monkeypatch):
+    import json
+    import sqlite3
+    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    first = App(Config(tmp_path, port=0))
+    first.runtime().start()
+    hook(first, "SessionStart")
+    first.console().run(["environment", "here"], AGENT)
+    first.console().run(["task", "create", "t", "--start"], AGENT)
+    first.runtime().stop()
+    db = sqlite3.connect(first.config.database)
+    working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
+    nested = {"resume": {"state": "at_mark", "data": {"resume": {"state": "working", "data": working}, "mark": 50}}, "skill": "plans", "path": ".claude/skills/journal-plans/SKILL.md"}
+    db.execute("UPDATE agents SET state = 'loading_skill', data = ?, oriented = 1, mark_owed = 0 WHERE session = 's1'", (json.dumps(nested),))
+    db.execute("DELETE FROM migrations")
+    db.commit()
+    db.close()
+    second = App(Config(tmp_path, port=0))
+    second.runtime().start()
+    try:
+        from journal.features.skills.requiring import Requiring
+        from journal.repositories.agents import Agents
+        from journal.repositories.scope import Scope
+        with second.container.get(Scope).of(MAIN):
+            agent = second.container.get(Agents).for_session("s1")
+            assert agent.state == "working" and agent.data.get("task_id") == 1 and agent.mark_owed == 50 and agent.oriented is True, "unwrapped to the work it held, the mark owed, never dropped to idle"
+            assert "plans" in second.container.get(Requiring).owed_names(agent), "the skill it was reading is owed as a link"
+    finally:
+        second.runtime().stop()
+
+
+def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.models.chart import Chart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    charts, seed, by = app.container.get(Charts), app.container.get(ShippedChart), Actor.user(1)
+    mine = charts.save(Chart(title="Mine while orienting", state="orienting", event="idle"), by)
+    charts.add_node(mine, Node(kind=NodeKind.TRIGGER, key="idle"), by)
+    charts.add_node(mine, Node(kind=NodeKind.ACTION, key="say", text="[chart] mine"), by)
+    seed.run()
+    kept = charts.find(mine.id)
+    assert kept.state == "" and "turned off, its state is the look owed now" in kept.title and not any(n.kind == NodeKind.TRIGGER for n in charts.nodes_of(kept)) and any(n.key == "say" for n in charts.nodes_of(kept)), "kept, turned off, and the title says what became of its state"

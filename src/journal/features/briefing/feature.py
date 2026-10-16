@@ -1,6 +1,5 @@
 from journal.features.briefing.listeners.brief_at_start import BriefAtStart
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
-from journal.features.briefing.states.orienting import Orienting
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
 
@@ -9,7 +8,6 @@ class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it."
-    states = (Orienting,)
     listeners = (BriefAtStart, EndSilentSessions)
 
     READY = Nudge(name, "ready", "the journal is ready on {{env}}", repeat_after=0)

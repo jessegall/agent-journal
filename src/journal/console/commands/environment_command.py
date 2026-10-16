@@ -7,7 +7,6 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.config import Config
 from journal.engine.machine import Machine
-from journal.features.briefing.states.orienting import Orienting
 from journal.features.shell.commands.shell_command import ENDED, MOVED
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
@@ -92,16 +91,13 @@ class EnvironmentCommand(Command):
         return f"{what}: " + "; ".join(rows) if rows else ""
 
     def oriented(self, where: Where) -> None:
-        """An agent that read this has its bearings: the hold at its start is lifted."""
+        """An agent that read this has its bearings: the look it owed since its start is paid."""
         if not where.session:
             return
         try:
-            current = self.machine.current(where.session)
+            self.agents.touch(self.agents.for_session(where.session), where.actor, oriented=True)
         except NotFound:
             return
-        self.agents.touch(self.agents.for_session(where.session), where.actor, oriented=True)
-        if isinstance(current, Orienting):
-            self.machine.move(where.session, self.scope.id, current.back().to)
 
     def list(self, args: Namespace, where: Where) -> int:
         for row in self.rows():

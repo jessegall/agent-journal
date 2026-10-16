@@ -5,7 +5,6 @@ from journal.features.memory.commands.reminder_command import ReminderCommand
 from journal.features.memory.commands.rule_command import RuleCommand
 from journal.features.memory.listeners.review_new_rule import ReviewNewRule
 from journal.features.memory.listeners.whisper import Whisper
-from journal.features.memory.states.at_mark import AtMark
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
 
@@ -18,7 +17,6 @@ class Memory(Feature):
     name = "memory"
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
-    states = (AtMark,)
     listeners = (Whisper, ReviewNewRule)
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 

@@ -144,7 +144,9 @@ and Run earlier and Run later on the open workflow.
 ## While something is owed
 
 What the agent owes the journal, a skill to read, the look at what is in flight at a start, a decision at a context
-mark, is a fact on its row and never a state over the one it is in. So a state's own workflows run as they would:
+mark, is a fact on its row and never a state over the one it is in: Orienting, At a context mark and Loading a
+skill are no states, the engine lists nine, and a journal whose agent stood in one of them at boot unwraps it to
+the state it held with the fact set. So a state's own workflows run as they would:
 Working at a tick still says the task is open after a quiet quarter hour while the look is owed, the inbox is named
 at a prompt while a skill is owed, a wait is released by its row event while a mark is owed. The debt holds only
 what it must: a write, through the guards at Tool about to run, and a stop, through Always at Agent stops, each

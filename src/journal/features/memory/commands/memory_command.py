@@ -4,7 +4,6 @@ from typing import ClassVar
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
-from journal.features.memory.states.at_mark import AtMark
 from journal.repositories.agents import Agents
 from journal.repositories.repository import Repository
 from journal.repositories.scope import Scope
@@ -52,10 +51,7 @@ class MemoryCommand(Command):
         return tuple(word.strip().lower() for word in args.keywords.split(",") if word.strip())
 
     def decided(self, where: Where) -> None:
-        """An agent held at a mark has decided; it goes back to what it was doing."""
+        """An agent held at a mark has decided: the mark owed is paid."""
         if not where.session:
             return
-        agent = self.agents.touch(self.machine.agent(where.session, self.scope.id), where.actor, mark_owed=0)
-        state = self.machine.states.named(agent.state, agent.data)
-        if isinstance(state, AtMark):
-            self.machine.move(where.session, agent.environment_id, state.back().to)
+        self.agents.touch(self.machine.agent(where.session, self.scope.id), where.actor, mark_owed=0)

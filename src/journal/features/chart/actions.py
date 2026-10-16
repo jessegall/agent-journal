@@ -6,7 +6,6 @@ from journal.engine.machine import Machine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.nudger import Nudger
-from journal.engine.resume import Resume
 from journal.features.chart.context import Context
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.features.chart.checks import Checks
@@ -167,12 +166,8 @@ class Actions:
         return self.say(text, ctx) if text else Decision()
 
     def without(self, state: AgentState, wait: Paused):
-        """The agent's state with the wait taken out of it: the wait itself goes back to what it was doing; a pause the agent owes the journal keeps standing, over what the wait would go back to."""
-        if state == wait:
-            return wait.back().to
-        beneath = self.machine.states.named(state.resume.get("state", "idle"), state.resume.get("data", {}))
-        released = self.without(beneath, wait)
-        return replace(state, resume={"state": released.state, "data": released.data} if isinstance(released, Resume) else {"state": released.name, "data": released.to_data()})
+        """The agent's state with the wait taken out of it: the wait goes back to what it was doing."""
+        return wait.back().to
 
     def move_to(self, text: str, ctx: Context) -> Decision:
         """The agent moved to the state named, through the machine. Idle, from a state that owns nothing; or a wait on something outside, expecting or stuck, laid over what the agent is doing with the words after the state's name as what it waits for. A state that owns a row, a task, a question, a worker, a sequence, is entered by what makes that row, and the walk records why a move there was refused."""

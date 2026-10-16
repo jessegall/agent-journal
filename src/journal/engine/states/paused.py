@@ -16,8 +16,6 @@ class Paused(AgentState):
     """A state the agent goes back from: it holds the state it left, serialised, and back() returns there. What two pauses share lives here."""
 
     resume: dict = field(default_factory=dict)
-    owed_by_agent: ClassVar[bool] = False
-    """True when what the state awaits is the agent's own doing, a read or a decision: a stop then says so. A wait on the user, a worker or a halt lets the stop pass."""
     leaves_by_itself: ClassVar[bool] = False
     """True when the state goes back on its own, by what the agent does in it, so no workflow has to release it."""
 
@@ -30,8 +28,8 @@ class Paused(AgentState):
         return self.stay()
 
     def prompt_submitted(self, event: PromptSubmitted) -> Transition:
-        """A word from the user frees any wait that is not the agent's own doing: the engine's way out of a wait whose workflow no longer releases it."""
-        return self.stay() if self.owed_by_agent else self.back()
+        """A word from the user frees any wait: the engine's way out of a wait whose workflow no longer releases it."""
+        return self.back()
 
     def back(self, *says: Said) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)

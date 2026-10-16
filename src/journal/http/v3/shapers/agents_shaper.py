@@ -16,7 +16,7 @@ STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "
 WORKING = frozenset({"working", "following_plan"})
 """The states in which the agent has declared its work: only then is it working, as version 3 had it; an agent merely running is busy."""
 EVENT = {"ToolStarting": "PreToolUse", "ToolFinished": "PostToolUse", "PromptSubmitted": "UserPromptSubmit", "Idle": "Stop", "SessionStarted": "SessionStart", "SessionEnded": "SessionEnd", "Compacting": "PreCompact"}
-PAUSED = frozenset({"waiting", "awaiting", "stuck", "at_mark", "loading_skill"})
+PAUSED = frozenset({"waiting", "awaiting", "stuck"})
 KEPT = 400
 ENDS = frozenset({"Idle", "SessionStarted", "SessionEnded"})
 """The entries no Agent call of their session outlives: the turn that made it, or the session, is over."""

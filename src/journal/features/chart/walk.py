@@ -76,7 +76,7 @@ class Walk:
         return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
-        """The event's workflows in the order the user set: the ones bound to no state always, and the ones bound to the agent's state, or to the nearest state it inherits from that has any at this event, whose workflows replace its parents' there; the state beneath an owed pause counts too."""
+        """The event's workflows in the order the user set: the ones bound to no state always, and the ones bound to the agent's state, or to the nearest state it inherits from that has any at this event, whose workflows replace its parents' there."""
         answering = self.charts.for_event(key)
         bound = set()
         for state in self.states_of(ctx):
@@ -86,13 +86,8 @@ class Walk:
         return [c for c in answering if not c.state or c.state in bound]
 
     def states_of(self, ctx: Context) -> list[AgentState]:
-        """The state the walk read, and beneath a pause the agent owes the journal the state it interrupted, so the conduct of that state, its inbox, its holds, its waits, still runs under the pause. A tick is about the agent's quiet, and under an owed pause the quiet is the pause's: the state beneath says nothing on it."""
-        if not ctx.state:
-            return []
-        beneath = self.states.beneath(ctx.state)
-        if beneath is ctx.state or isinstance(ctx.event, Ticked):
-            return [ctx.state]
-        return [ctx.state, beneath]
+        """The state the walk read: what the agent owes the journal is a fact on its row, never a state over this one."""
+        return [ctx.state] if ctx.state else []
 
     @staticmethod
     def lineage(state: AgentState) -> list[str]:

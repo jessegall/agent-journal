@@ -231,5 +231,5 @@ class Checks:
         return parts > 0 and journal == parts
 
     def state(self, ctx: Context):
-        """The agent's state as the walk read it once, looking through the pauses the agent owes the journal to the state beneath, whose conduct the walk runs; None when the walk is about no agent."""
-        return self.machine.states.beneath(ctx.state) if ctx.state else None
+        """The agent's state as the walk read it once."""
+        return ctx.state

@@ -18,7 +18,7 @@ class Moves:
     @staticmethod
     def words_field(target: AgentState) -> str:
         """The one field of words a wait carries, when the wait is one a workflow may make; empty for every other state."""
-        if not isinstance(target, Paused) or target.owed_by_agent:
+        if not isinstance(target, Paused):
             return ""
         own = [f for f in fields(target) if f.name != "resume"]
         return own[0].name if len(own) == 1 and own[0].type in (str, "str") else ""
