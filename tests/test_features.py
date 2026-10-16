@@ -346,7 +346,7 @@ def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
     assert 'created: plan 1 "release"' in console.run(["plan", "create", "release"], USER).out
-    assert 'created: task 1 "write the notes", link 1' in console.run(["plan", "add", "1", "write the notes"], USER).out
+    assert 'created: task 1 "write the notes", link ' in console.run(["plan", "add", "1", "write the notes"], USER).out, "the link's number is after the shipped workflows' lines, which are links too"
 
 
 def test_the_skill_tool_loads_a_skill_too(skilled):
@@ -1129,24 +1129,24 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     wf = int(console.run(["chart", "new", "a test"], AGENT).out.split()[1].rstrip(":"))
     add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
     shipped = 0
-    t, c, a = add("trigger", "prompt_submitted"), add("check", "open_tasks"), add("action", "block_stop", "--text", "tasks are open: carry on")
+    t, c, a = add("trigger", "tool_finished"), add("check", "open_tasks"), add("action", "block_stop", "--text", "tasks are open: carry on")
     console.run(["chart", "line", str(t), str(c)], AGENT)
     console.run(["chart", "line", str(c), str(a), "--port", "yes"], AGENT)
     shown = console.run(["chart", "show"], AGENT).out
     assert f"{t} --then--> {c}" in shown and f"{c} --yes--> {a}" in shown and "block_stop: tasks are open" in shown
     port = app.server().port
     read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/{wf}", timeout=5))
-    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["prompt_submitted", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
+    assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["tool_finished", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
     def post(body):
         try:
             with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{wf}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
-    nodes = [{"id": t, "kind": "trigger", "key": "prompt_submitted", "x": 10, "y": 10}, {"id": c, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
+    nodes = [{"id": t, "kind": "trigger", "key": "tool_finished", "x": 10, "y": 10}, {"id": c, "kind": "check", "key": "open_tasks"}, {"id": "new", "kind": "action", "key": "say", "text": "a word"}]
     lines = [{"from": t, "to": c}, {"from": c, "to": "new", "port": "yes"}, {"from": c, "to": "new", "port": "no"}]
     status, saved = post({"revision": 0, "nodes": nodes, "lines": lines})
-    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["prompt_submitted", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
+    assert status == 200 and saved["revision"] == 1 and [n["key"] for n in saved["nodes"]] == ["tool_finished", "open_tasks", "say"] and saved["nodes"][0]["x"] == 10, "the shipped nodes left out are gone"
     assert [(l["from"], l["port"]) for l in saved["lines"]] == [(t, "then"), (c, "yes"), (c, "no")], "lines drawn anew, the removed node gone"
     assert post({"revision": 0, "nodes": nodes, "lines": []})[0] == 409, "a stale revision is refused"
 
@@ -1439,17 +1439,17 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
-    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives"] and listed["catalogue"]
+    assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Message arrives", "Prompt sent"] and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
     second = made["id"]
-    console.run(["chart", "node", "trigger", "prompt_submitted", "--in", str(second)], AGENT)
-    prompt = int(console.run(["chart", "show"], AGENT).out.split(f"workflow {second}")[1].split()[4])
+    console.run(["chart", "node", "trigger", "tool_finished", "--in", str(second)], AGENT)
+    finished = int(console.run(["chart", "show"], AGENT).out.split(f"workflow {second}")[1].split()[4])
     say = int(console.run(["chart", "node", "action", "say", "--text", "the second workflow says hello", "--in", str(second)], AGENT).out.split()[1].rstrip(":"))
-    console.run(["chart", "line", str(prompt), str(say)], AGENT)
+    console.run(["chart", "line", str(finished), str(say)], AGENT)
     console.run(["task", "create", "free work"], USER)
-    assert "the second workflow says hello" in j.dumps(hook(app, "UserPromptSubmit", prompt="hello there")[1]), "the second workflow speaks at its own event"
+    assert "the second workflow says hello" in j.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")[1]), "the second workflow speaks at its own event"
     body = hook(app, "Stop")[1]
     assert "tasks are open" in body["reason"] and "says hello" not in body["reason"], "and the stop is the first one's alone"
     try:

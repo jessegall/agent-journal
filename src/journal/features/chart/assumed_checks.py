@@ -15,3 +15,6 @@ class AssumedChecks(Checks):
 
     def unread_messages(self, ctx: Context) -> bool:
         return self.assumptions.unread > 0 if self.assumptions.unread is not None else super().unread_messages(ctx)
+
+    def unread_over(self, ctx: Context, n: int) -> bool:
+        return self.assumptions.unread >= n if self.assumptions.unread is not None else super().unread_over(ctx, n)

@@ -10,6 +10,10 @@ from journal.repositories.settings import PROJECT, Settings
 TITLE = "Agent stops"
 MESSAGE_TITLE = "Message arrives"
 NEW_MESSAGE = "[messages.new] new message {{row}}"
+PROMPT_TITLE = "Prompt sent"
+ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
+SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
+MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
 LISTENERS_OFF = "listeners.off"
 """The setting naming the listeners in code that run nowhere: a shipped workflow that carries one's conduct adds it when the workflow is made."""
 OLD_TITLE = "The journal's conduct"
@@ -23,7 +27,11 @@ class ShippedChart(Seed):
 
     def __init__(self, charts: Charts, settings: Settings) -> None:
         self.charts, self.settings = charts, settings
-        self.drawings = {"idle": Drawing(TITLE, self.draw_stop), "messages.created": Drawing(MESSAGE_TITLE, self.draw_message, ("InboxOnArrival",))}
+        self.drawings = {
+            "idle": Drawing(TITLE, self.draw_stop),
+            "messages.created": Drawing(MESSAGE_TITLE, self.draw_message, ("InboxOnArrival",)),
+            "prompt_submitted": Drawing(PROMPT_TITLE, self.draw_prompt, ("InboxAtPrompt",)),
+        }
         """The events the journal ships a workflow for, each with its drawing."""
 
     def run(self) -> None:
@@ -61,6 +69,24 @@ class ShippedChart(Seed):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
         return self.charts.save(chart.saved_again().with_(title=drawing.title), by)
+
+    def draw_prompt(self, chart: Chart) -> None:
+        """Today's conduct when a prompt is sent: what waits unread is named by number, one message by its number, a few by theirs, more than three by their count."""
+        by = Actor.system()
+        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
+        prompt = node(NodeKind.TRIGGER, "prompt_submitted", x=400, y=0)
+        unread = node(NodeKind.CHECK, "unread_messages", x=400, y=92)
+        many = node(NodeKind.CHECK, "unread_over", "4", x=400, y=184)
+        say_many = node(NodeKind.ACTION, "say", MANY_UNREAD, x=160, y=276)
+        some = node(NodeKind.CHECK, "unread_over", "2", x=400, y=276)
+        say_some = node(NodeKind.ACTION, "say", SOME_UNREAD, x=160, y=368)
+        say_one = node(NodeKind.ACTION, "say", ONE_UNREAD, x=400, y=368)
+        self.charts.connect(prompt, unread, THEN, by)
+        self.charts.connect(unread, many, YES, by)
+        self.charts.connect(many, say_many, YES, by)
+        self.charts.connect(many, some, NO, by)
+        self.charts.connect(some, say_some, YES, by)
+        self.charts.connect(some, say_one, NO, by)
 
     def draw_message(self, chart: Chart) -> None:
         """Today's conduct when a message arrives: one the user left is named to the agent by number, typed into its terminal."""

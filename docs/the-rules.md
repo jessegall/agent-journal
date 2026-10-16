@@ -33,7 +33,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Tool about to run | triggers.denied | a trigger of the user's matches the tool | hold | the trigger feature's own words check |
 | Tool finished | laws.large_result | the result ran over N lines | say | needs "result over N lines" |
 | Tool finished | git.closed_by_commit | a commit's message named tasks | say | needs the commit filler |
-| Prompt sent | messages.new / some / many | messages unread, by count | say | needs the inbox fillers by count |
+| Prompt sent | messages.new / some / many | messages unread, by count | say | shipped as the workflow Prompt sent; the listener is off where it stands |
 | Prompt sent | skills.required | a skill owed in this state | hold | stays in the engine: skills |
 | Agent stops | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the Working state's; moves only with the state rule |
 | Agent stops | messages.new / some / many | messages unread | say on the stop | as at a prompt |

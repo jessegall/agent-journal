@@ -30,7 +30,7 @@ from journal.repositories.settings import PROJECT, Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over")
+COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over")
 """The checks that take a number: the node's text, or the setting named there."""
 
 
@@ -157,6 +157,10 @@ class Checks:
 
     def unread_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unread(ctx.environment_id))
+
+    def unread_over(self, ctx: Context, n: int) -> bool:
+        """At least so many messages unread: the inbox line is chosen by the count."""
+        return len(self.messages.unread(ctx.environment_id)) >= n
 
     def unanswered_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unanswered(ctx.environment_id))
