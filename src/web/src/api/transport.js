@@ -67,27 +67,27 @@ class Transport {
         this.refused = fn;
     }
 
-    async reach(method, url, body, wait, tries, unlocked = {}) {
+    async reach(method, url, body, wait, tries, unlocked = {}, headers = {}) {
         const raw = body instanceof FormData;
         try {
             return await fetch(url, {
                 method,
-                headers: {...this.carried, ...unlocked, ...(body === undefined || raw ? {} : {"Content-Type": "application/json"})},
+                headers: {...this.carried, ...headers, ...unlocked, ...(body === undefined || raw ? {} : {"Content-Type": "application/json"})},
                 body: payload(body),
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : WAIT_MS)),
             });
         } catch (error) {
             if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) throw error;
             await new Promise((resolve) => setTimeout(resolve, RELOAD_PAUSE_MS));
-            return this.reach(method, url, body, wait, tries - 1, unlocked);
+            return this.reach(method, url, body, wait, tries - 1, unlocked, headers);
         }
     }
 
-    async send(method, url, body, wait = 0, tries = RELOAD_TRIES) {
+    async send(method, url, body, wait = 0, tries = RELOAD_TRIES, headers = {}) {
         this.watcher("sent", method, url, body);
         const release = method === "GET" ? () => {} : holdPressed();
-        const res = await this.reach(method, url, body, wait, tries)
-            .then((got) => (got.status === LOCKED && this.unlocker ? this.unlockedReach(method, url, body, wait, tries) : got))
+        const res = await this.reach(method, url, body, wait, tries, {}, headers)
+            .then((got) => (got.status === LOCKED && this.unlocker ? this.unlockedReach(method, url, body, wait, tries, headers) : got))
             .finally(() => {
                 release();
                 this.watcher("answered", method, url, body);
@@ -98,22 +98,24 @@ class Transport {
         });
     }
 
-    async unlockedReach(method, url, body, wait, tries) {
-        return this.reach(method, url, body, wait, tries, await this.unlocker(method, url, payload(body)));
+    async unlockedReach(method, url, body, wait, tries, headers) {
+        return this.reach(method, url, body, wait, tries, await this.unlocker(method, url, payload(body)), headers);
     }
 
-    request(method, url, body, wait = 0) {
-        if (method !== "GET") return this.send(method, url, body, wait).then((got) => (this.written(url), got));
+    request(method, url, body, wait = 0, headers = {}) {
+        if (method !== "GET") return this.send(method, url, body, wait, RELOAD_TRIES, headers).then((got) => (this.written(url), got));
         if (covered() && !asksUpdateStatus(url)) return Promise.reject(Object.assign(new Error("The journal is updating."), {updating: true}));
-        if (this.asked.has(url)) return this.asked.get(url);
-        const endpoint = url.split("?")[0];
+        const scope = Object.values(headers).join(" ");
+        const key = `${scope} ${url}`;
+        if (this.asked.has(key)) return this.asked.get(key);
+        const endpoint = `${scope} ${url.split("?")[0]}`;
         const tries = this.tries;
-        const call = (this.flying.get(endpoint) || Promise.resolve()).catch(() => {}).then(() => this.send(method, url, body, 0, tries));
+        const call = (this.flying.get(endpoint) || Promise.resolve()).catch(() => {}).then(() => this.send(method, url, body, 0, tries, headers));
         this.flying.set(endpoint, call);
-        this.asked.set(url, call);
+        this.asked.set(key, call);
         call.finally(() => {
             if (this.flying.get(endpoint) === call) this.flying.delete(endpoint);
-            this.asked.delete(url);
+            this.asked.delete(key);
         }).catch(() => {});
         return call;
     }

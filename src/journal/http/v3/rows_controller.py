@@ -24,7 +24,7 @@ class RowsController:
         listing = Listing.from_query(request.query)
         if shaper.type in TIMELINES:
             listing = replace(listing, timeline=True)
-        rows = shaper.rows(self.environments.existing(request.params.get("env") or request.environment))
+        rows = shaper.rows(self.environments.existing(request.environment))
         return Response.json({**listing.listed(rows), "counts": self.counts(rows)})
 
     @staticmethod

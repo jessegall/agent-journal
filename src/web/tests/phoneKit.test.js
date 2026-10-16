@@ -20,8 +20,8 @@ test("a pointed client reaches the desktop's routes through the phone, with the 
     transport.carry({"X-Phone": "1"});
     await client.create("todo", {title: "From the phone"});
     const [url, sent] = fetched.mock.calls[0];
-    expect(url).toBe("/p/api/main/todo");
-    expect(sent.headers).toEqual({"X-Phone": "1", "Content-Type": "application/json"});
+    expect(url).toBe("/p/api/todo");
+    expect(sent.headers).toEqual({"X-Phone": "1", "X-Journal-Env": "main", "Content-Type": "application/json"});
 });
 
 test("the toast waits while it is touched and goes once let go", () => {
