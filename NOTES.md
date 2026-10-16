@@ -777,3 +777,16 @@ split), the inbox and the message named are Always workflows per shared event af
 shipped workflow carries only its own steps and a state with nothing own at an event ships none there, a standing
 journal's copies are released at boot (unedited gone, edited kept as the user's with the shared nodes stripped),
 and A message is updated has no conduct to ship, so no Always workflow stands there yet.
+
+Phase one closed on 2026-10-16 late: the counts replaced the engine's hidden counters. Is a count at every Nth joined
+the count checks; the row checks Message just read, Task just started by this agent and Log is for the task in hand
+read the event's row; counts are the engine's own table, walked by no row event, gone with the session; Always at A
+message is created starts uses and namings, Always at A message is updated (now shipped) starts owed at the first
+read owed; the guards count uses, owed and namings on the canvas and Working counts its edits, a held write not
+counted, started at nought by a task start and a log line; Working keeps no edits or reminders and the seven counter
+checks are gone from the catalogue, a user's workflow naming one rewritten to its count check at boot with the
+title saying so, a Working agent's edits carried once into its count; the replays record the counts and were
+re-frozen from the workflows, differing by the counts alone, with count_survives_events added; the rules reworded.
+A task start moves the agent before the row is written, so the row's walk reads Working. A second boot on a seeded
+journal is a no-op (tested). The suite: 230 tests, 16 s of CPU, 35 s of wall on a box at load 5, replays 40 in
+about three minutes.

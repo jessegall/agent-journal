@@ -8,10 +8,7 @@ file's own safety and deploy rules still stand. The user's own word comes before
 
 ## The journal's law
 
-These rules ship with the journal and cannot be switched off. The journal's guards that enforce them are locked
-workflows, first in their event's list, which the Workflows page shows with a lock: not deleted, not turned off,
-their steps not taken out or gated. A guard whose step fails is recorded where the page shows it and the walk goes
-on past it, so a law failing open is never silent.
+These rules ship with the journal and cannot be switched off.
 
 **L1 - Every subagent dispatch names its model and chooses the least expensive model that reliably fits the work.**
 Inheriting the orchestrator's model is not a model choice.

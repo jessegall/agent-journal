@@ -16,10 +16,10 @@ class Messages(Feature):
     title = "Messages"
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
-    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it", 0, unit="tool uses")
-    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer; 0 holds the first", 0, unit="tool uses")
-    REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read", 3, unit="tool uses")
-    HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read", 5, unit="reminders")
+    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it; the guards' workflow reads it against the count of uses owed", 0, unit="tool uses")
+    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer; 0 holds the first; read against the count of uses owed", 0, unit="tool uses")
+    REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read; the guards' workflow reads it against the count of uses since the message came", 3, unit="tool uses")
+    HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read; read against the count of namings", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS)
     listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
 

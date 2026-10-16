@@ -2909,3 +2909,14 @@ def test_a_boot_carries_a_working_agents_edits_into_its_count_once_and_rewrites_
     node = charts.nodes.find(old.id)
     assert node.key == "count_every" and node.text == "uses 3" and "rewrote tool_uses_since_unread_every to count checks" in kept.title, "a retired counter check is rewritten to its count check, the number kept, and the title says so"
     assert any(n.kind == NodeKind.TRIGGER for n in charts.nodes_of(kept)), "the workflow is not stopped: it still answers its event"
+
+
+def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.repositories.charts import Charts
+    charts, seed = app.container.get(Charts), app.container.get(ShippedChart)
+    picture = lambda: [(c.id, c.title, c.state, c.event, c.place, c.revision, c.locked, c.drawing, c.drawn_version, [(n.id, n.kind, n.key, n.text, n.locked) for n in charts.nodes_of(c)], [(l.source.id, l.target.id, l.kind) for l in charts.lines_of(c)]) for c in charts.all()]
+    seed.run()
+    first = picture()
+    seed.run()
+    assert picture() == first, "a boot on a journal already seeded draws, resets, releases and strips nothing: the second run is a no-op"

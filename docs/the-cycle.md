@@ -6,12 +6,15 @@ back in a hook's answer. A 409 is a hook answered "no": the agent reads why and 
 
 ## 0. The chart comes first
 
-Since 2026-10-16 the journal's conduct at a stop, and anything the user draws, is a chart: one per journal,
-edited on the Conduct page, read afresh at every event. An agent event is walked before its hook is answered,
-right after the machine, so a hold or a blocked stop from the chart reaches the agent and a said line rides on
-the answer; a row event is walked on the worker thread and can only say or type. What the chart does not carry
-the states and listeners below still do; the-rules.md lists which is which, and the-chart.md says how the
-chart is read and edited. The shipped chart carries the parked-tasks line and the next-open-task hold at a stop.
+Since 2026-10-16 the journal's conduct is workflows, edited on the Workflows page and read afresh at every event.
+A trigger has a list of workflows in the order the user drags: the locked guards first, then the Always ones that
+run whatever the agent is doing, then the states' own, each bound to the state it runs in; a Stop here node ends
+the event's walk for the workflows after it. An agent event is walked before its hook is answered, right after
+the machine, so a hold or a blocked stop reaches the agent and a said line rides on the answer; the first hold of
+an event wins and one move per event is taken; a row event is walked on the worker thread and can only say or
+type. The counts the workflows keep for the agent, started, counted and read by nodes on the canvas, carry the
+cadences that the engine once counted in secret. What the workflows do not carry the states and listeners below
+still do; the-rules.md lists which is which, and the-chart.md says how a workflow is read and edited.
 
 ## 1. One session, start to stop
 
