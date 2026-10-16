@@ -13,7 +13,17 @@ const catalogue = [
     {kind: "trigger", key: "plans.created", title: "A plan is created", group: "plan", providers: ["claude", "codex"]},
     {kind: "check", key: "open_tasks", title: "Has open tasks?", group: ""},
 ];
-const shipped = (id, state, event, more = {}) => ({id, state, event, shipped: true, edited: false, off: false, failed: false, warnings: [], ...more});
+const shipped = (id, state, event, more = {}) => ({
+    id,
+    state,
+    event,
+    shipped: true,
+    edited: false,
+    off: false,
+    failed: false,
+    warnings: [],
+    ...more,
+});
 const workflows = [
     shipped(1, "idle", "idle"),
     shipped(2, "working", "idle", {edited: true}),
@@ -38,9 +48,7 @@ describe("one workflow per state per event", () => {
         expect(paired.addableFor("working").map((e) => e.key)).toEqual(["plans.created"]);
     });
 
-    it("counts a state's own against the parent's and words the rows by the one thing that sets them apart", () => {
-        expect(paired.countOf("working")).toBe("2 of 3 do something");
-        expect(paired.countOf("following_plan")).toBe("1 of its own, 2 from Working");
+    it("words the rows by the one thing that sets them apart", () => {
         expect(paired.wordsFor("working", "idle")).toBe("Changed by you");
         expect(paired.wordsFor("working", "tasks.created")).toBe("Turned off");
         expect(paired.wordsFor("following_plan", "idle")).toBe("Working's");

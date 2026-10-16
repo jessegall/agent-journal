@@ -12,6 +12,8 @@ class AgentState:
     """One state the agent can be in. A method per agent event, named after it in snake_case, says what happens there; an event with no method changes nothing. `allows` is what the agent may do while here."""
 
     name: ClassVar[str]
+    title: ClassVar[str] = ""
+    """The state in the user's words, as the pages name it."""
     allows: ClassVar[frozenset[Permission]] = frozenset()
 
     def on(self, event: AgentEvent) -> "Transition":

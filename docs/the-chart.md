@@ -35,13 +35,15 @@ the agent; the inbox named at a start, a prompt and a stop; the unread inbox nam
 write held after so many namings; a read message answered before the next tool, held after so many uses. And each
 state adds its own, at its own events:
 
-- **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; a plan standing at a
-  checkpoint waits for the user's look, or in auto mode holds the stop and carries on; as the clock ticks, the
+- **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks, the
   parked ask after a minute and the check-in after half an hour.
 - **Working**: the task in hand named back every so many edits, the log asked for and then held; carry on at a
   stop and a start, with the log asked for when stale; the task still open after a quiet quarter hour.
   Following a plan inherits it.
-- **Awaiting a worker**: a worker reporting or stopping is told, and the agent is released when its last worker
+- **Following a plan**: the plan's state for the plan's whole life; at a stop or a start, a plan standing at a
+  checkpoint waits for the user's look, or in auto mode holds the stop and carries on, and with a task in hand it
+  carries on as Working does; what a wait or a sequence interrupts it comes back to it.
+- **Waiting on a worker**: a worker reporting or stopping is told, and the agent is released when its last worker
   is back.
 - **Waiting on a question**: the answer releases the agent, told how to read it.
 - **Expecting something outside**: after five quiet minutes the agent is told to check what it awaits; its own

@@ -21,6 +21,8 @@ class Paused(AgentState):
     resume: dict = field(default_factory=dict)
     owed_by_agent: ClassVar[bool] = False
     """True when what the state awaits is the agent's own doing, a read or a decision: a stop then says so. A wait on the user, a worker or a halt lets the stop pass."""
+    leaves_by_itself: ClassVar[bool] = False
+    """True when the state goes back on its own, by what the agent does in it, so no workflow has to release it."""
 
     def awaiting(self) -> tuple[str, str]:
         """What the agent waits for while paused here, in words, and the rows it waits on as refs; the viewer's status line reads both."""

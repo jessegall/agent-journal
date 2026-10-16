@@ -13,6 +13,7 @@ class Working(AgentState):
     """On one task. Writes are allowed and counted: every tenth names the task, and the twentieth with nothing logged waits for a log line; stopping with the task open is told to carry on; a long silence is told the task is still open."""
 
     name = "working"
+    title = "Working"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     task_id: int = 0
     what: str = ""

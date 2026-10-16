@@ -728,3 +728,15 @@ say <n> "<next job>"` sends a reported worker out again on that session, in the 
 the last job comes with it; a worker still out is told to report first, and one whose session was not captured is
 dispatched again. Subagents are reused the same way by the orchestrator's own message to the agent it already
 started, never a fresh one on work another knows.
+
+The plan state, 2026-10-16 at night on the user's word (tasks 211 to 213): Following a plan holds the agent for the
+plan's whole life. A checkpoint stands in the plan's state with no task in hand, said as "plan N, standing at a
+checkpoint"; the checkpoint branch moved from Idle's stop workflow into Following a plan's own stop and start
+workflows, beside the carry-on; Idle keeps nothing of plans. A plan parked or cancelled sends its follower back to
+rest; a session that starts at rest while a plan is started follows it, beneath its orienting pause, at the plan's
+task in hand. Every wait and a sequence are pauses that keep the state they left, so they return to the plan. A
+sequence ends by its own last step and is no wait a workflow must release, so the wait warning leaves it alone.
+Every state names itself (title on the class) and the states catalogue lists them all with their parents, so the
+Workflows page shows every state the engine has, from the engine and not from a hand-written list; its lists are
+headed State and Event and a state's row is its name and its marks. A child state ships only its own events, so
+its shared-only workflows never shadow the parent's.

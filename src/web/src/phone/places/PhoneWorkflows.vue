@@ -258,7 +258,6 @@ const stateActions = computed(() =>
     states.value.map((s) => ({
         key: s.key,
         label: s.title,
-        sub: pairing.value.countOf(s.key),
         check: s.key === pickedState.value,
         run: () => pick(s.key, pickedEvent.value),
     }))

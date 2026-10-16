@@ -32,7 +32,20 @@ class StatesCatalogue:
 
     def waits(self) -> list[str]:
         """The states that wait for something outside and are left only by a release: a workflow for one of them must hold one."""
-        return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.owed_by_agent)
+        return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.owed_by_agent and not state.leaves_by_itself)
+
+    def title_of(self, name: str) -> str:
+        return self._states[name].title if name in self._states else name
+
+    def parent_of(self, name: str) -> str:
+        """The state this one inherits its conduct from, when it has one: the nearest base class that is a state of its own."""
+        state = self._states.get(name)
+        return next((base.name for base in state.__mro__[1:] if base in self._states.values()), "") if state else ""
+
+    def listed(self) -> list[dict]:
+        """Every state with its words and its parent, the first state first, then the rest as the features bring them."""
+        names = ["idle"] + [name for name in self._states if name != "idle"]
+        return [{"key": name, "title": self.title_of(name), "parent": self.parent_of(name)} for name in names]
 
     def named(self, name: str, data: dict) -> AgentState:
         state = self._states.get(name) or self._states["idle"]

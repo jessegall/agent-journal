@@ -37,7 +37,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Prompt sent | messages.new / some / many | messages unread, by count | say | in every state's workflow at that event; its listener is deleted |
 | Prompt sent | skills.required | a skill owed in this state | hold | stays in the engine: skills |
 | Agent stops | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the workflow Working at a stop, in phase 2 (task 162), with the frozen record of the Working rules as its proof |
-| Agent stops | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Idle; the plan's advance stops at the checkpoint in the plans feature |
+| Agent stops | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Following a plan; the plan's advance stops at the checkpoint in the plans feature, the agent standing in the plan's state |
 | Agent stops | messages.new / some / many | messages unread | say on the stop | in every state's workflow at that event; its listener is deleted |
 | Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | the workflow Idle, in phase 2 (task 161) |
 | Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |

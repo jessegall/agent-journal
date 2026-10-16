@@ -1,13 +1,12 @@
 from dataclasses import asdict
 
 from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.seeds.shipped_chart import STATE_TITLES, ShippedChart
+from journal.features.chart.seeds.shipped_chart import ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import Validation
-from journal.features.chart.walk import Walk
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.http.request import Request
 from journal.http.response import Response
@@ -30,12 +29,7 @@ class ChartController:
         return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed()})
 
     def listed_states(self) -> list[dict]:
-        """The states the page lists, each with its words and the state it inherits workflows from, when it has one."""
-        listed = []
-        for key, title in STATE_TITLES.items():
-            parents = [name for name in Walk.lineage(self.states.named(key, {}))[1:] if name in STATE_TITLES]
-            listed.append({"key": key, "title": title, "parent": parents[0] if parents else ""})
-        return listed
+        return self.states.listed()
 
     def runs(self, request: Request) -> Response:
         """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
@@ -66,7 +60,7 @@ class ChartController:
     def create(self, request: Request) -> Response:
         """A workflow of the user's own for a state at an event, born with its trigger and a title that names the pair unless given."""
         state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
-        title = request.body.get("title", "").strip() or f"{STATE_TITLES.get(state, state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
+        title = request.body.get("title", "").strip() or f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}" if self.catalogue.has(NodeKind.TRIGGER, event) else request.body.get("title", "").strip()
         chart = Chart(title=title, state=state, event=event)
         faults = self.validation.binding_faults(chart)
         if faults:

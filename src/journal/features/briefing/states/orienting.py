@@ -10,6 +10,7 @@ class Orienting(Paused):
     """The session started, came back from a compaction or took the environment over: what is in flight here must be read before any other write. journal environment here takes the agent back."""
 
     name = "orienting"
+    title = "Orienting at a start"
     owed_by_agent = True
 
     def awaiting(self) -> tuple[str, str]:

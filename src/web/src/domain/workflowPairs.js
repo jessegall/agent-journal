@@ -37,19 +37,11 @@ export function pairs(workflows, states, catalogue) {
     // the events listed for a state: every agent event, and the row events it or its parent has a workflow for
     const eventsFor = (state) => [...agentEvents, ...rowEvents.filter((e) => servingFor(state, e.key))];
     const addableFor = (state) => rowEvents.filter((e) => !servingFor(state, e.key));
-    const countOf = (state) => {
-        const events = eventsFor(state);
-        const own = events.filter((e) => ownFor(state, e.key));
-        const parent = parentOf(state);
-        return parent
-            ? `${own.length} of its own, ${events.length - own.length} from ${titleOf(parent)}`
-            : `${own.length} of ${events.length} do something`;
-    };
     // what an event row says beside its name: the workflow's one status word, or whose it borrows
     const wordsFor = (state, event) => {
         const own = ownFor(state, event);
         const serving = servingFor(state, event);
         return own ? statusOf(own) : serving ? `${titleOf(parentOf(state))}'s` : "";
     };
-    return {titleOf, parentOf, ownFor, servingFor, eventsFor, addableFor, countOf, wordsFor};
+    return {titleOf, parentOf, ownFor, servingFor, eventsFor, addableFor, wordsFor};
 }

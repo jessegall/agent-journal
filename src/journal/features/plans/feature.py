@@ -3,6 +3,7 @@ from journal.features.nudge import Nudge
 from journal.features.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
+from journal.features.plans.listeners.follow_plan_at_start import FollowPlanAtStart
 from journal.features.plans.listeners.tell_approved import TellApproved
 from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
@@ -14,7 +15,7 @@ class Plans(Feature):
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
     states = (FollowingPlan,)
     commands = (PlanCommand,)
-    listeners = (AdvancePlan, TellApproved)
+    listeners = (AdvancePlan, TellApproved, FollowPlanAtStart)
     seeds = (ClosedPlans,)
 
     NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)

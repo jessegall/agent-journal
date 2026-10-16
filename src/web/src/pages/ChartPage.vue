@@ -507,7 +507,6 @@ const stateRows = computed(() =>
             key: s.key,
             title: s.title,
             marks: events.map((e) => ({key: e.key, title: e.title, mark: markOf(servingFor(s.key, e.key), !ownFor(s.key, e.key))})),
-            count: pairing.value.countOf(s.key),
             failed: own.some((e) => ownFor(s.key, e.key).failed),
             warning: own.some((e) => ownFor(s.key, e.key).warnings.length > 0),
         };
@@ -673,15 +672,15 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </div>
             </template>
             <template v-else-if="!listsHidden">
-                <aside class="chart-col chart-states" aria-label="When the agent is">
-                    <h2 class="chart-col-head">When the agent is</h2>
+                <aside class="chart-col chart-states" aria-label="State">
+                    <h2 class="chart-col-head">State</h2>
                     <button
                         v-for="row in stateRows"
                         :key="row.key"
                         type="button"
                         :class="['chart-row', 'chart-state', {on: row.key === pickedState}]"
                         :aria-current="row.key === pickedState ? 'true' : null"
-                        :aria-label="`${row.title}, ${row.count}${row.failed ? ', a run failed' : ''}${row.warning ? ', nothing ends its wait' : ''}`"
+                        :aria-label="`${row.title}${row.failed ? ', a run failed' : ''}${row.warning ? ', nothing ends its wait' : ''}`"
                         @click="pick(row.key, pickedEvent)"
                     >
                         <span class="chart-row-name">{{ row.title }}</span>
@@ -694,11 +693,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 @click.stop="pick(row.key, mark.key)"
                             />
                         </span>
-                        <span class="chart-row-sub">
-                            {{ row.count }}
-                            <span v-if="row.failed" class="chart-row-bad">· Failed</span>
-                            <span v-else-if="row.warning" class="chart-row-warn">· Nothing ends its wait</span>
-                        </span>
+                        <span v-if="row.failed" class="chart-row-bad">A run failed</span>
+                        <span v-else-if="row.warning" class="chart-row-warn">Nothing ends its wait</span>
                     </button>
                     <ul class="chart-key" aria-label="What the marks mean">
                         <li v-for="legend in MARKS" :key="legend.mark">
@@ -707,8 +703,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         </li>
                     </ul>
                 </aside>
-                <aside class="chart-col chart-events" aria-label="And this happens">
-                    <h2 class="chart-col-head">And this happens</h2>
+                <aside class="chart-col chart-events" aria-label="Event">
+                    <h2 class="chart-col-head">Event</h2>
                     <button
                         v-for="row in eventRows"
                         :key="row.key"

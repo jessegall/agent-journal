@@ -11,6 +11,7 @@ class Ended(AgentState):
     """The session is over. Nothing is allowed and nothing is said, until the same session starts again: then it is idle."""
 
     name = "ended"
+    title = "Ended"
 
     def session_started(self, event: SessionStarted) -> Transition:
         return self.go(Resume(state="idle", data={}))

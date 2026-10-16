@@ -482,7 +482,7 @@ def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no
     assert status == 409 and "action h holds the agent at every workers.updated: put a check before it" in body["error"]
     nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
     status, saved = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "s"}]})
-    assert status == 200 and saved["warnings"] == ["nothing ends this wait: no workflow of Awaiting a worker releases the agent or changes its state, so an agent awaiting a worker stays so until you release it by hand"]
+    assert status == 200 and saved["warnings"] == ["nothing ends this wait: no workflow of Waiting on a worker releases the agent or changes its state, so an agent waiting on a worker stays so until you release it by hand"]
 
 
 
@@ -502,6 +502,8 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     status, read = call(server, "GET", "/journal/chart")
     states = {s["key"]: s for s in read["states"]}
     assert states["following_plan"]["parent"] == "working" and states["working"]["parent"] == "" and states["idle"]["title"] == "Idle"
+    assert read["states"][0]["key"] == "idle" and {"orienting", "at_mark", "loading_skill", "ended", "running_sequence"} <= set(states), "every state the engine has, the first first"
+    assert states["awaiting"]["title"] == "Waiting on a worker" and states["orienting"]["parent"] == ""
     idle = next(w for w in read["workflows"] if w["state"] == "idle" and w["event"] == "idle")
     assert idle["edited"] is False and idle["failed"] is False and idle["off"] is False
     status, off = call(server, "POST", f"/journal/chart/{idle['id']}/off", {})

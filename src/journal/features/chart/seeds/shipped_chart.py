@@ -1,3 +1,4 @@
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.seed import Seed
@@ -8,16 +9,16 @@ from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.settings import Settings
 
-STATE_TITLES = {"idle": "Idle", "working": "Working", "following_plan": "Following a plan", "awaiting": "Awaiting a worker", "waiting": "Waiting on a question", "expecting": "Expecting something outside", "stuck": "Stuck", "running_sequence": "Running a sequence"}
-"""The states the page lists, in order, each with its words; following a plan has no workflows of its own shipped, it uses Working's."""
-SHIPPED_STATES = ("idle", "working", "awaiting", "waiting", "expecting", "stuck", "running_sequence")
+SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "running_sequence")
 """The states the journal ships workflows for."""
+OWN_EVENTS_ONLY = ("following_plan",)
+"""A state under a parent ships only its own events: the parent's workflows serve the rest, and a shared-only one here would shadow them."""
 SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_starting", "messages.created")
 """The events every state's workflows carry the shared conduct on: the inbox and the answers owed."""
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 5
+DRAWINGS_VERSION = 6
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 """What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
@@ -50,7 +51,8 @@ STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequ
 class ShippedChart(Seed):
     """The workflows the journal ships, one per state per trigger, each carrying the shared conduct of its event as well as the state's own: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings) -> None:
+    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue) -> None:
+        self.states = states
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         own = {
             ("idle", "idle"): self.idle_at_stop,
@@ -58,6 +60,8 @@ class ShippedChart(Seed):
             ("working", "tool_starting"): self.working_at_tool,
             ("working", "idle"): self.working_carries_on,
             ("working", "session_started"): self.working_carries_on,
+            ("following_plan", "idle"): self.following_at_stop,
+            ("following_plan", "session_started"): self.following_at_stop,
             ("working", "ticked"): self.working_at_tick,
             ("awaiting", "workers.updated"): self.awaiting_at_worker,
             ("waiting", "questions.updated"): self.waiting_at_question,
@@ -69,13 +73,14 @@ class ShippedChart(Seed):
         shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "tool_starting": self.shared_at_tool, "messages.created": self.shared_at_message}
         self.drawings: dict[tuple[str, str], Drawing] = {}
         for state in SHIPPED_STATES:
-            events = sorted({e for st, e in own if st == state} | set(SHARED_EVENTS), key=EVENT_ORDER.index)
+            shared_here = set() if state in OWN_EVENTS_ONLY else set(SHARED_EVENTS)
+            events = sorted({e for st, e in own if st == state} | shared_here, key=EVENT_ORDER.index)
             for event in events:
                 self.drawings[(state, event)] = Drawing(self.title_of(state, event), self.composed(own.get((state, event)), shared.get(event)))
         """One drawing per state per trigger: the state's own branch first, the shared branch of the event beside it."""
 
     def title_of(self, state: str, event: str) -> str:
-        return f"{STATE_TITLES[state]} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
+        return f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
 
     @staticmethod
     def composed(own, shared):
@@ -212,7 +217,7 @@ class ShippedChart(Seed):
         self.line(some, say_one, NO)
 
     def idle_at_stop(self, chart: Chart) -> None:
-        """An agent at rest stopping: parked tasks hold it in any mode and in auto mode the next open task holds it; a plan at a checkpoint waits for the user's look, or in auto mode holds the stop and carries on."""
+        """An agent at rest stopping: parked tasks hold it in any mode and in auto mode the next open task holds it."""
         stop = self.trigger(chart)
         parked = self.node(chart, NodeKind.CHECK, "parked_tasks", x=160, y=92)
         say_parked = self.node(chart, NodeKind.ACTION, "block_stop", PARKED, x=0, y=184)
@@ -224,14 +229,19 @@ class ShippedChart(Seed):
         self.line(parked, auto, NO)
         self.line(auto, open_, YES)
         self.line(open_, hold_stop, YES)
-        checkpoint = self.node(chart, NodeKind.CHECK, "plan_at_checkpoint", x=400, y=92)
-        auto_at_checkpoint = self.node(chart, NodeKind.CHECK, "auto_mode", x=400, y=184)
-        passed = self.node(chart, NodeKind.ACTION, "block_stop", CHECKPOINT_PASSED, x=320, y=276)
-        looks = self.node(chart, NodeKind.ACTION, "say", CHECKPOINT, x=480, y=276)
-        self.line(stop, checkpoint, THEN)
+
+    def following_at_stop(self, chart: Chart) -> None:
+        """An agent following a plan, at a stop or a session start: at a checkpoint it waits for the user's look, or in auto mode holds the stop and carries on; with a task in hand it carries on as Working does."""
+        trigger = self.trigger(chart)
+        checkpoint = self.node(chart, NodeKind.CHECK, "plan_at_checkpoint", x=240, y=92)
+        auto_at_checkpoint = self.node(chart, NodeKind.CHECK, "auto_mode", x=80, y=184)
+        passed = self.node(chart, NodeKind.ACTION, "block_stop", CHECKPOINT_PASSED, x=0, y=276)
+        looks = self.node(chart, NodeKind.ACTION, "say", CHECKPOINT, x=160, y=276)
+        self.line(trigger, checkpoint, THEN)
         self.line(checkpoint, auto_at_checkpoint, YES)
         self.line(auto_at_checkpoint, passed, YES)
         self.line(auto_at_checkpoint, looks, NO)
+        self.carry_on(chart, checkpoint, NO, x=400)
 
     def idle_at_tick(self, chart: Chart) -> None:
         """As the clock ticks on an agent at rest: the parked ask after a minute and the check-in after half an hour."""
@@ -269,11 +279,14 @@ class ShippedChart(Seed):
 
     def working_carries_on(self, chart: Chart) -> None:
         """A task in hand at a stop or a session start: carry on, with the log asked for when it is stale."""
-        trigger = self.trigger(chart)
-        stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "600", x=240, y=92)
-        carry_on_log = self.node(chart, NodeKind.ACTION, "say", CARRY_ON_LOG, x=160, y=184)
-        carry_on = self.node(chart, NodeKind.ACTION, "say", CARRY_ON, x=320, y=184)
-        self.line(trigger, stale, THEN)
+        self.carry_on(chart, self.trigger(chart), THEN, x=240)
+
+    def carry_on(self, chart: Chart, after: Node, port: str, x: int) -> None:
+        """The carry-on branch below a node: the log asked for when it is stale, else carry on."""
+        stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "600", x=x, y=92 if after.kind == NodeKind.TRIGGER else 184)
+        carry_on_log = self.node(chart, NodeKind.ACTION, "say", CARRY_ON_LOG, x=x - 80, y=stale.y + 92)
+        carry_on = self.node(chart, NodeKind.ACTION, "say", CARRY_ON, x=x + 80, y=stale.y + 92)
+        self.line(after, stale, port)
         self.line(stale, carry_on_log, YES)
         self.line(stale, carry_on, NO)
 

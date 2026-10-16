@@ -136,14 +136,24 @@ class PlanCommand(Command):
 
     def park(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(self.plans.find(args.n).parked(), where.actor)
+        self.stop_following(plan, where)
         print(f"plan {plan.id} parked")
         return 0
 
     def cancel(self, args: Namespace, where: Where) -> int:
         plan = self.plans.find(args.n)
         gone = self.plans.cancel(plan, where.actor)
+        self.stop_following(plan, where)
         print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in gone)}" if gone else ""))
         return 0
+
+    def stop_following(self, plan: Plan, where: Where) -> None:
+        """A plan parked or cancelled is over for the agent following it: it goes back to rest."""
+        if not where.session:
+            return
+        state = self.machine.current(where.session)
+        if isinstance(state, FollowingPlan) and state.plan_id == plan.id:
+            self.machine.move(where.session, plan.environment_id, self.machine.states.first())
 
     def brief(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(replace(self.plans.find(args.n), brief=args.text), where.actor)

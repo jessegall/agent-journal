@@ -14,7 +14,7 @@ from journal.repositories.tasks import Tasks
 
 
 class AdvancePlan(Listener[Updated]):
-    """A plan is done when its last task closes, whoever closes it. When an agent following a plan finishes the task it was on, the next open task is started for it; at a checkpoint phase's end the plan waits and the agent is idle, the Idle workflow saying what the mode makes of it; when no task is left, the agent is idle."""
+    """A plan is done when its last task closes, whoever closes it. When an agent following a plan finishes the task it was on, the next open task is started for it; at a checkpoint phase's end the plan waits and the agent keeps following it with no task in hand, the Idle workflow saying what the mode makes of it; when no task is left, the agent is idle."""
 
     def __init__(self, machine: Machine, plans: Plans, tasks: Tasks) -> None:
         self.machine, self.plans, self.tasks = machine, plans, tasks
@@ -47,7 +47,7 @@ class AdvancePlan(Listener[Updated]):
             return
         checkpoint = self.plans.at_checkpoint(plan)
         if checkpoint is not None:
-            self.machine.move(event.by.id, task.environment_id, self.machine.states.first())
+            self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id))
             print(PlansFeature.CHECKPOINT.about(n=plan.id, phase=checkpoint.title).rendered())
             return
         following = self.plans.next_task(plan)

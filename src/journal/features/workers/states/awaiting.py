@@ -9,6 +9,7 @@ class Awaiting(Paused):
     """Waiting for named workers. Stopping is fine; when the last one is back, the agent is told and returns to what it was doing."""
 
     name = "awaiting"
+    title = "Waiting on a worker"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     workers: tuple[int, ...] = ()
 

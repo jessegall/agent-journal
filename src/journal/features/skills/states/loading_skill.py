@@ -10,6 +10,7 @@ class LoadingSkill(Paused):
     """Writes wait until the agent has read one skill; reading it goes back to what the agent was doing."""
 
     name = "loading_skill"
+    title = "Loading a skill"
     owed_by_agent = True
     skill: str = ""
     path: str = ""

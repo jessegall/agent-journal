@@ -9,6 +9,8 @@ class RunningSequence(Paused):
     """Working through the steps of a sequence, one at a time; stopping between steps is told the step in hand, and the last step goes back to what the agent was doing."""
 
     name = "running_sequence"
+    title = "Running a sequence"
+    leaves_by_itself = True
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     sequence_id: int = 0
     step: int = 0

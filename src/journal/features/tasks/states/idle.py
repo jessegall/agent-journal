@@ -11,6 +11,7 @@ class Idle(AgentState):
     """Nothing declared: the agent may read and run, not write. Where every session starts."""
 
     name = "idle"
+    title = "Idle"
     allows = frozenset({Permission.RUN_COMMANDS})
 
     def tool_starting(self, event: ToolStarting) -> Transition:
