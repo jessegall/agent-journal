@@ -612,6 +612,20 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app)
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
 
+def test_a_quiet_tick_leaves_no_walk_entry_and_a_tick_that_acts_does(app):
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    app.console().run(["task", "park", "1", "later"], AGENT)
+    ticks = lambda: [e for e in app.container.get(Entries).of_kind("walk", 20) if e.data["trigger"] == "ticked"]
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    assert ticks() == [], "a tick that passed its checks and acted on none is no news"
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=120.0))
+    assert len(ticks()) == 1, "a tick whose walk acted, the parked ask, is recorded"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus
@@ -1412,7 +1426,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["chart", "line", str(trigger), str(quiet)], USER)
     console.run(["chart", "line", str(quiet), str(say), "--port", "yes"], USER)
     live = console.run(["chart", "try", "ticked", "--state", "expecting"], AGENT).out
-    assert f"nodes {trigger}, {quiet}" in live and "quiet for" not in live, "against the live rows the tick is not quiet"
+    assert f"nodes {trigger}, {quiet}, {say}" in live and "assumed: quiet for 3600 s" in live, "a tick trial stands in an hour's quiet unless told otherwise, so it shows what a tick does"
     scripted = console.run(["chart", "try", "ticked", "--quiet", "400", "--state", "expecting"], AGENT).out
     assert f"nodes {trigger}, {quiet}, {say}" in scripted and "assumed: quiet for 400 s, the agent expecting" in scripted, "the trial takes a quiet time and a state and says it assumed them"
     assert "no state is called flying" in console.run(["chart", "try", "ticked", "--state", "flying"], AGENT).err

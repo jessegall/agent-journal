@@ -20,6 +20,9 @@ from journal.features.chart.fillers import Fillers
 from journal.features.chart.walk import Walk
 from journal.models.actor import Actor
 from journal.models.worker_state import WorkerState
+
+TICK_QUIET = 3600.0
+"""The quiet a tick trial stands in when none is given: long enough for every shipped quiet check to pass, so the trial shows what a tick does."""
 from dataclasses import replace
 
 from journal.providers.providers import Providers
@@ -69,7 +72,8 @@ class Trial:
         state = self.state_for(agent, assumptions)
         if trigger in EVENTS:
             event = EVENTS[trigger](session, environment_id)
-            if isinstance(event, Ticked) and assumptions.quiet is not None:
+            if isinstance(event, Ticked):
+                assumptions = replace(assumptions, quiet=assumptions.quiet if assumptions.quiet is not None else TICK_QUIET)
                 event = Ticked(session=session, environment_id=environment_id, at=0.0, quiet_for=assumptions.quiet)
             if isinstance(event, ToolStarting):
                 event = replace(event, tool=sorted(self.providers.named(provider).write_tools)[0], provider=provider)

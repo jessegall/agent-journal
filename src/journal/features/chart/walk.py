@@ -1,5 +1,6 @@
 import re
 
+from journal.events.agent.ticked import Ticked
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
 from journal.features.chart.actions import Actions
@@ -11,6 +12,7 @@ from journal.engine.agent_state import AgentState
 from journal.models.actor import Actor
 from journal.models.chart import BASE, Chart
 from journal.models.entry import Entry
+from journal.models.graph import Graph
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
@@ -41,13 +43,22 @@ class Walk:
         """The walk, with the nodes it passes written into the list given."""
         key, decision = self.trigger_key(ctx.event), Decision()
         workflows = self.workflows_for(ctx, key)
-        for chart in workflows:
-            graph = self.charts.graph(chart)
+        graphs = [self.charts.graph(chart) for chart in workflows]
+        for graph in graphs:
             for start in graph.triggers.get(key, ()):
                 decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
-        if passed and not isinstance(self.actions, DryActions):
+        if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
             self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in workflows], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision
+
+    @staticmethod
+    def worth_recording(event: Event, graphs: list[Graph], passed: list) -> bool:
+        """A walk that passed a node is recorded, a tick's only when it acted: the clock ticks every few seconds and a quiet tick is no news."""
+        if not passed:
+            return False
+        if not isinstance(event, Ticked):
+            return True
+        return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
         """In the order they run: the base, then the workflow of the agent's state or of the nearest state it inherits from, then the workflow of the older shape that answers the event by itself."""
