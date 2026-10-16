@@ -1,5 +1,7 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
@@ -16,6 +18,9 @@ class Plans(Feature):
     states = (FollowingPlan,)
     commands = (PlanCommand,)
     listeners = (AdvancePlan, TellApproved, FollowPlanAtStart)
+    checks = (
+        Entry(NodeKind.CHECK, 'plan_at_checkpoint', 'Plan at a checkpoint?', 'a started plan stands at a completed checkpoint phase, its next phase not begun'),
+    )
     seeds = (ClosedPlans,)
 
     NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)

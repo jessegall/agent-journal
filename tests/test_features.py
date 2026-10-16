@@ -3055,7 +3055,7 @@ def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(
     assert kept.state == "" and "turned off, its state is the look owed now" in kept.title and not any(n.kind == NodeKind.TRIGGER for n in charts.nodes_of(kept)) and any(n.key == "say" for n in charts.nodes_of(kept)), "kept, turned off, and the title says what became of its state"
 
 
-def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show():
+def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app):
     """The skill, the look and the mark hold a Codex write through its pre-tool hook, as the records frozen on today's conduct show; nothing here is Claude only."""
     import json
     records = Path(__file__).with_name("replays")
@@ -3064,7 +3064,7 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show():
     assert "journal environment here" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
     from journal.features.chart.catalogue import Catalogue
-    by_key = {e.key: e for e in Catalogue().triggers()}
+    by_key = {e.key: e for e in app.container.get(Catalogue).triggers()}
     assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
 
 
@@ -3175,3 +3175,18 @@ def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_s
     charts.save(charts.find(idle.id).with_(title="My own stop rules"), Actor.system())
     shipped.run()
     assert charts.find(idle.id).title == "My own stop rules", "a title the user gave stays"
+
+
+def test_each_feature_declares_its_own_checks_and_actions_and_the_catalogue_only_gathers_them(app):
+    from journal.features.chart.actions import Actions
+    from journal.features.chart.catalogue import Catalogue
+    from journal.features.chart.checks import Checks
+    from journal.features.registry import Registry
+    catalogue, registry = app.container.get(Catalogue), app.container.get(Registry)
+    declared = [(f.name, e.key) for f in registry.features for e in f.checks + f.actions]
+    assert len(declared) == len({k for _, k in declared}), "a key is declared by one feature only"
+    assert {e.key for e in catalogue.checks()} == {e.key for f in registry.features for e in f.checks} and {e.key for e in catalogue.actions()} == {e.key for f in registry.features for e in f.actions}
+    assert all(callable(getattr(Checks, e.key, None)) for e in catalogue.checks()), "every declared check is answered by the chart's checks"
+    assert all(callable(getattr(Actions, e.key, None)) for e in catalogue.actions()), "every declared action is performed by the chart's actions"
+    owners = {k: f for f, k in declared}
+    assert owners["unread_over"] == "messages" and owners["open_tasks"] == "tasks" and owners["require_skill"] == "skills" and owners["count_every"] == "chart" and owners["worker_reported"] == "workers"

@@ -1,5 +1,7 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.sequences.commands.sequence_command import SequenceCommand
 from journal.features.sequences.listeners.start_on_created import StartOnCreated
@@ -14,6 +16,9 @@ class Sequences(Feature):
     states = (RunningSequence,)
     commands = (SequenceCommand,)
     listeners = (StartOnCreated,)
+    actions = (
+        Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
+    )
     seeds = (ShippedSequences,)
 
     STEP = Nudge(name, "step", "sequence {{n}}, step {{step}}: {{text}}", "journal sequence next when it is done", repeat_after=0)

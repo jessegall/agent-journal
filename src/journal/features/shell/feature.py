@@ -1,5 +1,7 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.option import Option
 from journal.features.shell.commands.shell_command import ShellCommand
 from journal.features.shell.listeners.read_narrowly import ReadNarrowly
@@ -17,6 +19,9 @@ class Shell(Feature):
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
     options = (FOREGROUND, WHILE_WAITING, SHOWN)
     listeners = (RefuseMixedJournal, ReadNarrowly)
+    checks = (
+        Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
+    )
 
     MOVED = Nudge(name, "moved", "moved to the background: {{part}}", "its output goes to {{file}}; you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
     ENDED = Nudge(name, "ended", "the command in the background {{outcome}}", "last lines: {{last}}; the whole output is at {{file}}", repeat_after=0)

@@ -2,6 +2,7 @@ from typing import ClassVar
 
 from journal.console.command import Command
 from journal.engine.agent_state import AgentState
+from journal.features.entry import Entry
 from journal.features.listener import Listener
 from journal.features.nudge import Nudge
 from journal.features.option import Option
@@ -10,7 +11,7 @@ from journal.features.skill import Skill
 
 
 class Feature:
-    """One switchable subject. It brings its states, its nudges, its state-free listeners and its commands; nothing else knows a feature exists."""
+    """One switchable subject. It brings its states, its nudges, its state-free listeners, its commands, and the checks and actions a workflow may name; nothing else knows a feature exists."""
 
     name: ClassVar[str]
     title: ClassVar[str] = ""
@@ -19,6 +20,8 @@ class Feature:
     nudges: ClassVar[tuple[Nudge, ...]] = ()
     options: ClassVar[tuple[Option, ...]] = ()
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
+    checks: ClassVar[tuple[Entry, ...]] = ()
+    actions: ClassVar[tuple[Entry, ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()
     skill: ClassVar[Skill | None] = None

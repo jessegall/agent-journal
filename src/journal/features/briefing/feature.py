@@ -1,7 +1,9 @@
 from journal.features.briefing.listeners.brief_at_start import BriefAtStart
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 
 
 class Briefing(Feature):
@@ -9,6 +11,12 @@ class Briefing(Feature):
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it."
     listeners = (BriefAtStart, EndSilentSessions)
+    checks = (
+        Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),
+    )
+    actions = (
+        Entry(NodeKind.ACTION, 'mark_unoriented', 'Require a look at what is in flight', 'the agent owes a look at what is in flight here before any other write, and is told so; journal environment here pays it'),
+    )
 
     READY = Nudge(name, "ready", "the journal is ready on {{env}}", repeat_after=0)
     RULES = Nudge(name, "rules", "{{count}} rules in force: {{rows}}", repeat_after=0)

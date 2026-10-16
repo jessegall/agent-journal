@@ -1,5 +1,7 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.states.awaiting import Awaiting
@@ -14,6 +16,12 @@ class Workers(Feature):
     states = (Awaiting,)
     commands = (WorkerCommand,)
     listeners = ()
+    checks = (
+        Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),
+        Entry(NodeKind.CHECK, 'worker_stopped', 'Worker stopped?', 'the row is a worker that just stopped before reporting'),
+        Entry(NodeKind.CHECK, 'agent_awaits_the_worker', 'Agent awaits this worker?', 'the agent waits on the worker of this row'),
+        Entry(NodeKind.CHECK, 'last_worker_back', 'Last worker back?', 'every worker the agent waits on has reported or stopped'),
+    )
 
     REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
     STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)

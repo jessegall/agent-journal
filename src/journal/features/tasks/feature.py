@@ -1,9 +1,11 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.option import Option
 from journal.features.skill import Skill
 from journal.features.tasks.states.expecting import Expecting
@@ -24,6 +26,15 @@ class Tasks(Feature):
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits with nothing logged before the next write waits for a log line; read against the edits count, a held write not counted", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
     listeners = (SpotPolling,)
+    checks = (
+        Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
+        Entry(NodeKind.CHECK, 'task_in_hand', 'Has a task in hand?', 'the agent has a task started'),
+        Entry(NodeKind.CHECK, 'parked_tasks', 'Has parked tasks?', 'a task is parked'),
+        Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task waits on something outside'),
+        Entry(NodeKind.CHECK, 'log_stale_over', 'Is the log older than N seconds?', 'the task in hand was last logged longer ago than N seconds, or never; the text is N'),
+        Entry(NodeKind.CHECK, 'task_just_started', 'Task just started by this agent?', 'the row is a task this agent has just started: this write set when it started, by the agent walking'),
+        Entry(NodeKind.CHECK, 'log_for_task_in_hand', 'Log is for the task in hand?', 'the row is a log line of the task this agent has in hand'),
+    )
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     CARRY_ON_LOG = Nudge(name, "carry_on_log", "{{name}} is in hand, {{logged}}: carry on", "log where it stands first, then continue; journal stuck \"<why>\" if you are truly stuck", repeat_after=0)

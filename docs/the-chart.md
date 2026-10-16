@@ -79,6 +79,11 @@ A workflow of your own is for a state at an event no default covers, made with N
 
 ## Three kinds of box
 
+Every check and action a box may name is declared by the feature it belongs to, in that feature's own file: the
+tasks feature declares Has open tasks? and the log's age, the messages feature the inbox checks, the skills
+feature Require a skill to be read, the chart feature the counts, the holds and the moves. The catalogue gathers
+them from the features and defines none itself; the chart's checks and actions answer and perform them.
+
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is
   about to run, a tool finished, the agent stops, a subagent starts or ends, the context compacts, the session
   ends, the clock ticks. Every row is one too: a task created, a plan updated, a message deleted, and so on for

@@ -1,3 +1,4 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.messages.commands.message_command import MessageCommand
 from journal.features.messages.listeners.deliver_message import DeliverMessage
@@ -8,6 +9,7 @@ from journal.features.messages.listeners.run_tags import RunTags
 from journal.features.messages.listeners.start_owed_count import StartOwedCount
 from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.option import Option
 from journal.features.said import Said
 from journal.features.skill import Skill
@@ -24,6 +26,15 @@ class Messages(Feature):
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read; read against the count of namings", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS)
     listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, DeliverMessage, StartOwedCount)
+    checks = (
+        Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
+        Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N'),
+        Entry(NodeKind.CHECK, 'unanswered_messages', 'Has unanswered messages?', 'a message was read and not yet replied to or given a face'),
+        Entry(NodeKind.CHECK, 'unanswered_over', 'N or more messages unanswered?', "at least N messages read and not yet replied to or given a face; the text is N or a setting's name", takes_text=True),
+        Entry(NodeKind.CHECK, 'message_by_user', 'Message written by you?', 'the row is a message the user wrote, not the agent'),
+        Entry(NodeKind.CHECK, 'message_just_read', 'Message just read?', 'the row is a message the agent has just read: this write set when it was read'),
+        Entry(NodeKind.CHECK, 'tool_reads_their_files', "Tool reads the message's own files?", 'the tool about to run reads a file attached to a message read and left unanswered'),
+    )
 
     NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)
     SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)

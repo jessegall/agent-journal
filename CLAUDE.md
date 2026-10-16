@@ -40,7 +40,8 @@ inherited, one level. Going back from a pause is data (`resume`), not a stack: t
 the waits, on a worker, on a question, on something outside, on being stuck, and a sequence.
 
 **Features bring their states; the engine knows no feature.** A feature owns its states, its
-nudges, its state-free listeners and its commands. The engine holds the machine, the base
+nudges, its state-free listeners, its commands, and the checks and actions a workflow may name;
+the chart's catalogue gathers them from the features and defines none itself. The engine holds the machine, the base
 state, `Paused`, the nudger, the clock and the runtime, and imports nothing from `features/`.
 A state names a feature's nudge as data; a feature moves the agent through `machine.move`.
 A trigger's workflows run in the order the user sets, the locked ones first; a workflow bound

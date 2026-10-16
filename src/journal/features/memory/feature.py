@@ -1,3 +1,4 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.nothing_command import NothingCommand
@@ -6,6 +7,7 @@ from journal.features.memory.commands.rule_command import RuleCommand
 from journal.features.memory.listeners.review_new_rule import ReviewNewRule
 from journal.features.memory.listeners.whisper import Whisper
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 
 
@@ -18,6 +20,13 @@ class Memory(Feature):
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     listeners = (Whisper, ReviewNewRule)
+    checks = (
+        Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
+        Entry(NodeKind.CHECK, 'mark_owed', 'Has a context mark still to record?', 'the agent crossed a context mark and has not yet decided what survives it: a fact, a rule or nothing'),
+    )
+    actions = (
+        Entry(NodeKind.ACTION, 'hold_at_mark', 'Hold the agent until the mark is recorded', 'the mark crossed is taken and owed: the agent is told to decide what to keep from the context, and a fact, a rule or journal nothing pays it'),
+    )
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
     MARKS = (25, 50, 80)

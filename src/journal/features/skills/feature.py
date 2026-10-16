@@ -1,5 +1,7 @@
+from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
 from journal.features.skills.listeners.forget_at_compaction import ForgetAtCompaction
@@ -14,6 +16,13 @@ class Skills(Feature):
     help = "The journal's skills are written for the agent and required by the workflows at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
     commands = (SkillCommand,)
     listeners = (MarkLoaded, ForgetAtCompaction)
+    checks = (
+        Entry(NodeKind.CHECK, 'prompt_names_skill', "Prompt names a skill's keyword?", "the prompt the user sent names a keyword of one of the journal's skills"),
+        Entry(NodeKind.CHECK, 'skill_owed', 'Has a skill still to read?', "the agent owes a read of a skill's file: required and not read since"),
+    )
+    actions = (
+        Entry(NodeKind.ACTION, 'require_skill', 'Require a skill to be read', 'the agent owes a read of the skill named in the text, told where its file is; with no text, the skills the prompt names at a prompt, else the skill of the state the agent is in', takes_text=True),
+    )
 
     REQUIRED = Nudge(name, "required", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)
     nudges = (REQUIRED,)
