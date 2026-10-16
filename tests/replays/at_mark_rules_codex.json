@@ -1,0 +1,136 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "a task in hand",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ],
+      "counts": {
+        "edits": 0
+      }
+    },
+    {
+      "name": "a read past the first mark",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "context 25% full: record what must survive it. journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "memory.decide"
+      ],
+      "counts": {
+        "edits": 0,
+        "owed": 1,
+        "uses": 1
+      }
+    },
+    {
+      "name": "a write at the mark",
+      "answer": {
+        "error": "writes wait until you decide what survives the context. journal fact create, journal rule create, or journal nothing \"<why>\""
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 1,
+        "owed": 2,
+        "uses": 2
+      }
+    },
+    {
+      "name": "a fact recorded",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 1,
+        "owed": 2,
+        "uses": 2
+      }
+    },
+    {
+      "name": "a write after the fact",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 2,
+        "owed": 3,
+        "uses": 3
+      }
+    },
+    {
+      "name": "a read: the mark asks once",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 2,
+        "owed": 4,
+        "uses": 4
+      }
+    },
+    {
+      "name": "a stop past the second mark",
+      "answer": {
+        "decision": "block",
+        "reason": "task 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck\ncontext 50% full: record what must survive it. journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do"
+      },
+      "typed": [],
+      "nudges": [
+        "tasks.carry_on",
+        "memory.decide"
+      ],
+      "counts": {
+        "edits": 2,
+        "owed": 4,
+        "uses": 4
+      }
+    },
+    {
+      "name": "a write at the second mark",
+      "answer": {
+        "error": "writes wait until you decide what survives the context. journal fact create, journal rule create, or journal nothing \"<why>\""
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 3,
+        "owed": 5,
+        "uses": 5
+      }
+    },
+    {
+      "name": "nothing survives",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 3,
+        "owed": 5,
+        "uses": 5
+      }
+    },
+    {
+      "name": "a write after",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "edits": 4,
+        "owed": 6,
+        "uses": 6
+      }
+    }
+  ]
+}

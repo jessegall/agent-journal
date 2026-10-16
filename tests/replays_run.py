@@ -420,7 +420,69 @@ def stuck_rules(app, replay: Replay, provider: str) -> None:
     replay.step("a tool use while stuck", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
 
 
-STATE_RULES = {"working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
+def read_skill(app, provider: str, folder: str):
+    return hook_as(app, provider, "PostToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": str(app.config.root / f".claude/skills/{folder}/SKILL.md")}, tool_response="")[1]
+
+
+def loading_skill_rules(app, replay: Replay, provider: str) -> None:
+    """The steps, with the skills on: a session starts and requires the journal skill, a write is held until the file is read, the start's look follows; a message arrives and a prompt naming plans requires that skill, the inbox named under the hold, a write held until the file is read, then allowed."""
+    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=True), Actor.system())
+    write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
+    replay.step("the session starts", hook_as(app, provider, "SessionStart")[1])
+    replay.step("a write before the skill is read", write())
+    replay.step("the journal skill read", read_skill(app, provider, "journal"))
+    replay.step("a write before the look", write())
+    app.console().run(["environment", "here"], AGENT)
+    replay.step("looked at what is in flight")
+    app.console().run(["message", "send", "one"], USER)
+    replay.step("message 1 arrives")
+    replay.step("a prompt naming plans", hook_as(app, provider, "UserPromptSubmit", prompt="make me a plan for the release")[1])
+    replay.step("a write before the plans skill is read", write())
+    replay.step("the plans skill read", read_skill(app, provider, "journal-plans"))
+    replay.step("a write after", write())
+
+
+def orienting_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: a session starts, a write is refused until the agent has looked at what is in flight, then allowed; a start after a compaction asks the same."""
+    write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
+    replay.step("the session starts", hook_as(app, provider, "SessionStart")[1])
+    replay.step("a write before the look", write())
+    app.console().run(["environment", "here"], AGENT)
+    replay.step("looked at what is in flight")
+    replay.step("a write after the look", write())
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    app.console().run(["message", "send", "hi"], USER)
+    replay.step("the session starts again after a compaction", hook_as(app, provider, "SessionStart", source="compact")[1])
+    replay.step("a write before the second look", write())
+    app.console().run(["environment", "here"], AGENT)
+    replay.step("looked again")
+    replay.step("a write after the second look", write())
+
+
+def at_mark_rules(app, replay: Replay, provider: str) -> None:
+    """The steps: with a task in hand the context crosses the first mark, a read is told, a write is held, a fact recorded lets it through and the mark asks once; the context crosses the second mark at a stop, and nothing survives lets it through."""
+    hook_as(app, provider, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
+    write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
+    replay.step("a task in hand")
+    context(app, 30)
+    replay.step("a read past the first mark", read())
+    replay.step("a write at the mark", write())
+    app.console().run(["fact", "create", "the login is flaky"], AGENT)
+    replay.step("a fact recorded")
+    replay.step("a write after the fact", write())
+    replay.step("a read: the mark asks once", read())
+    context(app, 55)
+    replay.step("a stop past the second mark", hook_as(app, provider, "Stop")[1])
+    replay.step("a write at the second mark", write())
+    app.console().run(["nothing", "survives", "all logged"], AGENT)
+    replay.step("nothing survives")
+    replay.step("a write after", write())
+
+
+STATE_RULES = {"loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
 """What the states say of their own, frozen before any of it moves into a workflow."""
 
 
