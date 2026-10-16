@@ -237,10 +237,11 @@ F. **The viewer is version 3's, whole** (the user's ruling on 2026-10-15, revers
    `/api` from version 4's rows (`src/journal/http/v3/`): a manifest and a settings tree
    recorded from a live version 3 server (`manifest.json`, `settings.json`, with task and
    worker names laid in), one shaper per type from a model to the row shape the viewer reads,
-   listings with its paging, the dashboard with counts, events and the event stream from the
+   one reading endpoint per type (`rows_controller.py`: its page, its rows above `from`, its
+   counts), so a type that fails leaves the others answering, events and the event stream from the
    entries (every row change is an entry now), the bar, the summary, identity, agents,
-   profiles, and the writes the viewer sends (`v3_actions.py`). The viewer's own code is the
-   one place to adapt if the contract ever moves; today nothing in it changed.
+   profiles, and the writes the viewer sends (`v3_actions.py`). The viewer polls each type alone;
+   the one dashboard call is gone.
 D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then one question
    at a time under it, moved through with ↑ ↓ (or j k), a number to jump, Enter to pick and
    Esc to leave; the space under the banner is cleared before each question. It asks which

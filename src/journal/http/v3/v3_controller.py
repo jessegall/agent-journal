@@ -1,4 +1,3 @@
-from dataclasses import replace
 import json
 import os
 import time
@@ -19,7 +18,6 @@ from journal.http.v3.current_work import CurrentWork
 from journal.features.registry import Registry
 from journal.providers.providers import Providers
 from journal.features.skills.skill_files import SkillFiles
-from journal.http.v3.listing import Listing
 from journal.http.v3.project_files import ProjectFiles
 from journal.http.v3.shapers.shapers import Shapers
 from journal.http.v3.v3_actions import V3Actions
@@ -46,10 +44,6 @@ STARTED = time.time()
 
 SILENT_AFTER = 900.0
 """Seconds a busy agent may send nothing before the viewer says it is not responding."""
-
-
-TIMELINES = ("message", "comment")
-"""The lists that are a chat or a feed: they page by number alone, so opening the journal loads the last page and the rest comes on scrolling up."""
 
 
 class V3Controller:
@@ -151,15 +145,6 @@ class V3Controller:
 
     # rows
 
-    def get_list(self, request: Request) -> Response:
-        shaper = self.shapers.named(request.params["type"])
-        if shaper is None:
-            return Response.not_found(request.params["type"])
-        listing = Listing.from_query(request.query)
-        if request.params["type"] in TIMELINES:
-            listing = replace(listing, timeline=True)
-        return Response.json(listing.listed(shaper.rows(self.environment_of(request))))
-
     def get_one(self, request: Request) -> Response:
         shaper = self.shapers.named(request.params["type"])
         n = int(request.params["n"])
@@ -168,23 +153,6 @@ class V3Controller:
 
     def get_choices(self, request: Request) -> Response:
         return Response.json([])
-
-    def get_dashboard(self, request: Request) -> Response:
-        environment = self.environment_of(request)
-        wanted = [t for t in request.query.get("types", "").split(",") if t]
-        listing = Listing.from_query({**request.query, "completed": "true"})
-        rows, counts = {}, {}
-        for shaper in (self.shapers.named(t) for t in self.shapers.types()):
-            all_rows = shaper.rows(environment)
-            open_rows = [r for r in all_rows if r.is_open]
-            counts[shaper.type] = {"all": len(all_rows), "open": len(open_rows), "unread": len([r for r in open_rows if "user" not in r.seen])}
-            if shaper.type in wanted:
-                rows[shaper.type] = listing.listed(all_rows)
-        answer = {"rows": rows, "counts": counts}
-        if "events" in request.query:
-            answer["events"] = self.events_since(environment, 0, int(request.query.get("events") or 100))
-            answer["settings"] = self.settings.tree(environment.id)
-        return Response.json(answer)
 
     def post_create(self, request: Request) -> Response:
         environment = self.environment_of(request)

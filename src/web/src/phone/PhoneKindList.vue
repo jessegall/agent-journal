@@ -94,7 +94,7 @@ async function load(at) {
 
 async function count() {
     try {
-        counts.value = (await api.dashboard([props.target], {last: 1})).counts[props.target] || counts.value;
+        counts.value = (await api.counts(props.target)) || counts.value;
     } catch {
         counts.value = {open: 0, all: 0};
     }

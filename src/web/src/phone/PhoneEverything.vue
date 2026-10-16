@@ -14,18 +14,15 @@ const emit = defineEmits(["open"]);
 const counts = ref({});
 const {under, scrolled} = useScrolled();
 
-onMounted(async () => {
+async function count(type) {
     try {
-        counts.value = (
-            await api.dashboard(
-                KIND_PLACES.map((place) => place.type),
-                {last: 1}
-            )
-        ).counts;
+        counts.value = {...counts.value, [type]: await api.counts(type)};
     } catch {
-        counts.value = {};
+        counts.value = {...counts.value, [type]: null};
     }
-});
+}
+
+onMounted(() => KIND_PLACES.forEach((place) => count(place.type)));
 
 const countOf = (place) => (place.type && counts.value[place.type] ? counts.value[place.type].open : "");
 const hot = (place) => Boolean(place.type && counts.value[place.type]?.unread);
