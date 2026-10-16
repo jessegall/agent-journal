@@ -40,7 +40,12 @@ states share is inherited, one level. Going back from a pause is data (`resume`)
 nudges, its state-free listeners and its commands. The engine holds the machine, the base
 state, `Paused`, the nudger, the clock and the runtime, and imports nothing from `features/`.
 A state names a feature's nudge as data; a feature moves the agent through `machine.move`.
-One line has one decider: a workflow or the engine, never both.
+A trigger's workflows run in the order the user sets, the locked ones first; a workflow bound
+to a state runs while the agent is in it, one bound to none always.
+
+**One line has one decider.** A line is said by a workflow or by the engine, never both; the
+first hold of an event wins and a later one is recorded unanswered; one move per event, a
+second refused. Every line and every move has one decider, and the record names it.
 
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script
 posts and prints. The server records the entry, runs the blocking listeners, replies, then
