@@ -652,3 +652,15 @@ change is on the revision (`revised_by`), and the page shows it. What differs pe
 but the switches: a feature switched off in an environment silences that feature's lines and holds there, since
 every shipped line and hold carries its feature's key. A per-user or per-environment workflow is not a thing the
 design has, and will not be until a shared journal asks for it.
+
+Plan 3, phase 3, the free part done on 2026-10-16 in the evening: the Workflows page lists by state and notes where
+each workflow runs, opens read-only behind an Edit switch, says when each workflow last ran and what last failed in
+it, and marks a workflow with no trigger off; every command-line write raises the revision and a default workflow is
+edited by command only with --edit-default; a hold a trigger reaches through no check is refused, a wait's workflow
+with no release saves with a warning, a shipped workflow cannot be deleted; a tick's walk is recorded only when it
+acted; a word from the user frees any wait not owed by the agent; a row event under an owed pause reaches the wait
+beneath; the pure state checks retired and a workflow naming an unknown entry is stopped at boot; a feature switched
+off silences its holds as well as its lines. The environment scope (Baron Haussmann) and the dictation fix (Mr.
+Edison) are merged. What is left of phase 3 is the deletion of the listeners the workflows replaced (118, 142), the
+end of listeners.off (181) and the docs after it (119): that waits on the user's look at the Workflows page, the
+plan's checkpoint.
