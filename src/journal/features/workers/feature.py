@@ -30,4 +30,7 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
 - `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.
 - A worker reports with `journal worker report <n> "<what it found or did>"`; you are told, and told again when
   the last one is back. `journal worker list` shows who is out.
-""", keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree'), required_in=('awaiting',))
+- Related work goes back to the worker that knows it: `journal worker say <n> "<next job>"` sends a worker that
+  reported out again with its memory of the last job, in the same worktree. Never dispatch a fresh worker for
+  work one already out has done part of.
+""", keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree', 'say'), required_in=('awaiting',))

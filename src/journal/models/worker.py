@@ -17,9 +17,15 @@ class Worker(Scoped):
     session: str = ""
     dispatched_by: str = ""
     """The session of the agent that sent it, which is told when it reports."""
+    resume: str = ""
+    """The provider's own session of its last run, so its next job is given to the same worker with its memory."""
 
     def reported(self) -> "Worker":
         return self.with_(state=WorkerState.REPORTED)
+
+    def told(self, brief: str) -> "Worker":
+        """The same worker sent out again on its next job."""
+        return self.with_(brief=brief, state=WorkerState.DISPATCHED)
 
     def stopped(self) -> "Worker":
         return self.with_(state=WorkerState.STOPPED)

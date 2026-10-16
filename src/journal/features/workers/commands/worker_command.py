@@ -7,6 +7,8 @@ from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.worker_reports import WorkerReports
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker import Worker
+from journal.refused import Refused
+from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
@@ -29,6 +31,9 @@ class WorkerCommand(Command):
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
+        say = self.verb(verbs, "say", "give a worker that reported its next job, with its memory of the last")
+        say.add_argument("n", type=int)
+        say.add_argument("brief")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
         self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
         self.verb(verbs, "list", "every worker out")
@@ -44,6 +49,18 @@ class WorkerCommand(Command):
         worker = self.workers.find(args.n)
         message = self.reports.file(worker, args.text, where.actor, where.session)
         print(f"worker {worker.id} reported in message {message.id}")
+        return 0
+
+    def say(self, args: Namespace, where: Where) -> int:
+        """The same worker sent on its next job: related work goes back to the one that knows it, never to a fresh dispatch."""
+        worker = self.workers.find(args.n)
+        if worker.state == WorkerState.DISPATCHED:
+            raise Refused(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
+        if not worker.resume:
+            raise Refused(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
+        worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=where.session), where.actor)
+        self.runner.start(worker, where.actor)
+        print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 
     def wait(self, args: Namespace, where: Where) -> int:

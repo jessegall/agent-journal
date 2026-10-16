@@ -42,9 +42,13 @@ class Provider:
     controls: ClassVar[dict] = {"groups": [], "note": ""}
     """The model, effort and context choices the viewer's agent bar offers, each with the line typed into the agent to take it."""
 
-    def worker_command(self, brief: str, model: str) -> list[str]:
-        """The program run headless on one job, printing its report."""
+    def worker_command(self, brief: str, model: str, resume: str = "") -> list[str]:
+        """The program run headless on one job, printing its report; given a session, the same worker again with its memory."""
         ...
+
+    def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
+        """What a finished worker printed, as its report, and the session a next job can resume, when the provider names one."""
+        return out.strip() or err.strip(), ""
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
         """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say holds the stop in the form the program shows as feedback, not as an error, since that is how the program is told to go on, and a stop already refused once is let through."""

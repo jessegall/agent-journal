@@ -10,6 +10,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.features.workers.worker_runner import WorkerRunner
+from journal.models.worker_state import WorkerState
 from journal.models.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.scope import Scope
@@ -252,6 +253,30 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     console.run(["worker", "stop", "2"], USER)
     assert machine.current("s1").task_id == 1
     assert typed[-1] == "[journal] what you waited on came back: carry on"
+
+
+def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, monkeypatch):
+    from journal.providers.claude import Claude
+    from journal.providers.codex import Codex
+    from journal.repositories.workers import Workers
+    started = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: started.append(worker))
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
+    assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
+    workers = app.container.get(Workers)
+    workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+    assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code == 0
+    told = workers.find(1)
+    assert told.state == WorkerState.DISPATCHED and told.brief == "now the lexer" and told.resume == "sess-1" and told.worktree and started[-1].id == 1
+    assert Claude().worker_command("now the lexer", "fast", "sess-1")[-2:] == ["--resume", "sess-1"]
+    assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == ("lexer done", "sess-2")
+    assert Claude().worker_outcome("plain words", "") == ("plain words", "")
+    assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m")[:2] == ["codex", "exec"]
+    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done", "0192f3a4-aaaa-bbbb")
 
 
 def test_a_dispatch_without_a_model_or_a_job_is_refused(app):

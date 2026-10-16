@@ -721,3 +721,10 @@ tools, its model and its instructions, and New profile; the server reads and wri
 ProfileFiles and serves them at /journal/profiles. The journal's own three (researcher, planner, debugger) are marked
 shipped and setup puts them back. The critic profile is gone and the designer profile has no critique rounds: a
 design is one designer's work, judged by the orchestrator against what the user wants.
+
+Worker reuse, 2026-10-16 on the user's word (task 210): a worker keeps the provider's session of its last run
+(Claude answers in JSON with its session id; Codex names its session id in the run's header) and `journal worker
+say <n> "<next job>"` sends a reported worker out again on that session, in the same worktree, so its memory of
+the last job comes with it; a worker still out is told to report first, and one whose session was not captured is
+dispatched again. Subagents are reused the same way by the orchestrator's own message to the agent it already
+started, never a fresh one on work another knows.

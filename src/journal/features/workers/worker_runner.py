@@ -20,7 +20,7 @@ class WorkerRunner:
         self._running: dict[int, subprocess.Popen] = {}
 
     def start(self, worker: Worker, by: Actor) -> None:
-        command = self.providers.named(worker.provider).worker_command(worker.brief, worker.model)
+        command = self.providers.named(worker.provider).worker_command(worker.brief, worker.model, worker.resume)
         threading.Thread(target=self.run_in_scope, args=(worker, command, by), name=f"worker-{worker.id}", daemon=True).start()
 
     def run_in_scope(self, worker: Worker, command: list[str], by: Actor) -> None:
@@ -39,8 +39,9 @@ class WorkerRunner:
         self._running[worker.id] = process
         out, err = process.communicate()
         self._running.pop(worker.id, None)
-        report = (out.strip() or err.strip())[-TAIL:] or "(nothing printed)"
-        self.reports.file(worker, report if process.returncode == 0 else f"failed with code {process.returncode}: {report}", by)
+        printed, resume = self.providers.named(worker.provider).worker_outcome(out, err)
+        report = printed[-TAIL:] or "(nothing printed)"
+        self.reports.file(worker.with_(resume=resume or worker.resume), report if process.returncode == 0 else f"failed with code {process.returncode}: {report}", by)
 
     def stop(self, worker_id: int) -> None:
         process = self._running.get(worker_id)

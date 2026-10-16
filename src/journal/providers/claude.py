@@ -79,8 +79,17 @@ class Claude(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 
-    def worker_command(self, brief: str, model: str) -> list[str]:
-        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions"]
+    def worker_command(self, brief: str, model: str, resume: str = "") -> list[str]:
+        resumed = ["--resume", resume] if resume else []
+        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "json", *resumed]
+
+    def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
+        """Claude's JSON answer: the result is the report and the session id is what a next job resumes; anything else is the report as printed."""
+        try:
+            answer = json.loads(out)
+        except ValueError:
+            return out.strip() or err.strip(), ""
+        return str(answer.get("result", "")).strip() or err.strip(), str(answer.get("session_id", ""))
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         path = super().wire_hooks(project, script, command)
