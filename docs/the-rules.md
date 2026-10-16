@@ -41,8 +41,8 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
 | Session starts | messages.new / some / many | messages unread | say | as at a prompt |
 | Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | needs the voice filler; the introduction stays with the voice |
-| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | needs "quiet for N seconds" |
-| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | needs "quiet for N" and the parked filler |
+| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | the quiet-for check exists; needs the idle-and-auto reading |
+| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | the quiet-for check exists; needs the parked filler |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the Expecting state's; moves only with the state rule |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
 | Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the user-author check exists; needs the live-agent target |
@@ -50,8 +50,8 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Reaction created by the user | messages.reacted | a face on a message | type | needs a reactions row trigger and the face filler |
 | Rule created | memory.rule_review | a new rule | type once | needs the rule filler |
 | Message by the agent created | etiquette.remind | now and then | type | needs "now and then" |
-| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | needs the worker checks, the release action and reaching every awaiting agent |
-| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | needs the question check and the release action |
+| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | the worker checks exist; needs the release action and reaching every awaiting agent |
+| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | the question checks exist; needs the release action |
 | Plan updated | plans.approved, next, done, parked | the plan's state changed | type | needs plan-state checks and fillers |
 | Setting saved | voices.changed | a voice setting changed | type | needs "setting X changed" |
 | Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |

@@ -1,8 +1,10 @@
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
+from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
+from journal.events.models.updated import Updated
 from journal.features.chart.context import Context
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.registry import Registry
@@ -10,8 +12,14 @@ from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.shell.chain import Chain
 from journal.features.tasks.states.idle import Idle as IdleState
 from journal.features.tasks.states.working import Working
+from journal.features.questions.states.waiting import Waiting
+from journal.features.workers.states.awaiting import Awaiting
 from journal.models.author import Author
 from journal.models.message import Message
+from journal.models.question import Question
+from journal.models.worker import Worker
+from journal.models.worker_state import WorkerState
+from journal.repositories.workers import Workers
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
@@ -22,16 +30,16 @@ from journal.repositories.settings import PROJECT, Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at")
+COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over")
 """The checks that take a number: the node's text, or the setting named there."""
 
 
 class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
-        self.registry, self.config = registry, config
+        self.registry, self.config, self.workers = registry, config, workers
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
         check = getattr(self, key)
@@ -100,6 +108,41 @@ class Checks:
 
     def blocked_tasks(self, ctx: Context) -> bool:
         return bool(self.tasks.in_state(ctx.environment_id, TaskState.BLOCKED))
+
+    def quiet_for_over(self, ctx: Context, seconds: int) -> bool:
+        """The clock ticks and the agent has been quiet for at least so many seconds."""
+        return isinstance(ctx.event, Ticked) and ctx.event.quiet_for >= seconds
+
+    def worker_reported(self, ctx: Context) -> bool:
+        return self.worker_now(ctx, WorkerState.REPORTED)
+
+    def worker_stopped(self, ctx: Context) -> bool:
+        return self.worker_now(ctx, WorkerState.STOPPED)
+
+    def worker_now(self, ctx: Context, state: WorkerState) -> bool:
+        """The row event is a worker that just came to this state, not one saved again in it."""
+        event = ctx.event
+        return isinstance(event, Updated) and isinstance(event.model, Worker) and event.model.state == state and event.was is not None and event.was.state != state
+
+    def agent_awaits_the_worker(self, ctx: Context) -> bool:
+        state = self.state(ctx)
+        return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Worker) and isinstance(state, Awaiting) and ctx.event.model.id in state.workers
+
+    def last_worker_back(self, ctx: Context) -> bool:
+        """Every worker the agent awaits has reported or stopped, the one of this row as the row now says."""
+        state = self.state(ctx)
+        if not isinstance(state, Awaiting):
+            return False
+        row = ctx.event.model if isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Worker) else None
+        return all((row.state if row and row.id == n else self.workers.find(n).state) != WorkerState.DISPATCHED for n in state.workers)
+
+    def question_answered(self, ctx: Context) -> bool:
+        event = ctx.event
+        return isinstance(event, Updated) and isinstance(event.model, Question) and event.model.answer is not None and event.was is not None and event.was.answer is None
+
+    def agent_waits_on_the_question(self, ctx: Context) -> bool:
+        state = self.state(ctx)
+        return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Question) and isinstance(state, Waiting) and state.question_id == ctx.event.model.id
 
     def message_by_user(self, ctx: Context) -> bool:
         """The row event is a message the user wrote."""

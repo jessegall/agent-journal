@@ -31,6 +31,12 @@ CHECKS = (
     ("tool_writes", "Tool changes files?", "the tool about to run changes a file or runs a writing command"),
     ("journal_command", "Tool is a journal command?", "the tool about to run is a journal command"),
     ("running_sequence", "In a sequence?", "the agent is on a step of a sequence"),
+    ("worker_reported", "Worker reported?", "the row is a worker that just reported"),
+    ("worker_stopped", "Worker stopped?", "the row is a worker that just stopped before reporting"),
+    ("agent_awaits_the_worker", "Agent awaits this worker?", "the agent waits on the worker of this row"),
+    ("last_worker_back", "Last worker back?", "every worker the agent waits on has reported or stopped"),
+    ("question_answered", "Question answered?", "the row is a question the user just answered"),
+    ("agent_waits_on_the_question", "Agent waits on this question?", "the agent waits on the question of this row"),
 )
 COUNTER_CHECKS = (
     ("tool_uses_since_unread_every", "Every Nth tool use with a message unread?", "true on every Nth tool use since the oldest unread message came; the text is N"),
@@ -38,6 +44,7 @@ COUNTER_CHECKS = (
     ("tool_uses_since_read_over", "N tool uses with a message unanswered?", "at least N tool uses since the oldest message was read and not answered; the text is N or a setting's name, such as messages.hold_after"),
     ("edits_since_log_over", "N edits since the last log?", "the task in hand had at least N edits since it was logged, before this one; the text is N or a setting's name, such as tasks.log_after"),
     ("edits_since_log_every", "Every Nth edit since the last log?", "true when the edits since the task in hand was logged, before this one, are a multiple of N; the text is N or a setting's name"),
+    ("quiet_for_over", "Quiet for N seconds?", "the clock ticks and the agent has done nothing for at least N seconds; the text is N or a setting's name"),
     ("edits_since_log_at", "Exactly N edits since the last log?", "true once, when the edits since the task in hand was logged, before this one, are exactly N; the text is N or a setting's name, such as tasks.first_nudge_after"),
 )
 ACTIONS = (

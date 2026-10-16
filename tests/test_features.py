@@ -1583,3 +1583,38 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
         hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env)
     assert checks.answer("edits_since_log_over", at, "tasks.first_nudge_after") and checks.answer("edits_since_log_every", at, "25"), "counted before the write about to run, as the log cadence counts"
+
+
+def test_the_checks_for_quiet_time_workers_and_questions(app):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.models.updated import Updated
+    from journal.features.chart.checks import Checks
+    from journal.features.chart.context import Context
+    from journal.repositories.environments import Environments
+    from journal.repositories.questions import Questions
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    checks = app.container.get(Checks)
+    env = app.container.get(Environments).named("main").id
+    tick = lambda quiet: Context(event=Ticked(at=0.0, quiet_for=quiet, session="s1", environment_id=env), session="s1", environment_id=env)
+    assert checks.answer("quiet_for_over", tick(61), "60") and not checks.answer("quiet_for_over", tick(59), "60")
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1"], AGENT)
+    worker = app.container.get(Workers).find(1)
+    reported = Context(event=Updated(model=worker.reported(), by=Actor.user(1), was=worker), session="s1", environment_id=env)
+    again = Context(event=Updated(model=worker.reported(), by=Actor.user(1), was=worker.reported()), session="s1", environment_id=env)
+    assert checks.answer("worker_reported", reported) and not checks.answer("worker_reported", again), "just came to the state, not saved again in it"
+    assert checks.answer("agent_awaits_the_worker", reported) and checks.answer("last_worker_back", reported), "the row says the last one is back"
+    console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1", "2"], AGENT)
+    assert not checks.answer("last_worker_back", reported), "another is still out"
+    app.container.get(Workers).save(worker.reported(), Actor.user(1))
+    console.run(["worker", "stop", "2"], USER)
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["question", "ask", "Which name?"], AGENT)
+    question = app.container.get(Questions).find(1)
+    answered = Context(event=Updated(model=question.answered("beta"), by=Actor.user(1), was=question), session="s1", environment_id=env)
+    assert checks.answer("question_answered", answered) and checks.answer("agent_waits_on_the_question", answered)
