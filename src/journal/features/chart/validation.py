@@ -1,4 +1,5 @@
 from journal.features.chart.catalogue import Catalogue
+from journal.features.chart.moves import Moves
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
@@ -78,10 +79,16 @@ class Validation:
                 ahead += then.get(str(node.get("id", "")), [])
         return faults
 
-    @staticmethod
-    def action_faults(nodes: list[dict]) -> list[str]:
-        """A move names idle, the one state the machine enters with nothing in hand."""
-        return [f"node {n.get('id')} moves the agent to {n.get('text', '').strip() or 'nowhere'}: a workflow moves the agent to idle only" for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") == "move_to" and n.get("text", "").strip() != "idle"]
+    def action_faults(self, nodes: list[dict]) -> list[str]:
+        """A move names idle, or a wait a workflow may make, expecting or stuck, with the words it waits for after the name."""
+        faults = []
+        for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") == "move_to"):
+            name = n.get("text", "").strip().partition(" ")[0]
+            if not name or not self.states.known(name):
+                faults.append(f"node {n.get('id')} moves the agent to {name or 'nowhere'}: no state is called that")
+            elif name != "idle" and not Moves.words_field(self.states.named(name, {})):
+                faults.append(f"node {n.get('id')} moves the agent to {name}: {Moves.refusal(name)}")
+        return faults
 
     @staticmethod
     def trigger_faults(chart: Chart, nodes: list[dict]) -> list[str]:

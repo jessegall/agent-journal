@@ -9,6 +9,7 @@ from journal.engine.nudger import Nudger
 from journal.engine.resume import Resume
 from journal.features.chart.context import Context
 from journal.features.chart.fillers import Fillers
+from journal.features.chart.moves import Moves
 from journal.features.registry import Registry
 from journal.features.said import Said
 from journal.features.sequences.running import Running
@@ -113,12 +114,21 @@ class Actions:
         return replace(state, resume={"state": released.state, "data": released.data} if isinstance(released, Resume) else {"state": released.name, "data": released.to_data()})
 
     def move_to(self, text: str, ctx: Context) -> Decision:
-        """The agent moved to the state named, through the machine: idle, from a state that owns nothing; a state with a task in hand, a wait or a step owed stays, and the walk records why."""
+        """The agent moved to the state named, through the machine. Idle, from a state that owns nothing; or a wait on something outside, expecting or stuck, laid over what the agent is doing with the words after the state's name as what it waits for. A state that owns a row, a task, a question, a worker, a sequence, is entered by what makes that row, and the walk records why a move there was refused."""
         if not ctx.session or not ctx.state:
             return Decision()
-        target = self.machine.states.named(text.strip(), {})
-        if target.name != text.strip():
-            raise Refused(f"no state is called {text.strip()}")
+        name, _, words = text.strip().partition(" ")
+        target = self.machine.states.named(name, {})
+        if target.name != name:
+            raise Refused(f"no state is called {name}")
+        field = Moves.words_field(target)
+        if field:
+            if isinstance(ctx.state, Paused):
+                raise Refused(f"the agent is {ctx.state.name} already: one wait at a time, and a release ends it")
+            self.machine.move(ctx.session, ctx.environment_id, type(target).leaving(ctx.state, **{field: words.strip()}))
+            return Decision()
+        if name != "idle":
+            raise Refused(Moves.refusal(name))
         self.leaving(ctx.state, target)
         if ctx.state.name != target.name:
             self.machine.move(ctx.session, ctx.environment_id, target)

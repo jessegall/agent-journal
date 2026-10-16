@@ -13,8 +13,11 @@ workflow of the agent's state or of the nearest state it inherits from, followin
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
 A workflow may move the agent, through the engine's machine: a release sends a paused agent back to what it was
-doing, and a move to idle is allowed from a state that owns nothing. An agent with a task in hand, a wait with its
-way back, or a step it owes the journal stays where it is, and the walk records why.
+doing; a move to idle is allowed from a state that owns nothing; and a move into expecting or stuck lays that wait
+over what the agent is doing, with the words after the state's name as what it waits for, so a workflow can make
+the agent wait on something outside. A state that owns a row, working, following a plan, waiting on a question,
+awaiting a worker, running a sequence, is entered by what makes that row, and a move there is refused with the
+reason, before the save and on the walk.
 
 A trial, `journal chart try <event>`, walks the workflows dry and says the path and what it would do, nothing done; it
 walks as the live agent, or as the state given with `--state`, with the agent's own data when it is in that state, and as

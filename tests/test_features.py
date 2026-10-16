@@ -748,6 +748,25 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
     assert edits.in_()[0].path == "f0.py" and edits.in_()[-1].path == f"f{KEEP - 1}.py", "the two oldest went"
 
 
+def test_a_workflow_moves_an_idle_agent_into_a_wait_with_its_words_and_a_release_brings_it_back(app, monkeypatch):
+    from journal.repositories.charts import Charts
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    idle = app.container.get(Charts).for_state("idle").id
+    node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--in", str(idle)], USER).out.split()[1].rstrip(":"))
+    trigger, move = node("trigger", "tool_finished"), node("action", "move_to", "--text", "expecting the deploy to finish")
+    console.run(["chart", "line", "--edit-default", str(trigger), str(move)], USER)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    machine = app.container.get(Machine)
+    state = machine.current("s1")
+    assert state.name == "expecting" and state.what == "the deploy to finish" and state.resume["state"] == "idle", "the move lays the wait over what the agent was doing, with its words"
+    hook(app, "UserPromptSubmit", prompt="it finished")
+    assert machine.current("s1").name == "idle", "a word from the user frees the wait, as any wait"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus
@@ -2119,7 +2138,8 @@ def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(
     from journal.repositories.charts import Charts as ChartRows
     charts = app.container.get(ChartRows)
     node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
-    assert "moves the agent to working: a workflow moves the agent to idle only" in node(charts.for_state("idle").id, "action", "move_to", "--text", "working").err
+    assert "moves the agent to working: a workflow moves the agent to idle, or into expecting or stuck" in node(charts.for_state("idle").id, "action", "move_to", "--text", "working").err
+    assert "moves the agent to flying: no state is called that" in node(charts.for_state("idle").id, "action", "move_to", "--text", "flying").err
     moves = {}
     for state in ("working", "expecting"):
         chart = charts.for_state(state).id
