@@ -645,3 +645,10 @@ frozen records. Phase 2 is the plan's checkpoint: the user looks at the Workflow
 listeners the workflows carry. The default suite runs in thirty seconds on a loaded machine, with the replays out of
 it (python3 -m pytest tests/replays_run.py) and one template journal booted per run; the server per test is what is
 left to cut.
+
+Ruling, 2026-10-16: the workflows are the project's, not a user's. A chart is a project row, so every environment
+of a journal walks the same workflows, and in a shared journal every user edits the same ones; who made the last
+change is on the revision (`revised_by`), and the page shows it. What differs per environment is not the drawing
+but the switches: a feature switched off in an environment silences that feature's lines and holds there, since
+every shipped line and hold carries its feature's key. A per-user or per-environment workflow is not a thing the
+design has, and will not be until a shared journal asks for it.
