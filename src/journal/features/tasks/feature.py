@@ -2,8 +2,6 @@ from journal.features.feature import Feature
 from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
-from journal.features.tasks.listeners.ask_after_parked import AskAfterParked
-from journal.features.tasks.listeners.check_in import CheckIn
 from journal.features.tasks.listeners.log_cadence import LogCadence
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.features.nudge import Nudge
@@ -26,7 +24,7 @@ class Tasks(Feature):
     NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between namings of the task in hand, so drift is noticed", 25, unit="edits")
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits with nothing logged before the next write waits for a log line", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
-    listeners = (SpotPolling, AskAfterParked, LogCadence, CheckIn)
+    listeners = (SpotPolling, LogCadence)
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
     CARRY_ON_LOG = Nudge(name, "carry_on_log", "{{name}} is in hand, {{logged}}: carry on", "log where it stands first, then continue; journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
