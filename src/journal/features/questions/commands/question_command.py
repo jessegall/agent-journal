@@ -2,21 +2,22 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.engine.cards import Cards
 from journal.engine.machine import Machine
+from journal.features.questions.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.models.question import Question
-from journal.repositories.agents import Agents
+from journal.models.ref import Ref
 from journal.repositories.environments import Environments
+from journal.repositories.links import Links
+from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
-from journal.supervisor_link import SupervisorLink
 
 
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, cards: Cards) -> None:
-        self.questions, self.agents, self.environments, self.machine, self.supervisor, self.cards = questions, agents, environments, machine, supervisor, cards
+    def __init__(self, questions: Questions, environments: Environments, machine: Machine, answering: Answering, messages: Messages, links: Links) -> None:
+        self.questions, self.environments, self.machine, self.answering, self.messages, self.links = questions, environments, machine, answering, messages, links
 
     def arguments(self, verbs) -> None:
         ask = self.verb(verbs, "ask", "ask the user something and wait")
@@ -26,6 +27,7 @@ class QuestionCommand(Command):
         answer.add_argument("n", type=int)
         answer.add_argument("answer")
         self.verb(verbs, "list", "every open question here")
+        self.verb(verbs, "show", "a question whole: its words, its choices, the answer and the messages linked to it").add_argument("n", type=int)
 
     def ask(self, args: Namespace, where: Where) -> int:
         environment = self.environments.named(where.environment).id
@@ -38,16 +40,25 @@ class QuestionCommand(Command):
         return 0
 
     def answer(self, args: Namespace, where: Where) -> int:
-        from journal.features.questions.feature import Questions as QuestionsFeature
-        question = self.questions.save(self.questions.find(args.n).answered(args.answer), where.actor)
-        for agent in self.agents.in_state(Waiting.name):
-            state = self.machine.states.named(agent.state, agent.data)
-            if state.question_id != question.id:
-                continue
-            self.machine.move(agent.session, agent.environment_id, state.back().to)
-            self.supervisor.type(question.environment_id, QuestionsFeature.ANSWERED.about(n=question.id, answer=question.answer).rendered())
-        self.cards.show(question.environment_id, "", f"You answered question {question.id}", "question", "good", question.answer, f"question:{question.id}")
+        question = self.answering.answer(self.questions.find(args.n), args.answer, where.actor)
         print(f"question {question.id} answered: {question.answer}")
+        return 0
+
+    def show(self, args: Namespace, where: Where) -> int:
+        """The question reaches the agent here, whole: its words, its choices, the answer, and every message linked to it in full."""
+        question = self.questions.find(args.n)
+        choices = f"  [{' / '.join(question.options)}]" if question.options else ""
+        print(f"question {question.id}: {question.text}{choices}")
+        print(f"  answer: {question.answer}" if question.answer is not None else "  not answered yet")
+        for link in self.links.of(question):
+            other = link.target if link.source == Ref.to(question) else link.source
+            if other.table == "messages":
+                message = self.messages.find(other.id)
+                print(f"  {link.kind} message {message.id} from the {message.author}: {message.text}")
+            else:
+                print(f"  {link.kind} {other}")
+        if question.answer is not None:
+            print("  act on the answer")
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:

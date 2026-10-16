@@ -14,7 +14,7 @@ class Questions(Feature):
     commands = (QuestionCommand,)
     listeners = (RefuseQuestionTool,)
 
-    ANSWERED = Nudge(name, "answered", "question {{n}} is answered: {{answer}}", "act on the answer", repeat_after=0)
+    ANSWERED = Nudge(name, "answered", "question {{n}} is answered", "journal question show {{n}} reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
     OWN_TOOL = Nudge(name, "own_tool", "a question goes through the journal, not your own question tool", "journal question ask \"<one line>\" --options a,b; the user answers in the viewer and the answer reaches you", repeat_after=0)
     nudges = (ANSWERED, OWN_TOOL)
 
@@ -24,6 +24,7 @@ class Questions(Feature):
 A choice only the user can make is asked as a question, not written into a reply.
 
 - `journal question ask "<the question>" --options "a, b, c"`; you are then waiting, and stopping is fine.
-- The answer arrives as a line: act on it. A reply from the user in the chat answers it too.
+- The answer arrives as a line naming `journal question show <n>`: read it there, whole, with the messages linked to it,
+  and act on it. A reply from the user in the chat answers it too.
 - `journal question list` shows what is open. Never offer choices in prose and carry on; ask.
 """, keywords=('question', 'questions', 'choose', 'options', 'decide'), required_in=('waiting',))

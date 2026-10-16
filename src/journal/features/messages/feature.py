@@ -35,7 +35,7 @@ class Messages(Feature):
     UNREAD_HELD = Nudge(name, "unread_held", "your inbox is unread: {{count}} waiting", "journal message unread before any other write", repeat_after=0)
     ANSWER = Nudge(name, "answer", "answer message {{messages}} before you do anything else", "a reply with [!reply:N], or a face: journal message react N \"👍\"", repeat_after=300, answered_in_chat=True)
     ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N], or a face: journal message react N \"👍\"; only a journal command goes through", repeat_after=0, answered_in_chat=True)
-    WHOLE = Nudge(name, "whole", "read the user's message whole: no pipe after journal message read", "run it on its own; every word of a message is for you", repeat_after=0)
+    WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after journal message read or journal question show", "run it on its own; every word is for you", repeat_after=0)
     nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE)
 
     @classmethod

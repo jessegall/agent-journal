@@ -689,7 +689,7 @@ def test_reading_a_message_names_its_files_links_and_captions(app):
 def test_a_message_read_through_a_pipe_is_refused(app):
     hook(app, "SessionStart")
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 3 | head -3"})
-    assert status == 409 and "read the user's message whole" in body["error"]
+    assert status == 409 and "read the user's words whole" in body["error"]
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 3"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list | head -5"})[0] == 200, "only the user's words are protected"
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep 'journal message read 3' notes.md | head -2"})[0] == 200, "the words quoted inside another command are not a read"
@@ -1479,3 +1479,19 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     assert rows[0].title == "The Workflows design" and rows[0].data["link"] == "https://design.example/p/1" and rows[0].data["label"] == "Open the design" and not rows[0].completed
     console.run(["notice", "close", "1"], AGENT)
     assert app.container.get(Shapers).named("notice").rows(env)[0].completed, "closed, it leaves the strip"
+
+
+def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read_is_never_piped(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
+    console.run(["question", "answer", "1", "beta"], USER)
+    assert any("question 1 is answered" in line and "journal question show 1" in line for line in typed), "told like a message, with the command to read it"
+    shown = console.run(["question", "show", "1"], AGENT).out
+    assert "question 1: Which name?  [alpha / beta]" in shown and "answer: beta" in shown and "act on the answer" in shown
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal question show 1 " + "|" + " head -2"})
+    assert status == 409 and "journal question show" in body["error"], "read whole, never through a pipe"

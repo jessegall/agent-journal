@@ -2,6 +2,7 @@ import time
 from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
+from journal.features.questions.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.features.tasks.states.working import Working
 from journal.http.request import Request
@@ -46,11 +47,11 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
-        self.notices = notices
+        self.notices, self.answering = notices, answering
         self.launcher = launcher
 
     def create(self, type: str, environment: Environment, body: dict, request: Request):
@@ -258,14 +259,7 @@ class V3Actions:
         return self.tasks.find(n)
 
     def question_answer(self, n: int, body: dict, by):
-        from journal.features.questions.feature import Questions as QuestionsFeature
-        answered = self.questions.save(self.questions.find(n).answered(body.get("how", body.get("answer", ""))), by)
-        for agent in self.agents.in_state(Waiting.name):
-            state = self.machine.states.named(agent.state, agent.data)
-            if state.question_id == answered.id:
-                self.machine.move(agent.session, agent.environment_id, state.back().to)
-                self.supervisor.type(answered.environment_id, QuestionsFeature.ANSWERED.about(n=answered.id, answer=answered.answer).rendered())
-        return answered
+        return self.answering.answer(self.questions.find(n), body.get("how", body.get("answer", "")), by)
 
     def question_complete(self, n: int, body: dict, by):
         return self.question_answer(n, body, by)
