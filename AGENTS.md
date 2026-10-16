@@ -38,6 +38,7 @@ designing go to a subagent; a job that changes a file goes to a worker (`journal
 
 Load the `journal` skill first in every session; the journal holds writes until you have. Declare a task before you write.
 Answer the user's messages before anything else. At a context mark, decide what to keep from it.
+A guard that raises lets the event through and says so in the chat: a hold is never the result of a fault.
 <!-- END: agent-journal, form 4 -->
 
 ## Dispatching subagents

@@ -115,6 +115,9 @@ Idle from a state that owns something is refused, and no node enters a state tha
   its first step, a prompt frees a wait, a session's end ends its work; none is a workflow and none is shown as one.
 - Delivery of a message to the agent: typed by number and the reminder counts started (messages/deliver_message),
   the owed count started at the first message read and left unanswered (messages/start_owed_count).
+- A guard that raises fails open: the event goes through as if the guard had said nothing, and the fault is
+  reported loudly, an entry of kind guard_failed, a card in the chat and a line to the agent (hooks/receiver);
+  a hold is never the result of a fault, and the law text says so.
 - The floor under every hold: a journal command and the read of a skill's file always run, whatever a workflow
   holds; the engine drops the refusal and keeps the words (chart/walk).
 - A session's start: the briefing (briefing); the journal skill and the look at what is in flight are owed by

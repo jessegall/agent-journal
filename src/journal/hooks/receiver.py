@@ -1,3 +1,4 @@
+from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
@@ -16,12 +17,16 @@ from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
 
 
+GUARD_FAILED = "guard_failed"
+"""The entry a blocking listener leaves when it raises: the event, the listener and the fault, so the page can show it."""
+
+
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns, cards: Cards) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
-        self.transcript = transcript
+        self.transcript, self.cards = transcript, cards
 
     def receive(self, hook: Hook) -> Decision:
         """The hook's decision: what the blocking listeners say, the rest deferred; all of it in the environment the hook names."""
@@ -46,10 +51,20 @@ class Receiver:
     def _blocking(self, event: AgentEvent) -> Decision:
         decision = Decision()
         for listener in self._split(event)[0]:
-            said = listener.handle(event)
+            said = self._guarded(listener, event)
             if said is not None:
                 decision = decision.merged(said)
         return decision
+
+    def _guarded(self, listener: Listener, event: AgentEvent) -> Decision | None:
+        """A guard that raises fails open: the event goes through as if the guard had said nothing, and the fault is reported loudly, as an entry, a card in the chat and a line to the agent, so a broken guard is never a silent hold."""
+        try:
+            return listener.handle(event)
+        except Exception as fault:
+            words = f"{type(listener).__name__} raised {type(fault).__name__}: {fault}"
+            self.entries.save(Entry(environment_id=event.environment_id, kind=GUARD_FAILED, actor=Actor.system(), data={"session": event.session, "event": type(event).__name__, "listener": type(listener).__name__, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
+            self.cards.show(event.environment_id, event.session, f"A guard failed and let the event through: {words}", "bolt", tone="bad")
+            return Decision.tell(f"[journal] a guard failed and let this through: {words}. the journal recorded it; tell the user if it happens again")
 
     def _defer(self, event: AgentEvent) -> None:
         for listener in self._split(event)[1]:

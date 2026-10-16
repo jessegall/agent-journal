@@ -111,3 +111,21 @@ def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path
     assert context.of("s1") == 0.4, "the statusline is still writing: the last whole reading stands"
     (tmp_path / "s1.json").write_text(json.dumps({"context_window": {"used_percentage": 55}}))
     assert context.of("s1") == 0.55
+
+
+class Raising(AgentListener[ToolStarting]):
+    blocking = True
+
+    def handle(self, event):
+        raise RuntimeError("the guard broke")
+
+
+def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app):
+    from journal.hooks.receiver import GUARD_FAILED
+    from journal.repositories.messages import Messages
+    app.container.get(Bus).listen(ToolStarting, Raising())
+    status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
+    assert status == 200 and "a guard failed and let this through: Raising raised RuntimeError: the guard broke" in body["hookSpecificOutput"]["additionalContext"], "the tool runs and the agent is told"
+    failed = [e for e in app.container.get(Entries).in_() if e.kind == GUARD_FAILED]
+    assert len(failed) == 1 and failed[0].data["listener"] == "Raising" and failed[0].data["event"] == "ToolStarting"
+    assert any("A guard failed and let the event through" in m.text for m in app.container.get(Messages).in_()), "and the user sees a card in the chat"
