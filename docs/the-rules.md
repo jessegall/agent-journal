@@ -125,10 +125,16 @@ Idle from a state that owns something is refused, and no node enters a state tha
 - A new rule questioned once (memory/review_new_rule); the context mark is the workflows' now, as a fact on the agent's row.
 - A plan's advance and its approval (plans); a sequence's steps and its start on a row event (sequences); a
   question asked only through the journal (questions).
-- The shell runner's parts, limits and the mixed-journal refusal; a long file not read whole (shell).
-- Delivery of typed lines and their retyping (delivery); the thought in the working bubble (thinking).
+- The guards on how the agent works, ruled engine behaviour on 2026-10-17 (plan 7, tasks 388 to 393): the shell
+  runner's parts, its limits and the move to the background past them; a journal command mixed with other shell
+  on one line refused; a read piped into something refused; a long output cut and a whole file not read; a
+  dispatch that names no model or no bounded job refused; the question tool held. None is a node, since nobody
+  would open a canvas to change them or to watch them.
+- Delivery of typed lines and their retyping (delivery), decided for good in plan 7 (task 399); the thought in
+  the working bubble (thinking).
 - The voice at a start and when changed (voices); the commit line that closes tasks (git); checks run on their
-  interval (checks); an agent owed a restart after a server change (mcp); silent sessions ended (briefing).
+  interval (checks); an agent owed a restart after a server change (mcp); an hour's silence ending the session
+  (briefing), the engine's own move, never a node (plan 7, task 398).
 
 The walk itself: agent events walk the chart as a blocking listener right after the machine, so a hold or a
 blocked stop reaches the agent and a said line rides on the hook's answer; row events walk on the worker thread
