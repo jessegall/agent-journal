@@ -182,8 +182,8 @@ export class ApiClient {
         return this.ownGet(`/chart/runs?last=${last}`);
     }
 
-    chartTry(trigger, environment) {
-        return this.ownPost("/chart/try", {trigger, environment});
+    chartTry(body) {
+        return this.ownPost("/chart/try", body);
     }
 
     mcp() {

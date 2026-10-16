@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
+import {pairs, statusOf} from "../../domain/workflowPairs.js";
 import Icon from "../../kit/Icon.vue";
 import ActionSheet from "../kit/ActionSheet.vue";
 import Button from "../kit/Button.vue";
@@ -74,15 +75,35 @@ onMounted(async () => {
         const got = await api.chart();
         workflows.value = got.workflows;
         catalogue.value = got.catalogue;
-        states.value = got.states || [];
-        const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
-        if (first) await open(first.id);
+        states.value = got.states;
+        await pick(pickedState.value, pickedEvent.value);
     } catch (error) {
         failed.value = error.message;
     } finally {
         loaded.value = true;
     }
 });
+
+async function pick(state, event) {
+    pickedState.value = state;
+    pickedEvent.value = event;
+    sheet.value = "";
+    const own = ownFor(state, event);
+    const serving = servingFor(state, event);
+    borrowed.value = !own && Boolean(serving);
+    if (serving) await open(serving.id);
+    else empty();
+}
+
+function empty() {
+    current.value = 0;
+    shipped.value = false;
+    title.value = "";
+    nodes.value = [];
+    lines.value = [];
+    past.value = [];
+    trial.value = null;
+}
 
 // every change goes on the draft, kept apart from what the server holds until Save; Undo steps the draft back
 function change(work) {
@@ -156,51 +177,121 @@ async function act(name, work) {
         busy.value = "";
     }
 }
+async function refreshList() {
+    workflows.value = (await api.chart()).workflows;
+}
+// a refused save keeps the draft and says its faults; a stale one names who saved first, and the next Save replaces theirs
 const save = () =>
     act("save", async () => {
-        take(await api.chartSave(current.value, {revision: revision.value, nodes: nodes.value, lines: lines.value}));
-        workflows.value = (await api.chart()).workflows;
+        const at = conflict.value ? conflict.value.revision : revision.value;
+        try {
+            take(await api.chartSave(current.value, {revision: at, nodes: nodes.value, lines: lines.value}));
+        } catch (error) {
+            if (error.details && error.details.faults) {
+                failed.value = error.details.faults.map((f) => f.words).join(" ");
+                return;
+            }
+            if (error.details && error.details.conflict) {
+                conflict.value = error.details;
+                failed.value = `${error.details.revised_by} saved this workflow first, so your changes were not saved. Save again replaces their version.`;
+                return;
+            }
+            throw error;
+        }
+        conflict.value = null;
+        await refreshList();
     });
-const reset = () => act("reset", async () => take(await api.chartReset(current.value)));
+const reset = () =>
+    act("reset", async () => {
+        take(await api.chartReset(current.value));
+        await refreshList();
+    });
 const removeWorkflow = () =>
     act("remove", async () => {
         await api.chartRemove(current.value);
-        const got = await api.chart();
-        workflows.value = got.workflows;
-        const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
-        if (first) await open(first.id);
+        await refreshList();
+        await pick(pickedState.value, pickedEvent.value);
     });
-const states = ref([]);
-const picking = ref("");
-const stateActions = computed(() =>
-    states.value.map((s) => ({key: s.key, label: s.title, run: () => ((picking.value = s.key), (sheet.value = "events"))}))
-);
-const create = (event) =>
+const turnOff = () =>
+    act("off", async () => {
+        take(await api.chartOff(current.value));
+        await refreshList();
+    });
+const turnOn = () =>
+    act("on", async () => {
+        take(await api.chartOn(current.value));
+        await refreshList();
+    });
+const start = () =>
     act("create", async () => {
-        const made = await api.chartNew({title: "", trigger: event.key, state: picking.value});
-        workflows.value = (await api.chart()).workflows;
+        const made = await api.chartNew({title: "", trigger: pickedEvent.value, state: pickedState.value});
+        await refreshList();
+        borrowed.value = false;
         await open(made.id);
     });
-const test = () =>
-    act("try", async () => {
-        const ran = await api.chartTry(trigger.value ? trigger.value.key : "idle", "");
-        trial.value = ran;
-    });
-
-// the sheets: every choice is an action sheet, as the phone does it
-function placeOf(workflow) {
-    const place = placeWords(workflow);
-    return workflow.off ? `${place} · off` : place;
-}
-function placeWords(workflow) {
-    return workflow.shipped ? "Default" : "Yours";
-}
-const workflowActions = computed(() =>
-    workflows.value.map((w) => ({key: String(w.id), label: w.title, sub: placeOf(w), check: w.id === current.value, run: () => open(w.id)}))
+const states = ref([]);
+const pickedState = ref("idle");
+const pickedEvent = ref("idle");
+const borrowed = ref(false);
+const conflict = ref(null);
+const pairing = computed(() => pairs(workflows.value, states.value, catalogue.value));
+const ownFor = (state, event) => pairing.value.ownFor(state, event);
+const servingFor = (state, event) => pairing.value.servingFor(state, event);
+const stateTitle = computed(() => pairing.value.titleOf(pickedState.value));
+const eventTitle = computed(() => entries.value[`trigger:${pickedEvent.value}`]?.title || pickedEvent.value);
+const currentWorkflow = computed(() => workflows.value.find((w) => w.id === current.value) || null);
+const parentWords = computed(() =>
+    pairing.value.parentOf(pickedState.value)
+        ? `${pairing.value.titleOf(pairing.value.parentOf(pickedState.value))}'s runs here again.`
+        : ""
+);
+const statusWords = computed(() => {
+    const workflow = currentWorkflow.value;
+    if (!workflow) return "No workflow";
+    if (borrowed.value) return `${pairing.value.titleOf(workflow.state)}'s, used where ${stateTitle.value} has none of its own`;
+    return statusOf(workflow) || "Default";
+});
+const canTry = computed(
+    () => Boolean(entries.value[`trigger:${pickedEvent.value}`]?.tried) && Boolean(currentWorkflow.value) && !dirty.value
+);
+const stateActions = computed(() =>
+    states.value.map((s) => ({
+        key: s.key,
+        label: s.title,
+        sub: pairing.value.countOf(s.key),
+        check: s.key === pickedState.value,
+        run: () => pick(s.key, pickedEvent.value),
+    }))
 );
 const eventActions = computed(() =>
-    catalogue.value.filter((e) => e.kind === "trigger").map((e) => ({key: e.key, label: e.title, sub: described(e), run: () => create(e)}))
+    pairing.value
+        .eventsFor(pickedState.value)
+        .map((e) => ({
+            key: e.key,
+            label: e.title,
+            sub: pairing.value.wordsFor(pickedState.value, e.key) || (e.providers.includes("codex") ? "" : "Claude only"),
+            check: e.key === pickedEvent.value,
+            run: () => pick(pickedState.value, e.key),
+        }))
+        .concat([
+            {
+                key: "add",
+                label: "Add an event",
+                sub: "A row event this state has no workflow for yet",
+                run: () => (sheet.value = "add-event"),
+            },
+        ])
 );
+const addEventActions = computed(() =>
+    pairing.value
+        .addableFor(pickedState.value)
+        .map((e) => ({key: e.key, label: e.title, sub: e.group, run: () => pick(pickedState.value, e.key)}))
+);
+const test = () =>
+    act("try", async () => {
+        const ran = await api.chartTry({trigger: pickedEvent.value, environment: "", state: pickedState.value});
+        trial.value = ran;
+    });
 const nodeActions = computed(() =>
     catalogue.value
         .filter((e) => e.kind !== "trigger" || !trigger.value)
@@ -222,30 +313,52 @@ const portActions = computed(() => {
             .map((n) => ({key: String(n.id), label: named(n), check: now && now.id === n.id, run: () => connect(node, port, n)})),
     ];
 });
-const workflowOwn = computed(() => [
-    {
-        key: "reset",
-        label: "Reset to default",
-        sub: shipped.value
-            ? "Replace this workflow with the version the journal ships"
-            : "Only the default workflow has a version to reset to",
-        danger: shipped.value,
-        run: () => shipped.value && (sheet.value = "confirm-reset"),
-    },
-    {
-        key: "remove",
-        label: "Delete workflow",
-        sub: shipped.value ? "The default workflow can be reset, not deleted" : "The workflow and its nodes are deleted",
-        danger: !shipped.value,
-        run: () => !shipped.value && (sheet.value = "confirm-remove"),
-    },
-]);
-const confirmActions = computed(() =>
-    sheet.value === "confirm-reset"
-        ? [{key: "reset", label: "Reset to default", sub: "Your edits to this workflow are lost", danger: true, run: reset}]
-        : [{key: "remove", label: "Delete workflow", sub: "The workflow and its nodes are deleted", danger: true, run: removeWorkflow}]
-);
-const deleteNode = (node) => [{key: "delete", label: "Delete node", tone: "danger", run: () => remove(node)}];
+const workflowOwn = computed(() => {
+    const workflow = currentWorkflow.value;
+    if (!workflow) return [{key: "start", label: "Start a workflow here", sub: "The journal does nothing here yet", run: start}];
+    if (borrowed.value)
+        return [
+            {key: "own", label: "Make its own", sub: `A copy of ${pairing.value.titleOf(workflow.state)}'s to change here`, run: start},
+        ];
+    const off = workflow.off
+        ? {key: "on", label: "Turn on", sub: "Its steps come back as they were", run: turnOn}
+        : {
+              key: "off",
+              label: "Turn off",
+              sub: "Its steps are kept; the journal stops answering here",
+              run: () => (sheet.value = "confirm-off"),
+          };
+    const own = [off];
+    if (shipped.value && (workflow.edited || workflow.off)) {
+        own.push({
+            key: "reset",
+            label: "Reset to default",
+            sub: "Your changes to this workflow are lost",
+            danger: true,
+            run: () => (sheet.value = "confirm-reset"),
+        });
+    }
+    if (!shipped.value)
+        own.push({
+            key: "remove",
+            label: "Delete workflow",
+            sub: "The workflow and its steps are deleted",
+            danger: true,
+            run: () => (sheet.value = "confirm-remove"),
+        });
+    return own;
+});
+const CONFIRMS = {
+    "confirm-reset": {title: "Reset to default?", line: "your changes to this workflow are lost"},
+    "confirm-off": {title: "Turn off?", line: "its steps are kept; Turn on brings them back"},
+    "confirm-remove": {title: "Delete workflow?", line: "the workflow and its steps are deleted"},
+};
+const confirmActions = computed(() => {
+    if (sheet.value === "confirm-reset") return [{key: "reset", label: "Reset to default", danger: true, run: reset}];
+    if (sheet.value === "confirm-off") return [{key: "off", label: "Turn off", sub: parentWords.value, danger: true, run: turnOff}];
+    return [{key: "remove", label: "Delete workflow", sub: parentWords.value, danger: true, run: removeWorkflow}];
+});
+const deleteNode = (node) => [{key: "delete", label: "Delete step", tone: "danger", run: () => remove(node)}];
 
 function pickPort(node, port) {
     porting.value = {node, port};
@@ -273,7 +386,7 @@ const steps = computed(() => {
 <template>
     <PlaceScreen title="Workflows" sub="What the journal does when the agent does something" :back="back" @back="emit('back')">
         <template #end>
-            <Button kind="link" :disabled="!trigger" @click="sheet = 'test'">Test</Button>
+            <Button kind="link" :disabled="!canTry" @click="sheet = 'test'">Test</Button>
         </template>
 
         <template v-if="loaded && failed && !nodes.length">
@@ -281,27 +394,24 @@ const steps = computed(() => {
         </template>
         <template v-else-if="loaded">
             <CellGroup>
-                <Cell
-                    :label="title || 'Workflow'"
-                    :sub="`${shipped ? 'Default · ' : ''}${nodes.length} ${nodes.length === 1 ? 'node' : 'nodes'}`"
-                    icon="bolt"
-                    @pick="sheet = 'workflows'"
-                />
+                <Cell label="When the agent is" :sub="stateTitle" icon="bolt" @pick="sheet = 'states'" />
+                <Cell label="And this happens" :sub="eventTitle" icon="bolt" @pick="sheet = 'events'" />
             </CellGroup>
-            <div class="wf-row">
-                <Button kind="plain" @click="sheet = 'states'">New workflow</Button>
-            </div>
+            <p class="wf-status">{{ statusWords }}</p>
             <p v-if="failed" class="wf-failed">{{ failed }}</p>
 
-            <template v-if="!nodes.length">
+            <template v-if="!currentWorkflow">
                 <EmptyList
                     icon="bolt"
-                    :title="shipped ? 'This workflow is off' : 'No nodes yet'"
-                    :reason="
-                        shipped
-                            ? 'It has no nodes, so the journal does nothing here. Add a trigger, or reset it to the default.'
-                            : 'Start with a trigger: the event that starts this workflow.'
-                    "
+                    title="Nothing is set up here"
+                    :reason="`The journal does nothing when the agent is ${stateTitle.toLowerCase()} and ${eventTitle.toLowerCase()}.`"
+                />
+            </template>
+            <template v-else-if="!trigger">
+                <EmptyList
+                    icon="bolt"
+                    title="This workflow is turned off"
+                    :reason="`Its ${nodes.length} ${nodes.length === 1 ? 'step is' : 'steps are'} kept. Turn on brings ${nodes.length === 1 ? 'it' : 'them'} back. ${parentWords}`"
                 />
             </template>
             <template v-for="node in nodes" :key="node.id">
@@ -338,7 +448,7 @@ const steps = computed(() => {
                 </CellGroup>
             </template>
 
-            <CellGroup head="Workflow" :foot="shipped ? 'The default workflow can be reset, not deleted.' : ''">
+            <CellGroup head="Workflow">
                 <template v-for="action in workflowOwn" :key="action.key">
                     <Cell
                         :label="action.label"
@@ -359,39 +469,45 @@ const steps = computed(() => {
                     <Button kind="link" :disabled="!dirty" @click="discard">Discard changes</Button>
                 </div>
                 <div class="wf-row">
-                    <Button kind="plain" fill @click="sheet = 'nodes'">Add node</Button>
+                    <Button kind="plain" fill :disabled="!currentWorkflow || borrowed" @click="sheet = 'nodes'">Add step</Button>
                     <Button kind="primary" fill :busy="busy === 'save'" :disabled="!dirty" @click="save">Save</Button>
                 </div>
             </div>
         </template>
     </PlaceScreen>
 
-    <template v-if="sheet === 'workflows'">
-        <ActionSheet title="Workflow" :about="title" line="the one to edit" :actions="workflowActions" @close="sheet = ''" />
-    </template>
     <template v-if="sheet === 'states'">
         <ActionSheet
-            title="New workflow"
-            about="Pick its state"
-            line="the state the agent is in when it runs"
+            title="When the agent is"
+            :about="stateTitle"
+            line="the state whose workflows to see"
             :actions="stateActions"
             @close="sheet = ''"
         />
     </template>
     <template v-if="sheet === 'events'">
         <ActionSheet
-            title="New workflow"
-            about="Pick the event it starts at"
-            line="a workflow of your own for that state at this event"
+            title="And this happens"
+            :about="stateTitle"
+            line="the event the workflow answers"
             :actions="eventActions"
+            @close="sheet = ''"
+        />
+    </template>
+    <template v-if="sheet === 'add-event'">
+        <ActionSheet
+            title="Add an event"
+            :about="stateTitle"
+            line="a row event to start a workflow at"
+            :actions="addEventActions"
             @close="sheet = ''"
         />
     </template>
     <template v-if="sheet === 'nodes'">
         <ActionSheet
-            title="Add node"
+            title="Add step"
             about="Checks and actions"
-            line="added at the end and connected to the last node"
+            line="added at the end and connected to the last step"
             :actions="nodeActions"
             @close="sheet = ''"
         />
@@ -405,11 +521,11 @@ const steps = computed(() => {
             @close="sheet = ''"
         />
     </template>
-    <template v-if="sheet === 'confirm-reset' || sheet === 'confirm-remove'">
+    <template v-if="CONFIRMS[sheet]">
         <ActionSheet
-            :title="sheet === 'confirm-reset' ? `Replace ‘${title}’ with the default version?` : `Delete ‘${title}’?`"
+            :title="CONFIRMS[sheet].title"
             :about="title"
-            line="the other workflows stay as they are"
+            :line="CONFIRMS[sheet].line"
             :actions="confirmActions"
             @close="sheet = ''"
         />
@@ -419,7 +535,7 @@ const steps = computed(() => {
             <template #head>
                 <h2 class="wf-sheet-title">Test with event</h2>
                 <p class="wf-sheet-sub">
-                    {{ trigger ? entryOf(trigger).title : "No trigger" }} · changes nothing; runs against current data
+                    {{ stateTitle }} at {{ eventTitle }} · the saved workflow, against what the agent has now; nothing is sent
                 </p>
             </template>
             <div class="wf-sheet-body">
@@ -463,6 +579,12 @@ const steps = computed(() => {
     display: flex;
     gap: 10px;
     margin: 12px 0 0;
+}
+
+.wf-status {
+    margin: 10px 4px 0;
+    color: var(--text-3);
+    font-size: 0.875rem;
 }
 
 .wf-failed {

@@ -1,6 +1,7 @@
 <script setup>
 import {ago} from "../format/time.js";
 import {overlapping, tidy} from "../domain/tidy.js";
+import {MARKS, markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -14,7 +15,6 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
 import SidePanel from "../kit/SidePanel.vue";
-import TextInput from "../kit/TextInput.vue";
 import ChartList from "./ChartList.vue";
 
 const CARD = {width: 208, plain: 48, text: 84};
@@ -22,21 +22,12 @@ const PORT_AT = {then: 50, yes: 30, no: 70};
 const WORD = {then: "Next", yes: "Yes", no: "No"};
 const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
 const fillers = ref([]);
-const LEAD =
-    "The journal ships one workflow per state per trigger, picked by the state and then the event, each carrying the shared conduct of its event as well as the state's own. A workflow starts at its triggers (events), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
-
-// where a workflow runs, as a note beside its title: a shipped one at its state, one of your own at its event; one with no trigger is off
-function placeOf(workflow) {
-    const place = placeWords(workflow);
-    return workflow.off ? `${place} · off` : place;
-}
-function placeWords(workflow) {
-    return workflow.shipped ? "Default" : "Yours";
-}
 const VIEWS = [
-    {key: "canvas", label: "Canvas"},
-    {key: "list", label: "List"},
+    {key: "canvas", label: "Chart"},
+    {key: "list", label: "Steps"},
 ];
+const LEAD =
+    "The journal answers the agent with one workflow per state per event: pick what the agent is doing, then what happens, and the workflow for that pair shows. A state with a parent uses the parent's workflow where it has none of its own.";
 
 const loaded = ref(false);
 const workflows = ref([]);
@@ -55,13 +46,13 @@ const lastFailure = ref({});
 const walkWords = computed(() => {
     const walk = lastWalk.value;
     if (!walk.at) return "";
-    const nodes = walk.nodes.length ? `nodes ${walk.nodes.join(", ")}` : "no node";
     const said = walk.said ? `, and said: ${walk.said}` : "";
-    return `Last ran ${ago(walk.at)} at ${walk.trigger}: ${nodes}${said}.`;
+    return `Last ran ${ago(walk.at)}${said}.`;
 });
 const failureWords = computed(() => {
     const failure = lastFailure.value;
-    return failure.at ? `Node ${failure.node} (${failure.key}) failed ${ago(failure.at)}: ${failure.fault}.` : "";
+    if (!failure.at || (lastWalk.value.at && failure.at < lastWalk.value.at)) return "";
+    return `Step ${failure.node} (${failure.key}) failed ${ago(failure.at)}: ${failure.fault}.`;
 });
 const selected = ref(null);
 const hovered = ref(null);
@@ -93,8 +84,6 @@ const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
 const selectedNode = computed(() => (selected.value ? byId.value[String(selected.value)] || null : null));
 const dirty = computed(() => past.value.length > 0);
-const workflowItems = computed(() => workflows.value.map((w) => ({key: String(w.id), label: w.title, note: placeOf(w)})));
-const eventItems = computed(() => catalogue.value.filter((e) => e.kind === "trigger").map((e) => ({key: e.key, label: e.title})));
 const matches = (e) => !search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase());
 const offeredChecks = computed(() => catalogue.value.filter((e) => e.kind === "check" && matches(e)));
 const offeredActions = computed(() => catalogue.value.filter((e) => e.kind === "action" && matches(e)));
@@ -129,6 +118,8 @@ function take(got) {
     notice.value = got.warnings.join(" ");
     lastWalk.value = got.last_walk;
     lastFailure.value = got.last_failure;
+    lit.value = got.last_walk.nodes || [];
+    faults.value = [];
 }
 
 // the whole workflow in view at first, as large as the canvas allows and never larger than life
@@ -159,10 +150,8 @@ async function load() {
     fillers.value = got.fillers;
     workflows.value = got.workflows;
     catalogue.value = got.catalogue;
-    states.value = got.states || [];
-    const first = got.workflows.find((w) => w.shipped) || got.workflows[0];
-    if (first) await open(first.id);
-    else loaded.value = true;
+    states.value = got.states;
+    await pick(pickedState.value, pickedEvent.value);
 }
 onMounted(load);
 onMounted(() => window.addEventListener("resize", fit));
@@ -413,15 +402,32 @@ async function act(name, work) {
         busy.value = "";
     }
 }
+// a refused save keeps the draft: its faults go under the bar, each a click away from its step; a stale one names who saved first
 const save = () =>
     act("save", async () => {
-        take(await api.chartSave(current.value, {revision: revision.value, nodes: nodes.value, lines: lines.value}));
+        faults.value = [];
+        const at = conflict.value ? conflict.value.revision : revision.value;
+        try {
+            take(await api.chartSave(current.value, {revision: at, nodes: nodes.value, lines: lines.value}));
+        } catch (e) {
+            if (e.details && e.details.faults) {
+                faults.value = e.details.faults;
+                return;
+            }
+            if (e.details && e.details.conflict) {
+                conflict.value = e.details;
+                return;
+            }
+            throw e;
+        }
+        conflict.value = null;
         await refreshList();
     });
 const reset = () =>
     act("reset", async () => {
         confirming.value = "";
         take(await api.chartReset(current.value));
+        await refreshList();
         await nextTick();
         fit();
     });
@@ -429,26 +435,172 @@ const removeWorkflow = () =>
     act("remove", async () => {
         confirming.value = "";
         await api.chartRemove(current.value);
-        await load();
-    });
-const states = ref([]);
-const stateItems = computed(() => states.value.map((s) => ({key: s.key, label: s.title})));
-const create = () =>
-    act("create", async () => {
-        const made = await api.chartNew({title: naming.value.title.trim(), trigger: naming.value.trigger, state: naming.value.state});
-        naming.value = null;
         await refreshList();
-        await open(made.id);
+        await pick(pickedState.value, pickedEvent.value);
     });
-const startNaming = () => {
-    naming.value = {state: "idle", trigger: "idle", title: ""};
-};
-const namingLabel = computed(() => (naming.value ? entries.value[`trigger:${naming.value.trigger}`]?.title || naming.value.trigger : ""));
-const namingState = computed(() =>
-    naming.value ? states.value.find((s) => s.key === naming.value.state)?.title || naming.value.state : ""
+const turnOff = () =>
+    act("off", async () => {
+        confirming.value = "";
+        take(await api.chartOff(current.value));
+        await refreshList();
+    });
+const turnOn = () =>
+    act("on", async () => {
+        take(await api.chartOn(current.value));
+        await refreshList();
+        await nextTick();
+        fit();
+    });
+const start = () =>
+    act("create", async () => {
+        const made = await api.chartNew({title: "", trigger: pickedEvent.value, state: pickedState.value});
+        await refreshList();
+        borrowed.value = false;
+        await open(made.id);
+        unlocked.value = true;
+    });
+const openRuns = () =>
+    act("runs", async () => {
+        runs.value = (await api.chartRuns(10)).runs;
+    });
+// a run opens the workflow it ran, the state's own or the parent's it borrowed, with the steps it took lit
+async function openRun(run) {
+    const ran = run.workflows.map((n) => workflows.value.find((w) => w.id === n)).find(Boolean);
+    runs.value = null;
+    if (!ran) return;
+    await pick(ran.state, ran.event);
+    lit.value = run.nodes;
+}
+const test = () =>
+    act("try", async () => {
+        const ran = await api.chartTry({trigger: pickedEvent.value, environment: "", state: pickedState.value});
+        trial.value = ran;
+        lit.value = ran.nodes;
+    });
+const trialWords = computed(() => {
+    const ran = trial.value;
+    if (!ran) return "";
+    const would = ran.would.length ? ran.would.join(" ") : "the journal would do nothing.";
+    return `Test run: ${would}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""}`;
+});
+const states = ref([]);
+const pickedState = ref("idle");
+const pickedEvent = ref("idle");
+const borrowed = ref(false);
+const runs = ref(null);
+const faults = ref([]);
+const conflict = ref(null);
+const lit = ref([]);
+const trial = ref(null);
+const leaving = ref(null);
+const listsHidden = ref(false);
+const pairing = computed(() => pairs(workflows.value, states.value, catalogue.value));
+const titleOf = (key) => pairing.value.titleOf(key);
+const parentOf = (key) => pairing.value.parentOf(key);
+const ownFor = (state, event) => pairing.value.ownFor(state, event);
+const servingFor = (state, event) => pairing.value.servingFor(state, event);
+const stateRows = computed(() =>
+    states.value.map((s) => {
+        const events = pairing.value.eventsFor(s.key);
+        const own = events.filter((e) => ownFor(s.key, e.key));
+        return {
+            key: s.key,
+            title: s.title,
+            marks: events.map((e) => ({key: e.key, title: e.title, mark: markOf(servingFor(s.key, e.key), !ownFor(s.key, e.key))})),
+            count: pairing.value.countOf(s.key),
+            failed: own.some((e) => ownFor(s.key, e.key).failed),
+            warning: own.some((e) => ownFor(s.key, e.key).warnings.length > 0),
+        };
+    })
 );
+const eventRows = computed(() =>
+    pairing.value.eventsFor(pickedState.value).map((e) => ({
+        key: e.key,
+        title: e.title,
+        mark: markOf(servingFor(pickedState.value, e.key), !ownFor(pickedState.value, e.key)),
+        words: pairing.value.wordsFor(pickedState.value, e.key),
+        claudeOnly: !e.providers.includes("codex"),
+    }))
+);
+const addableEvents = computed(() => pairing.value.addableFor(pickedState.value).map((e) => ({key: e.key, label: e.title, note: e.group})));
+const currentWorkflow = computed(() => workflows.value.find((w) => w.id === current.value) || null);
+const eventTitle = computed(() => entries.value[`trigger:${pickedEvent.value}`]?.title || pickedEvent.value);
+const pageTitle = computed(() => `${titleOf(pickedState.value)} at ${eventTitle.value}`);
+const statusWords = computed(() => {
+    const workflow = currentWorkflow.value;
+    if (!workflow) return "No workflow";
+    if (borrowed.value) return `${titleOf(workflow.state)}'s, used where ${titleOf(pickedState.value)} has none of its own`;
+    return statusOf(workflow) || "Default";
+});
+const alsoWords = computed(() => {
+    const children = states.value
+        .filter((s) => s.parent === pickedState.value && !ownFor(s.key, pickedEvent.value))
+        .map((s) => s.title.toLowerCase());
+    return children.length ? `Also used while the agent is ${children.join(" or ")}.` : "";
+});
+const canTry = computed(
+    () => Boolean(entries.value[`trigger:${pickedEvent.value}`]?.tried) && !unlocked.value && Boolean(currentWorkflow.value)
+);
+const parentWords = computed(() => (parentOf(pickedState.value) ? `${titleOf(parentOf(pickedState.value))}'s runs here again.` : ""));
 
-() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet");
+async function pick(state, event) {
+    if (dirty.value) {
+        leaving.value = {state, event};
+        return;
+    }
+    pickedState.value = state;
+    pickedEvent.value = event;
+    faults.value = [];
+    conflict.value = null;
+    trial.value = null;
+    const own = ownFor(state, event);
+    const serving = servingFor(state, event);
+    borrowed.value = !own && Boolean(serving);
+    if (serving) await open(serving.id);
+    else empty();
+}
+
+function empty() {
+    current.value = 0;
+    shipped.value = false;
+    title.value = "";
+    nodes.value = [];
+    lines.value = [];
+    past.value = [];
+    selected.value = null;
+    unlocked.value = false;
+    notice.value = "";
+    lastWalk.value = {};
+    lastFailure.value = {};
+    lit.value = [];
+    loaded.value = true;
+}
+
+function leaveAnyway() {
+    past.value = [];
+    const to = leaving.value;
+    leaving.value = null;
+    pick(to.state, to.event);
+}
+
+function stopEditing() {
+    if (dirty.value) {
+        leaving.value = {state: pickedState.value, event: pickedEvent.value};
+        return;
+    }
+    unlocked.value = false;
+}
+
+const isLit = (id) => lit.value.map(String).includes(String(id));
+const litWire = (line) =>
+    isLit(line.from) &&
+    isLit(line.to) &&
+    lit.value.map(String).indexOf(String(line.to)) === lit.value.map(String).indexOf(String(line.from)) + 1;
+const stepOf = (id) => nodes.value.findIndex((n) => String(n.id) === String(id)) + 1 || "";
+const faultWords = (fault) =>
+    fault.node
+        ? fault.words.replace(new RegExp(`\b(node|check|action|trigger) ${fault.node}\b`), `step ${stepOf(fault.node)}`)
+        : fault.words;
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
 // the message is written in the side panel and lands on the card as one change when the panel closes
 function openMessage(node) {
@@ -477,245 +629,354 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 <template>
     <section class="chart">
         <PageBar class="chart-bar">
-            <template v-if="naming">
-                <DropList
-                    :label="namingState"
-                    icon="bolt"
-                    :items="stateItems"
-                    :picked="naming.state"
-                    :menu-width="220"
-                    @pick="naming.state = $event.key"
-                />
-                <DropList
-                    :label="namingLabel"
-                    icon="bolt"
-                    :items="eventItems"
-                    :picked="naming.trigger"
-                    :menu-width="260"
-                    @pick="naming.trigger = $event.key"
-                />
-                <TextInput
-                    class="chart-name"
-                    :value="naming.title"
-                    :placeholder="namingLabel"
-                    aria-label="Workflow name"
-                    @input="naming.title = $event.target.value"
-                    @keydown.enter="create"
-                    @keydown.esc="naming = null"
-                />
-                <Btn kind="primary" small :busy="busy === 'create'" @click="create">Create workflow</Btn>
-                <Btn kind="ghost" small @click="naming = null">Cancel</Btn>
-            </template>
-            <template v-else>
-                <DropList
-                    :label="title || 'Workflow'"
-                    icon="bolt"
-                    :items="workflowItems"
-                    :picked="String(current)"
-                    :menu-width="260"
-                    @pick="open(Number($event.key))"
-                />
-                <Btn kind="ghost" small @click="startNaming">New workflow</Btn>
-                <Btn
-                    kind="danger"
-                    small
-                    :disabled="!shipped"
-                    :title="
-                        shipped
-                            ? 'Replace this workflow with the version the journal ships'
-                            : 'Only the default workflow has a version to reset to'
-                    "
-                    @click="confirming = 'reset'"
-                >
-                    Reset to default
-                </Btn>
-                <Btn
-                    kind="danger"
-                    small
-                    :disabled="shipped"
-                    :title="shipped ? 'The default workflow can be reset, not deleted' : ''"
-                    @click="confirming = 'remove'"
-                >
-                    Delete workflow
-                </Btn>
-            </template>
+            <Btn kind="ghost" small :busy="busy === 'runs'" title="The last ten runs across every workflow" @click="openRuns">
+                Recent runs
+            </Btn>
+            <Btn kind="ghost" small @click="showLead = true">How it works</Btn>
             <span class="chart-grow" />
             <template v-if="unlocked">
-                <span v-if="dirty" class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
+                <span class="chart-warning">Saving changes this for every agent, from the next {{ eventTitle }}. {{ alsoWords }}</span>
+                <span v-if="conflict" class="chart-unsaved">Save replaces {{ conflict.revised_by }}'s version</span>
+                <span v-else-if="dirty" class="chart-unsaved">
+                    {{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}
+                </span>
                 <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
                 <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
                 <Btn
                     kind="primary"
                     small
                     :busy="busy === 'save'"
-                    :disabled="!dirty"
+                    :disabled="!dirty && !conflict"
                     title="Takes effect at the agent's next event"
                     @click="save"
                 >
                     Save
                 </Btn>
+                <Btn kind="ghost" small @click="stopEditing">Done</Btn>
             </template>
-            <Btn v-else kind="ghost" small title="Changes alter how the journal drives the agent" @click="confirming = 'edit'">Edit</Btn>
+            <Btn v-else kind="ghost" small :disabled="!current" title="Change what the journal does here" @click="unlock">Edit</Btn>
         </PageBar>
+        <ul v-if="faults.length" class="chart-faults" role="alert">
+            <li v-for="(fault, i) in faults" :key="i">
+                <button type="button" class="chart-fault" :disabled="!fault.node" @click="selected = fault.node">
+                    {{ faultWords(fault) }}
+                </button>
+            </li>
+        </ul>
 
-        <div class="chart-page">
-            <header class="chart-head">
-                <div class="chart-head-words">
-                    <h1>Workflows</h1>
-                    <button type="button" class="chart-help" @click="showLead = true">How it works</button>
+        <div :class="['chart-page', {folded: unlocked}]">
+            <template v-if="unlocked">
+                <div class="chart-crumbs">
+                    <button type="button" class="chart-crumb" @click="stopEditing">{{ titleOf(pickedState) }}</button>
+                    <span class="chart-crumb-sep">›</span>
+                    <button type="button" class="chart-crumb" @click="stopEditing">{{ eventTitle }}</button>
                 </div>
-                <div class="chart-acts">
-                    <Btn
-                        ref="addButton"
-                        kind="ghost"
-                        small
-                        :class="{on: adding && !adding.at}"
-                        :disabled="!unlocked"
-                        :title="unlocked ? '' : 'Switch Edit on first'"
-                        @click.stop="openAdd(null)"
+            </template>
+            <template v-else-if="!listsHidden">
+                <aside class="chart-col chart-states" aria-label="When the agent is">
+                    <h2 class="chart-col-head">When the agent is</h2>
+                    <button
+                        v-for="row in stateRows"
+                        :key="row.key"
+                        type="button"
+                        :class="['chart-row', 'chart-state', {on: row.key === pickedState}]"
+                        :aria-current="row.key === pickedState ? 'true' : null"
+                        :aria-label="`${row.title}, ${row.count}${row.failed ? ', a run failed' : ''}${row.warning ? ', nothing ends its wait' : ''}`"
+                        @click="pick(row.key, pickedEvent)"
                     >
-                        Add node
-                    </Btn>
-                    <Btn kind="ghost" small :disabled="!nodes.length" title="Lay the cards out so none overlap" @click.stop="tidyUp">
-                        Tidy up
-                    </Btn>
-                    <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
-                </div>
-            </header>
-            <p v-if="notice" class="chart-notice">{{ notice }}</p>
-            <p v-if="failureWords" class="chart-notice">{{ failureWords }}</p>
-            <p v-if="walkWords" class="chart-trace">{{ walkWords }}</p>
-
-            <ChartList
-                v-if="view === 'list'"
-                :nodes="nodes"
-                :lines="lines"
-                :entry-of="entryOf"
-                :locked="!unlocked"
-                @text="setText"
-                @line="connect"
-                @unline="disconnect"
-                @remove="remove"
-            />
-            <div v-else ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
-                <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
-                    <svg class="chart-wires" overflow="visible">
-                        <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
-                            <path :class="['chart-wire', wire.line.port]" :d="wire.d" />
-                            <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
-                                <title>Click to delete this connection</title>
-                            </path>
-                        </g>
-                        <path v-if="drawing" class="chart-wire drafting" :d="drawingPath" />
-                    </svg>
-                    <div
-                        v-for="node in nodes"
-                        :key="node.id"
-                        :data-node="node.id"
-                        :class="[
-                            'chart-node',
-                            node.kind,
-                            {selected: selected === node.id, target: drawing && drawing.target && drawing.target.id === node.id},
-                        ]"
-                        :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
-                        @pointerdown="dragNode(node, $event)"
-                    >
-                        <div class="chart-node-kind">
-                            <span :class="['chart-glyph', node.kind]" />
-                            <span>{{ KIND[node.kind] }}</span>
-                            <button
-                                v-if="selected === node.id"
-                                type="button"
-                                class="chart-node-x"
-                                title="Delete node"
-                                @pointerdown.stop
-                                @click.stop="remove(node)"
-                            >
-                                <Icon name="close" :size="12" />
-                            </button>
-                        </div>
-                        <div class="chart-node-title" :title="entryOf(node).about">{{ entryOf(node).title }}</div>
-                        <template v-if="entryOf(node).takes_text">
-                            <button
-                                v-if="node.kind === 'action'"
-                                type="button"
-                                :class="['chart-node-text', {empty: !node.text}]"
-                                title="Click to write the message"
-                                @pointerdown.stop
-                                @click.stop="openMessage(node)"
-                            >
-                                {{ node.text || placeholderOf(node) }}
-                            </button>
-                            <input
-                                v-else
-                                class="chart-node-text"
-                                :value="node.text"
-                                :placeholder="placeholderOf(node)"
-                                @pointerdown.stop
-                                @focus="selected = node.id"
-                                @input="setText(node, $event.target.value)"
+                        <span class="chart-row-name">{{ row.title }}</span>
+                        <span class="chart-marks" aria-hidden="true">
+                            <span
+                                v-for="mark in row.marks"
+                                :key="mark.key"
+                                :class="['chart-mark', mark.mark, {on: mark.key === pickedEvent}]"
+                                :title="mark.title"
+                                @click.stop="pick(row.key, mark.key)"
                             />
-                        </template>
-                        <span
-                            v-if="node.kind !== 'trigger'"
-                            :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]"
-                        />
-                        <template v-for="port in ports(node)" :key="port">
-                            <span
-                                :class="[
-                                    'chart-port',
-                                    port,
-                                    {on: hooked(node, port), hover: isHover(node, port) && !drawing, dragging: isDrawingFrom(node, port)},
-                                ]"
-                                :style="{left: `${PORT_AT[port]}%`}"
-                                :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
-                                @pointerdown="dragLine(node, port, $event)"
-                                @pointerenter="hovered = {node: node.id, port}"
-                                @pointerleave="hovered = null"
-                            >
-                                <Icon v-if="isHover(node, port) && !drawing && !hooked(node, port)" name="plus" :size="11" />
-                            </span>
-                            <span
-                                v-if="port !== 'then'"
-                                :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
-                                :style="{left: `${PORT_AT[port]}%`}"
-                            >
-                                {{ WORD[port] }}
-                            </span>
-                        </template>
-                    </div>
-                    <span
-                        v-if="drawing && drawing.target"
-                        class="chart-tip"
-                        :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}"
+                        </span>
+                        <span class="chart-row-sub">
+                            {{ row.count }}
+                            <span v-if="row.failed" class="chart-row-bad">· Failed</span>
+                            <span v-else-if="row.warning" class="chart-row-warn">· Nothing ends its wait</span>
+                        </span>
+                    </button>
+                    <ul class="chart-key" aria-label="What the marks mean">
+                        <li v-for="legend in MARKS" :key="legend.mark">
+                            <span :class="['chart-mark', legend.mark]" aria-hidden="true" />
+                            {{ legend.words }}
+                        </li>
+                    </ul>
+                </aside>
+                <aside class="chart-col chart-events" aria-label="And this happens">
+                    <h2 class="chart-col-head">And this happens</h2>
+                    <button
+                        v-for="row in eventRows"
+                        :key="row.key"
+                        type="button"
+                        :class="['chart-row', 'chart-event', row.mark, {on: row.key === pickedEvent}]"
+                        :aria-current="row.key === pickedEvent ? 'true' : null"
+                        @click="pick(pickedState, row.key)"
                     >
-                        Release to connect
-                        <b>{{ WORD[drawing.port] }}</b>
-                        to {{ entryOf(drawing.target).title }}
-                    </span>
-                </div>
-                <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
+                        <span :class="['chart-mark', row.mark]" aria-hidden="true" />
+                        <span class="chart-row-name">{{ row.title }}</span>
+                        <span v-if="row.words" class="chart-row-words">{{ row.words }}</span>
+                        <span v-else-if="row.claudeOnly" class="chart-row-words">Claude only</span>
+                    </button>
+                    <DropList
+                        class="chart-add-event"
+                        label="Add an event"
+                        icon="plus"
+                        :items="addableEvents"
+                        :menu-width="300"
+                        searchable
+                        @pick="pick(pickedState, $event.key)"
+                    />
+                </aside>
+            </template>
 
-                <template v-if="loaded && !nodes.length">
-                    <EmptyState class="chart-empty" :title="shipped ? 'This workflow is off' : 'No nodes yet'">
-                        {{
-                            shipped
-                                ? "It has no nodes, so the journal does nothing here. Add a trigger, or reset it to the default."
-                                : "Start with a trigger: the event that starts this workflow."
-                        }}
-                        <br />
-                        <Btn class="chart-empty-add" :disabled="!unlocked" @click.stop="openAdd(null)">Add node</Btn>
-                    </EmptyState>
-                </template>
-                <template v-else-if="loaded && nodes.length === 1 && trigger">
-                    <div class="chart-hint">
-                        <p class="chart-hint-title">Nothing follows the trigger yet</p>
-                        <p class="chart-hint-text">Add node puts a check or an action below the selected node and connects it.</p>
-                        <Btn @click.stop="((selected = trigger.id), openAdd(null))">Add node</Btn>
+            <div class="chart-main">
+                <header class="chart-head">
+                    <div class="chart-head-words">
+                        <h1>{{ pageTitle }}</h1>
+                        <span
+                            :class="[
+                                'chart-status',
+                                currentWorkflow && !borrowed ? markOf(currentWorkflow, false) : borrowed ? 'borrowed' : 'none',
+                            ]"
+                        >
+                            {{ statusWords }}
+                        </span>
                     </div>
-                </template>
+                    <div class="chart-acts">
+                        <template v-if="unlocked">
+                            <Btn ref="addButton" kind="ghost" small :class="{on: adding && !adding.at}" @click.stop="openAdd(null)">
+                                Add step
+                            </Btn>
+                            <Btn
+                                v-if="view === 'canvas'"
+                                kind="ghost"
+                                small
+                                :disabled="!nodes.length"
+                                title="Lay the cards out so none overlap"
+                                @click.stop="tidyUp"
+                            >
+                                Tidy up
+                            </Btn>
+                        </template>
+                        <template v-else>
+                            <Btn v-if="borrowed" kind="ghost" small :busy="busy === 'create'" @click="start">Make its own</Btn>
+                            <template v-else-if="currentWorkflow">
+                                <Btn
+                                    v-if="canTry"
+                                    kind="ghost"
+                                    small
+                                    :busy="busy === 'try'"
+                                    title="Walks the saved workflow against the agent's rows; nothing is sent"
+                                    @click="test"
+                                >
+                                    Test run
+                                </Btn>
+                                <Btn v-if="currentWorkflow.off" kind="ghost" small :busy="busy === 'on'" @click="turnOn">Turn on</Btn>
+                                <Btn v-else kind="ghost" small @click="confirming = 'off'">Turn off</Btn>
+                                <Btn
+                                    v-if="shipped && (currentWorkflow.edited || currentWorkflow.off)"
+                                    kind="ghost"
+                                    small
+                                    @click="confirming = 'reset'"
+                                >
+                                    Reset to default
+                                </Btn>
+                                <Btn v-if="!shipped" kind="ghost" small @click="confirming = 'remove'">Delete</Btn>
+                            </template>
+                        </template>
+                        <Btn v-if="!unlocked" kind="ghost" small @click="listsHidden = !listsHidden">
+                            {{ listsHidden ? "Show the lists" : "Hide the lists" }}
+                        </Btn>
+                        <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
+                    </div>
+                </header>
+                <p v-if="notice" class="chart-notice">{{ notice }}</p>
+                <p v-if="failureWords" class="chart-notice">{{ failureWords }}</p>
+                <p v-if="trialWords" class="chart-trace">{{ trialWords }}</p>
+                <p v-else-if="walkWords" class="chart-trace">{{ walkWords }}</p>
+
+                <ChartList
+                    v-if="view === 'list'"
+                    :nodes="nodes"
+                    :lines="lines"
+                    :entry-of="entryOf"
+                    :locked="!unlocked"
+                    @text="setText"
+                    @line="connect"
+                    @unline="disconnect"
+                    @remove="remove"
+                />
+                <div v-else ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
+                    <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
+                        <svg class="chart-wires" overflow="visible">
+                            <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
+                                <path :class="['chart-wire', wire.line.port, {lit: litWire(wire.line)}]" :d="wire.d" />
+                                <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
+                                    <title>Click to delete this connection</title>
+                                </path>
+                            </g>
+                            <path v-if="drawing" class="chart-wire drafting" :d="drawingPath" />
+                        </svg>
+                        <div
+                            v-for="node in nodes"
+                            :key="node.id"
+                            :data-node="node.id"
+                            :class="[
+                                'chart-node',
+                                node.kind,
+                                {
+                                    selected: selected === node.id,
+                                    target: drawing && drawing.target && drawing.target.id === node.id,
+                                    lit: isLit(node.id),
+                                },
+                            ]"
+                            :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
+                            @pointerdown="dragNode(node, $event)"
+                        >
+                            <div class="chart-node-kind">
+                                <span :class="['chart-glyph', node.kind]" />
+                                <span>{{ KIND[node.kind] }}</span>
+                                <button
+                                    v-if="selected === node.id"
+                                    type="button"
+                                    class="chart-node-x"
+                                    title="Delete node"
+                                    @pointerdown.stop
+                                    @click.stop="remove(node)"
+                                >
+                                    <Icon name="close" :size="12" />
+                                </button>
+                            </div>
+                            <div class="chart-node-title" :title="entryOf(node).about">{{ entryOf(node).title }}</div>
+                            <template v-if="entryOf(node).takes_text">
+                                <button
+                                    v-if="node.kind === 'action'"
+                                    type="button"
+                                    :class="['chart-node-text', {empty: !node.text}]"
+                                    title="Click to write the message"
+                                    @pointerdown.stop
+                                    @click.stop="openMessage(node)"
+                                >
+                                    {{ node.text || placeholderOf(node) }}
+                                </button>
+                                <input
+                                    v-else
+                                    class="chart-node-text"
+                                    :value="node.text"
+                                    :placeholder="placeholderOf(node)"
+                                    @pointerdown.stop
+                                    @focus="selected = node.id"
+                                    @input="setText(node, $event.target.value)"
+                                />
+                            </template>
+                            <span
+                                v-if="node.kind !== 'trigger'"
+                                :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]"
+                            />
+                            <template v-for="port in ports(node)" :key="port">
+                                <span
+                                    :class="[
+                                        'chart-port',
+                                        port,
+                                        {
+                                            on: hooked(node, port),
+                                            hover: isHover(node, port) && !drawing,
+                                            dragging: isDrawingFrom(node, port),
+                                        },
+                                    ]"
+                                    :style="{left: `${PORT_AT[port]}%`}"
+                                    :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
+                                    @pointerdown="dragLine(node, port, $event)"
+                                    @pointerenter="hovered = {node: node.id, port}"
+                                    @pointerleave="hovered = null"
+                                >
+                                    <Icon v-if="isHover(node, port) && !drawing && !hooked(node, port)" name="plus" :size="11" />
+                                </span>
+                                <span
+                                    v-if="port !== 'then'"
+                                    :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
+                                    :style="{left: `${PORT_AT[port]}%`}"
+                                >
+                                    {{ WORD[port] }}
+                                </span>
+                            </template>
+                        </div>
+                        <span
+                            v-if="drawing && drawing.target"
+                            class="chart-tip"
+                            :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}"
+                        >
+                            Release to connect
+                            <b>{{ WORD[drawing.port] }}</b>
+                            to {{ entryOf(drawing.target).title }}
+                        </span>
+                    </div>
+                    <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
+
+                    <template v-if="loaded && !currentWorkflow">
+                        <EmptyState class="chart-empty" title="Nothing is set up here">
+                            The journal does nothing when the agent is {{ titleOf(pickedState).toLowerCase() }} and
+                            {{ eventTitle.toLowerCase() }}.
+                            <br />
+                            <Btn class="chart-empty-add" kind="primary" :busy="busy === 'create'" @click.stop="start">
+                                Start a workflow here
+                            </Btn>
+                        </EmptyState>
+                    </template>
+                    <template v-else-if="loaded && !nodes.length">
+                        <EmptyState class="chart-empty" title="This workflow is turned off">
+                            Its steps are gone, so the journal does nothing here. {{ parentWords }}
+                            <br />
+                            <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
+                        </EmptyState>
+                    </template>
+                    <template v-else-if="loaded && !trigger">
+                        <EmptyState class="chart-empty" title="This workflow is turned off">
+                            Its {{ nodes.length }} {{ nodes.length === 1 ? "step is" : "steps are" }} kept. Turn on brings
+                            {{ nodes.length === 1 ? "it" : "them" }} back.
+                            {{ parentWords }}
+                            <br />
+                            <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
+                        </EmptyState>
+                    </template>
+                    <template v-else-if="loaded && nodes.length === 1 && trigger">
+                        <div class="chart-hint">
+                            <p class="chart-hint-title">Nothing follows the trigger yet</p>
+                            <p class="chart-hint-text">Add step puts a check or an action below the selected step and connects it.</p>
+                            <Btn v-if="unlocked" @click.stop="((selected = trigger.id), openAdd(null))">Add step</Btn>
+                            <Btn v-else @click.stop="unlock">Edit</Btn>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
+
+        <template v-if="runs">
+            <SidePanel
+                title="Recent runs"
+                abstract="The last ten runs across every workflow, newest first. A run opens its workflow with the steps it took lit."
+                @close="runs = null"
+            >
+                <p v-if="!runs.length" class="chart-runs-empty">No runs yet.</p>
+                <ul v-else class="chart-runs">
+                    <li v-for="run in runs" :key="run.at">
+                        <button type="button" class="chart-run" @click="openRun(run)">
+                            <span class="chart-run-when">
+                                {{ ago(run.at) }}
+                                <span v-if="run.failed" class="chart-row-bad">· Failed</span>
+                            </span>
+                            <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
+                            <span v-if="run.said" class="chart-run-said">{{ run.said }}</span>
+                        </button>
+                    </li>
+                </ul>
+            </SidePanel>
+        </template>
 
         <template v-if="adding">
             <MenuPanel
@@ -807,42 +1068,62 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     block its stop, block a tool, type into its terminal or start a sequence.
                 </p>
                 <p class="chart-dialog-text">
-                    The page opens read-only; Edit switches editing on. Add node puts a node below the selected one and connects it. Drag
-                    from a port onto another node to connect them, click a line to remove it, and drag a node to move it. Nothing changes
-                    until you save, and Reset to default brings a default workflow back.
+                    The page opens read-only; Edit switches editing on. Add step puts a step below the selected one and connects it. Drag
+                    from a port onto another step to connect them, click a line to remove it, and drag a step to move it. Nothing changes
+                    until you save. Turn off keeps a workflow's steps but stops it answering; Reset to default brings a default workflow
+                    back; Delete removes one you made.
                 </p>
                 <template #foot>
                     <Btn kind="primary" @click="showLead = false">Close</Btn>
                 </template>
             </Dialog>
         </template>
-        <template v-if="confirming === 'edit'">
-            <Dialog title="Edit this workflow?" fits @close="confirming = ''">
-                <p class="chart-dialog-text">
-                    Changes alter how the journal drives the agent, so change only what you understand. A default workflow can always be
-                    brought back with Reset to default.
-                </p>
-                <template #foot>
-                    <Btn @click="confirming = ''">Cancel</Btn>
-                    <Btn kind="primary" @click="unlock">Edit</Btn>
-                </template>
-            </Dialog>
-        </template>
         <template v-if="confirming === 'reset'">
-            <Dialog :title="`Replace ‘${title}’ with the default version?`" fits @close="confirming = ''">
-                <p class="chart-dialog-text">Your edits to this workflow are lost. The other workflows stay as they are.</p>
+            <Dialog :title="`Reset ‘${title}’ to default?`" fits @close="confirming = ''">
+                <p class="chart-dialog-text">Your changes to this workflow are lost. The other workflows stay as they are.</p>
                 <template #foot>
                     <Btn @click="confirming = ''">Cancel</Btn>
                     <Btn kind="danger" :busy="busy === 'reset'" @click="reset">Reset to default</Btn>
                 </template>
             </Dialog>
         </template>
+        <template v-if="confirming === 'off'">
+            <Dialog :title="`Turn ‘${title}’ off?`" fits @close="confirming = ''">
+                <p class="chart-dialog-text">
+                    The journal stops answering here; its steps are kept and Turn on brings them back. {{ parentWords }}
+                </p>
+                <template #foot>
+                    <Btn @click="confirming = ''">Cancel</Btn>
+                    <Btn kind="danger" :busy="busy === 'off'" @click="turnOff">Turn off</Btn>
+                </template>
+            </Dialog>
+        </template>
         <template v-if="confirming === 'remove'">
             <Dialog :title="`Delete ‘${title}’?`" fits @close="confirming = ''">
-                <p class="chart-dialog-text">The workflow and its nodes are deleted. The other workflows stay as they are.</p>
+                <p class="chart-dialog-text">The workflow and its steps are deleted. {{ parentWords || "Nothing is left here." }}</p>
                 <template #foot>
                     <Btn @click="confirming = ''">Cancel</Btn>
                     <Btn kind="danger" :busy="busy === 'remove'" @click="removeWorkflow">Delete workflow</Btn>
+                </template>
+            </Dialog>
+        </template>
+        <template v-if="leaving">
+            <Dialog title="Save your changes first?" fits @close="leaving = null">
+                <p class="chart-dialog-text">You have {{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }} here.</p>
+                <template #foot>
+                    <Btn @click="leaving = null">Keep editing</Btn>
+                    <Btn kind="danger" @click="leaveAnyway">Leave and lose them</Btn>
+                    <Btn kind="primary" :busy="busy === 'save'" @click="save().then(() => !dirty && leaveAnyway())">Save</Btn>
+                </template>
+            </Dialog>
+        </template>
+        <template v-if="conflict && !unlocked">
+            <Dialog title="Someone saved this workflow first" fits @close="conflict = null">
+                <p class="chart-dialog-text">
+                    {{ conflict.revised_by }} saved it {{ ago(conflict.revised_at) }}, so your changes were not saved.
+                </p>
+                <template #foot>
+                    <Btn @click="conflict = null">Close</Btn>
                 </template>
             </Dialog>
         </template>
@@ -871,23 +1152,307 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     font-size: 12px;
 }
 
-.chart-name {
-    width: 220px;
-}
-
 .chart-page {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+.chart-page.folded {
+    flex-direction: column;
+}
+.chart-main {
     display: flex;
     flex: 1;
     flex-direction: column;
     gap: 12px;
+    min-width: 0;
     min-height: 0;
     padding: 12px 16px 16px;
+}
+.chart-col {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 1px;
+    padding: 12px 8px;
+    overflow: auto;
+    border-right: 1px solid var(--line);
+}
+.chart-states {
+    width: 236px;
+}
+.chart-events {
+    width: 268px;
+    background: color-mix(in oklab, var(--bg-2) 60%, var(--bg));
+}
+.chart-col-head {
+    margin: 0 0 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+}
+.chart-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 7px;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.chart-row:hover {
+    background: var(--hover);
+}
+.chart-row.on {
+    border-left-color: var(--accent-text);
+    background: var(--sel);
+}
+.chart-state {
+    flex-direction: column;
+    gap: 5px;
+}
+.chart-event {
+    align-items: center;
+    min-height: 32px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.chart-event.none .chart-row-name {
+    color: var(--text-3);
+}
+.chart-row-name {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chart-row-sub,
+.chart-row-words {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+.chart-row-bad {
+    color: var(--danger-soft);
+    font-size: 11.5px;
+    font-weight: 400;
+}
+.chart-row-warn {
+    color: var(--warn);
+    font-size: 11.5px;
+    font-weight: 400;
+}
+.chart-marks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+.chart-mark {
+    position: relative;
+    display: inline-block;
+    flex: none;
+    width: 10px;
+    height: 10px;
+}
+.chart-mark::before,
+.chart-mark::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+}
+.chart-mark.default::before {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-2);
+}
+.chart-mark.yours::before {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--accent-text);
+    transform: rotate(45deg);
+}
+.chart-mark.off::before {
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--text-2);
+    border-radius: 50%;
+}
+.chart-mark.off::after {
+    width: 1.5px;
+    height: 11px;
+    background: var(--text-2);
+    transform: rotate(45deg);
+}
+.chart-mark.failed::before {
+    width: 8px;
+    height: 8px;
+    border: 2px solid var(--danger-soft);
+    border-radius: 50%;
+}
+.chart-mark.borrowed::before {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-2);
+    opacity: 0.4;
+}
+.chart-mark.none::before {
+    width: 6px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--text-3);
+}
+.chart-marks .chart-mark.on::before {
+    outline: 1.5px solid var(--accent-text);
+    outline-offset: 2px;
+}
+.chart-key {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    margin: auto 0 0;
+    padding: 14px 10px 0;
+    color: var(--text-3);
+    font-size: 11.5px;
+    list-style: none;
+}
+.chart-key li {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.chart-add-event {
+    margin-top: 8px;
+}
+.chart-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px 0;
+}
+.chart-crumb {
+    padding: 3px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--raised);
+    color: var(--text);
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+.chart-crumb:hover {
+    background: var(--hover);
+}
+.chart-crumb-sep {
+    color: var(--text-3);
+}
+.chart-status {
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+.chart-status.yours {
+    color: var(--accent-text);
+}
+.chart-status.failed {
+    color: var(--danger-soft);
+}
+.chart-warning {
+    color: var(--warn);
+    font-size: 12px;
+}
+.chart-faults {
+    margin: 0;
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in oklab, var(--danger) 8%, var(--bg));
+    list-style: none;
+}
+.chart-fault {
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    color: var(--danger-soft);
+    font: inherit;
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+}
+.chart-fault:disabled {
+    cursor: default;
+}
+.chart-runs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.chart-runs li + li {
+    border-top: 1px solid var(--line);
+}
+.chart-run {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    padding: 8px 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.chart-run:hover .chart-run-title {
+    color: var(--accent-text);
+}
+.chart-run-when {
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+.chart-run-title {
+    font-size: 13px;
+    font-weight: 500;
+}
+.chart-run-said {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 12px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+.chart-runs-empty {
+    margin: 0;
+    color: var(--text-3);
+}
+.chart-node.lit {
+    border-color: var(--tone-good);
+    box-shadow: 0 0 0 1px var(--tone-good);
+}
+.chart-wire.lit {
+    stroke: var(--tone-good);
+    stroke-width: 2.5;
 }
 
 .chart-head-words {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 12px;
+    gap: 4px 12px;
 }
 
 .chart-help {
@@ -906,9 +1471,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 
 .chart-head {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .chart-head h1 {
@@ -971,7 +1535,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 
 .chart-acts {
     display: flex;
-    flex: none;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
@@ -1370,8 +1934,12 @@ button.chart-node-text:hover {
 }
 
 @media (max-width: 720px) {
-    .chart-page {
+    .chart-main {
         padding: 12px;
+    }
+
+    .chart-col {
+        display: none;
     }
 
     .chart-head {

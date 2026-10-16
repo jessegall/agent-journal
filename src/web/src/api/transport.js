@@ -20,7 +20,7 @@ export const loginPage = {open: (address) => window.location.assign(address)};
 export async function answered(response, fallback, failed = failure) {
     const body = await response.json().catch(() => ({}));
     if (response.status === LOGGED_OUT && body.login) loginPage.open(body.login);
-    if (!response.ok) throw Object.assign(failed(response.status, body.error || fallback), {blocked: Boolean(body.blocked)});
+    if (!response.ok) throw Object.assign(failed(response.status, body.error || fallback), {blocked: Boolean(body.blocked), details: body});
     return body;
 }
 
@@ -72,7 +72,12 @@ class Transport {
         try {
             return await fetch(url, {
                 method,
-                headers: {...this.carried, ...headers, ...unlocked, ...(body === undefined || raw ? {} : {"Content-Type": "application/json"})},
+                headers: {
+                    ...this.carried,
+                    ...headers,
+                    ...unlocked,
+                    ...(body === undefined || raw ? {} : {"Content-Type": "application/json"}),
+                },
                 body: payload(body),
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : WAIT_MS)),
             });
@@ -104,13 +109,16 @@ class Transport {
 
     request(method, url, body, wait = 0, headers = {}) {
         if (method !== "GET") return this.send(method, url, body, wait, RELOAD_TRIES, headers).then((got) => (this.written(url), got));
-        if (covered() && !asksUpdateStatus(url)) return Promise.reject(Object.assign(new Error("The journal is updating."), {updating: true}));
+        if (covered() && !asksUpdateStatus(url))
+            return Promise.reject(Object.assign(new Error("The journal is updating."), {updating: true}));
         const scope = Object.values(headers).join(" ");
         const key = `${scope} ${url}`;
         if (this.asked.has(key)) return this.asked.get(key);
         const endpoint = `${scope} ${url.split("?")[0]}`;
         const tries = this.tries;
-        const call = (this.flying.get(endpoint) || Promise.resolve()).catch(() => {}).then(() => this.send(method, url, body, 0, tries, headers));
+        const call = (this.flying.get(endpoint) || Promise.resolve())
+            .catch(() => {})
+            .then(() => this.send(method, url, body, 0, tries, headers));
         this.flying.set(endpoint, call);
         this.asked.set(key, call);
         call.finally(() => {

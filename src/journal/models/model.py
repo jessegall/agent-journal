@@ -23,6 +23,11 @@ class Model:
             return singular[:-1] + "ies"
         return singular + "s"
 
+    @classmethod
+    def noun(cls) -> str:
+        """The class in plain words: Task is task, TaskLog is task log."""
+        return re.sub(r"(?<!^)(?=[A-Z])", " ", cls.__name__).lower()
+
     @property
     def is_new(self) -> bool:
         return self.id is None

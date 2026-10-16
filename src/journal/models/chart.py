@@ -6,6 +6,10 @@ from journal.models.model import Model
 class Chart(Model):
     """One workflow: the journal's conduct toward the agent as a flowchart, with a title. A journal may hold several, and the engine walks them all. Saved whole, each save a revision."""
 
+    @classmethod
+    def noun(cls) -> str:
+        return "workflow"
+
     title: str = ""
     revision: int = 0
     shipped: bool = False

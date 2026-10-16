@@ -482,7 +482,7 @@ def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no
     assert status == 409 and "action h holds the agent at every workers.updated: put a check before it" in body["error"]
     nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
     status, saved = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "s"}]})
-    assert status == 200 and saved["warnings"] == ["nothing in the awaiting workflows releases the agent: without a release or a move at some event, an agent awaiting stays so until you release it by hand"]
+    assert status == 200 and saved["warnings"] == ["nothing ends this wait: no workflow of Awaiting a worker releases the agent or changes its state, so an agent awaiting a worker stays so until you release it by hand"]
 
 
 
@@ -515,6 +515,8 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     refused = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": on["revision"], "nodes": bad, "lines": [{"from": "t", "to": "c"}]})
     assert refused[0] == 409 and {f["node"] for f in refused[1]["faults"]} == {"c"} and any("check c has no line out" in f["words"] for f in refused[1]["faults"])
     assert {f["key"] for f in read["fillers"]} >= {"{{task}}", "{{inbox}}", "{{parked_tasks}}", "{{worker_name}}"} and all(f["about"] for f in read["fillers"])
+    titles = {e["key"]: e["title"] for e in read["catalogue"] if e["kind"] == "trigger"}
+    assert titles["task_logs.created"] == "A task log is created" and titles["mcp_servers.updated"] == "An MCP server is updated" and titles["edits.deleted"] == "An edit is deleted" and titles["nodes.created"] == "A workflow step is created"
     tried = {e["key"]: e["tried"] for e in read["catalogue"] if e["kind"] == "trigger"}
     assert tried["idle"] and tried["messages.created"] and tried["workers.updated"] and not tried["tasks.created"] and not tried["messages.deleted"]
     status, runs = call(server, "GET", "/journal/chart/runs?last=5")

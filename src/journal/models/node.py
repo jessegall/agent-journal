@@ -8,6 +8,10 @@ from journal.models.node_kind import NodeKind
 class Node(Model):
     """One box of the chart: a trigger, a check or an action, naming an entry of the catalogue, with the text the entry takes and its place on the canvas."""
 
+    @classmethod
+    def noun(cls) -> str:
+        return "workflow step"
+
     kind: NodeKind = NodeKind.TRIGGER
     key: str = ""
     text: str = ""

@@ -1,7 +1,7 @@
 <script setup>
 import MenuItem from "./MenuItem.vue";
 import MenuPanel from "./MenuPanel.vue";
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import Icon from "./Icon.vue";
 
 const props = defineProps({
@@ -13,10 +13,16 @@ const props = defineProps({
     wide: Boolean,
     bare: Boolean,
     menuWidth: {type: Number, default: 260},
+    searchable: Boolean,
 });
 const emit = defineEmits(["pick"]);
 const open = ref(false);
 const head = ref(null);
+const search = ref("");
+const shown = computed(() => {
+    const words = search.value.trim().toLowerCase();
+    return words ? props.items.filter((item) => `${item.label} ${item.note || ""}`.toLowerCase().includes(words)) : props.items;
+});
 
 function choose(item) {
     open.value = false;
@@ -35,7 +41,18 @@ function choose(item) {
         </button>
         <template v-if="open">
             <MenuPanel :anchor="head" :min-width="menuWidth" :max-height="320" @close="open = false">
-                <template v-for="item in items" :key="item.key">
+                <template v-if="searchable">
+                    <input
+                        class="drop-search"
+                        type="search"
+                        :value="search"
+                        placeholder="Search"
+                        aria-label="Search the list"
+                        autofocus
+                        @input="search = $event.target.value"
+                    />
+                </template>
+                <template v-for="item in shown" :key="item.key">
                     <MenuItem :on="item.key === picked" @click="choose(item)">
                         <template v-if="item.running !== undefined">
                             <span :class="['drop-dot', {live: item.running}]" />
@@ -49,7 +66,7 @@ function choose(item) {
                         </template>
                     </MenuItem>
                 </template>
-                <template v-if="!items.length">
+                <template v-if="!shown.length">
                     <p class="drop-none">{{ empty }}</p>
                 </template>
             </MenuPanel>
@@ -58,6 +75,18 @@ function choose(item) {
 </template>
 
 <style scoped>
+.drop-search {
+    width: calc(100% - 12px);
+    margin: 4px 6px 6px;
+    padding: 5px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 12.5px;
+}
+
 .drop {
     position: relative;
     display: inline-flex;

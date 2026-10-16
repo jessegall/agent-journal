@@ -704,5 +704,12 @@ Ruling, 2026-10-16 at night, on the user's word: one workflow per state per trig
 event and holds that one trigger; the pair has one workflow, forty of them shipped (seven states at the shared events
 plus each state's own), titled "Idle at Agent stops" and so on; the walk runs the workflow of the agent's state at
 the event, through the state's parents, then the state beneath an owed pause; a workflow of the user's own is for a
-pair no default covers. The per-state shape and the older per-event shape retire at boot. The page's picker is being
-designed by Mr. Eames in Claude Design (task 208) and the page is rebuilt to that design next.
+pair no default covers. The per-state shape and the older per-event shape retire at boot. The page was designed by
+Mr. Eames in Claude Design through two critique rounds and a third cut short on the user's word (the critics are
+not to be dispatched afresh per round, and a design needs no three rounds), then built to the orchestrator's own
+judgement on 2026-10-16: two lists, states with mark strips and events with their status words, the one workflow
+per pair, Turn off and on by the trigger, Start a workflow here and Make its own, faults under the bar by step,
+the stale save naming who saved first, Recent runs as a side panel lighting a run's path, the phone the same
+through its sheets; the pair logic lives in web/domain/workflowPairs.js for both. The server serves the states
+with parents, edited and failed flags, off and on, faults as {node, words}, fillers, a tried flag per trigger
+and runs with their nodes; row events are titled in the model's own noun with the right article.

@@ -1,5 +1,6 @@
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.fault import Fault
+from journal.features.chart.seeds.shipped_chart import STATE_TITLES
 from journal.features.chart.moves import Moves
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
@@ -57,7 +58,8 @@ class Validation:
         own = [c for c in self.charts.all() if c.state == chart.state]
         if any(n.kind == NodeKind.ACTION and n.key in RELEASES for c in own for n in self.charts.nodes_of(c)):
             return []
-        return [f"nothing in the {chart.state} workflows releases the agent: without a release or a move at some event, an agent {chart.state} stays so until you release it by hand"]
+        title = STATE_TITLES.get(chart.state, chart.state)
+        return [f"nothing ends this wait: no workflow of {title} releases the agent or changes its state, so an agent {title.lower()} stays so until you release it by hand"]
 
     @staticmethod
     def hold_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:

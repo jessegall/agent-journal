@@ -61,6 +61,12 @@ ACTIONS = (
 )
 
 
+def article(words: str) -> str:
+    """A or An before the words, by their first sound: an edit, an MCP server, a task."""
+    first = words.split(" ")[0]
+    return "An" if first[0].lower() in "aeiou" or (first.isupper() and first[0] in "AEFHILMNORSX") else "A"
+
+
 OWN = ("agents", "entries", "links")
 """The engine's own tables, which a walk writes itself when it moves an agent, records itself or draws a line: a trigger on them would walk without end, so no workflow may name them."""
 
@@ -70,7 +76,7 @@ class Catalogue:
 
     def triggers(self) -> list[Entry]:
         agent = [Entry(NodeKind.TRIGGER, key, title, about, providers=("claude",) if key == "turn_written" else ("claude", "codex")) for key, title, about in AGENT_EVENTS]
-        rows = [Entry(NodeKind.TRIGGER, f"{model.table()}.{moment}", f"A {model.__name__.lower()} is {moment}", f"a row of {model.table()} is {moment} by anyone")
+        rows = [Entry(NodeKind.TRIGGER, f"{model.table()}.{moment}", f"{article(model.noun())} {model.noun()} is {moment}", f"a row of {model.table()} is {moment} by anyone", group=model.noun())
                 for model in AllModels.MODELS if model.table() not in OWN for moment in ("created", "updated", "deleted")]
         return agent + rows
 

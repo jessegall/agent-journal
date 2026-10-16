@@ -12,5 +12,7 @@ class Entry:
     title: str
     about: str
     takes_text: bool = False
+    group: str = ""
+    """The row events of one table share their table's noun as a group; an agent event stands alone."""
     providers: tuple[str, ...] = ("claude", "codex")
     """The agents it works for: Codex delivers no MessageDisplay hook, so a turn written is Claude's alone."""

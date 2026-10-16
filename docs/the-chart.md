@@ -85,23 +85,38 @@ feature: it speaks through the feature's nudge, with its repeat window, and wher
 node says nothing and holds nothing. The shipped workflows name their feature on every line and every hold, so
 switching messages or tasks off still silences their conduct.
 
+## The page
+
+The Workflows page is two lists and the one workflow they pick. The left list is the states, "When the agent is",
+each with a strip of marks, one per event, and a count of how many of its events do something; the right list is
+the events of the picked state, "And this happens": every agent event, then the row events the state has a
+workflow for, then Add an event for the rest. A mark or a row's word says the one thing that sets a workflow
+apart: nothing for a default, a diamond for one changed or made by you, a crossed ring for one turned off, a red
+ring when its last run failed, a faded dot for one borrowed from the parent state, a dash for none. A state with
+a parent, Following a plan under Working, uses the parent's workflow where it has none of its own, says so, and
+offers Make its own, a copy to change; a pair with no workflow offers Start a workflow here. Under the title the
+status, when the workflow last ran and what it said, the last step that failed since, and the warning of a wait
+nothing ends. Recent runs in the bar opens the last ten runs across every workflow, each opening its workflow
+with the steps it took lit. Test run walks the saved workflow for the pair against the agent's rows, nothing
+sent, and lights its path; it is offered for the events a trial can stand in for.
+
 ## Editing
 
-The page opens read-only, with a line under the bar saying when the workflow last ran, through which of its nodes,
-and the last node that failed in it. Edit switches editing on, after a word that changes alter how the journal
-drives the agent; a save, or another workflow opened, switches it off again. By command the same guard is
-`--edit-default` on a default workflow. A workflow with no trigger is marked off in the list: the journal does
-nothing there until a trigger is added or it is reset. Drag a line from a port onto a card; drop it on empty canvas
-and Add node opens where it fell; click a line to take it out; drag a card to move it; type an action's message in
-its card. Add node puts a node below the
-selected one, connected to its first free output, and says so before you pick. Every change is a draft until you
-press Save; Undo steps the draft back and Discard changes drops it. A wrong workflow is refused with its faults
-named: a node the catalogue does not know, a line to nowhere or into a trigger, a check with no line out, a
-loop, a hold a trigger reaches through no check. A workflow for a state that waits on something outside saves
-with a warning when nothing in it releases the agent. Reset to default puts the shipped workflow back, after
-asking; a default workflow cannot be deleted, only emptied or reset. List shows the same workflow as cards with
-a picker for each output, for a phone or a keyboard. Test runs the workflow for one of its events without doing
-anything, and shows the steps and what it would do in a side panel.
+The page opens read-only. Edit switches editing on, folds the lists into two crumbs and says in the bar that
+saving changes this for every agent from the next event, and for the child states that use it; Done switches
+it off again, asking first when changes are unsaved, as does picking another pair. By command the same guard is
+`--edit-default` on a default workflow. Drag a line from a port onto a card; drop it on empty canvas and Add step
+opens where it fell; click a line to take it out; drag a card to move it; type an action's message in its card,
+with the values the server offers to insert. Add step puts a step below the selected one, connected to its first
+free output, and says so before you pick. Every change is a draft until you press Save; Undo steps the draft back
+and Discard changes drops it. A wrong workflow is refused with its faults under the bar, each naming its step and
+selecting it when clicked: a step the catalogue does not know, a line to nowhere or into a trigger, a check with
+no line out, a loop, a hold a trigger reaches through no check. A save of a workflow someone saved first is
+refused with their name; Save again replaces their version. A workflow for a state that waits on something
+outside saves with a warning when nothing in any of the state's workflows releases the agent. Turn off takes the
+trigger out and keeps the steps, so the journal stops answering there until Turn on puts it back; Reset to default
+puts the shipped workflow back, after asking, and shows only on a default changed or turned off; Delete removes a
+workflow you made. Steps shows the same workflow as rows with a picker for each output, for a phone or a keyboard.
 
 The shipped chart today: at a stop, at rest, parked tasks hold the stop and are named in any mode, and
 in auto mode the next open task holds the stop. The rules the states still keep are listed in the-rules.md.
