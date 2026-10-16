@@ -5,6 +5,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
+from journal.events.models.created import Created
 from journal.events.models.updated import Updated
 from journal.features.chart.context import Context
 from journal.features.registry import Registry
@@ -15,6 +16,8 @@ from journal.features.workers.states.awaiting import Awaiting
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.question import Question
+from journal.models.task import Task
+from journal.models.task_log import TaskLog
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.workers import Workers
@@ -30,7 +33,7 @@ from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over", "log_stale_over")
+COUNTERS = ("unanswered_over", "tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over", "log_stale_over")
 """The checks that take a number: the node's text, or the setting named there."""
 COUNT_CHECKS = ("count_over", "count_at", "count_every")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
@@ -195,6 +198,25 @@ class Checks:
 
     def unanswered_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unanswered())
+
+    def unanswered_over(self, ctx: Context, n: int) -> bool:
+        """At least so many messages read and not answered."""
+        return len(self.messages.unanswered()) >= n
+
+    def message_just_read(self, ctx: Context) -> bool:
+        """The row event is a message this write marked read."""
+        event = ctx.event
+        return isinstance(event, Updated) and isinstance(event.model, Message) and event.model.read_at is not None and event.was is not None and event.was.read_at is None
+
+    def task_just_started(self, ctx: Context) -> bool:
+        """The row event is a task this write started, by the agent whose walk this is."""
+        event = ctx.event
+        return isinstance(event, Updated) and isinstance(event.model, Task) and event.model.started_at is not None and event.was is not None and event.was.started_at is None and event.by.id == ctx.session
+
+    def log_for_task_in_hand(self, ctx: Context) -> bool:
+        """The row event is a log line of the task the agent has in hand."""
+        event, state = ctx.event, self.state(ctx)
+        return isinstance(event, Created) and isinstance(event.model, TaskLog) and isinstance(state, Working) and event.model.task_id == state.task_id
 
     def auto_mode(self, ctx: Context) -> bool:
         from journal.features.tasks.feature import Tasks

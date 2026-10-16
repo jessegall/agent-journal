@@ -27,6 +27,9 @@ CHECKS = (
     ("unread_reminders_over", "N namings of the unread inbox gone by?", "the tool uses since the oldest unread message came, counted in units of the setting messages.remind_every, reach N; the text is N or a setting's name, such as messages.hold_after_reminders"),
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
     ("message_by_user", "Message written by you?", "the row is a message the user wrote, not the agent"),
+    ("message_just_read", "Message just read?", "the row is a message the agent has just read: this write set when it was read"),
+    ("task_just_started", "Task just started by this agent?", "the row is a task this agent has just started: this write set when it started, by the agent walking"),
+    ("log_for_task_in_hand", "Log is for the task in hand?", "the row is a log line of the task this agent has in hand"),
     ("tool_reads_their_files", "Tool reads the message's own files?", "the tool about to run reads a file attached to a message read and left unanswered"),
     ("own_tool", "The agent's own tool use?", "the tool use is the agent's own, not a subagent's"),
     ("auto_mode", "Auto mode on?", "the environment runs in auto mode"),
@@ -41,6 +44,7 @@ CHECKS = (
     ("agent_waits_on_the_question", "Agent waits on this question?", "the agent waits on the question of this row"),
 )
 COUNTER_CHECKS = (
+    ("unanswered_over", "N or more messages unanswered?", "at least N messages read and not yet replied to or given a face; the text is N or a setting's name"),
     ("tool_uses_since_unread_every", "Every Nth tool use with a message unread?", "true on every Nth tool use since the oldest unread message came; the text is N"),
     ("tool_uses_since_unread_over", "N tool uses with a message unread?", "at least N tool uses since the oldest unread message came; the text is N or a setting's name"),
     ("tool_uses_since_read_over", "N tool uses with a message unanswered?", "at least N tool uses since the oldest message was read and not answered; the text is N or a setting's name, such as messages.hold_after"),

@@ -2731,3 +2731,63 @@ def test_the_shared_conduct_is_an_always_workflow_per_event_after_the_locked_one
     assert kept and not kept.shipped and kept.title.endswith(KEPT) and [n.id for n in charts.nodes_of(kept) if n.kind != NodeKind.TRIGGER] == [mine.id], "an edited one is kept as the user's, bound where it was, its shared conduct stripped"
     nodes = charts.nodes_of(charts.find(working.id))
     assert charts.find(working.id).shipped and any(n.id == theirs.id for n in nodes) and not any(n.text.startswith("[messages.") for n in nodes) and any(n.shipped and n.kind == NodeKind.CHECK for n in nodes), "an edited state's workflow loses the shipped shared nodes and keeps the user's and the state's own"
+
+
+def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_started_a_log_for_the_task_in_hand(app, monkeypatch):
+    from journal.repositories.charts import Charts
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    new = lambda event: int(console.run(["chart", "new", f"Mine at {event}", "--on", event], USER).out.split()[1].rstrip(":"))
+    trigger = lambda wf: next(n.id for n in charts.nodes_of(charts.find(wf)) if n.kind == "trigger")
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    link = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], USER)
+    on_message = new("messages.updated")
+    read = add(on_message, "check", "message_just_read")
+    one_owed = add(on_message, "check", "unanswered_over", "--text", "1")
+    say_read = add(on_message, "action", "type", "--text", "[chart] message {{row}} just read")
+    say_owed = add(on_message, "action", "type", "--text", "[chart] one message owed")
+    link(trigger(on_message), read)
+    link(read, say_read, "yes")
+    link(say_read, one_owed)
+    link(one_owed, say_owed, "yes")
+    on_task = new("tasks.updated")
+    started = add(on_task, "check", "task_just_started")
+    say_started = add(on_task, "action", "type", "--text", "[chart] task {{row}} just started by me")
+    link(trigger(on_task), started)
+    link(started, say_started, "yes")
+    on_log = new("task_logs.created")
+    mine = add(on_log, "check", "log_for_task_in_hand")
+    say_logged = add(on_log, "action", "type", "--text", "[chart] a log for my task")
+    link(trigger(on_log), mine)
+    link(mine, say_logged, "yes")
+    drain = lambda: app.runtime().deferred.drain()
+    said = lambda words: sum(1 for line in typed if line.endswith(words))
+    console.run(["task", "create", "the footer"], USER)
+    drain()
+    assert not any("[chart]" in line for line in typed), "a task made is not a task started"
+    console.run(["task", "start", "1"], AGENT)
+    drain()
+    assert said("[chart] task 1 just started by me") == 1, "the Updated task row, started by this agent's write, answers yes once"
+    console.run(["task", "log", "1", "halfway"], AGENT)
+    drain()
+    assert said("[chart] a log for my task") == 1, "the Created log row of the task in hand answers yes"
+    console.run(["task", "create", "another"], USER)
+    console.run(["task", "log", "2", "not mine"], USER)
+    drain()
+    assert said("[chart] a log for my task") == 1, "a log of another task is not the task in hand's"
+    console.run(["message", "send", "are you there?"], USER)
+    drain()
+    assert not any("just read" in line for line in typed), "a message that comes is not a message read"
+    console.run(["message", "read", "1"], AGENT)
+    drain()
+    assert said("[chart] message 1 just read") == 1 and said("[chart] one message owed") == 1, "the Updated message row with its reading newly set answers yes, and one message is owed"
+    console.run(["message", "send", "[!reply:1] here", "--reply-to", "1"], AGENT)
+    drain()
+    assert said("[chart] message 1 just read") == 1, "a reply is an update that did not read the message"
+    console.run(["task", "done", "1"], AGENT)
+    drain()
+    assert said("[chart] task 1 just started by me") == 1, "finishing a task is an update that did not start it"
