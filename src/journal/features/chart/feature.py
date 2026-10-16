@@ -28,6 +28,7 @@ no from a check.
 
 - `journal chart show` prints it; `journal chart catalogue` lists everything a node may be.
 - `journal chart node <trigger|check|action> <key> [--text "<line>"]`, `journal chart line <from> <to> [--port yes|no]`,
-  `journal chart remove <n>` edit it by hand; the chart page edits it as a drawing. `journal chart reset` brings the
-  shipped chart back, every edit gone.
+  `journal chart remove <n>` edit it by hand, a default workflow only with `--edit-default`, since an edit changes how
+  the journal drives the agent; the chart page edits it as a drawing. `journal chart reset` brings the shipped chart
+  back, every edit gone.
 """, keywords=('chart', 'flowchart', 'trigger', 'conduct'))

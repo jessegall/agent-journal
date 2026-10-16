@@ -74,7 +74,7 @@ class ChartController:
 
     def named(self, chart: Chart) -> dict:
         sidelined = self.charts.sidelined_by(chart)
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "sidelined_by": sidelined.id if sidelined else None, "off": not self.charts.graph(chart).triggers, "warnings": self.validation.warnings(chart)}
+        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "sidelined_by": sidelined.id if sidelined else None, "off": not self.charts.graph(chart).triggers, "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else ""}
 
     def entries(self) -> list[dict]:
         return [{**asdict(e), "kind": e.kind.value} for e in self.catalogue.all()]

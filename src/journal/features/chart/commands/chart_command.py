@@ -38,7 +38,10 @@ class ChartCommand(Command):
         line.add_argument("source", type=int)
         line.add_argument("target", type=int)
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
-        self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
+        remove = self.verb(verbs, "remove", "take a node out, with its lines")
+        remove.add_argument("n", type=int)
+        for editing in (node, line, remove):
+            editing.add_argument("--edit-default", dest="edit_default", action="store_true", help="allowed on a default workflow: an edit changes how the journal drives the agent")
         reset = self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone")
         reset.add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number")
         reset.add_argument("--for", dest="state", default="", help="the workflow by its state, or base")
@@ -55,7 +58,7 @@ class ChartCommand(Command):
         for chart in self.in_order():
             sidelined = self.charts.sidelined_by(chart)
             bound = f" [{chart.state}]" if chart.bound_to_a_state else ""
-            print(f"workflow {chart.id}{bound}, revision {chart.revision}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
+            print(f"workflow {chart.id}{bound}, revision {chart.revision} by {chart.updated_by.stamp if chart.updated_by else 'nobody'}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
             for node in self.charts.nodes_of(chart):
                 shown = f"{node.key} ({self.entries.entry(node.kind, node.key).title})" if node.kind == NodeKind.TRIGGER else node.key
                 print(f"{node.id:>4}  {node.kind:<8} {shown}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
@@ -95,6 +98,13 @@ class ChartCommand(Command):
         print(f"workflow {chart.id} taken out: {chart.title}")
         return 0
 
+    @staticmethod
+    def editable(chart: Chart, args: Namespace) -> Chart:
+        """A default workflow is changed by command only with the flag that says the user knows it changes how the journal drives the agent."""
+        if chart.shipped and not args.edit_default:
+            raise Refused(f"workflow {chart.id}, {chart.title}, is a default one: add --edit-default to change it, knowing it changes how the journal drives the agent")
+        return chart
+
     def catalogue(self, args: Namespace, where: Where) -> int:
         for entry in self.entries.all():
             print(f"{entry.kind:<8} {entry.key:<28} {entry.title}: {entry.about}")
@@ -105,7 +115,7 @@ class ChartCommand(Command):
         entry = self.entries.entry(kind, args.key)
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
-        chart = self.named_workflow(args.chart, args.state)
+        chart = self.editable(self.named_workflow(args.chart, args.state), args)
         wrong = self.validation.action_faults([{"kind": kind, "key": args.key, "text": args.text}])
         if wrong:
             raise Refused(wrong[0])
@@ -124,8 +134,9 @@ class ChartCommand(Command):
         fault = self.validation.port_fault({"id": source.id, "kind": source.kind}, {"id": target.id, "kind": target.kind}, args.port)
         if fault:
             raise Refused(fault[0])
+        chart = self.editable(self.charts.chart_of(source), args)
         self.charts.connect(source, target, args.port, where.actor)
-        self.charts.revised(self.charts.chart_of(source), where.actor)
+        self.charts.revised(chart, where.actor)
         print(f"line {source.id} --{args.port}--> {target.id}")
         return 0
 
@@ -149,7 +160,7 @@ class ChartCommand(Command):
 
     def remove(self, args: Namespace, where: Where) -> int:
         node = self.charts.nodes.find(args.n)
-        chart = self.charts.chart_of(node)
+        chart = self.editable(self.charts.chart_of(node), args)
         self.charts.remove_node(node, where.actor)
         self.charts.revised(chart, where.actor)
         print(f"node {node.id} removed")
