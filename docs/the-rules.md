@@ -65,6 +65,31 @@ user's words: each a guard on shell syntax), the reading of the agent's turn for
 rules (carry on in hand, the awaited check) until each moves with its state. Every other line in the table above is
 a workflow's to carry; the rows that say "a workflow" with a check still to build are phase 2's work.
 
+## Every state, and who holds its conduct
+
+One workflow per state, with a base workflow for what every state shares; a state's workflow is found by the
+state's class and then its parents, so following a plan takes Working's workflow and every wait takes its own
+before Paused's. The event the Stop hook sends is keyed `idle` in the catalogue, where its title is Agent stops;
+the state the agent rests in is also called idle, so the trial, the commands and the page name the event by its
+title and the state by its name.
+
+| State | Who holds its conduct | Why |
+| --- | --- | --- |
+| idle | the workflow Idle | the stop's holds, the parked ask and the check-in are conduct the user may change |
+| working | the workflow Working | the log cadence and the task in hand's lines; following_plan inherits them |
+| following_plan | Working's workflow, by inheritance | a plan being followed is a kind of working, with the plan's next task as its only addition |
+| awaiting | the workflow Awaiting | a worker reporting or stopping and the release are conduct |
+| waiting | the workflow Waiting | a question answered and the release are conduct |
+| expecting | the workflow Expecting | the check on the awaited thing is conduct; the wait's lifting by a tool use stays the state's move |
+| running_sequence | the workflow Running a sequence | the step held at a stop is conduct; the stepping stays the state's move |
+| stuck | the engine, silent | the journal stays quiet by design until the agent works again; nothing to draw |
+| orienting | the engine | the briefing's hold until the agent has looked at what is in flight is owed to the journal, not conduct |
+| at_mark | the engine | the context mark's hold until something survives it is owed to the journal |
+| loading_skill | the engine | a skill owed before a state's work is the engine's |
+| ended | the engine, nothing | a session that ended says nothing and walks nothing |
+
+A state not in this table does not exist: the subagent state nothing ever entered is gone.
+
 ## Kept by a state or a listener, by design
 
 - The task in hand at a stop: carry on, a log when stale (the Working state).

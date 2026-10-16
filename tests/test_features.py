@@ -1388,7 +1388,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     announced = len(sent)
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
     tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
-    assert "messages.created of row 1, walked as idle: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
+    assert "A message is created of row 1, walked as the state idle: nodes " in tried and "would type as messages.new: new message 1" in tried, "a row event is tried with its row, through the shipped workflow on it"
     assert len(sent) == announced, "the trial typed nothing"
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
@@ -1409,8 +1409,8 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     assert f"nodes {trigger}, {quiet}, {say}" in scripted and "assumed: quiet for 400 s" in scripted, "the trial takes a quiet time and says it assumed it"
     assert "no state is called flying" in console.run(["chart", "try", "ticked", "--state", "flying"], AGENT).err
     as_working = console.run(["chart", "try", "tool_starting", "--state", "working", "--provider", "codex"], AGENT).out
-    assert "walked as working" in as_working and "assumed: the agent working, a codex agent" in as_working, "the trial walks as the state given, with the provider's tool names"
-    assert "walked as idle" in console.run(["chart", "try", "tool_starting"], AGENT).out
+    assert "walked as the state working" in as_working and "assumed: the agent working, a codex agent" in as_working, "the trial walks as the state given, with the provider's tool names"
+    assert "walked as the state idle" in console.run(["chart", "try", "tool_starting"], AGENT).out
 
 
 def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():
@@ -2091,3 +2091,13 @@ def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     cut = entries.of_kind(1, "walk_failed", 1)[0]
     assert f"ran past {STEPS} nodes" in cut.data["fault"] and len(entries.of_kind(1, "walk", 1)[0].data["nodes"]) == STEPS, "a runaway path is cut off at the cap and the cut is on record"
+
+
+def test_the_rules_doc_rules_on_every_state_the_engine_knows(app):
+    from pathlib import Path
+    from journal.engine.states_catalogue import StatesCatalogue
+    doc = (Path(__file__).resolve().parents[1] / "docs" / "the-rules.md").read_text()
+    table = doc.split("## Every state, and who holds its conduct")[1].split("## ")[0]
+    names = app.container.get(StatesCatalogue).names()
+    assert "subagent" not in names, "the state nothing entered is gone"
+    assert [n for n in names if f"| {n} |" not in table] == [], "every state the engine knows has a ruling in the rules doc"

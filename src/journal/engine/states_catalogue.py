@@ -1,13 +1,12 @@
 from journal.engine.agent_state import AgentState
 from journal.engine.states.ended import Ended
-from journal.engine.states.subagent import Subagent
 from journal.features.registry import Registry
 
 
 class StatesCatalogue:
     """Every state by name: the engine's own and those of every feature. A row's state column becomes the class that holds its behaviour; a name no feature holds any more resolves to the first state, Idle."""
 
-    OWN = (Ended, Subagent)
+    OWN = (Ended,)
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

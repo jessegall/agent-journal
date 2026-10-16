@@ -57,7 +57,8 @@ class ChartCommand(Command):
             bound = f" [{chart.state}]" if chart.bound_to_a_state else ""
             print(f"workflow {chart.id}{bound}, revision {chart.revision}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
             for node in self.charts.nodes_of(chart):
-                print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
+                shown = f"{node.key} ({self.entries.entry(node.kind, node.key).title})" if node.kind == NodeKind.TRIGGER else node.key
+                print(f"{node.id:>4}  {node.kind:<8} {shown}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
             for line in self.charts.lines_of(chart):
                 print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
         return 0
@@ -128,7 +129,8 @@ class ChartCommand(Command):
 
     def try_(self, args: Namespace, where: Where) -> int:
         ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread, state=args.state, provider=args.provider))
-        print(f"{ran['trigger']}{f' of row {args.row}' if args.row else ''}, walked as {ran['state'] or 'no agent'}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
+        title = self.entries.entry(NodeKind.TRIGGER, args.trigger).title
+        print(f"{title}{f' of row {args.row}' if args.row else ''}, walked as the state {ran['state'] or 'of no agent'}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
         if ran["assumed"]:
             print(f"  assumed: {', '.join(ran['assumed'])}")
         for line in ran["would"]:

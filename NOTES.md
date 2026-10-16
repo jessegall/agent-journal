@@ -609,3 +609,8 @@ Ruled and built on 2026-10-16: the walk's Context carries the state, set once by
 after the machine has moved; the checks and the fillers read it there and never look the agent up; the walk entry
 names it. What is still to come under plan 3: the workflow found by the state's class and its parents and then the
 base, the base first and the state's workflow second with one spoken set.
+
+Ruled on 2026-10-16 under plan 3 (task 175): every state has one holder of its conduct, a workflow or the engine,
+in the table "Every state, and who holds its conduct" in docs/the-rules.md; the subagent state, which nothing ever
+entered, is deleted; the Stop hook's event stays keyed idle and the commands and the trial name it by its title,
+Agent stops, beside the state idle.
