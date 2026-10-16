@@ -1,0 +1,61 @@
+"""The replay harness of plan 2: the same scripted steps run on two fresh journals, one with a listener and one with the workflow
+that replaces it, and what the agent would have seen is compared step by step: the hook's answer, the lines typed to its terminal,
+and, when asked, the keys of the nudges said. A record can be frozen to a file, so the comparison survives the listener's deletion."""
+
+import json
+from pathlib import Path
+
+from journal.models.actor import Actor
+from journal.models.setting import Setting
+from journal.repositories.entries import Entries
+from journal.repositories.environments import Environments
+from journal.repositories.settings import Settings
+from journal.supervisor_link import SupervisorLink
+
+RECORDS = Path(__file__).with_name("replays")
+
+
+class Replay:
+    """One journal under replay: the lines typed to its agent are caught, and each step closes with what the step answered, typed and said."""
+
+    def __init__(self, app, monkeypatch, listeners_off: tuple[str, ...] = ()) -> None:
+        self.app, self.typed, self.steps, self.seen = app, [], [], 0
+        monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, instruction: self.typed.append(instruction["line"]))
+        if listeners_off:
+            app.container.get(Settings).save(Setting(environment_id=0, key="listeners.off", value=list(listeners_off)), Actor.system())
+
+    def step(self, name: str, answer=None) -> None:
+        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, and the nudges said since."""
+        environment = self.app.container.get(Environments).named("main").id
+        nudges = [e.data["key"] for e in reversed(self.app.container.get(Entries).of_kind_in(environment, 1000)) if e.kind == "nudge"]
+        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:]})
+        self.seen = len(nudges)
+        self.typed.clear()
+
+    def record(self) -> list[dict]:
+        return list(self.steps)
+
+    def freeze(self, name: str) -> Path:
+        RECORDS.mkdir(exist_ok=True)
+        path = RECORDS / f"{name}.json"
+        path.write_text(json.dumps(self.record(), indent=2) + "\n")
+        return path
+
+    @staticmethod
+    def frozen(name: str) -> list[dict]:
+        return json.loads((RECORDS / f"{name}.json").read_text())
+
+
+def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:
+    """What differs between two records, step by step, in words; nothing when the agent would have seen the same."""
+    found = []
+    for a, b in zip(left, right):
+        if a["answer"] != b["answer"]:
+            found.append(f"{a['name']}: the hook's answer differs: {a['answer']} against {b['answer']}")
+        if a["typed"] != b["typed"]:
+            found.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
+        if nudges and a["nudges"] != b["nudges"]:
+            found.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
+    if len(left) != len(right):
+        found.append(f"{len(left)} steps against {len(right)}")
+    return found

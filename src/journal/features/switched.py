@@ -14,7 +14,9 @@ class Switched(Listener[Event]):
         self.blocking = getattr(inner, "blocking", False)
 
     def handle(self, event: Event) -> object:
-        return self.inner.handle(event) if self.registry.is_on(self.feature, self.environment_of(event)) else None
+        if self.registry.listener_off(self.inner) or not self.registry.is_on(self.feature, self.environment_of(event)):
+            return None
+        return self.inner.handle(event)
 
     @staticmethod
     def environment_of(event: Event) -> int:

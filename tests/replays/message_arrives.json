@@ -1,0 +1,24 @@
+[
+  {
+    "name": "session starts",
+    "answer": null,
+    "typed": [],
+    "nudges": [
+      "briefing.ready",
+      "briefing.quiet",
+      "briefing.laws",
+      "briefing.orient",
+      "voices.voice"
+    ]
+  },
+  {
+    "name": "a message arrives",
+    "answer": null,
+    "typed": [
+      "[journal] new message 1"
+    ],
+    "nudges": [
+      "messages.new"
+    ]
+  }
+]

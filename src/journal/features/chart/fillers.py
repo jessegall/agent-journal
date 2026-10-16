@@ -17,6 +17,11 @@ class Fillers:
     def fill(self, text: str, ctx: Context) -> str:
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
 
+    def row(self, ctx: Context) -> str:
+        """The number of the row a row event is about."""
+        model = getattr(ctx.event, "model", None)
+        return str(model.id) if model is not None else ""
+
     def parked_tasks(self, ctx: Context) -> str:
         return "; ".join(f"{t.id} {t.title} (parked because: {t.parked_why})" for t in self.tasks.in_state(ctx.environment_id, TaskState.PARKED))
 
