@@ -1495,3 +1495,17 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     assert "question 1: Which name?  [alpha / beta]" in shown and "answer: beta" in shown and "act on the answer" in shown
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal question show 1 " + "|" + " head -2"})
     assert status == 409 and "journal question show" in body["error"], "read whole, never through a pipe"
+
+
+def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it_at_once(app, monkeypatch):
+    typed = []
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    hook(app, "Stop")
+    data = json.dumps({"brief": "are you there?", "idempotency": "v1"}).encode()
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/main/message", data=data, method="POST", headers={"Content-Type": "application/json"})
+    with urlopen(request, timeout=5) as reply:
+        n = json.loads(reply.read())["n"]
+    assert any(line == f"[journal] new message {n}" for line in typed), "named by number the moment it arrives, so it is not left for the next hook"
