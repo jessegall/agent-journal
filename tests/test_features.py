@@ -1517,3 +1517,19 @@ def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it
     with urlopen(request, timeout=5) as reply:
         n = json.loads(reply.read())["n"]
     assert any(line == f"[journal] new message {n}" for line in typed), "named by number the moment it arrives, so it is not left for the next hook"
+
+
+def test_the_rules_doc_names_every_line_a_listener_says():
+    """Plan 2's map: a listener's line not in the rules table is a line nobody planned for."""
+    import re
+    from pathlib import Path
+    doc = (Path(__file__).resolve().parents[1] / "docs" / "the-rules.md").read_text()
+    root = Path(__file__).resolve().parents[1] / "src" / "journal" / "features"
+    missing = []
+    for listener in root.glob("*/listeners/*.py"):
+        feature = listener.parts[-3]
+        for key in set(re.findall(r"\b([A-Z_]+)\.about\(", listener.read_text())):
+            name = re.search(rf"\b{key} = Nudge\(name, \"([a-z_]+)\"", (root / feature / "feature.py").read_text())
+            if name and f"{feature}.{name.group(1)}" not in doc and name.group(1) not in doc:
+                missing.append(f"{feature}.{name.group(1)}")
+    assert not missing, f"lines said by a listener and absent from docs/the-rules.md: {sorted(set(missing))}"

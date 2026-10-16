@@ -10,21 +10,58 @@ catalogue could carry it once a check or an action it needs exists.
 - At a stop, at rest: parked tasks hold the stop and are named, in any mode.
 - At a stop, at rest, auto mode on and tasks open outside a plan: the next task holds the stop.
 
-## Chart-able, kept by a listener today
+## Every line a listener says, by event
 
-- The unread inbox named every third tool use, and the write held after five reminders (messages/hold_unread): the
-  counter checks exist; the chart needs the inbox line's wording with its numbers.
-- A message read and unanswered holds the next tool call that is not a journal command or a look at its files; a face answers only a few words (messages/hold_unanswered).
-- The work in hand: a log asked after twenty-five edits, named every twenty-five, the write held at fifty (tasks/log_cadence).
-- An idle agent with a parked task asked, now and then, whether it can go on (tasks/ask_after_parked).
-- In auto mode, an agent idle for half an hour asked whether anything is left (tasks/check_in): needs a "quiet for" check.
-- Unread messages named at a prompt, a start and a stop (messages/inbox_at_prompt, inbox_at_start, inbox_at_stop).
-- A face the user puts on a message typed to the agent (messages/tell_reaction): needs a row trigger on reactions and a filler.
-- Words the user watches for (triggers/watch_prompt, watch_tool): a trigger with words is a check the catalogue could add.
-- The same shell command run three times in a row named (tasks/spot_polling).
-- A fact, rule or reminder whispered when its keyword comes up (memory/whisper).
-- A subagent dispatch without a model or a job refused (laws/judge_dispatch): a check on the tool's input.
-- A result of many lines named (laws/measure_result).
+The map for plan 2. One row per line a listener says, holds or types today: the event it fires on, the checks it
+needs, what it does, and whether the catalogue can build it now or what it still lacks. Numbers are the option
+defaults as the code reads them: the log is asked after `tasks.first_nudge_after` edits (25), the task named every
+`tasks.name_every` (25), the write held after `tasks.log_after` (50); a read message holds the next tool call after
+`messages.hold_after` tool uses (0) and is asked for after `messages.nudge_after` (0); the unread inbox is named every
+third tool use and the write held after five namings, both constants in code.
+
+| Event | Line (nudge key) | Checks it needs | Action | Catalogue today |
+| --- | --- | --- | --- | --- |
+| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | counters exist; needs the say to carry the key and the unread count filler |
+| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | needs "reads the message's own files" and the owed-numbers filler |
+| Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | needs "command pipes a read" |
+| Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | counters exist; needs the first-edit-at-N form, the task name and edit fillers, and settings read through their option default |
+| Tool about to run | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | needs "same command N times" from the entries |
+| Tool about to run | laws.no_model / no_job | the tool dispatches a subagent; the dispatch names no model or no job | hold | needs checks on the tool's input |
+| Tool about to run | questions.own_tool | the tool is the agent's own question tool | hold | needs "tool is named X" |
+| Tool about to run | shell.alone | a journal command chained with other commands | hold | needs "command chains a journal part" |
+| Tool about to run | shell.narrow | a whole read of a file over twice the shown lines | hold | needs "file longer than N" |
+| Tool about to run | triggers.denied | a trigger of the user's matches the tool | hold | the trigger feature's own words check |
+| Tool finished | laws.large_result | the result ran over N lines | say | needs "result over N lines" |
+| Tool finished | git.closed_by_commit | a commit's message named tasks | say | needs the commit filler |
+| Prompt sent | messages.new / some / many | messages unread, by count | say | needs the inbox fillers by count |
+| Prompt sent | skills.required | a skill owed in this state | hold | stays in the engine: skills |
+| Agent stops | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the Working state's; moves only with the state rule |
+| Agent stops | messages.new / some / many | messages unread | say on the stop | as at a prompt |
+| Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | carried by the chart today |
+| Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
+| Session starts | messages.new / some / many | messages unread | say | as at a prompt |
+| Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | needs the voice filler; the introduction stays with the voice |
+| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | needs "quiet for N seconds" |
+| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | needs "quiet for N" and the parked filler |
+| Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the Expecting state's; moves only with the state rule |
+| Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
+| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | needs "written by the user" and the live-agent target |
+| Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | the trigger feature's own words check |
+| Reaction created by the user | messages.reacted | a face on a message | type | needs a reactions row trigger and the face filler |
+| Rule created | memory.rule_review | a new rule | type once | needs the rule filler |
+| Message by the agent created | etiquette.remind | now and then | type | needs "now and then" |
+| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | needs the worker checks, the release action and reaching every awaiting agent |
+| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | needs the question check and the release action |
+| Plan updated | plans.approved, next, done, parked | the plan's state changed | type | needs plan-state checks and fillers |
+| Setting saved | voices.changed | a voice setting changed | type | needs "setting X changed" |
+| Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |
+| Any event at a mark | memory.decide / held | context at 25, 50, 80 percent | say, hold | stays in the engine: the context marks |
+| Any event | memory.whisper | a fact, rule or reminder's keyword in the prompt | say | needs the keyword check |
+
+What stays in code by design, with why: the briefing and the hold until oriented (a start is the engine's), the
+context marks and their hold (a mark is the engine's), skills owed, delivery of typed lines, the shell runner's
+parts and limits, the reading of the agent's turn for etiquette and faces, and the state rules (carry on in hand,
+the awaited check) until each moves with its state.
 
 ## Kept by a state or a listener, by design
 
