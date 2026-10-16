@@ -4,6 +4,7 @@ from journal.features.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
 from journal.features.plans.listeners.tell_approved import TellApproved
+from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
 
 
@@ -14,6 +15,7 @@ class Plans(Feature):
     states = (FollowingPlan,)
     commands = (PlanCommand,)
     listeners = (AdvancePlan, TellApproved)
+    seeds = (ClosedPlans,)
 
     NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
     DONE = Nudge(name, "done", "plan {{n}} is done: its last task closed", repeat_after=0)
