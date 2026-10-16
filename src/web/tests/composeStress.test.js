@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {createApp, h, nextTick, ref} from "vue";
+import {createApp, h, nextTick, reactive, ref} from "vue";
 
 const settle = async () => {
     for (let i = 0; i < 4; i++) await nextTick();
@@ -50,7 +50,7 @@ const INPUTS = {
         input(s.box);
         await settle();
     },
-    "pasted": async (s, words) => {
+    pasted: async (s, words) => {
         pasteEvent(s.box, words);
         s.box.value = words;
         input(s.box);
@@ -221,4 +221,61 @@ test("after coming back to the window with nothing focused, dictation pasted int
     await settle();
     expect(sent).toEqual(["first words", "second words after the tab"]);
     unmount();
+});
+
+// Wispr Flow replaces the clipboard, sends a simulated Cmd-V and restores the clipboard half a second later: the page sees the paste, the
+// value set, and an input event of insertFromPaste, or the value set with no event at all
+function wisprPaste(box, text, withInput) {
+    pasteEvent(box, text);
+    box.value = text;
+    if (withInput) box.dispatchEvent(new InputEvent("input", {inputType: "insertFromPaste", bubbles: true}));
+}
+
+const clipboardRestored = () => new Promise((done) => setTimeout(done, 500));
+
+async function waitingScene() {
+    const sent = [];
+    const waiting = reactive({helping: true, items: Array.from({length: 6}, () => ({reported: false}))});
+    const props = ref({placeholder: `Stress box ${++boxes}`, waiting, send: async (text) => void sent.push(text)});
+    const opened = await mounted(props);
+    opened.box.focus();
+    return {sent, waiting, box: opened.box, close: opened.unmount};
+}
+
+// a helper reporting redraws the waiting edge alone, and with it the box drawn in its slot
+async function helperReports(s) {
+    s.waiting.items.find((item) => !item.reported).reported = true;
+    await settle();
+}
+
+async function dictated(s, text, withInput) {
+    wisprPaste(s.box, text, withInput);
+    await settle();
+    await helperReports(s);
+    await clipboardRestored();
+    await helperReports(s);
+}
+
+for (const [how, withInput] of Object.entries({"with an input event": true, "with no event": false})) {
+    for (const [by, send] of Object.entries({Enter: sendByEnter, "a click on the send button": sendByClick})) {
+        test(`words Wispr Flow pastes ${how} stay in the box while the waiting edge redraws it and are sent whole by ${by}`, async () => {
+            const s = await waitingScene();
+            await dictated(s, WORDS, withInput);
+            expect(s.box.value).toBe(WORDS);
+            await send(s);
+            sentExactly(s, WORDS);
+            s.close();
+        });
+    }
+}
+
+test("the same words dictated again after a send are taken from the box and sent again", async () => {
+    const s = await waitingScene();
+    await dictated(s, "yes", true);
+    await sendByEnter(s);
+    await dictated(s, "yes", false);
+    expect(s.box.value).toBe("yes");
+    await sendByEnter(s);
+    sentExactly(s, "yes", "yes");
+    s.close();
 });
