@@ -548,7 +548,60 @@ def awaiting_rules(app, replay: Replay, provider: str) -> None:
     replay.step("a stop after", hook_as(app, provider, "Stop")[1])
 
 
-STATE_RULES = {"plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
+def pause_exits(app, replay: Replay, provider: str) -> None:
+    """The steps: with a task in hand, each remaining pause is entered and left by what ends it: awaiting something outside by the agent's own tool use, being stuck by its own tool use, waiting on a question by the answer, awaiting a worker by its report, running a sequence by its last step; a stop after each shows the way back."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
+    console.run(["await", "the deploy"], AGENT)
+    replay.step("awaiting something outside")
+    replay.step("a tool use lifts the await", read())
+    replay.step("a stop back at work", hook_as(app, provider, "Stop")[1])
+    console.run(["stuck", "the build is broken"], AGENT)
+    replay.step("stuck")
+    replay.step("a tool use lifts being stuck", read())
+    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    replay.step("waiting on a question", hook_as(app, provider, "Stop")[1])
+    console.run(["question", "answer", "1", "red"], USER)
+    app.runtime().deferred.drain()
+    replay.step("the answer releases the wait", hook_as(app, provider, "Stop")[1])
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1"], AGENT)
+    replay.step("awaiting a worker", hook_as(app, provider, "Stop")[1])
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    app.runtime().deferred.drain()
+    replay.step("the report releases the wait", hook_as(app, provider, "Stop")[1])
+    import re
+    made = re.search(r"sequence (\d+)", console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out).group(1)
+    console.run(["sequence", "run", made], AGENT)
+    replay.step("running a sequence", hook_as(app, provider, "Stop")[1])
+    console.run(["sequence", "next"], AGENT)
+    console.run(["sequence", "next"], AGENT)
+    replay.step("the last step ends the sequence", hook_as(app, provider, "Stop")[1])
+
+
+def ended_restarts(app, replay: Replay, provider: str) -> None:
+    """The steps: a session with a task in hand ends, a write and a stop while ended, the same session starts again, the look, a write and a stop back at work."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
+    ended = hook_as(app, provider, "SessionEnd")[1]
+    app.runtime().deferred.drain()
+    replay.step("the session ends", ended)
+    replay.step("a write while ended", write())
+    replay.step("a stop while ended", hook_as(app, provider, "Stop")[1])
+    replay.step("the session starts again", hook_as(app, provider, "SessionStart")[1])
+    console.run(["environment", "here"], AGENT)
+    replay.step("looked at what is in flight")
+    replay.step("a write back at work", write())
+    replay.step("a stop back at work", hook_as(app, provider, "Stop")[1])
+
+
+STATE_RULES = {"pause_exits": pause_exits, "ended_restarts": ended_restarts, "plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
 """What the states say of their own, frozen before any of it moves into a workflow."""
 
 
