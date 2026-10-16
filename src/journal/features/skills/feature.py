@@ -4,9 +4,6 @@ from journal.features.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
 from journal.features.skills.listeners.forget_at_compaction import ForgetAtCompaction
 from journal.features.skills.listeners.mark_loaded import MarkLoaded
-from journal.features.skills.listeners.require_at_prompt import RequireAtPrompt
-from journal.features.skills.listeners.require_at_start import RequireAtStart
-from journal.features.skills.listeners.require_on_entering import RequireOnEntering
 from journal.features.skills.states.loading_skill import LoadingSkill
 
 
@@ -15,10 +12,10 @@ class Skills(Feature):
 
     name = "skills"
     title = "Skills"
-    help = "The journal's skills are written for the agent and required at the moments they matter; writes wait until read."
+    help = "The journal's skills are written for the agent and required by the workflows at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
     states = (LoadingSkill,)
     commands = (SkillCommand,)
-    listeners = (RequireAtStart, RequireOnEntering, RequireAtPrompt, MarkLoaded, ForgetAtCompaction)
+    listeners = (MarkLoaded, ForgetAtCompaction)
 
     REQUIRED = Nudge(name, "required", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)
     nudges = (REQUIRED,)

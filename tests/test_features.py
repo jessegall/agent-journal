@@ -309,13 +309,13 @@ def read_skill(app, folder: str):
 
 
 def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_hold(skilled):
-    from journal.features.skills.states.loading_skill import LoadingSkill
     app = skilled
     status, body = hook(app, "SessionStart")
     assert "read the journal skill before anything else: .claude/skills/journal/SKILL.md" in body["hookSpecificOutput"]["additionalContext"]
     machine = app.container.get(Machine)
-    assert isinstance(machine.current("s1"), LoadingSkill)
-    assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409
+    assert machine.current("s1").name == "orienting", "the start's look is owed as a state still; the skill is owed as a link"
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
+    assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"], "the guards hold the write while a skill is owed"
     read_skill(app, "journal")
     assert machine.current("s1").name == "orienting", "the skill read, the start's look at what is in flight is still owed"
     app.console().run(["environment", "here"], AGENT)
@@ -323,19 +323,27 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
 
 
-def test_entering_a_state_requires_its_feature_skill_in_the_command_output(skilled):
-    from journal.features.skills.states.loading_skill import LoadingSkill
+def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
+    from journal.features.skills.requiring import Requiring
+    from journal.repositories.agents import Agents
     app = skilled
     hook(app, "SessionStart")
     read_skill(app, "journal")
-    out = app.console().run(["task", "create", "t", "--start"], AGENT).out
-    assert "read the tasks skill before anything else" in out
-    machine = app.container.get(Machine)
-    assert isinstance(machine.current("s1"), LoadingSkill) and machine.current("s1").skill == "tasks"
-    read_skill(app, "journal-tasks")
-    assert machine.current("s1").task_id == 1
+    app.console().run(["environment", "here"], AGENT)
+    requiring, agents = app.container.get(Requiring), app.container.get(Agents)
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    assert requiring.owed_names(agents.for_session("s1")) == [], "entering a state owes nothing by itself"
     hook(app, "PreCompact")
-    assert "journal skill" in hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"], "a compaction owes them again"
+    status, body = hook(app, "SessionStart")
+    said = body["hookSpecificOutput"]["additionalContext"]
+    assert "journal skill" in said and "read the tasks skill before anything else" in said, "a start after a compaction owes the journal skill and the state's own"
+    assert sorted(requiring.owed_names(agents.for_session("s1"))) == ["journal", "tasks"]
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
+    assert status == 409 and "skill before anything else" in body["error"]
+    read_skill(app, "journal")
+    read_skill(app, "journal-tasks")
+    app.console().run(["environment", "here"], AGENT)
+    assert requiring.owed_names(agents.for_session("s1")) == [] and hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
 
 
 def test_a_prompt_naming_a_keyword_requires_that_skill(skilled):
@@ -1136,18 +1144,25 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     assert sent[-1]["type"] == "Type" and "mcp__linear__authenticate" in sent[-1]["line"], "the agent is asked to sign in through the server's own tool"
 
 
-def test_a_task_finished_while_a_skill_is_owed_is_let_go_of_under_the_pause(skilled):
+def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_standing_until_the_read(skilled):
+    from journal.features.skills.requiring import Requiring
+    from journal.repositories.agents import Agents
     app = skilled
     hook(app, "SessionStart")
     read_skill(app, "journal")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    machine = app.container.get(Machine)
-    assert machine.current("s1").name == "loading_skill", "the tasks skill is owed on entering work"
+    hook(app, "PreCompact")
+    hook(app, "SessionStart")
+    read_skill(app, "journal")
+    app.console().run(["environment", "here"], AGENT)
+    requiring, agents, machine = app.container.get(Requiring), app.container.get(Agents), app.container.get(Machine)
+    assert requiring.owed_names(agents.for_session("s1")) == ["tasks"], "the tasks skill is owed at a start in work"
     done = app.console().run(["task", "done", "1", "--how", "quick"], AGENT)
     assert done.code == 0, done.err
+    assert machine.current("s1").name == "idle" and requiring.owed_names(agents.for_session("s1")) == ["tasks"], "the task done, the agent is idle and still owes the read"
     read_skill(app, "journal-tasks")
-    assert machine.current("s1").name == "idle", "the pause went back to idle, not to the finished task"
+    assert requiring.owed_names(agents.for_session("s1")) == []
 
 
 def test_a_long_file_is_not_read_whole(app, tmp_path):
@@ -2944,12 +2959,10 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     read_skill(app, "journal-plans")
     assert requiring.owed_names(row()) == []
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    assert requiring.owed_names(row()) == ["tasks"], "entering Working owes its feature's skill"
-    read_skill(app, "journal-tasks")
+    assert requiring.owed_names(row()) == [], "entering a state owes nothing by itself: a state's skill is owed at a start in it"
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    said = fillers.fill("{{awaiting}}", at).split(" and ")
-    assert row().mark_owed == 25 and row().context_mark == 25 and said[0] == "a decision at the context mark, 25% full" and said[1:] == [f"the {n} skill to be read" for n in requiring.owed_names(row())], "the crossing sets the mark owed; the mark's own skill is owed beside it"
+    assert row().mark_owed == 25 and row().context_mark == 25 and fillers.fill("{{awaiting}}", at) == "a decision at the context mark, 25% full", "the crossing sets the mark owed"
     app.console().run(["fact", "create", "the login is flaky"], AGENT)
     assert row().mark_owed == 0 and row().context_mark == 25, "the fact clears the mark owed and keeps the mark taken"
     context(app, 55)

@@ -2,6 +2,7 @@ import time
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
+from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
@@ -9,6 +10,7 @@ from journal.events.models.created import Created
 from journal.events.models.updated import Updated
 from journal.features.chart.context import Context
 from journal.features.registry import Registry
+from journal.features.skills.requiring import Requiring
 from journal.features.shell.chain import Chain
 from journal.features.tasks.states.working import Working
 from journal.features.questions.states.waiting import Waiting
@@ -42,10 +44,11 @@ COUNT_CHECKS = ("count_over", "count_at", "count_every")
 class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
+        self.requiring = requiring
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
         check = getattr(self, key)
@@ -135,6 +138,14 @@ class Checks:
     def agent_waits_on_the_question(self, ctx: Context) -> bool:
         state = self.state(ctx)
         return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Question) and isinstance(state, Waiting) and state.question_id == ctx.event.model.id
+
+    def prompt_names_skill(self, ctx: Context) -> bool:
+        """The prompt names a keyword of a skill."""
+        return isinstance(ctx.event, PromptSubmitted) and bool(self.requiring.named_in(ctx.event.prompt))
+
+    def skill_owed(self, ctx: Context) -> bool:
+        """The agent owes a read of a skill's file."""
+        return bool(ctx.session) and bool(self.requiring.owed_names(self.machine.agent(ctx.session, ctx.environment_id)))
 
     def message_by_user(self, ctx: Context) -> bool:
         """The row event is a message the user wrote."""

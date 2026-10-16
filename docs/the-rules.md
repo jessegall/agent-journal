@@ -36,7 +36,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Tool finished | laws.large_result | the result ran over N lines | say | stays in code: a law of the journal, L3 |
 | Tool finished | git.closed_by_commit | a commit's message named tasks | say | stays with the git feature: it reads commit messages, which no check reads |
 | Prompt sent | messages.new / some / many | messages unread, by count | say | in the workflow Always at Prompt sent; its listener is deleted |
-| Prompt sent | skills.required | a skill owed in this state | hold | stays in the engine: skills |
+| Prompt sent | skills.required | the prompt names a skill's keyword; the skill not read since | say, then hold the tool until read | in the workflow Always at Prompt sent (Require a skill, locked) and the hold in Guards at Tool about to run; the skill is owed as a link on the agent's row |
 | Agent stops | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the workflow Working at a stop, in phase 2 (task 162), with the frozen record of the Working rules as its proof |
 | Agent stops | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Following a plan; the plan's advance stops at the checkpoint in the plans feature, the agent standing in the plan's state |
 | Agent stops | messages.new / some / many | messages unread | say on the stop | in the workflow Always at Agent stops; its listener is deleted |
@@ -101,8 +101,10 @@ A state not in this table does not exist: the subagent state nothing ever entere
 
 ## Kept in code, by design
 
-- A session's start: the briefing, the hold until the journal skill and `journal environment here` (briefing, skills).
-- Skills owed on entering a state and after a compaction (skills).
+- A session's start: the briefing and the hold until `journal environment here` (briefing); the journal skill is
+  required by the workflow Always at Session starts and held by the guards until read.
+- Skills forgotten at a compaction, so a start owes them again (skills); a state's skill is required by its own
+  workflow at Session starts, the ones a prompt names by Always at Prompt sent.
 - The context mark: decide what survives, held there (memory/hold_at_mark); a new rule questioned once (memory/review_new_rule).
 - A plan's advance and its approval (plans); a sequence's steps and its start on a row event (sequences); a
   question asked only through the journal (questions).

@@ -26,6 +26,8 @@ CHECKS = (
     ("log_stale_over", "Is the log older than N seconds?", "the task in hand was last logged longer ago than N seconds, or never; the text is N"),
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
     ("message_by_user", "Message written by you?", "the row is a message the user wrote, not the agent"),
+    ("prompt_names_skill", "Prompt names a skill's keyword?", "the prompt the user sent names a keyword of one of the journal's skills"),
+    ("skill_owed", "Skill owed?", "the agent owes a read of a skill's file: required and not read since"),
     ("message_just_read", "Message just read?", "the row is a message the agent has just read: this write set when it was read"),
     ("task_just_started", "Task just started by this agent?", "the row is a task this agent has just started: this write set when it started, by the agent walking"),
     ("log_for_task_in_hand", "Log is for the task in hand?", "the row is a log line of the task this agent has in hand"),
@@ -54,6 +56,7 @@ COUNT_CHECKS = (
 ACTIONS = (
     ("say", "Send the agent a message", "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", True),
     ("hold", "Hold the tool", "stops the tool and sends the message, until what the message names is done", True),
+    ("require_skill", "Require a skill", "the agent owes a read of the skill named in the text, told where its file is; with no text, the skills the prompt names at a prompt, else the skill of the state the agent is in", True),
     ("block_stop", "Keep the agent from stopping", "the agent carries on, with the message", True),
     ("type", "Type to the agent", "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", True),
     ("start_sequence", "Start sequence", "starts the sequence named in the text at its first step", True),

@@ -2,6 +2,7 @@ from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.chart.validation import HOLDS
+from journal.features.registry import Registry
 from journal.features.seed import Seed
 from journal.models.actor import Actor
 from journal.models.chart import Chart
@@ -41,6 +42,7 @@ NEW_MESSAGE = "[messages.new] new message {{row}}"
 ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
 SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
 MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
+SKILL_HELD = "[skills.required] read the {{skill_owed}} skill before anything else: {{skill_path}}. writes wait until you have"
 UNREAD_HELD = "[messages.unread_held] your inbox is unread: {{unread_count}} waiting. journal message unread before any other write"
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
 ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
@@ -65,8 +67,8 @@ STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequ
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue, agents: Agents, counts: Counts) -> None:
-        self.states, self.agents, self.counts = states, agents, counts
+    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue, agents: Agents, counts: Counts, registry: Registry) -> None:
+        self.states, self.agents, self.counts, self.registry = states, agents, counts, registry
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         own = {
             ("idle", "idle"): self.idle_at_stop,
@@ -75,9 +77,9 @@ class ShippedChart(Seed):
             ("working", "tasks.updated"): self.working_at_task_start,
             ("working", "task_logs.created"): self.working_at_log,
             ("working", "idle"): self.working_carries_on,
-            ("working", "session_started"): self.working_carries_on,
+            ("working", "session_started"): self.skill_then(self.working_carries_on),
             ("following_plan", "idle"): self.following_at_stop,
-            ("following_plan", "session_started"): self.following_at_stop,
+            ("following_plan", "session_started"): self.skill_then(self.following_at_stop),
             ("working", "ticked"): self.working_at_tick,
             ("awaiting", "workers.updated"): self.awaiting_at_worker,
             ("waiting", "questions.updated"): self.waiting_at_question,
@@ -86,7 +88,10 @@ class ShippedChart(Seed):
             ("stuck", "tool_starting"): self.working_again,
             ("running_sequence", "idle"): self.sequence_at_stop,
         }
-        shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "messages.created": self.shared_at_message, "messages.updated": self.shared_at_message_read}
+        for state in SHIPPED_STATES:
+            if self.registry.skill_required_in(state) and (state, "session_started") not in own:
+                own[(state, "session_started")] = self.state_skill
+        shared = {"session_started": self.journal_skill_then(self.shared_inbox), "prompt_submitted": self.prompt_skill_then(self.shared_inbox), "idle": self.shared_inbox, "messages.created": self.shared_at_message, "messages.updated": self.shared_at_message_read}
         self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
             for event in sorted({e for st, e in own if st == state}, key=EVENT_ORDER.index):
@@ -261,9 +266,9 @@ class ShippedChart(Seed):
         place = self.state_place(chart.state) if chart.state else chart.place
         return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION, place=place), by)
 
-    def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:
-        """A shipped node; a hold is a guard of the journal's protocol and is drawn locked."""
-        return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True, locked=key in HOLDS), Actor.system())
+    def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0, locked: bool | None = None) -> Node:
+        """A shipped node; a hold is a guard of the journal's protocol and is drawn locked, as is any node the drawing says so of."""
+        return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True, locked=key in HOLDS if locked is None else locked), Actor.system())
 
     def trigger(self, chart: Chart) -> Node:
         """The workflow's one trigger, the event it is for, made where it is not yet."""
@@ -277,6 +282,34 @@ class ShippedChart(Seed):
         """Every open end given leads on to the node: a check's unused answer, an action's then, so one path runs through every part in order."""
         for source, port in ends:
             self.line(source, target, port)
+
+    def state_skill(self, chart: Chart, ends: list) -> list:
+        """A session starting in this state: the state's own skill is owed, where its feature says so."""
+        owed = self.node(chart, NodeKind.ACTION, "require_skill", x=160, y=92)
+        self.chain(ends, owed)
+        return [(owed, THEN)]
+
+    def skill_then(self, own):
+        """The state's own steps at a start, after its skill is required."""
+        return lambda chart, ends: own(chart, self.state_skill(chart, ends))
+
+    def journal_skill_then(self, shared):
+        """Every start owes the journal skill, locked, before the shared conduct."""
+        def draw(chart: Chart, ends: list) -> list:
+            owed = self.node(chart, NodeKind.ACTION, "require_skill", "journal", x=720, y=92, locked=True)
+            self.chain(ends, owed)
+            return shared(chart, [(owed, THEN)])
+        return draw
+
+    def prompt_skill_then(self, shared):
+        """A prompt naming a skill's keyword owes that skill, locked, before the shared conduct."""
+        def draw(chart: Chart, ends: list) -> list:
+            names = self.node(chart, NodeKind.CHECK, "prompt_names_skill", x=720, y=92, locked=True)
+            owed = self.node(chart, NodeKind.ACTION, "require_skill", x=720, y=184, locked=True)
+            self.chain(ends, names)
+            self.line(names, owed, YES)
+            return shared(chart, [(names, NO), (owed, THEN)])
+        return draw
 
     def shared_at_message(self, chart: Chart, ends: list) -> list:
         """A message the user leaves is named by number, typed into the terminal, and the counts of tool uses and inbox namings since it came start at nought."""
@@ -305,8 +338,13 @@ class ShippedChart(Seed):
         return self.draw_inbox(chart, ends, x=720, y=92)
 
     def shared_at_tool(self, chart: Chart, ends: list) -> list:
-        """At a tool use the counts of uses and uses owed go up by one; the unread inbox is named at every so many uses and the write held after so many namings, each naming counted; then a read message is answered before the next tool, held after so many uses owed, asked for after fewer."""
+        """At a tool use a skill owed holds the tool until its file is read; then the counts of uses and uses owed go up by one; the unread inbox is named at every so many uses and the write held after so many namings, each naming counted; then a read message is answered before the next tool, held after so many uses owed, asked for after fewer."""
         left = 720
+        skill = self.node(chart, NodeKind.CHECK, "skill_owed", x=left - 160, y=92, locked=True)
+        hold_skill = self.node(chart, NodeKind.ACTION, "hold", SKILL_HELD, x=left - 320, y=184)
+        self.chain(ends, skill)
+        self.line(skill, hold_skill, YES)
+        ends = [(skill, NO), (hold_skill, THEN)]
         use = self.node(chart, NodeKind.ACTION, "count_one", "uses", x=left + 80, y=92)
         owe = self.node(chart, NodeKind.ACTION, "count_one", "owed", x=left + 80, y=184)
         unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=left + 80, y=276)

@@ -8,7 +8,9 @@ from journal.engine.states.paused import Paused
 from journal.engine.nudger import Nudger
 from journal.engine.resume import Resume
 from journal.features.chart.context import Context
+from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.features.chart.fillers import Fillers
+from journal.features.skills.requiring import Requiring
 from journal.models.actor import Actor
 from journal.repositories.counts import Counts
 from journal.features.chart.moves import Moves
@@ -28,9 +30,9 @@ NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)
 class Actions:
     """The catalogue's actions, one method per key: each says, holds, blocks, types or starts through the funnel that owns it, and answers the hook when one waits."""
 
-    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts) -> None:
+    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts, requiring: Requiring) -> None:
         self.nudger, self.supervisor, self.machine, self.running, self.sequences, self.fillers, self.cards = nudger, supervisor, machine, running, sequences, fillers, cards
-        self.registry, self.counts = registry, counts
+        self.registry, self.counts, self.requiring = registry, counts, requiring
 
     def spoken(self, text: str) -> Said:
         """The node's words as a said line: through the nudge the text names in brackets, else through the chart's own line."""
@@ -58,6 +60,19 @@ class Actions:
             return Decision.tell(line)
         self.supervisor.type(ctx.environment_id, line)
         return Decision()
+
+    def require_skill(self, text: str, ctx: Context) -> Decision:
+        """The agent owes a read of a skill: the one named, or the ones the prompt names at a prompt, else the skill of its state; each owed one is a link from the agent and a line that says where its file is."""
+        if not ctx.session:
+            return Decision()
+        agent = self.machine.agent(ctx.session, ctx.environment_id)
+        skills = self.requiring.named(text.strip()) if text.strip() else self.requiring.named_in(ctx.event.prompt) if isinstance(ctx.event, PromptSubmitted) else self.requiring.for_state(ctx.state)
+        lines = self.requiring.require(agent, self.requiring.owed(agent, skills))
+        if lines and not ctx.answers_hook:
+            for line in lines:
+                self.typed(line, ctx)
+            return Decision()
+        return Decision.tell("\n".join(lines)) if lines else Decision()
 
     def hold(self, text: str, ctx: Context) -> Decision:
         """A tool use refused with the line; with no hook waiting there is nothing to hold, so the line is said. A hold named for a feature switched off here holds nothing."""
