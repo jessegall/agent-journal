@@ -2060,3 +2060,33 @@ def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, m
     console.run(["chart", "line", str(trigger), str(trigger + 2)], USER)
     answer = finished()
     assert "second words" in answer and "first words" not in answer, "a write through the repository clears the compiled workflow, and the next walk sees the edit"
+
+
+def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_and_recorded(app):
+    import time
+    from journal.features.chart.walk import STEPS
+    from journal.repositories.charts import Charts
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    for words in ("one", "two", "three", "four", "five"):
+        console.run(["message", "send", words], USER)
+    entries = app.container.get(Entries)
+    began = time.perf_counter()
+    for _ in range(5):
+        hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    took = (time.perf_counter() - began) / 5
+    walk = entries.of_kind(1, "walk", 1)[0]
+    assert len(walk.data["nodes"]) < STEPS and took < 0.5, f"the shipped tool workflow walks {len(walk.data['nodes'])} nodes in {took * 1000:.0f} ms"
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    node = lambda *args: int(console.run(["chart", "node", *args, "--for", "base"], USER).out.split()[1].rstrip(":"))
+    previous = node("trigger", "tool_finished")
+    for i in range(STEPS + 5):
+        following = node("action", "show_card", "--text", f"step {i}")
+        console.run(["chart", "line", str(previous), str(following)], USER)
+        previous = following
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    cut = entries.of_kind(1, "walk_failed", 1)[0]
+    assert f"ran past {STEPS} nodes" in cut.data["fault"] and len(entries.of_kind(1, "walk", 1)[0].data["nodes"]) == STEPS, "a runaway path is cut off at the cap and the cut is on record"

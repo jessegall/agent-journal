@@ -77,6 +77,8 @@ class Walk:
                 self.failed(node, ctx, fault)
                 continue
             at += after.get((node.id, port), [])
+        if at:
+            self.failed(node, ctx, RuntimeError(f"the path ran past {STEPS} nodes and was cut off"))
         return decision
 
     def step(self, node: Node, ctx: Context, decision: Decision) -> tuple[str, Decision]:
