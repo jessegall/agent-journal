@@ -16,6 +16,13 @@ class Message(Scoped):
     acknowledgement: bool = False
     files: tuple[str, ...] = ()
     """The names of the files attached, kept under the journal's files folder."""
+
+    FACE_WORDS = 6
+
+    @property
+    def takes_a_face(self) -> bool:
+        """A message of a few words, an ok or a thanks, is answered by a face; anything longer wants words."""
+        return len(self.text.split()) <= self.FACE_WORDS
     captions: dict = field(default_factory=dict)
     """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     """An agent's turn that only answered a journal line and changed nothing: kept, and left out of the chat unless shown."""

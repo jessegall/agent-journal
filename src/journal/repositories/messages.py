@@ -29,12 +29,12 @@ class Messages(ScopedRepository[Message]):
         return [m for m in self.in_(environment_id) if m.read_at is None and m.author == Author.USER]
 
     def unanswered(self, environment_id: int) -> list[Message]:
-        """The user's messages read and not heard back on: no reply, no face, and no message of the agent's in the chat since the read."""
+        """The user's messages read and not heard back on: no reply, no face on one of a few words, and no message of the agent's in the chat since the read."""
         rows = self.in_(environment_id)
         replied = {m.reply_to for m in rows if m.reply_to and m.author == Author.AGENT}
         replied |= {ref.id for m in rows if m.reply_to and m.author == Author.AGENT for ref in self.links.targets(m, self.ANSWERS)}
         spoke = [m.created_at for m in rows if m.author == Author.AGENT and not m.acknowledgement]
-        return [m for m in rows if m.author == Author.USER and m.read_at is not None and m.id not in replied and not self.reacted_by_agent(m) and not any(at > m.read_at for at in spoke)]
+        return [m for m in rows if m.author == Author.USER and m.read_at is not None and m.id not in replied and not (m.takes_a_face and self.reacted_by_agent(m)) and not any(at > m.read_at for at in spoke)]
 
     def reacted_by_agent(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.on(message))

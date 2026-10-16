@@ -1,3 +1,4 @@
+from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.shell.chain import Chain
 from journal.engine.nudger import Nudger
@@ -16,13 +17,13 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings) -> None:
-        self.machine, self.nudger, self.messages, self.entries, self.settings = machine, nudger, messages, entries, settings
+    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings, config: Config) -> None:
+        self.machine, self.nudger, self.messages, self.entries, self.settings, self.config = machine, nudger, messages, entries, settings, config
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
         owed = self.messages.unanswered(event.environment_id)
-        if not owed or self.is_journal_command(event):
+        if not owed or self.is_journal_command(event) or self.reads_their_files(event, owed):
             return None
         since = min(m.read_at for m in owed)
         uses = len([e for e in self.entries.of_kind(event.environment_id, "ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= since])
@@ -36,6 +37,13 @@ class HoldUnanswered(AgentListener[ToolStarting]):
 
     def after(self, option: Option) -> int:
         return int(self.settings.option(PROJECT, option))
+
+    def reads_their_files(self, event: ToolStarting, owed: list) -> bool:
+        """A look at a file attached to the message being answered is part of reading it, not work."""
+        if event.tool != "Read":
+            return False
+        path = str(event.input.get("file_path", ""))
+        return any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in owed)
 
     @staticmethod
     def is_journal_command(event: ToolStarting) -> bool:

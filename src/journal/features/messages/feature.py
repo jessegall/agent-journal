@@ -22,8 +22,8 @@ class Messages(Feature):
     title = "Messages"
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
-    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it", 10, unit="tool uses")
-    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer", 15, unit="tool uses")
+    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it", 0, unit="tool uses")
+    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer; 0 holds the first", 0, unit="tool uses")
     options = (NUDGE_AFTER, HOLD_AFTER)
     listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
 
@@ -33,8 +33,8 @@ class Messages(Feature):
     REACTED = Nudge(name, "reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_after=0)
     ONLY_A_FACE = Nudge(name, "only_a_face", "your turn was only {{face}}, so it was not posted", "a face on its own is a reaction: journal message react <n> \"{{face}}\" puts it on the message it answers; write words when there is something to say", repeat_after=0)
     UNREAD_HELD = Nudge(name, "unread_held", "your inbox is unread: {{count}} waiting", "journal message unread before any other write", repeat_after=0)
-    ANSWER = Nudge(name, "answer", "answer message {{messages}} before you do anything else", "a reply with [!reply:N], or a face: journal message react N \"👍\"", repeat_after=300, answered_in_chat=True)
-    ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N], or a face: journal message react N \"👍\"; only a journal command goes through", repeat_after=0, answered_in_chat=True)
+    ANSWER = Nudge(name, "answer", "answer message {{messages}} before you do anything else", "a reply with [!reply:N]; a face answers only a message of a few words", repeat_after=300, answered_in_chat=True)
+    ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through", repeat_after=0, answered_in_chat=True)
     WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after journal message read or journal question show", "run it on its own; every word is for you", repeat_after=0)
     nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE)
 
@@ -58,7 +58,7 @@ The user leaves messages; you answer them before anything else.
   shows every unread one and marks them read.
 - Answer each as a gentleman would, because you were asked: in your next turn, before the work it brought, with the
   tag `[!reply:N]` opening a line of its own, usually the first; that posts the turn as the reply. Nothing holds your
-  hands for it until ten tool uses have gone by. Several messages get several tags in one turn, each opening its own part: everything after a tag
+  hands for it: the next tool call waits. Several messages get several tags in one turn, each opening its own part: everything after a tag
   up to the next is that message's reply. `[!reply:N,M]` answers both with one part. A tag inside a line is only text.
 - Every message read is one of two things: steering, which you take as steering, or something to do, which you file
   as a task from it, `journal task create "<title>" --from N`, so the chat shows the task above the message.
@@ -66,7 +66,8 @@ The user leaves messages; you answer them before anything else.
   🙏 for thanks; the same face again takes it off. The user's face on a message is acted on when it asks for something and
   never mentioned. A turn of yours that is only a face is not posted.
 - An unread inbox is named again every third tool use; after five reminders the next write waits until you read it. A message
-  you read and leave unanswered is named back, and after ten tool uses every tool call waits for your answer: a reply or a face.
+  you read and leave unanswered holds your very next tool call that is not a journal command or a look at its files: a word
+  first, then the work. A face answers only a message of a few words.
 - After a compaction, a fresh start or a takeover, `journal environment here` shows what is in flight, the latest
   messages among it, and is owed before any other write; `journal message recent` shows the latest messages alone.
 - A turn that only answers a journal line and changes nothing is kept out of the chat by itself; say in the chat only what

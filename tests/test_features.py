@@ -548,23 +548,25 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "read and answered, the write goes on"
 
 
-def test_a_message_read_and_unanswered_is_nudged_after_ten_uses_held_after_fifteen_and_any_word_in_the_chat_answers_it(app):
+def test_a_message_read_gets_words_before_the_next_tool_call_and_a_face_answers_only_a_few_words(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    app.console().run(["message", "send", "can you look?"], USER)
+    app.console().run(["message", "send", "can you look at the footer, the header and the menu before lunch?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
-    answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={}) for _ in range(15)]
-    assert all(status == 200 and "answer message" not in json.dumps(body) for status, body in answers[:9]), "nothing is pressed for at first"
-    assert "answer message 1 before you do anything else" in json.dumps(answers[9][1]), "the tenth use is nudged"
-    assert all(status == 200 for status, _ in answers[:14]) and answers[14][0] == 409 and "your tool calls are held: answer message 1 first" in answers[14][1]["error"]
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert status == 409 and "your tool calls are held: answer message 1 first" in body["error"], "the very next tool call waits for the reply"
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 1"})[0] == 200, "a journal command goes through"
-    hook(app, "MessageDisplay", message="Looking at it now.")
+    own = str(app.config.home / "files" / "message" / "1" / "shot.png")
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": own})[0] == 200, "a look at the message's own file is part of reading it"
+    app.console().run(["message", "react", "1", "👍"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 409, "a face is no answer to a message of many words"
+    hook(app, "MessageDisplay", message="Understood, looking at all three now.")
     app.runtime().deferred.drain()
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200, "a word in the chat after the read is an answer"
-    app.container.get(Settings).save(Setting(environment_id=0, key="messages.hold_after", value=2), Actor.system())
-    app.console().run(["message", "send", "and this?"], USER)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200, "words in the chat after the read are the answer"
+    app.console().run(["message", "send", "thanks!"], USER)
     app.console().run(["message", "read", "3"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 200 and hook(app, "PreToolUse", tool_name="Read", tool_input={})[0] == 409, "the numbers are settings"
+    app.console().run(["message", "react", "3", "🙏"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200, "a few words take a face"
 
 
 def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app):
@@ -1104,13 +1106,16 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app)
     assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"
 
 
-def test_a_write_after_a_message_is_read_goes_on_the_answer_is_asked_not_forced(app):
+def test_a_write_after_a_message_is_read_waits_for_the_answer(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["message", "send", "could you rename it?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 200, "a gentleman answers because he was asked, not because his hands are tied"
+    assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 409, "a word first, then the work: the user's ruling of 2026-10-16"
+    hook(app, "MessageDisplay", message="Yes, renaming it now.")
+    app.runtime().deferred.drain()
+    assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 200
 
 def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     import json as j
