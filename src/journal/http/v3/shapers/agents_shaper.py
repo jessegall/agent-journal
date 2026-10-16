@@ -57,8 +57,8 @@ class AgentsShaper(Shaper):
 
     @staticmethod
     def subagent_rows(hooks) -> list[dict]:
-        """Each dispatch of a subagent: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch."""
-        rows, open_, background = [], [], {}
+        """Each dispatch of a subagent, its finish paired to its start by the tool use's id, by order only when a hook carries none, so a start that never finished leaves the others alone: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch."""
+        rows, open_, background = [], {}, {}
         for e in hooks:
             if e.kind == "SubagentEnded":
                 row = background.pop(e.data.get("agent_id", ""), None)
@@ -67,12 +67,12 @@ class AgentsShaper(Shaper):
                 continue
             if e.data.get("tool_name") not in ("Agent", "Task") or e.data.get("refused"):
                 continue
-            given = e.data.get("tool_input", {})
+            given, use = e.data.get("tool_input", {}), e.data.get("tool_use_id", "")
             if e.kind == "ToolStarting":
                 rows.append({"id": f"sub:{e.id}", "at": seconds(e.created_at), "task": given.get("description", "") or given.get("prompt", "")[:80], "type": given.get("subagent_type", "") or "subagent", "model": given.get("model", ""), "session": "", "status": "running", "running": True})
-                open_.append(rows[-1])
+                open_[use or f"entry:{e.id}"] = rows[-1]
             elif e.kind == "ToolFinished" and open_:
-                done = open_.pop(0)
+                done = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
                 launched = AgentsShaper.launched(e.data.get("tool_response"))
                 if launched:
                     background[launched] = done

@@ -1347,6 +1347,11 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app)
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "a quick one", "model": "haiku", "prompt": "x"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "a quick one"}, tool_response="the finished work")
     assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "never ran", "model": "haiku", "prompt": "x"}, tool_use_id="t-lost")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs", "model": "opus", "subagent_type": "auditor", "prompt": "x"}, tool_use_id="t-2")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a2"}, tool_use_id="t-2")
+    hook(app, "SubagentStop", agent_id="a2", agent_type="auditor")
+    assert [r["running"] for r in rows()[2:]] == [True, False], "a start that never finished keeps its own row; the finish and the stop close the row they belong to, by the tool use's id"
 
 
 def test_a_write_after_a_message_is_read_waits_for_the_answer(app):
