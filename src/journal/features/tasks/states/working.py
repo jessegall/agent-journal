@@ -4,11 +4,8 @@ from journal.engine.agent_state import AgentState
 from journal.engine.permission import Permission
 from journal.engine.transition import Transition
 from journal.events.agent.idle import Idle as AgentIdle
-from journal.events.agent.session_started import SessionStarted
-from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 
-QUIET_AFTER = 900.0
 
 
 @dataclass(frozen=True)
@@ -42,15 +39,5 @@ class Working(AgentState):
         return replace(self, edits=0, logged_at=at, reminders=0)
 
     def idle(self, event: AgentIdle) -> Transition:
-        """Every stop with a task in hand is told to carry on; an agent that is truly stuck says so with journal stuck, which lets it stop."""
-        from journal.features.tasks.stop_words import StopWords
-        return self.go(self.reminded(), StopWords.carry_on(self))
-
-    def session_started(self, event: SessionStarted) -> Transition:
-        """A session resumed with a task in hand is told which, and when it was last logged."""
-        from journal.features.tasks.stop_words import StopWords
-        return self.stay(StopWords.carry_on(self))
-
-    def ticked(self, event: Ticked) -> Transition:
-        from journal.features.tasks.feature import Tasks
-        return self.stay(Tasks.OPEN.about(name=self.named())) if event.quiet_for >= QUIET_AFTER else self.stay()
+        """A stop with a task in hand counts as a reminder; what it is told is the Working workflow's."""
+        return self.go(self.reminded())

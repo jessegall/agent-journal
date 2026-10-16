@@ -48,11 +48,12 @@ def hook_as(app, provider: str, kind: str, session: str = "s1", **body):
 class Replay:
     """One journal under replay: the lines typed to its agent are caught, and each step closes with what the step answered, typed and said."""
 
-    def __init__(self, app, monkeypatch, listeners_off: tuple[str, ...] = ()) -> None:
-        """On a started journal: the listeners named are off and every other on, whatever the shipped workflows switched off at boot."""
+    def __init__(self, app, monkeypatch, every_listener_on: bool = False) -> None:
+        """On a started journal: with every listener on for the listener side, whatever the shipped workflows switched off at boot; else as the boot left it, the replaced listeners off."""
         self.app, self.typed, self.steps, self.seen = app, [], [], 0
         monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, instruction: self.typed.append(instruction["line"]))
-        app.container.get(Settings).set("listeners.off", list(listeners_off), Actor.system())
+        if every_listener_on:
+            app.container.get(Settings).set("listeners.off", [], Actor.system())
 
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, and the nudges said since."""
@@ -89,7 +90,7 @@ def recorded(name: str, app, monkeypatch, steps, provider: str, nudges: bool = F
     if not FREEZE:
         return Frozen(name)
     app.runtime().start()
-    replay = Replay(app, monkeypatch)
+    replay = Replay(app, monkeypatch, every_listener_on=True)
     charts = app.container.get(Charts)
     for chart in charts.shipped():
         for node in charts.nodes_of(chart):
@@ -99,15 +100,29 @@ def recorded(name: str, app, monkeypatch, steps, provider: str, nudges: bool = F
     return replay
 
 
+def lines_of(answer) -> object:
+    """A hook's answer with the lines it carries as a set: the lines said in one answer are each an instruction of their own, and which listener or workflow said them first is not what the agent sees."""
+    if not isinstance(answer, dict):
+        return answer
+    flat = dict(answer)
+    output = flat.get("hookSpecificOutput")
+    if isinstance(output, dict) and "additionalContext" in output:
+        flat["hookSpecificOutput"] = {**output, "additionalContext": sorted(output["additionalContext"].split("\n"))}
+    for key in ("reason", "error"):
+        if key in flat:
+            flat[key] = sorted(str(flat[key]).split("\n"))
+    return flat
+
+
 def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:
-    """What differs between two records, step by step, in words; nothing when the agent would have seen the same."""
+    """What differs between two records, step by step, in words; nothing when the agent would have seen the same: the same answer's lines, the same lines typed in order, and, when asked, the same nudges said."""
     found = []
     for a, b in zip(left, right):
-        if a["answer"] != b["answer"]:
+        if lines_of(a["answer"]) != lines_of(b["answer"]):
             found.append(f"{a['name']}: the hook's answer differs: {a['answer']} against {b['answer']}")
         if a["typed"] != b["typed"]:
             found.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
-        if nudges and a["nudges"] != b["nudges"]:
+        if nudges and sorted(a["nudges"]) != sorted(b["nudges"]):
             found.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
     if len(left) != len(right):
         found.append(f"{len(left)} steps against {len(right)}")

@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from journal.engine.permission import Permission
 from journal.engine.states.paused import Paused
-from journal.engine.transition import Transition
-from journal.events.agent.idle import Idle as AgentIdle
 
 
 @dataclass(frozen=True)
@@ -19,8 +17,3 @@ class RunningSequence(Paused):
     def with_step(self, step: int, text: str) -> "RunningSequence":
         from dataclasses import replace
         return replace(self, step=step, text=text)
-
-    def idle(self, event: AgentIdle) -> Transition:
-        """A stop is told the step in hand; a step that waits on the user says so with journal await, which lets the stop pass."""
-        from journal.features.sequences.feature import Sequences
-        return self.stay(Sequences.STEP.about(n=self.sequence_id, step=self.step + 1, text=self.text))

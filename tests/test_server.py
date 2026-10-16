@@ -13,8 +13,8 @@ from journal.console.where import Where
 
 
 @pytest.fixture
-def server(tmp_path: Path):
-    app = App(Config(tmp_path, port=0))
+def server(journal_root: Path):
+    app = App(Config(journal_root, port=0))
     app.runtime().boot()
     server = app.server()
     server.start()
@@ -465,14 +465,18 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     assert [r["n"] for r in older["rows"]] == list(range(1, 11)) and not older["more"]
 
 
-def test_the_page_refuses_a_second_workflow_on_an_event(server):
-    status, body = call(server, "POST", "/journal/chart", {"trigger": "idle", "title": "Another stop"})
+def test_the_page_refuses_a_second_workflow_of_the_older_shape_on_an_event_and_a_second_on_a_state(server):
+    status, first = call(server, "POST", "/journal/chart", {"trigger": "idle", "title": "Another stop"})
+    assert status == 201, "a workflow of the older shape on an event no other such workflow answers"
+    status, body = call(server, "POST", "/journal/chart", {"trigger": "idle", "title": "Yet another stop"})
     assert status >= 400 and "one workflow per event" in json.dumps(body)
+    status, body = call(server, "POST", "/journal/chart", {"state": "working", "title": "Working twice"})
+    assert status >= 400 and "one workflow per state" in json.dumps(body)
     status, made = call(server, "POST", "/journal/chart", {"trigger": "tool_finished", "title": "After a tool"})
     assert status == 201
     moved = [{**node, "key": "idle"} for node in made["nodes"]]
     status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
     assert status >= 400 and "one workflow per event" in json.dumps(body)
     status, listed = call(server, "GET", "/journal/chart")
-    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 9, "each answers its own event"
+    assert [w["sidelined_by"] for w in listed["workflows"]] == [None] * 9, "each answers its own event or its own state"
 

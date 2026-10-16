@@ -22,8 +22,8 @@ AGENT = Where("main", "s1")
 
 
 @pytest.fixture
-def app(tmp_path: Path):
-    app = App(Config(tmp_path, port=0))
+def app(journal_root: Path):
+    app = App(Config(journal_root, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     yield app

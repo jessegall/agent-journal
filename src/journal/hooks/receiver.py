@@ -24,8 +24,10 @@ class Receiver:
         """The hook's decision: what the blocking listeners say, the rest deferred."""
         environment = self.environments.named(hook.environment)
         event = self.translation.event(hook, environment)
-        self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
+        entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
         decision = self._blocking(event)
+        if not decision.allowed:
+            self.entries.save(entry.with_(data={**entry.data, "refused": decision.reason}), Actor.agent(hook.session))
         self._defer(event)
         return decision
 

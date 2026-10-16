@@ -1,69 +1,84 @@
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.seed import Seed
 from journal.models.actor import Actor
-from journal.models.chart import Chart
+from journal.models.chart import BASE, Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.settings import PROJECT, Settings
 
-TITLE = "Agent stops"
-MESSAGE_TITLE = "Message arrives"
+BASE_TITLE = "For every state"
+IDLE_TITLE = "Idle"
+WORKING_TITLE = "Working"
+AWAITING_TITLE = "Awaiting a worker"
+WAITING_TITLE = "Waiting on a question"
+EXPECTING_TITLE = "Expecting something outside"
+SEQUENCE_TITLE = "Running a sequence"
+KEPT = " (kept from the older shape)"
+"""What a retired per-event workflow with the user's edits is called: its triggers gone, its edits kept to be drawn into a state's workflow."""
+
 NEW_MESSAGE = "[messages.new] new message {{row}}"
-PROMPT_TITLE = "Prompt sent"
-START_TITLE = "Session starts"
 ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
 SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
 MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
-CLOCK_TITLE = "Clock ticks"
-PARKED_STILL = "[tasks.parked_still] task {{parked_n}}, {{parked_title}}, is still parked: can you continue it now?. it was parked because: {{parked_why}}. journal task resume {{parked_n}} picks it up again"
-CHECK_IN = "[tasks.check_in] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
-WORKER_TITLE = "Worker reports"
-REPORTED = "[workers.reported] worker {{worker_n}}, {{worker_name}}, reported in the chat"
-STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
-RETURNED = "[workers.returned] what you waited on came back: carry on"
-QUESTION_TITLE = "Question answered"
-ANSWERED = "question {{question_n}} is answered. journal question show {{question_n}} reads it whole, with the messages linked to it; act on the answer"
-TOOL_TITLE = "Tool about to run"
 UNREAD_HELD = "your inbox is unread: {{unread_count}} waiting. journal message unread before any other write"
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
 ANSWER_HELD = "your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+PARKED = "parked tasks, still open: {{parked_tasks}}. journal task resume <n> picks one up; leave them parked only on purpose"
+NEXT = "tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck"
+PARKED_STILL = "[tasks.parked_still] task {{parked_n}}, {{parked_title}}, is still parked: can you continue it now?. it was parked because: {{parked_why}}. journal task resume {{parked_n}} picks it up again"
+CHECK_IN = "[tasks.check_in] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
 LOG_OVERDUE = "{{task_edits}} edits since you logged {{task}}. {{log_command}} \"<what was decided or done, and why>\" before any other write"
 LOG_SOON = "[tasks.log_soon] {{task_edits}} edits since you logged {{task}}: say where it stands. {{log_command}} \"<where it stands>\""
 IN_HAND = "[tasks.in_hand] {{task}} in hand, {{task_edits}} edits. if this is not what you are doing, finish it or park it and start the work you are on"
+CARRY_ON = "[tasks.carry_on] {{task}} is in hand, {{logged}}: carry on. journal stuck \"<why>\" if you are truly stuck"
+CARRY_ON_LOG = "[tasks.carry_on_log] {{task}} is in hand, {{logged}}: carry on. log where it stands first, then continue; journal stuck \"<why>\" if you are truly stuck"
+STILL_OPEN = "[tasks.open] {{task}} is still open: log where it stands or finish it"
+REPORTED = "[workers.reported] worker {{worker_n}}, {{worker_name}}, reported in the chat"
+STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
+RETURNED = "[workers.returned] what you waited on came back: carry on"
+ANSWERED = "question {{question_n}} is answered. journal question show {{question_n}} reads it whole, with the messages linked to it; act on the answer"
+CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
+STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequence_step_text}}. journal sequence next when it is done"
 LISTENERS_OFF = "listeners.off"
 """The setting naming the listeners in code that run nowhere: a shipped workflow that carries one's conduct adds it when the workflow is made."""
-OLD_TITLE = "The journal's conduct"
-"""The shipped workflow's name before it was named after its event; a journal still carrying it is renamed at boot."""
-PARKED = "parked tasks, still open: {{parked_tasks}}. journal task resume <n> picks one up; leave them parked only on purpose"
-NEXT = "tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or journal stuck \"<why>\" if you are truly stuck"
 
 
 class ShippedChart(Seed):
-    """The workflows the journal ships, one per event: each is made at boot where it is absent and left alone where it stands, edited or not, so a journal that upgrades gets the new ones and keeps its own. A reset redraws one by its event."""
+    """The workflows the journal ships, one per state and one for what every state shares: each is made at boot where it is absent and left alone where it stands, edited or not. A workflow of the older shape, bound to one event, retires at boot: taken out when unedited, kept without its triggers when the user edited it. A reset redraws one by its state."""
 
     def __init__(self, charts: Charts, settings: Settings) -> None:
         self.charts, self.settings = charts, settings
         self.drawings = {
-            "idle": Drawing(TITLE, self.draw_stop, ("InboxAtStop",)),
-            "session_started": Drawing(START_TITLE, self.draw_start, ("InboxAtStart",)),
-            "messages.created": Drawing(MESSAGE_TITLE, self.draw_message, ("InboxOnArrival",)),
-            "prompt_submitted": Drawing(PROMPT_TITLE, self.draw_prompt, ("InboxAtPrompt",)),
-            "tool_starting": Drawing(TOOL_TITLE, self.draw_tool, ("HoldUnread", "HoldUnanswered", "LogCadence")),
-            "ticked": Drawing(CLOCK_TITLE, self.draw_clock, ("AskAfterParked", "CheckIn")),
-            "workers.updated": Drawing(WORKER_TITLE, self.draw_worker, ("ReleaseAwaiting",)),
-            "questions.updated": Drawing(QUESTION_TITLE, self.draw_question, ("ReleaseWaiting",)),
+            BASE: Drawing(BASE_TITLE, self.draw_base, ("InboxOnArrival", "InboxAtStart", "InboxAtPrompt", "InboxAtStop", "HoldUnread", "HoldUnanswered")),
+            "idle": Drawing(IDLE_TITLE, self.draw_idle, ("AskAfterParked", "CheckIn")),
+            "working": Drawing(WORKING_TITLE, self.draw_working, ("LogCadence",)),
+            "awaiting": Drawing(AWAITING_TITLE, self.draw_awaiting, ("ReleaseAwaiting",)),
+            "waiting": Drawing(WAITING_TITLE, self.draw_waiting, ("ReleaseWaiting",)),
+            "expecting": Drawing(EXPECTING_TITLE, self.draw_expecting),
+            "running_sequence": Drawing(SEQUENCE_TITLE, self.draw_running_sequence),
         }
-        """The events the journal ships a workflow for, each with its drawing."""
+        """The states the journal ships a workflow for, the base first, each with its drawing."""
 
     def run(self) -> None:
         by = Actor.system()
-        self.claim_legacy(by)
-        for event, drawing in self.drawings.items():
-            if self.charts.shipped_on(event):
+        self.retire_the_older_shape(by)
+        for state, drawing in self.drawings.items():
+            if self.charts.for_state(state):
                 continue
-            drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, event=event), by))
+            drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, state=state), by))
             self.take_over(drawing.replaces, by)
+
+    def retire_the_older_shape(self, by: Actor) -> None:
+        """A shipped workflow bound to one event goes: whole when every node is still as shipped, else its triggers alone, so the user's edits stay to be drawn into a state's workflow."""
+        for chart in [c for c in self.charts.shipped() if not c.bound_to_a_state]:
+            nodes = self.charts.nodes_of(chart)
+            if all(node.shipped for node in nodes):
+                self.charts.remove(chart, by)
+                continue
+            for node in [n for n in nodes if n.kind == NodeKind.TRIGGER]:
+                self.charts.remove_node(node, by)
+            self.charts.save(chart.with_(shipped=False, event="", title=chart.title + KEPT), by)
 
     def take_over(self, listeners: tuple[str, ...], by: Actor) -> None:
         """The listeners a new shipped workflow carries the conduct of are switched off, so a line is said once."""
@@ -72,197 +87,166 @@ class ShippedChart(Seed):
         if missing:
             self.settings.set(LISTENERS_OFF, off + missing, by)
 
-    def claim_legacy(self, by: Actor) -> None:
-        """A journal from before workflows were marked: its first chart carried the shipped stop rules and is the shipped one on that event."""
-        for chart in self.charts.all():
-            if chart.shipped:
-                continue
-            shipped_nodes = [n for n in self.charts.nodes_of(chart) if n.shipped]
-            if not shipped_nodes:
-                continue
-            trigger = next((n.key for n in shipped_nodes if n.kind == NodeKind.TRIGGER), "idle")
-            title = self.drawings[trigger].title if chart.title == OLD_TITLE and trigger in self.drawings else chart.title
-            self.charts.save(chart.with_(shipped=True, event=trigger, title=title), by)
-
     def reset(self, chart: Chart, by: Actor) -> Chart:
-        """A shipped workflow as shipped again: every node and line gone, its event's drawing drawn anew, one more revision."""
-        drawing = self.drawings[chart.event]
+        """A shipped workflow as shipped again: every node and line gone, its state's drawing drawn anew, one more revision."""
+        drawing = self.drawings[chart.state]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
         self.take_over(drawing.replaces, by)
         return self.charts.save(chart.saved_again().with_(title=drawing.title), by)
 
-    def draw_prompt(self, chart: Chart) -> None:
-        """Today's conduct when a prompt is sent: what waits unread is named."""
-        prompt = self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key="prompt_submitted", x=400, y=0, shipped=True), Actor.system())
-        self.draw_inbox(chart, prompt, x=400, y=92)
+    def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:
+        return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), Actor.system())
 
-    def draw_start(self, chart: Chart) -> None:
-        """Today's conduct when a session starts, beside the engine's briefing: what waits unread is named."""
-        start = self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key="session_started", x=400, y=0, shipped=True), Actor.system())
-        self.draw_inbox(chart, start, x=400, y=92)
+    def line(self, source: Node, target: Node, port: str) -> None:
+        self.charts.connect(source, target, port, Actor.system())
+
+    def draw_base(self, chart: Chart) -> None:
+        """What every state shares: a message the user leaves named by number; the inbox named at a start, a prompt and a stop; at a tool use the inbox every few uses and the write held after enough namings, and a message read and unanswered held, a journal command and a look at its files going through."""
+        arrives = self.node(chart, NodeKind.TRIGGER, "messages.created", x=80, y=0)
+        by_user = self.node(chart, NodeKind.CHECK, "message_by_user", x=80, y=92)
+        named = self.node(chart, NodeKind.ACTION, "type", NEW_MESSAGE, x=80, y=184)
+        self.line(arrives, by_user, THEN)
+        self.line(by_user, named, YES)
+        for column, key in ((320, "session_started"), (560, "prompt_submitted"), (800, "idle")):
+            self.draw_inbox(chart, self.node(chart, NodeKind.TRIGGER, key, x=column, y=0), x=column, y=92)
+        tool = self.node(chart, NodeKind.TRIGGER, "tool_starting", x=1040, y=0)
+        unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=1040, y=92)
+        reminders = self.node(chart, NodeKind.CHECK, "unread_reminders_over", "messages.hold_after_reminders", x=1040, y=184)
+        writes = self.node(chart, NodeKind.CHECK, "tool_writes", x=960, y=276)
+        hold_unread = self.node(chart, NodeKind.ACTION, "hold", UNREAD_HELD, x=960, y=368)
+        every = self.node(chart, NodeKind.CHECK, "tool_uses_since_unread_every", "messages.remind_every", x=1120, y=368)
+        self.line(tool, unread, THEN)
+        self.line(unread, reminders, YES)
+        self.line(reminders, writes, YES)
+        self.line(writes, hold_unread, YES)
+        self.line(writes, every, NO)
+        self.line(reminders, every, NO)
+        self.draw_inbox(chart, every, x=1120, y=460)
+        owed = self.node(chart, NodeKind.CHECK, "unanswered_messages", x=1360, y=92)
+        journal = self.node(chart, NodeKind.CHECK, "journal_command", x=1360, y=184)
+        theirs = self.node(chart, NodeKind.CHECK, "tool_reads_their_files", x=1360, y=276)
+        held_after = self.node(chart, NodeKind.CHECK, "tool_uses_since_read_over", "messages.hold_after", x=1360, y=368)
+        hold_owed = self.node(chart, NodeKind.ACTION, "hold", ANSWER_HELD, x=1280, y=460)
+        ask_after = self.node(chart, NodeKind.CHECK, "tool_uses_since_read_over", "messages.nudge_after", x=1440, y=460)
+        say_owed = self.node(chart, NodeKind.ACTION, "say", ANSWER, x=1440, y=552)
+        self.line(tool, owed, THEN)
+        self.line(owed, journal, YES)
+        self.line(journal, theirs, NO)
+        self.line(theirs, held_after, NO)
+        self.line(held_after, hold_owed, YES)
+        self.line(held_after, ask_after, NO)
+        self.line(ask_after, say_owed, YES)
 
     def draw_inbox(self, chart: Chart, after: Node, x: int, y: int) -> None:
         """What waits unread, named from the node given: one message by its number, a few by theirs, more than three by their count."""
-        by = Actor.system()
-        node = lambda kind, key, text="", dx=0, dy=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x + dx, y=y + dy, shipped=True), by)
-        unread = node(NodeKind.CHECK, "unread_messages")
-        many = node(NodeKind.CHECK, "unread_over", "4", dy=92)
-        say_many = node(NodeKind.ACTION, "say", MANY_UNREAD, dx=-240, dy=184)
-        some = node(NodeKind.CHECK, "unread_over", "2", dy=184)
-        say_some = node(NodeKind.ACTION, "say", SOME_UNREAD, dx=-240, dy=276)
-        say_one = node(NodeKind.ACTION, "say", ONE_UNREAD, dy=276)
-        self.charts.connect(after, unread, THEN if after.kind != NodeKind.CHECK else YES, by)
-        self.charts.connect(unread, many, YES, by)
-        self.charts.connect(many, say_many, YES, by)
-        self.charts.connect(many, some, NO, by)
-        self.charts.connect(some, say_some, YES, by)
-        self.charts.connect(some, say_one, NO, by)
+        unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=x, y=y)
+        many = self.node(chart, NodeKind.CHECK, "unread_over", "4", x=x, y=y + 92)
+        say_many = self.node(chart, NodeKind.ACTION, "say", MANY_UNREAD, x=x - 160, y=y + 184)
+        some = self.node(chart, NodeKind.CHECK, "unread_over", "2", x=x, y=y + 184)
+        say_some = self.node(chart, NodeKind.ACTION, "say", SOME_UNREAD, x=x - 160, y=y + 276)
+        say_one = self.node(chart, NodeKind.ACTION, "say", ONE_UNREAD, x=x, y=y + 276)
+        self.line(after, unread, THEN if after.kind != NodeKind.CHECK else YES)
+        self.line(unread, many, YES)
+        self.line(many, say_many, YES)
+        self.line(many, some, NO)
+        self.line(some, say_some, YES)
+        self.line(some, say_one, NO)
 
-    def draw_worker(self, chart: Chart) -> None:
-        """Today's conduct when a worker reports or stops: every agent awaiting it is told, and the one whose last worker is back goes on with what it was doing."""
-        by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        line = lambda source, target, port: self.charts.connect(source, target, port, by)
-        worker = node(NodeKind.TRIGGER, "workers.updated", x=400, y=0)
-        reported = node(NodeKind.CHECK, "worker_reported", x=240, y=92)
-        awaited_r = node(NodeKind.CHECK, "agent_awaits_the_worker", x=240, y=184)
-        tell_reported = node(NodeKind.ACTION, "type", REPORTED, x=240, y=276)
-        last_r = node(NodeKind.CHECK, "last_worker_back", x=240, y=368)
-        back_r = node(NodeKind.ACTION, "release", RETURNED, x=240, y=460)
-        stopped = node(NodeKind.CHECK, "worker_stopped", x=560, y=92)
-        awaited_s = node(NodeKind.CHECK, "agent_awaits_the_worker", x=560, y=184)
-        tell_stopped = node(NodeKind.ACTION, "type", STOPPED, x=560, y=276)
-        last_s = node(NodeKind.CHECK, "last_worker_back", x=560, y=368)
-        back_s = node(NodeKind.ACTION, "release", RETURNED, x=560, y=460)
-        line(worker, reported, THEN)
-        line(reported, awaited_r, YES)
-        line(awaited_r, tell_reported, YES)
-        line(tell_reported, last_r, THEN)
-        line(last_r, back_r, YES)
-        line(worker, stopped, THEN)
-        line(stopped, awaited_s, YES)
-        line(awaited_s, tell_stopped, YES)
-        line(tell_stopped, last_s, THEN)
-        line(last_s, back_s, YES)
+    def draw_idle(self, chart: Chart) -> None:
+        """An agent at rest: at a stop, parked tasks hold it in any mode and in auto mode the next open task holds it; as the clock ticks, the parked ask after a minute and the check-in after half an hour in auto mode."""
+        stop = self.node(chart, NodeKind.TRIGGER, "idle", x=160, y=0)
+        parked = self.node(chart, NodeKind.CHECK, "parked_tasks", x=160, y=92)
+        say_parked = self.node(chart, NodeKind.ACTION, "block_stop", PARKED, x=0, y=184)
+        auto = self.node(chart, NodeKind.CHECK, "auto_mode", x=160, y=276)
+        open_ = self.node(chart, NodeKind.CHECK, "open_tasks", x=160, y=368)
+        hold_stop = self.node(chart, NodeKind.ACTION, "block_stop", NEXT, x=160, y=460)
+        self.line(stop, parked, THEN)
+        self.line(parked, say_parked, YES)
+        self.line(parked, auto, NO)
+        self.line(auto, open_, YES)
+        self.line(open_, hold_stop, YES)
+        tick = self.node(chart, NodeKind.TRIGGER, "ticked", x=560, y=0)
+        parked_tick = self.node(chart, NodeKind.CHECK, "parked_tasks", x=440, y=92)
+        quiet_a_minute = self.node(chart, NodeKind.CHECK, "quiet_for_over", "60", x=440, y=184)
+        ask_parked = self.node(chart, NodeKind.ACTION, "type", PARKED_STILL, x=440, y=276)
+        auto_tick = self.node(chart, NodeKind.CHECK, "auto_mode", x=680, y=92)
+        quiet_half_an_hour = self.node(chart, NodeKind.CHECK, "quiet_for_over", "1800", x=680, y=184)
+        check_in = self.node(chart, NodeKind.ACTION, "type", CHECK_IN, x=680, y=276)
+        self.line(tick, parked_tick, THEN)
+        self.line(parked_tick, quiet_a_minute, YES)
+        self.line(quiet_a_minute, ask_parked, YES)
+        self.line(tick, auto_tick, THEN)
+        self.line(auto_tick, quiet_half_an_hour, YES)
+        self.line(quiet_half_an_hour, check_in, YES)
 
-    def draw_question(self, chart: Chart) -> None:
-        """Today's conduct when a question is answered: every agent waiting on it goes back to its work and is told how to read the answer."""
-        by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        question = node(NodeKind.TRIGGER, "questions.updated", x=400, y=0)
-        answered = node(NodeKind.CHECK, "question_answered", x=400, y=92)
-        waits = node(NodeKind.CHECK, "agent_waits_on_the_question", x=400, y=184)
-        back = node(NodeKind.ACTION, "release", ANSWERED, x=400, y=276)
-        self.charts.connect(question, answered, THEN, by)
-        self.charts.connect(answered, waits, YES, by)
-        self.charts.connect(waits, back, YES, by)
+    def draw_working(self, chart: Chart) -> None:
+        """A task in hand: at a tool use that writes the task is named every so many edits, the log asked for at the first threshold and the write held when the log is overdue; a stop and a session starting again are told to carry on, with a log asked for when the last is stale; a quarter of an hour's quiet is told the task is still open."""
+        tool = self.node(chart, NodeKind.TRIGGER, "tool_starting", x=160, y=0)
+        writes = self.node(chart, NodeKind.CHECK, "tool_writes", x=160, y=92)
+        overdue = self.node(chart, NodeKind.CHECK, "edits_since_log_over", "tasks.log_after", x=160, y=184)
+        hold_log = self.node(chart, NodeKind.ACTION, "hold", LOG_OVERDUE, x=0, y=276)
+        first = self.node(chart, NodeKind.CHECK, "edits_since_log_at", "tasks.first_nudge_after", x=240, y=276)
+        say_soon = self.node(chart, NodeKind.ACTION, "say", LOG_SOON, x=160, y=368)
+        named = self.node(chart, NodeKind.CHECK, "edits_since_log_every", "tasks.name_every", x=320, y=368)
+        say_in_hand = self.node(chart, NodeKind.ACTION, "say", IN_HAND, x=320, y=460)
+        self.line(tool, writes, THEN)
+        self.line(writes, overdue, YES)
+        self.line(overdue, hold_log, YES)
+        self.line(overdue, first, NO)
+        self.line(first, say_soon, YES)
+        self.line(first, named, NO)
+        self.line(named, say_in_hand, YES)
+        for column, key in ((640, "idle"), (960, "session_started")):
+            trigger = self.node(chart, NodeKind.TRIGGER, key, x=column, y=0)
+            stale = self.node(chart, NodeKind.CHECK, "log_stale_over", "600", x=column, y=92)
+            carry_on_log = self.node(chart, NodeKind.ACTION, "say", CARRY_ON_LOG, x=column - 80, y=184)
+            carry_on = self.node(chart, NodeKind.ACTION, "say", CARRY_ON, x=column + 80, y=184)
+            self.line(trigger, stale, THEN)
+            self.line(stale, carry_on_log, YES)
+            self.line(stale, carry_on, NO)
+        tick = self.node(chart, NodeKind.TRIGGER, "ticked", x=1280, y=0)
+        quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "900", x=1280, y=92)
+        still_open = self.node(chart, NodeKind.ACTION, "say", STILL_OPEN, x=1280, y=184)
+        self.line(tick, quiet, THEN)
+        self.line(quiet, still_open, YES)
 
-    def draw_clock(self, chart: Chart) -> None:
-        """Today's conduct as the clock ticks: an idle agent with a parked task is asked now and then whether it can go on with it, and in auto mode one quiet for half an hour whether anything is left to do."""
-        by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        line = lambda source, target, port: self.charts.connect(source, target, port, by)
-        tick = node(NodeKind.TRIGGER, "ticked", x=400, y=0)
-        idle = node(NodeKind.CHECK, "plain_idle", x=400, y=92)
-        parked = node(NodeKind.CHECK, "parked_tasks", x=240, y=184)
-        quiet_a_minute = node(NodeKind.CHECK, "quiet_for_over", "60", x=240, y=276)
-        ask_parked = node(NodeKind.ACTION, "type", PARKED_STILL, x=240, y=368)
-        auto = node(NodeKind.CHECK, "auto_mode", x=560, y=184)
-        quiet_half_an_hour = node(NodeKind.CHECK, "quiet_for_over", "1800", x=560, y=276)
-        check_in = node(NodeKind.ACTION, "type", CHECK_IN, x=560, y=368)
-        line(tick, idle, THEN)
-        line(idle, parked, YES)
-        line(parked, quiet_a_minute, YES)
-        line(quiet_a_minute, ask_parked, YES)
-        line(idle, auto, YES)
-        line(auto, quiet_half_an_hour, YES)
-        line(quiet_half_an_hour, check_in, YES)
+    def draw_awaiting(self, chart: Chart) -> None:
+        """An agent awaiting workers: one reporting or stopping is told, and the agent goes back to its work when its last worker is back."""
+        worker = self.node(chart, NodeKind.TRIGGER, "workers.updated", x=400, y=0)
+        for column, came, told in ((240, "worker_reported", REPORTED), (560, "worker_stopped", STOPPED)):
+            now = self.node(chart, NodeKind.CHECK, came, x=column, y=92)
+            awaited = self.node(chart, NodeKind.CHECK, "agent_awaits_the_worker", x=column, y=184)
+            tell = self.node(chart, NodeKind.ACTION, "type", told, x=column, y=276)
+            last = self.node(chart, NodeKind.CHECK, "last_worker_back", x=column, y=368)
+            back = self.node(chart, NodeKind.ACTION, "release", RETURNED, x=column, y=460)
+            self.line(worker, now, THEN)
+            self.line(now, awaited, YES)
+            self.line(awaited, tell, YES)
+            self.line(tell, last, THEN)
+            self.line(last, back, YES)
 
-    def draw_tool(self, chart: Chart) -> None:
-        """Today's conduct when a tool is about to run, three paths: an unread inbox named every few uses and the write held after enough namings; a message read and unanswered held, a journal command and a look at its files going through; the task in hand logged as it goes, with the write held when the log is overdue."""
-        by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        line = lambda source, target, port: self.charts.connect(source, target, port, by)
-        tool = node(NodeKind.TRIGGER, "tool_starting", x=400, y=0)
-        unread = node(NodeKind.CHECK, "unread_messages", x=120, y=92)
-        reminders = node(NodeKind.CHECK, "unread_reminders_over", "messages.hold_after_reminders", x=120, y=184)
-        writes_unread = node(NodeKind.CHECK, "tool_writes", x=40, y=276)
-        hold_unread = node(NodeKind.ACTION, "hold", UNREAD_HELD, x=40, y=368)
-        every = node(NodeKind.CHECK, "tool_uses_since_unread_every", "messages.remind_every", x=200, y=368)
-        many = node(NodeKind.CHECK, "unread_over", "4", x=200, y=460)
-        say_many = node(NodeKind.ACTION, "say", MANY_UNREAD, x=80, y=552)
-        some = node(NodeKind.CHECK, "unread_over", "2", x=280, y=552)
-        say_some = node(NodeKind.ACTION, "say", SOME_UNREAD, x=200, y=644)
-        say_one = node(NodeKind.ACTION, "say", ONE_UNREAD, x=360, y=644)
-        owed = node(NodeKind.CHECK, "unanswered_messages", x=400, y=92)
-        journal = node(NodeKind.CHECK, "journal_command", x=400, y=184)
-        theirs = node(NodeKind.CHECK, "tool_reads_their_files", x=400, y=276)
-        held_after = node(NodeKind.CHECK, "tool_uses_since_read_over", "messages.hold_after", x=400, y=368)
-        hold_owed = node(NodeKind.ACTION, "hold", ANSWER_HELD, x=320, y=460)
-        ask_after = node(NodeKind.CHECK, "tool_uses_since_read_over", "messages.nudge_after", x=480, y=460)
-        say_owed = node(NodeKind.ACTION, "say", ANSWER, x=480, y=552)
-        writes = node(NodeKind.CHECK, "tool_writes", x=680, y=92)
-        in_hand = node(NodeKind.CHECK, "task_in_hand", x=680, y=184)
-        overdue = node(NodeKind.CHECK, "edits_since_log_over", "tasks.log_after", x=680, y=276)
-        hold_log = node(NodeKind.ACTION, "hold", LOG_OVERDUE, x=600, y=368)
-        first = node(NodeKind.CHECK, "edits_since_log_at", "tasks.first_nudge_after", x=760, y=368)
-        say_soon = node(NodeKind.ACTION, "say", LOG_SOON, x=680, y=460)
-        named = node(NodeKind.CHECK, "edits_since_log_every", "tasks.name_every", x=840, y=460)
-        say_in_hand = node(NodeKind.ACTION, "say", IN_HAND, x=840, y=552)
-        line(tool, unread, THEN)
-        line(unread, reminders, YES)
-        line(reminders, writes_unread, YES)
-        line(writes_unread, hold_unread, YES)
-        line(writes_unread, every, NO)
-        line(reminders, every, NO)
-        line(every, many, YES)
-        line(many, say_many, YES)
-        line(many, some, NO)
-        line(some, say_some, YES)
-        line(some, say_one, NO)
-        line(tool, owed, THEN)
-        line(owed, journal, YES)
-        line(journal, theirs, NO)
-        line(theirs, held_after, NO)
-        line(held_after, hold_owed, YES)
-        line(held_after, ask_after, NO)
-        line(ask_after, say_owed, YES)
-        line(tool, writes, THEN)
-        line(writes, in_hand, YES)
-        line(in_hand, overdue, YES)
-        line(overdue, hold_log, YES)
-        line(overdue, first, NO)
-        line(first, say_soon, YES)
-        line(first, named, NO)
-        line(named, say_in_hand, YES)
+    def draw_waiting(self, chart: Chart) -> None:
+        """An agent waiting on a question: when it is answered the agent goes back to its work, told how to read the answer."""
+        question = self.node(chart, NodeKind.TRIGGER, "questions.updated", x=400, y=0)
+        answered = self.node(chart, NodeKind.CHECK, "question_answered", x=400, y=92)
+        waits = self.node(chart, NodeKind.CHECK, "agent_waits_on_the_question", x=400, y=184)
+        back = self.node(chart, NodeKind.ACTION, "release", ANSWERED, x=400, y=276)
+        self.line(question, answered, THEN)
+        self.line(answered, waits, YES)
+        self.line(waits, back, YES)
 
-    def draw_message(self, chart: Chart) -> None:
-        """Today's conduct when a message arrives: one the user left is named to the agent by number, typed into its terminal."""
-        by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        arrives = node(NodeKind.TRIGGER, "messages.created", x=400, y=0)
-        by_user = node(NodeKind.CHECK, "message_by_user", x=400, y=92)
-        named = node(NodeKind.ACTION, "type", NEW_MESSAGE, x=400, y=184)
-        self.charts.connect(arrives, by_user, THEN, by)
-        self.charts.connect(by_user, named, YES, by)
+    def draw_expecting(self, chart: Chart) -> None:
+        """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long; the wait lifts on its own next tool use, which is the state's move."""
+        tick = self.node(chart, NodeKind.TRIGGER, "ticked", x=400, y=0)
+        quiet = self.node(chart, NodeKind.CHECK, "quiet_for_over", "300", x=400, y=92)
+        check = self.node(chart, NodeKind.ACTION, "say", CHECK_AWAITED, x=400, y=184)
+        self.line(tick, quiet, THEN)
+        self.line(quiet, check, YES)
 
-    def draw_stop(self, chart: Chart) -> None:
-        """Today's conduct at a stop: what waits unread is named; at rest, parked tasks hold the stop in any mode, and in auto mode the next open task holds it."""
-        by = Actor.system()
-        node = lambda kind, key, text="", x=0, y=0: self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), by)
-        stop = node(NodeKind.TRIGGER, "idle", x=400, y=0)
-        self.draw_inbox(chart, stop, x=80, y=92)
-        at_rest = node(NodeKind.CHECK, "plain_idle", x=400, y=92)
-        parked = node(NodeKind.CHECK, "parked_tasks", x=400, y=276)
-        say_parked = node(NodeKind.ACTION, "block_stop", PARKED, x=160, y=368)
-        auto = node(NodeKind.CHECK, "auto_mode", x=400, y=496)
-        open_ = node(NodeKind.CHECK, "open_tasks", x=400, y=588)
-        hold_stop = node(NodeKind.ACTION, "block_stop", NEXT, x=400, y=680)
-        self.charts.connect(stop, at_rest, THEN, by)
-        self.charts.connect(at_rest, parked, YES, by)
-        self.charts.connect(parked, say_parked, YES, by)
-        self.charts.connect(parked, auto, NO, by)
-        self.charts.connect(auto, open_, YES, by)
-        self.charts.connect(open_, hold_stop, YES, by)
+    def draw_running_sequence(self, chart: Chart) -> None:
+        """An agent working through a sequence: a stop is told the step in hand; stepping on is the state's move."""
+        stop = self.node(chart, NodeKind.TRIGGER, "idle", x=400, y=0)
+        step = self.node(chart, NodeKind.ACTION, "say", STEP, x=400, y=92)
+        self.line(stop, step, THEN)

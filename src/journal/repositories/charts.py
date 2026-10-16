@@ -68,6 +68,7 @@ class Charts(Repository[Chart]):
         for node in self.nodes_of(chart):
             self.remove_node(node, by)
         self.delete(chart, by)
+        self._graphs.clear()
 
     def nodes_of(self, chart: Chart) -> list[Node]:
         return [self.nodes.find(ref.id) for ref in self.links.sources(chart, NODE_OF)]
@@ -76,17 +77,20 @@ class Charts(Repository[Chart]):
         return [link for node in self.nodes_of(chart) for link in self.links.of(node) if link.kind in PORTS and link.source == Ref.to(node)]
 
     def add_node(self, chart: Chart, node: Node, by: Actor) -> Node:
-        self._graphs.clear()
+        """A node made and linked to its workflow; the compiled graphs go after the link is in, since a walk set off by the node's own row would compile the workflow without it."""
         added = self.nodes.save(node, by)
         self.links.save(Link(source=Ref.to(added), target=Ref.to(chart), kind=NODE_OF), by)
+        self._graphs.clear()
         return added
 
     def remove_node(self, node: Node, by: Actor) -> None:
         self._graphs.clear()
         self.links.remove_all_of(node)
         self.nodes.delete(node, by)
+        self._graphs.clear()
 
     def connect(self, source: Node, target: Node, port: str, by: Actor) -> Link:
+        self._graphs.clear()
         self._graphs.clear()
         return self.links.save(Link(source=Ref.to(source), target=Ref.to(target), kind=port), by)
 
@@ -106,4 +110,5 @@ class Charts(Repository[Chart]):
             self.links.delete(line, by)
         for line in lines:
             self.connect(kept[str(line["from"])], kept[str(line["to"])], line.get("port", THEN), by)
+        self._graphs.clear()
         return self.save(chart.saved_again(), by)

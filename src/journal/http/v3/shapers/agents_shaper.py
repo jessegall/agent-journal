@@ -58,7 +58,7 @@ class AgentsShaper(Shaper):
 
     @staticmethod
     def subagent_rows(hooks) -> list[dict]:
-        """Each dispatch of a subagent: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook."""
+        """Each dispatch of a subagent: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch."""
         rows, open_, background = [], [], {}
         for e in hooks:
             if e.kind == "SubagentEnded":
@@ -66,7 +66,7 @@ class AgentsShaper(Shaper):
                 if row:
                     row.update(status="done", running=False, ended=seconds(e.created_at))
                 continue
-            if e.data.get("tool_name") not in ("Agent", "Task"):
+            if e.data.get("tool_name") not in ("Agent", "Task") or e.data.get("refused"):
                 continue
             given = e.data.get("tool_input", {})
             if e.kind == "ToolStarting":

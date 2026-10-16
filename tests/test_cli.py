@@ -17,8 +17,8 @@ MAIN = Where("main")
 
 
 @pytest.fixture
-def app(tmp_path: Path) -> App:
-    return App(Config(tmp_path, port=0))
+def app(journal_root: Path) -> App:
+    return App(Config(journal_root, port=0))
 
 
 def test_a_task_lives_through_the_cli(app):
@@ -42,8 +42,9 @@ def test_the_agent_is_the_actor_when_its_session_is_set(app):
 
 
 def test_the_environment_is_made_on_first_use(app):
+    from journal.repositories.environments import Environments
     app.console().run(["task", "create", "t"], Where("other"))
-    assert app.container.get(Tasks).find(1).environment_id == 1
+    assert app.container.get(Tasks).find(1).environment_id == app.container.get(Environments).named("other").id
 
 
 def test_bad_arguments_answer_with_usage_not_an_exit(app):

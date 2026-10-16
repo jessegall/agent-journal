@@ -35,8 +35,8 @@ class Noted(AgentListener[ToolStarting]):
 
 
 @pytest.fixture
-def app(tmp_path: Path):
-    app = App(Config(tmp_path, port=0))
+def app(journal_root: Path):
+    app = App(Config(journal_root, port=0))
     app.container.get(Deferred).start()
     app.server().start()
     yield app

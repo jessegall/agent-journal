@@ -1,3 +1,4 @@
+# The replays boot a journal each and run minutes, so they are not in the default run: python3 -m pytest tests/replays_run.py, before any commit that touches the workflows; REPLAY_FREEZE=1 records the listener side anew.
 """Plan 2's replays: a listener and the workflow that replaces it, run through the same steps on two fresh journals, must leave the agent
 with the same answers and the same typed lines. Each replay freezes the listener's record, so it still stands once the listener is gone."""
 
@@ -52,7 +53,7 @@ def test_prompt_sent_as_the_shipped_workflow_equals_the_listener(journals, monke
     with_listener, with_workflow, provider = journals
     left = recorded(f"prompt_sent_{provider}", with_listener, monkeypatch, prompts_with_unread, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtPrompt"))
+    right = Replay(with_workflow, monkeypatch)
     prompts_with_unread(with_workflow, right, provider)
     answers = [s["answer"] for s in left.record() if s["answer"] is not None]
     assert "new message 1" in str(answers[0]) and "new messages 1, 2, 3" in str(answers[1]) and "4 messages unread" in str(answers[2]) and "unread" not in str(answers[3]), "the listener names one, a few, many, and not again inside the window"
@@ -123,7 +124,7 @@ def test_clock_ticks_as_the_shipped_workflow_equals_the_two_listeners(journals, 
     with_listener, with_workflow, provider = journals
     left = recorded(f"the_clock_ticks_{provider}", with_listener, monkeypatch, the_clock_ticks, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("AskAfterParked", "CheckIn"))
+    right = Replay(with_workflow, monkeypatch)
     the_clock_ticks(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert by_name["quiet for a minute"]["typed"] == [] and "nothing has happened for half an hour" in str(by_name["quiet for half an hour"]["typed"]) and by_name["quiet for half an hour again"]["typed"] == [], "the listener checks in at half an hour, once inside the window"
@@ -168,7 +169,7 @@ def test_worker_reports_as_the_shipped_workflow_equals_the_listener(journals, mo
     with_listener, with_workflow, provider = journals
     left = recorded(f"a_worker_reports_{provider}", with_listener, monkeypatch, a_worker_reports, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("ReleaseAwaiting",))
+    right = Replay(with_workflow, monkeypatch)
     a_worker_reports(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert by_name["worker 1 reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
@@ -181,7 +182,7 @@ def test_question_answered_as_the_shipped_workflow_equals_the_listener(journals,
     with_listener, with_workflow, provider = journals
     left = recorded(f"a_question_is_answered_{provider}", with_listener, monkeypatch, a_question_is_answered, provider, nudges=False)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("ReleaseWaiting",))
+    right = Replay(with_workflow, monkeypatch)
     a_question_is_answered(with_workflow, right, provider)
     assert left.record()[-1]["typed"] == ["[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"]
     assert with_workflow.container.get(Machine).current("s1").task_id == 1, "the workflow released the agent"
@@ -216,7 +217,7 @@ def test_the_stop_workflow_carries_the_inbox_equal_to_the_listener(journals, mon
     with_listener, with_workflow, provider = journals
     left = recorded(f"stops_with_unread_{provider}", with_listener, monkeypatch, stops_with_unread, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtStop"))
+    right = Replay(with_workflow, monkeypatch)
     stops_with_unread(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert "new message 1" in str(by_name["a stop with one unread"]["answer"]) and "4 messages unread" in str(by_name["a stop with four unread"]["answer"])
@@ -227,7 +228,7 @@ def test_the_start_workflow_carries_the_inbox_equal_to_the_listener(journals, mo
     with_listener, with_workflow, provider = journals
     left = recorded(f"starts_with_unread_{provider}", with_listener, monkeypatch, starts_with_unread, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxAtStart",))
+    right = Replay(with_workflow, monkeypatch)
     starts_with_unread(with_workflow, right, provider)
     assert "new messages 1, 2" in str(left.record()[-1]["answer"]), "the listener names the inbox at a start"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
@@ -260,7 +261,7 @@ def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journals, monk
     with_listener, with_workflow, provider = journals
     left = recorded(f"tool_uses_with_changed_settings_{provider}", with_listener, monkeypatch, tool_uses_with_changed_settings, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtPrompt", *TOOL_LISTENERS))
+    right = Replay(with_workflow, monkeypatch)
     tool_uses_with_changed_settings(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert by_name["read 1 while owed"]["answer"] == {} and "answer message 1 before you do anything else" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
@@ -273,7 +274,7 @@ def test_tool_about_to_run_as_the_shipped_workflow_equals_the_three_listeners_on
     with_listener, with_workflow, provider = journals
     left = recorded(f"tool_uses_with_the_inbox_{provider}", with_listener, monkeypatch, tool_uses_with_the_inbox, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "InboxAtPrompt", *TOOL_LISTENERS))
+    right = Replay(with_workflow, monkeypatch)
     tool_uses_with_the_inbox(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert "new message 1" in str(by_name["read 3"]["answer"]) and by_name["read 4"]["answer"] == {}, "the listener names the inbox every third use"
@@ -286,7 +287,7 @@ def test_tool_about_to_run_as_the_shipped_workflow_equals_the_log_cadence(journa
     with_listener, with_workflow, provider = journals
     left = recorded(f"writes_over_the_log_{provider}", with_listener, monkeypatch, writes_over_the_log, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=TOOL_LISTENERS)
+    right = Replay(with_workflow, monkeypatch)
     writes_over_the_log(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert "25 edits since you logged task 1" in str(by_name["write 26"]["answer"]) and by_name["write 27"]["answer"] == {}, "the listener asks for a log at the first threshold"
@@ -307,7 +308,7 @@ def test_message_arrives_as_the_shipped_workflow_equals_the_listener(journals, m
     with_listener, with_workflow, provider = journals
     left = recorded(f"message_arrives_{provider}", with_listener, monkeypatch, message_arrives, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival",))
+    right = Replay(with_workflow, monkeypatch)
     message_arrives(with_workflow, right, provider)
     assert left.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
@@ -452,7 +453,7 @@ def test_two_agents_in_one_environment_each_walk_as_their_own_state_and_a_line_i
     with_listener, with_workflow, provider = journals
     left = recorded(f"two_agents_{provider}", with_listener, monkeypatch, two_agents, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "ReleaseAwaiting"))
+    right = Replay(with_workflow, monkeypatch)
     two_agents(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert by_name["a message arrives"]["typed"] == ["[journal] new message 1"], "named once for the environment"
@@ -465,7 +466,7 @@ def test_two_lines_on_one_write_come_in_the_order_the_listeners_gave_them(journa
     with_listener, with_workflow, provider = journals
     left = recorded(f"two_lines_on_one_write_{provider}", with_listener, monkeypatch, two_lines_on_one_write, provider, nudges=True)
     with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", *TOOL_LISTENERS))
+    right = Replay(with_workflow, monkeypatch)
     two_lines_on_one_write(with_workflow, right, provider)
     held = left.record()[-1]["answer"]
     assert "answer message 1 first" in held["error"] and "2 edits since you logged task 1" in held["error"], "both holds on one write, joined in order"

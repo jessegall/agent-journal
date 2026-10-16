@@ -1,3 +1,4 @@
+import time
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
@@ -30,7 +31,7 @@ from journal.repositories.settings import PROJECT, Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over")
+COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over", "log_stale_over")
 """The checks that take a number: the node's text, or the setting named there."""
 
 
@@ -85,6 +86,11 @@ class Checks:
 
     def edits_since_log_at(self, ctx: Context, n: int) -> bool:
         return self.edits_before(ctx) == n
+
+    def log_stale_over(self, ctx: Context, seconds: int) -> bool:
+        """The task in hand was last logged longer ago than so many seconds, or never."""
+        state = self.state(ctx)
+        return isinstance(state, Working) and (not state.logged_at or time.time() - state.logged_at > seconds)
 
     def edits_before(self, ctx: Context) -> int:
         """The edits since the task in hand was logged, before the write about to run: the machine counted that one already, as the log cadence counts."""

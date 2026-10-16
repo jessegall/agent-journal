@@ -4,10 +4,8 @@ from journal.engine.states.paused import Paused
 from journal.engine.transition import Transition
 from journal.events.agent.idle import Idle as AgentIdle
 from journal.events.agent.prompt_submitted import PromptSubmitted
-from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 
-ASK_AFTER = 300.0
 
 
 @dataclass(frozen=True)
@@ -30,6 +28,4 @@ class Expecting(Paused):
     def idle(self, event: AgentIdle) -> Transition:
         return self.stay()
 
-    def ticked(self, event: Ticked) -> Transition:
-        from journal.features.tasks.feature import Tasks
-        return self.stay(Tasks.CHECK_AWAITED.about(what=self.what, minutes=int(event.quiet_for // 60))) if event.quiet_for >= ASK_AFTER else self.stay()
+

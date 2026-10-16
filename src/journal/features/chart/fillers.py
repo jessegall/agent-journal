@@ -4,6 +4,7 @@ from journal.events.agent.ticked import Ticked
 from journal.features.chart.context import Context
 from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.tasks.states.expecting import Expecting
+from journal.features.tasks.stop_words import ago
 from journal.features.tasks.states.working import Working
 from journal.models.question import Question
 from journal.models.task_state import TaskState
@@ -49,6 +50,13 @@ class Fillers:
         """The work in hand as the task lines name it: the task's number, with what the agent is on."""
         state = self.state(ctx)
         return state.named() if isinstance(state, Working) else ""
+
+    def logged(self, ctx: Context) -> str:
+        """When the task in hand was last logged, as the stop's words say it."""
+        state = self.state(ctx)
+        if not isinstance(state, Working):
+            return ""
+        return f"last logged {ago(state.logged_at)}" if state.logged_at else "nothing logged yet"
 
     def task_edits(self, ctx: Context) -> str:
         """The edits since the task in hand was logged, before the write about to run."""

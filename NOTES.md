@@ -602,8 +602,9 @@ run today. The user's ruling: a workflow per state, with a base workflow for wha
 class drawn, a trigger per event inside it; the state checks leave the branches, two workflows never fight over the
 driving, and a workflow may move the agent to its next state through the machine. Plan 3 carries it in three
 phases; report 3, five readers against "Find what is missing", is folded into it. The first task rules which state
-picks the workflow: the state after the machine and the engine's holds, read once into the walk's context, found by
-the state's class and its parents and then the base.
+picks the workflow: the state the machine left, read once into the walk's context right after the machine and
+before the engine's holds, found by the state's class and its parents and then the base; the chart feature registers
+first for that, so a session start is walked as the state the agent resumes in.
 
 Ruled and built on 2026-10-16: the walk's Context carries the state, set once by the walk listeners and the trial
 after the machine has moved; the checks and the fillers read it there and never look the agent up; the walk entry
@@ -619,3 +620,8 @@ Ruled on 2026-10-16 under plan 3 (task 176): every line still said outside a wor
 doc's table: a law or a guard that stays in code, a feature's own conduct of another kind that stays with it, or a
 workflow in phase 3 once its check exists: polling, the reaction, a rule's review, the etiquette reminder and a
 plan's changes, each in the base workflow.
+
+Built on 2026-10-16 under plan 3 (phase 2): the seven state workflows, the base first, drawn from the per-event
+drawings and the state rules; the older shape retires at boot, whole when unedited, its triggers alone when the user
+edited it; Working, Expecting and the running state no longer say their lines; the replays' equal compares the lines
+of one answer as a set, since each is an instruction of its own and only the order of the merge changed.
