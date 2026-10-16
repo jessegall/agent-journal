@@ -6,10 +6,12 @@ import "./tokens.css";
 import {watchPresses} from "./platform/pressed.js";
 import {followPage} from "./state/updating.js";
 import {logInputs} from "./platform/inputLog.js";
+import {pasteByHand} from "./platform/pasteByHand.js";
 
 watchConsole();
 watchPresses();
 logInputs(window);
+pasteByHand(window);
 followPage(document);
 
 function start({root = App, given = new Map()} = {}) {
