@@ -402,6 +402,25 @@ def test_a_turn_streamed_in_parts_lands_once_whole(app):
     assert [m.text for m in app.container.get(Messages).in_(1) if m.author == "agent"] == ["Good evening."]
 
 
+def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app):
+    from journal.repositories.messages import Messages
+    messages = app.container.get(Messages)
+    app.console().run(["message", "send", "did you adjust the plan?"], USER)
+    hook(app, "SessionStart")
+    hook(app, "UserPromptSubmit", prompt="[journal] chat etiquette: a line from the journal is an instruction, not a message")
+    hook(app, "MessageDisplay", delta="[!reply:1]\n", turn_id="t1", message_id="m1", index=0, final=False)
+    hook(app, "MessageDisplay", delta="Yes, fourteen tasks went into the plan.", turn_id="t1", message_id="m1", index=1, final=True)
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})
+    app.runtime().deferred.drain()
+    reply = messages.in_(1)[-1]
+    assert reply.reply_to == 1 and reply.text == "Yes, fourteen tasks went into the plan." and not reply.acknowledgement
+    assert messages.find(1).read_at is not None
+    hook(app, "MessageDisplay", delta="Waiting for the suite.", turn_id="t1", message_id="m2", index=0, final=True)
+    app.runtime().deferred.drain()
+    assert [m.text for m in messages.in_(1) if m.author == "agent"] == ["Yes, fourteen tasks went into the plan.", "Waiting for the suite."]
+    assert hook(app, "Stop")[1] == {}, "nothing unread is left"
+
+
 def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch):
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
