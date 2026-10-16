@@ -34,10 +34,10 @@ class Entries(ScopedRepository[Entry]):
         return row["id"] or 0
 
     def dispatches(self, session: str) -> list[Entry]:
-        """Every dispatch of a subagent in a session, however long ago: the Agent tool's starts and finishes and the subagents' own stops, oldest first."""
+        """Every dispatch of a subagent in a session, however long ago: the Agent tool's starts and finishes, the subagents' own stops and the turn and session ends that close what never answered, oldest first."""
         rows = self.connection.all(
             f"SELECT * FROM {self.table} WHERE environment_id = ? AND json_extract(data, '$.session_id') = ? "
-            "AND (kind = 'SubagentEnded' OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task'))) ORDER BY id",
+            "AND (kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task'))) ORDER BY id",
             (self.scope.id, session))
         return [self._load(row) for row in rows]
 
