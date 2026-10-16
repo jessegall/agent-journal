@@ -62,9 +62,9 @@ def test_a_command_from_inside_an_agent_is_the_live_agents(app):
     try:
         port = app.server().port
         hook = js.dumps({"hook_event_name": "SessionStart", "session_id": "live-1"}).encode()
-        urlopen(HttpRequest(f"http://127.0.0.1:{port}/hooks/claude", data=hook, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        urlopen(HttpRequest(f"http://127.0.0.1:{port}/hooks/claude", data=hook, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         body = js.dumps({"argv": ["task", "create", "from inside"], "env": "main", "session": "", "agent": True}).encode()
-        urlopen(HttpRequest(f"http://127.0.0.1:{port}/cli", data=body, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        urlopen(HttpRequest(f"http://127.0.0.1:{port}/cli", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         assert app.container.get(Tasks).find(1).created_by == Actor.agent("live-1")
     finally:
         app.runtime().stop()

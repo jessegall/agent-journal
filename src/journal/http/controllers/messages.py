@@ -20,7 +20,7 @@ class MessageController(Controller[Message]):
 
     def read(self, request: Request) -> Response:
         try:
-            message = self.repository.find(int(request.params["id"]))
+            message = self.repository.find(request.number("id"))
         except NotFound as missing:
             return Response.not_found(str(missing))
         return Response.json(self.repository.mark_read(message, request.actor))

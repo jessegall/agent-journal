@@ -765,11 +765,11 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
-    bar = json.load(urlopen(f"http://127.0.0.1:{port}/api/bar?env=main", timeout=5))["queue"]
+    bar = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/bar?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["queue"]
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
     console.run(["shell", "ran", "git commit -m done", "--chain", "c1", "--status", "0", "--seconds", "2", "--output", "[main 1a2b3c4] done"], AGENT)
-    assert json.load(urlopen(f"http://127.0.0.1:{port}/api/bar?env=main", timeout=5))["queue"][-1]["done"] is True
-    line = json.load(urlopen(f"http://127.0.0.1:{port}/api/agent/1/terminal?env=main", timeout=5))["lines"][-1]
+    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/bar?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["queue"][-1]["done"] is True
+    line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/agent/1/terminal?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["lines"][-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
     moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
     assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
@@ -796,13 +796,13 @@ def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking
     console.run(["message", "read", "1"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.runtime().deferred.drain()
-    agent = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", timeout=5))["rows"][-1]["data"]
+    agent = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]
     assert agent["thinking"] == "Now the next step."
     reply = app.container.get(Messages).all()[-1]
     assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered(1) == []
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
-    assert json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", timeout=5))["rows"][-1]["data"]["thinking"] == ""
+    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]["thinking"] == ""
     assert "no journal is running" in console.run(["setup", "restart"], USER).out
 
 
@@ -840,7 +840,7 @@ def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
     from urllib.request import urlopen
     hook(app, "SessionStart")
     app.console().run(["shell", "ran", "sed -i '' s/a/b/ notes.md", "--chain", "c2", "--status", "0", "--changed", "3\t1\tnotes.md\n0\t0\tsame.md"], AGENT)
-    edits = json.load(urlopen(f"http://127.0.0.1:{app.server().port}/api/agent/1/edits?env=main", timeout=5))["edits"]
+    edits = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent/1/edits?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["edits"]
     assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 1), ("same.md", 0, 0)] and edits[0]["command"].startswith("sed")
 
 
@@ -878,14 +878,14 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     hook(app, "SessionStart")
     port = app.server().port
     def post(path, body):
-        with urlopen(R(f"http://127.0.0.1:{port}{path}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+        with urlopen(R(f"http://127.0.0.1:{port}{path}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
             return j.loads(r.read())
     installed = post("/journal/mcp/install", {"name": "github"})
     assert installed["state"] == "needs_key" and installed["has_key"] is False and sent[-1]["type"] == "RestartAgent" and sent[-1]["resume"] == ["--resume", "s1"], "an idle agent restarts at once"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     sent.clear()
     post("/journal/mcp/github/key", {"value": "first"})
-    assert sent == [] and j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))["restart_pending"] == ["s1"], "an agent at work is not cut off"
+    assert sent == [] and j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))["restart_pending"] == ["s1"], "an agent at work is not cut off"
     hook(app, "Stop")
     app.runtime().deferred.drain()
     assert sent and sent[-1]["type"] == "RestartAgent", "the restart comes the moment its turn ends"
@@ -898,7 +898,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     post("/journal/mcp/install", {"name": "linear"})
     states = {s["name"]: s["state"] for s in post("/journal/mcp/check", {})["servers"]}
     assert states == {"github": "connected", "linear": "needs_auth"}
-    page = j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))
+    page = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
     assert [(s["name"], s["managed"]) for s in page["servers"]] == [("github", True), ("linear", True), ("playwright", False)], "the program's own servers show after the journal's"
     assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
@@ -1158,11 +1158,11 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     shown = console.run(["chart", "show"], AGENT).out
     assert f"{t} --then--> {c}" in shown and f"{c} --yes--> {a}" in shown and "block_stop: tasks are open" in shown
     port = app.server().port
-    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/{wf}", timeout=5))
+    read = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/{wf}", headers={"X-Journal-Env": "main"}), timeout=5))
     assert read["revision"] == 0 and [n["key"] for n in read["nodes"]][shipped:] == ["tool_finished", "open_tasks", "block_stop"] and len(read["catalogue"]) > 30
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{wf}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{wf}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1182,7 +1182,7 @@ def test_a_wrong_chart_is_refused_with_its_faults(app):
     port = app.server().port
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1206,12 +1206,12 @@ def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     port = app.server().port
-    catalogue = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/1", timeout=5))["catalogue"]
+    catalogue = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))["catalogue"]
     by_key = {e["key"]: e for e in catalogue}
     assert by_key["turn_written"]["providers"] == ["claude"] and by_key["idle"]["providers"] == ["claude", "codex"]
     def post(body):
         try:
-            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+            with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
                 return r.status, j.loads(r.read())
         except HTTPError as error:
             return error.code, j.loads(error.read())
@@ -1323,17 +1323,17 @@ def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(a
     console = app.console()
     console.run(["environment", "here"], AGENT)
     port = app.server().port
-    read = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/1", timeout=5))
+    read = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))
     assert all(n["shipped"] for n in read["nodes"])
     nodes = read["nodes"]
     nodes[-1]["text"] = "my own words"
     nodes[0]["x"] = 99
-    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": read["lines"]}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         saved = j.loads(r.read())
     assert saved["nodes"][-1]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
     assert "(edited)" in console.run(["chart", "show"], AGENT).out
     assert "reset to the shipped one, revision 2" in console.run(["chart", "reset"], AGENT).out
-    again = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart/1", timeout=5))
+    again = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))
     assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
 
 
@@ -1442,13 +1442,13 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     monkeypatch.setattr(Health, "remove", lambda self, name: removed.append(name) or name == "blender")
     hook(app, "SessionStart")
     port = app.server().port
-    listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/mcp", timeout=5))["servers"]
+    listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))["servers"]
     assert [s["name"] for s in listed] == ["blender"] and listed[0]["managed"] is False
-    with urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/blender/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/blender/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         assert j.loads(r.read()) == {"removed": "blender"}
     assert removed == ["blender"] and sent[-1]["type"] == "RestartAgent"
     try:
-        urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/nothing/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5)
+        urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/nothing/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5)
     except HTTPError as error:
         assert error.code == 404
 
@@ -1481,9 +1481,9 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console = app.console()
     console.run(["environment", "here"], AGENT)
     port = app.server().port
-    listed = j.load(urlopen(f"http://127.0.0.1:{port}/journal/chart", timeout=5))
+    listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
     assert [w["title"] for w in listed["workflows"]] == ["Agent stops", "Session starts", "Message arrives", "Prompt sent", "Tool about to run", "Clock ticks", "Worker reports", "Question answered"] and listed["catalogue"]
-    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and made["nodes"] == []
     second = made["id"]
@@ -1496,10 +1496,10 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     body = hook(app, "Stop")[1]
     assert "tasks are open" in body["reason"] and "says hello" not in body["reason"], "and the stop is the first one's alone"
     try:
-        urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5)
+        urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5)
     except HTTPError as error:
         assert error.code == 409, "the shipped workflow stays"
-    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{second}/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+    with urlopen(R(f"http://127.0.0.1:{port}/journal/chart/{second}/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         assert j.loads(r.read()) == {"removed": second}
     assert "Greetings" not in console.run(["chart", "show"], AGENT).out
 
@@ -1514,7 +1514,7 @@ def test_a_workflow_holds_one_trigger(app):
     port = app.server().port
     nodes = [{"id": "a", "kind": "trigger", "key": "idle"}, {"id": "b", "kind": "trigger", "key": "ticked"}]
     try:
-        urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": []}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5)
+        urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": []}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5)
     except HTTPError as error:
         assert error.code == 409 and "holds one trigger; this one has 2" in j.loads(error.read())["error"]
 
@@ -1923,7 +1923,7 @@ def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     console.run(["plan", "add", "1", "its own"], USER)
     console.run(["plan", "cancel", "1"], USER)
     for kind in ("plan", "todo"):
-        with urlopen(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main", timeout=5) as reply:
+        with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
             assert reply.status == 200, f"a cancelled {kind} is shaped for the page"
             assert "abandoned" in j.dumps(j.loads(reply.read()))
 

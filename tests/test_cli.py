@@ -58,7 +58,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app):
     server.start()
     try:
         body = json.dumps({"argv": ["task", "create", "over http"], "env": "main", "session": "s-9"}).encode()
-        with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/cli", data=body, method="POST", headers={"Content-Type": "application/json"}), timeout=5) as reply:
+        with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/cli", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as reply:
             outcome = json.loads(reply.read())
     finally:
         server.stop()

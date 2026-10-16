@@ -32,7 +32,7 @@ class Controller(Generic[S]):
 
     def show(self, request: Request) -> Response:
         try:
-            return Response.json(self.repository.find(int(request.params["id"])))
+            return Response.json(self.repository.find(request.number("id")))
         except NotFound as missing:
             return Response.not_found(str(missing))
 
@@ -42,7 +42,7 @@ class Controller(Generic[S]):
 
     def update(self, request: Request) -> Response:
         try:
-            row = self.repository.find(int(request.params["id"]))
+            row = self.repository.find(request.number("id"))
         except NotFound as missing:
             return Response.not_found(str(missing))
         return Response.json(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor))

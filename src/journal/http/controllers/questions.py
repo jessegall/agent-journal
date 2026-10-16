@@ -18,7 +18,7 @@ class QuestionController(Controller[Question]):
     def answer(self, request: Request) -> Response:
         from journal.features.questions.feature import Questions as QuestionsFeature
         try:
-            question = self.repository.find(int(request.params["id"]))
+            question = self.repository.find(request.number("id"))
         except NotFound as missing:
             return Response.not_found(str(missing))
         answered = self.repository.save(question.answered(request.body.get("answer", "")), request.actor)

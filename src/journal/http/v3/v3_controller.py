@@ -147,7 +147,7 @@ class V3Controller:
 
     def get_one(self, request: Request) -> Response:
         shaper = self.shapers.named(request.params["type"])
-        n = int(request.params["n"])
+        n = request.number("n")
         row = next((r for r in (shaper.rows(self.environment_of(request)) if shaper else []) if r.n == n), None)
         return Response.json(row.to_json()) if row else Response.not_found(f"no {request.params['type']} {n}")
 
@@ -166,7 +166,7 @@ class V3Controller:
         type_, action = request.params["type"], request.params["action"]
         if not request.params["n"].isdigit():
             return Response.refused(f"{action} on a {type_} by its session is not something the viewer can do here yet")
-        n = int(request.params["n"])
+        n = request.number("n")
         try:
             done = self.actions.act(type_, n, action, request.body, request)
         except NotFound as missing:
@@ -177,7 +177,7 @@ class V3Controller:
 
     def post_upload(self, request: Request) -> Response:
         environment = self.environment_of(request)
-        type_, n = request.params["type"], int(request.params["n"])
+        type_, n = request.params["type"], request.number("n")
         try:
             done = self.actions.upload(type_, n, request)
         except NotFound as missing:
@@ -187,7 +187,7 @@ class V3Controller:
         return Response.json(self.row_of(type_, n, environment) or {})
 
     def get_attached_file(self, request: Request):
-        found = self.actions.attachments.read(request.params["type"], int(request.params["n"]), request.params["name"])
+        found = self.actions.attachments.read(request.params["type"], request.number("n"), request.params["name"])
         return FileResponse(*found) if found else Response.not_found("no such file")
 
     def post_read_all(self, request: Request) -> Response:
@@ -264,7 +264,7 @@ class V3Controller:
     def get_agent_edits(self, request: Request) -> Response:
         """The files the agent wrote or edited, newest last, with the lines each change added and removed, as the file edits pane draws them."""
         environment = self.environment_of(request)
-        n = int(request.params["n"])
+        n = request.number("n")
         agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
         if agent is None:
             return Response.json({"cursor": time.time(), "edits": [], "older": False})
@@ -332,7 +332,7 @@ class V3Controller:
     def get_agent_terminal(self, request: Request) -> Response:
         """The shell commands the agent ran, part by part, with what each printed and how long it took, as the terminal pane shows them."""
         environment = self.environment_of(request)
-        n = int(request.params["n"])
+        n = request.number("n")
         agent = next((a for a in self.agents.in_(environment.id) if a.id == n), None)
         if agent is None:
             return Response.json({"lines": []})

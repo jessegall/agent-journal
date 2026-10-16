@@ -120,7 +120,7 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
         assert "\"face\"" not in json.dumps(call(server, "GET", "/api/reaction")[1], ensure_ascii=False), "the same face again takes it off"
         hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
         for kind, extra in (("SessionStart", {}), ("PreToolUse", {"tool_name": "Agent", "tool_input": {"description": "review the login", "prompt": "read the login flow and report", "subagent_type": "reviewer", "model": "sonnet"}}), ("PostToolUse", {"tool_name": "Agent", "tool_input": {}, "tool_response": "fine"})):
-            urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+            urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         agents = json.dumps(call(server, "GET", "/api/agent")[1])
         assert '"task": "review the login"' in agents and '"type": "reviewer"' in agents and '"status": "done"' in agents
     finally:
@@ -221,7 +221,7 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
     server = app.server()
     try:
         data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode()
-        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.console().run(["task", "create", "the footer", "--start"], Where("main", "s1"))
         work = call(server, "GET", "/api/work")[1]["rows"][0]
         assert work["title"] == "the footer" and work["data"]["awaiting"] == "" and work["data"]["todo"] == 1
@@ -246,7 +246,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
     server = app.server()
     hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
     def hook(kind, **extra):
-        return urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        return urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     try:
         hook("SessionStart")
         n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k"})[1]["n"]
@@ -313,7 +313,7 @@ def test_a_file_attached_to_a_message_is_stored_and_served(server):
     with urlopen(request, timeout=5) as reply:
         row = json.loads(reply.read())
     assert row["data"]["files"] == {"note.txt": ""}
-    with urlopen(f"http://127.0.0.1:{server.port}/api/message/{n}/files/note.txt?env=main", timeout=5) as reply:
+    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/api/message/{n}/files/note.txt?env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         assert reply.read() == b"hello there" and reply.headers["Content-Type"].startswith("text/plain")
 
 
@@ -346,8 +346,8 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
         assert call(server, "POST", "/api/agent/s1/control", {"action": "effort", "value": "max"})[1]["queued"] is True and typed[-1] == "/effort max"
         assert call(server, "POST", "/api/agent/s1/control", {"action": "model", "value": "gpt"})[0] == 409
         n = call(server, "POST", "/api/message", {"brief": "is the footer fixed?\nand the header?", "idempotency": "q"})[1]["n"]
-        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
-        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
+        urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
         reply = call(server, "GET", "/api/message")[1]["rows"][-1]
         assert reply["brief"] == "Both are." and reply["refs"] == [f"message:{n}"] and reply["data"]["reply_to"] == n
@@ -366,7 +366,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
     try:
         n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
-            urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5).read()
+            urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
         rows = [r for r in call(server, "GET", "/api/message?completed=1")[1]["rows"] if n in (r["n"], r["data"]["reply_to"])]
         assert [(r["type"], r["data"]["author"], r["data"]["reply_to"], r["brief"]) for r in rows] == [("message", "user", 0, "hello"), ("message", "agent", n, "Hello back.")]

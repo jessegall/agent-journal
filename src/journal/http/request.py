@@ -2,6 +2,7 @@ from dataclasses import dataclass, field, replace
 
 from journal.models.actor import Actor
 from journal.refused import Refused
+from journal.repositories.not_found import NotFound
 
 ENV_HEADER = "X-Journal-Env"
 
@@ -21,6 +22,13 @@ class Request:
 
     def with_params(self, params: dict) -> "Request":
         return replace(self, params=params)
+
+    def number(self, name: str) -> int:
+        """A row's number from the path; an address with something else there names no row."""
+        given = self.params.get(name, "")
+        if not given.isdigit():
+            raise NotFound("rows", given or "nothing")
+        return int(given)
 
     @property
     def environment(self) -> str:

@@ -26,7 +26,7 @@ class ChartController:
 
     def one(self, request: Request) -> Response:
         try:
-            return Response.json(self.drawn(self.charts.find(int(request.params["id"]))))
+            return Response.json(self.drawn(self.charts.find(request.number("id"))))
         except NotFound as missing:
             return Response.not_found(str(missing))
 
@@ -44,14 +44,14 @@ class ChartController:
         return Response.json(self.drawn(chart), 201)
 
     def remove(self, request: Request) -> Response:
-        chart = self.charts.find(int(request.params["id"]))
+        chart = self.charts.find(request.number("id"))
         if chart.shipped:
             return Response.refused("a shipped workflow stays; empty it or reset it instead")
         self.charts.remove(chart, request.actor)
         return Response.json({"removed": chart.id})
 
     def save(self, request: Request) -> Response:
-        chart = self.charts.find(int(request.params["id"]))
+        chart = self.charts.find(request.number("id"))
         if int(request.body.get("revision", -1)) != chart.revision:
             return Response.refused(f"the workflow changed since you read it: it is at revision {chart.revision}, read it again")
         faults = self.validation.faults(chart, request.body.get("nodes", []), request.body.get("lines", []))
@@ -67,7 +67,7 @@ class ChartController:
         return Response.json(self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed))
 
     def reset(self, request: Request) -> Response:
-        chart = self.charts.find(int(request.params["id"]))
+        chart = self.charts.find(request.number("id"))
         if not chart.shipped:
             return Response.refused("only a shipped workflow has a shipped drawing to go back to")
         return Response.json(self.drawn(self.shipped.reset(chart, request.actor)))

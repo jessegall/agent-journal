@@ -32,7 +32,7 @@ def app(tmp_path: Path):
 
 def hook(app, kind: str, **body):
     data = json.dumps({"hook_event_name": kind, "session_id": "s1", **body}).encode()
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json"})
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
     try:
         with urlopen(request, timeout=5) as reply:
             return reply.status, json.loads(reply.read())

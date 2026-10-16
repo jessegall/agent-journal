@@ -23,7 +23,7 @@ class TaskController(Controller[Task]):
 
     def log(self, request: Request) -> Response:
         try:
-            task = self.repository.find(int(request.params["id"]))
+            task = self.repository.find(request.number("id"))
         except NotFound as missing:
             return Response.not_found(str(missing))
         line = self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=request.body.get("line", "")), request.actor)
@@ -31,7 +31,7 @@ class TaskController(Controller[Task]):
 
     def _change(self, request: Request, change) -> Response:
         try:
-            task = self.repository.find(int(request.params["id"]))
+            task = self.repository.find(request.number("id"))
         except NotFound as missing:
             return Response.not_found(str(missing))
         return Response.json(self.repository.save(change(task), request.actor))
