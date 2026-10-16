@@ -9,7 +9,7 @@ from journal.features.chart.trial import Trial
 from journal.repositories.environments import Environments
 from journal.features.chart.validation import TEXT_LIMIT, Validation
 from journal.refused import Refused
-from journal.models.chart import Chart
+from journal.models.chart import BASE, Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import PORTS, THEN, Charts
@@ -32,13 +32,16 @@ class ChartCommand(Command):
         node.add_argument("kind", choices=[k.value for k in NodeKind])
         node.add_argument("key")
         node.add_argument("--text", default="", help="the line an action says, holds with, blocks with or types, or the sequence it starts")
-        node.add_argument("--in", dest="chart", type=int, default=0, help="the workflow by its number; the shipped one unless given")
+        node.add_argument("--in", dest="chart", type=int, default=0, help="the workflow by its number")
+        node.add_argument("--for", dest="state", default="", help="the workflow by its state, or base")
         line = self.verb(verbs, "line", "draw a line from one node to another")
         line.add_argument("source", type=int)
         line.add_argument("target", type=int)
         line.add_argument("--port", default=THEN, choices=PORTS, help="then from a trigger or an action; yes or no from a check")
         self.verb(verbs, "remove", "take a node out, with its lines").add_argument("n", type=int)
-        self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone").add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number; the first shipped one unless given")
+        reset = self.verb(verbs, "reset", "a shipped workflow as shipped again: every edit gone")
+        reset.add_argument("chart", type=int, nargs="?", default=0, help="the workflow's number")
+        reset.add_argument("--for", dest="state", default="", help="the workflow by its state, or base")
         try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
         try_.add_argument("trigger")
         try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
@@ -49,7 +52,7 @@ class ChartCommand(Command):
         try_.add_argument("--provider", default=None, help="the provider whose agent is tried, claude or codex, whose tool names the tool event takes")
 
     def show(self, args: Namespace, where: Where) -> int:
-        for chart in self.charts.all():
+        for chart in self.in_order():
             sidelined = self.charts.sidelined_by(chart)
             bound = f" [{chart.state}]" if chart.bound_to_a_state else ""
             print(f"workflow {chart.id}{bound}, revision {chart.revision}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
@@ -58,6 +61,22 @@ class ChartCommand(Command):
             for line in self.charts.lines_of(chart):
                 print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
         return 0
+
+    def in_order(self) -> list[Chart]:
+        """The base first, then the states' workflows by name, then those of the older shape."""
+        bound = sorted((c for c in self.charts.all() if c.bound_to_a_state), key=lambda c: (c.state != BASE, c.state))
+        return bound + self.charts.by_event()
+
+    def named_workflow(self, number: int, state: str) -> Chart:
+        """The workflow a command means: by its number, or by the state it is for."""
+        if number:
+            return self.charts.find(number)
+        if state:
+            found = self.charts.for_state(state)
+            if found is None:
+                raise Refused(f"no workflow is for {state}: journal chart new \"<title>\" --for {state} makes one")
+            return found
+        raise Refused("name the workflow: --in <n> by its number, or --for <state>")
 
     def new(self, args: Namespace, where: Where) -> int:
         faults = self.validation.binding_faults(Chart(title=args.title, state=args.state))
@@ -69,6 +88,8 @@ class ChartCommand(Command):
 
     def drop(self, args: Namespace, where: Where) -> int:
         chart = self.charts.find(args.n)
+        if chart.shipped:
+            raise Refused(f"workflow {chart.id} is a shipped one and stays: empty it, or journal chart reset {chart.id} brings its drawing back")
         self.charts.remove(chart, where.actor)
         print(f"workflow {chart.id} taken out: {chart.title}")
         return 0
@@ -83,7 +104,7 @@ class ChartCommand(Command):
         entry = self.entries.entry(kind, args.key)
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
-        chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
+        chart = self.named_workflow(args.chart, args.state)
         wrong = self.validation.action_faults([{"kind": kind, "key": args.key, "text": args.text}])
         if wrong:
             raise Refused(wrong[0])
@@ -115,7 +136,7 @@ class ChartCommand(Command):
         return 0
 
     def reset(self, args: Namespace, where: Where) -> int:
-        chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
+        chart = self.named_workflow(args.chart, args.state)
         if not chart.shipped:
             raise Refused(f"workflow {chart.id} is not a shipped one: only a shipped workflow has a drawing to go back to")
         chart = self.shipped.reset(chart, where.actor)

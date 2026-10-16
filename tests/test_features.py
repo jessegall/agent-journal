@@ -1148,7 +1148,7 @@ def test_the_chart_is_rows_a_catalogue_and_one_whole_save_with_a_revision(app):
     console = app.console()
     listed = console.run(["chart", "catalogue"], AGENT).out
     assert "trigger  idle" in listed and "action   say" in listed and "trigger  plans.created" in listed
-    assert "has no check named flying" in console.run(["chart", "node", "check", "flying"], AGENT).err
+    assert "has no check named flying" in console.run(["chart", "node", "check", "flying", "--in", "1"], AGENT).err
     wf = int(console.run(["chart", "new", "a test"], AGENT).out.split()[1].rstrip(":"))
     add = lambda kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
     shipped = 0
@@ -1332,7 +1332,7 @@ def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(a
         saved = j.loads(r.read())
     assert saved["nodes"][-1]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
     assert "(edited)" in console.run(["chart", "show"], AGENT).out
-    assert "reset to the shipped one, revision 2" in console.run(["chart", "reset"], AGENT).out
+    assert "reset to the shipped one, revision 2" in console.run(["chart", "reset", "1"], AGENT).out
     again = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/1", headers={"X-Journal-Env": "main"}), timeout=5))
     assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
 
@@ -1510,7 +1510,7 @@ def test_a_workflow_holds_one_trigger(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    assert "a workflow holds one trigger" in console.run(["chart", "node", "trigger", "tool_starting"], AGENT).err
+    assert "a workflow holds one trigger" in console.run(["chart", "node", "trigger", "tool_starting", "--in", "1"], AGENT).err
     port = app.server().port
     nodes = [{"id": "a", "kind": "trigger", "key": "idle"}, {"id": "b", "kind": "trigger", "key": "ticked"}]
     try:
@@ -2022,3 +2022,18 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     walks = entries.of_kind(1, "walk", 1000)
     since = [w.data["trigger"] for w in walks[: len(walks) - before]]
     assert set(since) == {"workers.updated", "messages.created"}, "the report's two rows were walked, the worker's and its message; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
+
+
+def test_the_chart_commands_name_a_workflow_by_number_or_by_state(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    assert "name the workflow: --in <n> by its number, or --for <state>" in console.run(["chart", "node", "check", "open_tasks"], USER).err
+    assert "no workflow is for working" in console.run(["chart", "node", "check", "open_tasks", "--for", "working"], USER).err
+    working = int(console.run(["chart", "new", "While working", "--state", "working"], USER).out.split()[1].rstrip(":"))
+    assert console.run(["chart", "node", "trigger", "tool_starting", "--for", "working"], USER).code == 0
+    assert "is not a shipped one" in console.run(["chart", "reset", "--for", "working"], USER).err
+    assert "is a shipped one and stays" in console.run(["chart", "drop", "1"], USER).err
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    shown = console.run(["chart", "show"], USER).out
+    assert shown.index(f"workflow {base} [base]") < shown.index(f"workflow {working} [working]") < shown.index("workflow 1, revision"), "the base first, then the states, then the older shape"
