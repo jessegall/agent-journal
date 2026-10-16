@@ -16,11 +16,16 @@ import SidePanel from "../kit/SidePanel.vue";
 import TextInput from "../kit/TextInput.vue";
 import ChartList from "./ChartList.vue";
 
-const CARD = {width: 208, plain: 48, text: 84, open: 124};
+const CARD = {width: 208, plain: 48, text: 84};
 const PORT_AT = {then: 50, yes: 30, no: 70};
 const WORD = {then: "Next", yes: "Yes", no: "No"};
 const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
-const HELP = "{{name}}";
+const TEST_LINE = "Runs this workflow for its event against the journal as it is now. Nothing is done: the steps and the result open beside the canvas, and the path lights up.";
+const FILLERS = [
+    {key: "{{parked_tasks}}", about: "The parked tasks, each with why it was parked"},
+    {key: "{{next_task}}", about: "The number of the next open task"},
+    {key: "{{next_task_title}}", about: "The title of the next open task"},
+];
 const LEAD = "Workflows control what happens when the agent does something. Each starts at a trigger (an event), then runs through checks (yes/no questions) and actions. Drag from a port to connect two nodes. Changes apply when you save.";
 const VIEWS = [
     {key: "canvas", label: "Canvas"},
@@ -51,6 +56,10 @@ const dropMark = ref(null);
 const search = ref("");
 const naming = ref(null);
 const confirming = ref("");
+const showLead = ref(false);
+const editing = ref(null);
+const messageText = ref("");
+const messageBox = ref(null);
 const trial = reactive({nodes: [], would: [], ran: false});
 let fresh = 0;
 
@@ -210,7 +219,7 @@ function setText(node, text) {
 
 // the flow reads down the page: a line leaves a card by its bottom edge and enters the next by its top; a check's Yes and No sit side by side
 const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
-const heightOf = (node) => (entryOf(node).takes_text ? (selected.value === node.id && node.kind === "action" ? CARD.open : CARD.text) : CARD.plain);
+const heightOf = (node) => (entryOf(node).takes_text ? CARD.text : CARD.plain);
 const portAt = (node, port) => ({x: node.x + (CARD.width * PORT_AT[port]) / 100, y: node.y + heightOf(node)});
 const inAt = (node) => ({x: node.x + CARD.width / 2, y: node.y});
 const path = (from, to) => {
@@ -396,6 +405,26 @@ const skipped = computed(() => {
 });
 const triggerTitle = computed(() => (trigger.value ? entryOf(trigger.value).title : "No trigger yet"));
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
+// the message is written in the side panel and lands on the card as one change when the panel closes
+function openMessage(node) {
+    selected.value = node.id;
+    editing.value = node;
+    messageText.value = node.text;
+}
+
+function closeMessage() {
+    if (editing.value && messageText.value !== editing.value.text) setText(editing.value, messageText.value);
+    editing.value = null;
+}
+
+function insertFiller(filler) {
+    const box = messageBox.value;
+    const at = box ? box.selectionStart : messageText.value.length;
+    const text = messageText.value;
+    messageText.value = `${text.slice(0, at)}${filler.key}${text.slice(at)}`;
+    if (box) nextTick(() => box.focus());
+}
+
 const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting's name" : "Message to the agent");
 </script>
 
@@ -440,15 +469,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 
         <div class="chart-page">
             <header class="chart-head">
-                <div>
+                <div class="chart-head-words">
                     <h1>Workflows</h1>
-                    <p class="chart-lead">{{ LEAD }}</p>
+                    <button type="button" class="chart-help" @click="showLead = !showLead">{{ showLead ? "Hide how it works" : "How it works" }}</button>
                 </div>
                 <div class="chart-acts">
                     <Btn ref="addButton" kind="ghost" small :class="{on: adding && !adding.at}" @click.stop="openAdd(null)">Add node</Btn>
                     <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                 </div>
             </header>
+            <p v-if="showLead" class="chart-lead">{{ LEAD }}</p>
             <p v-if="notice" class="chart-notice">{{ notice }}</p>
 
             <ChartList v-if="view === 'list'" :nodes="nodes" :lines="lines" :entry-of="entryOf" @text="setText" @line="connect" @unline="disconnect" @remove="remove" />
@@ -481,15 +511,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         </div>
                         <div class="chart-node-title" :title="entryOf(node).about">{{ entryOf(node).title }}</div>
                         <template v-if="entryOf(node).takes_text">
-                            <textarea
-                                v-if="selected === node.id && node.kind === 'action'"
-                                class="chart-node-text open"
-                                :value="node.text"
-                                :placeholder="placeholderOf(node)"
-                                rows="2"
+                            <button
+                                v-if="node.kind === 'action'"
+                                type="button"
+                                :class="['chart-node-text', {empty: !node.text}]"
+                                title="Click to write the message"
                                 @pointerdown.stop
-                                @input="setText(node, $event.target.value)"
-                            />
+                                @click.stop="openMessage(node)"
+                            >
+                                {{ node.text || placeholderOf(node) }}
+                            </button>
                             <input
                                 v-else
                                 class="chart-node-text"
@@ -499,7 +530,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 @focus="selected = node.id"
                                 @input="setText(node, $event.target.value)"
                             />
-                            <span v-if="selected === node.id && node.kind === 'action'" class="chart-node-help">Insert values with {{ HELP }}</span>
                         </template>
                         <span v-if="node.kind !== 'trigger'" :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]" />
                         <template v-for="port in ports(node)" :key="port">
@@ -522,10 +552,10 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </div>
                 <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
 
-                <div class="chart-test">
+                <div class="chart-test" v-tip="{title: 'Test', line: TEST_LINE}">
                     <span class="chart-test-label">Test with event</span>
                     <span class="chart-test-event"><span class="chart-glyph trigger" />{{ triggerTitle }}</span>
-                    <span class="chart-test-note">Changes nothing</span>
+                    <span class="chart-test-note">Dry run, changes nothing</span>
                     <Btn kind="ghost" small :busy="busy === 'try'" :disabled="!trigger" @click="tryIt">Test</Btn>
                 </div>
 
@@ -567,7 +597,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
         </template>
 
         <template v-if="trial.ran">
-            <SidePanel title="Test result" abstract="Run against current data. Nothing was changed." @close="trial.ran = false">
+            <SidePanel title="Test result" :abstract="`Ran for ${triggerTitle} against the journal as it is now. Nothing was changed; the lit path on the canvas is what would have run.`" @close="trial.ran = false">
                 <MenuLabel>Steps</MenuLabel>
                 <ol v-if="steps.length" class="chart-steps">
                     <li v-for="(step, i) in steps" :key="`${step.id}-${i}`">
@@ -590,6 +620,24 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             </SidePanel>
         </template>
 
+        <template v-if="editing">
+            <SidePanel title="Message to the agent" :abstract="`${entryOf(editing).title}: what the journal says to the agent at this step`" @close="closeMessage">
+                <textarea ref="messageBox" class="chart-message" :value="messageText" rows="10" placeholder="Message to the agent" @input="messageText = $event.target.value" />
+                <MenuLabel>Values you can insert</MenuLabel>
+                <div class="chart-fillers">
+                    <template v-for="filler in FILLERS" :key="filler.key">
+                        <button type="button" class="chart-filler" @click="insertFiller(filler)">
+                            <code>{{ filler.key }}</code>
+                            <span>{{ filler.about }}</span>
+                        </button>
+                    </template>
+                </div>
+                <template #foot>
+                    <span class="chart-grow" />
+                    <Btn kind="primary" small @click="closeMessage">Done</Btn>
+                </template>
+            </SidePanel>
+        </template>
         <template v-if="confirming === 'reset'">
             <Dialog :title="`Replace ‘${title}’ with the default version?`" fits @close="confirming = ''">
                 <p class="chart-dialog-text">Your edits to this workflow are lost. The other workflows stay as they are.</p>
@@ -651,9 +699,29 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
     min-height: 0;
-    padding: 24px;
+    padding: 12px 16px 16px;
+}
+
+.chart-head-words {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.chart-help {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.chart-help:hover {
+    color: var(--text);
 }
 
 .chart-head {
@@ -664,14 +732,67 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 }
 
 .chart-head h1 {
-    margin: 0 0 6px;
-    font-size: 20px;
+    margin: 0;
+    font-size: 18px;
 }
 
 .chart-lead {
-    max-width: 640px;
-    margin: 0;
+    max-width: 720px;
+    margin: -4px 0 0;
     color: var(--text-dim, #9aa0a6);
+}
+
+.chart-message {
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--bg-2);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.chart-message:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.chart-fillers {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chart-filler {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chart-filler:hover {
+    border-color: var(--border-2);
+    background: var(--hover);
+    color: var(--text);
+}
+
+.chart-filler code {
+    flex: none;
+    color: var(--accent-text);
+    font-family: var(--mono);
+    font-size: 12px;
 }
 
 .chart-acts {
@@ -823,6 +944,7 @@ g:hover .chart-wire {
     width: 100%;
     margin-top: 5px;
     padding: 5px 8px;
+    overflow: hidden;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--bg-2);
@@ -831,27 +953,28 @@ g:hover .chart-wire {
     font-size: 12px;
     line-height: 16px;
     outline: none;
+    text-align: left;
+    white-space: nowrap;
     text-overflow: ellipsis;
+    cursor: text;
+}
+
+.chart-node-text.empty {
+    color: var(--text-4);
+}
+
+button.chart-node-text:hover {
+    border-color: var(--border-3);
+    color: var(--text);
 }
 
 .chart-node-text::placeholder {
     color: var(--text-4);
 }
 
-.chart-node-text.open,
 .chart-node-text:focus {
     border-color: var(--accent);
     color: var(--text);
-}
-
-.chart-node-text.open {
-    resize: none;
-    white-space: normal;
-}
-
-.chart-node-help {
-    color: var(--text-4);
-    font-size: 11px;
 }
 
 .chart-glyph {
@@ -1200,7 +1323,7 @@ g:hover .chart-wire {
 
 @media (max-width: 720px) {
     .chart-page {
-        padding: 16px;
+        padding: 12px;
     }
 
     .chart-head {
