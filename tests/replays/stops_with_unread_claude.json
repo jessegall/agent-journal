@@ -1,53 +1,56 @@
-[
-  {
-    "name": "message 1 arrives",
-    "answer": null,
-    "typed": [
-      "[journal] new message 1"
-    ],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice",
-      "messages.new"
-    ]
-  },
-  {
-    "name": "a stop with one unread",
-    "answer": {
-      "decision": "block",
-      "reason": "new message 1"
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "message 1 arrives",
+      "answer": null,
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice",
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "three more arrive",
-    "answer": null,
-    "typed": [
-      "[journal] new message 2",
-      "[journal] new message 3",
-      "[journal] new message 4"
-    ],
-    "nudges": [
-      "messages.new",
-      "messages.new",
-      "messages.new"
-    ]
-  },
-  {
-    "name": "a stop with four unread",
-    "answer": {
-      "decision": "block",
-      "reason": "4 messages unread: journal message unread"
+    {
+      "name": "a stop with one unread",
+      "answer": {
+        "decision": "block",
+        "reason": "new message 1"
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.many"
-    ]
-  }
-]
+    {
+      "name": "three more arrive",
+      "answer": null,
+      "typed": [
+        "[journal] new message 2",
+        "[journal] new message 3",
+        "[journal] new message 4"
+      ],
+      "nudges": [
+        "messages.new",
+        "messages.new",
+        "messages.new"
+      ]
+    },
+    {
+      "name": "a stop with four unread",
+      "answer": {
+        "decision": "block",
+        "reason": "4 messages unread: journal message unread"
+      },
+      "typed": [],
+      "nudges": [
+        "messages.many"
+      ]
+    }
+  ]
+}

@@ -1,201 +1,204 @@
-[
-  {
-    "name": "a task in hand",
-    "answer": null,
-    "typed": [],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice"
-    ]
-  },
-  {
-    "name": "message 1 arrives",
-    "answer": null,
-    "typed": [
-      "[journal] new message 1"
-    ],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 1",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 2",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 3",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "new message 1"
-      }
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "a task in hand",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 4",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 5",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 6",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "new message 1"
-      }
+    {
+      "name": "message 1 arrives",
+      "answer": null,
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 7",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 8",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 9",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "new message 1"
-      }
+    {
+      "name": "read 1",
+      "answer": {},
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 10",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 11",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 12",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "new message 1"
-      }
+    {
+      "name": "read 2",
+      "answer": {},
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 13",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 14",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 15",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "new message 1"
-      }
+    {
+      "name": "read 3",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 16",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a write at 17",
-    "answer": {
-      "error": "your inbox is unread: 1 waiting. journal message unread before any other write"
+    {
+      "name": "read 4",
+      "answer": {},
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "message 1 read",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a read while owed",
-    "answer": {
-      "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+    {
+      "name": "read 5",
+      "answer": {},
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a journal command while owed",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a look at its files",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "the reply",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a read after the reply",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  }
-]
+    {
+      "name": "read 6",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "read 7",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "read 8",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "read 9",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "read 10",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "read 11",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "read 12",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "read 13",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "read 14",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "read 15",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "read 16",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a write at 17",
+      "answer": {
+        "error": "your inbox is unread: 1 waiting. journal message unread before any other write"
+      },
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "message 1 read",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a read while owed",
+      "answer": {
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+      },
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a journal command while owed",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a look at its files",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "the reply",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a read after the reply",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

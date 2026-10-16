@@ -1,36 +1,39 @@
-[
-  {
-    "name": "awaiting two workers",
-    "answer": null,
-    "typed": [],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice"
-    ]
-  },
-  {
-    "name": "worker 1 reports",
-    "answer": null,
-    "typed": [
-      "[journal] worker 1, Lady Lovelace, reported in the chat"
-    ],
-    "nudges": [
-      "workers.reported"
-    ]
-  },
-  {
-    "name": "worker 2 is stopped",
-    "answer": null,
-    "typed": [
-      "[journal] worker 2, Dr. Einstein, stopped before it reported",
-      "[journal] what you waited on came back: carry on"
-    ],
-    "nudges": [
-      "workers.stopped",
-      "workers.returned"
-    ]
-  }
-]
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "awaiting two workers",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "worker 1 reports",
+      "answer": null,
+      "typed": [
+        "[journal] worker 1, Lady Lovelace, reported in the chat"
+      ],
+      "nudges": [
+        "workers.reported"
+      ]
+    },
+    {
+      "name": "worker 2 is stopped",
+      "answer": null,
+      "typed": [
+        "[journal] worker 2, Dr. Einstein, stopped before it reported",
+        "[journal] what you waited on came back: carry on"
+      ],
+      "nudges": [
+        "workers.stopped",
+        "workers.returned"
+      ]
+    }
+  ]
+}

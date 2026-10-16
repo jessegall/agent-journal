@@ -1,129 +1,132 @@
-[
-  {
-    "name": "message 1 read",
-    "answer": null,
-    "typed": [
-      "[journal] new message 1"
-    ],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice",
-      "messages.new"
-    ]
-  },
-  {
-    "name": "read 1 while owed",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 2 while owed",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "answer message 1 before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
-      }
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "message 1 read",
+      "answer": null,
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice",
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.answer"
-    ]
-  },
-  {
-    "name": "read 3 while owed",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 4 while owed",
-    "answer": {
-      "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+    {
+      "name": "read 1 while owed",
+      "answer": {},
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "read 5 while owed",
-    "answer": {
-      "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+    {
+      "name": "read 2 while owed",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "answer message 1 before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.answer"
+      ]
     },
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "the reply",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "write 1",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "write 2",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "write 3",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "task 1 in hand, 2 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-      }
+    {
+      "name": "read 3 while owed",
+      "answer": {},
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": [
-      "tasks.in_hand"
-    ]
-  },
-  {
-    "name": "write 4",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "3 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
-      }
+    {
+      "name": "read 4 while owed",
+      "answer": {
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+      },
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": [
-      "tasks.log_soon"
-    ]
-  },
-  {
-    "name": "write 5",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "additionalContext": "task 1 in hand, 4 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-      }
+    {
+      "name": "read 5 while owed",
+      "answer": {
+        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+      },
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": [
-      "tasks.in_hand"
-    ]
-  },
-  {
-    "name": "write 6",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "write 7",
-    "answer": {
-      "error": "6 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write"
+    {
+      "name": "the reply",
+      "answer": null,
+      "typed": [],
+      "nudges": []
     },
-    "typed": [],
-    "nudges": []
-  }
-]
+    {
+      "name": "write 1",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "write 2",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "write 3",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "task 1 in hand, 2 edits. if this is not what you are doing, finish it or park it and start the work you are on"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "tasks.in_hand"
+      ]
+    },
+    {
+      "name": "write 4",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "3 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "tasks.log_soon"
+      ]
+    },
+    {
+      "name": "write 5",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "task 1 in hand, 4 edits. if this is not what you are doing, finish it or park it and start the work you are on"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "tasks.in_hand"
+      ]
+    },
+    {
+      "name": "write 6",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "write 7",
+      "answer": {
+        "error": "6 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write"
+      },
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

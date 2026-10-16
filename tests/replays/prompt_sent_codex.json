@@ -1,99 +1,102 @@
-[
-  {
-    "name": "session starts",
-    "answer": null,
-    "typed": [],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice"
-    ]
-  },
-  {
-    "name": "message 1 arrives",
-    "answer": null,
-    "typed": [
-      "[journal] new message 1"
-    ],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "a prompt after 1",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "UserPromptSubmit",
-        "additionalContext": "new message 1"
-      }
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "session starts",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "message 2 arrives",
-    "answer": null,
-    "typed": [
-      "[journal] new message 2"
-    ],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "message 3 arrives",
-    "answer": null,
-    "typed": [
-      "[journal] new message 3"
-    ],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "a prompt after 3",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "UserPromptSubmit",
-        "additionalContext": "new messages 1, 2, 3"
-      }
+    {
+      "name": "message 1 arrives",
+      "answer": null,
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.some"
-    ]
-  },
-  {
-    "name": "message 4 arrives",
-    "answer": null,
-    "typed": [
-      "[journal] new message 4"
-    ],
-    "nudges": [
-      "messages.new"
-    ]
-  },
-  {
-    "name": "a prompt after 4",
-    "answer": {
-      "hookSpecificOutput": {
-        "hookEventName": "UserPromptSubmit",
-        "additionalContext": "4 messages unread: journal message unread"
-      }
+    {
+      "name": "a prompt after 1",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "UserPromptSubmit",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ]
     },
-    "typed": [],
-    "nudges": [
-      "messages.many"
-    ]
-  },
-  {
-    "name": "a prompt again after 4",
-    "answer": {},
-    "typed": [],
-    "nudges": []
-  }
-]
+    {
+      "name": "message 2 arrives",
+      "answer": null,
+      "typed": [
+        "[journal] new message 2"
+      ],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "message 3 arrives",
+      "answer": null,
+      "typed": [
+        "[journal] new message 3"
+      ],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "a prompt after 3",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "UserPromptSubmit",
+          "additionalContext": "new messages 1, 2, 3"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.some"
+      ]
+    },
+    {
+      "name": "message 4 arrives",
+      "answer": null,
+      "typed": [
+        "[journal] new message 4"
+      ],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "a prompt after 4",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "UserPromptSubmit",
+          "additionalContext": "4 messages unread: journal message unread"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.many"
+      ]
+    },
+    {
+      "name": "a prompt again after 4",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

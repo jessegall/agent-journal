@@ -1,58 +1,61 @@
-[
-  {
-    "name": "idle",
-    "answer": null,
-    "typed": [],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice"
-    ]
-  },
-  {
-    "name": "quiet for a minute",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "quiet for half an hour",
-    "answer": null,
-    "typed": [
-      "[journal] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
-    ],
-    "nudges": [
-      "tasks.check_in"
-    ]
-  },
-  {
-    "name": "quiet for half an hour again",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a task parked",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  },
-  {
-    "name": "a minute with a task parked",
-    "answer": null,
-    "typed": [
-      "[journal] task 1, the footer, is still parked: can you continue it now?. it was parked because: the header first. journal task resume 1 picks it up again"
-    ],
-    "nudges": [
-      "tasks.parked_still"
-    ]
-  },
-  {
-    "name": "a minute more",
-    "answer": null,
-    "typed": [],
-    "nudges": []
-  }
-]
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "idle",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "quiet for a minute",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "quiet for half an hour",
+      "answer": null,
+      "typed": [
+        "[journal] nothing has happened for half an hour: is there anything left for you to do?. carry on, take the next task, or say so in one line"
+      ],
+      "nudges": [
+        "tasks.check_in"
+      ]
+    },
+    {
+      "name": "quiet for half an hour again",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a task parked",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a minute with a task parked",
+      "answer": null,
+      "typed": [
+        "[journal] task 1, the footer, is still parked: can you continue it now?. it was parked because: the header first. journal task resume 1 picks it up again"
+      ],
+      "nudges": [
+        "tasks.parked_still"
+      ]
+    },
+    {
+      "name": "a minute more",
+      "answer": null,
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}

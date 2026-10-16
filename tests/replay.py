@@ -3,18 +3,22 @@ that replaces it, and what the agent would have seen is compared step by step: t
 and, when asked, the keys of the nudges said. A record can be frozen to a file, so the comparison survives the listener's deletion."""
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
 
 from journal.models.actor import Actor
+from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 
 RECORDS = Path(__file__).with_name("replays")
+FREEZE = os.environ.get("REPLAY_FREEZE") == "1"
+"""Set, the listener side runs and its record is frozen anew; unset, the frozen record stands in for it, so the proof survives the listeners' deletion and the run boots one journal."""
 
 
 @dataclass(frozen=True)
@@ -61,15 +65,38 @@ class Replay:
     def record(self) -> list[dict]:
         return list(self.steps)
 
-    def freeze(self, name: str) -> Path:
+    def freeze(self, name: str, nudges: bool) -> Path:
+        """The record written to its file, with whether the nudges said count in the comparison."""
         RECORDS.mkdir(exist_ok=True)
         path = RECORDS / f"{name}.json"
-        path.write_text(json.dumps(self.record(), indent=2) + "\n")
+        path.write_text(json.dumps({"nudges": nudges, "steps": self.record()}, indent=2) + "\n")
         return path
 
-    @staticmethod
-    def frozen(name: str) -> list[dict]:
-        return json.loads((RECORDS / f"{name}.json").read_text())
+
+class Frozen:
+    """A record read back from its file: what the listener side saw, standing in for it."""
+
+    def __init__(self, name: str) -> None:
+        kept = json.loads((RECORDS / f"{name}.json").read_text())
+        self.nudges, self.steps = kept["nudges"], kept["steps"]
+
+    def record(self) -> list[dict]:
+        return list(self.steps)
+
+
+def recorded(name: str, app, monkeypatch, steps, provider: str, nudges: bool = False):
+    """The listener side of a replay: run and frozen when REPLAY_FREEZE is set, every listener on and every shipped workflow emptied so the listeners alone speak; else read from its frozen record."""
+    if not FREEZE:
+        return Frozen(name)
+    app.runtime().start()
+    replay = Replay(app, monkeypatch)
+    charts = app.container.get(Charts)
+    for chart in charts.shipped():
+        for node in charts.nodes_of(chart):
+            charts.remove_node(node, Actor.system())
+    steps(app, replay, provider)
+    replay.freeze(name, nudges)
+    return replay
 
 
 def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:

@@ -1,22 +1,25 @@
-[
-  {
-    "name": "waiting on the question",
-    "answer": null,
-    "typed": [],
-    "nudges": [
-      "briefing.ready",
-      "briefing.quiet",
-      "briefing.laws",
-      "briefing.orient",
-      "voices.voice"
-    ]
-  },
-  {
-    "name": "answered",
-    "answer": null,
-    "typed": [
-      "[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"
-    ],
-    "nudges": []
-  }
-]
+{
+  "nudges": false,
+  "steps": [
+    {
+      "name": "waiting on the question",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "answered",
+      "answer": null,
+      "typed": [
+        "[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"
+      ],
+      "nudges": []
+    }
+  ]
+}
