@@ -1,4 +1,4 @@
-# The replays boot a journal each and run minutes, so they are not in the default run: python3 -m pytest tests/replays_run.py, before any commit that touches the workflows; REPLAY_FREEZE=1 records the listener side anew.
+# The replays boot a journal each and run minutes, so they are not in the default run: python3 -m pytest tests/replays_run.py, before any commit that touches the workflows. The listener side was frozen before the listeners were deleted; REPLAY_FREEZE=1 re-records only what listeners are still in code.
 """Plan 2's replays: a listener and the workflow that replaces it, run through the same steps on two fresh journals, must leave the agent
 with the same answers and the same typed lines. Each replay freezes the listener's record, so it still stands once the listener is gone."""
 

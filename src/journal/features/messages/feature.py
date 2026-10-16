@@ -1,11 +1,5 @@
 from journal.features.feature import Feature
 from journal.features.messages.commands.message_command import MessageCommand
-from journal.features.messages.listeners.inbox_at_prompt import InboxAtPrompt
-from journal.features.messages.listeners.inbox_at_start import InboxAtStart
-from journal.features.messages.listeners.inbox_at_stop import InboxAtStop
-from journal.features.messages.listeners.hold_unanswered import HoldUnanswered
-from journal.features.messages.listeners.hold_unread import HoldUnread
-from journal.features.messages.listeners.inbox_on_arrival import InboxOnArrival
 from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.refuse_truncated_read import RefuseTruncatedRead
@@ -27,7 +21,7 @@ class Messages(Feature):
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS)
-    listeners = (InboxAtStart, InboxAtPrompt, InboxAtStop, InboxOnArrival, HoldUnread, HoldUnanswered, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
+    listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks)
 
     NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)
     SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)
