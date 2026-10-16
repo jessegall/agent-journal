@@ -1,3 +1,4 @@
+import contextvars
 import queue
 import sys
 import threading
@@ -6,7 +7,7 @@ from typing import Callable
 
 
 class Deferred:
-    """Work the server does after it has replied: one worker thread, in order, never on a request's thread."""
+    """Work the server does after it has replied: one worker thread, in order, never on a request's thread, each piece in the scope it was added in."""
 
     STOP = None
 
@@ -19,7 +20,7 @@ class Deferred:
         self._thread.start()
 
     def add(self, work: Callable[[], None]) -> None:
-        self._queue.put(work)
+        self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
     def stop(self) -> None:
         if self._thread:

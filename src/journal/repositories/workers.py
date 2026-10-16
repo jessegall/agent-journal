@@ -6,5 +6,5 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Workers(ScopedRepository[Worker]):
     model = Worker
 
-    def out(self, environment_id: int) -> list[Worker]:
-        return self.where(environment_id=environment_id, state=WorkerState.DISPATCHED)
+    def out(self) -> list[Worker]:
+        return self.where(environment_id=self.scope.id, state=WorkerState.DISPATCHED)

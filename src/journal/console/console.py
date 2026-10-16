@@ -11,6 +11,7 @@ from journal.repositories.not_found import NotFound
 from journal.console.where import Where
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 from journal.container import Container
 
 
@@ -18,9 +19,9 @@ from journal.container import Container
 class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
 
-    def __init__(self, container: Container) -> None:
+    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope) -> None:
         self._capture = threading.Lock()
-        self.container = container
+        self.container, self.environments, self.agents, self.scope = container, environments, agents, scope
         self.commands: dict[str, Command] = {}
         self._parser: argparse.ArgumentParser | None = None
 
@@ -32,7 +33,7 @@ class Console:
         """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from; with no agent live there, as in a shell outside the journal, it is the user's own."""
         if not where.from_agent_shell or where.session:
             return where
-        live = self.container.get(Agents).live(self.container.get(Environments).named(where.environment).id)
+        live = self.agents.live()
         return where.as_(live.session) if live else where
 
     def parser(self) -> argparse.ArgumentParser:
@@ -45,9 +46,9 @@ class Console:
         return self._parser
 
     def run(self, argv: list[str], where: Where) -> Outcome:
-        """Runs one command with its output captured, so the same call serves the terminal and the server. The capture is process-wide, so commands run one at a time."""
+        """Runs one command with its output captured, in the environment it names, so the same call serves the terminal and the server. The capture is process-wide, so commands run one at a time."""
         out, err = io.StringIO(), io.StringIO()
-        with self._capture:
+        with self._capture, self.scope.of(self.environments.named(where.environment).id):
             return self.captured(argv, where, out, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:

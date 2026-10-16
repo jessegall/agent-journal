@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
 from journal.features.skill import Skill
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.settings import Settings
 
 
 class Registry:
@@ -12,18 +12,16 @@ class Registry:
         self._by_name = {feature.name: feature for feature in features}
         self._by_state = {state.name: feature for feature in features for state in feature.states}
 
-    def on(self, environment_id: int) -> list[type[Feature]]:
-        return [feature for feature in self.features if self.is_on(feature, environment_id)]
-
-    def is_on(self, feature: type[Feature], environment_id: int) -> bool:
-        return bool(self.settings.get(environment_id, f"features.{feature.name}", feature.default))
+    def is_on(self, feature: type[Feature]) -> bool:
+        """On in the scope's environment."""
+        return bool(self.settings.get(f"features.{feature.name}", feature.default))
 
     def skill_required_in(self, state: str) -> Skill | None:
         return next((skill for skill in self.skills() if state in skill.required_in), None)
 
     def listener_off(self, listener: object) -> bool:
         """A listener named in the setting listeners.off runs nowhere: the switch a workflow takes over by, and the kill switch for one that misbehaves."""
-        return type(listener).__name__ in (self.settings.get(PROJECT, "listeners.off", []) or [])
+        return type(listener).__name__ in (self.settings.project("listeners.off", []) or [])
 
     def options(self) -> list:
         """Every option a feature declares, across features."""
@@ -41,6 +39,6 @@ class Registry:
     def owner_of(self, nudge: Nudge) -> type[Feature]:
         return self._by_name[nudge.feature]
 
-    def silenced(self, nudge: Nudge, environment_id: int) -> bool:
+    def silenced(self, nudge: Nudge) -> bool:
         """A feature's nudge is silenced with its feature; the engine's own, with no feature, never are."""
-        return bool(nudge.feature) and not self.is_on(self.owner_of(nudge), environment_id)
+        return bool(nudge.feature) and not self.is_on(self.owner_of(nudge))

@@ -147,6 +147,18 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 
 - A feature's listeners go on the bus wrapped in `Switched`, which runs the inner listener only
   where its feature is on; so a switched-off feature has no listener running, by construction.
+- **The environment is a scope (2026-10-16, task 191).** `repositories/scope.py` holds the
+  environment of the thread of work in a contextvar; a scoped repository reads it, so its reads
+  take no environment (`messages.unread()`, `tasks.in_state(TaskState.PARKED)`) and refuse with
+  `Unscoped` when none is set, and a new row that names no environment is placed in it (entries
+  and settings name their own: 0 is the project's). It is set where work enters: the router
+  (the header's environment, looked up at the first read that needs it), the hook receiver, the
+  console's run, the worker thread and the deferred worker (each piece in the scope it was added
+  in). What crosses environments sets it per environment through the same object: the clock per
+  agent, `Switched` per event (a feature's listener runs in its event's environment, 0 for an
+  event in none), the nudger and `Turn` per agent, the viewer's summary per environment, a chart
+  trial in the environment it names. `find` and `all` stay unscoped. The engine's own calls that
+  take an environment id (`machine.move`, `SupervisorLink`, `Cards`) keep it: they are not reads.
 - The machine fires `StateEntered(session, environment_id, left, entered)` on the bus whenever
   an agent's state name changes, by event or by command. It is a plain Event, not an AgentEvent,
   since no hook reported it. Skills are required on it; nothing listens to Agent `Updated` for

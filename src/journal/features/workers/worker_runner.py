@@ -7,6 +7,7 @@ from journal.features.workers.worker_reports import WorkerReports
 from journal.models.actor import Actor
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
+from journal.repositories.scope import Scope
 
 TAIL = 4000
 
@@ -14,13 +15,18 @@ TAIL = 4000
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports) -> None:
-        self.config, self.providers, self.reports = config, providers, reports
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope) -> None:
+        self.config, self.providers, self.reports, self.scope = config, providers, reports, scope
         self._running: dict[int, subprocess.Popen] = {}
 
     def start(self, worker: Worker, by: Actor) -> None:
         command = self.providers.named(worker.provider).worker_command(worker.brief, worker.model)
-        threading.Thread(target=self.run, args=(worker, command, by), name=f"worker-{worker.id}", daemon=True).start()
+        threading.Thread(target=self.run_in_scope, args=(worker, command, by), name=f"worker-{worker.id}", daemon=True).start()
+
+    def run_in_scope(self, worker: Worker, command: list[str], by: Actor) -> None:
+        """The thread starts in no scope: the worker's report is filed in the worker's environment."""
+        with self.scope.of(worker.environment_id):
+            self.run(worker, command, by)
 
     def run(self, worker: Worker, command: list[str], by: Actor) -> None:
         """Blocks until the worker ends: for the thread above, and for a test that wants the outcome."""
