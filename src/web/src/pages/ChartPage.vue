@@ -81,6 +81,12 @@ const dropMark = ref(null);
 const search = ref("");
 const naming = ref(null);
 const confirming = ref("");
+// the page opens read-only: editing is switched on by hand, after a word on what an edit does, and switches off when the workflow is saved or another is opened
+const unlocked = ref(false);
+function unlock() {
+    unlocked.value = true;
+    confirming.value = "";
+}
 const showLead = ref(false);
 const editing = ref(null);
 const messageText = ref("");
@@ -124,6 +130,7 @@ function take(got) {
     past.value = [];
     selected.value = null;
     loaded.value = true;
+    unlocked.value = false;
     notice.value = got.warnings.join(" ");
     lastWalk.value = got.last_walk;
     lastFailure.value = got.last_failure;
@@ -190,6 +197,7 @@ function discard() {
 }
 
 function openAdd(from) {
+    if (!unlocked.value) return;
     search.value = "";
     adding.value = {from: from || null};
 }
@@ -228,6 +236,7 @@ function add(entry) {
 }
 
 function remove(node) {
+    if (!unlocked.value) return;
     change(() => {
         nodes.value = nodes.value.filter((n) => n.id !== node.id);
         lines.value = lines.value.filter((l) => String(l.from) !== String(node.id) && String(l.to) !== String(node.id));
@@ -242,6 +251,7 @@ function cut(line) {
 }
 
 function connect(node, port, target) {
+    if (!unlocked.value) return;
     change(() => {
         lines.value = lines.value.filter((l) => !(String(l.from) === String(node.id) && l.port === port));
         lines.value.push({from: node.id, to: target.id, port});
@@ -249,12 +259,14 @@ function connect(node, port, target) {
 }
 
 function disconnect(node, port) {
+    if (!unlocked.value) return;
     change(() => {
         lines.value = lines.value.filter((l) => !(String(l.from) === String(node.id) && l.port === port));
     });
 }
 
 function setText(node, text) {
+    if (!unlocked.value) return;
     change(() => {
         node.text = text;
     });
@@ -315,6 +327,7 @@ function zoom(event) {
 }
 
 function dragNode(node, event) {
+    if (!unlocked.value) return;
     event.stopPropagation();
     selected.value = node.id;
     const start = {x: event.clientX, y: event.clientY, nx: node.x, ny: node.y};
@@ -337,6 +350,7 @@ function dragNode(node, event) {
 
 // a line dropped on a card connects to it; dropped on empty canvas, it offers a new node where it fell
 function dragLine(node, port, event) {
+    if (!unlocked.value) return;
     event.stopPropagation();
     hovered.value = null;
     drawing.value = {from: node.id, port, to: planePoint(event), target: null};
@@ -428,6 +442,7 @@ const namingLabel = computed(() => (naming.value ? entries.value[`trigger:${nami
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
 // the message is written in the side panel and lands on the card as one change when the panel closes
 function openMessage(node) {
+    if (!unlocked.value) return;
     selected.value = node.id;
     editing.value = node;
     messageText.value = node.text;
@@ -506,6 +521,19 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     Delete workflow
                 </Btn>
             </template>
+            <Btn v-if="!unlocked" kind="ghost" small title="Changes alter how the journal drives the agent" @click="confirming = 'edit'">
+                Edit
+            </Btn>
+            <Btn
+                v-else
+                kind="ghost"
+                small
+                :disabled="dirty"
+                :title="dirty ? 'Save or discard your changes first' : ''"
+                @click="unlocked = false"
+            >
+                Stop editing
+            </Btn>
             <span class="chart-grow" />
             <span v-if="dirty" class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
             <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
@@ -529,7 +557,17 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     <button type="button" class="chart-help" @click="showLead = true">How it works</button>
                 </div>
                 <div class="chart-acts">
-                    <Btn ref="addButton" kind="ghost" small :class="{on: adding && !adding.at}" @click.stop="openAdd(null)">Add node</Btn>
+                    <Btn
+                        ref="addButton"
+                        kind="ghost"
+                        small
+                        :class="{on: adding && !adding.at}"
+                        :disabled="!unlocked"
+                        :title="unlocked ? '' : 'Switch Edit on first'"
+                        @click.stop="openAdd(null)"
+                    >
+                        Add node
+                    </Btn>
                     <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                 </div>
             </header>
@@ -542,6 +580,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 :nodes="nodes"
                 :lines="lines"
                 :entry-of="entryOf"
+                :locked="!unlocked"
                 @text="setText"
                 @line="connect"
                 @unline="disconnect"
@@ -654,7 +693,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 : "Start with a trigger: the event that starts this workflow."
                         }}
                         <br />
-                        <Btn class="chart-empty-add" @click.stop="openAdd(null)">Add node</Btn>
+                        <Btn class="chart-empty-add" :disabled="!unlocked" @click.stop="openAdd(null)">Add node</Btn>
                     </EmptyState>
                 </template>
                 <template v-else-if="loaded && nodes.length === 1 && trigger">
@@ -762,6 +801,18 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </p>
                 <template #foot>
                     <Btn kind="primary" @click="showLead = false">Close</Btn>
+                </template>
+            </Dialog>
+        </template>
+        <template v-if="confirming === 'edit'">
+            <Dialog title="Edit this workflow?" fits @close="confirming = ''">
+                <p class="chart-dialog-text">
+                    Changes alter how the journal drives the agent, so change only what you understand. A default workflow can always be
+                    brought back with Reset to default.
+                </p>
+                <template #foot>
+                    <Btn @click="confirming = ''">Cancel</Btn>
+                    <Btn kind="primary" @click="unlock">Edit</Btn>
                 </template>
             </Dialog>
         </template>

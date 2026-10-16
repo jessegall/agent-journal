@@ -6,6 +6,7 @@ const props = defineProps({
     nodes: {type: Array, required: true},
     lines: {type: Array, required: true},
     entryOf: {type: Function, required: true},
+    locked: {type: Boolean, default: false},
 });
 const emit = defineEmits(["text", "line", "unline", "remove"]);
 
@@ -18,7 +19,10 @@ const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
 const numberOf = (node) => props.nodes.indexOf(node) + 1;
 const targetOf = (node, port) => props.lines.find((l) => String(l.from) === String(node.id) && l.port === port);
 const named = (node) => `${numberOf(node)} · ${props.entryOf(node).title}`;
-const choices = (node) => [{key: "", label: END}, ...props.nodes.filter((n) => n.id !== node.id && n.kind !== "trigger").map((n) => ({key: String(n.id), label: named(n)}))];
+const choices = (node) => [
+    {key: "", label: END},
+    ...props.nodes.filter((n) => n.id !== node.id && n.kind !== "trigger").map((n) => ({key: String(n.id), label: named(n)})),
+];
 const picked = (node, port) => (targetOf(node, port) ? String(targetOf(node, port).to) : "");
 const described = (node) => {
     const about = props.entryOf(node).about;
@@ -31,8 +35,15 @@ const label = (node, port) => {
 };
 
 function pick(node, port, key) {
+    if (props.locked) return;
     if (key === "") emit("unline", node, port);
-    else emit("line", node, port, props.nodes.find((n) => String(n.id) === key));
+    else
+        emit(
+            "line",
+            node,
+            port,
+            props.nodes.find((n) => String(n.id) === key)
+        );
 }
 </script>
 
@@ -42,7 +53,7 @@ function pick(node, port, key) {
             <div class="chart-list-head">
                 <span class="chart-list-kind">{{ numberOf(node) }} · {{ KIND[node.kind] }}</span>
                 <span class="chart-list-grow" />
-                <Btn kind="ghost" small @click="emit('remove', node)">Delete node</Btn>
+                <Btn kind="ghost" small :disabled="locked" @click="emit('remove', node)">Delete node</Btn>
             </div>
             <strong class="chart-list-title">{{ entryOf(node).title }}</strong>
             <p v-if="entryOf(node).about" class="chart-list-about">{{ described(node) }}</p>
@@ -51,6 +62,7 @@ function pick(node, port, key) {
                     class="chart-list-text"
                     :value="node.text"
                     rows="2"
+                    :disabled="locked"
                     :placeholder="node.kind === 'check' ? 'A number, or a setting\'s name' : 'Message to the agent'"
                     @input="emit('text', node, $event.target.value)"
                 />
@@ -59,7 +71,13 @@ function pick(node, port, key) {
             <div v-for="port in ports(node)" :key="port" class="chart-list-port">
                 <span :class="['chart-list-dot', port, {on: targetOf(node, port)}]" />
                 <span class="chart-list-port-name">{{ PORT[port] }}</span>
-                <DropList :label="label(node, port)" :items="choices(node)" :picked="picked(node, port)" :menu-width="280" @pick="pick(node, port, $event.key)" />
+                <DropList
+                    :label="label(node, port)"
+                    :items="choices(node)"
+                    :picked="picked(node, port)"
+                    :menu-width="280"
+                    @pick="pick(node, port, $event.key)"
+                />
             </div>
         </li>
     </ol>
