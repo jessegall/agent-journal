@@ -189,6 +189,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
     from journal.features.questions.states.waiting import Waiting
     console = app.console()
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
     machine = app.container.get(Machine)
@@ -221,6 +222,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it | push"], USER).out
     release = created.split()[1].rstrip(":")
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
@@ -247,6 +249,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     monkeypatch.setattr(SupervisorLink, "_send", sent)
     console = app.console()
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
@@ -2984,3 +2987,16 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     assert row().mark_owed == 0, "nothing survives clears it too"
     status, body = hook(app, "SessionStart", source="compact")
     assert row().oriented is False and row().mark_owed == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
+
+
+def test_a_stop_while_something_is_owed_is_held_by_the_always_workflow_naming_what_it_awaits(app):
+    hook(app, "SessionStart")
+    status, body = hook(app, "Stop")
+    assert body.get("decision") == "block" and "you stopped while the journal awaits a look at what is in flight here" in body["reason"] and "journal stuck" in body["reason"], "a stop before the look is held, naming the debt"
+    app.console().run(["environment", "here"], AGENT)
+    assert hook(app, "Stop")[1] == {}, "the debt paid, a stop at rest is a stop"
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    context(app, 30)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    status, body = hook(app, "Stop")
+    assert body.get("decision") == "block" and "awaits a decision at the context mark, 25% full" in body["reason"], "a stop at a mark not decided is held too"

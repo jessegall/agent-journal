@@ -30,6 +30,7 @@ CHECKS = (
     ("skill_owed", "Skill owed?", "the agent owes a read of a skill's file: required and not read since"),
     ("not_oriented", "Agent not yet oriented?", "the agent has not looked at what is in flight here since its session started"),
     ("context_over_mark", "Context over a mark not taken?", "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
+    ("something_owed", "Something owed?", "the agent owes the journal something before it may stop: a skill to read, the look at what is in flight, or a decision at a context mark"),
     ("mark_owed", "Mark owed?", "the agent crossed a context mark and has not yet decided what survives it: a fact, a rule or nothing"),
     ("message_just_read", "Message just read?", "the row is a message the agent has just read: this write set when it was read"),
     ("task_just_started", "Task just started by this agent?", "the row is a task this agent has just started: this write set when it started, by the agent walking"),

@@ -58,6 +58,7 @@ def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app)
 
 def test_done_makes_the_agent_idle_again(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["task", "done", "1"], AGENT)
     assert isinstance(app.container.get(Machine).current("s1"), Idle)
@@ -66,6 +67,7 @@ def test_done_makes_the_agent_idle_again(app):
 
 def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "stuck on the login"], AGENT)
     machine = app.container.get(Machine)
@@ -117,6 +119,7 @@ def test_a_tick_reaches_the_machine_without_a_hook(app):
 
 def test_one_task_in_hand_park_resume_and_await(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     console = app.console()
     console.run(["task", "create", "first", "--start"], AGENT)
     console.run(["task", "create", "second"], AGENT)

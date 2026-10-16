@@ -42,6 +42,7 @@ NEW_MESSAGE = "[messages.new] new message {{row}}"
 ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
 SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
 MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
+STOPPED_OWING = "[chart.awaiting] you stopped while the journal awaits {{awaiting}}. do that first, or journal stuck \"<why>\" if you are truly stuck"
 MARK_HELD = "[memory.held] writes wait until you decide what survives the context. journal fact create, journal rule create, or journal nothing \"<why>\""
 ORIENT_HELD = "[briefing.orient] read what is in flight here before any other write: journal environment here"
 SKILL_HELD = "[skills.required] read the {{skill_owed}} skill before anything else: {{skill_path}}. writes wait until you have"
@@ -93,7 +94,7 @@ class ShippedChart(Seed):
         for state in SHIPPED_STATES:
             if self.registry.skill_required_in(state) and (state, "session_started") not in own:
                 own[(state, "session_started")] = self.state_skill
-        shared = {"session_started": self.mark_then(self.journal_skill_then(self.shared_inbox)), "prompt_submitted": self.mark_then(self.prompt_skill_then(self.shared_inbox)), "idle": self.mark_then(self.shared_inbox), "tool_finished": self.mark_then(None), "messages.created": self.shared_at_message, "messages.updated": self.shared_at_message_read}
+        shared = {"session_started": self.mark_then(self.journal_skill_then(self.shared_inbox)), "prompt_submitted": self.mark_then(self.prompt_skill_then(self.shared_inbox)), "idle": self.owed_stop_then(self.mark_then(self.shared_inbox)), "tool_finished": self.mark_then(None), "messages.created": self.shared_at_message, "messages.updated": self.shared_at_message_read}
         self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
             for event in sorted({e for st, e in own if st == state}, key=EVENT_ORDER.index):
@@ -293,6 +294,16 @@ class ShippedChart(Seed):
             self.chain(ends, crossed)
             self.line(crossed, held, YES)
             return shared(chart, [(crossed, NO), (held, THEN)]) if shared else [(crossed, NO), (held, THEN)]
+        return draw
+
+    def owed_stop_then(self, shared):
+        """A stop while the agent owes the journal something is held, locked, naming what it awaits, before the stop's own conduct; a mark crossed at this very stop is not yet a debt here, so the decide line stands alone."""
+        def draw(chart: Chart, ends: list) -> list:
+            owed = self.node(chart, NodeKind.CHECK, "something_owed", x=720, y=112, locked=True)
+            held = self.node(chart, NodeKind.ACTION, "block_stop", STOPPED_OWING, x=560, y=112, locked=True)
+            self.chain(ends, owed)
+            self.line(owed, held, YES)
+            return shared(chart, [(owed, NO), (held, THEN)])
         return draw
 
     def state_skill(self, chart: Chart, ends: list) -> list:

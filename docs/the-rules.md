@@ -41,6 +41,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Agent stops | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Following a plan; the plan's advance stops at the checkpoint in the plans feature, the agent standing in the plan's state |
 | Agent stops | messages.new / some / many | messages unread | say on the stop | in the workflow Always at Agent stops; its listener is deleted |
 | Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | the workflow Idle, in phase 2 (task 161) |
+| Agent stops | chart.awaiting: "you stopped while the journal awaits ..." | something owed: a skill, the look at what is in flight, a decision at a mark | block the stop, naming the debt | in the workflow Always at Agent stops (Something owed?, locked); the pause's own stop rule is deleted |
 | Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
 | Session starts | messages.new / some / many | messages unread | say | in the workflow Always at Session starts; its listener is deleted |
 | Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | stays with the voices feature: the voice's own words |

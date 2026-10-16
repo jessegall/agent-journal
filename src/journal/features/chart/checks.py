@@ -155,6 +155,10 @@ class Checks:
         taken = self.machine.agent(ctx.session, ctx.environment_id).context_mark
         return [mark for mark in Memory.MARKS if context * 100 >= mark > taken]
 
+    def something_owed(self, ctx: Context) -> bool:
+        """The agent owes the journal a skill's read, the look at what is in flight or a decision at a mark."""
+        return self.not_oriented(ctx) or self.skill_owed(ctx) or self.mark_owed(ctx)
+
     def mark_owed(self, ctx: Context) -> bool:
         """The agent crossed a mark and has not decided what survives it."""
         return bool(ctx.session) and bool(self.machine.agent(ctx.session, ctx.environment_id).mark_owed)

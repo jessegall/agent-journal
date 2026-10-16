@@ -47,7 +47,7 @@ what survives, and the mark owed is a fact on its row until it does. Then the co
 state, one Always workflow per event, bound to no state and placed after the locked ones: Always at Session starts
 requires the journal skill (locked), names the inbox and marks the agent unoriented (locked), owing the look that
 `journal environment here` pays, Always at Prompt sent requires the skills a prompt names
-(locked) and names the inbox, Always at Agent stops names the inbox, Always at A message is created types a message
+(locked) and names the inbox, Always at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox, Always at A message is created types a message
 that comes to the agent and starts its counts of tool uses and inbox namings, Always at A message is updated starts
 the count of uses the agent owes an answer on, at the first message read and owed. A state whose feature has a
 skill requires it at Session starts in that state, in the state's own workflow there. Require a skill names the

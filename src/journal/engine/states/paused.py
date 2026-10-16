@@ -5,13 +5,10 @@ from journal.engine.agent_state import AgentState
 from journal.engine.resume import Resume
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
-from journal.features.nudge import Nudge
 from journal.engine.transition import Transition
 from journal.features.said import Said
 
 
-AWAITING = Nudge("", "awaiting", "you stopped while the journal awaits {{what}}", "do that first, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
-"""Said once at a stop in any paused state; the next stop goes through."""
 
 
 @dataclass(frozen=True)
@@ -29,7 +26,8 @@ class Paused(AgentState):
         return "", ""
 
     def idle(self, event: Idle) -> Transition:
-        return self.refuse(AWAITING.about(what=self.awaiting()[0])) if self.owed_by_agent else self.stay()
+        """A stop while paused is the workflows' to hold: a wait stays as it is."""
+        return self.stay()
 
     def prompt_submitted(self, event: PromptSubmitted) -> Transition:
         """A word from the user frees any wait that is not the agent's own doing: the engine's way out of a wait whose workflow no longer releases it."""
