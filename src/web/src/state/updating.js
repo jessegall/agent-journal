@@ -1,3 +1,4 @@
+import {reloadWhenFree} from "../platform/busyField.js";
 import {reactive} from "vue";
 import {remember, remembered} from "../platform/storage.js";
 
@@ -8,7 +9,18 @@ const THIRD_STEP_AT = 25;
 
 export const STATUS_POLL = "summary";
 
-export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: "", starting: false, bootStep: ""});
+export const updating = reactive({
+    version: "",
+    failure: "",
+    late: false,
+    since: 0,
+    external: false,
+    step: "",
+    countdown: null,
+    target: "",
+    starting: false,
+    bootStep: "",
+});
 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
 export const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
@@ -74,7 +86,7 @@ function newVersion(version) {
 export function followServer(got) {
     counting(got.countdown);
     starting(got.ready, got.step);
-    if (follow(Boolean(got.updating), got.step) || (!got.updating && newVersion(got.version))) window.location.reload();
+    if (follow(Boolean(got.updating), got.step) || (!got.updating && newVersion(got.version))) reloadWhenFree(window);
 }
 
 export const updatedTo = () => remembered(UPDATED_KEY, "");

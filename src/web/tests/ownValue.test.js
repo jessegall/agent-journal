@@ -1,0 +1,34 @@
+import {expect, test} from "vitest";
+import {createApp, h, nextTick, ref} from "vue";
+import TextInput from "../src/kit/TextInput.vue";
+import {fieldBusy} from "../src/platform/busyField.js";
+
+test("a field with focus keeps what was typed or pasted when the page redraws it, and takes a new bound value once left", async () => {
+    const value = ref("from the server");
+    const placeholder = ref("one");
+    const host = document.createElement("div");
+    document.body.append(host);
+    const app = createApp({render: () => h(TextInput, {value: value.value, placeholder: placeholder.value})});
+    app.mount(host);
+    await nextTick();
+    const box = host.querySelector("input");
+    expect(box.value).toBe("from the server");
+    box.focus();
+    box.value = "pasted words";
+    box.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertFromPaste"}));
+    placeholder.value = "two";
+    await nextTick();
+    expect(box.value).toBe("pasted words");
+    expect(box.placeholder).toBe("two");
+    value.value = "from the server";
+    await nextTick();
+    expect(box.value).toBe("pasted words");
+    expect(fieldBusy()).toBe(true);
+    box.blur();
+    value.value = "saved elsewhere";
+    await nextTick();
+    expect(box.value).toBe("saved elsewhere");
+    expect(fieldBusy()).toBe(false);
+    app.unmount();
+    host.remove();
+});

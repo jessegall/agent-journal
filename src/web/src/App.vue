@@ -1,4 +1,5 @@
 <script setup>
+import {reloadWhenFree} from "./platform/busyField.js";
 import {useWindowEvent} from "./composables/windowEvent.js";
 import {chatOnly, narrow, soloView} from "./platform/view.js";
 import WindowBar from "./layout/WindowBar.vue";
@@ -43,7 +44,9 @@ function startBoot() {
     bootTimer = setTimeout(() => (bootError.value = TOO_LONG), 60000);
     boot()
         .then(() => (bootError.value = ""))
-        .catch((error) => (bootError.value = error.name === "TimeoutError" ? TOO_LONG : error.message || "The journal could not be reached."))
+        .catch(
+            (error) => (bootError.value = error.name === "TimeoutError" ? TOO_LONG : error.message || "The journal could not be reached.")
+        )
         .finally(() => clearTimeout(bootTimer));
 }
 const retryBoot = () => location.reload();
@@ -153,7 +156,7 @@ onUnmounted(() => clearTimeout(bootTimer));
 watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);
 watch(
     () => route.value.env,
-    (now, before) => before && now !== before && location.reload()
+    (now, before) => before && now !== before && reloadWhenFree(window)
 );
 </script>
 

@@ -1,11 +1,15 @@
 <script setup>
 import {computed, ref, useAttrs} from "vue";
 import Icon from "./Icon.vue";
+import {ownValue as vOwnValue} from "./ownValue.js";
 
 defineOptions({inheritAttrs: false});
 defineProps({label: {type: String, default: ""}, icon: {type: String, default: ""}, large: Boolean});
 const attrs = useAttrs();
-const inputAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "class" && key !== "style")));
+const inputAttrs = computed(() =>
+    Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "class" && key !== "style" && key !== "value"))
+);
+const bareAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "value")));
 const input = ref(null);
 defineExpose({focus: () => input.value && input.value.focus()});
 </script>
@@ -19,14 +23,14 @@ defineExpose({focus: () => input.value && input.value.focus()});
             <template v-if="label">
                 <span class="text-field-label">{{ label }}</span>
             </template>
-            <input ref="input" class="text-field-input" spellcheck="false" v-bind="inputAttrs" />
+            <input ref="input" v-own-value="attrs.value" class="text-field-input" spellcheck="false" v-bind="inputAttrs" />
             <template v-if="$slots.end">
                 <span class="text-field-end"><slot name="end" /></span>
             </template>
         </label>
     </template>
     <template v-else>
-        <input ref="input" class="text-input" spellcheck="false" v-bind="$attrs" />
+        <input ref="input" v-own-value="attrs.value" class="text-input" spellcheck="false" v-bind="bareAttrs" />
     </template>
 </template>
 

@@ -10,7 +10,8 @@ import {pasteByHand} from "./platform/pasteByHand.js";
 
 watchConsole();
 watchPresses();
-logInputs(window);
+// the input log is for hunting a lost paste: on only when the browser's storage says so (journal.inputLog = on)
+if (localStorage.getItem("journal.inputLog") === "on") logInputs(window);
 pasteByHand(window);
 followPage(document);
 

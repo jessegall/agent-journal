@@ -1,4 +1,5 @@
 <script setup>
+import {fieldBusy, reloadWhenFree} from "../platform/busyField.js";
 import {remember, remembered} from "../platform/storage.js";
 import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, ref, watch} from "vue";
@@ -16,7 +17,12 @@ const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
 const visible = computed(
-    () => !hostedOn.value && upstream.value && upstream.value.newer && (!upstream.value.installs || upstream.value.changed?.length) && dismissed.value !== upstream.value.latest
+    () =>
+        !hostedOn.value &&
+        upstream.value &&
+        upstream.value.newer &&
+        (!upstream.value.installs || upstream.value.changed?.length) &&
+        dismissed.value !== upstream.value.latest
 );
 const changed = computed(() => upstream.value?.changed || []);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
@@ -28,7 +34,7 @@ const stale = computed(() => {
 const RELOAD_AFTER = 60;
 const now = useNow();
 const remaining = ref(0);
-const waiting = computed(() => store.drafting > 0);
+const waiting = computed(() => store.drafting > 0 || fieldBusy());
 const left = computed(() => Math.ceil(remaining.value));
 
 watch(stale, (is) => (remaining.value = is ? RELOAD_AFTER : 0), {immediate: true});
@@ -45,7 +51,7 @@ onMounted(async () => {
 });
 
 function reload() {
-    window.location.reload();
+    reloadWhenFree(window);
 }
 
 function dismiss() {
@@ -102,7 +108,8 @@ async function retry() {
     </template>
     <template v-if="visible && changed.length">
         <Notice tone="need" class="changed-files">
-            These files changed since the journal wrote them: {{ changed.join(", ") }}. Updating will copy them into .journal/attic before replacing them.
+            These files changed since the journal wrote them: {{ changed.join(", ") }}. Updating will copy them into .journal/attic before
+            replacing them.
             <template v-if="lines.length">
                 <span>{{ lines.join(" · ") }}</span>
             </template>

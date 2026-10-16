@@ -1,9 +1,14 @@
 <script setup>
+import {computed, useAttrs} from "vue";
+import {ownValue as vOwnValue} from "./ownValue.js";
+
 defineOptions({inheritAttrs: false});
+const attrs = useAttrs();
+const bareAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "value")));
 </script>
 
 <template>
-    <textarea class="text-area" spellcheck="false" v-bind="$attrs" />
+    <textarea v-own-value="attrs.value" class="text-area" spellcheck="false" v-bind="bareAttrs" />
 </template>
 
 <style scoped>
