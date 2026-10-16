@@ -16,8 +16,12 @@ PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", 
 """The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
 OWN_EVENTS_ONLY = ("following_plan",)
 """A state under a parent ships only its own events: the parent's workflows serve the rest, and a shared-only one here would shadow them."""
-SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_starting", "messages.created")
+SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "messages.created")
 """The events every state's workflows carry the shared conduct on: the inbox and the answers owed."""
+GUARDS = {"tool_starting": "Guards at Tool about to run"}
+"""The journal's guards, one locked workflow per event bound to no state, first in the event's list in every journal: at a tool use, the inbox named and the write held while a message waits, and the answer owed held."""
+HEAD = -1000
+"""Where a locked workflow is placed: before anything the user orders."""
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "ticked", "messages.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
@@ -75,14 +79,15 @@ class ShippedChart(Seed):
             ("stuck", "tool_starting"): self.working_again,
             ("running_sequence", "idle"): self.sequence_at_stop,
         }
-        shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "tool_starting": self.shared_at_tool, "messages.created": self.shared_at_message}
+        shared = {"session_started": self.shared_inbox, "prompt_submitted": self.shared_inbox, "idle": self.shared_inbox, "messages.created": self.shared_at_message}
         self.drawings: dict[str, Drawing] = {}
         for state in SHIPPED_STATES:
             shared_here = set() if state in OWN_EVENTS_ONLY else set(SHARED_EVENTS)
             events = sorted({e for st, e in own if st == state} | shared_here, key=EVENT_ORDER.index)
             for event in events:
                 self.drawings[self.key_of(state, event)] = Drawing(self.title_of(state, event), self.composed(own.get((state, event)), shared.get(event)))
-        """One drawing per state per trigger, named state:event: the state's own steps first, the shared conduct of the event after them."""
+        self.drawings[self.key_of("", "tool_starting")] = Drawing(GUARDS["tool_starting"], self.composed(None, self.shared_at_tool), locked=True)
+        """One drawing per state per trigger, named state:event, the state's own steps first and the shared conduct of the event after them; then the journal's guards, named :event, locked and bound to no state."""
 
     def title_of(self, state: str, event: str) -> str:
         return f"{self.states.title_of(state)} at {self.catalogue.entry(NodeKind.TRIGGER, event).title}"
@@ -106,10 +111,10 @@ class ShippedChart(Seed):
         self.stop_what_names_an_unknown_entry(by)
         self.name_the_shipped(by)
         retired = self.retired()
-        for key in self.drawings:
+        for key, drawing in self.drawings.items():
             standing = self.shipped_named(key)
             if standing is None:
-                if key not in retired:
+                if drawing.locked or key not in retired:
                     self.draw(key, by)
             elif self.outdated(standing):
                 self.reset(standing, by)
@@ -128,12 +133,18 @@ class ShippedChart(Seed):
         return next((c for c in self.charts.shipped() if c.drawing == key), None)
 
     def draw(self, key: str, by: Actor) -> Chart:
-        """A shipped drawing drawn anew as its own workflow, named after it."""
+        """A shipped drawing drawn anew as its own workflow, named after it; a locked one at the head of its event's list, the rest in the states' order."""
         state, event = key.split(":", 1)
         drawing = self.drawings[key]
-        chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=PLACE_ORDER.index(state) if state in PLACE_ORDER else len(PLACE_ORDER)), by)
+        place = HEAD + len([c for c in self.charts.for_event(event) if c.locked]) if drawing.locked else self.state_place(state)
+        chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=place), by)
         drawing.draw(chart)
         return chart
+
+    @staticmethod
+    def state_place(state: str) -> int:
+        """The place a state's shipped workflow takes at its event: the waits first, so a released wait hands the event on."""
+        return PLACE_ORDER.index(state) if state in PLACE_ORDER else len(PLACE_ORDER)
 
     def retired(self) -> set[str]:
         return set(self.settings.project(RETIRED_DRAWINGS_KEY, []) or [])
@@ -162,8 +173,8 @@ class ShippedChart(Seed):
             self.retire(chart, by)
 
     def retire_the_older_shape(self, by: Actor) -> None:
-        """A shipped workflow bound to one event and no state, the oldest shape, goes the same way."""
-        for chart in [c for c in self.charts.shipped() if not c.state]:
+        """A shipped workflow bound to one event and no state and named after no drawing, the oldest shape, goes the same way; a shipped stateless one with a drawing's name is the journal's own."""
+        for chart in [c for c in self.charts.shipped() if not c.state and not c.drawing]:
             self.retire(chart, by)
 
     def retire(self, chart: Chart, by: Actor) -> None:

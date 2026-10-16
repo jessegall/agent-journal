@@ -36,10 +36,12 @@ journal clears the compiled graphs, so the next walk reads the edit.
 
 ## The shipped workflows
 
-Every state has a workflow at each of the shared events, carrying the shared conduct: a message arriving is typed to
-the agent; the inbox named at a start, a prompt and a stop; the unread inbox named every so many tool uses and the
-write held after so many namings; a read message answered before the next tool, held after so many uses. And each
-state adds its own, at its own events:
+The journal's guards come first: Guards at Tool about to run is a locked workflow bound to no state, at the head
+of the list in every journal, drawn back by any boot that finds it missing, where the unread inbox is named every
+so many tool uses and the write held after so many namings, and a read message answered before the next tool, held
+after so many uses. Every state has a workflow at each of the other shared events, carrying the shared conduct: a
+message arriving is typed to the agent; the inbox named at a start, a prompt and a stop. And each state adds its
+own, at its own events:
 
 - **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks, the
   parked ask after a minute and the check-in after half an hour.

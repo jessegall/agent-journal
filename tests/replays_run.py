@@ -473,6 +473,26 @@ def test_two_lines_on_one_write_come_in_the_order_the_listeners_gave_them(journa
     held = left.record()[-1]["answer"]
     assert "answer message 1 first" in held["error"] and "2 edits since you logged task 1" in held["error"], "the listeners joined both holds on one write"
     kept = left.record()
-    kept[-1]["answer"] = {**held, "error": held["error"].split("\n")[0]}
-    assert "2 edits since you logged task 1" in right.record()[-1]["answer"]["error"] and "answer message 1 first" not in right.record()[-1]["answer"]["error"], "the workflow answers the first hold alone: the log's, which comes first in the order; the inbox hold is recorded unanswered"
+    kept[-1]["answer"] = {**held, "error": next(line for line in held["error"].split("\n") if "answer message 1 first" in line)}
+    assert "answer message 1 first" in right.record()[-1]["answer"]["error"] and "2 edits since you logged task 1" not in right.record()[-1]["answer"]["error"], "the workflow answers the first hold alone: the guards' inbox hold, locked at the head of the order; the log's hold is recorded unanswered"
     assert differences(kept, right.record(), nudges=True) == [], "the agent would have seen the same, in the same order, but for the one hold"
+
+
+def test_an_edited_tool_workflow_still_holds_the_tool_once_a_boot_adds_the_locked_guards(journals, monkeypatch):
+    """A journal whose Working at Tool about to run the user edited, without the guards yet: a boot adds them at the head, and the tool uses go as the listeners' record says."""
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.repositories.charts import Charts
+    from tests.replay import Frozen
+    with_listener, with_workflow, provider = journals
+    left = Frozen(f"tool_uses_with_the_inbox_{provider}")
+    with_workflow.runtime().start()
+    charts, seed = with_workflow.container.get(Charts), with_workflow.container.get(ShippedChart)
+    guards = next(c for c in charts.for_event("tool_starting") if c.locked)
+    charts.remove(guards, Actor.system())
+    working = charts.for_pair("working", "tool_starting")
+    assert with_workflow.console().run(["chart", "node", "--edit-default", "action", "say", "--text", "my own line", "--in", str(working.id)], USER).code == 0
+    seed.run()
+    assert charts.for_event("tool_starting")[0].locked and not all(n.shipped for n in charts.nodes_of(charts.find(working.id))), "the guards are back at the head and the edit stands"
+    right = Replay(with_workflow, monkeypatch)
+    tool_uses_with_the_inbox(with_workflow, right, provider)
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same holds and lines"

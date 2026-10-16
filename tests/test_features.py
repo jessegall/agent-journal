@@ -1541,7 +1541,7 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_keeps_edited_ones
     charts.remove(charts.for_pair("idle", "idle"), by)
     seed.run()
     assert charts.for_pair("idle", "idle") and len(charts.nodes_of(charts.for_pair("idle", "idle"))) > 10, "a journal lacking a shipped workflow gets it at boot"
-    assert len(charts.shipped()) == len(seed.drawings) and all(c.state and c.event for c in charts.shipped()), "one shipped workflow per state per trigger, no other shape"
+    assert len(charts.shipped()) == len(seed.drawings) and all(c.event and (c.state or c.locked) for c in charts.shipped()), "one shipped workflow per drawing: a state's at a trigger, or the journal's locked guards at one"
     unedited = charts.save(Chart(title="Agent stops", shipped=True, event="idle"), by)
     charts.add_node(unedited, Node(kind=NodeKind.TRIGGER, key="idle", shipped=True), by)
     edited = charts.save(Chart(title="Tool about to run", shipped=True, event="tool_starting"), by)
@@ -1717,7 +1717,7 @@ def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its
     console.run(["environment", "here"], AGENT)
     port = app.server().port
     listed = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))
-    assert listed["workflows"][0]["title"] == "Idle at Agent stops" and all(w["state"] and w["event"] for w in listed["workflows"]) and listed["catalogue"]
+    assert listed["workflows"][0]["title"] == "Idle at Agent stops" and all(w["event"] and (w["state"] or w["locked"]) for w in listed["workflows"]) and listed["catalogue"]
     with urlopen(R(f"http://127.0.0.1:{port}/journal/chart", data=j.dumps({"title": "Greetings", "state": "idle", "trigger": "tool_finished"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         made = j.loads(r.read())
     assert made["title"] == "Greetings" and made["shipped"] is False and [n["key"] for n in made["nodes"]] == ["tool_finished"], "born with its trigger"
@@ -2648,3 +2648,26 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
     assert "would come before a locked step" in console.run(["chart", "line", str(gate), str(hold), "--port", "yes"], USER).err, "no check of the user's is drawn before a locked step"
     after = add(first, "action", "say", "--text", "[chart] after the law")
     assert console.run(["chart", "line", str(hold), str(after)], USER).code == 0, "a step after it is the user's to add"
+
+
+def test_a_boot_adds_the_missing_locked_guards_at_the_head_of_the_list_and_leaves_the_users_edited_workflow_alone(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.http.controllers.chart import ChartController
+    from journal.repositories.charts import Charts
+    hook(app, "SessionStart")
+    console, charts, seed = app.console(), app.container.get(Charts), app.container.get(ShippedChart)
+    guards = next(c for c in charts.for_event("tool_starting") if c.locked)
+    assert guards.state == "" and guards.shipped and charts.for_event("tool_starting")[0].id == guards.id, "the guards are a locked workflow bound to no state, first at a tool use"
+    assert any(n.locked and n.text.startswith("[messages.") for n in charts.nodes_of(guards)) and not any(n.text.startswith("[messages.") for n in charts.nodes_of(charts.for_pair("working", "tool_starting"))), "the inbox holds live in the guards, not in a state's workflow"
+    working = charts.for_pair("working", "tool_starting")
+    mine = int(console.run(["chart", "node", "--edit-default", "action", "say", "--text", "my own line", "--in", str(working.id)], AGENT).out.split()[1].rstrip(":"))
+    own = int(console.run(["chart", "new", "Mine at a tool", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
+    edited, made = charts.find(working.id), charts.find(own)
+    charts.remove(guards, Actor.system())
+    seed.run()
+    seed.run()
+    back = next(c for c in charts.for_event("tool_starting") if c.locked)
+    assert back.id != guards.id and charts.for_event("tool_starting")[0].id == back.id, "a boot draws the guards it lacks, at the head, and a second boot keeps them"
+    assert charts.find(working.id).revision == edited.revision and any(n.id == mine for n in charts.nodes_of(charts.find(working.id))), "the user's edited workflow is not touched"
+    assert charts.find(own).revision == made.revision and charts.find(own).event == "tool_starting", "nor the user's own"
+    assert app.container.get(ChartController).named(back)["locked"] is True, "the page shows the insertion by its lock"

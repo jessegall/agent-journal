@@ -422,7 +422,7 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
 def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_when_none_does(server):
     manifest = call(server, "GET", "/api/manifest")[1]
     hold_after = next(s for s in manifest["features"]["messages"]["settings"] if s["name"] == "hold_after")
-    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} >= {"Idle at Tool about to run", "Working at Tool about to run"} and all(r["node"] > 0 for r in hold_after["read_by"]), "every state's workflow has the check that reads the hold cadence"
+    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Guards at Tool about to run"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
     auto = next(s for s in manifest["features"]["tasks"]["settings"] if s["name"] == "auto")
     assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
 
