@@ -589,3 +589,14 @@ would otherwise fail the whole answer and skip every listener after it, so one b
 check-ins down with it. The walk therefore catches a node's fault, writes a `walk_failed` entry naming the node, its key and the
 fault's words, ends that path and goes on with the others. This is the one place a `try/except` is allowed to catch broadly, and it
 does not swallow: the entry is the fault made visible, and the page is to show it per workflow (plan 2, phase 3).
+
+## One workflow per state (ruling of 2026-10-16, afternoon)
+
+Plan 2, one workflow per event, is cancelled at phase 2 with its machinery kept: the catalogue, the checks, the
+fillers, the actions, the replay harness and the frozen records, and the seven per-event shipped workflows that
+run today. The user's ruling: a workflow per state, with a base workflow for what every state shares, is the state
+class drawn, a trigger per event inside it; the state checks leave the branches, two workflows never fight over the
+driving, and a workflow may move the agent to its next state through the machine. Plan 3 carries it in three
+phases; report 3, five readers against "Find what is missing", is folded into it. The first task rules which state
+picks the workflow: the state after the machine and the engine's holds, read once into the walk's context, found by
+the state's class and its parents and then the base.
