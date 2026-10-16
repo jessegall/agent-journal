@@ -563,6 +563,17 @@ def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_wai
     assert "waiting for you here: 1 tasks, 1 messages" in told
 
 
+def test_a_feature_switched_off_here_silences_the_lines_and_the_holds_its_workflow_carries(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.container.get(Settings).save(Setting(environment_id=1, key="features.messages", value=False), Actor.system())
+    app.console().run(["message", "send", "look at the footer"], USER)
+    answers = [json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1]) for _ in range(6)]
+    assert not any("message 1" in answer for answer in answers), "with messages off, the inbox is never named"
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    assert status == 200 and "inbox" not in json.dumps(body), "with messages off, the inbox hold holds nothing"
+
+
 def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after_five_reminders(app):
     hook(app, "SessionStart")
     app.console().run(["message", "send", "look at the footer"], USER)
@@ -1442,7 +1453,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 18, 19, 44, 45, 47, 48, 49" in out, "the base passes its inbox branch first and finds nothing unread; the Idle workflow then holds"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "nodes 18, 19, 44, 45, 47, 48, 49" in out, "the base passes its inbox branch first and finds nothing unread; the Idle workflow then holds"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
     console.run(["message", "send", "are you there?"], USER)

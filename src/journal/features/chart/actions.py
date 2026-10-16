@@ -57,11 +57,17 @@ class Actions:
         return Decision()
 
     def hold(self, text: str, ctx: Context) -> Decision:
-        """A tool use refused with the line; with no hook waiting there is nothing to hold, so the line is said."""
-        return Decision.refuse(text) if ctx.answers_hook else self.say(text, ctx)
+        """A tool use refused with the line; with no hook waiting there is nothing to hold, so the line is said. A hold named for a feature switched off here holds nothing."""
+        return self.refusing(text, ctx)
 
     def block_stop(self, text: str, ctx: Context) -> Decision:
-        return Decision.refuse(text) if ctx.answers_hook else self.say(text, ctx)
+        return self.refusing(text, ctx)
+
+    def refusing(self, text: str, ctx: Context) -> Decision:
+        said = self.spoken(text)
+        if self.registry.silenced(said):
+            return Decision()
+        return Decision.refuse(said.rendered()) if ctx.answers_hook else self.say(text, ctx)
 
     def type(self, text: str, ctx: Context) -> Decision:
         """Typed into the terminal; a text naming a nudge goes through the nudger first, so the record and the repeat window are the nudge's, and is for a live agent only."""

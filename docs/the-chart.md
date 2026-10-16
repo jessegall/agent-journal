@@ -53,6 +53,11 @@ walked before the hook is answered, so a hold or a blocked stop reaches the agen
 answer. A row event is walked a moment later and can only say or type. Each walk leaves a trace with the boxes it
 passed, so the viewer can say why the agent heard a line.
 
+A node's message that opens with a feature's key in brackets, such as `[messages.unread_held]`, belongs to that
+feature: it speaks through the feature's nudge, with its repeat window, and where the feature is switched off the
+node says nothing and holds nothing. The shipped workflows name their feature on every line and every hold, so
+switching messages or tasks off still silences their conduct.
+
 ## Editing
 
 The page opens read-only, with a line under the bar saying when the workflow last ran, through which of its nodes,
