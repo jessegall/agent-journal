@@ -1538,3 +1538,16 @@ def test_the_rules_doc_names_every_line_a_listener_says():
             if name and f"{feature}.{name.group(1)}" not in doc and name.group(1) not in doc:
                 missing.append(f"{feature}.{name.group(1)}")
     assert not missing, f"lines said by a listener and absent from docs/the-rules.md: {sorted(set(missing))}"
+
+
+def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["await", "the readers"], AGENT)
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "expecting"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, agent_id="sub-1")
+    assert machine.current("s1").name == "expecting", "a subagent reading is not the agent working again"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert machine.current("s1").name == "idle", "the agent's own tool use lifts the wait"

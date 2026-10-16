@@ -40,4 +40,4 @@ class Translation:
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
-        return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session)))
+        return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), hook.subagent))

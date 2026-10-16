@@ -17,7 +17,7 @@ class Stuck(Paused):
         return self.why, ""
 
     def tool_starting(self, event: ToolStarting) -> Transition:
-        return self.back()
+        return self.stay() if event.subagent else self.back()
 
     def prompt_submitted(self, event: PromptSubmitted) -> Transition:
         return self.back()

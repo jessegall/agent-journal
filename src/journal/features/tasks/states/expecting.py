@@ -21,7 +21,8 @@ class Expecting(Paused):
         return self.what, ""
 
     def tool_starting(self, event: ToolStarting) -> Transition:
-        return self.back()
+        """The agent's own tool use is working again; a subagent's is not."""
+        return self.stay() if event.subagent else self.back()
 
     def prompt_submitted(self, event: PromptSubmitted) -> Transition:
         return self.back()
