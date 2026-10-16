@@ -34,9 +34,9 @@ TOOLS = {"claude": Tools("Read", "Write", "Bash"), "codex": Tools("read_file", "
 PROVIDERS = tuple(TOOLS)
 
 
-def hook_as(app, provider: str, kind: str, **body):
-    """A hook as the provider's agent sends it: the status and the answer."""
-    data = json.dumps({"hook_event_name": kind, "session_id": "s1", **body}).encode()
+def hook_as(app, provider: str, kind: str, session: str = "s1", **body):
+    """A hook as the provider's agent sends it, for the session named: the status and the answer."""
+    data = json.dumps({"hook_event_name": kind, "session_id": session, **body}).encode()
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/{provider}", data=data, method="POST", headers={"Content-Type": "application/json"})
     try:
         with urlopen(request, timeout=5) as reply:

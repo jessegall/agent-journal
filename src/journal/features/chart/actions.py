@@ -68,7 +68,9 @@ class Actions:
         if not NAMED.match(text):
             self.typed(text, ctx)
         elif ctx.session:
-            self.typed(self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text)), ctx)
+            said = self.spoken(text)
+            if said.rendered() not in ctx.spoken:
+                self.typed(self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), said), ctx)
         return Decision()
 
     def typed(self, line: str | None, ctx: Context) -> None:

@@ -410,3 +410,63 @@ def test_a_state_rule_frozen_before_it_moves_still_holds(journals, monkeypatch, 
     right = Replay(with_workflow, monkeypatch)
     STATE_RULES[name](with_workflow, right, provider)
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+
+
+def two_agents(app, replay: Replay, provider: str) -> None:
+    """The steps: two agents in one environment, the first idle and the second awaiting a worker; a message arrives, then the worker reports."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    hook_as(app, provider, "SessionStart", session="s2")
+    second = Where("main", "s2")
+    console.run(["environment", "here"], second)
+    console.run(["task", "create", "the parser", "--start"], second)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], second)
+    console.run(["worker", "wait", "1"], second)
+    hook_as(app, provider, "Stop")
+    replay.step("one idle, one awaiting")
+    console.run(["message", "send", "how is it going?"], USER)
+    app.runtime().deferred.drain()
+    replay.step("a message arrives")
+    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    app.runtime().deferred.drain()
+    replay.step("the worker reports")
+
+
+def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
+    """The steps: with the log held after two edits, a task in hand, two writes, a message read and left unanswered, then a write that is held twice over."""
+    app.container.get(Settings).set("tasks.log_after", 2, Actor.system())
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    for i in (1, 2):
+        replay.step(f"write {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
+    console.run(["message", "send", "how is it going?"], USER)
+    console.run(["message", "read", "1"], AGENT)
+    replay.step("a message read and owed")
+    replay.step("a write held twice over", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
+
+
+def test_two_agents_in_one_environment_each_walk_as_their_own_state_and_a_line_is_typed_once(journals, monkeypatch):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"two_agents_{provider}", with_listener, monkeypatch, two_agents, provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", "ReleaseAwaiting"))
+    two_agents(with_workflow, right, provider)
+    by_name = {s["name"]: s for s in left.record()}
+    assert by_name["a message arrives"]["typed"] == ["[journal] new message 1"], "named once for the environment"
+    assert by_name["the worker reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat", "[journal] what you waited on came back: carry on"], "the awaiting agent is told and released, once"
+    assert with_workflow.container.get(Machine).current("s2").task_id == 1 and with_workflow.container.get(Machine).current("s1").name == "idle"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+
+
+def test_two_lines_on_one_write_come_in_the_order_the_listeners_gave_them(journals, monkeypatch):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"two_lines_on_one_write_{provider}", with_listener, monkeypatch, two_lines_on_one_write, provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch, listeners_off=("InboxOnArrival", *TOOL_LISTENERS))
+    two_lines_on_one_write(with_workflow, right, provider)
+    held = left.record()[-1]["answer"]
+    assert "answer message 1 first" in held["error"] and "2 edits since you logged task 1" in held["error"], "both holds on one write, joined in order"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, in the same order"

@@ -1,0 +1,41 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "write 1",
+      "answer": {},
+      "typed": [],
+      "nudges": [
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "briefing.orient",
+        "voices.voice"
+      ]
+    },
+    {
+      "name": "write 2",
+      "answer": {},
+      "typed": [],
+      "nudges": []
+    },
+    {
+      "name": "a message read and owed",
+      "answer": null,
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "messages.new"
+      ]
+    },
+    {
+      "name": "a write held twice over",
+      "answer": {
+        "error": "2 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write\nyour tool calls are held: answer message 1 first. a reply with [!reply:N] in words; a face answers only a message of a few words; only a journal command and a look at the message's own files go through"
+      },
+      "typed": [],
+      "nudges": []
+    }
+  ]
+}
