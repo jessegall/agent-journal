@@ -1,5 +1,6 @@
 <script setup>
 import {ago} from "../format/time.js";
+import {overlapping, tidy} from "../domain/tidy.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -126,6 +127,7 @@ function take(got) {
     revision.value = got.revision;
     nodes.value = got.nodes.map((n) => ({...n}));
     lines.value = got.lines.map((l) => ({...l}));
+    if (overlapping(nodes.value, sizing)) nodes.value = tidy(nodes.value, lines.value, sizing);
     past.value = [];
     selected.value = null;
     loaded.value = true;
@@ -274,6 +276,14 @@ function setText(node, text) {
 // the flow reads down the page: a line leaves a card by its bottom edge and enters the next by its top; a check's Yes and No sit side by side
 const ports = (node) => (node.kind === "check" ? ["yes", "no"] : ["then"]);
 const heightOf = (node) => (entryOf(node).takes_text ? CARD.text : CARD.plain);
+const sizing = {width: CARD.width, heightOf: (node) => heightOf(node)};
+
+// the cards laid out anew by the layout package: a draft change while editing, a view while reading
+function tidyUp() {
+    if (unlocked.value) remember();
+    nodes.value = tidy(nodes.value, lines.value, sizing);
+    nextTick(fit);
+}
 const portAt = (node, port) => ({x: node.x + (CARD.width * PORT_AT[port]) / 100, y: node.y + heightOf(node)});
 const inAt = (node) => ({x: node.x + CARD.width / 2, y: node.y});
 const path = (from, to) => {
@@ -556,6 +566,9 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                         @click.stop="openAdd(null)"
                     >
                         Add node
+                    </Btn>
+                    <Btn kind="ghost" small :disabled="!nodes.length" title="Lay the cards out so none overlap" @click.stop="tidyUp">
+                        Tidy up
                     </Btn>
                     <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                 </div>
