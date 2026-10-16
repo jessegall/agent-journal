@@ -11,6 +11,9 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
 from journal.events.models.created import Created
 from journal.events.models.updated import Updated
+from journal.features.chart.assumed_checks import AssumedChecks
+from journal.features.chart.assumptions import Assumptions
+from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.walk import Walk
@@ -44,22 +47,26 @@ BEFORE = {"messages": lambda m: m, "workers": lambda w: w.with_(state=WorkerStat
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
 
-    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions) -> None:
+    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks) -> None:
         self.repositories = {"messages": messages, "workers": workers, "questions": questions}
+        self.checks = checks
         self.walk, self.fillers, self.agents = walk, fillers, agents
 
-    def run(self, trigger: str, environment_id: int, row: int = 0) -> dict:
-        """A dry run for an agent event, or for a row event given the row: the path and what it would do, nothing done."""
+    def run(self, trigger: str, environment_id: int, row: int = 0, assumptions: Assumptions = Assumptions()) -> dict:
+        """A dry run for an agent event, or for a row event given the row, against the live rows or the state assumed: the path and what it would do, nothing done."""
         agent = self.agents.live(environment_id)
         session = agent.session if agent else ""
         provider = (agent.provider or "claude") if agent else "claude"
         if trigger in EVENTS:
-            ctx = Context(event=EVENTS[trigger](session, environment_id), session=session, environment_id=environment_id, provider=provider, answers_hook=True)
+            event = EVENTS[trigger](session, environment_id)
+            if isinstance(event, Ticked) and assumptions.quiet is not None:
+                event = Ticked(session=session, environment_id=environment_id, at=0.0, quiet_for=assumptions.quiet)
+            ctx = Context(event=event, session=session, environment_id=environment_id, provider=provider, answers_hook=True)
         else:
             ctx = Context(event=self.row_event(trigger, row), session=session, environment_id=environment_id, provider=provider)
         passed: list[int] = []
-        decision = self.walk.dry(self.fillers).on_with_trace(ctx, passed)
-        return {"trigger": trigger, "row": row, "nodes": passed, "would": [line for line in decision.context.split("\n") if line]}
+        decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions)).on_with_trace(ctx, passed)
+        return {"trigger": trigger, "row": row, "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described()}
 
     def row_event(self, trigger: str, row: int):
         """A row event stood in for the row named: created as it is, or updated from how it stood before the change the event means."""

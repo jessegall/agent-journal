@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import Validation
 from journal.http.request import Request
@@ -57,7 +58,9 @@ class ChartController:
     def try_(self, request: Request) -> Response:
         """A dry run: the path the chart would take for an agent event in an environment, and what it would do, nothing done."""
         environment = self.environments.named(request.body.get("environment", "main")).id
-        return Response.json(self.trial.run(request.body.get("trigger", "idle"), environment, int(request.body.get("row", 0) or 0)))
+        body = request.body
+        assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"))
+        return Response.json(self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed))
 
     def reset(self, request: Request) -> Response:
         chart = self.charts.find(int(request.params["id"]))

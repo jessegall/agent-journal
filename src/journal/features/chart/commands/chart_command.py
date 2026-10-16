@@ -4,6 +4,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
+from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
 from journal.repositories.environments import Environments
 from journal.features.chart.validation import TEXT_LIMIT, Validation
@@ -40,6 +41,9 @@ class ChartCommand(Command):
         try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
         try_.add_argument("trigger")
         try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
+        try_.add_argument("--quiet", type=float, default=None, help="how long the agent has been quiet, in seconds, for ticked")
+        try_.add_argument("--edits", type=int, default=None, help="the edits since the task in hand was logged, instead of the live count")
+        try_.add_argument("--unread", type=int, default=None, help="how many messages are unread, instead of the live inbox")
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.charts.all():
@@ -88,8 +92,10 @@ class ChartCommand(Command):
         return 0
 
     def try_(self, args: Namespace, where: Where) -> int:
-        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row)
+        ran = self.trial.run(args.trigger, self.environments.named(where.environment).id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread))
         print(f"{ran['trigger']}{f' of row {args.row}' if args.row else ''}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
+        if ran["assumed"]:
+            print(f"  assumed: {', '.join(ran['assumed'])}")
         for line in ran["would"]:
             print(f"  {line}")
         return 0

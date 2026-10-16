@@ -36,6 +36,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.supervisor_link import SupervisorLink
 from journal.repositories.environments import Environments
+from journal.repositories.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
 COLOR = "#5e64c9"

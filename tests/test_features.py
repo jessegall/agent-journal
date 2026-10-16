@@ -1355,6 +1355,15 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
     assert "messages.created of row 1: nodes none" in console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out, "a row event is tried with its row; no shipped workflow is on it yet"
     assert len(sent) == announced, "the trial typed nothing"
+    n = int(console.run(["chart", "new", "Waiting long"], USER).out.split()[1].rstrip(":"))
+    node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
+    trigger, quiet, say = node("trigger", "ticked"), node("check", "quiet_for_over", "--text", "300"), node("action", "say", "--text", "check {{awaited}} now")
+    console.run(["chart", "line", str(trigger), str(quiet)], USER)
+    console.run(["chart", "line", str(quiet), str(say), "--port", "yes"], USER)
+    live = console.run(["chart", "try", "ticked"], AGENT).out
+    assert f"nodes {trigger}, {quiet}" in live and "assumed" not in live, "against the live state the tick is not quiet"
+    scripted = console.run(["chart", "try", "ticked", "--quiet", "400"], AGENT).out
+    assert f"nodes {trigger}, {quiet}, {say}" in scripted and "assumed: quiet for 400 s" in scripted, "the trial takes a quiet time and says it assumed it"
 
 
 def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():

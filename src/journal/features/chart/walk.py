@@ -28,9 +28,9 @@ class Walk:
     def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries) -> None:
         self.charts, self.checks, self.actions, self.entries = charts, checks, actions, entries
 
-    def dry(self, fillers) -> "Walk":
-        """The same walk with nothing done: each action tells what it would do."""
-        return Walk(self.charts, self.checks, DryActions(fillers), self.entries)
+    def dry(self, fillers, checks: Checks) -> "Walk":
+        """The same walk with nothing done: each action tells what it would do, and the checks given answer, assumed or live."""
+        return Walk(self.charts, checks, DryActions(fillers), self.entries)
 
     def on(self, ctx: Context) -> Decision:
         return self.on_with_trace(ctx, [])
