@@ -625,3 +625,10 @@ Built on 2026-10-16 under plan 3 (phase 2): the seven state workflows, the base 
 drawings and the state rules; the older shape retires at boot, whole when unedited, its triggers alone when the user
 edited it; Working, Expecting and the running state no longer say their lines; the replays' equal compares the lines
 of one answer as a set, since each is an instruction of its own and only the order of the merge changed.
+
+Plan 3, phase 2, complete on 2026-10-16 at the end of the afternoon: the development journal runs the base workflow
+and the six state workflows, the older per-event ones retired at boot; thirty-six replays prove them equal to the
+frozen records. Phase 2 is the plan's checkpoint: the user looks at the Workflows page before phase 3 deletes the
+listeners the workflows carry. The default suite runs in thirty seconds on a loaded machine, with the replays out of
+it (python3 -m pytest tests/replays_run.py) and one template journal booted per run; the server per test is what is
+left to cut.
