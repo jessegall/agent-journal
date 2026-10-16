@@ -811,3 +811,22 @@ suite: 237 tests, 19 s of CPU and 38 s of wall on a loaded box; the replays: 46 
 no pause state wraps another. The checkpoint note is report 7 on the plan. The dev journal
 re-seeded itself at the bump: 9 states, 28 workflows, none behind. The lockout of 2026-10-16 (a skill hold that
 held the read paying it) is fixed in the guards and floored by task 406, still open.
+
+Phase three of plan 7, closed on 2026-10-17 in the small hours: the replays for plans and workers, the clock, the
+pauses' exits and Ended, and a session's start and end were frozen before anything moved (tasks 372 to 375), and
+stand green after it, 58 in about twenty seconds. Send the agent back to what it was doing releases any pause to
+the state its resume keeps (376); a state change is named by its outcome, Wait for something outside, Mark the
+agent stuck, Change state to Idle, with a wordless wait or stuck refused at the save and a change to Idle from a
+state that owns something refused as before; move_to is gone and an older workflow naming a state is rewritten at
+boot (377). Ended ships a workflow with its trigger alone, titled Does nothing yet (378). The page shows a run's
+state change in words, the answer the agent was given, the number a count check read, and a card's details in
+reading mode; Test run says the order and where it would stop, with a dry count ledger (379, 380, 413). The rules
+doc is reworded (381). On the user's rulings of the same night: the engine's own moves are not workflows and are
+not shown on the page at all (415, after 379 had shown them in grey); delivering a message to the agent is the
+engine's, so the two Always workflows at a message's creation and reading are gone and the messages feature types
+and counts itself (416); every shipped workflow is titled by what it does (411); every label, title and line is
+plain English, swept by a reading subagent and fixed in two commits (412), and CLAUDE.md carries both rules, Plain
+English and Workflows drive the agent, the engine keeps it safe, the latter around the test "would a user want it
+different, or want to watch it happen". Task 414 sorts the plan's remaining phases by that test before phase four
+closes: 388 to 393, 398 and 399 are engine behaviour, 385, 395, 396, 397 and 401 stay workflows. The floor of 406
+is in: a journal command and a skill's read are never held. The suite: 245 tests; the replays: 58.
