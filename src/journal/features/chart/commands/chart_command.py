@@ -24,8 +24,9 @@ class ChartCommand(Command):
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "every workflow: its nodes and lines")
         self.verb(verbs, "catalogue", "everything a node may be")
-        new = self.verb(verbs, "new", "a new, empty workflow")
+        new = self.verb(verbs, "new", "a new, empty workflow, for a state or the base")
         new.add_argument("title")
+        new.add_argument("--state", default="", help="the state this workflow is for, or base for what every state shares; left out, a workflow of the older shape bound to one event")
         self.verb(verbs, "drop", "take a workflow out, with its nodes").add_argument("n", type=int)
         node = self.verb(verbs, "node", "add a node naming a catalogue entry")
         node.add_argument("kind", choices=[k.value for k in NodeKind])
@@ -48,7 +49,8 @@ class ChartCommand(Command):
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.charts.all():
             sidelined = self.charts.sidelined_by(chart)
-            print(f"workflow {chart.id}, revision {chart.revision}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
+            bound = f" [{chart.state}]" if chart.bound_to_a_state else ""
+            print(f"workflow {chart.id}{bound}, revision {chart.revision}: {chart.title}" + (f"  (sidelined: workflow {sidelined.id} answers its event)" if sidelined else ""))
             for node in self.charts.nodes_of(chart):
                 print(f"{node.id:>4}  {node.kind:<8} {node.key}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
             for line in self.charts.lines_of(chart):
@@ -56,7 +58,10 @@ class ChartCommand(Command):
         return 0
 
     def new(self, args: Namespace, where: Where) -> int:
-        chart = self.charts.save(Chart(title=args.title), where.actor)
+        faults = self.validation.binding_faults(Chart(title=args.title, state=args.state))
+        if faults:
+            raise Refused(faults[0])
+        chart = self.charts.save(Chart(title=args.title, state=args.state), where.actor)
         print(f"workflow {chart.id}: {chart.title}")
         return 0
 
@@ -77,11 +82,11 @@ class ChartCommand(Command):
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
         chart = self.charts.find(args.chart) if args.chart else self.charts.shipped()[0]
-        if kind == NodeKind.TRIGGER and any(n.kind == NodeKind.TRIGGER for n in self.charts.nodes_of(chart)):
-            raise Refused(f"workflow {chart.id} already has its trigger: a workflow holds one; journal chart new \"<title>\" for another")
-        taken = self.validation.taken_faults(chart, [{"kind": kind, "key": args.key}])
-        if taken:
-            raise Refused(taken[0])
+        if kind == NodeKind.TRIGGER:
+            present = [{"kind": n.kind, "key": n.key} for n in self.charts.nodes_of(chart)]
+            faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}]) + self.validation.taken_faults(chart, [{"kind": kind, "key": args.key}])
+            if faults:
+                raise Refused(faults[0])
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
         print(f"node {node.id}: {entry.title}" + (f", {node.text}" if node.text else ""))
         return 0

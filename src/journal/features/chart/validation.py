@@ -1,5 +1,6 @@
 from journal.features.chart.catalogue import Catalogue
-from journal.models.chart import Chart
+from journal.engine.states_catalogue import StatesCatalogue
+from journal.models.chart import BASE, Chart
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import NO, THEN, YES, Charts
 
@@ -10,17 +11,26 @@ TEXT_LIMIT = 500
 class Validation:
     """What makes a workflow wrong, found before it is saved: a node the catalogue does not know, more than one trigger, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
 
-    def __init__(self, catalogue: Catalogue, charts: Charts) -> None:
-        self.catalogue, self.charts = catalogue, charts
+    def __init__(self, catalogue: Catalogue, charts: Charts, states: StatesCatalogue) -> None:
+        self.catalogue, self.charts, self.states = catalogue, charts, states
+
+    def binding_faults(self, chart: Chart) -> list[str]:
+        """A workflow is bound to the base or to a state the engine knows, and a state has one workflow: a second on the same state, or a state nobody has heard of, is refused."""
+        if not chart.bound_to_a_state:
+            return []
+        if chart.state != BASE and not self.states.known(chart.state):
+            return [f"no state is called {chart.state}: base, or one of {', '.join(self.states.names())}"]
+        other = self.charts.for_state(chart.state)
+        if other and other.id != chart.id:
+            return [f"workflow {other.id}, {other.title}, is already the workflow for {chart.state}: one workflow per state"]
+        return []
 
     def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[str]:
         by_id = {str(n.get("id", "")): n for n in nodes}
         faults = [f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}" for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
         faults += self.taken_faults(chart, nodes)
         faults += [f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters" for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
-        triggers = [n for n in nodes if n.get("kind") == NodeKind.TRIGGER]
-        if len(triggers) > 1:
-            faults.append(f"a workflow holds one trigger; this one has {len(triggers)}")
+        faults += self.trigger_faults(chart, nodes)
         for line in lines:
             source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
             if not source or not target:
@@ -31,9 +41,20 @@ class Validation:
         faults += self.cycle_faults(nodes, lines)
         return faults
 
+    @staticmethod
+    def trigger_faults(chart: Chart, nodes: list[dict]) -> list[str]:
+        """A workflow bound to a state holds one trigger per event it answers; one of the older shape holds one trigger."""
+        keys = [n.get("key", "") for n in nodes if n.get("kind") == NodeKind.TRIGGER]
+        if not chart.bound_to_a_state:
+            return [f"a workflow holds one trigger; this one has {len(keys)}"] if len(keys) > 1 else []
+        twice = sorted({k for k in keys if keys.count(k) > 1})
+        return [f"a workflow holds one trigger per event; {k} is in this one {keys.count(k)} times" for k in twice]
+
     def taken_faults(self, chart: Chart, nodes: list[dict]) -> list[str]:
-        """One workflow per event: a trigger on an event another workflow already answers is refused, since two on one event would both drive the agent."""
+        """One workflow of the older shape per event: a trigger on an event another such workflow already answers is refused, since two on one event would both drive the agent."""
         faults = []
+        if chart.bound_to_a_state:
+            return faults
         for trigger in [n for n in nodes if n.get("kind") == NodeKind.TRIGGER]:
             other = self.charts.answering(trigger.get("key", ""))
             if other and other.id != chart.id:

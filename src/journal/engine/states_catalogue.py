@@ -13,6 +13,12 @@ class StatesCatalogue:
         self.registry = registry
         self._states = {state.name: state for feature in registry.features for state in feature.states} | {state.name: state for state in self.OWN}
 
+    def known(self, name: str) -> bool:
+        return name in self._states
+
+    def names(self) -> list[str]:
+        return sorted(self._states)
+
     def named(self, name: str, data: dict) -> AgentState:
         state = self._states.get(name) or self._states["idle"]
         return state.from_data(data or {})

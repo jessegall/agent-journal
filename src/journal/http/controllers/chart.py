@@ -34,10 +34,11 @@ class ChartController:
         """A workflow is born with its trigger: the event it starts at, named by its key, and a title that is the event's unless given."""
         trigger = next((e for e in self.catalogue.all() if e.kind == NodeKind.TRIGGER and e.key == request.body.get("trigger", "")), None)
         title = request.body.get("title", "").strip() or (trigger.title if trigger else "A workflow")
-        taken = self.validation.taken_faults(Chart(title=title), [{"kind": NodeKind.TRIGGER, "key": trigger.key}]) if trigger else []
-        if taken:
-            return Response.refused(taken[0])
-        chart = self.charts.save(Chart(title=title), request.actor)
+        chart = Chart(title=title, state=request.body.get("state", "").strip())
+        faults = self.validation.binding_faults(chart) + (self.validation.taken_faults(chart, [{"kind": NodeKind.TRIGGER, "key": trigger.key}]) if trigger else [])
+        if faults:
+            return Response.refused(faults[0])
+        chart = self.charts.save(chart, request.actor)
         if trigger:
             self.charts.add_node(chart, Node(kind=NodeKind.TRIGGER, key=trigger.key, x=400, y=0), request.actor)
         return Response.json(self.drawn(chart), 201)
@@ -73,13 +74,14 @@ class ChartController:
 
     def named(self, chart: Chart) -> dict:
         sidelined = self.charts.sidelined_by(chart)
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "sidelined_by": sidelined.id if sidelined else None}
+        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "sidelined_by": sidelined.id if sidelined else None}
 
     def entries(self) -> list[dict]:
         return [{**asdict(e), "kind": e.kind.value} for e in self.catalogue.all()]
 
     def drawn(self, chart: Chart) -> dict:
         return {
+            "state": chart.state,
             **self.named(chart), "shipped": chart.shipped,
             "nodes": [{"id": n.id, "kind": n.kind.value, "key": n.key, "text": n.text, "x": n.x, "y": n.y, "shipped": n.shipped} for n in self.charts.nodes_of(chart)],
             "lines": [{"from": line.source.id, "to": line.target.id, "port": line.kind} for line in self.charts.lines_of(chart)],

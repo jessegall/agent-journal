@@ -1,6 +1,8 @@
 # The chart: the journal's conduct, drawn
 
-The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. A journal holds one workflow
+The Workflow page shows how the journal treats the agent as a flowchart, and lets you change it. A workflow is bound
+to a state, or to the base that holds what every state shares, and holds one trigger per event it answers; a state has
+one workflow. Workflows of the older shape, bound to one event each, answer by their event until they retire: a journal holds one such workflow
 per event, each starting at its event's trigger; a second on the same event is refused, since two would both drive
 the agent, and should a journal somehow hold two, the older one answers and the page marks the other sidelined. The journal ships it with today's conduct, so nothing changes until you edit it.
 

@@ -1506,7 +1506,7 @@ def test_a_workflow_holds_one_trigger(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    assert "already has its trigger" in console.run(["chart", "node", "trigger", "tool_starting"], AGENT).err
+    assert "a workflow holds one trigger" in console.run(["chart", "node", "trigger", "tool_starting"], AGENT).err
     port = app.server().port
     nodes = [{"id": "a", "kind": "trigger", "key": "idle"}, {"id": "b", "kind": "trigger", "key": "ticked"}]
     try:
@@ -1922,3 +1922,21 @@ def test_the_dashboard_shows_a_cancelled_plan_and_a_failing_handler_still_answer
         assert reply.status == 200, "a cancelled plan and its task are shaped for the page"
         shown = j.loads(reply.read())
     assert "abandoned" in j.dumps(shown)
+
+
+def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    assert "no state is called flying" in console.run(["chart", "new", "Flying", "--state", "flying"], USER).err
+    made = console.run(["chart", "new", "While working", "--state", "working"], USER).out
+    n = int(made.split()[1].rstrip(":"))
+    assert "already the workflow for working: one workflow per state" in console.run(["chart", "new", "Working twice", "--state", "working"], USER).err
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    node = lambda chart, *args: console.run(["chart", "node", *args, "--in", str(chart)], USER)
+    assert node(n, "trigger", "tool_starting").code == 0 and node(n, "trigger", "idle").code == 0, "a state's workflow holds a trigger per event it answers"
+    assert "one trigger per event; idle is in this one 2 times" in node(n, "trigger", "idle").err
+    assert node(base, "trigger", "idle").code == 0, "the base and a state may both answer an event; the older shape's one-per-event rule does not reach them"
+    shown = console.run(["chart", "show"], USER).out
+    assert f"workflow {n} [working], revision 0: While working" in shown and f"workflow {base} [base]" in shown and "sidelined" not in shown
+    assert "Agent stops" in shown and "workflow 1, revision" in shown, "the older shape, bound to its event, stands beside them until it retires"
