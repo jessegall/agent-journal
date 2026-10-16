@@ -802,3 +802,12 @@ mark is owed, and Always at Agent stops holds a stop while anything is owed, nam
 mark listeners are deleted; the three pause states are no longer entered and retire in task 368. Decided (task 367):
 a debt never changes which workflows run; it holds writes and stops only. The replays of phase two carry it. The
 journal's own commands must never be held, whatever a workflow says: task 406, on the user's ruling.
+
+Phase two closed on 2026-10-17 just after midnight: the three pause states are deleted with the owed-pause
+machinery; the first migration, run at boot by the migrator the app now wires, unwraps an agent standing in one
+of them with its fact set; a user's workflow bound to one is kept off and named; the holds hold under Codex as
+under Claude; CLAUDE.md names the facts beside the state and the pauses as the waits; DRAWINGS_VERSION 9. The
+suite: 237 tests, 19 s of CPU and 38 s of wall on a loaded box; the replays: 46 in about twenty seconds now that
+no pause state wraps another. The checkpoint note is report 7 on the plan. The dev journal
+re-seeded itself at the bump: 9 states, 28 workflows, none behind. The lockout of 2026-10-16 (a skill hold that
+held the read paying it) is fixed in the guards and floored by task 406, still open.
