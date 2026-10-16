@@ -81,6 +81,7 @@ def test_the_session_start_is_answered_with_the_briefing(app):
 
 def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     context(app, 30)
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={})
@@ -313,11 +314,12 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     status, body = hook(app, "SessionStart")
     assert "read the journal skill before anything else: .claude/skills/journal/SKILL.md" in body["hookSpecificOutput"]["additionalContext"]
     machine = app.container.get(Machine)
-    assert machine.current("s1").name == "orienting", "the start's look is owed as a state still; the skill is owed as a link"
+    assert machine.current("s1").name == "idle", "the start owes the skill and the look as facts, not as a state"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
-    assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"], "the guards hold the write while a skill is owed"
+    assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"] and "in flight" not in body["error"], "the guards hold the write while a skill is owed: the first hold wins"
     read_skill(app, "journal")
-    assert machine.current("s1").name == "orienting", "the skill read, the start's look at what is in flight is still owed"
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
+    assert status == 409 and "read what is in flight here before any other write: journal environment here" in body["error"], "the skill read, the start's look at what is in flight is still owed"
     app.console().run(["environment", "here"], AGENT)
     assert machine.current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
@@ -621,6 +623,7 @@ def test_a_feature_switched_off_here_silences_the_lines_and_the_holds_its_workfl
 
 def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after_five_reminders(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "look at the footer"], USER)
     named = [i for i in range(1, 16) if "new message 1" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1])]
     assert named == [3, 6, 9, 12, 15] or len(named) >= 4, "every third tool use names the inbox"
@@ -712,13 +715,15 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
     machine = app.container.get(Machine)
     assert machine.current("s1").name == "waiting"
     hook(app, "SessionStart")
-    assert machine.current("s1").name == "orienting" and machine.current("s1").resume["state"] == "waiting", "a new session holds the agent over its wait"
+    from journal.repositories.agents import Agents
+    agents = app.container.get(Agents)
+    assert machine.current("s1").name == "waiting" and agents.for_session("s1").oriented is False, "a new session keeps the agent in its wait and owes the look as a fact"
     console.run(["question", "answer", "1", "beta"], USER)
     app.runtime().deferred.drain()
-    held = machine.current("s1")
-    assert held.name == "orienting" and held.resume["state"] == "working", "the answer reached the wait beneath the pause and released it; the pause still stands"
+    assert machine.current("s1").name == "working" and agents.for_session("s1").oriented is False, "the answer released the wait; the look is still owed"
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 409, "a write before the look is held"
     console.run(["environment", "here"], AGENT)
-    assert machine.current("s1").name == "working", "oriented again, the agent goes on with its work, not back into a wait already answered"
+    assert agents.for_session("s1").oriented is True and hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "oriented again, the agent goes on with its work"
 
 
 def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, monkeypatch):
@@ -750,7 +755,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     assert body.get("decision") == "block" and "in auto mode its checkpoint is no stop" in body["reason"], "auto on: the checkpoint is no stop, said by the plan state's own workflow"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
     hook(app, "SessionStart", session_id="s2")
-    assert machine.current("s2").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2).to_data()}, "a session that starts while the plan runs follows it beneath its orienting pause, at its task in hand"
+    assert machine.current("s2") == FollowingPlan(plan_id=1, task_id=2), "a session that starts while the plan runs follows it, at its task in hand"
     console.run(["plan", "park", "1"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
 

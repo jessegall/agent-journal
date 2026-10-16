@@ -46,6 +46,7 @@ def write(app):
 
 def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app):
     hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "ship it", "--start"], AGENT)
     assert app.container.get(Machine).current("s1").task_id == 1
     assert write(app)[0] == 200
@@ -94,6 +95,7 @@ def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
     first.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     first.runtime().start()
     hook(first, "SessionStart")
+    first.console().run(["environment", "here"], AGENT)
     first.console().run(["task", "create", "t", "--start"], AGENT)
     first.runtime().stop()
     second = App(Config(tmp_path, port=0))

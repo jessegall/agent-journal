@@ -42,6 +42,7 @@ NEW_MESSAGE = "[messages.new] new message {{row}}"
 ONE_UNREAD = "[messages.new] new message {{unread_numbers}}"
 SOME_UNREAD = "[messages.some] new messages {{unread_numbers}}"
 MANY_UNREAD = "[messages.many] {{unread_count}} messages unread: journal message unread"
+ORIENT_HELD = "[briefing.orient] read what is in flight here before any other write: journal environment here"
 SKILL_HELD = "[skills.required] read the {{skill_owed}} skill before anything else: {{skill_path}}. writes wait until you have"
 UNREAD_HELD = "[messages.unread_held] your inbox is unread: {{unread_count}} waiting. journal message unread before any other write"
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; a face answers only a message of a few words"
@@ -294,11 +295,13 @@ class ShippedChart(Seed):
         return lambda chart, ends: own(chart, self.state_skill(chart, ends))
 
     def journal_skill_then(self, shared):
-        """Every start owes the journal skill, locked, before the shared conduct."""
+        """Every start owes the journal skill, locked, before the shared conduct, and ends owing the look at what is in flight here, locked."""
         def draw(chart: Chart, ends: list) -> list:
             owed = self.node(chart, NodeKind.ACTION, "require_skill", "journal", x=720, y=92, locked=True)
             self.chain(ends, owed)
-            return shared(chart, [(owed, THEN)])
+            unoriented = self.node(chart, NodeKind.ACTION, "mark_unoriented", x=720, y=644, locked=True)
+            self.chain(shared(chart, [(owed, THEN)]), unoriented)
+            return [(unoriented, THEN)]
         return draw
 
     def prompt_skill_then(self, shared):
@@ -338,13 +341,21 @@ class ShippedChart(Seed):
         return self.draw_inbox(chart, ends, x=720, y=92)
 
     def shared_at_tool(self, chart: Chart, ends: list) -> list:
-        """At a tool use a skill owed holds the tool until its file is read; then the counts of uses and uses owed go up by one; the unread inbox is named at every so many uses and the write held after so many namings, each naming counted; then a read message is answered before the next tool, held after so many uses owed, asked for after fewer."""
+        """At a tool use a skill owed holds a write until its file is read, as does the look at what is in flight still owed, a read going through so the debt can be paid; then the counts of uses and uses owed go up by one; the unread inbox is named at every so many uses and the write held after so many namings, each naming counted; then a read message is answered before the next tool, held after so many uses owed, asked for after fewer."""
         left = 720
         skill = self.node(chart, NodeKind.CHECK, "skill_owed", x=left - 160, y=92, locked=True)
-        hold_skill = self.node(chart, NodeKind.ACTION, "hold", SKILL_HELD, x=left - 320, y=184)
+        writes_owing = self.node(chart, NodeKind.CHECK, "tool_writes", x=left - 160, y=184, locked=True)
+        hold_skill = self.node(chart, NodeKind.ACTION, "hold", SKILL_HELD, x=left - 320, y=276)
         self.chain(ends, skill)
-        self.line(skill, hold_skill, YES)
-        ends = [(skill, NO), (hold_skill, THEN)]
+        self.line(skill, writes_owing, YES)
+        self.line(writes_owing, hold_skill, YES)
+        unoriented = self.node(chart, NodeKind.CHECK, "not_oriented", x=left - 160, y=368, locked=True)
+        writes_unoriented = self.node(chart, NodeKind.CHECK, "tool_writes", x=left - 160, y=460, locked=True)
+        hold_orient = self.node(chart, NodeKind.ACTION, "hold", ORIENT_HELD, x=left - 320, y=552)
+        self.chain([(skill, NO), (writes_owing, NO), (hold_skill, THEN)], unoriented)
+        self.line(unoriented, writes_unoriented, YES)
+        self.line(writes_unoriented, hold_orient, YES)
+        ends = [(unoriented, NO), (writes_unoriented, NO), (hold_orient, THEN)]
         use = self.node(chart, NodeKind.ACTION, "count_one", "uses", x=left + 80, y=92)
         owe = self.node(chart, NodeKind.ACTION, "count_one", "owed", x=left + 80, y=184)
         unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=left + 80, y=276)

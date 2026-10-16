@@ -3,18 +3,16 @@
   "steps": [
     {
       "name": "a stop before orienting",
-      "answer": {
-        "decision": "block",
-        "reason": "you stopped while the journal awaits a look at what is in flight here. do that first, or journal stuck \"<why>\" if you are truly stuck"
-      },
+      "answer": {},
       "typed": [],
       "nudges": [
+        "briefing.orient",
         "briefing.ready",
         "briefing.quiet",
         "briefing.laws",
-        "briefing.orient",
         "voices.voice"
-      ]
+      ],
+      "counts": {}
     },
     {
       "name": "a tool use at the mark",
@@ -27,7 +25,11 @@
       "typed": [],
       "nudges": [
         "memory.decide"
-      ]
+      ],
+      "counts": {
+        "owed": 1,
+        "uses": 1
+      }
     },
     {
       "name": "a stop under the mark",
@@ -36,7 +38,11 @@
         "reason": "you stopped while the journal awaits a decision at the context mark, 80% full. do that first, or journal stuck \"<why>\" if you are truly stuck"
       },
       "typed": [],
-      "nudges": []
+      "nudges": [],
+      "counts": {
+        "owed": 1,
+        "uses": 1
+      }
     }
   ]
 }

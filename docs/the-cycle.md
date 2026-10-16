@@ -13,8 +13,9 @@ the event's walk for the workflows after it. An agent event is walked before its
 the machine, so a hold or a blocked stop reaches the agent and a said line rides on the answer; the first hold of
 an event wins and one move per event is taken; a row event is walked on the worker thread and can only say or
 type. The counts the workflows keep for the agent, started, counted and read by nodes on the canvas, carry the
-cadences that the engine once counted in secret. What the workflows do not carry the states and listeners below
-still do; the-rules.md lists which is which, and the-chart.md says how a workflow is read and edited.
+cadences that the engine once counted in secret. What the agent owes the journal, a skill to read, the look at what is in flight, a decision at a context mark, is a
+fact on its row, set by a node and paid by a command, with the guards holding its writes meanwhile. What the
+workflows do not carry the states and listeners below still do; the-rules.md lists which is which, and the-chart.md says how a workflow is read and edited.
 
 ## 1. One session, start to stop
 

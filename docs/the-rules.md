@@ -92,7 +92,7 @@ title and the state by its name.
 | every wait above | the engine, as the way out | a word from the user frees any wait that is not the agent's own doing, ruled once in Paused; so a wait whose workflow was emptied or edited still ends, and the page warns when a wait's workflow releases nothing |
 | running_sequence | the workflow Running a sequence | the step held at a stop is conduct; the stepping stays the state's move |
 | stuck | the workflow Stuck | the journal stays quiet until the agent's own tool use lifts the wait; the shared conduct runs under it |
-| orienting | the engine | the briefing's hold until the agent has looked at what is in flight is owed to the journal, not conduct |
+| orienting | a fact on the agent's row and the guards' hold | the look at what is in flight is owed as a fact, marked by Always at Session starts and paid by journal environment here; the state stays only until phase two retires it |
 | at_mark | the engine | the context mark's hold until something survives it is owed to the journal |
 | loading_skill | the engine | a skill owed before a state's work is the engine's |
 | ended | the engine, nothing | a session that ended says nothing and walks nothing |
@@ -101,8 +101,9 @@ A state not in this table does not exist: the subagent state nothing ever entere
 
 ## Kept in code, by design
 
-- A session's start: the briefing and the hold until `journal environment here` (briefing); the journal skill is
-  required by the workflow Always at Session starts and held by the guards until read.
+- A session's start: the briefing (briefing); the journal skill and the look at what is in flight are owed by
+  the workflow Always at Session starts, as facts on the agent's row, and held by the guards until the read and
+  `journal environment here`.
 - Skills forgotten at a compaction, so a start owes them again (skills); a state's skill is required by its own
   workflow at Session starts, the ones a prompt names by Always at Prompt sent.
 - The context mark: decide what survives, held there (memory/hold_at_mark); a new rule questioned once (memory/review_new_rule).

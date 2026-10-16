@@ -38,10 +38,12 @@ journal clears the compiled graphs, so the next walk reads the edit.
 
 The journal's guards come first: Guards at Tool about to run is a locked workflow bound to no state, at the head
 of the list in every journal, drawn back by any boot that finds it missing, where a skill owed holds the tool
-until its file is read, the unread inbox is named every so many tool uses and the write held after so many
-namings, and a read message answered before the next tool, held after so many uses. Then the conduct for every
+until its file is read, a write before the look at what is in flight here is held until `journal environment
+here`, the unread inbox is named every so many tool uses and the write held after so many namings, and a read
+message answered before the next tool, held after so many uses. Then the conduct for every
 state, one Always workflow per event, bound to no state and placed after the locked ones: Always at Session starts
-requires the journal skill (locked) and names the inbox, Always at Prompt sent requires the skills a prompt names
+requires the journal skill (locked), names the inbox and marks the agent unoriented (locked), owing the look that
+`journal environment here` pays, Always at Prompt sent requires the skills a prompt names
 (locked) and names the inbox, Always at Agent stops names the inbox, Always at A message is created types a message
 that comes to the agent and starts its counts of tool uses and inbox namings, Always at A message is updated starts
 the count of uses the agent owes an answer on, at the first message read and owed. A state whose feature has a

@@ -143,6 +143,10 @@ class Checks:
         """The prompt names a keyword of a skill."""
         return isinstance(ctx.event, PromptSubmitted) and bool(self.requiring.named_in(ctx.event.prompt))
 
+    def not_oriented(self, ctx: Context) -> bool:
+        """The agent has not looked at what is in flight here since its session started."""
+        return bool(ctx.session) and not self.machine.agent(ctx.session, ctx.environment_id).oriented
+
     def skill_owed(self, ctx: Context) -> bool:
         """The agent owes a read of a skill's file."""
         return bool(ctx.session) and bool(self.requiring.owed_names(self.machine.agent(ctx.session, ctx.environment_id)))
