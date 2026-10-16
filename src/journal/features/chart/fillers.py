@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import re
 
 from journal.events.agent.ticked import Ticked
@@ -17,6 +18,11 @@ from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
+from journal.repositories.rules import Rules
+from journal.repositories.facts import Facts
+from journal.repositories.reminders import Reminders
+from journal.repositories.questions import Questions
+from journal.repositories.environments import Environments
 from journal.repositories.tasks import Tasks
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
@@ -25,9 +31,11 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
+        self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
 
     @classmethod
     def listed(cls) -> list[dict]:
@@ -36,6 +44,41 @@ class Fillers:
 
     def fill(self, text: str, ctx: Context) -> str:
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
+
+    def env(self, ctx: Context) -> str:
+        """The environment's name."""
+        return self.environments.find(ctx.environment_id).name if ctx.environment_id else ""
+
+    def taken_over_at(self, ctx: Context) -> str:
+        """The time of day the other session that worked here last did anything."""
+        from journal.features.chart.checks import TAKEN_OVER_WITHIN
+        others = self.agents.others_lately(ctx.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN) if ctx.session else []
+        return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
+
+    def rule_count(self, ctx: Context) -> str:
+        """How many rules are in force."""
+        return str(len(self.rule_rows.all()))
+
+    def rules(self, ctx: Context) -> str:
+        """The rules in force, numbered."""
+        return self.numbered(r.text for r in self.rule_rows.all())
+
+    def facts(self, ctx: Context) -> str:
+        """The facts about this environment, numbered."""
+        return self.numbered(f.text for f in self.fact_rows.in_())
+
+    def reminders(self, ctx: Context) -> str:
+        """The reminders here, numbered."""
+        return self.numbered(r.text for r in self.reminder_rows.in_())
+
+    def waiting(self, ctx: Context) -> str:
+        """What waits for the agent, by count: open tasks, unread messages, open questions."""
+        counts = {"tasks": len(self.tasks.in_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
+        return ", ".join(f"{n} {name}" for name, n in counts.items() if n)
+
+    @staticmethod
+    def numbered(texts) -> str:
+        return "; ".join(f"{n}. {text}" for n, text in enumerate(texts, 1))
 
     def plan_n(self, ctx: Context) -> str:
         """The number of the started plan standing at a checkpoint."""

@@ -1,4 +1,3 @@
-from journal.features.briefing.listeners.brief_at_start import BriefAtStart
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
 from journal.features.entry import Entry
 from journal.features.feature import Feature
@@ -9,10 +8,15 @@ from journal.models.node_kind import NodeKind
 class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
-    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it."
-    listeners = (BriefAtStart, EndSilentSessions)
+    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, drawn in the Always workflow at Session starts."
+    listeners = (EndSilentSessions,)
     checks = (
         Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),
+        Entry(NodeKind.CHECK, 'taken_over', 'Another session worked here lately?', 'another session worked this environment within a day, and this start is not the same session going on after a compaction'),
+        Entry(NodeKind.CHECK, 'has_rules', 'Has rules?', 'rules are in force here'),
+        Entry(NodeKind.CHECK, 'has_facts', 'Has facts?', 'facts about this environment are on record'),
+        Entry(NodeKind.CHECK, 'has_reminders', 'Has reminders?', 'reminders are on record here'),
+        Entry(NodeKind.CHECK, 'something_waiting', 'Anything waiting for the agent?', 'open tasks, unread messages or open questions wait for the agent'),
     )
     actions = (
         Entry(NodeKind.ACTION, 'mark_unoriented', 'Require a look at what is in flight', 'the agent owes a look at what is in flight here before any other write, and is told so; journal environment here pays it'),

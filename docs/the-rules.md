@@ -48,7 +48,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Agent stops | messages.new / some / many | messages unread | say on the stop | in the workflow the Always workflow at Agent stops; its listener is deleted |
 | Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | Idle's workflows, in phase 2 (task 161) |
 | Agent stops | chart.awaiting: "you stopped while the journal awaits ..." | something owed: a skill, the look at what is in flight, a decision at a mark | block the stop, naming the debt | in the workflow the Always workflow at Agent stops (Something owed?, locked); the pause's own stop rule is deleted |
-| Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
+| Session starts | briefing.ready, quiet, laws (locked), takeover, rules, facts, reminders, waiting | always; the rows that exist; another session lately | say | in the Always workflow at Session starts, the start block drawn line by line after the look is owed (plan 7, task 395); its listener is deleted; the orient line is the Require a look node's |
 | Session starts | messages.new / some / many | messages unread | say | in the workflow the Always workflow at Session starts; its listener is deleted |
 | Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | stays with the voices feature: the voice's own words |
 | Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in Idle's workflows; its listener is deleted |
@@ -68,7 +68,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Any event at a mark | memory.decide / held | context at 25, 50, 80 percent | say, hold | in every Always and Guards workflow at an agent event (Context over a mark not taken?, Hold the agent at a context mark, locked) and the write hold in the guards at Tool about to run; the mark owed is a fact on the agent's row, paid by fact, rule or nothing |
 | Any event | memory.whisper | a fact, rule or reminder's keyword in the prompt | say | stays with the memory feature: it reads the keywords of facts, rules and reminders, which no check reads |
 
-What stays in code by design, with why: the briefing (a start is the engine's), delivery of typed lines, the shell runner's
+What stays in code by design, with why: delivery of typed lines, the shell runner's
 parts and limits with its three refusals (a mixed journal chain, a whole read of a long file, a piped read of the
 user's words: each a guard on shell syntax), the reading of the agent's turn for etiquette and faces, and the state
 rules (carry on in hand, the awaited check) until each moves with its state. Every other line in the table above is
@@ -120,9 +120,9 @@ Idle from a state that owns something is refused, and no node enters a state tha
   a hold is never the result of a fault, and the law text says so.
 - The floor under every hold: a journal command and the read of a skill's file always run, whatever a workflow
   holds; the engine drops the refusal and keeps the words (chart/walk).
-- A session's start: the briefing (briefing); the journal skill and the look at what is in flight are owed by
-  the workflow the Always workflow at Session starts, as facts on the agent's row, and held by the guards until the read and
-  `journal environment here`.
+- A session's start: the journal skill and the look at what is in flight are owed by the Always workflow at
+  Session starts, as facts on the agent's row, and held by the guards until the read and `journal environment
+  here`; the start block itself is that workflow's nodes.
 - Skills forgotten at a compaction, so a start owes them again (skills); a state's skill is required by its own
   workflow at Session starts, the ones a prompt names by the Always workflow at Prompt sent.
 - A new rule questioned once (memory/review_new_rule); the context mark is the workflows' now, as a fact on the agent's row.

@@ -1,9 +1,11 @@
 import re
+from datetime import datetime, timedelta, timezone
 import time
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
@@ -33,12 +35,19 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.plans import Plans
 from journal.repositories.counts import Counts
 from journal.repositories.settings import Settings
+from journal.repositories.rules import Rules
+from journal.repositories.facts import Facts
+from journal.repositories.reminders import Reminders
+from journal.repositories.agents import Agents
+from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
 
 
 UNITS = re.compile(r"^(\d+)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours)?$")
 SECONDS = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1, "m": 60, "min": 60, "mins": 60, "minute": 60, "minutes": 60, "h": 3600, "hr": 3600, "hrs": 3600, "hour": 3600, "hours": 3600}
 """A time in a check's text, by its unit; a bare number is seconds."""
+TAKEN_OVER_WITHIN = timedelta(days=1)
+"""Another session that worked here this recently makes a start a takeover."""
 COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over", "context_over")
 WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
@@ -50,10 +59,12 @@ COUNT_CHECKS = ("count_over", "count_at", "count_every")
 class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
+                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
+        self.rules, self.facts, self.reminders, self.agents, self.questions = rules, facts, reminders, agents, questions
         self.requiring = requiring
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
@@ -190,6 +201,26 @@ class Checks:
     def agent_waits_on_the_question(self, ctx: Context) -> bool:
         state = self.state(ctx)
         return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Question) and isinstance(state, Waiting) and state.question_id == ctx.event.model.id
+
+    def taken_over(self, ctx: Context) -> bool:
+        """Another session worked this environment within a day, and this start is not the same session going on after a compaction."""
+        event = ctx.event
+        if not isinstance(event, SessionStarted) or event.source == "compact":
+            return False
+        return bool(self.agents.others_lately(event.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN))
+
+    def has_rules(self, ctx: Context) -> bool:
+        return bool(self.rules.all())
+
+    def has_facts(self, ctx: Context) -> bool:
+        return bool(self.facts.in_())
+
+    def has_reminders(self, ctx: Context) -> bool:
+        return bool(self.reminders.in_())
+
+    def something_waiting(self, ctx: Context) -> bool:
+        """Open tasks, unread messages or open questions wait for the agent."""
+        return bool(self.tasks.in_state(TaskState.OPEN) or self.messages.unread() or self.questions.open())
 
     def prompt_names_skill(self, ctx: Context) -> bool:
         """The prompt names a keyword of a skill."""
