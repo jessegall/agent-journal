@@ -7,7 +7,9 @@ from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
 from journal.hooks.decision import Decision
+from journal.engine.agent_state import AgentState
 from journal.models.actor import Actor
+from journal.models.chart import BASE, Chart
 from journal.models.entry import Entry
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
@@ -38,8 +40,8 @@ class Walk:
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
         """The walk, with the nodes it passes written into the list given."""
         key, decision = self.trigger_key(ctx.event), Decision()
-        chart = self.charts.answering(key)
-        if chart:
+        workflows = self.workflows_for(ctx, key)
+        for chart in workflows:
             nodes = {node.id: node for node in self.charts.nodes_of(chart)}
             after = {}
             for line in self.charts.lines_of(chart):
@@ -47,8 +49,24 @@ class Walk:
             for start in [n for n in nodes.values() if n.kind == NodeKind.TRIGGER and n.key == key]:
                 decision = decision.merged(self.follow(start, nodes, after, ctx, passed))
         if passed and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in workflows], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision
+
+    def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
+        """In the order they run: the base, then the workflow of the agent's state or of the nearest state it inherits from, then the workflow of the older shape that answers the event by itself."""
+        found = [chart for chart in [self.charts.for_state(BASE)] if chart]
+        if ctx.state:
+            own = next((chart for name in self.lineage(ctx.state) if (chart := self.charts.for_state(name))), None)
+            if own:
+                found.append(own)
+        legacy = self.charts.answering(key)
+        return found + [legacy] if legacy else found
+
+    @staticmethod
+    def lineage(state: AgentState) -> list[str]:
+        """The state's name and then its parents', nearest first: following a plan is a kind of working, and every pause is a kind of paused."""
+        names = [getattr(cls, "name", "") for cls in type(state).__mro__ if issubclass(cls, AgentState) and cls is not AgentState]
+        return [n for i, n in enumerate(names) if n and n not in names[:i]]
 
     def follow(self, start: Node, nodes: dict, after: dict, ctx: Context, passed: list) -> Decision:
         decision, at, steps = Decision(), [start.id], 0

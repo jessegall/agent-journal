@@ -8,7 +8,9 @@ the agent, and should a journal somehow hold two, the older one answers and the 
 
 The walk reads the agent's state once, after the engine's machine and holds have answered the event, and every
 check and filler reads that same state; so a tool use that lifts a wait is walked as Working, and a session start
-finds the agent orienting. The trace of a walk names the state it read.
+finds the agent orienting. The trace of a walk names the state it read and the workflows it ran, in the order they run: the base first, then the
+workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
+every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
 ## Three kinds of box
 

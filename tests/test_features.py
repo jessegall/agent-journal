@@ -1940,3 +1940,33 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     shown = console.run(["chart", "show"], USER).out
     assert f"workflow {n} [working], revision 0: While working" in shown and f"workflow {base} [base]" in shown and "sidelined" not in shown
     assert "Agent stops" in shown and "workflow 1, revision" in shown, "the older shape, bound to its event, stands beside them until it retires"
+
+
+def test_the_walk_runs_the_base_then_the_state_workflow_found_by_the_state_and_its_parents(app):
+    import json
+    from journal.features.chart.walk import Walk
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    base = int(console.run(["chart", "new", "For every state", "--state", "base"], USER).out.split()[1].rstrip(":"))
+    working = int(console.run(["chart", "new", "While working", "--state", "working"], USER).out.split()[1].rstrip(":"))
+    for chart, words in ((base, "from the base"), (working, "from working")):
+        node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(chart)], USER).out.split()[1].rstrip(":"))
+        trigger, say = node("trigger", "tool_starting"), node("action", "say", "--text", words)
+        console.run(["chart", "line", str(trigger), str(say)], USER)
+    read = lambda: json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[1])
+    assert "from the base" in read() and "from working" not in read(), "idle: the base alone"
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    answer = read()
+    assert answer.index("from the base") < answer.index("from working"), "working: the base first, then the state's own"
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "step one"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "2"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    assert app.container.get(Machine).current("s1").name == "following_plan"
+    assert "from working" in read(), "following a plan is a kind of working: it inherits Working's workflow"
+    assert Walk.lineage(app.container.get(Machine).current("s1"))[:2] == ["following_plan", "working"]
