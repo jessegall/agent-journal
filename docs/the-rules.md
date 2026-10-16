@@ -7,6 +7,12 @@ part of the machine, a law of the journal or a guard on syntax or data, and no w
 its feature" means a feature's own listener keeps it because it reads what no check reads. The listeners the
 workflows replaced are deleted; the frozen replay records under tests/replays are the proof the workflows say the same.
 
+The test for which side a rule belongs to is the one CLAUDE.md states: would a user ever want it different, or want
+to watch it happen? Delivering a message to the agent fails it, so the engine does it; the reminder every third
+tool use passes it, so a workflow carries it. Engine behaviour never appears on the Workflows page, not as a node
+and not as a note. A shipped workflow is titled by what it does ("Keep the agent going while tasks are open or
+parked"), and the line under it says when it runs.
+
 ## Carried by the chart
 
 - At a stop, at rest: parked tasks hold the stop and are named, in any mode.
@@ -40,22 +46,22 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Agent stops | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the workflow Working at a stop, in phase 2 (task 162), with the frozen record of the Working rules as its proof |
 | Agent stops | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Following a plan; the plan's advance stops at the checkpoint in the plans feature, the agent standing in the plan's state |
 | Agent stops | messages.new / some / many | messages unread | say on the stop | in the workflow the Always workflow at Agent stops; its listener is deleted |
-| Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | the workflow Idle, in phase 2 (task 161) |
+| Agent stops | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | Idle's workflows, in phase 2 (task 161) |
 | Agent stops | chart.awaiting: "you stopped while the journal awaits ..." | something owed: a skill, the look at what is in flight, a decision at a mark | block the stop, naming the debt | in the workflow the Always workflow at Agent stops (Something owed?, locked); the pause's own stop rule is deleted |
 | Session starts | briefing.ready, rules, facts, reminders, waiting, laws, quiet, takeover, orient | always; the rows that exist | say, then hold until oriented | stays in the engine: the briefing |
 | Session starts | messages.new / some / many | messages unread | say | in the workflow the Always workflow at Session starts; its listener is deleted |
 | Session starts | voices.voice, introduce | the voice chosen; a fresh conversation | say | stays with the voices feature: the voice's own words |
-| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in the workflow Idle; its listener is deleted |
-| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in the workflow Idle; its listener is deleted |
-| Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the workflow Expecting, in phase 2 (task 165), with the frozen record as its proof |
+| Clock ticks | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in Idle's workflows; its listener is deleted |
+| Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in Idle's workflows; its listener is deleted |
+| Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | Expecting's workflows, in phase 2 (task 165), with the frozen record as its proof |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
 | Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the engine's own delivery: the messages feature's DeliverMessage listener types it and starts the counts; not a workflow, since nobody would open a canvas to decide whether the agent gets a message |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | stays with the triggers feature, as above |
 | Reaction created by the user | messages.reacted | a face on a message | type | a workflow later, in every state's on reactions.created, with the check reaction by the user and the face and message fillers |
 | Rule created | memory.rule_review | a new rule | type once | a workflow later, in every state's on rules.created, with the rule filler |
 | Message by the agent created | etiquette.remind | now and then | type | a workflow later, in every state's, with the check every N lines said; its flood of today is fixed at the source already |
-| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | in the workflow Awaiting a worker; its listener is deleted |
-| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | in the workflow Waiting on a question; its listener is deleted |
+| Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | in Awaiting's workflow at Worker updated, which sends the agent back when the last worker is back; its listener is deleted |
+| Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | in Waiting's workflow at Question updated, which sends the agent back; its listener is deleted |
 | Plan updated | plans.approved, next, done, parked | the plan's state changed | type | a workflow later, in every state's on plans.updated, with plan-state checks and fillers |
 | Setting saved | voices.changed | a voice setting changed | type | stays with the voices feature |
 | Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |
@@ -82,25 +88,33 @@ title and the state by its name.
 
 | State | Who holds its conduct | Why |
 | --- | --- | --- |
-| idle | the workflow Idle | the stop's holds, the parked ask and the check-in are conduct the user may change |
-| working | the workflow Working | the log cadence and the task in hand's lines; following_plan inherits them |
+| idle | Idle's workflows | the stop's holds, the parked ask and the check-in are conduct the user may change |
+| working | Working's workflows | the log cadence and the task in hand's lines; following_plan inherits them |
 | following_plan | Working's workflow, by inheritance | a plan being followed is a kind of working, with the plan's next task as its only addition |
-| awaiting | the workflow Awaiting | a worker reporting or stopping and the release are conduct |
-| waiting | the workflow Waiting | a question answered and the release are conduct |
-| expecting | the workflow Expecting | the check on the awaited thing, and the wait lifted by the agent's own tool use, are conduct |
+| awaiting | Awaiting's workflows | a worker reporting or stopping, and Send the agent back to what it was doing when the last is back, are conduct |
+| waiting | Waiting's workflows | a question answered, and Send the agent back to what it was doing, are conduct |
+| expecting | Expecting's workflows | the reminder of what it waits for, and Send the agent back when it uses a tool itself, are conduct; the wait itself is entered by Wait for something outside, named by its outcome |
 | a wait while the agent owes the journal something | the wait's workflow | what the agent owes, a skill, the look at a start, a decision at a mark, is a fact on its row and never a state over the wait: a row event about a question or a worker reaches the wait itself, and the guards hold its writes until the debt is paid, which keeps standing |
 | every wait above | the engine, as the way out | a word from the user frees any wait that is not the agent's own doing, ruled once in Paused; so a wait whose workflow was emptied or edited still ends, and the page warns when a wait's workflow releases nothing |
-| running_sequence | the workflow Running a sequence | the step held at a stop is conduct; the stepping stays the state's move |
-| stuck | the workflow Stuck | the journal stays quiet until the agent's own tool use lifts the wait; the shared conduct runs under it |
+| running_sequence | Running a sequence's workflows | the step held at a stop is conduct; the stepping stays the state's move |
+| stuck | Stuck's workflows | the journal says nothing until the agent's own tool use sends it back; entered by Mark the agent stuck, named by its outcome; the shared conduct runs under it |
 | orienting | a fact, held in the Always workflow | the look at what is in flight is a fact on the agent's row, marked by the Always workflow at Session starts, held at a write by the guards and at a stop by the Always workflow at Agent stops, paid by journal environment here |
 | at_mark | a fact, held in the Always workflow | the mark owed is a fact on the agent's row, taken by Hold the agent at a context mark in every Always and Guards workflow, held the same way, paid by fact, rule or nothing |
 | loading_skill | a fact, held in the Always workflow | a skill owed is a link from the agent's row, set by Require a skill, held the same way, paid by the read of the file; an agent standing in one of the three at boot is unwrapped with its fact set, a user's workflow bound to one kept turned off and named |
-| ended | the engine, nothing | a session that ended says nothing and walks nothing |
+| ended | the workflow Does nothing yet, its trigger alone | a session that ended says nothing; its end and its start move into the workflows in phase six (task 398) |
 
-A state not in this table does not exist: the subagent state nothing ever entered is gone.
+A state not in this table does not exist: the subagent state nothing ever entered is gone. A state change a workflow
+makes is named by its outcome, Wait for something outside, Mark the agent stuck, Change state to Idle, Send the agent
+back to what it was doing; one move per event, the first to act, and a second is refused and recorded. A change to
+Idle from a state that owns something is refused, and no node enters a state that owns a row.
 
 ## Kept in code, by design
 
+- The engine's own moves: a task started moves the agent to Working and back when it is done or parked, a plan
+  followed from its task, a question asked makes it wait, a worker dispatched makes it await, a sequence runs from
+  its first step, a prompt frees a wait, a session's end ends its work; none is a workflow and none is shown as one.
+- Delivery of a message to the agent: typed by number and the reminder counts started (messages/deliver_message),
+  the owed count started at the first message read and left unanswered (messages/start_owed_count).
 - The floor under every hold: a journal command and the read of a skill's file always run, whatever a workflow
   holds; the engine drops the refusal and keeps the words (chart/walk).
 - A session's start: the briefing (briefing); the journal skill and the look at what is in flight are owed by
