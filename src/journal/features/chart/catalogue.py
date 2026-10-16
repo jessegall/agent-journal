@@ -83,12 +83,30 @@ def article(words: str) -> str:
     return "An" if first[0].lower() in "aeiou" or (first.isupper() and first[0] in "AEFHILMNORSX") else "A"
 
 
+FIXED = {
+    "tasks.updated": ("the journal itself moves the agent to Working when it starts a task, and back to what it was doing when the task is done or parked",),
+    "task_logs.created": ("the journal itself notes the log on the agent's work",),
+    "plans.updated": ("the journal itself follows a plan from the task it starts and leaves it when the plan is parked or cancelled",),
+    "questions.created": ("the journal itself makes the agent wait on the question it asks",),
+    "workers.updated": ("the journal itself makes the agent await the workers it waits for",),
+    "sequences.updated": ("the journal itself runs a sequence from its first step and ends it after its last",),
+    "prompt_submitted": ("a prompt always frees a wait",),
+    "session_started": ("a session starting ended is idle again, and a started plan is followed from its task",),
+    "session_ended": ("a session's end always ends the agent's work",),
+    "ticked": ("an hour's silence ends the session",),
+}
+"""The moves the engine makes itself at an event, before the event's workflows run: fixed lines at the head of the list, which no workflow edits."""
 OWN = ("agents", "entries", "links", "counts")
 """The engine's own tables, which a walk writes itself when it moves an agent, records itself, draws a line or counts: a trigger on them would walk without end, so no workflow may name them."""
 
 
 class Catalogue:
     """Everything a node may be: a trigger for each agent event and each row event, the checks the journal can answer, and the actions it can take."""
+
+    @staticmethod
+    def fixed() -> dict[str, list[str]]:
+        """Per trigger, the moves the engine makes itself before the list runs."""
+        return {event: list(lines) for event, lines in FIXED.items()}
 
     def triggers(self) -> list[Entry]:
         agent = [Entry(NodeKind.TRIGGER, key, title, about, providers=("claude",) if key == "turn_written" else ("claude", "codex")) for key, title, about in AGENT_EVENTS]

@@ -26,7 +26,7 @@ class ChartController:
         self.traces, self.states = traces, states
 
     def index(self, request: Request) -> Response:
-        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed()})
+        return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed(), "fixed": self.catalogue.fixed()})
 
     def listed_states(self) -> list[dict]:
         return self.states.listed()
@@ -34,8 +34,17 @@ class ChartController:
     def runs(self, request: Request) -> Response:
         """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
         titles = {c.id: c.title for c in self.charts.all()}
-        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]]} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
+        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]], "change": self.change_words(run)} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
+
+    def change_words(self, run: dict) -> str:
+        """A state change in words: by the step that moved the agent, or the engine's own move at a row event, before the list ran."""
+        state = self.states.title_of(run["started"]) if run["started"] else ""
+        if run["moved_to"]:
+            return f"{state} to {self.states.title_of(run['moved_to'])}, by step {run['moved_by'][-1]}" if run["moved_by"] else ""
+        if run["event"] in self.catalogue.fixed() and run["row"]:
+            return f"{state}, after {run['trigger'].lower()} {run['row']}: the journal's own move came first"
+        return ""
 
     def order(self, request: Request) -> Response:
         """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since."""

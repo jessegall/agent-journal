@@ -2,7 +2,7 @@
 import {ago} from "../format/time.js";
 import {overlapping, tidy} from "../domain/tidy.js";
 import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
-import {markOf, pairs, statusOf} from "../domain/workflowPairs.js";
+import {fixedLinesOf, markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -149,6 +149,7 @@ async function open(id) {
 async function load() {
     const got = await api.chart();
     fillers.value = got.fillers;
+    fixed.value = got.fixed || {};
     workflows.value = got.workflows;
     catalogue.value = got.catalogue;
     states.value = got.states;
@@ -493,6 +494,8 @@ const states = ref([]);
 const pickedEvent = ref("idle");
 const stateFilter = ref("");
 const runs = ref(null);
+const fixed = ref({});
+const fixedLines = computed(() => fixedLinesOf(fixed.value, pickedEvent.value));
 const faults = ref([]);
 const conflict = ref(null);
 const lit = ref([]);
@@ -746,7 +749,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </aside>
                 <aside class="chart-col chart-list" aria-label="Workflows, in the order they run">
                     <div class="chart-col-top">
-                        <h2 class="chart-col-head">Runs in this order</h2>
+                        <h2 class="chart-col-head">Run order</h2>
                         <DropList
                             :label="filterLabel"
                             :items="filterItems"
@@ -755,6 +758,14 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                             @pick="stateFilter = $event.key"
                         />
                     </div>
+                    <p
+                        v-for="line in fixedLines"
+                        :key="line"
+                        class="chart-fixed"
+                        title="The journal's own move at this event, before the list runs; no workflow edits it"
+                    >
+                        {{ line }}
+                    </p>
                     <p v-if="!listRows.length" class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
                     <button
                         v-for="row in listRows"
@@ -1059,6 +1070,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 <span v-if="run.failed" class="chart-row-bad">· Failed</span>
                             </span>
                             <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
+                            <span v-if="run.change" class="chart-run-said">{{ run.change }}</span>
                             <span v-if="run.said" class="chart-run-said">{{ run.said }}</span>
                         </button>
                     </li>
@@ -1278,6 +1290,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
 }
 .chart-col-top .chart-col-head {
     margin: 0;
+}
+.chart-fixed {
+    margin: 4px 10px 6px;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 1.4;
 }
 .chart-list-empty {
     margin: 8px 10px;

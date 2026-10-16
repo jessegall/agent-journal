@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {MARKS, markOf, pairs, statusOf} from "../src/domain/workflowPairs.js";
+import {MARKS, fixedLinesOf, markOf, pairs, statusOf} from "../src/domain/workflowPairs.js";
 
 const states = [
     {key: "idle", title: "Idle", parent: ""},
@@ -58,6 +58,13 @@ describe("an event's workflows in the order they run", () => {
         expect(statusOf(workflows[1])).toBe("Changed by you");
         expect(statusOf(workflows[2])).toBe("Turned off");
         expect(statusOf(workflows[4])).toBe("");
+    });
+
+    it("names the engine's own moves at an event, and none where it makes none", () => {
+        const fixed = {"tasks.updated": ["the journal itself moves the agent to Working when it starts a task"]};
+        expect(fixedLinesOf(fixed, "tasks.updated")).toEqual(["the journal itself moves the agent to Working when it starts a task"]);
+        expect(fixedLinesOf(fixed, "idle")).toEqual([]);
+        expect(fixedLinesOf(undefined, "idle")).toEqual([]);
     });
 
     it("marks a row by what was done to it", () => {

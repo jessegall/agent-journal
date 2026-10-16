@@ -23,6 +23,11 @@ export const MARKS = [
     {mark: "none", words: "No workflow"},
 ];
 
+// the moves the engine makes itself at an event, before the list runs: grey notes at the head, which no workflow edits
+export function fixedLinesOf(fixed, event) {
+    return (fixed && fixed[event]) || [];
+}
+
 export function pairs(workflows, states, catalogue) {
     const titleOf = (key) => states.find((s) => s.key === key)?.title || key;
     const parentOf = (key) => states.find((s) => s.key === key)?.parent || "";

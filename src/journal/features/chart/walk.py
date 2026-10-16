@@ -56,7 +56,7 @@ class Walk:
 
     def on_with_trace(self, ctx: Context, passed: list) -> Decision:
         """The walk, with the nodes it passes written into the list given: the event's workflows in their order; a move inside one re-reads the state, and the new state's workflows that come later in the order run at their place."""
-        key, decision = self.trigger_key(ctx.event), Decision()
+        key, decision, started = self.trigger_key(ctx.event), Decision(), ctx.state
         walked, graphs, queue = [], [], self.workflows_for(ctx, key)
         while queue:
             chart = queue.pop(0)
@@ -72,7 +72,7 @@ class Walk:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
                 queue = [c for c in self.workflows_for(ctx, key) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0}), Actor.system())
         return decision
 
     @staticmethod

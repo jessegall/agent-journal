@@ -2,7 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {LOCK_WHY, stayOn} from "../../domain/workflowLocks.js";
-import {pairs, statusOf} from "../../domain/workflowPairs.js";
+import {fixedLinesOf, pairs, statusOf} from "../../domain/workflowPairs.js";
 import Icon from "../../kit/Icon.vue";
 import ActionSheet from "../kit/ActionSheet.vue";
 import Button from "../kit/Button.vue";
@@ -76,6 +76,7 @@ onMounted(async () => {
         const got = await api.chart();
         workflows.value = got.workflows;
         catalogue.value = got.catalogue;
+        fixed.value = got.fixed || {};
         states.value = got.states;
         await pick(pickedEvent.value);
     } catch (error) {
@@ -228,6 +229,8 @@ const start = (state) =>
     });
 const states = ref([]);
 const pickedEvent = ref("idle");
+const fixed = ref({});
+const fixedWords = computed(() => fixedLinesOf(fixed.value, pickedEvent.value).join(" "));
 const conflict = ref(null);
 const pairing = computed(() => pairs(workflows.value, states.value, catalogue.value));
 const eventTitle = computed(() => entries.value[`trigger:${pickedEvent.value}`]?.title || pickedEvent.value);
@@ -505,9 +508,9 @@ const steps = computed(() => {
     </template>
     <template v-if="sheet === 'list'">
         <ActionSheet
-            title="Runs in this order"
+            title="Run order"
             :about="eventTitle"
-            line="first to last; Run earlier and Run later move the open one"
+            :line="fixedWords ? `${fixedWords}; then, first to last` : 'first to last; Run earlier and Run later move the open one'"
             :actions="listActions"
             @close="sheet = ''"
         />

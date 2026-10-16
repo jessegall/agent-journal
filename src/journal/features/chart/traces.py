@@ -36,7 +36,7 @@ class Traces:
         runs = []
         for walk in self.entries.of_kind(WALKED, LOOK_BACK)[:limit]:
             at = walk.created_at.timestamp()
-            runs.append({"at": at, "workflows": walk.data.get("workflows", []), "nodes": walk.data.get("nodes", []), "trigger": self.trigger_title(walk.data["trigger"]), "state": walk.data.get("state", ""), "said": walk.data.get("said", ""),
+            runs.append({"at": at, "workflows": walk.data.get("workflows", []), "nodes": walk.data.get("nodes", []), "trigger": self.trigger_title(walk.data["trigger"]), "event": walk.data["trigger"], "state": walk.data.get("state", ""), "started": walk.data.get("started", walk.data.get("state", "")), "moved_to": walk.data.get("moved_to", ""), "moved_by": walk.data.get("moved_by", []), "row": walk.data.get("row", 0), "said": walk.data.get("said", ""),
                          "failed": any(abs(f.created_at.timestamp() - at) < 1 and f.data.get("workflow") in walk.data.get("workflows", []) for f in failures)})
         return runs
 

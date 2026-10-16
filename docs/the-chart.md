@@ -129,13 +129,16 @@ switching messages or tasks off still silences their conduct.
 
 The Workflows page is an event list, the event's workflows in the order they run, and the one workflow picked.
 The left list is the events: every agent event, then the row events something answers, then Add an event for the
-rest; each shows how many workflows answer it, a dash when none. The middle list, "Runs in this order", is the
+rest; each shows how many workflows answer it, a dash when none. The middle list, "Run order", is the
 event's workflows numbered first to last, each saying when it runs, always or when the agent is in its state, and
 the one thing that sets it apart: changed or made by you, turned off, failed. Dragging a row onto another puts it
 there; the order is saved at once, for every agent from the next event, and refused with who saved first when the
 list changed under you. A filter at the top shows the list as it runs for one state: the always ones and the
 nearest state's in the lineage, numbered by their place in the whole list; dragging waits for Every state. New
-workflow at the foot starts one at this event, always or for one state, at the last place. A mark says the one
+workflow at the foot starts one at this event, always or for one state, at the last place. Above the list, in grey,
+the moves the engine makes itself at this event before the list runs, such as the journal moving the agent to
+Working when it starts a task, or a prompt freeing a wait: fixed lines, which no workflow edits. Recent runs names a
+state change in words, by the step that moved the agent or the journal's own move that came first. A mark says the one
 thing that sets a workflow apart: nothing for a default, a diamond for one changed or made by you, a crossed ring
 for one turned off, a red ring when its last run failed, a dash for none. Under the title the status and when the
 workflow runs, when it last ran and what it said, the last step that failed since, and the warning of a wait

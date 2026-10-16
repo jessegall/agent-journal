@@ -643,3 +643,19 @@ def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(server):
     assert status == 200 and any(n["key"] == "say" and n["text"] == "after the law" for n in body["nodes"]), f"a step after a locked one is the user's to add: {body}"
     status, body = call(server, "POST", f"/journal/chart/{guarded['id']}/off", {})
     assert status == 409 and "holds locked step" in body["error"], "a workflow holding the law is not turned off"
+
+
+def test_the_index_serves_the_engines_own_moves_as_fixed_lines_and_a_run_names_a_state_change(server):
+    status, read = call(server, "GET", "/journal/chart")
+    assert status == 200 and "the journal itself moves the agent to Working when it starts a task" in read["fixed"]["tasks.updated"][0] and "a prompt always frees a wait" in read["fixed"]["prompt_submitted"] and "idle" not in read["fixed"], "per trigger, the moves the engine makes itself before the list runs"
+    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Wait after a tool"})
+    trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
+    nodes = made["nodes"] + [{"id": "w", "kind": "action", "key": "wait_outside", "text": "the deploy", "x": 0, "y": 0}]
+    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": [{"from": trigger["id"], "to": "w", "port": "then"}]})
+    assert status == 200, saved
+    hooked = lambda kind, **body: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s9", **body})
+    hooked("SessionStart")
+    hooked("PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    status, runs = call(server, "GET", "/journal/chart/runs?last=5")
+    change = next((r["change"] for r in runs["runs"] if r["change"]), "")
+    assert "Idle to Expecting something outside, by step" in change, f"a run names the state change in words: {[r['change'] for r in runs['runs']]}"
