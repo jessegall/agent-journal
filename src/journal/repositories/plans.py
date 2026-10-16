@@ -72,6 +72,11 @@ class Plans(ScopedRepository[Plan]):
     def next_task(self, plan: Plan) -> Task | None:
         return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN), None)
 
+    def current_phase(self, plan: Plan) -> int:
+        """The number from 1 of the first phase with a task still to close, or of the last when none has."""
+        phases = self.phases_of(plan)
+        return next((i for i, phase in enumerate(phases, 1) if any(t.state not in (TaskState.DONE, TaskState.CANCELLED) for t in self.tasks_in(phase))), len(phases) or 1)
+
     def at_checkpoint(self, plan: Plan) -> Phase | None:
         """The checkpoint phase the plan stands at: complete, marked for the user's look, and the phase after it not yet begun; None when the plan stands at no checkpoint."""
         phases = self.phases_of(plan)
