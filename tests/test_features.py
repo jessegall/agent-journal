@@ -2436,3 +2436,45 @@ def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_envir
     assert "main's own" in in_main and "other's own" not in in_main
     assert "other's own" in in_other and "main's own" not in in_other
     assert [t.title for t in app.container.get(Tasks).in_()] == ["main's own"], "the test reads in main, the scope its fixture entered"
+
+
+def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    starting, start_trigger = own_workflow(console, charts, "idle", "subagent_started")
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    def link(wf, a, b, port="then"):
+        out = console.run(["chart", "line", str(a), str(b), "--port", port], USER)
+        assert out.code == 0, out.err
+    started = add(starting, "action", "count_start", "--text", "subs")
+    link(starting, start_trigger, started)
+    finishing, finish_trigger = own_workflow(console, charts, "idle", "tool_finished")
+    one = add(finishing, "action", "count_one", "--text", "subs")
+    over = add(finishing, "check", "count_over", "--text", "subs 2")
+    enough = add(finishing, "action", "say", "--text", "[chart] two tools since the subagent started")
+    link(finishing, finish_trigger, one)
+    link(finishing, one, over)
+    link(finishing, over, enough, "yes")
+    assert "names no number" in console.run(["chart", "node", "check", "count_at", "--text", "subs", "--in", str(finishing)], USER).err
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    counts, scope = app.container.get(Counts), app.container.get(Scope)
+    hook(app, "SubagentStart", agent_id="a1")
+    with scope.of(1):
+        assert [c.value for c in counts.where(session="s1", name="subs")] == [0], "the start put the count at nought"
+    said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    with scope.of(1):
+        assert [c.value for c in counts.where(session="s1", name="subs")] == [1], "one tool use counted"
+    assert "two tools" not in said(body), "one tool use: the count stands at one"
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})
+    assert "two tools since the subagent started" in said(body), "the second tool use reaches two: the check answers yes and the line rides the hook's answer"
+    hook(app, "SubagentStart", agent_id="a2")
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "c"})
+    assert "two tools" not in said(body), "a new start puts the count back at nought"
+    assert not typed, "nothing was typed: every line rode a hook's answer"

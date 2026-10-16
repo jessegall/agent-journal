@@ -740,3 +740,10 @@ Every state names itself (title on the class) and the states catalogue lists the
 Workflows page shows every state the engine has, from the engine and not from a hand-written list; its lists are
 headed State and Event and a state's row is its name and its marks. A child state ships only its own events, so
 its shared-only workflows never shadow the parent's.
+
+Counts, 2026-10-16 at night on the user's word (task 214): a workflow keeps named numbers for an agent between
+events, as rows (models/count.py): Start a count puts one at nought, Count one adds one, and the checks Is a count
+over N and Is a count at N read it, the text naming the count then the number or a setting. The user's rule: every
+behaviour laid out in a workflow, nothing hidden in a check; task 215 rewrites the shipped conduct onto counts and
+retires the hidden tool-use and edit counters, and task 216 is the proposal for moving the engine's remaining state
+into workflows.

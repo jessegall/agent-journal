@@ -49,12 +49,18 @@ COUNTER_CHECKS = (
     ("quiet_for_over", "Has the agent been quiet for N seconds?", "the clock ticks and the agent has done nothing for at least N seconds; the text is N or a setting's name"),
     ("edits_since_log_at", "Exactly N edits since the last log?", "true once, when the edits since the task in hand was logged, before this one, are exactly N; the text is N or a setting's name, such as tasks.first_nudge_after"),
 )
+COUNT_CHECKS = (
+    ("count_over", "Is a count over N?", "the agent's count named first in the text has reached N; the text is the count's name, then N or a setting's name, such as reads messages.hold_after"),
+    ("count_at", "Is a count at N?", "the agent's count named first in the text stands at exactly N; the text is the count's name, then N or a setting's name"),
+)
 ACTIONS = (
     ("say", "Send the agent a message", "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", True),
     ("hold", "Hold the tool", "stops the tool and sends the message, until what the message names is done", True),
     ("block_stop", "Keep the agent from stopping", "the agent carries on, with the message", True),
     ("type", "Type to the agent", "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", True),
     ("start_sequence", "Start sequence", "starts the sequence named in the text at its first step", True),
+    ("count_start", "Start a count", "sets the agent's count named in the text to nought; a check at a later event reads it", True),
+    ("count_one", "Count one", "adds one to the agent's count named in the text", True),
     ("show_card", "Show a card in the chat", "a card in the chat with the message, so the user sees what the journal did", True),
     ("move_to", "Change the agent's state", "moves the agent through the engine's machine: to idle from a state that owns nothing, or into expecting or stuck over what it is doing, with the words after the state's name as what it waits for; a state that owns a row is entered by what makes that row", True),
     ("release", "End the agent's wait", "an agent paused for a worker, a question or anything outside goes back to what it was doing, told with the message; an agent not paused is left as it is", True),
@@ -82,7 +88,7 @@ class Catalogue:
 
     def checks(self) -> list[Entry]:
         plain = [Entry(NodeKind.CHECK, key, title, about) for key, title, about in CHECKS]
-        counters = [Entry(NodeKind.CHECK, key, title, about, takes_text=True) for key, title, about in COUNTER_CHECKS]
+        counters = [Entry(NodeKind.CHECK, key, title, about, takes_text=True) for key, title, about in COUNTER_CHECKS + COUNT_CHECKS]
         return plain + counters
 
     def actions(self) -> list[Entry]:

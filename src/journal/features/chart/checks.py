@@ -25,24 +25,38 @@ from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
 from journal.repositories.plans import Plans
+from journal.repositories.counts import Counts
 from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
 COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at", "quiet_for_over", "unread_over", "unread_reminders_over", "log_stale_over")
 """The checks that take a number: the node's text, or the setting named there."""
+COUNT_CHECKS = ("count_over", "count_at")
+"""The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
 
 
 class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
+        self.counts = counts
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
         check = getattr(self, key)
+        if key in COUNT_CHECKS:
+            name, _, limit = text.strip().partition(" ")
+            return bool(check(ctx, name, self.number(limit)))
         return bool(check(ctx, self.number(text)) if key in COUNTERS else check(ctx))
+
+    def count_over(self, ctx: Context, name: str, limit: int) -> bool:
+        """The agent's count by that name has reached the number."""
+        return bool(ctx.session) and self.counts.named(ctx.session, name).value >= limit
+
+    def count_at(self, ctx: Context, name: str, limit: int) -> bool:
+        return bool(ctx.session) and self.counts.named(ctx.session, name).value == limit
 
     def number(self, text: str) -> int:
         """The node's text as a number, or the setting it names, read through its option so an unset key means the option's default, or nothing."""

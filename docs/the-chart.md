@@ -63,9 +63,14 @@ A workflow of your own is for a state at an event no default covers, made with N
   message unread, is auto mode on, does the tool about to run write. A check leaves
   by a yes line and a no line; one of them may be left out, and the path then ends on that answer. Counter
   checks take a number in their text, or the name of a setting that holds it: every third tool use with a message
-  unread, fifteen tool uses with a message unanswered, twenty edits since the last log.
+  unread, fifteen tool uses with a message unanswered, twenty edits since the last log. A count check reads a
+  count the workflow keeps for the agent, named first in its text, against the number after it: is the count
+  over N, is it at N.
 - An **action** is what the journal does, with the line it says: say a line to the agent, hold the tool it was
-  about to use, block its stop, type a line into its terminal, start a sequence by its title. The line may name
+  about to use, block its stop, type a line into its terminal, start a sequence by its title. Start a count and
+  Count one keep a number for the agent between events, named in their text, so what one event starts a later
+  event's check can read: a count of tool uses started when a message comes, counted at every tool and asked at
+  each. The line may name
   rows with placeholders: `{{next_task}}`, `{{next_task_title}}`, `{{parked_tasks}}`, `{{parked_n}}`, `{{parked_title}}`, `{{parked_why}}`,
   `{{inbox}}`, `{{unread_count}}`, `{{unread_numbers}}`, `{{owed}}`, `{{task}}`, `{{task_edits}}`, `{{log_command}}`, `{{awaited}}`,
   `{{quiet_minutes}}`, `{{row}}`, `{{worker_n}}`, `{{worker_name}}`, `{{question_n}}`, `{{sequence_n}}`, `{{sequence_step}}` and

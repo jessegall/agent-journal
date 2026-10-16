@@ -82,8 +82,14 @@ class Validation:
         return faults
 
     def action_faults(self, nodes: list[dict]) -> list[Fault]:
-        """A move names idle, or a wait a workflow may make, expecting or stuck, with the words it waits for after the name."""
+        """A move names idle, or a wait a workflow may make, expecting or stuck, with the words it waits for after the name; a count node names its count, and a count check the number after it."""
         faults = []
+        for n in (n for n in nodes if n.get("key") in ("count_start", "count_one", "count_over", "count_at")):
+            words = n.get("text", "").split()
+            if not words:
+                faults.append(Fault(f"node {n.get('id')} names no count: its text is the count's name", str(n.get("id", ""))))
+            elif n.get("kind") == NodeKind.CHECK and len(words) < 2:
+                faults.append(Fault(f"node {n.get('id')} names no number: its text is the count's name, then N or a setting's name", str(n.get("id", ""))))
         for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") == "move_to"):
             name = n.get("text", "").strip().partition(" ")[0]
             if not name or not self.states.known(name):

@@ -9,6 +9,8 @@ from journal.engine.nudger import Nudger
 from journal.engine.resume import Resume
 from journal.features.chart.context import Context
 from journal.features.chart.fillers import Fillers
+from journal.models.actor import Actor
+from journal.repositories.counts import Counts
 from journal.features.chart.moves import Moves
 from journal.features.registry import Registry
 from journal.features.said import Said
@@ -26,9 +28,9 @@ NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)
 class Actions:
     """The catalogue's actions, one method per key: each says, holds, blocks, types or starts through the funnel that owns it, and answers the hook when one waits."""
 
-    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry) -> None:
+    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts) -> None:
         self.nudger, self.supervisor, self.machine, self.running, self.sequences, self.fillers, self.cards = nudger, supervisor, machine, running, sequences, fillers, cards
-        self.registry = registry
+        self.registry, self.counts = registry, counts
 
     def spoken(self, text: str) -> Said:
         """The node's words as a said line: through the nudge the text names in brackets, else through the chart's own line."""
@@ -87,6 +89,17 @@ class Actions:
         if line and line not in ctx.spoken:
             ctx.spoken.add(line)
             self.supervisor.type(ctx.environment_id, line)
+
+    def count_start(self, text: str, ctx: Context) -> Decision:
+        """The agent's count by that name back at nought."""
+        if ctx.session and text.strip():
+            self.counts.set(ctx.session, text.strip(), 0, Actor.system())
+        return Decision()
+
+    def count_one(self, text: str, ctx: Context) -> Decision:
+        if ctx.session and text.strip():
+            self.counts.save(self.counts.named(ctx.session, text.strip()).up(), Actor.system())
+        return Decision()
 
     def show_card(self, text: str, ctx: Context) -> Decision:
         """A card in the chat with the line, so the user sees what the journal did."""
