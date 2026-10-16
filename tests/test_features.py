@@ -710,22 +710,26 @@ def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_th
     from journal.providers.claude import Claude
     from journal.repositories.messages import Messages
     transcript = tmp_path / "s1.jsonl"
-    transcript.write_text("")
+    earlier = {"type": "assistant", "message": {"content": [{"type": "text", "text": "Long ago."}]}}
+    first = {"type": "assistant", "message": {"content": [{"type": "text", "text": "Starting up."}, {"type": "tool_use", "name": "Bash"}]}}
+    transcript.write_text(j.dumps(earlier) + "\n" + j.dumps(first) + "\n")
     monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript if session == "s1" else None)
     hook(app, "SessionStart")
+    messages = app.container.get(Messages)
+    texts = [m.text for m in messages.in_() if m.author == "agent"]
+    assert "Starting up." in texts and "Long ago." not in texts, "the first look reads the turn in hand, the last line, and not the session's past"
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
-    app.console().run(["message", "read", "1"], AGENT)
+    app.console().run(["message", "read", "2"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    assert status == 409 and "answer message 1 first" in body["error"], "the message is read and unanswered: the write is held"
-    row = {"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:1]\nHere, Sir Jesse, and writing."}, {"type": "tool_use", "name": "Write"}]}}
+    assert status == 409 and "answer message 2 first" in body["error"], "the message is read and unanswered: the write is held"
+    row = {"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:2]\nHere, Sir Jesse, and writing."}, {"type": "tool_use", "name": "Write"}]}}
     with transcript.open("a") as file:
         file.write(j.dumps(row) + "\n")
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "the reply in the transcript answered the message before the call was judged"
-    messages = app.container.get(Messages)
     replies = [m for m in messages.in_() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]
-    assert len(replies) == 1 and replies[0].reply_to == 1
-    hook(app, "MessageDisplay", message="[!reply:1]\nHere, Sir Jesse, and writing.")
+    assert len(replies) == 1 and replies[0].reply_to == 2
+    hook(app, "MessageDisplay", message="[!reply:2]\nHere, Sir Jesse, and writing.")
     app.runtime().deferred.drain()
     assert len([m for m in messages.in_() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]) == 1, "the display hook's copy of the same block is no second message"
 
