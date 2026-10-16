@@ -103,6 +103,7 @@ class ChartController:
         last_walk, last_failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
         return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "off": not self.charts.graph(chart).triggers,
                 "edited": not all(n.shipped for n in self.charts.nodes_of(chart)), "failed": bool(last_failure) and last_failure["at"] >= last_walk.get("at", 0),
+                "behind": self.shipped.behind(chart),
                 "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": last_walk, "last_failure": last_failure}
 
     def entries(self) -> list[dict]:

@@ -397,6 +397,9 @@ const steps = computed(() => {
                 <Cell label="And this happens" :sub="eventTitle" icon="bolt" @pick="sheet = 'events'" />
             </CellGroup>
             <p class="wf-status">{{ statusWords }}</p>
+            <p v-if="currentWorkflow && currentWorkflow.behind" class="wf-status">
+                The shipped version changed since you edited this. Reset to default takes the new one.
+            </p>
             <p v-if="failed" class="wf-failed">{{ failed }}</p>
 
             <template v-if="!currentWorkflow">

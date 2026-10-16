@@ -102,14 +102,18 @@ class ShippedChart(Seed):
         for (state, event), drawing in self.drawings.items():
             standing = self.charts.for_pair(state, event)
             if standing is None:
-                drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event), by))
+                drawing.draw(self.charts.save(Chart(title=drawing.title, shipped=True, state=state, event=event, drawn_version=DRAWINGS_VERSION), by))
             elif self.outdated(standing):
                 self.reset(standing, by)
         self.settings.set(DRAWINGS_VERSION_KEY, DRAWINGS_VERSION, by)
 
     def outdated(self, chart: Chart) -> bool:
-        """An unedited shipped workflow drawn by an older shipping is redrawn; one the user edited is theirs and stays."""
+        """An unedited shipped workflow drawn by an older shipping is redrawn; one the user edited is theirs and stays, and the page says the shipping moved past it."""
         return int(self.settings.project(DRAWINGS_VERSION_KEY, 0) or 0) < DRAWINGS_VERSION and all(n.shipped for n in self.charts.nodes_of(chart))
+
+    def behind(self, chart: Chart) -> bool:
+        """A shipped workflow the user edited whose shipping has since moved on: kept as theirs, and told so on the page."""
+        return chart.shipped and chart.drawn_version < DRAWINGS_VERSION and not all(n.shipped for n in self.charts.nodes_of(chart))
 
     def retire_unpaired(self, by: Actor) -> None:
         """A workflow bound to a state but no event, the shape before one per state per trigger, goes: whole when unedited, else kept as the user's own without its triggers."""
@@ -148,7 +152,7 @@ class ShippedChart(Seed):
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
-        return self.charts.save(chart.saved_again().with_(title=drawing.title), by)
+        return self.charts.save(chart.saved_again().with_(title=drawing.title, drawn_version=DRAWINGS_VERSION), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0) -> Node:
         return self.charts.add_node(chart, Node(kind=kind, key=key, text=text, x=x, y=y, shipped=True), Actor.system())

@@ -793,6 +793,10 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                 </header>
                 <p v-if="notice" class="chart-notice">{{ notice }}</p>
                 <p v-if="failureWords" class="chart-notice">{{ failureWords }}</p>
+                <p v-if="currentWorkflow && currentWorkflow.behind" class="chart-trace">
+                    The shipped version of this workflow changed since you edited it. Reset to default takes the new one and drops your
+                    changes.
+                </p>
                 <p v-if="trialWords" class="chart-trace">{{ trialWords }}</p>
                 <p v-else-if="walkWords" class="chart-trace">{{ walkWords }}</p>
 

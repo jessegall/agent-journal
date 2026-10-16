@@ -2485,3 +2485,27 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "c"})
     assert "two tools" not in said(body), "a new start puts the count back at nought"
     assert not typed, "nothing was typed: every line rode a hook's answer"
+
+
+def test_an_upgrade_keeps_a_users_edited_workflow_when_the_shipped_one_changes_shape(app, monkeypatch):
+    from journal.features.chart.seeds import shipped_chart
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.http.controllers.chart import ChartController
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    hook(app, "SessionStart")
+    console, charts = app.console(), app.container.get(Charts)
+    working = charts.for_pair("working", "tool_starting")
+    mine = int(console.run(["chart", "node", "--edit-default", "action", "say", "--text", "my own line", "--in", str(working.id)], AGENT).out.split()[1].rstrip(":"))
+    idle = charts.for_pair("idle", "idle")
+    monkeypatch.setattr(shipped_chart, "DRAWINGS_VERSION", shipped_chart.DRAWINGS_VERSION + 1)
+    app.container.get(ShippedChart).run()
+    kept = charts.find(working.id)
+    assert kept.shipped and any(n.id == mine for n in charts.nodes_of(kept)), "the edited shipped workflow is kept with the user's node, still the state's workflow"
+    assert charts.find(idle.id).drawn_version == shipped_chart.DRAWINGS_VERSION and all(n.shipped for n in charts.nodes_of(charts.find(idle.id))), "an unedited shipped workflow is redrawn at the new shipping"
+    named = {w["id"]: w for w in [app.container.get(ChartController).named(c) for c in charts.all()]}
+    assert named[working.id]["behind"] is True and named[working.id]["edited"] is True, "the page says the shipping moved past the user's edit"
+    assert named[idle.id]["behind"] is False
+    app.container.get(ShippedChart).reset(kept, Actor.user(1))
+    reset = charts.find(working.id)
+    assert app.container.get(ChartController).named(reset)["behind"] is False and all(n.shipped for n in charts.nodes_of(reset)) and all(n.kind != NodeKind.ACTION or n.text != "my own line" for n in charts.nodes_of(reset)), "Reset to default takes the new shipped drawing"

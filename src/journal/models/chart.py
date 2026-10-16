@@ -18,6 +18,8 @@ class Chart(Model):
     """The event this workflow answers, the key of its one trigger."""
     state: str = ""
     """The state this workflow is for, by name: a state at an event has one workflow."""
+    drawn_version: int = 0
+    """The shipping a shipped workflow's drawing came from: one the user edited that the shipping has since moved past is told so."""
 
     def saved_again(self) -> "Chart":
         return self.with_(revision=self.revision + 1)
