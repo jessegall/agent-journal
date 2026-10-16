@@ -767,6 +767,19 @@ def test_a_workflow_moves_an_idle_agent_into_a_wait_with_its_words_and_a_release
     assert machine.current("s1").name == "idle", "a word from the user frees the wait, as any wait"
 
 
+def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app):
+    from journal.repositories.plans import Plans
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "only"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], USER)
+    console.run(["task", "done", "1"], USER)
+    assert app.container.get(Plans).find(1).state == "done", "the user closed the last task: the plan is done, no agent following it"
+
+
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.bus import Bus

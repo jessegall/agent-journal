@@ -44,6 +44,10 @@ class Plans(ScopedRepository[Plan]):
         """Whether another plan that is not cancelled holds this task too."""
         return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
 
+    def holding(self, task: Task) -> list[Plan]:
+        """The started plans this task belongs to."""
+        return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state == PlanState.STARTED]
+
     def tasks_of(self, plan: Plan) -> list[Task]:
         """In the order they were added."""
         return [self.tasks.find(ref.id) for ref in self.links.sources(plan, IN_PLAN)]
