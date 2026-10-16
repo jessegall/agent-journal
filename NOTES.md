@@ -566,8 +566,9 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   nudger, the decision, the supervisor and `Running`; `Fillers` fill placeholders from the rows.
 - Saved whole over `POST /journal/chart` with a revision, refused with every fault named (`Validation`); reset to
   the shipped chart; a dry run (`Trial`) for an agent event. `journal chart show|catalogue|node|line|remove|reset|try`.
-- The shipped chart carries the stop rules that were `AnswerStop` and `StopWords.for_`; those are gone. The
-  counter rules (unread, unanswered, log cadence) stay as listeners until their lines move over; docs/the-rules.md.
+- The shipped workflows carry the stop rules that were `AnswerStop` and `StopWords.for_`, and since plan 3's
+  phase 2 the counter rules too (unread, unanswered, log cadence), in the base workflow and Working's; their
+  listeners stay in code until phase 3 deletes them; docs/the-rules.md says what stays in code for good.
 - The Workflow page: canvas with pan and zoom, palette, lines dragged from ports, text in place, draft with undo,
   list form for a phone or a keyboard, Try it dry. No release yet: version 4 is still a branch.
 

@@ -786,8 +786,9 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                     block its stop, block a tool, type into its terminal or start a sequence.
                 </p>
                 <p class="chart-dialog-text">
-                    Add node puts a node below the selected one and connects it. Drag from a port onto another node to connect them, click a
-                    line to remove it, and drag a node to move it. Nothing changes until you save.
+                    The page opens read-only; Edit switches editing on. Add node puts a node below the selected one and connects it. Drag
+                    from a port onto another node to connect them, click a line to remove it, and drag a node to move it. Nothing changes
+                    until you save, and Reset to default brings a default workflow back.
                 </p>
                 <template #foot>
                     <Btn kind="primary" @click="showLead = false">Close</Btn>

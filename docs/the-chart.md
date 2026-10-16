@@ -55,13 +55,20 @@ passed, so the viewer can say why the agent heard a line.
 
 ## Editing
 
-Drag a line from a port onto a card; drop it on empty canvas and Add node opens where it fell; click a line to
-take it out; drag a card to move it; type an action's message in its card. Add node puts a node below the
+The page opens read-only, with a line under the bar saying when the workflow last ran, through which of its nodes,
+and the last node that failed in it. Edit switches editing on, after a word that changes alter how the journal
+drives the agent; a save, or another workflow opened, switches it off again. By command the same guard is
+`--edit-default` on a default workflow. A workflow with no trigger is marked off in the list: the journal does
+nothing there until a trigger is added or it is reset. Drag a line from a port onto a card; drop it on empty canvas
+and Add node opens where it fell; click a line to take it out; drag a card to move it; type an action's message in
+its card. Add node puts a node below the
 selected one, connected to its first free output, and says so before you pick. Every change is a draft until you
 press Save; Undo steps the draft back and Discard changes drops it. A wrong workflow is refused with its faults
 named: a node the catalogue does not know, a line to nowhere or into a trigger, a check with no line out, a
-loop. Reset to default puts the shipped workflow back, after asking. List shows the same workflow as cards with
-a picker for each output, for a phone or a keyboard. Test runs the workflow for its own event without doing
+loop, a hold a trigger reaches through no check. A workflow for a state that waits on something outside saves
+with a warning when nothing in it releases the agent. Reset to default puts the shipped workflow back, after
+asking; a default workflow cannot be deleted, only emptied or reset. List shows the same workflow as cards with
+a picker for each output, for a phone or a keyboard. Test runs the workflow for one of its events without doing
 anything, and shows the steps and what it would do in a side panel.
 
 The shipped chart today: at a stop, at rest, parked tasks hold the stop and are named in any mode, and

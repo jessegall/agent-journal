@@ -7,9 +7,10 @@ version 3 broke it and paid for it. Read this before writing, and when a change 
 these, the change is wrong, not the rule.
 
 **One concept, one place.** A thing is defined in one file and nowhere else. A model is its
-file in `models/`; its SQL is its repository; its behaviour toward the agent is a state in its
-feature. If you are about to write the same idea in a second place, you have found the one
-place it belongs and should move it there.
+file in `models/`; its SQL is its repository; the journal's conduct toward the agent in a state
+is that state's workflow, and the engine keeps only what no workflow may change. If you are
+about to write the same idea in a second place, you have found the one place it belongs and
+should move it there.
 
 **One class per file.** Every class, enum and dataclass has a file of its own, named after it
 in snake_case. A module never holds two classes. Navigation is by file name alone.
@@ -39,7 +40,7 @@ states share is inherited, one level. Going back from a pause is data (`resume`)
 nudges, its state-free listeners and its commands. The engine holds the machine, the base
 state, `Paused`, the nudger, the clock and the runtime, and imports nothing from `features/`.
 A state names a feature's nudge as data; a feature moves the agent through `machine.move`.
-One line has one decider: a state or a listener, never both.
+One line has one decider: a workflow or the engine, never both.
 
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script
 posts and prints. The server records the entry, runs the blocking listeners, replies, then

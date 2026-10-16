@@ -370,8 +370,8 @@ const steps = computed(() => {
     <template v-if="sheet === 'events'">
         <ActionSheet
             title="New workflow"
-            about="Pick its event"
-            line="the workflow is born with its trigger"
+            about="Pick the event it starts at"
+            line="a workflow of your own; the default ones are one per state, with one for every state"
             :actions="eventActions"
             @close="sheet = ''"
         />
