@@ -1,2 +1,2 @@
-export const PAGE = 25;
+export const PAGE = 50;
 export const RECENT = 100;

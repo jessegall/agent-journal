@@ -386,3 +386,17 @@ def test_a_read_of_an_unknown_environment_is_not_found_and_makes_none(tmp_path: 
         assert not app.container.get(Environments).where(name="settings"), "a stray address in the browser never makes an environment"
     finally:
         app.runtime().stop()
+
+
+def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
+    from journal.http.v3.listing import Listing
+    from journal.http.v3.v3_row import V3Row
+    rows = [V3Row(type="message", n=n, title=f"m{n}", brief=f"m{n}", seen=["user"], created=float(n), updated=float(n), completed=0.0) for n in range(1, 61)]
+    chat = Listing.from_query({"completed": "1"})
+    assert [r["n"] for r in chat.listed(rows)["rows"]] == list(range(1, 61)), "a work list shows every open row, however many"
+    from dataclasses import replace
+    timeline = replace(chat, timeline=True)
+    page = timeline.listed(rows)
+    assert [r["n"] for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
+    older = replace(Listing.from_query({"completed": "1", "before": "11"}), timeline=True).listed(rows)
+    assert [r["n"] for r in older["rows"]] == list(range(1, 11)) and not older["more"]

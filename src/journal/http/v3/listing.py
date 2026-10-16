@@ -2,12 +2,12 @@ from dataclasses import dataclass
 
 from journal.http.v3.v3_row import V3Row
 
-PAGE = 25
+PAGE = 50
 
 
 @dataclass(frozen=True)
 class Listing:
-    """What version 3's viewer asks of a list: the newest `last` rows, open ones always, closed ones when asked, older than `before`, changed since `since`, or only the numbers named."""
+    """What version 3's viewer asks of a list: the newest `last` rows, open ones always unless the list is a timeline, closed ones when asked, older than `before`, changed since `since`, or only the numbers named."""
 
     last: int = PAGE
     completed: bool = False
@@ -15,6 +15,8 @@ class Listing:
     before: int = 0
     since: float = 0.0
     only: tuple[int, ...] = ()
+    timeline: bool = False
+    """A chat or a feed: the rows page strictly by number, and an open one older than the page waits for a scroll up like any other."""
 
     @classmethod
     def from_query(cls, query: dict) -> "Listing":
@@ -35,5 +37,5 @@ class Listing:
             return {"rows": [r.to_json() for r in closed[-self.last:]], "more": len(closed) > self.last}
         wanted = [r for r in rows if (self.completed or not r.completed) and (not self.before or r.n < self.before)]
         page = wanted[-self.last:]
-        open_ = [r for r in rows if not r.completed and r not in page] if not self.before else []
+        open_ = [r for r in rows if not r.completed and r not in page] if not self.before and not self.timeline else []
         return {"rows": [r.to_json() for r in sorted([*open_, *page], key=lambda r: r.n)], "more": len(wanted) > self.last}

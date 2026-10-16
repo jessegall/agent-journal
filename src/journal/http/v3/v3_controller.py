@@ -1,3 +1,4 @@
+from dataclasses import replace
 import json
 import os
 import time
@@ -44,6 +45,10 @@ STARTED = time.time()
 
 SILENT_AFTER = 900.0
 """Seconds a busy agent may send nothing before the viewer says it is not responding."""
+
+
+TIMELINES = ("message", "comment")
+"""The lists that are a chat or a feed: they page by number alone, so opening the journal loads the last page and the rest comes on scrolling up."""
 
 
 class V3Controller:
@@ -149,7 +154,10 @@ class V3Controller:
         shaper = self.shapers.named(request.params["type"])
         if shaper is None:
             return Response.not_found(request.params["type"])
-        return Response.json(Listing.from_query(request.query).listed(shaper.rows(self.environment_of(request))))
+        listing = Listing.from_query(request.query)
+        if request.params["type"] in TIMELINES:
+            listing = replace(listing, timeline=True)
+        return Response.json(listing.listed(shaper.rows(self.environment_of(request))))
 
     def get_one(self, request: Request) -> Response:
         shaper = self.shapers.named(request.params["type"])
