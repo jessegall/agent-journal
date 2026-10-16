@@ -19,7 +19,7 @@ before the states they go back to, so a tool use that lifts a wait is walked as 
 workflow of the agent's state or of the nearest state it inherits from, following a plan being a kind of working and
 every wait a kind of pause, then a workflow of the older shape that answers the event by itself.
 
-A workflow may move the agent, through the engine's machine: a release sends a paused agent back to what it was
+A workflow may move the agent, through the engine's machine: Send the agent back to what it was doing sends an agent in any pause back to what it was
 doing; a move to idle is allowed from a state that owns nothing; and a move into expecting or stuck lays that wait
 over what the agent is doing, with the words after the state's name as what it waits for, so a workflow can make
 the agent wait on something outside. A state that owns a row, working, following a plan, waiting on a question,

@@ -3085,3 +3085,42 @@ def test_no_workflow_holds_a_journal_command_or_the_read_of_a_skills_file(skille
     assert status == 200, "the read of a skill's file goes through: it pays the skill owed"
     read_skill(app, "journal")
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal environment here"})[0] == 200
+
+
+def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
+    """A workflow of the user's with the one node sends the agent back from each pause: awaiting something outside, stuck, waiting on a question, awaiting a worker, running a sequence."""
+    import re
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    from journal.repositories.charts import Charts
+    console, charts, machine = app.console(), app.container.get(Charts), app.container.get(Machine)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    mine = int(console.run(["chart", "new", "Back on a subagent", "--on", "subagent_ended"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in charts.nodes_of(charts.find(mine)) if n.kind == "trigger")
+    back = int(console.run(["chart", "node", "action", "release", "--text", "[chart] back to it", "--in", str(mine)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(back)], USER)
+    send_back = lambda: hook(app, "SubagentStop", agent_id="a1")
+    console.run(["await", "the deploy"], AGENT)
+    assert machine.current("s1").name == "expecting"
+    send_back()
+    assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from awaiting something outside, to the task"
+    console.run(["stuck", "the build is broken"], AGENT)
+    assert machine.current("s1").name == "stuck"
+    send_back()
+    assert machine.current("s1").name == "working", "back from being stuck"
+    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    assert machine.current("s1").name == "waiting"
+    send_back()
+    assert machine.current("s1").name == "working", "back from a question"
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "wait", "1"], AGENT)
+    assert machine.current("s1").name == "awaiting"
+    send_back()
+    assert machine.current("s1").name == "working", "back from a worker"
+    made = re.search(r"sequence (\d+)", console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out).group(1)
+    console.run(["sequence", "run", made], AGENT)
+    assert machine.current("s1").name == "running_sequence"
+    send_back()
+    assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from a sequence, to the task it keeps"

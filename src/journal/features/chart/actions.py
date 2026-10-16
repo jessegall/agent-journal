@@ -156,7 +156,7 @@ class Actions:
         return Decision()
 
     def release(self, text: str, ctx: Context) -> Decision:
-        """An agent paused for something outside goes back to what it was doing, told with the line; an agent not paused is left as it is."""
+        """An agent in any pause goes back to the state the pause keeps in resume, told with the line; an agent not paused is left as it is."""
         if not ctx.session:
             return Decision()
         wait = self.machine.states.wait_in(ctx.state) if ctx.state else None
