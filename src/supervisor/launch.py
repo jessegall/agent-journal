@@ -7,6 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from supervisor.header import Header
 from supervisor.inbox import Inbox
 from supervisor.journal_process import JournalProcess
 from supervisor.choice import Choice
@@ -113,4 +114,5 @@ class Launch:
         status = StatusLine(self.root.name, choice.environment, self.root)
         terminal = Terminal(self.agent_command(choice, status), str(self.root), environ)
         journal = NoJournal(self.root) if self.no_journal else JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
-        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), journal, status, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}")
+        header = Header(self.root.name, choice.environment) if sys.stdout.isatty() else None
+        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), journal, status, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}", header=header)
