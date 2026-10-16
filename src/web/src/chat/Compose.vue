@@ -90,15 +90,21 @@ onMounted(() => nextTick(measure));
 onMounted(() => (shown = area.value ? area.value.value : ""));
 // words put in without an input event, by dictation, are read from the box at every moment they could be lost or needed: coming back
 // to the window, before the box is taken off the page, and before the send button decides whether there is anything to send
+// dictation pastes into the focused field only, and coming back to the window leaves nothing focused: the box takes the focus back
+// when nothing else holds it, so the next words land in it
+function returned() {
+    takeFromBox();
+    if (document.activeElement === document.body || document.activeElement === null) focusArea();
+}
 onMounted(() => {
-    window.addEventListener("focus", takeFromBox);
-    document.addEventListener("visibilitychange", takeFromBox);
+    window.addEventListener("focus", returned);
+    document.addEventListener("visibilitychange", returned);
 });
 onBeforeUnmount(() => {
     takeFromBox();
     ui.drafts[draftKey.value] = draft.text;
-    window.removeEventListener("focus", takeFromBox);
-    document.removeEventListener("visibilitychange", takeFromBox);
+    window.removeEventListener("focus", returned);
+    document.removeEventListener("visibilitychange", returned);
 });
 watch(
     () => [props.idle?.label, props.submit],

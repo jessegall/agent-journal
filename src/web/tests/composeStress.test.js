@@ -180,3 +180,45 @@ test("a long mix of typing, pasting, dictation and disturbances keeps every word
     sentExactly(s, "first second third fourth fifth", "round two again and more", "round three");
     s.close();
 });
+
+// Wispr Flow puts dictated words in as a simulated Cmd-V into the focused field: the clipboard is replaced, the key sent, the page sees
+// the paste path (paste, beforeinput and input with insertFromPaste), and nothing is inserted when no field is focused
+function dictatedPaste(text) {
+    const el = document.activeElement;
+    if (!el || el === document.body) return false;
+    el.dispatchEvent(new KeyboardEvent("keydown", {key: "v", code: "KeyV", metaKey: true, bubbles: true, cancelable: true}));
+    const paste = new Event("paste", {bubbles: true, cancelable: true});
+    paste.clipboardData = {files: [], getData: (kind) => (kind === "text/plain" ? text : "")};
+    if (!el.dispatchEvent(paste)) return true;
+    const start = el.selectionStart;
+    el.setRangeText(text, start, el.selectionEnd, "end");
+    el.dispatchEvent(new InputEvent("input", {inputType: "insertFromPaste", bubbles: true}));
+    el.dispatchEvent(new KeyboardEvent("keyup", {key: "v", code: "KeyV", metaKey: true, bubbles: true}));
+    return true;
+}
+
+test("after coming back to the window with nothing focused, dictation pasted into the focused field lands in the box", async () => {
+    const sent = [];
+    const props = ref({send: async (text) => sent.push(text)});
+    const {box, unmount} = await mounted(props);
+    box.focus();
+    expect(dictatedPaste("first words")).toBe(true);
+    await settle();
+    expect(box.value).toBe("first words");
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
+    await settle();
+    expect(sent).toEqual(["first words"]);
+    box.blur();
+    window.dispatchEvent(new Event("blur"));
+    expect(document.activeElement).toBe(document.body);
+    window.dispatchEvent(new Event("focus"));
+    await settle();
+    expect(document.activeElement).toBe(box);
+    expect(dictatedPaste("second words after the tab")).toBe(true);
+    await settle();
+    expect(box.value).toBe("second words after the tab");
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
+    await settle();
+    expect(sent).toEqual(["first words", "second words after the tab"]);
+    unmount();
+});
