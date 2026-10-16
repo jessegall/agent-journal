@@ -194,10 +194,5 @@ class Checks:
         return isinstance(self.state(ctx), RunningSequence)
 
     def state(self, ctx: Context):
-        """The agent's state, or None when the walk is about no agent."""
-        if not ctx.session:
-            return None
-        try:
-            return self.machine.current(ctx.session)
-        except NotFound:
-            return None
+        """The agent's state as the walk read it once, or None when the walk is about no agent."""
+        return ctx.state

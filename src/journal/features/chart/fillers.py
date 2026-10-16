@@ -1,6 +1,5 @@
 import re
 
-from journal.engine.machine import Machine
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.context import Context
 from journal.features.tasks.states.expecting import Expecting
@@ -18,8 +17,8 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, machine: Machine) -> None:
-        self.tasks, self.plans, self.messages, self.machine = tasks, plans, messages, machine
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages) -> None:
+        self.tasks, self.plans, self.messages = tasks, plans, messages
 
     def fill(self, text: str, ctx: Context) -> str:
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
@@ -91,10 +90,7 @@ class Fillers:
         return parked[0].parked_why if parked else ""
 
     def state(self, ctx: Context):
-        if not ctx.session:
-            return None
-        agent = self.machine.agent(ctx.session, ctx.environment_id)
-        return self.machine.states.named(agent.state, agent.data)
+        return ctx.state
 
     def parked_tasks(self, ctx: Context) -> str:
         return "; ".join(f"{t.id} {t.title} (parked because: {t.parked_why})" for t in self.tasks.in_state(ctx.environment_id, TaskState.PARKED))

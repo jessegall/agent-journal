@@ -4,6 +4,10 @@ The Workflow page shows how the journal treats the agent as a flowchart, and let
 per event, each starting at its event's trigger; a second on the same event is refused, since two would both drive
 the agent, and should a journal somehow hold two, the older one answers and the page marks the other sidelined. The journal ships it with today's conduct, so nothing changes until you edit it.
 
+The walk reads the agent's state once, after the engine's machine and holds have answered the event, and every
+check and filler reads that same state; so a tool use that lifts a wait is walked as Working, and a session start
+finds the agent orienting. The trace of a walk names the state it read.
+
 ## Three kinds of box
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is

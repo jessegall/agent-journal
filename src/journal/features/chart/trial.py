@@ -1,3 +1,4 @@
+from journal.engine.machine import Machine
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
@@ -47,9 +48,9 @@ BEFORE = {"messages": lambda m: m, "workers": lambda w: w.with_(state=WorkerStat
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
 
-    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks) -> None:
+    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: Machine) -> None:
         self.repositories = {"messages": messages, "workers": workers, "questions": questions}
-        self.checks = checks
+        self.checks, self.machine = checks, machine
         self.walk, self.fillers, self.agents = walk, fillers, agents
 
     def run(self, trigger: str, environment_id: int, row: int = 0, assumptions: Assumptions = Assumptions()) -> dict:
@@ -57,13 +58,14 @@ class Trial:
         agent = self.agents.live(environment_id)
         session = agent.session if agent else ""
         provider = (agent.provider or "claude") if agent else "claude"
+        state = self.machine.states.named(agent.state, agent.data) if agent else None
         if trigger in EVENTS:
             event = EVENTS[trigger](session, environment_id)
             if isinstance(event, Ticked) and assumptions.quiet is not None:
                 event = Ticked(session=session, environment_id=environment_id, at=0.0, quiet_for=assumptions.quiet)
-            ctx = Context(event=event, session=session, environment_id=environment_id, provider=provider, answers_hook=True)
+            ctx = Context(event=event, session=session, environment_id=environment_id, provider=provider, answers_hook=True, state=state)
         else:
-            ctx = Context(event=self.row_event(trigger, row), session=session, environment_id=environment_id, provider=provider)
+            ctx = Context(event=self.row_event(trigger, row), session=session, environment_id=environment_id, provider=provider, state=state)
         passed: list[int] = []
         decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions)).on_with_trace(ctx, passed)
         return {"trigger": trigger, "row": row, "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described()}

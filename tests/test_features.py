@@ -1611,8 +1611,8 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     console.run(["message", "send", "look at the picture, the chart and the footer please"], USER)
     console.run(["message", "read", "1"], AGENT)
     own = str(app.config.home / "files" / "message" / "1" / "shot.png")
-    reads_own = Context(event=ToolStarting(tool="Read", input={"file_path": own}, session="s1", environment_id=env), session="s1", environment_id=env)
-    reads_other = Context(event=ToolStarting(tool="Read", input={"file_path": "a.py"}, session="s1", environment_id=env), session="s1", environment_id=env)
+    reads_own = Context(event=ToolStarting(tool="Read", input={"file_path": own}, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
+    reads_other = Context(event=ToolStarting(tool="Read", input={"file_path": "a.py"}, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     assert checks.answer("tool_reads_their_files", reads_own) and not checks.answer("tool_reads_their_files", reads_other)
     by_user = Context(event=Created(model=Message(environment_id=env, author=Author.USER, text="hi"), by=Actor.user(1)), environment_id=env)
     by_agent = Context(event=Created(model=Message(environment_id=env, author=Author.AGENT, text="hi"), by=Actor.agent("s1")), environment_id=env)
@@ -1622,7 +1622,7 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     app.runtime().deferred.drain()
     for _ in range(26):
         hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env)
+    at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     assert checks.answer("edits_since_log_over", at, "tasks.first_nudge_after") and checks.answer("edits_since_log_every", at, "25"), "counted before the write about to run, as the log cadence counts"
 
 
@@ -1639,25 +1639,26 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
     console.run(["environment", "here"], AGENT)
     checks = app.container.get(Checks)
     env = app.container.get(Environments).named("main").id
-    tick = lambda quiet: Context(event=Ticked(at=0.0, quiet_for=quiet, session="s1", environment_id=env), session="s1", environment_id=env)
+    tick = lambda quiet: Context(event=Ticked(at=0.0, quiet_for=quiet, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     assert checks.answer("quiet_for_over", tick(61), "60") and not checks.answer("quiet_for_over", tick(59), "60")
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1"], AGENT)
     worker = app.container.get(Workers).find(1)
-    reported = Context(event=Updated(model=worker.reported(), by=Actor.user(1), was=worker), session="s1", environment_id=env)
-    again = Context(event=Updated(model=worker.reported(), by=Actor.user(1), was=worker.reported()), session="s1", environment_id=env)
+    about = lambda event: Context(event=event, session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
+    reported = about(Updated(model=worker.reported(), by=Actor.user(1), was=worker))
+    again = about(Updated(model=worker.reported(), by=Actor.user(1), was=worker.reported()))
     assert checks.answer("worker_reported", reported) and not checks.answer("worker_reported", again), "just came to the state, not saved again in it"
     assert checks.answer("agent_awaits_the_worker", reported) and checks.answer("last_worker_back", reported), "the row says the last one is back"
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
-    assert not checks.answer("last_worker_back", reported), "another is still out"
+    assert not checks.answer("last_worker_back", about(reported.event)), "another is still out: the state is read when the walk starts"
     app.container.get(Workers).save(worker.reported(), Actor.user(1))
     console.run(["worker", "stop", "2"], USER)
     console.run(["task", "done", "1"], AGENT)
     console.run(["question", "ask", "Which name?"], AGENT)
     question = app.container.get(Questions).find(1)
-    answered = Context(event=Updated(model=question.answered("beta"), by=Actor.user(1), was=question), session="s1", environment_id=env)
+    answered = Context(event=Updated(model=question.answered("beta"), by=Actor.user(1), was=question), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     assert checks.answer("question_answered", answered) and checks.answer("agent_waits_on_the_question", answered)
 
 
@@ -1672,7 +1673,7 @@ def test_the_card_and_release_actions(app):
     console.run(["environment", "here"], AGENT)
     actions = app.container.get(Actions)
     env = app.container.get(Environments).named("main").id
-    ctx = Context(event=Ticked(at=0.0, quiet_for=0.0, session="s1", environment_id=env), session="s1", environment_id=env)
+    ctx = Context(event=Ticked(at=0.0, quiet_for=0.0, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     machine = app.container.get(Machine)
     actions.perform("release", "nothing to release", ctx)
     assert machine.current("s1").name == "idle", "an agent not paused is left as it is"
@@ -1699,7 +1700,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     console.run(["environment", "here"], AGENT)
     fillers = app.container.get(Fillers)
     env = app.container.get(Environments).named("main").id
-    at = lambda event: Context(event=event, session="s1", environment_id=env)
+    at = lambda event: Context(event=event, session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
     tick = at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))
     console.run(["message", "send", "one"], USER)
     assert fillers.fill("{{inbox}} / {{unread_count}} / {{unread_numbers}}", tick) == "new message 1 / 1 / 1"
@@ -1715,7 +1716,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     write = at(ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env))
     assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", write) == "task 1 / 2 / journal task log 1"
     console.run(["await", "the deploy"], AGENT)
-    assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", tick) == "check the deploy now: you have waited 5 min"
+    assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now: you have waited 5 min", "the context carries the state as it is when the walk starts"
     console.run(["task", "park", "1", "the header first"], AGENT)
     assert fillers.fill("{{parked_n}}: {{parked_title}} ({{parked_why}})", tick) == "1: the footer (the header first)"
     console.run(["task", "create", "t2", "--start"], AGENT)
@@ -1847,3 +1848,27 @@ def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_one
     assert plans.find(1).state == PlanState.CANCELLED and tasks.find(1).state == TaskState.CANCELLED
     assert tasks.find(2).state == TaskState.DONE and tasks.find(3).state == TaskState.OPEN, "a done task stays done; a task the new plan holds too stays open"
     assert tasks.find(1).id not in [t.id for t in plans.free(1)], "a cancelled task is offered to nobody"
+
+
+def test_the_walk_reads_the_state_once_after_the_machine_has_moved(app):
+    import json
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    charts = app.container.get(Charts)
+    tool = charts.shipped_on("tool_starting")[0]
+    trigger = next(n.id for n in charts.nodes_of(tool) if n.kind == NodeKind.TRIGGER)
+    node = lambda *args: int(console.run(["chart", "node", *args, "--in", str(tool.id)], USER).out.split()[1].rstrip(":"))
+    in_hand, say = node("check", "task_in_hand"), node("action", "say", "--text", "in hand: {{task}}")
+    console.run(["chart", "line", str(trigger), str(in_hand)], USER)
+    console.run(["chart", "line", str(in_hand), str(say), "--port", "yes"], USER)
+    console.run(["await", "the deploy"], AGENT)
+    assert app.container.get(Machine).current("s1").name == "expecting"
+    body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[1]
+    assert "in hand: task 1" in json.dumps(body), "the tool use lifted the wait before the walk, and the walk read Working, once"
+    walks = app.container.get(Entries).of_kind(1, "walk", 5)
+    assert walks[0].data["state"] == "working", "the trace names the state the walk read"

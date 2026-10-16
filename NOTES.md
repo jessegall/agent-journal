@@ -600,3 +600,8 @@ driving, and a workflow may move the agent to its next state through the machine
 phases; report 3, five readers against "Find what is missing", is folded into it. The first task rules which state
 picks the workflow: the state after the machine and the engine's holds, read once into the walk's context, found by
 the state's class and its parents and then the base.
+
+Ruled and built on 2026-10-16: the walk's Context carries the state, set once by the walk listeners and the trial
+after the machine has moved; the checks and the fillers read it there and never look the agent up; the walk entry
+names it. What is still to come under plan 3: the workflow found by the state's class and its parents and then the
+base, the base first and the state's workflow second with one spoken set.

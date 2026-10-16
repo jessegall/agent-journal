@@ -47,7 +47,7 @@ class Walk:
             for start in [n for n in nodes.values() if n.kind == NodeKind.TRIGGER and n.key == key]:
                 decision = decision.merged(self.follow(start, nodes, after, ctx, passed))
         if passed and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason}), Actor.system())
         return decision
 
     def follow(self, start: Node, nodes: dict, after: dict, ctx: Context, passed: list) -> Decision:
