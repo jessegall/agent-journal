@@ -24,6 +24,8 @@ CHECKS = (
     ("blocked_tasks", "Has blocked tasks?", "a task waits on something outside"),
     ("unread_messages", "Has unread messages?", "the user left a message the agent has not read"),
     ("unanswered_messages", "Has unanswered messages?", "a message was read and not yet replied to or given a face"),
+    ("message_by_user", "Message written by the user?", "the row is a message the user wrote, not the agent"),
+    ("tool_reads_their_files", "Tool reads the message's own files?", "the tool about to run reads a file attached to a message read and left unanswered"),
     ("auto_mode", "Auto mode on?", "the environment runs in auto mode"),
     ("following_plan", "Following a plan?", "the agent is on a plan's task"),
     ("tool_writes", "Tool changes files?", "the tool about to run changes a file or runs a writing command"),
@@ -34,8 +36,9 @@ COUNTER_CHECKS = (
     ("tool_uses_since_unread_every", "Every Nth tool use with a message unread?", "true on every Nth tool use since the oldest unread message came; the text is N"),
     ("tool_uses_since_unread_over", "N tool uses with a message unread?", "at least N tool uses since the oldest unread message came; the text is N or a setting's name"),
     ("tool_uses_since_read_over", "N tool uses with a message unanswered?", "at least N tool uses since the oldest message was read and not answered; the text is N or a setting's name, such as messages.hold_after"),
-    ("edits_since_log_over", "N edits since the last log?", "the task in hand has at least N edits since it was logged; the text is N or a setting's name, such as tasks.log_after"),
-    ("edits_since_log_every", "Every Nth edit since the last log?", "true on every Nth edit since the task in hand was logged; the text is N or a setting's name"),
+    ("edits_since_log_over", "N edits since the last log?", "the task in hand had at least N edits since it was logged, before this one; the text is N or a setting's name, such as tasks.log_after"),
+    ("edits_since_log_every", "Every Nth edit since the last log?", "true when the edits since the task in hand was logged, before this one, are a multiple of N; the text is N or a setting's name"),
+    ("edits_since_log_at", "Exactly N edits since the last log?", "true once, when the edits since the task in hand was logged, before this one, are exactly N; the text is N or a setting's name, such as tasks.first_nudge_after"),
 )
 ACTIONS = (
     ("say", "Send message to agent", "sends the message to the agent once; repeats are skipped for a set time", True),

@@ -5,10 +5,7 @@ from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
-
-REMIND_EVERY = 3
-PATIENCE = 5
-"""Reminders of an unread inbox before the next write waits for it to be read."""
+from journal.repositories.settings import PROJECT, Settings
 
 
 class HoldUnread(AgentListener[ToolStarting]):
@@ -16,8 +13,8 @@ class HoldUnread(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries) -> None:
-        self.machine, self.nudger, self.messages, self.entries = machine, nudger, messages, entries
+    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages, entries: Entries, settings: Settings) -> None:
+        self.machine, self.nudger, self.messages, self.entries, self.settings = machine, nudger, messages, entries, settings
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages as MessagesFeature
@@ -26,9 +23,10 @@ class HoldUnread(AgentListener[ToolStarting]):
             return None
         oldest = min(m.created_at for m in unread)
         uses = len([e for e in self.entries.of_kind(event.environment_id, "ToolStarting", 200) if e.actor and e.actor.id == event.session and e.created_at >= oldest])
-        if uses // REMIND_EVERY >= PATIENCE and event.writes:
+        every, patience = int(self.settings.option(PROJECT, MessagesFeature.REMIND_EVERY)), int(self.settings.option(PROJECT, MessagesFeature.HOLD_AFTER_REMINDERS))
+        if uses // every >= patience and event.writes:
             return Decision.refuse(MessagesFeature.UNREAD_HELD.about(count=len(unread)).rendered())
-        if uses % REMIND_EVERY:
+        if uses % every:
             return None
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), MessagesFeature.inbox(unread))
         return Decision.tell(line) if line else None

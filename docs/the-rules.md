@@ -17,14 +17,14 @@ needs, what it does, and whether the catalogue can build it now or what it still
 defaults as the code reads them: the log is asked after `tasks.first_nudge_after` edits (25), the task named every
 `tasks.name_every` (25), the write held after `tasks.log_after` (50); a read message holds the next tool call after
 `messages.hold_after` tool uses (0) and is asked for after `messages.nudge_after` (0); the unread inbox is named every
-third tool use and the write held after five namings, both constants in code.
+`messages.remind_every` tool uses (3) and the write held after `messages.hold_after_reminders` namings (5).
 
 | Event | Line (nudge key) | Checks it needs | Action | Catalogue today |
 | --- | --- | --- | --- | --- |
-| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | counters exist; needs the say to carry the key and the unread count filler |
-| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | needs "reads the message's own files" and the owed-numbers filler |
+| Tool about to run | messages.unread_held: "your inbox is unread: N waiting" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | counters and the cadence options exist; needs the say to carry the key and the unread count filler |
+| Tool about to run | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | checks exist; needs the owed-numbers filler |
 | Tool about to run | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | needs "command pipes a read" |
-| Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | counters exist; needs the first-edit-at-N form, the task name and edit fillers, and settings read through their option default |
+| Tool about to run | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | counters exist, the exact-N form too, settings read through their option; needs the task name and edit fillers |
 | Tool about to run | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | needs "same command N times" from the entries |
 | Tool about to run | laws.no_model / no_job | the tool dispatches a subagent; the dispatch names no model or no job | hold | needs checks on the tool's input |
 | Tool about to run | questions.own_tool | the tool is the agent's own question tool | hold | needs "tool is named X" |
@@ -45,7 +45,7 @@ third tool use and the write held after five namings, both constants in code.
 | Clock ticks | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | needs "quiet for N" and the parked filler |
 | Clock ticks | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | the Expecting state's; moves only with the state rule |
 | Clock ticks | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
-| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | needs "written by the user" and the live-agent target |
+| Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the user-author check exists; needs the live-agent target |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | the trigger feature's own words check |
 | Reaction created by the user | messages.reacted | a face on a message | type | needs a reactions row trigger and the face filler |
 | Rule created | memory.rule_review | a new rule | type once | needs the rule filler |

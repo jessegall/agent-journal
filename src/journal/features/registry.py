@@ -21,6 +21,10 @@ class Registry:
     def skill_required_in(self, state: str) -> Skill | None:
         return next((skill for skill in self.skills() if state in skill.required_in), None)
 
+    def options(self) -> list:
+        """Every option a feature declares, across features."""
+        return [option for feature in self.features for option in feature.options]
+
     def skills(self) -> list[Skill]:
         return [feature.skill for feature in self.features if feature.skill]
 

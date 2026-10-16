@@ -1551,3 +1551,35 @@ def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app):
     assert machine.current("s1").name == "expecting", "a subagent reading is not the agent working again"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert machine.current("s1").name == "idle", "the agent's own tool use lifts the wait"
+
+
+def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do(app):
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.events.models.created import Created
+    from journal.features.chart.checks import Checks
+    from journal.features.chart.context import Context
+    from journal.models.author import Author
+    from journal.models.message import Message
+    from journal.repositories.environments import Environments
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    checks = app.container.get(Checks)
+    env = app.container.get(Environments).named("main").id
+    assert checks.number("tasks.log_after") == 50 and checks.number("7") == 7, "a setting's name reads through its option, so an unset key is the default, never 0"
+    console.run(["message", "send", "look at the picture, the chart and the footer please"], USER)
+    console.run(["message", "read", "1"], AGENT)
+    own = str(app.config.home / "files" / "message" / "1" / "shot.png")
+    reads_own = Context(event=ToolStarting(tool="Read", input={"file_path": own}, session="s1", environment_id=env), session="s1", environment_id=env)
+    reads_other = Context(event=ToolStarting(tool="Read", input={"file_path": "a.py"}, session="s1", environment_id=env), session="s1", environment_id=env)
+    assert checks.answer("tool_reads_their_files", reads_own) and not checks.answer("tool_reads_their_files", reads_other)
+    by_user = Context(event=Created(model=Message(environment_id=env, author=Author.USER, text="hi"), by=Actor.user(1)), environment_id=env)
+    by_agent = Context(event=Created(model=Message(environment_id=env, author=Author.AGENT, text="hi"), by=Actor.agent("s1")), environment_id=env)
+    assert checks.answer("message_by_user", by_user) and not checks.answer("message_by_user", by_agent)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    hook(app, "MessageDisplay", message="yes, on it")
+    app.runtime().deferred.drain()
+    for _ in range(26):
+        hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
+    at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env)
+    assert checks.answer("edits_since_log_over", at, "tasks.first_nudge_after") and checks.answer("edits_since_log_every", at, "25"), "counted before the write about to run, as the log cadence counts"

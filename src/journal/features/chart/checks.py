@@ -1,12 +1,17 @@
+from journal.config import Config
 from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.models.model_event import ModelEvent
 from journal.features.chart.context import Context
 from journal.features.plans.states.following_plan import FollowingPlan
+from journal.features.registry import Registry
 from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.features.shell.chain import Chain
 from journal.features.tasks.states.idle import Idle as IdleState
 from journal.features.tasks.states.working import Working
+from journal.models.author import Author
+from journal.models.message import Message
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
@@ -17,24 +22,28 @@ from journal.repositories.settings import PROJECT, Settings
 from journal.repositories.tasks import Tasks
 
 
-COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every")
+COUNTERS = ("tool_uses_since_unread_every", "tool_uses_since_unread_over", "tool_uses_since_read_over", "edits_since_log_over", "edits_since_log_every", "edits_since_log_at")
 """The checks that take a number: the node's text, or the setting named there."""
 
 
 class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries) -> None:
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
+        self.registry, self.config = registry, config
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
         check = getattr(self, key)
         return bool(check(ctx, self.number(text)) if key in COUNTERS else check(ctx))
 
     def number(self, text: str) -> int:
-        """The node's text as a number, or the setting it names, or nothing."""
+        """The node's text as a number, or the setting it names, read through its option so an unset key means the option's default, or nothing."""
         if text.strip().isdigit():
             return int(text)
+        option = next((o for o in self.registry.options() if o.key == text.strip()), None)
+        if option:
+            return int(self.settings.option(PROJECT, option))
         return int(self.settings.get(PROJECT, text.strip(), 0)) if text.strip() else 0
 
     def tool_uses_since_unread_every(self, ctx: Context, every: int) -> bool:
@@ -53,12 +62,19 @@ class Checks:
         return uses is not None and uses >= limit
 
     def edits_since_log_over(self, ctx: Context, limit: int) -> bool:
-        state = self.state(ctx)
-        return isinstance(state, Working) and state.edits >= limit
+        return self.edits_before(ctx) >= limit
 
     def edits_since_log_every(self, ctx: Context, every: int) -> bool:
+        before = self.edits_before(ctx)
+        return bool(every) and before > 0 and before % every == 0
+
+    def edits_since_log_at(self, ctx: Context, n: int) -> bool:
+        return self.edits_before(ctx) == n
+
+    def edits_before(self, ctx: Context) -> int:
+        """The edits since the task in hand was logged, before the write about to run: the machine counted that one already, as the log cadence counts."""
         state = self.state(ctx)
-        return isinstance(state, Working) and bool(every) and state.edits > 0 and state.edits % every == 0
+        return state.edits - 1 if isinstance(state, Working) and state.edits else -1
 
     def oldest_unread(self, ctx: Context):
         unread = self.messages.unread(ctx.environment_id)
@@ -84,6 +100,17 @@ class Checks:
 
     def blocked_tasks(self, ctx: Context) -> bool:
         return bool(self.tasks.in_state(ctx.environment_id, TaskState.BLOCKED))
+
+    def message_by_user(self, ctx: Context) -> bool:
+        """The row event is a message the user wrote."""
+        return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Message) and ctx.event.model.author == Author.USER
+
+    def tool_reads_their_files(self, ctx: Context) -> bool:
+        """The tool about to run reads a file attached to a message read and left unanswered: part of reading it, not work."""
+        if not isinstance(ctx.event, ToolStarting) or ctx.event.tool != "Read":
+            return False
+        path = str(ctx.event.input.get("file_path", ""))
+        return any(path.startswith(str(self.config.home / "files" / "message" / str(m.id)) + "/") for m in self.messages.unanswered(ctx.environment_id))
 
     def unread_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unread(ctx.environment_id))
