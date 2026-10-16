@@ -13,6 +13,7 @@ from journal.models.actor import Actor
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
+from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 
@@ -56,8 +57,8 @@ class Replay:
 
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, and the nudges said since."""
-        environment = self.app.container.get(Environments).named("main").id
-        nudges = [e.data["key"] for e in reversed(self.app.container.get(Entries).of_kind_in(environment, 1000)) if e.kind == "nudge"]
+        with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
+            nudges = [e.data["key"] for e in reversed(self.app.container.get(Entries).of_kind_in(1000)) if e.kind == "nudge"]
         self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:]})
         self.seen = len(nudges)
         self.typed.clear()

@@ -16,6 +16,10 @@ from journal.features.bus import Bus
 from journal.hooks.decision import Decision
 from journal.hooks.deferred import Deferred
 from journal.repositories.entries import Entries
+from journal.repositories.scope import Scope
+
+MAIN = 1
+"""The id of main, made by the first hook: what a test reads directly, it reads there."""
 
 
 class RefuseWrites(AgentListener[ToolStarting]):
@@ -39,7 +43,8 @@ def app(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
     app.container.get(Deferred).start()
     app.server().start()
-    yield app
+    with app.container.get(Scope).of(MAIN):
+        yield app
     app.server().stop()
     app.container.get(Deferred).stop()
 
@@ -56,7 +61,7 @@ def post_hook(app, body: dict):
 def test_a_hook_lands_as_an_entry_and_answers_200(app):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}})
     assert status == 200 and body == {}
-    entries = app.container.get(Entries).in_(1)
+    entries = app.container.get(Entries).in_()
     assert [e.kind for e in entries] == ["ToolStarting"] and entries[0].actor.stamp == "agent:s1"
 
 
@@ -81,7 +86,7 @@ def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app):
 def test_every_hook_kind_translates(app):
     for kind in ["SessionStart", "UserPromptSubmit", "PostToolUse", "PreCompact", "Stop", "SubagentStart", "SubagentStop", "MessageDisplay", "SessionEnd"]:
         assert post_hook(app, {"hook_event_name": kind, "session_id": "s1"})[0] == 200
-    assert len(app.container.get(Entries).in_(1)) == 9
+    assert len(app.container.get(Entries).in_()) == 9
 
 
 

@@ -12,7 +12,8 @@ from journal.config import Config
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.actor import Actor
 from journal.models.setting import Setting
-from journal.repositories.settings import PROJECT, Settings
+from journal.repositories.scope import Scope
+from journal.repositories.settings import Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.memory.states.at_mark import AtMark
@@ -20,6 +21,8 @@ from journal.features.tasks.states.working import Working
 
 AGENT = Where("main", "s1")
 USER = Where("main")
+MAIN = 1
+"""The id of main, the environment a fresh journal makes at boot: what a test reads directly, it reads there."""
 
 
 @pytest.fixture
@@ -30,7 +33,8 @@ def app(tmp_path: Path, monkeypatch):
     app = App(Config(tmp_path, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
-    yield app
+    with app.container.get(Scope).of(MAIN):
+        yield app
     app.runtime().stop()
 
 
@@ -135,7 +139,7 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     assert "can you look at the login?" in shown and "[!reply:1]" in shown
     hook(app, "MessageDisplay", message="[!reply:1] On it, the login is next.")
     app.runtime().deferred.drain()
-    messages = app.container.get(Messages).in_(1)
+    messages = app.container.get(Messages).in_()
     assert [m.author for m in messages] == ["user", "agent"]
     assert messages[1].reply_to == 1 and messages[1].text == "On it, the login is next."
     assert messages[0].read_at is not None
@@ -153,11 +157,11 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     app.console().run(["environment", "here"], AGENT)
     hook(app, "MessageDisplay", message="Good evening. At your service.\n\n[!reply:1]")
     app.runtime().deferred.drain()
-    messages = app.container.get(Messages).in_(1)
+    messages = app.container.get(Messages).in_()
     assert messages[-1].author == "agent" and messages[-1].reply_to == 1 and messages[-1].text == "Good evening. At your service."
     hook(app, "MessageDisplay", message="Both done, see below [!reply:2]")
     app.runtime().deferred.drain()
-    messages = app.container.get(Messages).in_(1)
+    messages = app.container.get(Messages).in_()
     assert messages[-1].reply_to is None and "[!reply:2]" in messages[-1].text, "a tag inside a line is text"
     assert typed[-1].endswith("the [!reply:2] tag must open a line of your turn; message 2 is still unanswered")
     assert "new message 2" in hook(app, "Stop")[1]["reason"]
@@ -258,7 +262,8 @@ def skilled(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
-    yield app
+    with app.container.get(Scope).of(MAIN):
+        yield app
     app.runtime().stop()
 
 
@@ -399,7 +404,7 @@ def test_a_turn_streamed_in_parts_lands_once_whole(app):
     hook(app, "MessageDisplay", delta="Good ", message_id="m1", index=0, final=False)
     hook(app, "MessageDisplay", delta="evening.", message_id="m1", index=1, final=True)
     app.runtime().deferred.drain()
-    assert [m.text for m in app.container.get(Messages).in_(1) if m.author == "agent"] == ["Good evening."]
+    assert [m.text for m in app.container.get(Messages).in_() if m.author == "agent"] == ["Good evening."]
 
 
 def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app):
@@ -413,12 +418,12 @@ def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app):
     hook(app, "MessageDisplay", delta="Yes, fourteen tasks went into the plan.", turn_id="t1", message_id="m1", index=1, final=True)
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})
     app.runtime().deferred.drain()
-    reply = messages.in_(1)[-1]
+    reply = messages.in_()[-1]
     assert reply.reply_to == 1 and reply.text == "Yes, fourteen tasks went into the plan." and not reply.acknowledgement
     assert messages.find(1).read_at is not None
     hook(app, "MessageDisplay", delta="Waiting for the suite.", turn_id="t1", message_id="m2", index=0, final=True)
     app.runtime().deferred.drain()
-    assert [m.text for m in messages.in_(1) if m.author == "agent"] == ["Yes, fourteen tasks went into the plan.", "Waiting for the suite."]
+    assert [m.text for m in messages.in_() if m.author == "agent"] == ["Yes, fourteen tasks went into the plan.", "Waiting for the suite."]
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
 
 
@@ -443,7 +448,7 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
     assert typed[-1] == "[journal] the user put 🎉 on message 2. act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it"
     hook(app, "MessageDisplay", message="👍")
     app.runtime().deferred.drain()
-    assert [m.text for m in messages.in_(1)] == ["thanks, carry on", "Done."], "a turn that is only a face is not posted"
+    assert [m.text for m in messages.in_()] == ["thanks, carry on", "Done."], "a turn that is only a face is not posted"
     assert typed[-1].startswith("[journal] your turn was only 👍, so it was not posted")
 
 
@@ -469,7 +474,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
     hook(app, "UserPromptSubmit", prompt="please fix the footer")
     hook(app, "MessageDisplay", message="On it.")
     app.runtime().deferred.drain()
-    assert [(m.text, m.acknowledgement) for m in app.container.get(Messages).in_(1) if m.author == "agent"] == [("Noted.", True), ("Good day. I am your butler; what shall I attend to?", False), ("Still nothing changed.", True), ("Fixed the login.", False), ("On it.", False)], "an introduction asked for by the journal is for the user"
+    assert [(m.text, m.acknowledgement) for m in app.container.get(Messages).in_() if m.author == "agent"] == [("Noted.", True), ("Good day. I am your butler; what shall I attend to?", False), ("Still nothing changed.", True), ("Fixed the login.", False), ("On it.", False)], "an introduction asked for by the journal is for the user"
 
 
 def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch):
@@ -502,7 +507,7 @@ def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, m
     assert tasks.find(1).title == "Fix the footer" and "overlaps" in tasks.find(1).brief and tasks.find(1).state == "done"
     assert [log.line for log in app.container.get(TaskLogs).all()][-2:] == ["Halfway: the overlap is a margin.", "The footer sits below the form now."] or any("Halfway" in log.line for log in app.container.get(TaskLogs).all())
     assert [f.text for f in app.container.get(Facts).all()] == ["The footer is 64px tall"]
-    assert [m.text for m in messages.in_(1) if m.author == "agent"] == ["The footer overlaps the form on narrow screens.", "Measured in the browser.", "The footer sits below the form now.", "No such task."], "a log turn stays out of the chat; the others post without their tag"
+    assert [m.text for m in messages.in_() if m.author == "agent"] == ["The footer overlaps the form on narrow screens.", "Measured in the browser.", "The footer sits below the form now.", "No such task."], "a log turn stays out of the chat; the others post without their tag"
     assert typed[-1].startswith("[journal] the [!end] tag did not run:")
 
 
@@ -511,7 +516,7 @@ def test_notable_moments_are_cards_on_the_agents_timeline(app):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "stuck on the login"], AGENT)
-    cards = [e.data for e in app.container.get(Entries).of_kind(1, "card")]
+    cards = [e.data for e in app.container.get(Entries).of_kind("card")]
     assert [c["label"] for c in cards] == ["Agent stuck"] and cards[0]["detail"] == "stuck on the login" and cards[0]["tone"] == "bad"
 
 
@@ -648,7 +653,7 @@ def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
     app.console().run(["task", "create", "Fix the footer"], AGENT)
     hook(app, "MessageDisplay", message="[!reply:1]\nFiled task 1 for it.")
     app.runtime().deferred.drain()
-    rows = app.container.get(__import__("journal.http.v3.shapers.messages_shaper", fromlist=["MessagesShaper"]).MessagesShaper).rows(app.container.get(__import__("journal.repositories.environments", fromlist=["Environments"]).Environments).find(1))
+    rows = app.container.get(__import__("journal.http.v3.shapers.messages_shaper", fromlist=["MessagesShaper"]).MessagesShaper).rows()
     assert "todo:1" in rows[0].refs
 
 
@@ -668,7 +673,7 @@ def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
     worker = app.container.get(Workers).find(1)
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo the footer is fixed"], A.agent("s1"))
     assert app.container.get(Workers).find(1).state == "reported"
-    assert any("Lady Lovelace reports: the footer is fixed" in m.text for m in app.container.get(Messages).in_(1))
+    assert any("Lady Lovelace reports: the footer is fixed" in m.text for m in app.container.get(Messages).in_())
 
 
 def test_a_message_waiting_at_session_start_is_named_in_the_start_block(app):
@@ -685,7 +690,7 @@ def test_a_reply_naming_several_messages_answers_each_and_a_journal_command_afte
     app.console().run(["message", "unread"], AGENT)
     hook(app, "MessageDisplay", message="[!reply:1,2]\nBoth seen.")
     app.runtime().deferred.drain()
-    assert app.container.get(Messages).unanswered(1) == []
+    assert app.container.get(Messages).unanswered() == []
     app.console().run(["message", "send", "three"], USER)
     app.console().run(["message", "read", "4"], AGENT)
     for _ in range(15):
@@ -775,7 +780,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
     assert "failed with code 1" in typed[-1] and "2 failed" in typed[-1]
-    assert len(app.container.get(Entries).of_kind(1, CARD, 10)) == 2
+    assert len(app.container.get(Entries).of_kind(CARD, 10)) == 2
 
 
 def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
@@ -799,7 +804,7 @@ def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking
     agent = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]
     assert agent["thinking"] == "Now the next step."
     reply = app.container.get(Messages).all()[-1]
-    assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered(1) == []
+    assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered() == []
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]["thinking"] == ""
@@ -813,7 +818,7 @@ def test_a_turns_parts_landing_out_of_order_are_put_back_before_the_turn_is_read
     app.console().run(["message", "read", "1"], AGENT)
     hook(app, "MessageDisplay", delta="It is.", turn_id="t9", index=1, final=True)
     app.runtime().deferred.drain()
-    assert app.container.get(Messages).unanswered(1), "the final part alone is not the turn"
+    assert app.container.get(Messages).unanswered(), "the final part alone is not the turn"
     hook(app, "MessageDisplay", delta="[!reply:1]\n", turn_id="t9", index=0, final=False)
     app.runtime().deferred.drain()
     reply = app.container.get(Messages).all()[-1]
@@ -1076,19 +1081,17 @@ def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app):
 
 def test_the_shipped_templates_are_seeded_and_the_critique_ones_are_offered_to_the_viewer(app):
     from journal.http.v3.shapers.shapers import Shapers
-    from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     listed = app.console().run(["template", "list"], AGENT).out
     assert "Find what is missing (for plan, critique)" in listed and "Functional design (for doc)" in listed
     shown = app.console().run(["template", "show", "3"], AGENT).out
     assert shown.startswith("template 3: Find what is missing") and "the step nobody wrote down" in shown
-    rows = app.container.get(Shapers).named("template").rows(app.container.get(Environments).named("main"))
+    rows = app.container.get(Shapers).named("template").rows()
     assert [r.data["purpose"] for r in rows].count("critique") == 3 and rows[0].sections[0]["title"] == "What it is for"
 
 
 def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp_path):
     from journal.http.v3.shapers.shapers import Shapers
-    from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["plan", "create", "p", "--brief", "g"], USER)
@@ -1096,7 +1099,7 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp
     body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
     out = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).out
     assert out.startswith("report 1: Critique of plan 1, about plans:1")
-    rows = app.container.get(Shapers).named("report").rows(app.container.get(Environments).named("main"))
+    rows = app.container.get(Shapers).named("report").rows()
     assert [s["title"] for s in rows[0].sections] == ["Phase 1", "Phase 2"] and rows[0].refs == ["plan:1"], "the viewer names a plan plan:1"
 
 
@@ -1109,15 +1112,14 @@ def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(a
     console.run(["message", "read", "2"], AGENT)
     hook(app, "MessageDisplay", message="Two answers.\n\n[!reply:1]\nThe first is fine.\n\n[!reply:2]\nThe second waits.")
     app.runtime().deferred.drain()
-    replies = [m for m in app.container.get(Messages).in_(1) if m.author == "agent"]
+    replies = [m for m in app.container.get(Messages).in_() if m.author == "agent"]
     assert [(m.reply_to, m.text) for m in replies] == [(1, "Two answers.\n\nThe first is fine."), (2, "The second waits.")]
 
 
 def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app):
     from journal.http.v3.shapers.agents_shaper import AgentsShaper
-    from journal.repositories.environments import Environments
     hook(app, "SessionStart")
-    rows = lambda: app.container.get(AgentsShaper).rows(app.container.get(Environments).named("main"))[0].data["subagent_rows"]
+    rows = lambda: app.container.get(AgentsShaper).rows()[0].data["subagent_rows"]
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "sonnet", "subagent_type": "researcher", "prompt": "read"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a1"})
     assert rows()[0]["running"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
@@ -1273,7 +1275,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     app.runtime().deferred.drain()
     assert "[journal] a task was filed" in sent, "a row event walks the chart and types the line"
     from journal.repositories.entries import Entries
-    walks = [e for e in app.container.get(Entries).of_kind(1, "walk") if e.data["trigger"] == "idle"]
+    walks = [e for e in app.container.get(Entries).of_kind("walk") if e.data["trigger"] == "idle"]
     assert any({stop, open_, hold_stop} <= set(w.data["nodes"]) and not w.data["allowed"] for w in walks), "a walk leaves its trace: the one workflow on the stop, with the edit's path beside the shipped one"
 
 
@@ -1422,10 +1424,9 @@ def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():
 
 def test_a_messages_mentions_reach_the_viewer_as_refs(app):
     from journal.http.v3.shapers.shapers import Shapers
-    from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     app.console().run(["message", "send", "look at plan 1 and task 2"], USER)
-    rows = app.container.get(Shapers).named("message").rows(app.container.get(Environments).named("main"))
+    rows = app.container.get(Shapers).named("message").rows()
     assert rows[-1].refs == ["plan:1", "todo:2"]
 
 
@@ -1521,20 +1522,18 @@ def test_a_workflow_holds_one_trigger(app):
 
 def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app):
     from journal.http.v3.shapers.agents_shaper import AgentsShaper
-    from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Herr Gropius draws", "model": "opus", "subagent_type": "designer", "prompt": "draw"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Herr Gropius draws"}, tool_response={"isAsync": True, "agentId": "g1"})
     for _ in range(60):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
         hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"}, tool_response="x")
-    rows = app.container.get(AgentsShaper).rows(app.container.get(Environments).named("main"))[0].data["subagent_rows"]
+    rows = app.container.get(AgentsShaper).rows()[0].data["subagent_rows"]
     assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["running"] is True
 
 
 def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, monkeypatch):
     from journal.http.v3.shapers.shapers import Shapers
-    from journal.repositories.environments import Environments
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
@@ -1550,11 +1549,10 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     assert len([line for line in sent if "is not pinned" in line]) == 1, "told once"
     out = console.run(["notice", "create", "The Workflows design", "--link", "https://design.example/p/1", "--label", "Open the design"], AGENT).out
     assert out.startswith("notice 1 pinned")
-    env = app.container.get(Environments).named("main")
-    rows = app.container.get(Shapers).named("notice").rows(env)
+    rows = app.container.get(Shapers).named("notice").rows()
     assert rows[0].title == "The Workflows design" and rows[0].data["link"] == "https://design.example/p/1" and rows[0].data["label"] == "Open the design" and not rows[0].completed
     console.run(["notice", "close", "1"], AGENT)
-    assert app.container.get(Shapers).named("notice").rows(env)[0].completed, "closed, it leaves the strip"
+    assert app.container.get(Shapers).named("notice").rows()[0].completed, "closed, it leaves the strip"
 
 
 def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read_is_never_piped(app, monkeypatch):
@@ -1707,7 +1705,7 @@ def test_the_card_and_release_actions(app):
     actions.perform("release", "the build came back: carry on", ctx())
     assert machine.current("s1").task_id == 1, "released to what it was doing"
     actions.perform("show_card", "The journal did a thing", ctx())
-    cards = [e for e in app.container.get(Entries).of_kind(env, "card", 10)]
+    cards = [e for e in app.container.get(Entries).of_kind("card", 10)]
     assert cards and cards[0].data["label"] == "The journal did a thing"
 
 
@@ -1767,7 +1765,7 @@ def test_a_failing_node_ends_its_path_is_recorded_and_the_walk_goes_on(app):
     console.run(["task", "create", "free work"], USER)
     status, body = hook(app, "Stop")
     assert status == 200 and body.get("decision") == "block" and "task 1 next" in body["reason"], "the shipped path beside the broken one still answers the stop"
-    failed = app.container.get(Entries).of_kind(env, "walk_failed", 5)
+    failed = app.container.get(Entries).of_kind("walk_failed", 5)
     assert failed and failed[0].data["node"] == bad.id and "no_such_check" in failed[0].data["fault"], "the fault is on record, naming the node"
 
 
@@ -1818,7 +1816,7 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     typed = []
     from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
-    assert "InboxOnArrival" in app.container.get(Settings).get(PROJECT, "listeners.off", []), "the seed switched the listener off when it made the workflow"
+    assert "InboxOnArrival" in app.container.get(Settings).project("listeners.off", []), "the seed switched the listener off when it made the workflow"
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -1841,7 +1839,7 @@ def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, 
     machine, nudger = app.container.get(Machine), app.container.get(Nudger)
     agent = machine.agent("s1", 1)
     before = len([t for t in typed if "chat etiquette" in t])
-    said = app.container.get(Entries).said_to(1, "s1")
+    said = app.container.get(Entries).said_to("s1")
     for i in range(said + 1, 101):
         nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
     reminders = [t for t in typed if "chat etiquette" in t]
@@ -1871,7 +1869,7 @@ def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_one
     plans, tasks = app.container.get(Plans), app.container.get(Tasks)
     assert plans.find(1).state == PlanState.CANCELLED and tasks.find(1).state == TaskState.CANCELLED
     assert tasks.find(2).state == TaskState.DONE and tasks.find(3).state == TaskState.OPEN, "a done task stays done; a task the new plan holds too stays open"
-    assert tasks.find(1).id not in [t.id for t in plans.free(1)], "a cancelled task is offered to nobody"
+    assert tasks.find(1).id not in [t.id for t in plans.free()], "a cancelled task is offered to nobody"
 
 
 def test_the_walk_reads_the_state_once_after_the_machine_has_moved(app):
@@ -1894,7 +1892,7 @@ def test_the_walk_reads_the_state_once_after_the_machine_has_moved(app):
     assert app.container.get(Machine).current("s1").name == "expecting"
     body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[1]
     assert "in hand: task 1" in json.dumps(body), "the tool use lifted the wait before the walk, and the walk read Working, once"
-    walks = app.container.get(Entries).of_kind(1, "walk", 5)
+    walks = app.container.get(Entries).of_kind("walk", 5)
     assert walks[0].data["state"] == "working", "the trace names the state the walk read"
 
 
@@ -1991,12 +1989,12 @@ def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     machine = app.container.get(Machine)
     assert machine.current("s1").name == "working", "a task in hand is not left with nobody on it"
-    failed = app.container.get(Entries).of_kind(1, "walk_failed", 3)
+    failed = app.container.get(Entries).of_kind("walk_failed", 3)
     assert failed and failed[0].data["node"] == move and "would leave that with nobody on it" in failed[0].data["fault"], "the walk records why the move was refused"
     console.run(["await", "the deploy"], AGENT)
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     assert machine.current("s1").name == "expecting", "a wait keeps its way back: a workflow does not move it"
-    assert "would lose its way back" in app.container.get(Entries).of_kind(1, "walk_failed", 1)[0].data["fault"]
+    assert "would lose its way back" in app.container.get(Entries).of_kind("walk_failed", 1)[0].data["fault"]
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})
     console.run(["task", "done", "1"], AGENT)
     assert machine.current("s1").name == "idle"
@@ -2016,9 +2014,24 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1"], AGENT)
     entries = app.container.get(Entries)
-    before = len(entries.of_kind(1, "walk", 1000))
+    before = len(entries.of_kind("walk", 1000))
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
     app.runtime().deferred.drain()
-    walks = entries.of_kind(1, "walk", 1000)
+    walks = entries.of_kind("walk", 1000)
     since = [w.data["trigger"] for w in walks[: len(walks) - before]]
     assert set(since) == {"workers.updated", "messages.created"}, "the report's two rows were walked, the worker's and its message; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
+
+
+def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_environment_only(app):
+    from contextvars import Context
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.unscoped import Unscoped
+    console = app.console()
+    console.run(["task", "create", "main's own"], USER)
+    console.run(["task", "create", "other's own"], Where("other"))
+    with pytest.raises(Unscoped):
+        Context().run(app.container.get(Tasks).in_)
+    in_main, in_other = console.run(["task", "list"], USER).out, console.run(["task", "list"], Where("other")).out
+    assert "main's own" in in_main and "other's own" not in in_main
+    assert "other's own" in in_other and "main's own" not in in_other
+    assert [t.title for t in app.container.get(Tasks).in_()] == ["main's own"], "the test reads in main, the scope its fixture entered"

@@ -11,6 +11,7 @@ from journal.config import Config
 from journal.models.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.entries import Entries
+from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 
 SRC = Path(__file__).resolve().parent.parent / "src"
@@ -50,17 +51,18 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         assert shown[0] == "1" and shown[-1] == "1000" and len(shown) == 401 and "600 of 1000 lines cut from the middle" in shown[200], "a long output is cut to its first and last two hundred lines"
         run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "fast" in run.stdout and "moved to the background: sleep 3" in run.stdout and run.returncode == 0, run.stderr
-        entries = app.container.get(Entries)
-        for _ in range(100):
-            if entries.of_kind(1, "ended", 5):
-                break
-            time.sleep(0.1)
-        ended = entries.of_kind(1, "ended", 5)[0]
-        assert ended.data["status"] == 0 and "slow" in ended.data["last"], ended.data
-        assert [e.data["part"] for e in reversed(entries.of_kind(1, "ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
-        run = subprocess.run([runner, wrapped("printf 'a\\nb\\n' > made.txt && echo untouched", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
-        changed = [e.data["changed"] for e in reversed(entries.of_kind(1, "ran", 20))][-2:]
-        assert changed == [[{"added": 2, "removed": 0, "path": "made.txt"}], []], changed
+        with app.container.get(Scope).of(1):
+            entries = app.container.get(Entries)
+            for _ in range(100):
+                if entries.of_kind("ended", 5):
+                    break
+                time.sleep(0.1)
+            ended = entries.of_kind("ended", 5)[0]
+            assert ended.data["status"] == 0 and "slow" in ended.data["last"], ended.data
+            assert [e.data["part"] for e in reversed(entries.of_kind("ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
+            run = subprocess.run([runner, wrapped("printf 'a\\nb\\n' > made.txt && echo untouched", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            changed = [e.data["changed"] for e in reversed(entries.of_kind("ran", 20))][-2:]
+            assert changed == [[{"added": 2, "removed": 0, "path": "made.txt"}], []], changed
         assert cwd.read_text().strip() == str(tmp_path.resolve())
     finally:
         app.runtime().stop()
