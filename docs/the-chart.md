@@ -74,6 +74,8 @@ keeps your steps and the state's and loses the shared ones at the boot that move
   next tool use is working again and releases it.
 - **Stuck**: nothing is said until the agent's own next tool use, which releases it.
 - **Running a sequence**: the step in hand said at a stop.
+- **Ended**: at a start, nothing of its own yet; the workflow holds its trigger alone, so the state is on the page
+  with something to open, until the session's end and start move into the workflows.
 
 A workflow of your own is for a state at an event no default covers, made with New workflow or `journal chart new "<title>" --for <state> --on <event>`; a default one is edited in place.
 

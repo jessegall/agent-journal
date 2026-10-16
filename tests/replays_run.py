@@ -609,13 +609,14 @@ def session_starts(app, replay: Replay, provider: str) -> None:
     console.run(["reminder", "create", "tag the release"], USER)
     console.run(["task", "create", "the footer"], USER)
     console.run(["message", "send", "one"], USER)
-    replay.step("a fresh start with rows on record", hook_as(app, provider, "SessionStart", source="startup")[1])
+    settled = lambda answer: (app.runtime().deferred.drain(), answer)[1]
+    replay.step("a fresh start with rows on record", settled(hook_as(app, provider, "SessionStart", source="startup")[1]))
     console.run(["environment", "here"], AGENT)
     console.run(["task", "start", "1"], AGENT)
-    replay.step("a second session takes the environment over", hook_as(app, provider, "SessionStart", session="s2", source="startup")[1])
-    replay.step("the first starts again after a compaction", hook_as(app, provider, "SessionStart", source="compact")[1])
+    replay.step("a second session takes the environment over", settled(hook_as(app, provider, "SessionStart", session="s2", source="startup")[1]))
+    replay.step("the first starts again after a compaction", settled(hook_as(app, provider, "SessionStart", source="compact")[1]))
     console.run(["environment", "here"], AGENT)
-    replay.step("the first resumed", hook_as(app, provider, "SessionStart", source="resume")[1])
+    replay.step("the first resumed", settled(hook_as(app, provider, "SessionStart", source="resume")[1]))
 
 
 def silent_session_ends(app, replay: Replay, provider: str) -> None:

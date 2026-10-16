@@ -15,9 +15,9 @@ from journal.repositories.counts import Counts
 from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.settings import Settings
 
-SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "running_sequence")
+SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "running_sequence", "ended")
 """The states the journal ships workflows for."""
-PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "working", "following_plan")
+PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "working", "following_plan", "ended")
 """The place the shipped workflows of one event take, the waits first: a wait released at an event hands the event on to the workflows that come after it in the order."""
 SHARED_EVENTS = ("idle", "session_started", "prompt_submitted", "tool_finished", "messages.created", "messages.updated")
 """The events with conduct for every state, shipped as an Always workflow each: the inbox named at a stop, a start and a prompt, a message that comes named and the counts it starts, and a message read starting the count it is owed on."""
@@ -95,6 +95,7 @@ class ShippedChart(Seed):
             ("expecting", "tool_starting"): self.working_again,
             ("stuck", "tool_starting"): self.working_again,
             ("running_sequence", "idle"): self.sequence_at_stop,
+            ("ended", "session_started"): self.nothing_own,
         }
         for state in SHIPPED_STATES:
             if self.registry.skill_required_in(state) and (state, "session_started") not in own:
@@ -531,6 +532,10 @@ class ShippedChart(Seed):
         self.chain(ends, mine)
         self.line(mine, edits, YES)
         return [(mine, NO), (edits, THEN)]
+
+    def nothing_own(self, chart: Chart, ends: list) -> list:
+        """A state with nothing of its own yet: its workflow holds the trigger alone, so the state is on the page with something to open; the Always workflows carry the rest."""
+        return ends
 
     def working_carries_on(self, chart: Chart, ends: list) -> list:
         """A task in hand at a stop or a session start: carry on, with the log asked for when it is stale."""

@@ -3146,3 +3146,15 @@ def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     state = app.container.get(Machine).current("s1")
     assert state.name == "expecting" and state.what == "the deploy", "and it still walks"
+
+
+def test_ended_ships_a_workflow_at_session_starts_with_nothing_of_its_own(app):
+    from journal.http.controllers.chart import ChartController
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    charts = app.container.get(Charts)
+    ended = charts.for_pair("ended", "session_started")
+    assert ended and ended.shipped and [n.kind for n in charts.nodes_of(ended)] == [NodeKind.TRIGGER], "Ended at Session starts is shipped with its trigger alone"
+    named = app.container.get(ChartController).named(ended)
+    assert named["title"] == "Ended at Session starts" and named["off"] is False and named["edited"] is False, "the page lists it with its marks"
+    assert any(s["key"] == "ended" for s in app.container.get(ChartController).listed_states()), "and Ended among the states"
