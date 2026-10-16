@@ -562,7 +562,7 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     assert refused[0] == 409 and {f["node"] for f in refused[1]["faults"]} == {"c"} and any("check c has no line out" in f["words"] for f in refused[1]["faults"])
     assert {f["key"] for f in read["fillers"]} >= {"{{task}}", "{{inbox}}", "{{parked_tasks}}", "{{worker_name}}"} and all(f["about"] for f in read["fillers"])
     titles = {e["key"]: e["title"] for e in read["catalogue"] if e["kind"] == "trigger"}
-    assert titles["task_logs.created"] == "A task log is created" and titles["mcp_servers.updated"] == "An MCP server is updated" and titles["edits.deleted"] == "An edit is deleted" and titles["nodes.created"] == "A workflow step is created"
+    assert titles["task_logs.created"] == "Task log created" and titles["mcp_servers.updated"] == "MCP server updated" and titles["edits.deleted"] == "Edit deleted" and titles["nodes.created"] == "Workflow step created", "an event is named, not described"
     tried = {e["key"]: e["tried"] for e in read["catalogue"] if e["kind"] == "trigger"}
     assert tried["idle"] and tried["messages.created"] and tried["workers.updated"] and not tried["tasks.created"] and not tried["messages.deleted"]
     status, runs = call(server, "GET", "/journal/chart/runs?last=5")

@@ -1671,7 +1671,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     announced = len(sent)
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
     tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
-    assert "A message is created of row 1, walked as the state idle: nodes none" in tried, "a row event is tried with its row; nothing is shipped at a message's creation, since delivery is the engine's"
+    assert "Message created of row 1, walked as the state idle: nodes none" in tried, "a row event is tried with its row; nothing is shipped at a message's creation, since delivery is the engine's"
     assert len(sent) == announced, "the trial typed nothing"
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts

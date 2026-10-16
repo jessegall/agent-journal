@@ -47,6 +47,7 @@ const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
 const dirty = computed(() => past.value.length > 0);
 const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
+const stopsTheWalk = (node) => node.kind === "action" && ["stop_here", "block_stop"].includes(node.key);
 const numberOf = (node) => nodes.value.indexOf(node) + 1;
 const named = (node) => `${numberOf(node)} · ${cardTitle(entryOf(node), node)}`;
 const lineOf = (node, port) => lines.value.find((l) => String(l.from) === String(node.id) && l.port === port);
@@ -438,7 +439,18 @@ const steps = computed(() => {
                     :foot="entryOf(node).takes_text && node.kind === 'action' ? `Insert values with ${HELP}` : ''"
                 >
                     <SwipeRow :label="cardTitle(entryOf(node), node)" :trail="deleteNode(node)">
-                        <Cell :label="cardTitle(entryOf(node), node)" :sub="node.locked ? LOCK_WHY : described(entryOf(node))" still />
+                        <Cell
+                            :label="cardTitle(entryOf(node), node)"
+                            :sub="
+                                [
+                                    node.locked ? LOCK_WHY : described(entryOf(node)),
+                                    stopsTheWalk(node) ? 'Stops here: no later workflow of the event runs' : '',
+                                ]
+                                    .filter(Boolean)
+                                    .join(' · ')
+                            "
+                            still
+                        />
                     </SwipeRow>
                     <Cell v-if="node.locked && node.text" :label="node.text" sub="Locked: this text cannot be changed" still />
                     <template v-if="entryOf(node).takes_text && !node.locked">
