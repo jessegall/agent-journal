@@ -77,6 +77,20 @@ function unlock() {
 }
 const showLead = ref(false);
 const editing = ref(null);
+// the selected step's details while the page reads: the full text, what the step is, how often it ran
+const details = computed(() => (unlocked.value ? null : selectedNode.value));
+const detailLines = computed(() => {
+    const node = details.value;
+    if (!node) return [];
+    const entry = entryOf(node);
+    const lines = [{label: "What it does", words: described(entry)}];
+    if (entry.takes_text) lines.push({label: node.kind === "action" ? "Message" : "Text", words: node.text || placeholderOf(node)});
+    if (isLit(node.id) && readWords(litRead.value, node.id))
+        lines.push({label: "On the run shown", words: readWords(litRead.value, node.id)});
+    if (node.runs) lines.push({label: "Ran", words: `${nodeRunWords(node)}${node.last ? `, last ${ago(node.last)}` : ""}`});
+    if (node.locked) lines.push({label: "Locked", words: LOCK_WHY});
+    return lines;
+});
 const messageText = ref("");
 const messageBox = ref(null);
 let fresh = 0;
@@ -327,9 +341,9 @@ function zoom(event) {
 }
 
 function dragNode(node, event) {
-    if (!unlocked.value) return;
     event.stopPropagation();
     selected.value = node.id;
+    if (!unlocked.value) return;
     const start = {x: event.clientX, y: event.clientY, nx: node.x, ny: node.y};
     let moved = false;
     const move = (e) => {
@@ -657,8 +671,8 @@ const faultWords = (fault) =>
 const described = (entry) => (entry.about ? entry.about.charAt(0).toUpperCase() + entry.about.slice(1) : "");
 // the message is written in the side panel and lands on the card as one change when the panel closes
 function openMessage(node) {
-    if (!unlocked.value) return;
     selected.value = node.id;
+    if (!unlocked.value) return;
     editing.value = node;
     messageText.value = node.text;
 }
@@ -943,9 +957,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
                                 <span :class="['chart-glyph', node.kind]" />
                                 <span>{{ KIND[node.kind] }}</span>
                                 <Icon v-if="node.locked" name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
-                                <span v-if="nodeRunWords(node)" class="chart-node-runs" :title="node.last ? `last ${ago(node.last)}` : ''">
-                                    {{ nodeRunWords(node) }}
-                                </span>
                                 <span v-if="isLit(node.id) && readWords(litRead, node.id)" class="chart-node-read">
                                     {{ readWords(litRead, node.id) }}
                                 </span>
@@ -1146,6 +1157,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
             </MenuPanel>
         </template>
 
+        <template v-if="details">
+            <SidePanel :title="cardTitle(entryOf(details), details)" :abstract="KIND[details.kind]" @close="selected = null">
+                <dl class="chart-details">
+                    <template v-for="line in detailLines" :key="line.label">
+                        <dt>{{ line.label }}</dt>
+                        <dd>{{ line.words }}</dd>
+                    </template>
+                </dl>
+            </SidePanel>
+        </template>
         <template v-if="editing">
             <SidePanel
                 title="Message to the agent"
@@ -1334,16 +1355,26 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or a setting
     flex: none;
     color: var(--text-3);
 }
-.chart-node-runs,
 .chart-node-read {
     margin-left: auto;
-    color: var(--text-3);
+    color: var(--accent);
     font-size: 10.5px;
     white-space: nowrap;
 }
-.chart-node-read {
-    margin-left: 6px;
-    color: var(--accent);
+.chart-details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 14px;
+    margin: 0;
+    font-size: 13px;
+}
+.chart-details dt {
+    color: var(--text-3);
+}
+.chart-details dd {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 .chart-node.locked .chart-node-text:disabled {
     opacity: 0.8;
