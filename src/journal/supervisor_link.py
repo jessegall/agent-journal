@@ -4,13 +4,18 @@ import time
 
 from journal.config import Config
 from journal.engine.typed_lines import TypedLines
+from journal.old_supervisor import OldSupervisor
 from journal.repositories.environments import Environments
 
 MARK = "[journal]"
+AGENT, JOURNAL = "agent", "journal"
+"""The names of the supervisor's two processes: the agent in front, the journal beside it."""
+WAIT = 5.0
+"""How long a supervisor has to answer a request."""
 
 
 class SupervisorLink:
-    """The journal's end of each supervisor's inbox: one datagram per instruction, nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
+    """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor from before the protocol, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
     def __init__(self, config: Config, environments: Environments, typed: TypedLines) -> None:
         self.config, self.environments, self.typed = config, environments, typed
@@ -21,25 +26,25 @@ class SupervisorLink:
         """A line of the journal's, marked, and noted until its prompt hook proves it arrived."""
         marked = f"{MARK} {line}"
         self.typed.typed(environment_id, marked)
-        self._send(environment_id, {"type": "Type", "line": marked, "after": after})
+        self._send(environment_id, {"verb": "type", "name": AGENT, "line": marked, "after": after})
 
     def type_again(self, environment_id: int, marked: str) -> None:
         """A marked line typed once more, as it was."""
-        self._send(environment_id, {"type": "Type", "line": marked, "after": 0.0})
+        self._send(environment_id, {"verb": "type", "name": AGENT, "line": marked, "after": 0.0})
 
     def type_raw(self, environment_id: int, line: str) -> None:
         """What the user typed in the viewer's terminal pane, as the user, without the mark."""
         self._viewer_keyed_at[environment_id] = time.time()
-        self._send(environment_id, {"type": "Type", "line": line, "after": 0.0})
+        self._send(environment_id, {"verb": "type", "name": AGENT, "line": line, "after": 0.0})
 
     def keys(self, environment_id: int, keys: str) -> None:
         """Keys written to the agent's terminal as they are, with no Enter after them: an arrow, Enter, Escape."""
-        self._send(environment_id, {"type": "Keys", "keys": keys})
+        self._send(environment_id, {"verb": "keys", "name": AGENT, "keys": keys})
 
     def choose(self, environment_id: int, command: str) -> None:
         """A provider command typed for the user's pick in the agent bar, noted so a confirmation it brings up is the journal's to answer."""
         self._chosen_at[environment_id] = time.time()
-        self._send(environment_id, {"type": "Type", "line": command, "after": 0.0})
+        self._send(environment_id, {"verb": "type", "name": AGENT, "line": command, "after": 0.0})
 
     def chosen_at(self, environment_id: int) -> float:
         return self._chosen_at.get(environment_id, 0.0)
@@ -67,21 +72,33 @@ class SupervisorLink:
         return self.config.home / "runtime" / "screens" / f"{self.environments.find(environment_id).name}.{kind}"
 
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
-        self._send(environment_id, {"type": "RestartAgent", "resume": list(resume)})
+        self._send(environment_id, {"verb": "restart", "name": AGENT, "resume": list(resume)})
 
     def restart_journal(self, environment_id: int) -> None:
-        self._send(environment_id, {"type": "RestartJournal"})
+        self._send(environment_id, {"verb": "restart", "name": JOURNAL})
 
     def stop(self, environment_id: int) -> None:
-        self._send(environment_id, {"type": "Stop"})
+        self._send(environment_id, {"verb": "stop", "name": AGENT})
 
     def inbox_of(self, environment_id: int) -> str:
-        announced = self.config.home / "runtime" / "inboxes" / self.environments.find(environment_id).name
-        return announced.read_text().strip() if announced.is_file() else ""
+        return self.announced(environment_id).get("socket", "")
 
-    def _send(self, environment_id: int, instruction: dict) -> None:
-        path = self.inbox_of(environment_id)
-        if not path:
-            return
-        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
-            out.sendto(json.dumps(instruction).encode(), path)
+    def announced(self, environment_id: int) -> dict:
+        """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a supervisor before the protocol; nothing when none runs."""
+        path = self.config.home / "runtime" / "inboxes" / self.environments.find(environment_id).name
+        text = path.read_text().strip() if path.is_file() else ""
+        return json.loads(text) if text.startswith("{") else {"socket": text} if text else {}
+
+    def _send(self, environment_id: int, request: dict) -> dict:
+        announced = self.announced(environment_id)
+        if not announced:
+            return {"ok": False, "error": "no supervisor runs here"}
+        if "protocol" not in announced:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
+                out.sendto(json.dumps(OldSupervisor.datagram(request)).encode(), announced["socket"])
+            return {"ok": True}
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
+            link.settimeout(WAIT)
+            link.connect(announced["socket"])
+            link.sendall((json.dumps(request) + "\n").encode())
+            return json.loads(link.makefile("rb").readline())

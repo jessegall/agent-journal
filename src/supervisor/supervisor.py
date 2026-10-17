@@ -11,21 +11,19 @@ from pathlib import Path
 from supervisor.status_line import StatusLine
 from supervisor.header import Header
 from supervisor.inbox import Inbox
-from supervisor.instructions.instruction import Instruction
-from supervisor.instructions.keys import Keys
-from supervisor.instructions.restart_agent import RestartAgent
-from supervisor.instructions.restart_journal import RestartJournal
-from supervisor.instructions.stop import Stop
-from supervisor.instructions.type import Type
 from supervisor.journal_process import JournalProcess
 from supervisor.mirror import Mirror
 from supervisor.terminal import Terminal
+from supervisor.verbs import Verbs
 
 LONGEST = 65536
+FRONT = "agent"
+"""The process in front: the agent, in the user's terminal."""
+JOURNAL = "journal"
 
 
 class Supervisor:
-    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's instructions carried out, the journal kept running, the status line kept current."""
+    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the journal kept running, the status line kept current."""
 
     def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, status: StatusLine, stdin: int | None = 0, stdout: int = 1, viewer: str = "", header: Header | None = None, mirror: Mirror | None = None) -> None:
         self.terminal, self.inbox, self.journal, self.status, self.stdin, self.stdout = terminal, inbox, journal, status, stdin, stdout
@@ -36,6 +34,7 @@ class Supervisor:
         """The band kept at the top of the screen; none when the output is not a terminal."""
         self.viewer = viewer
         """A page to open in the browser once the journal is up, as #/<environment>; empty opens nothing."""
+        self.verbs = Verbs(self)
         self._stopping = False
         self._code: int | None = None
         self._noticed = False
@@ -79,8 +78,7 @@ class Supervisor:
         if self.terminal.fd in writable:
             self.terminal.feed()
         if self.inbox.fd in readable:
-            for instruction in self.inbox.received():
-                self.carry_out(instruction)
+            self.inbox.answer(self.verbs.handle)
         if self.terminal.fd in readable:
             data = self.terminal.read()
             if not data:
@@ -128,26 +126,28 @@ class Supervisor:
         except OSError:
             return False
 
-    def carry_out(self, instruction: Instruction) -> None:
-        """Dispatches on the instruction's type to one of the five below."""
-        {Type: self.type, Keys: self.keys, RestartAgent: self.restart_agent, RestartJournal: self.restart_journal, Stop: self.stop}[type(instruction)](instruction)
+    def terminal_named(self, name: str) -> Terminal:
+        if name != FRONT:
+            raise LookupError(f"no terminal process is named {name!r}")
+        return self.terminal
 
-    def type(self, instruction: Type) -> None:
-        self.terminal.type(instruction.line, instruction.after)
-
-    def keys(self, instruction: Keys) -> None:
-        self.terminal.write(instruction.keys.encode())
-
-    def restart_agent(self, instruction: RestartAgent) -> None:
+    def restart(self, name: str, resume: tuple[str, ...]) -> None:
+        """The agent started again with the arguments that resume its session, or the journal started again."""
+        if name == JOURNAL:
+            self.journal.restart()
+            return
+        self.terminal_named(name)
         self._stopping = True
-        self.terminal.restart(instruction.resume)
+        self.terminal.restart(resume)
         self._stopping = False
         self.fit()
 
-    def restart_journal(self, instruction: RestartJournal) -> None:
-        self.journal.restart()
+    def stop_named(self, name: str) -> None:
+        """The agent stopped, and the supervisor with it: it is the process in front."""
+        self.terminal_named(name)
+        self.stop()
 
-    def stop(self, instruction: Stop | None = None) -> None:
+    def stop(self) -> None:
         self._stopping = True
         self._code = self.terminal.stop(3.0)
         if self.header:

@@ -1,6 +1,7 @@
 """The first features through the real server: the briefing at session start, and the memory hold at a context mark."""
 
 import json
+import os
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
@@ -430,6 +431,41 @@ def test_a_shell_line_printing_skill_files_loads_each_of_them(skilled):
     assert {"journal", "tasks"} <= set(loaded), "one cat of two skill files, by paths relative to the project, loads both"
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "cat .claude/skills/journal-workers/SKILL.md > copy.md"}, tool_response="")
     assert "workers" not in app.container.get(Agents).for_session("s1").skills_loaded, "a line that writes reads nothing"
+
+
+def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app):
+    import socket
+    import threading
+    from journal.supervisor_link import SupervisorLink
+    link, environment = app.container.get(SupervisorLink), 1
+    announced = app.config.home / "runtime" / "inboxes" / "main"
+    announced.parent.mkdir(parents=True, exist_ok=True)
+    path = f"/tmp/journal-test-{os.getpid()}.sock"
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as old:
+        Path(path).unlink(missing_ok=True)
+        old.bind(path)
+        announced.write_text(path)
+        link.restart_agent(environment, ("--resume", "s1"))
+        assert json.loads(old.recv(4096)) == {"type": "RestartAgent", "resume": ["--resume", "s1"]}, "a bare path is a supervisor from before the protocol"
+    Path(path).unlink(missing_ok=True)
+    heard = []
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as new:
+        new.bind(path)
+        new.listen(1)
+        announced.write_text(json.dumps({"socket": path, "protocol": 1}))
+
+        def answer():
+            connection, _ = new.accept()
+            with connection:
+                heard.append(json.loads(connection.makefile("rb").readline()))
+                connection.sendall(b'{"ok": true}\n')
+
+        answering = threading.Thread(target=answer)
+        answering.start()
+        assert link._send(environment, {"verb": "restart", "name": "journal"}) == {"ok": True}
+        answering.join(2)
+    Path(path).unlink(missing_ok=True)
+    assert heard == [{"verb": "restart", "name": "journal"}]
 
 
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
@@ -1150,14 +1186,14 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
         with urlopen(R(f"http://127.0.0.1:{port}{path}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
             return j.loads(r.read())
     installed = post("/journal/mcp/install", {"name": "github"})
-    assert installed["state"] == "needs_key" and installed["has_key"] is False and sent[-1]["type"] == "RestartAgent" and sent[-1]["resume"] == ["--resume", "s1"], "an idle agent restarts at once"
+    assert installed["state"] == "needs_key" and installed["has_key"] is False and sent[-1]["verb"] == "restart" and sent[-1]["name"] == "agent" and sent[-1]["resume"] == ["--resume", "s1"], "an idle agent restarts at once"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     sent.clear()
     post("/journal/mcp/github/key", {"value": "first"})
     assert sent == [] and j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))["restart_pending"] == ["s1"], "an agent at work is not cut off"
     hook(app, "Stop")
     app.runtime().deferred.drain()
-    assert sent and sent[-1]["type"] == "RestartAgent", "the restart comes the moment its turn ends"
+    assert sent and sent[-1]["verb"] == "restart", "the restart comes the moment its turn ends"
     claude = j.loads((app.config.root / ".mcp.json").read_text())["mcpServers"]["github"]
     assert claude["command"] == "npx" and claude["env"] == {"GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"}
     assert '[mcp_servers.github]' in (app.config.root / ".codex" / "config.toml").read_text()
@@ -1175,7 +1211,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     post("/journal/mcp/install", {"name": "linear"})
     sent.clear()
     assert post("/journal/mcp/linear/sign-in", {})["asked"] == "linear"
-    assert sent[-1]["type"] == "Type" and "mcp__linear__authenticate" in sent[-1]["line"], "the agent is asked to sign in through the server's own tool"
+    assert sent[-1]["verb"] == "type" and "mcp__linear__authenticate" in sent[-1]["line"], "the agent is asked to sign in through the server's own tool"
 
 
 def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_standing_until_the_read(skilled):
@@ -1758,7 +1794,7 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     assert [s["name"] for s in listed] == ["blender"] and listed[0]["managed"] is False
     with urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/blender/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
         assert j.loads(r.read()) == {"removed": "blender"}
-    assert removed == ["blender"] and sent[-1]["type"] == "RestartAgent"
+    assert removed == ["blender"] and sent[-1]["verb"] == "restart"
     try:
         urlopen(R(f"http://127.0.0.1:{port}/journal/mcp/nothing/remove", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5)
     except HTTPError as error:

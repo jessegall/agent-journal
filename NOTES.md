@@ -867,3 +867,10 @@ Who owns what, decided at the start of the plan (task 443) on the rulings of mes
 - send stays in the protocol: it is the message bus of message 1613; its first user comes with a later service.
 - "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself still needs a restart; the supervisor stays small so that is rare, and an upgrade installs a new supervisor beside the running one (task 438).
 - The menu watcher stays a thread in the journal server (question 6, the user's answer): it reads every environment's mirror and shares what it chose with SupervisorLink in memory. Phase 3 proves services through the protocol with the next real one, or a fake one in its test.
+
+The protocol, first version (tasks 436, 437, 439):
+
+- One stream socket per supervisor, in /tmp/journal-<uid>/, a folder only the user can open, the socket itself 0600. A request is one line of JSON, {"verb": ..., ...}; the reply is one line, {"ok": true, ...} or {"ok": false, "error": "<plain words>"}. An unknown verb or a malformed request is answered with an error and the supervisor stays up.
+- The announce file runtime/inboxes/<environment> holds {"socket": <path>, "protocol": 1}. An announce file holding a bare path is the old supervisor, which takes the old datagrams (Type, Keys, Stop, RestartAgent, RestartJournal); SupervisorLink speaks to each in its own way until the one restart, then the old way is removed.
+- hello answers {"protocol": 1, "verbs": [...]}. The verbs are hello, start, stop, restart, list, keys, type and send. A later version adds verbs and never changes one, so a journal asks hello before using a verb it is not sure of.
+- The supervisor's process in front is the one that owns the user's terminal: it gets the keyboard, the resize and the band, and when it ends the supervisor ends, taking every process it started with it.

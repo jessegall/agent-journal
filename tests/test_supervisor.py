@@ -3,6 +3,7 @@
 import json
 import os
 import socket
+import stat
 import time
 from pathlib import Path
 
@@ -24,6 +25,15 @@ def pump(supervisor: Supervisor, seconds: float) -> None:
         supervisor.journal.keep_alive()
 
 
+def ask(supervisor: Supervisor, **request) -> dict:
+    """One request to the supervisor's inbox, answered while the loop turns once."""
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
+        link.connect(str(supervisor.inbox.path))
+        link.sendall((json.dumps(request) + "\n").encode())
+        supervisor.relay_once(0.2)
+        return json.loads(link.makefile("rb").readline())
+
+
 def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
     out_r, out_w = os.pipe()
     in_r, in_w = os.pipe()
@@ -37,8 +47,7 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
     try:
         os.write(in_w, b"hello\r")
         pump(supervisor, 0.5)
-        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
-            link.sendto(json.dumps({"type": "Type", "line": "from the journal"}).encode(), str(inbox.path))
+        assert ask(supervisor, verb="type", name="agent", line="from the journal") == {"ok": True}
         pump(supervisor, 1.0)
         seen = os.read(out_r, 65536).decode()
         assert "got:hello" in seen and "got:from the journal" in seen
@@ -197,10 +206,9 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
     journal.start()
     terminal.start()
     try:
-        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
-            link.sendto(json.dumps({"type": "Type", "line": "now"}).encode(), str(inbox.path))
-            link.sendto(json.dumps({"type": "Type", "line": "later", "after": 0.8}).encode(), str(inbox.path))
-        pump(supervisor, 0.7)
+        ask(supervisor, verb="type", name="agent", line="now")
+        ask(supervisor, verb="type", name="agent", line="later", after=0.8)
+        pump(supervisor, 0.6)
         seen = os.read(out_r, 65536).decode()
         assert "got:now" in seen and "later" not in seen, "the line with a delay has not gone in yet; lines go in the order they were sent"
         pump(supervisor, 1.0)
@@ -211,7 +219,7 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
         inbox.close()
 
 
-def test_a_stop_instruction_ends_the_supervisor_and_takes_its_inbox_down(tmp_path: Path):
+def test_the_inbox_answers_each_request_and_a_stop_ends_the_supervisor_and_takes_its_inbox_down(tmp_path: Path):
     out_r, out_w = os.pipe()
     terminal = Terminal(["sh", "-c", "trap '' TERM; while true; do sleep 1; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
     inbox = Inbox.for_(tmp_path, "main")
@@ -221,9 +229,14 @@ def test_a_stop_instruction_ends_the_supervisor_and_takes_its_inbox_down(tmp_pat
     journal.start()
     terminal.start()
     try:
-        assert inbox.announced_at.read_text() == str(inbox.path)
-        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as link:
-            link.sendto(json.dumps({"type": "Stop"}).encode(), str(inbox.path))
+        assert json.loads(inbox.announced_at.read_text()) == {"socket": str(inbox.path), "protocol": 1}
+        assert stat.S_IMODE(inbox.path.stat().st_mode) == 0o600 and stat.S_IMODE(inbox.path.parent.stat().st_mode) == 0o700, "only its user can reach the socket"
+        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "keys", "type", "restart", "stop"]}
+        assert ask(supervisor, verb="dance") == {"ok": False, "error": "unknown verb 'dance': hello names the verbs this supervisor takes"}
+        assert ask(supervisor, verb="type", name="nobody", line="x") == {"ok": False, "error": "no terminal process is named 'nobody'"}
+        assert ask(supervisor, verb="type", line="x") == {"ok": False, "error": "type needs 'name'"}
+        assert supervisor._code is None, "a request it cannot carry out is answered and the supervisor stays up"
+        ask(supervisor, verb="stop", name="agent")
         began = time.time()
         while supervisor._code is None and time.time() - began < 8:
             supervisor.relay_once(0.05)

@@ -200,7 +200,7 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     switch = "\x1b[1mSwitch model?\x1b[0m\r\nYour next response will be slower\r\n\r\n❯ 1. Yes, switch to Opus 5.5\r\n  2. No, go back\r\n"
     link.choose(1, "/model opus")
     shown(switch)
-    assert watcher.look(agent) == "\r" and sent[-1] == {"type": "Keys", "keys": "\r"}, "a confirmation the journal's pick caused is taken with Enter"
+    assert watcher.look(agent) == "\r" and sent[-1] == {"verb": "keys", "name": "agent", "keys": "\r"}, "a confirmation the journal's pick caused is taken with Enter"
     assert watcher.look(agent) == "", "and answered once"
     shown("Something new?\r\n❯ 1. Turn it on\r\n  2. Leave it\r\n")
     assert watcher.look(agent) == "\x1b", "a menu it cannot place is closed with Escape"
