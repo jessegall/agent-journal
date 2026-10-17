@@ -3,6 +3,7 @@ from journal.models.sequence import Sequence
 BUILDING_A_PLAN = Sequence(
     title="Building a plan",
     starts_on="plan.created",
+    finishes_in=("ready", "approved", "started", "done"),
     steps=(
         "Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`",
         "Add the plan's phases in order with `journal plan phase <plan n> \"<title>\" --when \"<complete when>\"`, and `--checkpoint` where the user should look before it goes on",

@@ -24,9 +24,13 @@ class Watching(AgentListener[A]):
     def can_deny(self) -> bool:
         return False
 
+    def by_user(self, event: A) -> bool:
+        """Whether the text is the user's own words, the only words that start a sequence."""
+        return False
+
     def handle(self, event: A) -> Decision | None:
         from journal.features.triggers.feature import Triggers as TriggersFeature
-        met = self.triggers.met_by(self.text_of(event))
+        met = [t for t in self.triggers.met_by(self.text_of(event)) if self.by_user(event) or t.action != TriggerAction.SEQUENCE]
         if not met:
             return None
         denied = [t for t in met if t.action == TriggerAction.DENY]

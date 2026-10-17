@@ -8,8 +8,11 @@ from journal.features.skills.requiring import Requiring
 from journal.models.actor import Actor
 from journal.models.agent import Agent
 from journal.models.sequence import Sequence
+from journal.models.ref import Ref
 from journal.models.sequence_run import SequenceRun
+from journal.refused import Refused
 from journal.repositories.agents import Agents
+from journal.repositories.rows import Rows
 from journal.repositories.workers import Workers
 
 NAMED = re.compile(r"`([^`<]+)")
@@ -19,8 +22,8 @@ NAMED = re.compile(r"`([^`<]+)")
 class Running:
     """The sequences an agent works through, kept on its row as a stack: one started inside another is the one in hand, and when it ends the other comes back. Every start goes through here."""
 
-    def __init__(self, machine: Machine, agents: Agents, requiring: Requiring, workers: Workers) -> None:
-        self.machine, self.agents, self.requiring, self.workers = machine, agents, requiring, workers
+    def __init__(self, machine: Machine, agents: Agents, requiring: Requiring, workers: Workers, rows: Rows) -> None:
+        self.machine, self.agents, self.requiring, self.workers, self.rows = machine, agents, requiring, workers, rows
 
     def runs(self, agent: Agent) -> list[SequenceRun]:
         return [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
@@ -35,7 +38,7 @@ class Running:
         runs = self.runs(agent)
         if any(run.sequence_id == sequence.id for run in runs) or not sequence.steps:
             return ""
-        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about, started_at=self.now(), said_at=self.now())
+        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about, started_at=self.now(), said_at=self.now(), finishes_in=tuple(sequence.finishes_in))
         self.kept(agent, [*runs, run])
         owed = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.named("sequences")))
         return "\n".join([*owed, self.said(run)])
@@ -46,17 +49,50 @@ class Running:
         agent = self.machine.agent(session, environment_id)
         runs = self.runs(agent)
         run = runs[-1]
+        self.refuse_an_unfinished_end(run)
         if not run.last:
             moved = run.moved_on().said(self.now())
             self.kept(agent, [*runs[:-1], moved])
             return self.said(moved)
-        ended = Sequences.ENDED.about(n=run.sequence_id).rendered()
+        return self.ended(agent, runs, Sequences.ENDED.about(n=run.sequence_id).rendered())
+
+    def ended(self, agent: Agent, runs: list[SequenceRun], ended: str) -> str:
+        """The run in hand taken off, the line that says so, and the step of the run it was started inside, if any."""
         if len(runs) == 1:
             self.kept(agent, [])
             return ended
         outer = runs[-2].said(self.now())
         self.kept(agent, [*runs[:-2], outer])
         return f"{ended}\n{self.said(outer)}"
+
+    def refuse_an_unfinished_end(self, run: SequenceRun) -> None:
+        """The last step may not be done while the row the run is about stands short of the states the sequence names; a row gone no longer holds it."""
+        state = self.rows.state_of(Ref.parse(run.about)) if run.last and run.about and run.finishes_in else ""
+        if state and state not in run.finishes_in:
+            raise Refused(f"sequence {run.sequence_id} ends when {run.about} is {' or '.join(run.finishes_in)}; it is {state}. finish it first, or `journal sequence abandon --why \"<why>\"`")
+
+    def abandon(self, session: str, environment_id: int) -> tuple[SequenceRun, str]:
+        """The run in hand given up: it, and the line that says so with the step it returns to."""
+        from journal.features.sequences.feature import Sequences
+        agent = self.machine.agent(session, environment_id)
+        runs = self.runs(agent)
+        return runs[-1], self.ended(agent, runs, Sequences.ABANDONED.about(n=runs[-1].sequence_id).rendered())
+
+    def end_where(self, environment_id: int, gone, why: str) -> list[tuple[Agent, str]]:
+        """Every run here that can no longer finish, as gone says, taken off its agent: each agent with the line that tells it why."""
+        from journal.features.sequences.feature import Sequences
+        told = []
+        for agent in [a for a in self.agents.where(environment_id=environment_id) if a.sequence_runs]:
+            runs = self.runs(agent)
+            kept = [run for run in runs if not gone(run)]
+            if len(kept) < len(runs):
+                self.kept(agent, kept)
+                told.append((agent, "\n".join(Sequences.CANNOT_FINISH.about(n=run.sequence_id, why=why).rendered() for run in runs if gone(run))))
+        return told
+
+    def environments_running(self, sequence_id: int) -> set[int]:
+        """The environments where an agent runs the sequence."""
+        return {a.environment_id for a in self.agents.all() if any(run.sequence_id == sequence_id for run in self.runs(a))}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
         """The step in hand taken up now, and a parked run resumed with it."""

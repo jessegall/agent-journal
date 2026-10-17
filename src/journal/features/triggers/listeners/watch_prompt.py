@@ -5,3 +5,6 @@ from journal.features.triggers.listeners.watching import Watching
 class WatchPrompt(Watching[PromptSubmitted]):
     def text_of(self, event: PromptSubmitted) -> str:
         return event.prompt
+
+    def by_user(self, event: PromptSubmitted) -> bool:
+        return event.by_user

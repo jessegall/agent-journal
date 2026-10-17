@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
@@ -1377,10 +1378,17 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkey
     app.console().run(["plan", "create", "Another", "--brief", "b"], AGENT)
     app.runtime().deferred.drain()
     assert len(running.runs(app.container.get(Machine).agent("s1", 1))) == 1 and running.in_hand("s1", 1).step == 0, "a sequence already running is not started again"
-    for _ in range(4):
-        app.console().run(["sequence", "follow"], AGENT)
-        app.console().run(["sequence", "next"], AGENT)
-    assert running.in_hand("s1", 1) is None, "the last step ends the run"
+    console = app.console()
+    for _ in range(3):
+        console.run(["sequence", "follow"], AGENT)
+        console.run(["sequence", "next"], AGENT)
+    console.run(["sequence", "follow"], AGENT)
+    assert "ends when plans:1 is ready" in console.run(["sequence", "next"], AGENT).err, "the last step waits for the plan to be ready"
+    console.run(["plan", "phase", "1", "Lay the floor", "--when", "the floor is level"], AGENT)
+    task = re.search(r"task (\d+)", console.run(["plan", "add", "1", "Level the floor", "--brief", "level"], AGENT).out).group(1)
+    console.run(["plan", "todos", "1", "1", task], AGENT)
+    console.run(["plan", "ready", "1"], AGENT)
+    assert "ran its last step" in console.run(["sequence", "next"], AGENT).out and running.in_hand("s1", 1) is None, "a ready plan lets the last step end the run"
 
 
 def test_a_plans_goal_can_be_reset(app):
@@ -2000,7 +2008,6 @@ def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it
 
 def test_the_rules_doc_names_every_line_a_listener_says():
     """Plan 2's map: a listener's line not in the rules table is a line nobody planned for."""
-    import re
     from pathlib import Path
     doc = (Path(__file__).resolve().parents[1] / "docs" / "the-rules.md").read_text()
     root = Path(__file__).resolve().parents[1] / "src" / "journal" / "features"
@@ -3104,6 +3111,16 @@ def test_a_run_stands_through_the_agents_moves_and_a_workflow_action_starts_one(
     hook(app, "UserPromptSubmit", prompt="carry on")
     console.run(["stuck", "the build is broken"], AGENT)
     assert machine.current("s1").name == "stuck" and running.in_hand("s1", 1).text == "bump", "a task, a wait, the user's word and being stuck leave the run standing"
+    console.run(["task", "park", "1", "a plan first"], AGENT)
+    console.run(["plan", "create", "p", "--brief", "the goal"], USER)
+    console.run(["plan", "phase", "1", "One", "--when", "done"], USER)
+    task = re.search(r"task (\d+)", console.run(["plan", "add", "1", "first", "--brief", "b"], USER).out).group(1)
+    console.run(["plan", "todos", "1", "1", task], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    hook(app, "SessionStart", source="resume")
+    assert machine.current("s1").name == "following_plan" and running.in_hand("s1", 1).text == "bump", "following a plan, and the plan taken up again at a start, leave the run standing"
     from dataclasses import replace
     from journal.repositories.sequences import Sequences
     sequences = app.container.get(Sequences)
@@ -3183,6 +3200,63 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     assert any("is parked at step 1: docs first" in line for line in sent), "a parked run is recalled at the same pace"
     assert "is parked at step 1" in json.dumps(hook(app, "SessionStart", source="resume")[1]), "and at a start"
 
+def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_gone(app, monkeypatch):
+    from journal.repositories.messages import Messages
+    from journal.repositories.sequences import Sequences
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    running = app.container.get(Running)
+    made = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
+    console.run(["sequence", "run", made], AGENT)
+    assert "was never taken up" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).err, "a step is taken up before it is given up"
+    console.run(["sequence", "follow"], AGENT)
+    unsure = console.run(["sequence", "abandon", "--why", "not needed"], AGENT)
+    assert unsure.code == 1 and "leaves undone: 1. bump; 2. tag; 3. push" in unsure.err and running.in_hand("s1", 1), "without --sure it names what it would skip and keeps the run"
+    assert "sequence 3 abandoned" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).out and running.in_hand("s1", 1) is None
+    card = app.container.get(Messages).in_()[-1]
+    assert "abandoned at step 1: not needed" in card.text and "left undone: 1. bump" in card.data["detail"], "the user is told, with the reason and what was left undone"
+    console.run(["plan", "create", "Side work", "--brief", "b"], AGENT)
+    app.runtime().deferred.drain()
+    assert running.in_hand("s1", 1).title == "Building a plan"
+    console.run(["plan", "cancel", "1"], AGENT)
+    app.runtime().deferred.drain()
+    assert running.in_hand("s1", 1) is None and any("plans:1 was cancelled" in line for line in sent), "a cancelled plan ends its run and the agent is told"
+    console.run(["sequence", "run", made], AGENT)
+    sequences = app.container.get(Sequences)
+    sequences.delete(sequences.find(int(made)), USER.actor)
+    app.runtime().deferred.drain()
+    assert running.in_hand("s1", 1) is None and any(f"sequence {made} was deleted" in line for line in sent), "a deleted sequence ends its runs"
+
+def test_runs_nest_never_in_themselves_and_only_the_users_words_start_one(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    running = app.container.get(Running)
+    outer = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    inner = console.run(["sequence", "create", "check", "--steps", "lint"], USER).out.split()[1].rstrip(":")
+    console.run(["sequence", "run", outer], AGENT)
+    assert "is running already" in console.run(["sequence", "run", outer], AGENT).out, "a sequence never starts inside itself"
+    console.run(["sequence", "run", inner], AGENT)
+    assert running.in_hand("s1", 1).title == "check", "one started inside another is the one followed"
+    console.run(["sequence", "follow"], AGENT)
+    ended = console.run(["sequence", "next"], AGENT).out
+    assert f"sequence {inner} ran its last step" in ended and "step 1: bump" in ended and running.in_hand("s1", 1).title == "release", "when it ends the other is said again"
+    console.run(["sequence", "follow"], AGENT)
+    console.run(["sequence", "next"], AGENT)
+    console.run(["sequence", "follow"], AGENT)
+    console.run(["sequence", "next"], AGENT)
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message send 'give me an update when you can'"})
+    hook(app, "UserPromptSubmit", prompt="<task-notification>the researcher says: give me an update</task-notification>")
+    hook(app, "UserPromptSubmit", prompt="[journal] give me an update")
+    assert running.in_hand("s1", 1) is None, "words the agent wrote, a subagent's report or a journal line start no sequence"
+    hook(app, "UserPromptSubmit", prompt="give me an update")
+    assert running.in_hand("s1", 1).title == "Writing an update", "the user's own words do"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
@@ -3234,7 +3308,6 @@ def test_no_workflow_holds_a_journal_command_or_the_read_of_a_skills_file(skille
 
 def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     """A workflow of the user's with the one node sends the agent back from each pause: awaiting something outside, stuck, waiting on a question, awaiting a worker, running a sequence."""
-    import re
     from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
     from journal.repositories.charts import Charts

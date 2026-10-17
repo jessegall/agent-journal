@@ -21,7 +21,7 @@ class ShippedSequences(Seed):
             standing = present.get(sequence.title)
             if standing is None:
                 self.sequences.save(sequence, Actor.system())
-            elif standing.updated_by == Actor.system() and standing.steps != sequence.steps:
-                self.sequences.save(replace(standing, steps=sequence.steps), Actor.system())
+            elif standing.updated_by == Actor.system() and (standing.steps, standing.finishes_in) != (sequence.steps, sequence.finishes_in):
+                self.sequences.save(replace(standing, steps=sequence.steps, finishes_in=sequence.finishes_in), Actor.system())
         if not any(t.action == TriggerAction.SEQUENCE and t.text == WRITING_AN_UPDATE.title for t in self.triggers.all()):
             self.triggers.save(Trigger(words=UPDATE_WORDS, action=TriggerAction.SEQUENCE, text=WRITING_AN_UPDATE.title), Actor.system())
