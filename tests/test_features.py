@@ -3626,6 +3626,16 @@ def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_
     after = next(s for s in read()["servers"] if s["name"] == "claude_design")
     assert after["state"] == "connected", "Check all asks the program anew, so a login done since shows"
 
+def test_the_end_of_a_session_never_begun_makes_no_agent(app):
+    from journal.repositories.agents import Agents
+    from journal.repositories.scope import Scope
+    hook(app, "SessionStart")
+    hook(app, "SessionEnd", session_id="one-off", reason="other")
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        sessions = [a.session for a in app.container.get(Agents).in_()]
+    assert sessions == ["s1"], "a one-off run of the program, such as claude mcp list, ends a session that never began: no agent is made for it"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

@@ -42,7 +42,10 @@ export function plainRefusal(message, action) {
 
 export const sessionRow = (rows, session) => rows.find((row) => row.title === session) || null;
 
-export const environmentAgent = (rows) =>
-    [...rows].filter((row) => !row.deleted && !row.data.parent).sort((a, b) => b.updated - a.updated)[0] || null;
+// the environment's agent: the live one most lately busy, else the one most lately seen
+export const environmentAgent = (rows) => {
+    const own = [...rows].filter((row) => !row.deleted && !row.data.parent).sort((a, b) => b.updated - a.updated);
+    return own.find((row) => row.data.status !== "stopped") || own[0] || null;
+};
 
 export const agentOf = (rows, session, lent) => sessionRow(rows, session) || (lent ? environmentAgent(rows) : null);

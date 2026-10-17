@@ -2,6 +2,7 @@ from journal.engine.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
+from journal.events.agent.session_ended import SessionEnded
 from journal.features.agent_listener import AgentListener
 from journal.features.bus import Bus
 from journal.features.listener import Listener
@@ -12,6 +13,7 @@ from journal.hooks.transcript_turns import TranscriptTurns
 from journal.hooks.translation import Translation
 from journal.models.actor import Actor
 from journal.models.entry import Entry
+from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
@@ -24,8 +26,9 @@ GUARD_FAILED = "guard_failed"
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns, cards: Cards) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
+        self.agents = agents
         self.transcript, self.cards = transcript, cards
 
     def receive(self, hook: Hook) -> Decision:
@@ -36,11 +39,17 @@ class Receiver:
                 self._now(written)
             event = self.translation.event(hook, environment)
             entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
+            if self.stray(event):
+                return Decision()
             decision = self._blocking(event)
             if not decision.allowed:
                 self.entries.save(entry.with_(data={**entry.data, "refused": decision.reason}), Actor.agent(hook.session))
             self._defer(event)
         return decision
+
+    def stray(self, event: AgentEvent) -> bool:
+        """The end of a session the journal never saw begin, such as a one-off run of the program like claude mcp list: recorded, and no agent made for it."""
+        return isinstance(event, SessionEnded) and not self.agents.where(session=event.session)
 
     def _now(self, event: AgentEvent) -> None:
         """A turn read from the transcript is handled whole and at once, by every listener, so a reply in it answers its message before the hook's own event is judged."""
