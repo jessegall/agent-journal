@@ -37,7 +37,7 @@ class Menu:
         asking = not yes
         chosen = env or (self._environment(agent, rows) if asking else "main")
         rows = self.environments() if chosen not in {row["name"] for row in rows} else rows
-        last = next((row.get("last_session", "") for row in rows if row["name"] == chosen), "")
+        last = next((row.get("last_sessions", {}).get(agent, "") for row in rows if row["name"] == chosen), "")
         resume = "" if new or not last else (self._resume(agent, chosen, last) if asking else last)
         asking = asking and not resume
         """Carrying on takes last time's answers to the other questions, as the banner promised."""

@@ -113,4 +113,4 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     agents.save(Agent(session="lost", environment_id=1, provider="claude", state="ended"), Actor.system())
     import json as j
     rows = j.loads(app.console().run(["environment", "json"], Where("main")).out)
-    assert rows[0]["last_session"] == "s1"
+    assert rows[0]["last_sessions"] == {"claude": "s1"}, "a codex launch finds no Claude session to carry on"

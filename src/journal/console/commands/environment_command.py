@@ -41,14 +41,14 @@ class EnvironmentCommand(Command):
         self.verb(verbs, "delete", "an environment and everything recorded in it").add_argument("name")
 
     def rows(self) -> list[dict]:
-        """Each environment for the boot menu: the newest session whose conversation the program can still find, so a carry-on never names one it has lost."""
+        """Each environment for the boot menu: for each agent program, its newest session whose conversation it can still find, so a carry-on never names one it has lost nor one of another program."""
         rows = []
         for environment in self.environments.all() or [self.environments.named("main")]:
             with self.scope.of(environment.id):
                 agents = self.agents.in_()
             last = agents[-1] if agents else None
             resumable = [a for a in agents if a.session and self.providers.named(a.provider or "claude").transcript(self.config.root, a.session)]
-            rows.append({"name": environment.name, "last_session": resumable[-1].session if resumable else "", "working": bool(last) and last.state != "ended",
+            rows.append({"name": environment.name, "last_sessions": {a.provider or "claude": a.session for a in resumable}, "working": bool(last) and last.state != "ended",
                          "last_used": self.ago(last.updated_at) if last else ""})
         return rows
 

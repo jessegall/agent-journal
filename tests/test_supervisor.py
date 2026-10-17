@@ -13,7 +13,7 @@ from journal.launcher.screen import Screen
 from journal.launcher.status_line import StatusLine
 
 
-ROWS = [{"name": "main", "last_session": "abc", "last_used": "2 hours ago", "working": True}, {"name": "spike", "last_session": "", "last_used": "", "working": False}]
+ROWS = [{"name": "main", "last_sessions": {"claude": "abc"}, "last_used": "2 hours ago", "working": True}, {"name": "spike", "last_sessions": {}, "last_used": "", "working": False}]
 OTHER = {"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "say done"}]}]}, "model": "opus"}
 
 
