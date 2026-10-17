@@ -9,14 +9,14 @@ from pathlib import Path
 
 from supervisor.header import Header
 from supervisor.inbox import Inbox
-from supervisor.journal_process import JournalProcess
 from supervisor.choice import Choice
 from supervisor.status_line import StatusLine
 from supervisor.menu import Menu
 from supervisor.mirror import Mirror
-from supervisor.no_journal import NoJournal
 from supervisor.other_hooks import OtherHooks
 from supervisor.project_command import ProjectCommand
+from supervisor.service import Service
+from supervisor.services import Services
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
@@ -114,6 +114,6 @@ class Launch:
         environ = self.environ(choice)
         status = StatusLine(self.root.name, choice.environment, self.root)
         terminal = Terminal(self.agent_command(choice, status), str(self.root), environ)
-        journal = NoJournal(self.root) if self.no_journal else JournalProcess(self.root, self.journal_command(), environ, self.root / ".journal" / "runtime" / "server.log")
+        services = Services() if self.no_journal else Services(Service("journal", self.journal_command(), self.root, environ, self.root / ".journal" / "runtime" / "server.log"))
         header = Header(self.root.name, choice.environment) if sys.stdout.isatty() else None
-        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), journal, status, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}", header=header, mirror=Mirror.for_(self.root, choice.environment))
+        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), services, status, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}", header=header, mirror=Mirror.for_(self.root, choice.environment), port_file=self.root / ".journal" / "port")

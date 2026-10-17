@@ -11,22 +11,23 @@ from pathlib import Path
 from supervisor.status_line import StatusLine
 from supervisor.header import Header
 from supervisor.inbox import Inbox
-from supervisor.journal_process import JournalProcess
 from supervisor.mirror import Mirror
+from supervisor.services import Services
 from supervisor.terminal import Terminal
 from supervisor.verbs import Verbs
 
 LONGEST = 65536
 FRONT = "agent"
 """The process in front: the agent, in the user's terminal."""
-JOURNAL = "journal"
 
 
 class Supervisor:
-    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the journal kept running, the status line kept current."""
+    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the services kept running, the status line kept current."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, status: StatusLine, stdin: int | None = 0, stdout: int = 1, viewer: str = "", header: Header | None = None, mirror: Mirror | None = None) -> None:
-        self.terminal, self.inbox, self.journal, self.status, self.stdin, self.stdout = terminal, inbox, journal, status, stdin, stdout
+    def __init__(self, terminal: Terminal, inbox: Inbox, services: Services, status: StatusLine, stdin: int | None = 0, stdout: int = 1, viewer: str = "", header: Header | None = None, mirror: Mirror | None = None, port_file: Path | None = None) -> None:
+        self.terminal, self.inbox, self.services, self.status, self.stdin, self.stdout = terminal, inbox, services, status, stdin, stdout
+        self.port_file = port_file
+        """Where the journal writes its port once it is up; none when nobody waits for its page."""
         self.mirror = mirror
         """The agent's newest output written where the journal reads it; none in a supervisor with nobody to read it."""
         """stdin is None for a supervisor started by the journal, with nobody at a keyboard."""
@@ -43,7 +44,7 @@ class Supervisor:
     def run(self) -> int:
         saved = self._raw()
         self.inbox.open()
-        self.journal.start()
+        self.services.start_all()
         self._started_at = time.time()
         self.terminal.start()
         self.fit()
@@ -52,10 +53,10 @@ class Supervisor:
         try:
             while self._code is None:
                 self.relay_once(0.5)
-                self.journal.keep_alive()
+                self.services.keep_alive()
                 self.notice_journal_once()
         finally:
-            self.journal.stop()
+            self.services.stop_all()
             self.inbox.close()
             if saved is not None and self.stdin is not None:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
@@ -102,13 +103,12 @@ class Supervisor:
 
     def notice_journal_once(self) -> None:
         """The first time the port in the port file answers: the status line shows the URL and the viewer opens in the browser; a port file left by a dead journal answers nothing."""
-        if self._noticed:
+        if self._noticed or self.port_file is None:
             return
         if time.time() - self._started_at > 30:
             self._noticed = True
             return
-        port_file = self.journal.root / ".journal" / "port"
-        url = f"http://127.0.0.1:{port_file.read_text().strip()}/" if port_file.is_file() else ""
+        url = f"http://127.0.0.1:{self.port_file.read_text().strip()}/" if self.port_file.is_file() else ""
         if not url or not self._answers(url):
             return
         self._noticed = True
@@ -132,20 +132,26 @@ class Supervisor:
         return self.terminal
 
     def restart(self, name: str, resume: tuple[str, ...]) -> None:
-        """The agent started again with the arguments that resume its session, or the journal started again."""
-        if name == JOURNAL:
-            self.journal.restart()
+        """The agent started again with the arguments that resume its session, or a service started again."""
+        if name != FRONT:
+            self.services.named(name).restart()
             return
-        self.terminal_named(name)
         self._stopping = True
         self.terminal.restart(resume)
         self._stopping = False
         self.fit()
 
     def stop_named(self, name: str) -> None:
-        """The agent stopped, and the supervisor with it: it is the process in front."""
-        self.terminal_named(name)
+        """A service stopped and taken off the table, or the agent stopped and the supervisor with it: it is the process in front."""
+        if name != FRONT:
+            self.services.remove(name)
+            return
         self.stop()
+
+    def described(self) -> list[dict]:
+        """Every process this supervisor runs, the agent in front first."""
+        front = {"name": FRONT, "pid": self.terminal.pid, "running": self.terminal.pid > 0, "terminal": True, "front": True}
+        return [front, *self.services.described()]
 
     def stop(self) -> None:
         self._stopping = True

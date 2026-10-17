@@ -1,11 +1,15 @@
 from typing import TYPE_CHECKING
 
+import os
+from pathlib import Path
+
 from supervisor.inbox import PROTOCOL
+from supervisor.service import Service
 
 if TYPE_CHECKING:
     from supervisor.supervisor import Supervisor
 
-VERBS = ("hello", "keys", "type", "restart", "stop")
+VERBS = ("hello", "start", "stop", "restart", "list", "keys", "type")
 """The verbs this supervisor takes; a later protocol adds verbs and never changes one."""
 
 
@@ -28,6 +32,17 @@ class Verbs:
 
     def hello(self, request: dict) -> dict:
         return {"protocol": PROTOCOL, "verbs": list(VERBS)}
+
+    def start(self, request: dict) -> dict:
+        """A service started under its name, with its command, folder, environment and log; one already running under the name is left as it is."""
+        name = request["name"]
+        started = not self.supervisor.services.runs(name)
+        log = Path(request.get("log", os.devnull))
+        self.supervisor.services.add(Service(name, list(request["command"]), Path(request.get("folder", ".")), {**os.environ, **request.get("env", {})}, log))
+        return {"started": started}
+
+    def list(self, request: dict) -> dict:
+        return {"processes": self.supervisor.described()}
 
     def keys(self, request: dict) -> dict:
         self.supervisor.terminal_named(request["name"]).write(request["keys"].encode())
