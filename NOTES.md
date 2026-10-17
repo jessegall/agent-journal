@@ -37,7 +37,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   `HookReceived`; listeners answer with a `Decision` and the receiver folds them into one.
 - **Entries** are the append-only table of what happened (`Entry`, `Entries`); hooks and
   commands both write to it. The in-process word is event, the stored word is entry.
-- **Supervisor** is its own package, `src/supervisor/`, stdlib only, never imports `journal`.
+- **Supervisor** is its own package, `src/supervisor/`, stdlib only, never imports `journal`: since plan 8 a thin process host started from a launch file the journal writes (see The thin supervisor).
   It owns the agent's pty, keeps the journal server alive, and carries out instructions from
   a unix datagram socket: `Type`, `RestartAgent`, `RestartJournal`, `Stop`. Nothing else.
 - **One class per file**, named after the class in snake_case. Enums included.
@@ -254,7 +254,7 @@ F. **The viewer is version 3's, whole** (the user's ruling on 2026-10-15, revers
    entries (every row change is an entry now), the bar, the summary, identity, agents,
    profiles, and the writes the viewer sends (`v3_actions.py`). The viewer polls each type alone;
    the one dashboard call is gone.
-D2. **The boot menu** is version 3's, rebuilt in the supervisor: a banner, then one question
+D2. **The boot menu** is version 3's, rebuilt in the supervisor and moved to the journal's launcher (`src/journal/launcher`) in plan 8: a banner, then one question
    at a time under it, moved through with ↑ ↓ (or j k), a number to jump, Enter to pick and
    Esc to leave; the space under the banner is cleared before each question. It asks which
    environment (badges: agent working, last used; or a new name), whether to carry on the last
@@ -327,9 +327,9 @@ The supervisor is proven with a shell agent in a pty; `journal claude` interacti
 first thing to try by hand.
 
 Still to do, in rough order:
-- Workers do not spawn yet: `worker dispatch` records the row; the supervisor's headless launch
-  of a second agent in a worktree is next.
-- Resume after `RestartAgent` is wired but untried; Codex is wired but untried live.
+- Workers spawn from the journal itself (`worker_runner.py`), outside the supervisor and its protocol.
+- Resume after a restart of the agent is tried live (plan 8, task 453): it comes back on the same conversation. Codex runs on
+  the thin supervisor, but its hooks did not reach the journal in a fresh project, so its resume is untried (task 461).
 - The context figure needs Claude's statusline, which runs only interactively; untested.
 - Reports and docs have models and routes but no page; no page for workers, checks, sequences,
   triggers; no hub of journals; no phone; no sharing; no plugins.
@@ -450,7 +450,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 - **Install is one command, as version 3's (2026-10-15, later).** `install.sh` copies `src` into
   `<project>/.journal/src` (from the checkout it is run from, or a clone of `AGENT_JOURNAL_REPO` at
   `AGENT_JOURNAL_REF`) and runs `journal setup here` from the copy. Setup also writes the dispatcher at
-  `~/.local/bin/journal` (`supervisor/dispatcher.py`): it finds the project's `.journal` walking up and
+  `~/.local/bin/journal` (`journal/launcher/dispatcher.py`): it finds the project's `.journal` walking up and
   hands over to `.journal/src/journal.sh` (version 4) or `.journal/journal` (version 3's launcher), so one
   command serves both versions and nothing of the journal lives outside a project. Setup adds `/.journal`
   to the project's `.gitignore`. A wired hook first tests that its script exists. A dogfood checkout
@@ -467,10 +467,10 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   and reads that file, so a line reaches the agent of that environment and none other; an environment
   with no supervisor hears nothing. The viewer's Start runs `journal.py <agent> --env <name> --yes
   --no-open --no-journal` detached (`AgentLauncher`): no keyboard (`stdin=None`), no journal of its
-  own (`NoJournal`), its screen in `.journal/runtime/agent-<env>.log`; Stop sends the supervisor the
-  Stop instruction. Deleted on the way: `JOURNAL_INBOX`.
+  own (a launch file with no services), its screen in `.journal/runtime/agent-<env>.log`; Stop sends the supervisor the
+  stop verb. Since plan 8 the inbox is a stream socket speaking the protocol and the announce file is JSON naming it, the protocol and the screen. Deleted on the way: `JOURNAL_INBOX`.
 - **The command is the project's.** `journal setup` writes `.journal/bin/journal` and nothing outside the
-  project; the supervisor puts that folder first on the agent's PATH, so `journal …` resolves inside a
+  project; the launch puts that folder first on the agent's PATH, so `journal …` resolves inside a
   session and nowhere else. Ruled 2026-10-15 after a dogfood setup overwrote the global `journal` of
   version 3 on this machine (restored from version 3's own shim template). Nothing of version 4 is
   published: origin holds `main` only, the last tag is v3.3.2.
