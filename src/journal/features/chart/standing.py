@@ -25,7 +25,7 @@ class Standing:
         nodes = {n.id: n for n in self.charts.nodes_of(chart)}
         walks = self.entries.of_kind(WALKED, LOOKED_BACK)
         agents = [a for a in self.agents.in_() if a.state != "ended"]
-        return {"agents": [self.agent(chart, nodes, walks, a) for a in agents], "readings": self.readings(nodes)}
+        return {"agents": [self.agent(chart, nodes, walks, a) for a in agents], "readings": self.readings(nodes), "limits": self.limits(nodes)}
 
     def agent(self, chart: Chart, nodes: dict, walks: list, agent) -> dict:
         stop = next((s for w in walks if w.data.get("session") == agent.session for s in reversed(w.data.get("stops", ())) if s["workflow"] == chart.id), None)
@@ -39,6 +39,10 @@ class Standing:
             "counts": self.checks.counts_kept(agent.session, chart.id),
             "readings": {name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)},
         }
+
+    def limits(self, nodes: dict) -> dict:
+        """Each count check's number, a setting it names read as its value."""
+        return {str(n.id): self.checks.number(n.text.strip().partition(" ")[2]) for n in nodes.values() if n.key in COUNT_CHECKS and n.text.strip().partition(" ")[2]}
 
     def readings(self, nodes: dict) -> dict:
         """What each reading a count check of the workflow compares counts, in plain words."""

@@ -30,6 +30,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.CHECK, 'quiet_for_over', 'Has the agent been quiet for N?', "the clock ticks and the agent has done nothing for at least the time in the text, with its unit: 30 seconds, 10 minutes, 2 hours; a bare number is seconds, or a setting's name", takes_text=True),
         Entry(NodeKind.CHECK, 'count_over', 'Is a count over N?', "the agent's count named first in the text has reached N; the text is the count's name, then N or a setting's name, such as reads messages.hold_after", takes_text=True),
         Entry(NodeKind.CHECK, 'count_at', 'Is a count at N?', "the agent's count named first in the text stands at exactly N; the text is the count's name, then N or a setting's name", takes_text=True),
+        Entry(NodeKind.CHECK, 'count_wait', 'Wait here until a count reaches N?', "the workflow goes on past here once the agent's count named first in the text reaches N, and waits here until then; the text is the count's name, then N or a setting's name", takes_text=True),
         Entry(NodeKind.CHECK, 'count_every', 'Is a count at every Nth?', "the agent's count named first in the text is a multiple of N, not zero; the text is the count's name, then N or a setting's name, such as uses messages.remind_every", takes_text=True),
     )
     actions = (

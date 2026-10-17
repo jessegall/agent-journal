@@ -7,6 +7,7 @@ const standing = {
         {n: 4, session: "s2", node: 9, port: "then", waits: false, counts: {}, readings: {uses: 1}},
     ],
     readings: {uses: "Tool uses since the newest unread message came."},
+    limits: {12: 5},
 };
 
 test("a node an agent waits at says so, and how many when several", () => {
@@ -16,8 +17,9 @@ test("a node an agent waits at says so, and how many when several", () => {
 });
 
 test("a count check says its count against its number, a reading too", () => {
-    expect(countWords(standing, {id: 12, text: "reminders 3"})).toBe("reminders 2 of 3");
-    expect(countWords(standing, {id: 12, text: "uses messages.hold_after"})).toBe("uses 7 of messages.hold_after");
+    expect(countWords(standing, {id: 9, text: "reminders 3"})).toBe("reminders 2 of 3");
+    expect(countWords(standing, {id: 12, text: "uses messages.hold_after"})).toBe("uses 7 of 5");
+    expect(countWords({agents: standing.agents}, {id: 12, text: "uses messages.hold_after"})).toBe("uses 7");
     expect(countWords(standing, {id: 12, text: "missing 3"})).toBe("");
 });
 

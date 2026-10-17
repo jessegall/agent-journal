@@ -16,7 +16,8 @@ export function countWords(standing, node) {
     if (!name || !agent) return "";
     const value = name in (agent.counts || {}) ? agent.counts[name] : (agent.readings || {})[name];
     if (value === undefined) return "";
-    return limit ? `${name} ${value} of ${limit}` : `${name} ${value}`;
+    const number = standing?.limits?.[String(node.id)] ?? (/^\d+$/.test(limit || "") ? limit : null);
+    return number ? `${name} ${value} of ${number}` : `${name} ${value}`;
 }
 
 export function standingLines(standing, nodeId) {

@@ -3465,6 +3465,27 @@ def test_the_walk_records_where_each_workflow_stopped_with_its_counts(app):
         walk = next(e for e in app.container.get(Entries).of_kind(WALKED, 50) if made in e.data["workflows"])
     assert {"workflow": made, "node": enough, "port": "no", "counts": {"reminders": 2}} in walk.data["stops"], "the path ended at the count check's No, with the count it read"
 
+def test_a_workflow_waits_at_a_count_until_it_reaches_its_number(app):
+    from journal.repositories.charts import Charts
+    console = app.console()
+    made, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, "--text", text, "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    one, wait, say = node("action", "count_one", "reminders"), node("check", "count_wait", "reminders 3"), node("action", "say", "[chart] three reminders")
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    console.run(["chart", "line", str(one), str(wait)], USER)
+    assert console.run(["chart", "line", str(wait), str(say), "--port", "yes"], USER).code == 0, "a wait needs no line on its No"
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    said = [json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": p})[1]) for p in ("a", "b", "c")]
+    assert ["three reminders" in s for s in said] == [False, False, True], "it waits at the check until the count reaches three, then goes on"
+    assert "would say: [chart] three reminders" not in console.run(["chart", "try", "tool_finished", "--value", "reminders=0"], USER).out, "a trial with the count at nought, one more, would wait"
+    assert "three reminders" in console.run(["chart", "try", "tool_finished", "--value", "reminders=2"], USER).out, "a trial with the count at two, one more, goes on"
+    assert "takes name=n" in console.run(["chart", "try", "tool_finished", "--value", "reminders"], USER).err
+    from journal.repositories.scope import Scope
+    with app.container.get(Scope).of(1):
+        runs = json.loads(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart/runs?last=10", headers={"X-Journal-Env": "main"}), timeout=5).read())["runs"]
+    assert any("reminders 3" in r["counts"] for r in runs), "Recent runs says the count a walk left"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

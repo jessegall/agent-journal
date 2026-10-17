@@ -54,7 +54,7 @@ COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over"
 WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
 """The checks that take a number: the node's text, or the setting named there."""
-COUNT_CHECKS = ("count_over", "count_at", "count_every")
+COUNT_CHECKS = ("count_over", "count_at", "count_every", "count_wait")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
 
 
@@ -130,6 +130,10 @@ class Checks:
     def count_over(self, ctx: Context, name: str, limit: int) -> bool:
         """The agent's count by that name has reached the number."""
         return bool(ctx.session) and self.count_of(ctx, name) >= limit
+
+    def count_wait(self, ctx: Context, name: str, limit: int) -> bool:
+        """Has the count reached the number: until it has, the workflow waits here, its No needing no line."""
+        return self.count_over(ctx, name, limit)
 
     def count_at(self, ctx: Context, name: str, limit: int) -> bool:
         return bool(ctx.session) and self.count_of(ctx, name) == limit

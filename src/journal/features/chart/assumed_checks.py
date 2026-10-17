@@ -12,7 +12,10 @@ class AssumedChecks(Checks):
 
     def count_of(self, ctx: Context, name: str) -> int:
         """The count as the dry walk left it: assumed for the edits when given, set or added to by the dry count nodes before this check."""
-        base = self.assumptions.edits if name == "edits" and self.assumptions.edits is not None else super().count_of(ctx, name)
+        if name in self.assumptions.counts:
+            base = self.assumptions.counts[name]
+        else:
+            base = self.assumptions.edits if name == "edits" and self.assumptions.edits is not None else super().count_of(ctx, name)
         kind, value = self.ledger.get(ctx.counted(name), ("add", 0))
         return value if kind == "set" else base + value
 

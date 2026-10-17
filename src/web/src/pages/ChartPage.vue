@@ -27,6 +27,7 @@ const CARD = {width: 208, plain: 48, text: 84};
 const PORT_AT = {then: 50, yes: 30, no: 70};
 const WORD = {then: "Next", yes: "Yes", no: "No"};
 const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
+const portWord = (node, port) => (node.key === "count_wait" && port === "no" ? "Waits here" : WORD[port]);
 const fillers = ref([]);
 const VIEWS = [
     {key: "canvas", label: "Chart"},
@@ -1046,7 +1047,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                     :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
                                     :style="{left: `${PORT_AT[port]}%`}"
                                 >
-                                    {{ WORD[port] }}
+                                    {{ portWord(node, port) }}
                                 </span>
                             </template>
                         </div>
@@ -1121,6 +1122,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                             <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
                             <span v-if="run.change" class="chart-run-said">{{ run.change }}</span>
                             <span v-if="run.answer" class="chart-run-said">{{ run.answer }}</span>
+                            <span v-if="run.counts" class="chart-run-said">Counts: {{ run.counts }}</span>
                         </button>
                     </li>
                 </ul>
@@ -1378,9 +1380,14 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 }
 
 .chart-node-count {
+    min-width: 0;
+    overflow: hidden;
     color: var(--text-2);
     font-size: 10.5px;
+    letter-spacing: 0;
+    text-transform: none;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .chart-node-lock {

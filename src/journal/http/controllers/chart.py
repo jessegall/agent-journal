@@ -42,8 +42,14 @@ class ChartController:
     def runs(self, request: Request) -> Response:
         """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
         titles = {c.id: c.title for c in self.charts.all()}
-        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]], "change": self.change_words(run), "answer": self.answer_words(run)} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
+        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]], "change": self.change_words(run), "answer": self.answer_words(run), "counts": self.count_words(run)} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
+
+    @staticmethod
+    def count_words(run: dict) -> str:
+        """The counts the walk left its workflows with, in words: reminders 3, edits 2."""
+        counted = {name: value for stop in run.get("stops", ()) for name, value in stop.get("counts", {}).items()}
+        return ", ".join(f"{name} {value}" for name, value in counted.items())
 
     @staticmethod
     def answer_words(run: dict) -> str:
@@ -144,7 +150,7 @@ class ChartController:
         """A dry run: the path the chart would take for an agent event in an environment, and what it would do, nothing done."""
         environment = self.environments.named(request.body.get("environment", "main")).id
         body = request.body
-        assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"), state=body.get("state"), provider=body.get("provider"))
+        assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"), state=body.get("state"), provider=body.get("provider"), counts={k: int(v) for k, v in (body.get("counts") or {}).items()})
         ran = self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed)
         titles = {c.id: c.title for c in self.charts.all()}
         return Response.json({**ran, "titles": [titles.get(n, f"workflow {n}") for n in ran["workflows"]]})
