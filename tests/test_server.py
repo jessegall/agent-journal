@@ -705,3 +705,23 @@ def test_the_journal_knows_whether_a_viewer_tab_is_open(server):
     assert call(server, "GET", "/journal/viewer")[1] == {"open": False}, "no tab has asked anything yet"
     call(server, "GET", "/api/environments")
     assert call(server, "GET", "/journal/viewer")[1] == {"open": True}, "a tab that polls the viewer's API is open, and a launch opens no other"
+
+
+def test_the_secrets_page_makes_fills_allows_deletes_and_restores_a_secret(server, tmp_path, monkeypatch):
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    status, made = call(server, "POST", "/api/secret", {"title": "Github", "kind": "api key", "brief": "gh api user", "programs": ["gh"]})
+    assert status in (200, 201)
+    n = made.get("n") or made.get("row", {}).get("n") or 1
+    listed = json.dumps(call(server, "GET", "/api/secret")[1])
+    assert '"title": "Github"' in listed and '"variable": "GITHUB_KEY"' in listed and '"programs": ["gh"]' in listed
+    call(server, "POST", f"/api/secret/{n}/fill", {"field": "key", "value": "ghp_secretvalue123"})
+    listed = json.dumps(call(server, "GET", "/api/secret")[1])
+    assert '"filled": {"key":' in listed and "ghp_secretvalue123" not in listed, "a filled field is marked, its value never shown"
+    status, refused = call(server, "POST", f"/api/secret/{n}/update", {"programs": ["gh", "bash"]})
+    assert status == 409 and "never given to bash" in json.dumps(refused)
+    assert call(server, "POST", f"/api/secret/{n}/update", {"programs": ["gh", "curl"], "proposed": []})[0] == 200
+    assert call(server, "POST", "/api/secret/where")[1].endswith(".env")
+    call(server, "POST", f"/api/secret/{n}/delete", {"why": "deleted from the viewer"})
+    assert '"Github"' not in json.dumps(call(server, "GET", "/api/secret")[1]), "a deleted secret leaves the list, kept for a restore"
+    call(server, "POST", f"/api/secret/{n}/restore")
+    assert '"Github"' in json.dumps(call(server, "GET", "/api/secret")[1])

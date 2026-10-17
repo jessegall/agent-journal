@@ -7,6 +7,7 @@ from journal.features.questions.states.waiting import Waiting
 from journal.features.tasks.states.working import Working
 from journal.http.request import Request
 from journal.http.v3.attachments import Attachments
+from journal.http.v3.secret_actions import SecretActions
 from journal.models.author import Author
 from journal.models.fact import Fact
 from journal.models.doc import Doc
@@ -46,12 +47,14 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering, secret_actions: SecretActions) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
         self.notices, self.answering = notices, answering
         self.launcher = launcher
+        self.own_types = {"secret": secret_actions}
+        """Types whose acts live in a class of their own, by the act's name."""
 
     def create(self, type: str, body: dict, request: Request):
         title, brief = body.get("title", "") or body.get("brief", "")[:80], body.get("brief", "")
@@ -83,12 +86,14 @@ class V3Actions:
             return self.reports.save(Report(title=body.get("title", ""), body=body.get("brief", "")), by)
         if type == "environment":
             return self.environments.named(title)
+        if type in self.own_types:
+            return self.own_types[type].create(body, by)
         return None
 
     def act(self, type: str, n: int, action: str, body: dict, request: Request):
         """A type's own handler first; else the acts every row answers: read, restore and priority change nothing here, update rewrites the words, section appends one."""
         by = request.actor
-        own = getattr(self, f"{type}_{action}", None)
+        own = getattr(self.own_types[type], action, None) if type in self.own_types else getattr(self, f"{type}_{action}", None)
         if own:
             return own(n, body, by)
         shared = getattr(self, f"any_{action}", None)
