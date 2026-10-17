@@ -720,6 +720,7 @@ def test_the_secrets_page_makes_fills_allows_deletes_and_restores_a_secret(serve
     status, refused = call(server, "POST", f"/api/secret/{n}/update", {"programs": ["gh", "bash"]})
     assert status == 409 and "never given to bash" in json.dumps(refused)
     assert call(server, "POST", f"/api/secret/{n}/update", {"programs": ["gh", "curl"], "proposed": []})[0] == 200
+    assert '"programs": ["gh", "curl"]' in json.dumps(call(server, "GET", "/api/secret")[1]), "the user allowed curl"
     assert call(server, "POST", "/api/secret/where")[1].endswith(".env")
     call(server, "POST", f"/api/secret/{n}/delete", {"why": "deleted from the viewer"})
     assert '"Github"' not in json.dumps(call(server, "GET", "/api/secret")[1]), "a deleted secret leaves the list, kept for a restore"

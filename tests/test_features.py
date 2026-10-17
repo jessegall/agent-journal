@@ -3503,5 +3503,22 @@ def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_
     assert "got:Bearer [secret FAKE_KEY]" in templated.out
     assert "name the program bare" in console.run(["secret", "run", "Fake", "--", str(echoer)], AGENT).err
     assert "never given to bash" in console.run(["secret", "run", "Fake", "--", "bash", "-c", "echo"], AGENT).err
-    assert "not among the programs" in console.run(["secret", "run", "Fake", "--", "ls"], AGENT).err
+    assert "`journal secret propose 1 ls`" in console.run(["secret", "run", "Fake", "--", "ls"], AGENT).err
+    assert "proposed for secret 1" in console.run(["secret", "propose", "1", "ls"], AGENT).out and secrets.find(1).proposed == ("ls",)
+    assert "never given to python3" in console.run(["secret", "propose", "1", "python3"], AGENT).err
+    assert "already" in console.run(["secret", "propose", "1", "fakeapi"], AGENT).out
     assert secrets.find(1).used_at is not None
+
+
+def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
+    from journal.http.v3.secret_actions import SecretActions
+    from journal.models.secret import Secret
+    from journal.repositories.secrets import Secrets
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, request: sent.append(request))
+    hook(app, "SessionStart")
+    secret = app.container.get(Secrets).save(Secret(title="Github", proposed=("gh",)), Actor.agent("s1"))
+    app.container.get(SecretActions).update(secret.id, {"programs": ["gh"], "proposed": []}, Actor.user("u"))
+    app.runtime().deferred.drain()
+    assert any("the user let secret 1, Github, go to gh" in r.get("line", "") for r in sent)

@@ -59,7 +59,7 @@ class SecretRun:
         if Programs.never_given(name):
             raise Refused(f"a secret is never given to {name}: name the program that uses it directly, such as curl or gh")
         if name not in secret.programs:
-            raise Refused(f"{name} is not among the programs secret {secret.id} may go to ({', '.join(secret.programs) or 'none yet'}): the user allows it on the Secrets page")
+            raise Refused(f"{name} is not among the programs secret {secret.id} may go to ({', '.join(secret.programs) or 'none yet'}): propose it with `journal secret propose {secret.id} {name}`, and the user allows it on the Secrets page")
         found = shutil.which(name, path=self.search_path())
         if found is None:
             raise Refused(f"no program {name} on this machine")

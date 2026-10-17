@@ -47,6 +47,9 @@ class SecretCommand(Command):
         run.add_argument("--stdin", default="", help="what the program reads, with {field} where a value goes; the hidden value alone when left out")
         run.add_argument("--env", action="store_true", help="the values in the fields' variables too")
         run.add_argument("command", nargs="*", help="after --: the program and its arguments")
+        propose = self.verb(verbs, "propose", "propose a program a secret may go to; the user allows it on the Secrets page")
+        propose.add_argument("n", type=int)
+        propose.add_argument("program")
         self.verb(verbs, "where", "the file the values live in, outside the project")
         self.verb(verbs, "delete", "a secret put away; its values are kept thirty days for a restore").add_argument("n", type=int)
         self.verb(verbs, "restore", "a deleted secret back, with its values").add_argument("n", type=int)
@@ -101,6 +104,18 @@ class SecretCommand(Command):
         self.secrets.save(secret.with_(used_at=datetime.now(timezone.utc)), where.actor)
         print(output.decode(errors="replace"), end="")
         return code
+
+    def propose(self, args: Namespace, where: Where) -> int:
+        secret = self.secrets.find(args.n)
+        name = args.program
+        if "/" in name or Programs.never_given(name):
+            raise Refused(f"a secret is never given to {name}: propose the program that uses it directly, named bare, such as curl or gh")
+        if name in secret.programs or name in secret.proposed:
+            print(f"{name} is {'allowed' if name in secret.programs else 'proposed'} for secret {secret.id} already")
+            return 0
+        self.secrets.save(secret.with_(proposed=(*secret.proposed, name)), where.actor)
+        print(f"{name} proposed for secret {secret.id}: the user allows it on the Secrets page")
+        return 0
 
     def named(self, given: str) -> Secret:
         """A live secret by its number or its title."""
