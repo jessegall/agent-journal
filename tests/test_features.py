@@ -3307,6 +3307,24 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
         helper = json.loads(reply.read())["rows"][0]
     assert helper["data"]["report"] == "the parser is written", "the report is linked from the worker, not found among the recent messages"
 
+def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
+    import contextvars
+    import threading
+    import time
+    from journal.events.agent.turn_written import TurnWritten
+    from journal.features.messages.listeners.record_turn import RecordTurn
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    record = app.container.get(RecordTurn)
+    checked = RecordTurn.already_recorded
+    monkeypatch.setattr(RecordTurn, "already_recorded", lambda self, part: (checked(self, part), time.sleep(0.2))[0])
+    block = TurnWritten(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0)
+    threads = [threading.Thread(target=contextvars.copy_context().run, args=(record.handle, block)) for _ in range(2)]
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    said = [m for m in app.container.get(Messages).in_() if m.text == "Checking the worker's inspector now."]
+    assert len(said) == 1, "the transcript's copy and the display hook's copy, handled at once, make one message"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

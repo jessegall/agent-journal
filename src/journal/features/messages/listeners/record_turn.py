@@ -1,4 +1,5 @@
 import re
+import threading
 
 from journal.events.agent.turn_written import TurnWritten
 from journal.features.agent_listener import AgentListener
@@ -30,6 +31,7 @@ class RecordTurn(AgentListener[TurnWritten]):
 
     def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links) -> None:
         self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links = messages, entries, providers, registry, supervisor, links
+        self.recording = threading.Lock()  # the same block arrives at once from the transcript and from the display hook
 
     def handle(self, event: TurnWritten) -> None:
         from journal.features.messages.feature import Messages as MessagesFeature
@@ -38,7 +40,8 @@ class RecordTurn(AgentListener[TurnWritten]):
         if Faces.only_face(event.text):
             self.supervisor.type(event.environment_id, MessagesFeature.ONLY_A_FACE.about(face=event.text.strip()).rendered())
             return
-        self._record(event, event.text)
+        with self.recording:
+            self._record(event, event.text)
 
     def _record(self, event: TurnWritten, whole: str) -> None:
         by = Actor.agent(event.session)
