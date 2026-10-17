@@ -60,7 +60,7 @@ class ChartFeature(Feature):
     skill = Skill("chart", "The workflows of the journal's conduct; load it when a workflow is read or edited", """
 # The workflows
 
-The journal's conduct toward the agent is workflows: each answers one event, bound to a state or to none, and an
+The journal's conduct toward the agent is workflows: each answers the events it holds a trigger for, bound to a state or to none, and an
 event's workflows run in the order the user sets, the locked guards first, then the Always ones, then the states'.
 A trigger is an event, a check a yes or no question, an action what the journal does; lines join them, then from a
 trigger or an action, yes or no from a check, one line per port. A locked workflow or step ships with the journal and cannot be removed:

@@ -1370,12 +1370,18 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 }
 .chart-item-lock,
 .chart-node-waiting {
-    margin-left: auto;
-    padding: 0 6px;
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    padding: 1px 8px;
+    border: 1px solid color-mix(in oklab, var(--accent) 50%, transparent);
     border-radius: 999px;
     color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 16%, transparent);
+    background: var(--bg, #111215);
     font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
     white-space: nowrap;
 }
 
