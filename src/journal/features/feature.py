@@ -7,6 +7,7 @@ from journal.features.listener import Listener
 from journal.features.nudge import Nudge
 from journal.features.option import Option
 from journal.features.seed import Seed
+from journal.features.service import Service
 from journal.features.skill import Skill
 
 
@@ -25,4 +26,5 @@ class Feature:
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()
     skill: ClassVar[Skill | None] = None
+    services: ClassVar[tuple[Service, ...]] = ()
     default: ClassVar[bool] = True

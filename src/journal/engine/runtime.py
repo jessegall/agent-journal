@@ -1,6 +1,7 @@
 import os
 from journal.engine.clock import Clock
 from journal.engine.menu_watcher import MenuWatcher
+from journal.engine.service_start import ServiceStart
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
@@ -48,6 +49,7 @@ class Runtime:
         self.clock.start()
         self.watcher.start()
         self.server.start()
+        self.container.get(ServiceStart).run()
 
     def run(self) -> None:
         """Blocks until stop(), or until the process that started it is gone, so a journal never outlives its supervisor."""

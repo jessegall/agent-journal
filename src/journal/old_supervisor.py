@@ -18,5 +18,9 @@ class OldSupervisor:
         return str(home / "runtime" / "screens" / f"{environment}.out")
 
     @staticmethod
+    def takes(request: dict) -> bool:
+        return request.get("verb") in OLD
+
+    @staticmethod
     def datagram(request: dict) -> dict:
         return OLD[request["verb"]](request)

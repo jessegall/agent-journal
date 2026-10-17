@@ -470,6 +470,23 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
     assert not link.runs(environment), "an announce file a dead supervisor left answers nothing"
 
 
+def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_at_boot(app, monkeypatch):
+    from journal.engine.service_start import ServiceStart
+    from journal.features.registry import Registry
+    from journal.features.service import Service
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, request: sent.append(request) or {"ok": True, "started": True})
+    monkeypatch.setattr(Registry, "services", lambda self: [Service("watcher", "journal.watcher")])
+    starter = app.container.get(ServiceStart)
+    monkeypatch.delenv("JOURNAL_ENV", raising=False)
+    assert starter.run() == [] and sent == [], "a journal no supervisor hosts starts nothing"
+    monkeypatch.setenv("JOURNAL_ENV", "main")
+    assert starter.run() == [{"ok": True, "started": True}], "an upgrade that brings a new service starts it as the journal boots again, the supervisor still running"
+    assert sent[0]["verb"] == "start" and sent[0]["name"] == "watcher" and sent[0]["command"][1:] == ["-m", "journal.watcher"] and sent[0]["log"].endswith("runtime/watcher.log")
+
+
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink

@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.nudge import Nudge
+from journal.features.service import Service
 from journal.features.skill import Skill
 from journal.repositories.settings import Settings
 
@@ -22,6 +23,10 @@ class Registry:
     def options(self) -> list:
         """Every option a feature declares, across features."""
         return [option for feature in self.features for option in feature.options]
+
+    def services(self) -> list[Service]:
+        """The processes the features that are on need beside the agent."""
+        return [service for feature in self.features if self.is_on(feature) for service in feature.services]
 
     def skills(self) -> list[Skill]:
         return [feature.skill for feature in self.features if feature.skill]

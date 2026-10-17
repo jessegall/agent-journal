@@ -6,13 +6,12 @@ from pathlib import Path
 from journal.config import Config
 from journal.engine.typed_lines import TypedLines
 from journal.old_supervisor import OldSupervisor
+from journal.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
 MARK = "[journal]"
 AGENT, JOURNAL = "agent", "journal"
 """The names of the supervisor's two processes: the agent in front, the journal beside it."""
-WAIT = 5.0
-"""How long a supervisor has to answer a request."""
 
 
 class SupervisorLink:
@@ -74,6 +73,10 @@ class SupervisorLink:
         screen = self.announced(environment_id).get("screen", "")
         return Path(screen).with_suffix(f".{kind}") if screen else None
 
+    def start(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path) -> dict:
+        """A service started under the environment's supervisor; one already running under the name is left as it is."""
+        return self._send(environment_id, {"verb": "start", "name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log)})
+
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, {"verb": "restart", "name": AGENT, "resume": list(resume)})
 
@@ -103,12 +106,10 @@ class SupervisorLink:
         announced = self.announced(environment_id)
         if not announced:
             return {"ok": False, "error": "no supervisor runs here"}
+        if "protocol" not in announced and not OldSupervisor.takes(request):
+            return {"ok": False, "error": f"the supervisor running predates the protocol and takes no {request.get('verb')}"}
         if "protocol" not in announced:
             with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
                 out.sendto(json.dumps(OldSupervisor.datagram(request)).encode(), announced["socket"])
             return {"ok": True}
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
-            link.settimeout(WAIT)
-            link.connect(announced["socket"])
-            link.sendall((json.dumps(request) + "\n").encode())
-            return json.loads(link.makefile("rb").readline())
+        return SupervisorSocket.ask(announced["socket"], request)
