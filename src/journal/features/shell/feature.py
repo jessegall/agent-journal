@@ -24,7 +24,7 @@ class Shell(Feature):
     )
 
     MOVED = Nudge(name, "moved", "moved to the background: {{part}}", "its output goes to {{file}}; you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
-    ENDED = Nudge(name, "ended", "the command in the background {{outcome}}", "last lines: {{last}}; the whole output is at {{file}}", repeat_after=0)
+    ENDED = Nudge(name, "ended", "the command in the background {{outcome}}: {{part}}", "last lines: {{last}}; the whole output is at {{file}}", repeat_after=0)
     NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
     ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
     nudges = (MOVED, ENDED, ALONE)

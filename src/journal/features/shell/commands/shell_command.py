@@ -1,3 +1,4 @@
+import re
 from argparse import Namespace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,6 +22,8 @@ from journal.supervisor_link import SupervisorLink
 
 TAIL = 2000
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
+WORDS_IN = re.compile(r"[A-Za-z]{3,}")
+"""A word of three letters or more: a line holding one says something."""
 """The entries a chain leaves: each part as it starts and as it ends, the move to the background, and the end of a moved chain."""
 
 
@@ -102,14 +105,26 @@ class ShellCommand(Command):
     def ended(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
-        outcome = "ended" if args.status == 0 else f"failed with code {args.status}"
-        self.cards.show(self.scope.id, where.session, f"Background command {outcome}", "terminal", "good" if args.status == 0 else "bad", args.last)
+        part = self.moved_part(args.chain)
+        outcome = "finished" if args.status == 0 else f"failed with code {args.status}"
+        said = self.said_last(args.last)
+        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", "\n".join(line for line in (part, said) if line))
         live = self.agents.live()
         if live:
-            line = self.nudger.say(live, Shell.ENDED.about(outcome=outcome, last=args.last[-300:], file=args.file))
+            line = self.nudger.say(live, Shell.ENDED.about(part=part, outcome=outcome, last=args.last[-300:], file=args.file))
             if line:
                 self.supervisor.type(self.scope.id, line)
         return 0
+
+    def moved_part(self, chain: str) -> str:
+        """The command a chain was running when it moved to the background."""
+        return next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
+
+    @staticmethod
+    def said_last(last: str) -> str:
+        """The last line of output when it says something in words, not a row of progress dots or a percentage."""
+        line = next((l.strip() for l in reversed(last.splitlines()) if l.strip()), "")
+        return line if WORDS_IN.search(line) else ""
 
     def record(self, where: Where, kind: str, data: dict) -> None:
         self.entries.save(Entry(environment_id=self.scope.id, kind=kind, actor=where.actor, data={**data, "session": where.session, "at": datetime.now(timezone.utc).timestamp()}), where.actor)

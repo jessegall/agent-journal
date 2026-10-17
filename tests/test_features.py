@@ -1132,8 +1132,13 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
     assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
-    assert "failed with code 1" in typed[-1] and "2 failed" in typed[-1]
-    assert len([m for m in app.container.get(Messages).in_() if m.author == "system"]) == 2
+    assert "failed with code 1: pytest -q" in typed[-1] and "2 failed" in typed[-1]
+    cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
+    assert len(cards) == 2 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["detail"] == "pytest -q\n2 failed", "the card names the command and how it ended"
+    console.run(["shell", "moved", "c2", "pytest -q", "--file", "/tmp/out/c2"], AGENT)
+    console.run(["shell", "ended", "c2", "--status", "0", "--file", "/tmp/out/c2", "--last", "........ [ 76%]\n....... [100%]"], AGENT)
+    card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
+    assert card.text == "Finished in the background: testing" and card.data["detail"] == "pytest -q", "a last line of progress dots says nothing and is left out"
 
 
 def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
