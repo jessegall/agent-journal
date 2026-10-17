@@ -128,6 +128,10 @@ class ChartCommand(Command):
         wrong = self.validation.action_faults([{"kind": kind, "key": args.key, "text": args.text}])
         if wrong:
             raise Refused(wrong[0])
+        present = [{"id": n.id, "kind": n.kind, "key": n.key, "text": n.text} for n in self.charts.nodes_of(chart)]
+        calls = self.validation.call_faults(chart, present + [{"id": "new", "kind": kind, "key": args.key, "text": args.text}])
+        if calls:
+            raise Refused(str(calls[0]))
         if kind == NodeKind.TRIGGER:
             present = [{"kind": n.kind, "key": n.key} for n in self.charts.nodes_of(chart)]
             faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}])

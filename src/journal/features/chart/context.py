@@ -27,5 +27,7 @@ class Context:
     read: dict = field(default_factory=dict)
     """What each count check read on this walk, by node: the value the check compared."""
     walked: list = field(default_factory=list)
+    calling: list = field(default_factory=list)
+    """The workflows a Run a workflow step is running now, innermost last, so a call into one already running is refused."""
     """The workflows walked, in order, by id."""
     """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""

@@ -109,6 +109,11 @@ that read the event's own content take words: Tool is one of Write, Edit; Tool i
 deploy; Context over 60 percent; Time of day within 22:00-06:00, a tick reading its own time and any other event now. A check
 on time takes its unit: Has the agent been quiet for 30 minutes?, Is the log older than 2 hours?; a bare number is seconds.
 
+A workflow can run another: the action Run a workflow names one by its title, and the walk runs that workflow's
+steps from its trigger on, in place, as part of the event that reached the caller, so one drawing serves several
+events or states. A workflow cannot run itself, directly or through another: the save refuses it, and a call into
+a workflow already running in the same call is refused and recorded.
+
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is
   about to run, a tool finished, the agent stops, a subagent starts or ends, the context compacts, the session
   ends, the clock ticks. Every row is one too: a task created, a plan updated, a message deleted, and so on for

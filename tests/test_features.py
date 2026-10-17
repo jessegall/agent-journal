@@ -3207,3 +3207,24 @@ def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app
     assert "the parser is written" in report and "its 1 commits were taken into this branch" in report and "the parser" in report.split("taken into this branch:")[1], "its commit is merged and named"
     assert (root / "parser.txt").exists(), "the worker's file is in the project now"
     assert "it left 1 files uncommitted in its worktree" in report and "notes.txt" in report, "what it never committed is named, not lost"
+
+
+def test_a_workflow_runs_another_by_its_title_and_a_loop_is_refused(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    trigger = lambda wf: next(n.id for n in charts.nodes_of(charts.find(wf)) if n.kind == "trigger")
+    shared = int(console.run(["chart", "new", "Shared steps", "--on", "subagent_started"], USER).out.split()[1].rstrip(":"))
+    words = add(shared, "action", "say", "--text", "[chart] the shared steps speak")
+    console.run(["chart", "line", str(trigger(shared)), str(words)], USER)
+    caller = int(console.run(["chart", "new", "Caller", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    call = add(caller, "action", "run_workflow", "--text", "Shared steps")
+    console.run(["chart", "line", str(trigger(caller)), str(call)], USER)
+    status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    assert "the shared steps speak" in said(body), "the called workflow's steps run in place, at the caller's event"
+    loop = console.run(["chart", "node", "action", "run_workflow", "--text", "Caller", "--in", str(shared)], USER)
+    assert loop.code == 1 and "runs Caller, which runs this workflow again" in loop.err, "a loop is refused when the step is added"
+    assert "none is titled Nobody" in console.run(["chart", "node", "action", "run_workflow", "--text", "Nobody", "--in", str(caller)], USER).err, "a title no workflow has is refused"

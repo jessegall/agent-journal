@@ -38,6 +38,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.ACTION, 'type', 'Type to the agent', "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", takes_text=True),
         Entry(NodeKind.ACTION, 'count_start', 'Start a count', "sets the agent's count named in the text to zero; a check at a later event reads it", takes_text=True),
         Entry(NodeKind.ACTION, 'count_one', 'Count one', "adds one to the agent's count named in the text", takes_text=True),
+        Entry(NodeKind.ACTION, 'run_workflow', 'Run a workflow', 'runs the workflow named in the text by its title, from its trigger on, as part of this event and in place, so one workflow is used in several; a workflow cannot run itself, directly or through another', takes_text=True),
         Entry(NodeKind.ACTION, 'stop_here', 'Run no later workflows', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),
         Entry(NodeKind.ACTION, 'show_card', 'Show a card in the chat', 'a card in the chat with the message, so the user sees what the journal did', takes_text=True),
         Entry(NodeKind.ACTION, 'wait_outside', 'Wait for something outside', 'the agent waits for what the text names, it stays in effect until the agent uses a tool itself, you send it a word, or Send the agent back runs; one wait at a time', takes_text=True),

@@ -102,7 +102,7 @@ class Walk:
             node = nodes[at.pop(0)]
             passed.append(node.id)
             try:
-                port, decision = self.step(node, ctx, decision)
+                port, decision = self.step(node, ctx, decision, passed)
             except Exception as fault:
                 self.failed(node, ctx, fault)
                 port = NO if node.kind == NodeKind.CHECK else THEN
@@ -111,7 +111,7 @@ class Walk:
             self.failed(node, ctx, RuntimeError(f"the path ran past {STEPS} nodes and was cut off"))
         return decision
 
-    def step(self, node: Node, ctx: Context, decision: Decision) -> tuple[str, Decision]:
+    def step(self, node: Node, ctx: Context, decision: Decision, passed: list) -> tuple[str, Decision]:
         """One node: a check answers with the port to leave by, an action acts and leaves by then, a trigger leaves by then. The first hold of the event wins and a later one is recorded unanswered; a second move in one event is refused."""
         if node.kind == NodeKind.CHECK:
             if node.key in COUNT_CHECKS:
@@ -122,6 +122,8 @@ class Walk:
         if node.key == "stop_here":
             ctx.stopped.append(node.id)
             return THEN, decision.merged(self.actions.perform(node.key, node.text, ctx))
+        if node.key == "run_workflow":
+            return THEN, decision.merged(self.run_workflow(node, ctx, passed))
         if node.key in MOVERS and ctx.moves:
             return THEN, decision.merged(self.second_move(node, ctx))
         acted = self.actions.perform(node.key, node.text, ctx)
@@ -138,6 +140,20 @@ class Walk:
                 if node.key == "block_stop":
                     ctx.stopped.append(node.id)
         return THEN, decision.merged(acted)
+
+    def run_workflow(self, node: Node, ctx: Context, passed: list) -> Decision:
+        """The workflow the step names by its title, run in place as part of this event from its trigger on; one already running in this call is refused, so no call loops."""
+        title = node.text.strip()
+        called = next((c for c in self.charts.all() if c.title == title), None)
+        if called is None or called.id in ctx.calling:
+            self.failed(node, ctx, RuntimeError(f"no workflow is titled {title}" if called is None else f"{title} is already running in this call"))
+            return Decision()
+        ctx.calling.append(called.id)
+        graph, decision = self.charts.graph(called), Decision()
+        for start in [n for starts in graph.triggers.values() for n in starts]:
+            decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
+        ctx.calling.pop()
+        return decision
 
     def second_move(self, node: Node, ctx: Context) -> Decision:
         """A second move in one event is refused and recorded, naming both nodes; a dry run says it would be."""

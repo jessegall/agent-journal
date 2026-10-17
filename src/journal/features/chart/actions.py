@@ -108,6 +108,10 @@ class Actions:
             ctx.spoken.add(line)
             self.supervisor.type(ctx.environment_id, line)
 
+    def run_workflow(self, text: str, ctx: Context) -> Decision:
+        """Nothing to do here: the walk runs the named workflow in place."""
+        return Decision()
+
     def stop_here(self, text: str, ctx: Context) -> Decision:
         """Nothing to do: the walk ends the event at this node."""
         return Decision()

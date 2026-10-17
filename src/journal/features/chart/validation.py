@@ -62,6 +62,7 @@ class Validation:
         faults += [Fault(f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters", str(n.get("id", ""))) for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
         faults += self.trigger_faults(chart, nodes)
         faults += self.action_faults(nodes)
+        faults += self.call_faults(chart, nodes)
         for line in lines:
             source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
             if not source or not target:
@@ -163,6 +164,28 @@ class Validation:
                     faults.append(Fault(f"action {node.get('id')} holds the agent at every {trigger.get('key')}: put a check before it, or the agent never gets past", str(node.get("id", ""))))
                 ahead += then.get(str(node.get("id", "")), [])
         return faults
+
+    def call_faults(self, chart: Chart, nodes: list[dict]) -> list[Fault]:
+        """A Run a workflow step names a workflow there is, and no workflow runs itself, directly or through another."""
+        titles = {c.title: c for c in self.charts.all()}
+        calls = {c.id: [n.text.strip() for n in self.charts.nodes_of(c) if n.key == "run_workflow"] for c in self.charts.all() if c.id != chart.id}
+        calls[chart.id] = [n.get("text", "").strip() for n in nodes if n.get("key") == "run_workflow"]
+        faults = []
+        for n in (n for n in nodes if n.get("key") == "run_workflow"):
+            title = n.get("text", "").strip()
+            if title not in titles:
+                faults.append(Fault(f"node {n.get('id')} runs no workflow: none is titled {title or 'nothing'}", str(n.get("id", ""))))
+            elif self.reaches(titles[title].id, chart.id, calls, titles, set()):
+                faults.append(Fault(f"node {n.get('id')} runs {title}, which runs this workflow again: a workflow cannot run itself, directly or through another", str(n.get("id", ""))))
+        return faults
+
+    def reaches(self, start: int, target: int, calls: dict, titles: dict, seen: set) -> bool:
+        if start == target:
+            return True
+        if start in seen:
+            return False
+        seen.add(start)
+        return any(self.reaches(titles[t].id, target, calls, titles, seen) for t in calls.get(start, []) if t in titles)
 
     def action_faults(self, nodes: list[dict]) -> list[Fault]:
         """A wait names what for and being stuck why; a count node names its count, and a count check the number after it."""
