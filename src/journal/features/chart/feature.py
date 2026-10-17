@@ -1,6 +1,7 @@
 from journal.features.chart.commands.chart_command import ChartCommand
 from journal.features.chart.listeners.forget_counts_at_end import ForgetCountsAtEnd
 from journal.features.chart.listeners.walk_agent_events import WalkAgentEvents
+from journal.features.chart.listeners.walk_agent_events_after import WalkAgentEventsAfter
 from journal.features.chart.listeners.walk_row_events import WalkRowEvents
 from journal.features.chart.seeds.shipped_chart import ShippedChart
 from journal.features.entry import Entry
@@ -16,7 +17,7 @@ class ChartFeature(Feature):
     help = "The journal's conduct toward the agent as a flowchart the user edits: triggers, checks and actions joined by lines."
     commands = (ChartCommand,)
     seeds = (ShippedChart,)
-    listeners = (WalkAgentEvents, WalkRowEvents, ForgetCountsAtEnd)
+    listeners = (WalkAgentEvents, WalkAgentEventsAfter, WalkRowEvents, ForgetCountsAtEnd)
     checks = (
         Entry(NodeKind.CHECK, 'something_owed', 'Owes a skill, a look or a mark?', 'the agent owes the journal something before it may stop: a skill to read, the look at what is in flight, or a decision at a context mark'),
         Entry(NodeKind.CHECK, 'own_tool', 'Tool used by the agent itself, not a subagent?', "the tool use is the agent's own, not a subagent's"),

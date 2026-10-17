@@ -147,6 +147,12 @@ action, so one broken step never silences what follows.
 
 ## When the chart is walked
 
+An agent event walks its workflows in two parts. Those that can change the hook's answer or move the agent, any with a
+hold, a held stop, a line said, a move or Run no later workflows, walk before the hook is answered. Those that only
+type into the terminal, show a card or start a sequence walk after the reply on the deferred worker, in the same run
+order, so the agent never waits on them; a walk ended in the first part ends the second part too. A tick, answered by
+no hook, walks them all at once.
+
 At every event the engine reads the chart afresh and follows each trigger box for that event: a check sends the
 path on by its answer, an action acts and sends it on. An agent event, such as a tool about to run or a stop, is
 walked before the hook is answered, so a hold or a blocked stop reaches the agent and a said line rides on the

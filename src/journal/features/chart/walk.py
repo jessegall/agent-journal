@@ -25,6 +25,8 @@ from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.entries import Entries
 
 STEPS = 50
+ALL, BEFORE, AFTER = "all", "before", "after"
+"""Which of an event's workflows a walk takes: all of them, those walked before the hook's reply, or the quiet ones after it."""
 MOVERS = ("release", "wait_outside", "mark_stuck", "go_idle")
 """The actions that move the agent: one of them per event, the first to act."""
 """A path is at most this long: a longer one is a loop the validation missed, and it stops here."""
@@ -39,19 +41,20 @@ class Walk:
 
     def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine, floor: Floor) -> None:
         self.charts, self.checks, self.actions, self.entries, self.states, self.machine, self.floor = charts, checks, actions, entries, states, machine, floor
+        self._stopped_at: dict[int, int] = {}
 
     def dry(self, fillers, checks: Checks, ledger: dict) -> "Walk":
         """The same walk with nothing done: each action tells what it would do, the checks given answer, assumed or live, and the counts the dry walk makes are read through the ledger shared with them."""
         return Walk(self.charts, checks, DryActions(fillers, ledger), self.entries, self.states, self.machine, self.floor)
 
-    def on(self, ctx: Context) -> Decision:
-        """The walk's decision under the floor: no workflow holds a journal command or the read of a skill's file, the ways a debt is paid; the hold's words still reach the agent."""
-        return self.floor.under(ctx.event, self.on_with_trace(ctx, []))
+    def on(self, ctx: Context, part: str = ALL) -> Decision:
+        """The walk's decision under the floor: no workflow holds a journal command or the read of a skill's file, the ways a debt is paid; the hold's words still reach the agent. The part says which workflows walk: those that can change the answer before the reply, the quiet ones after it, or all."""
+        return self.floor.under(ctx.event, self.on_with_trace(ctx, [], part))
 
-    def on_with_trace(self, ctx: Context, passed: list) -> Decision:
+    def on_with_trace(self, ctx: Context, passed: list, part: str = ALL) -> Decision:
         """The walk, with the nodes it passes written into the list given: the event's workflows in their order; a move inside one re-reads the state, and the new state's workflows that come later in the order run at their place."""
         key, decision, started = self.trigger_key(ctx.event), Decision(), ctx.state
-        walked, graphs, queue = [], [], self.workflows_for(ctx, key)
+        walked, graphs, queue = [], [], self.in_part(self.workflows_for(ctx, key), ctx.event, part)
         while queue:
             chart = queue.pop(0)
             walked.append(chart)
@@ -62,13 +65,23 @@ class Walk:
             for start in graph.triggers.get(key, ()):
                 decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
             if ctx.stopped:
+                self._stopped_at[id(ctx.event)] = chart.place
                 queue = []
             elif len(ctx.moves) > moves_before:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
-                queue = [c for c in self.workflows_for(ctx, key) if c not in walked and c.place > chart.place]
+                queue = [c for c in self.in_part(self.workflows_for(ctx, key), ctx.event, part) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
             self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, "read": {str(k): v for k, v in ctx.read.items()}}), Actor.system())
         return decision
+
+    def in_part(self, charts: list[Chart], event: Event, part: str) -> list[Chart]:
+        """The workflows of the part asked for: before the reply those that can change the answer, after it the quiet ones placed before any that ended the walk."""
+        if part == BEFORE:
+            return [c for c in charts if self.charts.graph(c).answers]
+        if part == AFTER:
+            stopped = self._stopped_at.pop(id(event), None)
+            return [c for c in charts if not self.charts.graph(c).answers and (stopped is None or c.place < stopped)]
+        return charts
 
     @staticmethod
     def worth_recording(event: Event, graphs: list[Graph], passed: list) -> bool:

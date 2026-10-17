@@ -2442,6 +2442,7 @@ def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_
         console.run(["chart", "line", "--edit-default", str(previous), str(following)], USER)
         previous = following
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    app.runtime().deferred.drain()
     cut = entries.of_kind("walk_failed", 1)[0]
     own = {n.id for n in app.container.get(ChartRows).nodes_of(app.container.get(ChartRows).find(chart))}
     assert f"ran past {STEPS} nodes" in cut.data["fault"] and len([n for n in entries.of_kind("walk", 1)[0].data["nodes"] if n in own]) == STEPS, "a runaway path is cut off at the cap and the cut is on record"
@@ -3228,3 +3229,28 @@ def test_a_workflow_runs_another_by_its_title_and_a_loop_is_refused(app):
     loop = console.run(["chart", "node", "action", "run_workflow", "--text", "Caller", "--in", str(shared)], USER)
     assert loop.code == 1 and "runs Caller, which runs this workflow again" in loop.err, "a loop is refused when the step is added"
     assert "none is titled Nobody" in console.run(["chart", "node", "action", "run_workflow", "--text", "Nobody", "--in", str(caller)], USER).err, "a title no workflow has is refused"
+
+
+def test_a_quiet_workflow_walks_after_the_reply_and_a_walk_ended_before_it_ends_it(app, monkeypatch):
+    from journal.repositories.charts import Charts
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction.get("line", "")))
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
+    trigger = lambda wf: next(n.id for n in charts.nodes_of(charts.find(wf)) if n.kind == "trigger")
+    quiet = int(console.run(["chart", "new", "Quiet one", "--on", "subagent_started"], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger(quiet)), str(add(quiet, "action", "type", "--text", "[chart] typed after the reply"))], USER)
+    status, body = hook(app, "SubagentStart", agent_id="a1")
+    assert "typed after the reply" not in json.dumps(body), "the quiet workflow is not on the hook's path"
+    app.runtime().deferred.drain()
+    assert any("typed after the reply" in t for t in typed), "it walks after the reply"
+    first = int(console.run(["chart", "new", "Ends the run", "--on", "subagent_started"], USER).out.split()[1].rstrip(":"))
+    charts.save(charts.find(first).with_(place=-1000), USER.actor)
+    console.run(["chart", "line", str(trigger(first)), str(add(first, "action", "stop_here"))], USER)
+    typed.clear()
+    hook(app, "SubagentStart", agent_id="a2")
+    app.runtime().deferred.drain()
+    assert not any("typed after the reply" in t for t in typed), "a walk ended by an earlier workflow ends the quiet part too"
