@@ -1,21 +1,23 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields, replace
 
 
 @dataclass(frozen=True)
 class SequenceRun:
-    """A sequence an agent is working through: the steps as they were when it started, the step in hand, the row it is about, whether the step was taken up, and why it is parked when it is."""
+    """A sequence an agent is working through: the steps as they were when it started, the step in hand, the row it is about, when the step was taken up, when a stop was last held with it, and why it is parked when it is."""
 
     sequence_id: int
     title: str
     steps: tuple[str, ...]
     step: int = 0
     about: str = ""
-    taken_up: bool = False
+    taken_up_at: str = ""
+    held_at: str = ""
     parked_why: str = ""
 
     @classmethod
     def of(cls, raw: dict) -> "SequenceRun":
-        return cls(**{**raw, "steps": tuple(raw.get("steps", ()))})
+        known = {f.name for f in fields(cls)}
+        return cls(**{**{k: v for k, v in raw.items() if k in known}, "steps": tuple(raw.get("steps", ()))})
 
     def as_dict(self) -> dict:
         return {**asdict(self), "steps": list(self.steps)}
@@ -30,3 +32,12 @@ class SequenceRun:
 
     def moved_on(self) -> "SequenceRun":
         return SequenceRun(self.sequence_id, self.title, self.steps, self.step + 1, self.about)
+
+    def taken_up(self, at: str) -> "SequenceRun":
+        return replace(self, taken_up_at=at)
+
+    def held(self, at: str) -> "SequenceRun":
+        return replace(self, held_at=at)
+
+    def parked(self, why: str) -> "SequenceRun":
+        return replace(self, parked_why=why)

@@ -18,7 +18,7 @@
       "name": "a stop at step one",
       "answer": {
         "decision": "block",
-        "reason": "sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with journal plan brief <plan n> \"<goal>\". `journal sequence next` when it is done"
+        "reason": "sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` to take it up, `journal sequence next` when it is done"
       },
       "typed": [],
       "nudges": [],
@@ -26,10 +26,7 @@
     },
     {
       "name": "a stop at step two",
-      "answer": {
-        "decision": "block",
-        "reason": "sequence 1, step 2: Add the plan's phases in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and --checkpoint where the user should look before it goes on. `journal sequence next` when it is done"
-      },
+      "answer": {},
       "typed": [],
       "nudges": [],
       "counts": {}

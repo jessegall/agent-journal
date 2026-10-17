@@ -22,6 +22,10 @@ class Requiring:
     def __init__(self, machine: Machine, registry: Registry, files: SkillFiles, nudger: Nudger, links: Links) -> None:
         self.machine, self.registry, self.files, self.nudger, self.links = machine, registry, files, nudger, links
 
+    def owes_anything(self, agent: Agent) -> bool:
+        """Whether the agent owes the journal the look at what is in flight, a decision at a context mark or a skill's read."""
+        return not agent.oriented or bool(agent.mark_owed) or bool(self.owed_names(agent))
+
     def owed_names(self, agent: Agent) -> list[str]:
         """The skills the agent owes a read of, by name, as its links say."""
         return [link.kind[len(OWES):] for link in self.links.of(agent) if link.kind.startswith(OWES) and link.source == Ref.to(agent)]
@@ -52,8 +56,10 @@ class Requiring:
         return [skill for skill in self.registry.skills() if words & {k.lower() for k in skill.keywords}]
 
     def require(self, agent: Agent, skills: list[Skill]) -> list[str]:
-        """Each skill owed becomes a link from the agent, and the line that says where its file is."""
+        """Each skill owed becomes a link from the agent, and the line that says where its file is; nothing is owed while the skills feature is off, as nothing would pay it."""
         from journal.features.skills.feature import Skills
+        if self.registry.silenced(Skills.REQUIRED):
+            return []
         for skill in skills:
             self.owe(agent, skill)
         return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.about(skill=skill.name, path=self.path_of(skill))))]

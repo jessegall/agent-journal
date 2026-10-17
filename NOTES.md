@@ -545,7 +545,13 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   seeded at boot (feature `seeds`, run by the runtime) and tells the plan's steps. A run is engine flow, not a state
   and not a workflow: the runs are a stack on the agent's row (`sequence_runs`), the one in hand last, each with the
   step titles it began with and the row it is about; every start goes through `Running`; the next session takes over
-  the runs of the last one that ended with some; a stop outside a wait is held with the step (plan 10).
+  the runs of the last one that ended with some (plan 10). A step is taken up with `journal sequence follow`, or by
+  running a command the step names in backticks; until then a write waits, and a taken-up step that stands for
+  `sequences.stale_after` writes (25) holds the next write again. Reads, journal-only lines and subagents are never
+  held. A stop is told the step once until the agent uses a tool again, and is quiet in a wait, while a question
+  is open, while the run is parked and while the agent owes the look, the mark or a skill (`Requiring.owes_anything`),
+  so those debts are paid first. A run's start owes the sequences skill. An unedited shipped sequence follows the
+  shipped text at boot.
 - Delivery: every line the journal types is held in `TypedLines` until its prompt hook brings it back; one not back
   after ten quiet seconds between turns is typed again, three tries, each a card.
 - The supervisor pins nothing to the screen any more: its line is Claude Code's own status line, read from

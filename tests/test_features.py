@@ -239,19 +239,38 @@ def test_the_same_check_three_times_is_named(app):
 
 def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     console = app.console()
-    created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it | push"], USER).out
+    created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it with `git tag v1` | push"], USER).out
     release = created.split()[1].rstrip(":")
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
+    edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"})[1]
     assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "told the step at every stop"
+    assert "step 1" not in json.dumps(hook(app, "Stop", stop_hook_active=True)[1]), "the step is said once until the agent uses a tool again"
+    assert "a write waits for sequence" in json.dumps(edit()), "a write waits until the step is taken up"
+    assert "a write waits" not in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1]), "a read goes through"
+    bash = lambda line, **more: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": line}, **more)[0]
+    assert bash("journal message unread && journal task list") == 200, "a line of journal commands alone goes through"
+    assert bash("journal task list && sed -i '' s/a/b/ a.py") == 409, "a journal command chained with a write stays held"
+    assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"}, agent_id="r1")[0] == 200, "a subagent is never held"
+    assert "step 1 of sequence" in console.run(["sequence", "next"], AGENT).err, "a step never taken up cannot be moved on"
+    assert "following sequence" in console.run(["sequence", "follow"], AGENT).out
+    assert "a write waits" not in json.dumps(edit()), "a step taken up lets writes through"
+    assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"], "a tool used since the last hold, so the stop is held again"
     console.run(["await", "the user"], AGENT)
     assert hook(app, "Stop")[1].get("decision") != "block", "a step that waits on the user says so, and the stop passes"
-    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal sequence next"})
-    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out, "working again lifts the wait and the sequence goes on"
+    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
+    assert "a write waits" not in json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "git tag v1 && git push --tags"})[1]), "a command the step names goes through"
+    assert app.container.get(Running).in_hand("s1", 1).taken_up_at, "and takes the step up"
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
+    console.run(["sequence", "follow"], AGENT)
+    app.container.get(Settings).set("sequences.stale_after", 2, Actor.user(1))
+    edit(), edit()
+    assert "2 writes since sequence" in json.dumps(edit()), "a step taken up and not moved on holds again after the set writes"
+    assert "parked at step 3" in console.run(["sequence", "park", "--why", "the user wants the docs first"], AGENT).out
+    assert "a write waits" not in json.dumps(edit()) and "step 3" not in json.dumps(hook(app, "Stop")[1]), "a parked run holds nothing"
+    console.run(["sequence", "follow"], AGENT)
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
     assert app.container.get(Machine).current("s1").task_id == 1
 
@@ -1357,6 +1376,7 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkey
     app.runtime().deferred.drain()
     assert len(running.runs(app.container.get(Machine).agent("s1", 1))) == 1 and running.in_hand("s1", 1).step == 0, "a sequence already running is not started again"
     for _ in range(4):
+        app.console().run(["sequence", "follow"], AGENT)
         app.console().run(["sequence", "next"], AGENT)
     assert running.in_hand("s1", 1) is None, "the last step ends the run"
 
@@ -1390,6 +1410,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     console = app.console()
     console.run(["plan", "create", "p", "--brief", "the goal"], AGENT)
     for _ in range(4):
+        console.run(["sequence", "follow"], AGENT)
         console.run(["sequence", "next"], AGENT)
     console.run(["plan", "phase", "1", "Lay the floor", "--when", "the floor is level"], AGENT)
     console.run(["plan", "phase", "1", "Raise the walls", "--when", "the walls stand", "--checkpoint"], AGENT)
@@ -1859,6 +1880,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     running = app.container.get(Running)
     assert running.in_hand("s1", 1).title == "release" and "step 1: bump" in json.dumps(body), "a prompt's words start the sequence and its first step rides on the answer"
     for _ in range(2):
+        console.run(["sequence", "follow"], AGENT)
         console.run(["sequence", "next"], AGENT)
     console.run(["message", "send", "could you give me an update?"], USER)
     app.runtime().deferred.drain()
@@ -3085,6 +3107,7 @@ def test_a_run_stands_through_the_agents_moves_and_a_workflow_action_starts_one(
     sequences = app.container.get(Sequences)
     release = next(q for q in sequences.all() if q.title == "release")
     sequences.save(replace(release, steps=("push", "bump", "tag")), USER.actor)
+    console.run(["sequence", "follow"], AGENT)
     assert "step 2: tag" in console.run(["sequence", "next"], AGENT).out, "a run keeps the steps it began with when its sequence is edited"
 
 def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, monkeypatch):
@@ -3098,11 +3121,31 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, m
     app.console().run(["environment", "here"], AGENT)
     app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
     hook(app, "SessionStart", session_id="s2")
+    app.console().run(["environment", "here"], Where("main", "s2"))
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal-plans/SKILL.md")}, tool_response="", session_id="s2")
     app.console().run(["plan", "create", "Side work", "--brief", "b"], Where("main", "s2"))
     app.runtime().deferred.drain()
     running = app.container.get(Running)
     assert running.in_hand("s2", 1).title == "Building a plan" and running.in_hand("s1", 1) is None and not any("Building" in line or "step 1" in line for line in sent), "the run is the worker's, and its step is not typed to the agent"
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal-sequences/SKILL.md")}, tool_response="", session_id="s2")
     assert "step 1" in hook(app, "Stop", session_id="s2")[1]["reason"], "the worker is told the step at its stop"
+
+def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_paid_in_turn(skilled):
+    app, console = skilled, skilled.console()
+    edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"})
+    made = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    hook(app, "SessionStart")
+    console.run(["sequence", "run", made], AGENT)
+    context(app, 30)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    for pay in (lambda: read_skill(app, "journal"), lambda: read_skill(app, "journal-sequences"), lambda: console.run(["environment", "here"], AGENT), lambda: console.run(["nothing", "survives", "all logged"], AGENT)):
+        status, held = edit()
+        assert status == 409 and "a write waits for sequence" not in json.dumps(held), "the debt holds the write, and the step stays out of it"
+        assert "step 1" not in json.dumps(hook(app, "Stop")[1]), "while a debt is owed the step is not said at a stop"
+        pay()
+    assert "a write waits for sequence" in json.dumps(edit()[1]), "every debt paid, the step holds the write"
+    console.run(["sequence", "follow"], AGENT)
+    assert edit()[0] == 200, "the step taken up, the write goes through"
 
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
