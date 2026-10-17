@@ -50,7 +50,7 @@
       "name": "a minute with a task parked",
       "answer": null,
       "typed": [
-        "[journal] task 1, the footer, is still parked: can you continue it now? It was parked because: the header first. journal task resume 1 picks it up again"
+        "[journal] task 1, the footer, is still parked: can you continue it now? It was parked because: the header first. `journal task resume 1` picks it up again"
       ],
       "nudges": [
         "tasks.parked_still"
@@ -75,7 +75,7 @@
       "name": "five quiet minutes awaiting",
       "answer": null,
       "typed": [
-        "[journal] check the deploy now: you have waited 5 min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
+        "[journal] check the deploy now: you have waited 5 min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
       ],
       "nudges": [
         "tasks.check_awaited"

@@ -42,7 +42,7 @@
       "name": "a stop after",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [

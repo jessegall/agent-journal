@@ -20,8 +20,8 @@ class Questions(Feature):
         Entry(NodeKind.CHECK, 'agent_waits_on_the_question', 'Agent waits on this question?', 'the agent waits on the question of this row'),
     )
 
-    ANSWERED = Nudge(name, "answered", "question {{n}} is answered", "journal question show {{n}} reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
-    OWN_TOOL = Nudge(name, "own_tool", "a question goes through the journal, not your own question tool", "journal question ask \"<one line>\" --options a,b; the user answers in the viewer and the answer reaches you", repeat_after=0)
+    ANSWERED = Nudge(name, "answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
+    OWN_TOOL = Nudge(name, "own_tool", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options a,b`; the user answers in the viewer and the answer reaches you", repeat_after=0)
     nudges = (ANSWERED, OWN_TOOL)
 
     skill = Skill("questions", 'Ask the user a question and wait for the answer; load it before offering the user choices', """

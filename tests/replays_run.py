@@ -212,7 +212,7 @@ def test_question_answered_as_the_shipped_workflow_equals_the_listener(journals,
     with_workflow.runtime().start()
     right = Replay(with_workflow, monkeypatch)
     a_question_is_answered(with_workflow, right, provider)
-    assert left.record()[-1]["typed"] == ["[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"]
+    assert left.record()[-1]["typed"] == ["[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"]
     assert with_workflow.container.get(Machine).current("s1").task_id == 1, "the workflow released the agent"
     assert differences(left.record(), right.record()) == [], "the agent would have seen the same; the workflow's line is on record too, which the listener never left"
 

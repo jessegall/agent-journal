@@ -171,7 +171,7 @@ class Fillers:
     def log_command(self, ctx: Context) -> str:
         """The command that logs the task in hand."""
         state = self.state(ctx)
-        return f"journal task log {state.task_id}" if isinstance(state, Working) and state.task_id else ""
+        return f"`journal task log {state.task_id}`" if isinstance(state, Working) and state.task_id else ""
 
     def awaited(self, ctx: Context) -> str:
         """What an expecting agent is expecting, in its own words."""

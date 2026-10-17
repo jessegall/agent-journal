@@ -48,7 +48,7 @@
       "name": "a stop with four unread",
       "answer": {
         "decision": "block",
-        "reason": "4 messages unread: journal message unread"
+        "reason": "4 messages unread: `journal message unread`"
       },
       "typed": [],
       "nudges": [

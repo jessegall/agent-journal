@@ -18,7 +18,7 @@
       "name": "answered",
       "answer": null,
       "typed": [
-        "[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"
+        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
       ],
       "nudges": [
         "chart.line"

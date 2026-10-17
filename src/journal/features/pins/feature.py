@@ -12,7 +12,7 @@ class Pins(Feature):
     commands = (NoticeCommand,)
     listeners = (UnpinnedLink,)
 
-    UNPINNED = Nudge(name, "unpinned", "a link you gave in the chat is not pinned; if the user will come back to it, pin it", "{{url}}: journal notice create \"<what it is>\" --link \"{{url}}\" --label \"<Open ...>\"", repeat_after=86400)
+    UNPINNED = Nudge(name, "unpinned", "a link you gave in the chat is not pinned; if the user will come back to it, pin it", "{{url}}: `journal notice create \"<what it is>\" --link \"{{url}}\" --label \"<Open ...>\"`", repeat_after=86400)
     nudges = (UNPINNED,)
 
     skill = Skill("pinned-links", "Load it when you point the user at a design, a page or anything else outside the journal. A link the agent gives the user in the chat is pinned to the chat, so it is not lost as the chat scrolls.", """

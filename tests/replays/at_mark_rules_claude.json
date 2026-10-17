@@ -19,7 +19,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "context 25% full: decide what to keep from it. journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do"
+          "additionalContext": "context 25% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do"
         }
       },
       "typed": [],
@@ -31,7 +31,7 @@
     {
       "name": "a write at the mark",
       "answer": {
-        "error": "writes wait until you decide what to keep from the context. journal fact create, journal rule create, or journal nothing \"<why>\""
+        "error": "writes wait until you decide what to keep from the context. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`"
       },
       "typed": [],
       "nudges": [],
@@ -62,7 +62,7 @@
       "name": "a stop past the second mark",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a decision at the context mark, 50% full. journal fact create, journal rule create, or journal nothing \"<why>\" first, or journal stuck \"<why>\" if you are truly stuck\ncontext 50% full: decide what to keep from it. journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do\ntask 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck"
+        "reason": "you stopped while the journal awaits a decision at the context mark, 50% full. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck\ncontext 50% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [
@@ -74,7 +74,7 @@
     {
       "name": "a write at the second mark",
       "answer": {
-        "error": "writes wait until you decide what to keep from the context. journal fact create, journal rule create, or journal nothing \"<why>\""
+        "error": "writes wait until you decide what to keep from the context. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`"
       },
       "typed": [],
       "nudges": [],

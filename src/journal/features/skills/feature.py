@@ -29,7 +29,7 @@ class Skills(Feature):
     )
 
     REQUIRED = Nudge(name, "required", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)
-    STOPPED_OWING = Nudge(name, "stopped_owing", "you stopped while the journal awaits the {{skills}} skill to be read", "do that first, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
+    STOPPED_OWING = Nudge(name, "stopped_owing", "you stopped while the journal awaits the {{skills}} skill to be read", "do that first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
     nudges = (REQUIRED, STOPPED_OWING)
 
     skill = Skill("journal", "The journal, its commands and when each applies; load it first in every session", """

@@ -98,9 +98,9 @@ class MessageCommand(Command):
         for name in message.files:
             path = self.config.home / "files" / "message" / str(message.id) / name
             seen = message.captions.get(name)
-            print(f"  file {path}" + (f": {seen}" if seen else f" (open it, then journal message tag {message.id} \"{name}\" \"<what it shows>\")"))
+            print(f"  file {path}" + (f": {seen}" if seen else f" (open it, then `journal message tag {message.id} \"{name}\" \"<what it shows>\"`)"))
         for link in self.links.of(message):
             other = link.target if link.source == Ref.to(message) else link.source
             print(f"  {link.kind} {other}")
         print(f"  reply with [!reply:{message.id}] in your turn")
-        print(f"  steering? take it as steering. something to do? file it: journal task create \"<title>\" --from {message.id}")
+        print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")

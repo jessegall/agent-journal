@@ -345,7 +345,7 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"] and "in flight" not in body["error"], "the guards hold the write while a skill is owed: the first hold wins"
     read_skill(app, "journal")
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
-    assert status == 409 and "before your first write, run journal environment here: it lists the task in hand, the open tasks, the facts and the reminders" in body["error"], "the skill read, the start's look at what is in flight is still owed"
+    assert status == 409 and "before your first write, run `journal environment here`: it lists the task in hand, the open tasks, the facts and the reminders" in body["error"], "the skill read, the start's look at what is in flight is still owed"
     app.console().run(["environment", "here"], AGENT)
     assert machine.current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
@@ -537,7 +537,7 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
     assert typed == ["[journal] new message 2", "[journal] new message 3"]
     assert "new messages 1, 2, 3" in hook(app, "UserPromptSubmit", prompt="hi")[1]["hookSpecificOutput"]["additionalContext"]
     app.console().run(["message", "send", "four"], USER)
-    assert "4 messages unread: journal message unread" in hook(app, "Stop")[1]["reason"]
+    assert "4 messages unread: `journal message unread`" in hook(app, "Stop")[1]["reason"]
     shown = app.console().run(["message", "unread"], AGENT).out
     assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "four" in shown
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
@@ -761,9 +761,9 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["message", "send", "hi"], USER)
     status, body = hook(app, "SessionStart", source="compact")
-    assert "before your first write, run journal environment here" in body["hookSpecificOutput"]["additionalContext"]
+    assert "before your first write, run `journal environment here`" in body["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    assert status == 409 and "journal environment here" in body["error"]
+    assert status == 409 and "`journal environment here`" in body["error"]
     shown = console.run(["environment", "here"], AGENT).out
     assert "task in hand: 1 t" in shown and "unread messages: 1" in shown
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
@@ -991,7 +991,7 @@ def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
 def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_reminds(app, monkeypatch):
     hook(app, "SessionStart")
     status, body = hook(app, "PreToolUse", tool_name="AskUserQuestion", tool_input={"question": "which?"})
-    assert status == 409 and "journal question ask" in body["error"]
+    assert status == 409 and "`journal question ask \"<one line>\" --options a,b`" in body["error"]
 
 
 def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
@@ -1041,8 +1041,8 @@ def test_reading_a_message_names_its_files_links_and_captions(app):
     with u(f"http://127.0.0.1:{app.server().port}/api/message/1/files/shot%20one.png?env=main", timeout=5) as reply:
         assert reply.read() == b"PNG", "a file name with a space is found"
     shown = console.run(["message", "read", "1"], AGENT).out
-    assert "file " in shown and "shot one.png" in shown and "journal message tag 1" in shown
-    assert 'something to do? file it: journal task create "<title>" --from 1' in shown
+    assert "file " in shown and "shot one.png" in shown and "`journal message tag 1 \"shot one.png\"" in shown
+    assert 'something to do? file it: `journal task create "<title>" --from 1`' in shown
     assert "(from message 1)" in console.run(["task", "create", "look at the picture", "--from", "1"], AGENT).out
     assert console.run(["message", "tag", "1", "shot one.png", "the footer overlapping the form"], AGENT).code == 0
     assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).out
@@ -1181,7 +1181,7 @@ def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
 
 def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     from journal.features.shell.writes import Writes
-    assert [Writes.of(c) for c in ("sed -i '' s/a/b/ f.py", "cat f.py | head -3", "echo hi > /dev/null", "echo hi > out.txt", "git status; git log", "git checkout -- f.py", "journal task create x", "python3 - <<'EOF'\nfrom pathlib import Path\nPath('x').write_text('y')\nEOF", "python3 -c 'print(1)'", "grep -rn 'a > b' src | tee found.txt", 'echo "a > b"')] == [True, False, False, True, False, True, False, True, False, True, False]
+    assert [Writes.of(c) for c in ("sed -i '' s/a/b/ f.py", "cat f.py | head -3", "echo hi > /dev/null", "echo hi > out.txt", "git status; git log", "git checkout -- f.py", "`journal task create` x", "python3 - <<'EOF'\nfrom pathlib import Path\nPath('x').write_text('y')\nEOF", "python3 -c 'print(1)'", "grep -rn 'a > b' src | tee found.txt", 'echo "a > b"')] == [True, False, False, True, False, True, False, True, False, True, False]
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -1663,7 +1663,7 @@ def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
     console.run(["task", "create", "free work"], USER)
     body = hook(app, "Stop")[1]
     assert body.get("decision") == "block" and "tasks are open, and auto mode is on: task 1 next: free work" in body["reason"], "the next open task, in auto mode, through the chart"
-    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again: journal stuck is the way out"
+    assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again: `journal stuck` is the way out"
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     assert hook(app, "Stop")[1] == {}, "auto off: an open task says nothing"
@@ -1951,11 +1951,11 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     console.run(["environment", "here"], AGENT)
     console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
     console.run(["question", "answer", "1", "beta"], USER)
-    assert any("question 1 is answered" in line and "journal question show 1" in line for line in typed), "told like a message, with the command to read it"
+    assert any("question 1 is answered" in line and "`journal question show 1`" in line for line in typed), "told like a message, with the command to read it"
     shown = console.run(["question", "show", "1"], AGENT).out
     assert "question 1: Which name?  [alpha / beta]" in shown and "answer: beta" in shown and "act on the answer" in shown
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal question show 1 " + "|" + " head -2"})
-    assert status == 409 and "journal question show" in body["error"], "read whole, never through a pipe"
+    assert status == 409 and "`journal question show`" in body["error"], "read whole, never through a pipe"
 
 
 def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it_at_once(app, monkeypatch):
@@ -2121,7 +2121,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     console.run(["message", "send", "two"], USER)
     console.run(["message", "send", "three"], USER)
     console.run(["message", "send", "four"], USER)
-    assert fillers.fill("{{inbox}}", tick) == "4 messages unread: journal message unread"
+    assert fillers.fill("{{inbox}}", tick) == "4 messages unread: `journal message unread`"
     console.run(["message", "read", "1"], AGENT)
     assert fillers.fill("{{owed}}", tick) == "1"
     console.run(["task", "create", "the footer", "--start"], AGENT)
@@ -2129,7 +2129,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     held = [hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] for _ in range(3)]
     from journal.events.agent.idle import Idle
     stop = at(Idle(session="s1", environment_id=env))
-    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", stop) == f"task 1 / {held.count(200)} / journal task log 1", "the edits are the writes that went through, a held one not counted"
+    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", stop) == f"task 1 / {held.count(200)} / `journal task log 1`", "the edits are the writes that went through, a held one not counted"
     console.run(["await", "the deploy"], AGENT)
     assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now: you have waited 5 min", "the context carries the state as it is when the walk starts"
     console.run(["task", "park", "1", "the header first"], AGENT)
@@ -2976,7 +2976,7 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
 def test_a_stop_while_something_is_owed_is_held_by_the_always_workflow_naming_what_it_awaits(app):
     hook(app, "SessionStart")
     status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and "you stopped while the journal awaits a look at what is in flight here" in body["reason"] and "journal stuck" in body["reason"], "a stop before the look is held, naming the debt"
+    assert body.get("decision") == "block" and "you stopped while the journal awaits a look at what is in flight here" in body["reason"] and '`journal stuck "<why>"`' in body["reason"], "a stop before the look is held, naming the debt"
     app.console().run(["environment", "here"], AGENT)
     assert hook(app, "Stop")[1] == {}, "the debt paid, a stop at rest is a stop"
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -3038,7 +3038,7 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app
     records = Path(__file__).with_name("replays")
     held = lambda name: {s["name"]: s["answer"]["error"] for s in json.loads((records / f"{name}_codex.json").read_text())["steps"] if isinstance(s["answer"], dict) and "error" in s["answer"]}
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
-    assert "journal environment here" in held("orienting_rules")["a write before the look"]
+    assert "`journal environment here`" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
     from journal.features.chart.catalogue import Catalogue
     by_key = {e.key: e for e in app.container.get(Catalogue).triggers()}
@@ -3430,7 +3430,7 @@ def test_the_agent_is_kept_out_of_the_secrets_and_the_mcp_keys(app, tmp_path, mo
     climbed = "../" * len(app.config.root.resolve().parts) + str(keys.resolve()).lstrip("/") + "/x.json"
     assert refused("Read", {"file_path": climbed}), "a path that climbs into the keys is refused too"
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "a.py")})[0] == 200
-    assert "journal secret run" in hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(values)})[1]["error"]
+    assert "`journal secret run <n> -- <program>`" in hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(values)})[1]["error"]
 
 
 def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_takes_a_value(app, tmp_path, monkeypatch):

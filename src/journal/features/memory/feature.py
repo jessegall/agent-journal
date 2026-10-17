@@ -35,10 +35,10 @@ class Memory(Feature):
     MARKS = (25, 50, 80)
     """Percent of the context window at which the agent is asked to decide what survives."""
 
-    DECIDE = Nudge(name, "decide", "context {{percent}}% full: decide what to keep from it", "journal fact create \"<what is true here>\", journal rule create \"<Always/Never ...>\", or journal nothing \"<why>\"; writes wait until you do", repeat_after=0)
-    HELD = Nudge(name, "held", "writes wait until you decide what to keep from the context", "journal fact create, journal rule create, or journal nothing \"<why>\"")
-    STOPPED_AT_MARK = Nudge(name, "stopped_at_mark", "you stopped while the journal awaits a decision at the context mark, {{percent}}% full", "journal fact create, journal rule create, or journal nothing \"<why>\" first, or journal stuck \"<why>\" if you are truly stuck", repeat_after=0)
-    STALE = Nudge(name, "stale", "these are {{stale_after}} days old or more, check they still hold: {{stale}}", "strike what no longer holds (journal fact strike <n>), reword what drifted, and keep the rest", repeat_after=86400)
+    DECIDE = Nudge(name, "decide", "context {{percent}}% full: decide what to keep from it", "`journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do", repeat_after=0)
+    HELD = Nudge(name, "held", "writes wait until you decide what to keep from the context", "`journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`")
+    STOPPED_AT_MARK = Nudge(name, "stopped_at_mark", "you stopped while the journal awaits a decision at the context mark, {{percent}}% full", "`journal fact create`, `journal rule create`, or `journal nothing \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
+    STALE = Nudge(name, "stale", "these are {{stale_after}} days old or more, check they still hold: {{stale}}", "strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest", repeat_after=86400)
     STALE_AFTER = Option("memory.stale_after", "Ask about old facts after", "Days a fact, rule or reminder stands before the agent is asked at a session start whether it still holds", 7, unit="days")
     RULE_REVIEW = Nudge(name, "rule_review", "does rule {{n}} apply to the whole project?", "keep it only as Always or Never for every environment; otherwise delete it and record a fact or a reminder here")
     WHISPER = Nudge(name, "whisper", "{{noun}} {{n}}: {{text}}", repeat_after=ONCE)

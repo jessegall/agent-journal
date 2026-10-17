@@ -25,7 +25,7 @@
       "name": "a stop back at work",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [
@@ -58,10 +58,10 @@
       "name": "the answer releases the wait",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [
-        "[journal] question 1 is answered. journal question show 1 reads it whole, with the messages linked to it; act on the answer"
+        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
       ],
       "nudges": [
         "chart.line",
@@ -80,7 +80,7 @@
       "name": "the report releases the wait",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [
         "[journal] worker 1, Lady Lovelace, reported in the chat",
@@ -97,7 +97,7 @@
       "name": "running a sequence",
       "answer": {
         "decision": "block",
-        "reason": "sequence 3, step 1: tag it. journal sequence next when it is done"
+        "reason": "sequence 3, step 1: tag it. `journal sequence next` when it is done"
       },
       "typed": [],
       "nudges": [
@@ -109,7 +109,7 @@
       "name": "the last step ends the sequence",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. journal stuck \"<why>\" if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [

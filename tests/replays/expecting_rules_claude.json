@@ -18,7 +18,7 @@
       "name": "five quiet minutes",
       "answer": null,
       "typed": [
-        "[journal] check the deploy now: you have waited 5 min. look at it. Still going: journal await again. Done or failed: log what came of it and take the next step"
+        "[journal] check the deploy now: you have waited 5 min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
       ],
       "nudges": [
         "tasks.check_awaited"

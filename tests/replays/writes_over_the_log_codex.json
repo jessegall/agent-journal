@@ -194,7 +194,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
+          "additionalContext": "25 edits since you logged task 1: say where it stands. `journal task log 1` \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
         }
       },
       "typed": [],
@@ -398,7 +398,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
+          "additionalContext": "25 edits since you logged task 1: say where it stands. `journal task log 1` \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
         }
       },
       "typed": [],
@@ -579,7 +579,7 @@
     {
       "name": "write 51 after the log",
       "answer": {
-        "error": "50 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write"
+        "error": "50 edits since you logged task 1. `journal task log 1` \"<what was decided or done, and why>\" before any other write"
       },
       "typed": [],
       "nudges": [

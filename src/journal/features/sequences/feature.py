@@ -21,7 +21,7 @@ class Sequences(Feature):
     )
     seeds = (ShippedSequences,)
 
-    STEP = Nudge(name, "step", "sequence {{n}}, step {{step}}: {{text}}", "journal sequence next when it is done", repeat_after=0)
+    STEP = Nudge(name, "step", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_after=0)
     ENDED = Nudge(name, "ended", "sequence {{n}} ran its last step", repeat_after=0)
     nudges = (STEP, ENDED)
 

@@ -91,7 +91,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
-          "additionalContext": "4 messages unread: journal message unread"
+          "additionalContext": "4 messages unread: `journal message unread`"
         }
       },
       "typed": [],
