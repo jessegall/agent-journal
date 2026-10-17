@@ -13,6 +13,7 @@ from journal.http.controllers.questions import QuestionController
 from journal.http.controllers.resource_controller import ResourceController
 from journal.http.controllers.settings import SettingController
 from journal.http.controllers.tasks import TaskController
+from journal.http.controllers.viewer import ViewerController
 from journal.http.router import Router
 from journal.http.v3.v3_routes import V3Routes
 from journal.repositories.docs import Docs
@@ -35,6 +36,7 @@ class Routes:
         get = self.container.get
         router.post("/hooks/{agent}", get(HookController).receive)
         router.post("/cli", get(CliController).run)
+        router.get(f"{API}/viewer", get(ViewerController).show)
         self.resource(router, "tasks", get(TaskController))
         router.post(f"{API}/tasks/{{id}}/start", get(TaskController).start)
         router.post(f"{API}/tasks/{{id}}/log", get(TaskController).log)

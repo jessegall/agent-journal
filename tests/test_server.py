@@ -699,3 +699,9 @@ def test_a_new_workflow_is_titled_by_its_first_action_until_the_user_names_it(se
     assert status == 200 and saved["title"] == "Send the agent a message", "the first action names it"
     status, named = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Mine"})
     assert status == 201 and named["title"] == "Mine", "a title given is kept"
+
+
+def test_the_journal_knows_whether_a_viewer_tab_is_open(server):
+    assert call(server, "GET", "/journal/viewer")[1] == {"open": False}, "no tab has asked anything yet"
+    call(server, "GET", "/api/environments")
+    assert call(server, "GET", "/journal/viewer")[1] == {"open": True}, "a tab that polls the viewer's API is open, and a launch opens no other"

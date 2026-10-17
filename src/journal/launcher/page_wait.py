@@ -1,3 +1,4 @@
+import json
 import threading
 import time
 import urllib.request
@@ -9,6 +10,8 @@ from journal.supervisor_socket import SupervisorSocket
 
 PATIENCE = 30.0
 """How long the launch waits for the journal's page before it stops looking."""
+TAB_WAIT = 8.0
+"""How long the launch listens for an open tab to call the journal before it opens one."""
 
 
 class PageWait:
@@ -41,10 +44,24 @@ class PageWait:
             return ""
 
     def shown(self, url: str) -> None:
+        """The address in the status line and the band, and the viewer opened unless a tab of it is open already: that tab asks the new journal within seconds and carries on."""
         self.status.set_url(url)
         try:
             SupervisorSocket.ask(self.socket, {"verb": "band", "left": self.band[0], "middle": self.band[1], "right": url})
         except OSError:
             pass
-        if self.viewer:
+        if self.viewer and not self.tab_open(url):
             webbrowser.open(url + self.viewer, new=2)
+
+    def tab_open(self, url: str) -> bool:
+        """Whether a viewer tab calls the journal within a few seconds of its coming up."""
+        began = time.time()
+        while time.time() - began < TAB_WAIT:
+            try:
+                with urllib.request.urlopen(url + "journal/viewer", timeout=0.5) as reply:
+                    if json.loads(reply.read()).get("open"):
+                        return True
+            except (OSError, ValueError):
+                return False
+            time.sleep(0.5)
+        return False

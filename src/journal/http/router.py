@@ -5,14 +5,15 @@ from journal.repositories.not_found import NotFound
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.route import Handler, Route
+from journal.http.viewer_seen import ViewerSeen
 from journal.repositories.scope import Scope
 
 
 class Router:
     """Finds the route a request takes and answers it inside the environment the request names."""
 
-    def __init__(self, scope: Scope) -> None:
-        self.scope = scope
+    def __init__(self, scope: Scope, seen: ViewerSeen) -> None:
+        self.scope, self.seen = scope, seen
         self.routes: list[Route] = []
 
     def get(self, path: str, handler: Handler) -> None:
@@ -22,6 +23,7 @@ class Router:
         self.routes.append(Route("POST", path, handler))
 
     def dispatch(self, request: Request) -> Response:
+        self.seen.saw(request.path)
         for route in self.routes:
             params = route.params(request.method, request.path)
             if params is not None:
