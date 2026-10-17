@@ -93,7 +93,6 @@ keeps your steps and the state's and loses the shared ones at the boot that move
 - **Expecting something outside**: after five quiet minutes the agent is told to check what it awaits; its own
   next tool use is working again and releases it.
 - **Stuck**: nothing is said until the agent's own next tool use, which releases it.
-- **Running a sequence**: the step in hand said at a stop.
 - **Ended**: at a start, nothing of its own yet; the workflow holds its trigger alone, so the state is on the page
   with something to open, until the session's end and start move into the workflows.
 

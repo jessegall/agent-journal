@@ -5,7 +5,7 @@ import re
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
-from journal.features.sequences.states.running_sequence import RunningSequence
+from journal.features.sequences.running import Running
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.stop_words import ago
 from journal.features.tasks.states.working import Working
@@ -37,11 +37,11 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
         self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
-        self.chosen, self.checks, self.task_logs, self.config = chosen, checks, task_logs, config
+        self.chosen, self.checks, self.task_logs, self.config, self.running = chosen, checks, task_logs, config, running
 
     @classmethod
     def listed(cls) -> list[dict]:
@@ -179,19 +179,19 @@ class Fillers:
         return state.what if isinstance(state, Expecting) else ""
 
     def sequence_n(self, ctx: Context) -> str:
-        """The number of the sequence being run."""
-        state = self.state(ctx)
-        return str(state.sequence_id) if isinstance(state, RunningSequence) else ""
+        """The number of the sequence in hand."""
+        run = self.running.in_hand(ctx.session, ctx.environment_id) if ctx.session else None
+        return str(run.sequence_id) if run else ""
 
     def sequence_step(self, ctx: Context) -> str:
-        """The step in hand, counted from one, as the running state says it at a stop."""
-        state = self.state(ctx)
-        return str(state.step + 1) if isinstance(state, RunningSequence) else ""
+        """The step in hand, counted from one."""
+        run = self.running.in_hand(ctx.session, ctx.environment_id) if ctx.session else None
+        return str(run.step + 1) if run else ""
 
     def sequence_step_text(self, ctx: Context) -> str:
         """The words of the sequence step in hand."""
-        state = self.state(ctx)
-        return state.text if isinstance(state, RunningSequence) else ""
+        run = self.running.in_hand(ctx.session, ctx.environment_id) if ctx.session else None
+        return run.text if run else ""
 
     def quiet_minutes(self, ctx: Context) -> str:
         """How many minutes the agent has been quiet, at a tick."""

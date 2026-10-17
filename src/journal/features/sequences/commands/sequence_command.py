@@ -2,9 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.engine.machine import Machine
 from journal.features.sequences.running import Running
-from journal.features.sequences.states.running_sequence import RunningSequence
 from journal.models.sequence import Sequence
 from journal.repositories.scope import Scope
 from journal.repositories.sequences import Sequences
@@ -13,8 +11,8 @@ from journal.repositories.sequences import Sequences
 class SequenceCommand(Command):
     noun = "sequence"
 
-    def __init__(self, sequences: Sequences, machine: Machine, running: Running, scope: Scope) -> None:
-        self.sequences, self.machine, self.running, self.scope = sequences, machine, running, scope
+    def __init__(self, sequences: Sequences, running: Running, scope: Scope) -> None:
+        self.sequences, self.running, self.scope = sequences, running, scope
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "write a sequence of steps")
@@ -32,25 +30,15 @@ class SequenceCommand(Command):
         return 0
 
     def run(self, args: Namespace, where: Where) -> int:
-        print(self.running.start(self.sequences.find(args.n), where.session, self.scope.id))
+        sequence = self.sequences.find(args.n)
+        print(self.running.start(sequence, where.session, self.scope.id) or f"sequence {sequence.id} is running already")
         return 0
 
     def next(self, args: Namespace, where: Where) -> int:
-        from journal.features.sequences.feature import Sequences as SequencesFeature
-        environment = self.scope.id
-        agent = self.machine.agent(where.session, environment)
-        state = self.machine.states.named(agent.state, agent.data)
-        if not isinstance(state, RunningSequence):
+        if self.running.in_hand(where.session, self.scope.id) is None:
             print("no sequence is running")
             return 1
-        sequence = self.sequences.find(state.sequence_id)
-        step = state.step + 1
-        if step >= len(sequence.steps):
-            self.machine.move(where.session, environment, state.back().to)
-            print(SequencesFeature.ENDED.about(n=sequence.id).rendered())
-            return 0
-        self.machine.move(where.session, environment, state.with_step(step, sequence.steps[step]))
-        print(SequencesFeature.STEP.about(n=sequence.id, step=step + 1, text=sequence.steps[step]).rendered())
+        print(self.running.next(where.session, self.scope.id))
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:

@@ -547,7 +547,7 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     status, read = call(server, "GET", "/journal/chart")
     states = {s["key"]: s for s in read["states"]}
     assert states["following_plan"]["parent"] == "working" and states["working"]["parent"] == "" and states["idle"]["title"] == "Idle"
-    assert read["states"][0]["key"] == "idle" and set(states) == {"idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "running_sequence", "ended"}, "the nine states the engine has, the first first; the pauses the agent owed are facts now"
+    assert read["states"][0]["key"] == "idle" and set(states) == {"idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended"}, "the eight states the engine has, the first first; the pauses the agent owed are facts now"
     assert states["awaiting"]["title"] == "Waiting on a worker" and states["awaiting"]["parent"] == ""
     idle = next(w for w in read["workflows"] if w["shipped"] and not w["guarded"])
     assert idle["edited"] is False and idle["failed"] is False and idle["off"] is False

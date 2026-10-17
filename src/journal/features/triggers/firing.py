@@ -24,9 +24,7 @@ class Firing:
         return lines
 
     def started(self, trigger: Trigger, session: str, environment_id: int) -> str:
-        """The sequence the trigger names, by its title, started unless one already runs; its first step is the line."""
-        if self.running.runs_one(session, environment_id):
-            return ""
+        """The sequence the trigger names, by its title, started unless it runs already; its first step is the line."""
         for sequence in self.sequences.all():
             if sequence.title == trigger.text:
                 return self.running.start(sequence, session, environment_id)

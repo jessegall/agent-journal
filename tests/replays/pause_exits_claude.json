@@ -97,11 +97,11 @@
       "name": "running a sequence",
       "answer": {
         "decision": "block",
-        "reason": "sequence 3, step 1: tag it. `journal sequence next` when it is done"
+        "reason": "sequence 3, step 1: tag it. `journal sequence next` when it is done\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [
-        "sequences.step"
+        "tasks.carry_on"
       ],
       "counts": {}
     },

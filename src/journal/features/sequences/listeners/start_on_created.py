@@ -8,7 +8,7 @@ from journal.supervisor_link import SupervisorLink
 
 
 class StartOnCreated(Listener[Created]):
-    """A row an agent creates starts the sequence that names that moment, such as Building a plan on plan.created: the agent is moved to its first step and told it."""
+    """A row an agent creates starts the sequence that names that moment, such as Building a plan on plan.created: the run is kept on the agent, about that row, and its first step told."""
 
     def __init__(self, sequences: Sequences, running: Running, supervisor: SupervisorLink) -> None:
         self.sequences, self.running, self.supervisor = sequences, running, supervisor
@@ -19,6 +19,8 @@ class StartOnCreated(Listener[Created]):
             return
         moment = f"{type(row).__name__.lower()}.created"
         for sequence in self.sequences.all():
-            if sequence.starts_on == moment and not self.running.runs_one(event.by.id, row.environment_id):
-                self.supervisor.type(row.environment_id, self.running.start(sequence, event.by.id, row.environment_id))
+            if sequence.starts_on == moment:
+                line = self.running.start(sequence, event.by.id, row.environment_id, about=f"{row.table()}:{row.id}")
+                if line:
+                    self.supervisor.type(row.environment_id, line)
                 return

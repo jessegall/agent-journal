@@ -4,18 +4,18 @@ from journal.features.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.sequences.commands.sequence_command import SequenceCommand
+from journal.features.sequences.listeners.carry_runs_to_the_next_session import CarryRunsToTheNextSession
+from journal.features.sequences.listeners.say_the_step_at_a_stop import SayTheStepAtAStop
 from journal.features.sequences.listeners.start_on_created import StartOnCreated
 from journal.features.sequences.seeds.shipped_sequences import ShippedSequences
-from journal.features.sequences.states.running_sequence import RunningSequence
 
 
 class Sequences(Feature):
     name = "sequences"
     title = "Sequences"
     help = "Steps the agent follows one at a time."
-    states = (RunningSequence,)
     commands = (SequenceCommand,)
-    listeners = (StartOnCreated,)
+    listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtAStop)
     actions = (
         Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
     )
@@ -35,4 +35,4 @@ Steps followed in order, one at a time.
 - `journal sequence run <n>` starts it: you are told step 1. `journal sequence next` when the step is done;
   the last step takes you back to what you were doing.
 - Creating a plan starts Building a plan: follow its steps before you do anything else to the plan.
-""", keywords=('sequence', 'sequences', 'steps'), required_in=('running_sequence',))
+""", keywords=('sequence', 'sequences', 'steps'))

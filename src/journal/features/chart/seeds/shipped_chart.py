@@ -14,9 +14,9 @@ from journal.repositories.counts import Counts
 from journal.repositories.charts import NO, THEN, YES, Charts
 from journal.repositories.settings import Settings
 
-SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "running_sequence", "ended")
+SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended")
 """The states the journal ships workflows for."""
-PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "running_sequence", "idle", "following_plan", "working", "ended")
+PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "idle", "following_plan", "working", "ended")
 """The place the shipped workflows of one event take, the waits first, and a child state before its parent, so following a plan speaks at a checkpoint before Working's lines and can end the walk there."""
 SETTING = re.compile(r"\{([a-z_]+\.[a-z_]+)\}")
 """A setting a shipped title names, filled with its value when the title is drawn."""
@@ -56,7 +56,6 @@ OWN = (
     ("expecting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
     ("expecting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("stuck", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
-    ("running_sequence", "idle", "step", "Say the next step of the sequence when the agent stops", "sequence_at_stop"),
     ("ended", "session_started", "nothing", "No workflow for this state yet", "nothing_own"),
 )
 """The workflows the journal ships for a state, one concern each: the state, the event, the drawing's name, what it does in plain words, and the builder that draws it."""
@@ -67,7 +66,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 21
+DRAWINGS_VERSION = 22
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -115,7 +114,6 @@ STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped befor
 RETURNED = "[workers.returned] what you waited on came back: carry on"
 ANSWERED = "question {{question_n}} is answered. `journal question show {{question_n}}` reads it whole, with the messages linked to it; act on the answer"
 CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
-STEP = "[sequences.step] sequence {{sequence_n}}, step {{sequence_step}}: {{sequence_step_text}}. `journal sequence next` when it is done"
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
@@ -657,9 +655,3 @@ class ShippedChart(Seed):
         self.chain(ends, own)
         self.line(own, back, YES)
         return [(own, NO), (back, THEN)]
-
-    def sequence_at_stop(self, chart: Chart, ends: list) -> list:
-        """An agent working through a sequence: a stop is told the step in hand; stepping on is the state's move."""
-        step = self.node(chart, NodeKind.ACTION, "say", STEP, x=400, y=92)
-        self.chain(ends, step)
-        return [(step, THEN)]

@@ -18,6 +18,7 @@ from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
+from journal.features.sequences.running import Running
 from journal.features.tasks.states.working import Working
 
 AGENT = Where("main", "s1")
@@ -1349,14 +1350,15 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkey
     assert "Building a plan (4 steps, starts on plan.created)" in listed, "the shipped sequence is seeded at boot"
     app.console().run(["plan", "create", "Behaviour tree", "--brief", "a flowchart"], AGENT)
     app.runtime().deferred.drain()
-    machine = app.container.get(Machine)
-    assert machine.current("s1").name == "running_sequence" and "step 1" in sent[-1]["line"] and "goal" in sent[-1]["line"]
+    running = app.container.get(Running)
+    run = running.in_hand("s1", 1)
+    assert run.title == "Building a plan" and run.about.startswith("plans:") and "step 1" in sent[-1]["line"] and "goal" in sent[-1]["line"]
     app.console().run(["plan", "create", "Another", "--brief", "b"], AGENT)
     app.runtime().deferred.drain()
-    assert machine.current("s1").step == 0, "a sequence already running is not started again"
+    assert len(running.runs(app.container.get(Machine).agent("s1", 1))) == 1 and running.in_hand("s1", 1).step == 0, "a sequence already running is not started again"
     for _ in range(4):
         app.console().run(["sequence", "next"], AGENT)
-    assert machine.current("s1").name == "idle", "the last step goes back to what the agent was doing"
+    assert running.in_hand("s1", 1) is None, "the last step ends the run"
 
 
 def test_a_plans_goal_can_be_reset(app):
@@ -1854,13 +1856,13 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER)
     console.run(["trigger", "create", "ship it", "release", "--do", "sequence"], USER)
     body = hook(app, "UserPromptSubmit", prompt="ok, ship it now")[1]
-    machine = app.container.get(Machine)
-    assert machine.current("s1").name == "running_sequence" and "step 1: bump" in json.dumps(body), "a prompt's words start the sequence and its first step rides on the answer"
+    running = app.container.get(Running)
+    assert running.in_hand("s1", 1).title == "release" and "step 1: bump" in json.dumps(body), "a prompt's words start the sequence and its first step rides on the answer"
     for _ in range(2):
         console.run(["sequence", "next"], AGENT)
     console.run(["message", "send", "could you give me an update?"], USER)
     app.runtime().deferred.drain()
-    assert machine.current("s1").name == "running_sequence" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, typed to the agent"
+    assert running.in_hand("s1", 1).title == "Writing an update" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, typed to the agent"
 
 
 def test_a_journal_holds_one_workflow_per_event_and_the_engine_walks_each_at_its_event(app):
@@ -2330,7 +2332,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert "a workflow holds one trigger, of the event it is for" in node(idle, "trigger", "tool_finished").err
     assert node(idle, "check", "open_tasks").code == 0
     shown = console.run(["chart", "show"], USER).out
-    assert f"workflow {idle} [idle at idle, place 50], revision 1 by user:1: Hold the stop while a task is parked" in shown and f"workflow {working} [working at tool_starting, place" in shown
+    assert f"workflow {idle} [idle at idle, place 40], revision 1 by user:1: Hold the stop while a task is parked" in shown and f"workflow {working} [working at tool_starting, place" in shown
 
 def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
@@ -2443,7 +2445,7 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
     refused = console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle"], USER)
     assert refused.code == 1 and f"workflow {base.id}, Hold the stop while a task is parked, is a default one: add --edit-default" in refused.err
     assert console.run(["chart", "node", "check", "open_tasks", "--for", "idle", "--on", "idle", "--edit-default"], USER).code == 0
-    assert f"workflow {base.id} [idle at idle, place 50], revision 1 by user:1: Hold the stop while a task is parked" in console.run(["chart", "show"], USER).out
+    assert f"workflow {base.id} [idle at idle, place 40], revision 1 by user:1: Hold the stop while a task is parked" in console.run(["chart", "show"], USER).out
     own = int(console.run(["chart", "new", "mine", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert console.run(["chart", "node", "check", "open_tasks", "--in", str(own)], USER).code == 0, "your own workflow needs no flag"
 
@@ -3017,6 +3019,48 @@ def test_an_agent_standing_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact
         second.runtime().stop()
 
 
+def test_an_agent_in_the_old_running_sequence_state_is_unwrapped_at_boot_with_the_run_on_its_row(tmp_path: Path, monkeypatch):
+    import sqlite3
+    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    first = App(Config(tmp_path, port=0))
+    first.runtime().start()
+    hook(first, "SessionStart")
+    first.console().run(["environment", "here"], AGENT)
+    first.console().run(["task", "create", "t", "--start"], AGENT)
+    made = first.console().run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
+    first.runtime().stop()
+    db = sqlite3.connect(first.config.database)
+    working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
+    running = {"resume": {"state": "working", "data": working}, "sequence_id": int(made), "step": 1, "text": "tag"}
+    db.execute("UPDATE agents SET state = 'waiting', data = ? WHERE session = 's1'", (json.dumps({"resume": {"state": "running_sequence", "data": running}, "question_id": 1}),))
+    db.execute("DELETE FROM migrations")
+    db.commit()
+    db.close()
+    second = App(Config(tmp_path, port=0))
+    second.runtime().start()
+    try:
+        from journal.repositories.agents import Agents
+        from journal.repositories.scope import Scope
+        with second.container.get(Scope).of(MAIN):
+            agent = second.container.get(Agents).for_session("s1")
+            run = second.container.get(Running).runs(agent)[-1]
+            assert agent.state == "waiting" and agent.data["resume"] == {"state": "working", "data": working}, "the run's layer is taken out of the resume chain, the rest kept"
+            assert run.title == "release" and run.steps == ("bump", "tag", "push") and run.text == "tag", "the run is on the row at the step it stood at"
+    finally:
+        second.runtime().stop()
+
+
+def test_a_run_goes_with_the_agent_to_its_next_session(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    made = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    console.run(["sequence", "run", made], AGENT)
+    hook(app, "SessionEnd")
+    hook(app, "SessionStart", session_id="s2")
+    running = app.container.get(Running)
+    assert running.in_hand("s2", 1).title == "release" and running.in_hand("s1", 1) is None, "the next session takes the run over"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
@@ -3100,9 +3144,7 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     assert machine.current("s1").name == "working", "back from a worker"
     made = re.search(r"sequence (\d+)", console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out).group(1)
     console.run(["sequence", "run", made], AGENT)
-    assert machine.current("s1").name == "running_sequence"
-    send_back()
-    assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from a sequence, to the task it keeps"
+    assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "a sequence runs beside the state, which keeps its task"
 
 
 def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at_boot_and_still_walks(app):

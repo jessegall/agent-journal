@@ -186,7 +186,9 @@ class Actions:
         if not ctx.session:
             return Decision()
         for sequence in self.sequences.all():
-            if sequence.title == text and not self.running.runs_one(ctx.session, ctx.environment_id):
+            if sequence.title == text:
                 line = self.running.start(sequence, ctx.session, ctx.environment_id)
+                if not line:
+                    return Decision()
                 return Decision.tell(line) if ctx.answers_hook else self.type(line, ctx)
         return Decision()
