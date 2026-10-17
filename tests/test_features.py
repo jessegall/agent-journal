@@ -3080,6 +3080,12 @@ def test_a_run_stands_through_the_agents_moves_and_a_workflow_action_starts_one(
     hook(app, "UserPromptSubmit", prompt="carry on")
     console.run(["stuck", "the build is broken"], AGENT)
     assert machine.current("s1").name == "stuck" and running.in_hand("s1", 1).text == "bump", "a task, a wait, the user's word and being stuck leave the run standing"
+    from dataclasses import replace
+    from journal.repositories.sequences import Sequences
+    sequences = app.container.get(Sequences)
+    release = next(q for q in sequences.all() if q.title == "release")
+    sequences.save(replace(release, steps=("push", "bump", "tag")), USER.actor)
+    assert "step 2: tag" in console.run(["sequence", "next"], AGENT).out, "a run keeps the steps it began with when its sequence is edited"
 
 def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, monkeypatch):
     from journal.models.worker import Worker
