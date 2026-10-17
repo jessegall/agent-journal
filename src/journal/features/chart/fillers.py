@@ -1,3 +1,4 @@
+import subprocess
 from datetime import datetime, timezone
 import re
 
@@ -25,6 +26,8 @@ from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
 from journal.repositories.questions import Questions
 from journal.repositories.environments import Environments
+from journal.repositories.task_logs import TaskLogs
+from journal.config import Config
 from journal.repositories.tasks import Tasks
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
@@ -34,11 +37,11 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
         self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
-        self.chosen, self.checks = chosen, checks
+        self.chosen, self.checks, self.task_logs, self.config = chosen, checks, task_logs, config
 
     @classmethod
     def listed(cls) -> list[dict]:
@@ -127,6 +130,24 @@ class Fillers:
         """The work in hand as the task lines name it: the task's number, with what the agent is on."""
         state = self.state(ctx)
         return state.named() if isinstance(state, Working) else ""
+
+    def last_log(self, ctx: Context) -> str:
+        """The task in hand's last log line, whole, or that nothing is logged yet."""
+        state = self.state(ctx)
+        if not isinstance(state, Working):
+            return ""
+        logs = self.task_logs.of(self.tasks.find(state.task_id))
+        return f'"{logs[-1].line}"' if logs else "nothing logged yet"
+
+    def uncommitted(self, ctx: Context) -> str:
+        """The files changed in the project and not committed, as git names them, at most twenty; none when the tree is clean or no git is there."""
+        try:
+            done = subprocess.run(["git", "status", "--short"], cwd=self.config.root, capture_output=True, text=True, timeout=3)
+        except (OSError, subprocess.SubprocessError):
+            return "none"
+        files = [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
+        more = f" and {len(files) - 20} more" if len(files) > 20 else ""
+        return ", ".join(files[:20]) + more if files else "none"
 
     def logged(self, ctx: Context) -> str:
         """When the task in hand was last logged, as the stop's words say it."""

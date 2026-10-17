@@ -245,6 +245,10 @@ class Checks:
             return False
         return bool(self.agents.others_lately(event.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN))
 
+    def after_compaction(self, ctx: Context) -> bool:
+        """The start is the same session going on after its context was compacted."""
+        return isinstance(ctx.event, SessionStarted) and ctx.event.source == "compact"
+
     def has_rules(self, ctx: Context) -> bool:
         return bool(self.rules.all())
 

@@ -3131,3 +3131,16 @@ def test_a_shipped_title_says_its_settings_number_and_a_changed_setting_retitles
     charts.save(named().with_(title="My reminder"), Actor.system())
     app.container.get(ShippedChart).run()
     assert named().title == "My reminder", "a title the user gave stays"
+
+
+def test_a_start_after_a_compaction_says_where_the_work_stands(app):
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "log", "1", "halfway through the footer"], AGENT)
+    app.runtime().deferred.drain()
+    fresh = hook(app, "SessionStart", source="startup")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "after the compaction" not in fresh, "a fresh start says nothing of a compaction"
+    said = hook(app, "SessionStart", source="compact")[1]["hookSpecificOutput"]["additionalContext"]
+    assert 'after the compaction, the work stands here: task 1' in said and '"halfway through the footer"' in said and "uncommitted files:" in said, "the task, its last log whole and the files not committed"
