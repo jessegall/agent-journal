@@ -5,10 +5,10 @@ from journal.config import Config
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
 from journal.hooks.decision import Decision
-from journal.private_folder import SECRETS_VARIABLE, PrivateFolder
+from journal.private_folder import PrivateFolder
 from journal.secret_values import SecretValues
 
-MARKERS = ("agent-journal/secrets", ".journal/keys", SECRETS_VARIABLE, "journal-secret-")
+MARKERS = ("agent-journal/secrets", ".journal/keys", "journal-secret-")
 """Words that name the private folders whatever the path around them."""
 
 
