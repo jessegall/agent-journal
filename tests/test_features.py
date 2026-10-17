@@ -3955,6 +3955,21 @@ def test_a_plugins_skills_are_published_stamped_and_taken_away(app):
     assert not any(p.exists() for p in published), "removed, its skills go"
 
 
+def test_plugins_come_back_when_the_journal_starts_again(app):
+    app.console().run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
+    (app.config.home / "plugin-data" / "echo" / "kept.txt").write_text("kept")
+    again = App(Config(app.config.root, port=0))
+    again.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    again.runtime().start()
+    try:
+        hook(again, "SessionStart")
+        status, body = hook(again, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
+        assert status == 409 and "[plugin echo]" in body["error"], "a journal started anew hears through the plugins its rows name"
+        assert (again.config.home / "plugin-data" / "echo" / "kept.txt").read_text() == "kept"
+    finally:
+        again.runtime().stop()
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries
