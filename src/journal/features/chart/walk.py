@@ -1,4 +1,3 @@
-import re
 from dataclasses import replace
 
 from journal.events.agent.ticked import Ticked
@@ -201,7 +200,4 @@ class Walk:
 
     @staticmethod
     def trigger_key(event: Event) -> str:
-        """An agent event by its name as the catalogue spells it, Idle as idle and ToolStarting as tool_starting; a row event as table.moment."""
-        if isinstance(event, ModelEvent):
-            return f"{event.model.table()}.{type(event).__name__.lower()}"
-        return re.sub(r"(?<!^)(?=[A-Z])", "_", type(event).__name__).lower()
+        return event.key

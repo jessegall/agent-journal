@@ -3684,6 +3684,59 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app):
     task = app.container.get(Tasks).save(Task(environment_id=1, title="written by a plugin"), Actor.plugin("lint"))
     assert task.created_by == Actor(ActorKind.PLUGIN, "lint") and task.created_by.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.created_by
 
+def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.events.models.created import Created
+    from journal.features.plugins.plugin_fault import PluginFault
+    from journal.features.plugins.protocol import Protocol
+    from journal.models.task import Task
+    protocol = app.container.get(Protocol)
+    tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2), "main", "working"))
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False}), "an agent event: its name, where it happened and its own fields"
+    row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
+    assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
+    assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
+    answer = protocol.answer_of(json.dumps({"v": 1, "answer": "refuse", "reason": "not on main", "cards": [{"kind": "sin", "label": "a sin"}], "commands": ["journal task list"]}))
+    assert (answer.answer, answer.reason, answer.cards[0]["kind"], answer.commands) == ("refuse", "not on main", "sin", ("journal task list",))
+    for broken, words in (("{nope", "not JSON"), ('["a"]', "not a JSON object"), ('{"answer": "maybe"}', "allow, refuse or tell"), ('{"v": 2}', "protocol 2"), ('{"say": "x"}', "keys the protocol does not know: say"), (json.dumps({"commands": ["journal x"] * 21}), "at most 20")):
+        try:
+            protocol.answer_of(broken)
+            raise AssertionError(f"no fault for {broken}")
+        except PluginFault as fault:
+            assert words in str(fault), f"{broken}: {fault}"
+
+def test_the_echo_test_plugin_answers_each_case(app):
+    import subprocess
+    import sys
+    from journal.events.agent.prompt_submitted import PromptSubmitted
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.events.models.created import Created
+    from journal.features.plugins.manifest_reader import ManifestReader
+    from journal.features.plugins.plugin_fault import PluginFault
+    from journal.features.plugins.protocol import Protocol
+    from journal.models.task import Task
+    folder = Path(__file__).parent / "plugins" / "echo"
+    manifest, protocol = app.container.get(ManifestReader).read(folder), app.container.get(Protocol)
+
+    def asked(event, mode: str = "", timeout: float = 5.0):
+        ran = subprocess.run([sys.executable, str(folder / manifest.program)], input=protocol.line_of(event, "main") + "\n", capture_output=True, text=True, timeout=timeout, env={**os.environ, "ECHO_MODE": mode})
+        return protocol.answer_of(ran.stdout)
+    assert asked(ToolStarting(tool="Bash", input={"command": "rm forbidden"}).placed("s1", 1, "claude", 0.0)).answer == "refuse"
+    assert asked(ToolStarting(tool="Read", input={"file_path": "a.py"}).placed("s1", 1, "claude", 0.0)).answer == "allow"
+    assert asked(PromptSubmitted(prompt="hello").placed("s1", 1, "claude", 0.0)).tell == "echo heard your prompt"
+    made = asked(Created(model=Task(id=4, environment_id=1, title="t"), by=Actor.user(1)))
+    assert made.cards[0]["key"] == "task 4" and made.commands == ('journal task log 4 "echoed"',)
+    try:
+        asked(ToolStarting(tool="Read", input={}).placed("s1", 1, "claude", 0.0), mode="broken")
+        raise AssertionError("a broken answer is a fault")
+    except PluginFault:
+        pass
+    try:
+        asked(ToolStarting(tool="Read", input={}).placed("s1", 1, "claude", 0.0), mode="slow", timeout=0.5)
+        raise AssertionError("a slow plugin runs past its time")
+    except subprocess.TimeoutExpired:
+        pass
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

@@ -1,0 +1,9 @@
+{
+  "name": "echo",
+  "version": "1.0.0",
+  "protocol": 1,
+  "program": "run.py",
+  "hears": ["tool_starting", "prompt_submitted", "tasks.created"],
+  "holds": ["tool_starting", "prompt_submitted"],
+  "cards": [{"kind": "echoed", "label": "Echoed", "tone": "good"}]
+}

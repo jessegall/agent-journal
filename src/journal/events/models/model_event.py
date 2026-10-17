@@ -11,3 +11,8 @@ class ModelEvent(Event):
 
     model: Model
     by: Actor
+
+    @property
+    def key(self) -> str:
+        """A row event as table.moment: tasks.created."""
+        return f"{self.model.table()}.{type(self).__name__.lower()}"
