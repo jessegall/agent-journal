@@ -3598,6 +3598,17 @@ def test_a_hold_after_reminders_drawn_by_hand_holds_where_the_shipped_one_does(a
     standing = app.container.get(Standing).of(charts.find(made))
     assert any(a["session"] == "s2" and a["counts"].get("tools", 0) >= 6 for a in standing["agents"]), "its count stands on the canvas"
 
+def test_a_report_about_several_rows_links_each_and_refuses_one_it_cannot_read(app):
+    console = app.console()
+    for title in ("one", "two"):
+        console.run(["plan", "create", title, "--brief", "b"], USER)
+    made = console.run(["report", "create", "Both", "--body", "words", "--about", "plans:1,plans:2"], USER)
+    assert made.code == 0 and "about plans:1, plans:2" in made.out, "rows apart by commas are each linked"
+    spaced = console.run(["report", "create", "Both again", "--body", "words", "--about", "plans:1", "plans:2"], USER)
+    assert spaced.code == 0 and "about plans:1, plans:2" in spaced.out, "and so are rows apart by spaces"
+    refused = console.run(["report", "create", "Wrong", "--body", "words", "--about", "plans:1,the second plan"], USER)
+    assert refused.code == 1 and "not a row: the second plan" in refused.err, "a row it cannot read is refused by name, and no report is made"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
