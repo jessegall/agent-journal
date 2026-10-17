@@ -3474,3 +3474,34 @@ def test_secrets_kept_as_files_in_the_project_folder_become_rows_once(app):
     assert len(rows) == 1, "brought in once, however often the journal boots"
     flespi = rows[0]
     assert flespi.title == "flespi" and flespi.kind == "api key" and flespi.filled == ("key",) and flespi.programs == ("curl",) and flespi.brief == "The flespi token, used with curl." and flespi.used_at is not None and not flespi.waiting()
+
+
+def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_it(app, tmp_path, monkeypatch):
+    from journal.models.secret import Secret
+    from journal.models.secret_kind import SecretKind
+    from journal.repositories.secrets import Secrets
+    from journal.secret_values import SecretValues
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    import tempfile
+    tools = Path(tempfile.mkdtemp(prefix="tools-"))
+    assert not tools.resolve().is_relative_to(app.config.root.resolve()), "a program of the project's would be left off the search path"
+    echoer = tools / "fakeapi"
+    echoer.write_text("#!/bin/sh\nread given\necho \"got:$given\"\necho \"var:$FAKE_KEY\"\nprintf '%s' \"$given\" | base64\necho \"home:$HOME\"\n")
+    echoer.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{tools}:/usr/bin:/bin")
+    secrets = app.container.get(Secrets)
+    secrets.save(Secret(title="Fake", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Fake"), programs=("fakeapi",)), Actor.user("u"))
+    console = app.console()
+    assert "no value for key on this machine" in console.run(["secret", "run", "Fake", "--", "fakeapi"], AGENT).err
+    app.container.get(SecretValues).put("FAKE_KEY", "s3cretvalue123")
+    secrets.save(secrets.find(1).filled_in("key"), Actor.user("u"))
+    ran = console.run(["secret", "run", "1", "--env", "--", "fakeapi"], AGENT)
+    assert ran.code == 0 and "got:[secret FAKE_KEY]" in ran.out and "var:[secret FAKE_KEY]" in ran.out, ran.out
+    assert "s3cretvalue123" not in ran.out and "czNjcmV0dmFsdWUxMjM" not in ran.out, "the value is masked as it is and in base64"
+    assert "/runs/run-" in ran.out, "the program's home is a throwaway one inside the secrets folder"
+    templated = console.run(["secret", "run", "Fake", "--stdin", "Bearer {key}", "--", "fakeapi"], AGENT)
+    assert "got:Bearer [secret FAKE_KEY]" in templated.out
+    assert "name the program bare" in console.run(["secret", "run", "Fake", "--", str(echoer)], AGENT).err
+    assert "never given to bash" in console.run(["secret", "run", "Fake", "--", "bash", "-c", "echo"], AGENT).err
+    assert "not among the programs" in console.run(["secret", "run", "Fake", "--", "ls"], AGENT).err
+    assert secrets.find(1).used_at is not None

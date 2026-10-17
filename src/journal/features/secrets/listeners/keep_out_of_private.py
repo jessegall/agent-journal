@@ -8,7 +8,7 @@ from journal.hooks.decision import Decision
 from journal.private_folder import PrivateFolder
 from journal.secret_values import SecretValues
 
-MARKERS = ("agent-journal/secrets", ".journal/keys", "journal-secret-")
+MARKERS = ("agent-journal/secrets", ".journal/keys")
 """Words that name the private folders whatever the path around them."""
 
 

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.secrets.programs import Programs
+from journal.features.secrets.secret_run import SecretRun
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.secret import Secret
@@ -12,6 +13,7 @@ from journal.refused import Refused
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
 from journal.repositories.secrets import Secrets
+from journal.repositories.workers import Workers
 from journal.secret_values import SecretValues
 
 
@@ -20,8 +22,8 @@ class SecretCommand(Command):
 
     noun = "secret"
 
-    def __init__(self, secrets: Secrets, values: SecretValues, messages: Messages, servers: McpServers) -> None:
-        self.secrets, self.values, self.messages, self.servers = secrets, values, messages, servers
+    def __init__(self, secrets: Secrets, values: SecretValues, messages: Messages, servers: McpServers, runner: SecretRun, workers: Workers) -> None:
+        self.secrets, self.values, self.messages, self.servers, self.runner, self.workers = secrets, values, messages, servers, runner, workers
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "a secret with its fields, empty until the user fills them")
@@ -40,6 +42,11 @@ class SecretCommand(Command):
         self.verb(verbs, "fill", "the user fills a value on the Secrets page, never by a command").add_argument("n", type=int)
         self.verb(verbs, "list", "every secret, with what it waits for")
         self.verb(verbs, "show", "a secret's fields, which are filled and the programs it may be given to").add_argument("n", type=int)
+        run = self.verb(verbs, "run", "give a secret to a program it may go to: its value on the program's input, or in variables with --env, and masked in what it prints")
+        run.add_argument("secret", help="the secret's number or title")
+        run.add_argument("--stdin", default="", help="what the program reads, with {field} where a value goes; the hidden value alone when left out")
+        run.add_argument("--env", action="store_true", help="the values in the fields' variables too")
+        run.add_argument("command", nargs="*", help="after --: the program and its arguments")
         self.verb(verbs, "where", "the file the values live in, outside the project")
         self.verb(verbs, "delete", "a secret put away; its values are kept thirty days for a restore").add_argument("n", type=int)
         self.verb(verbs, "restore", "a deleted secret back, with its values").add_argument("n", type=int)
@@ -85,6 +92,22 @@ class SecretCommand(Command):
             print(f"  {raw['name']:<10} {raw['variable']:<24} {'filled' if raw['name'] in s.filled else 'waiting for the user'}{', hidden' if raw.get('hidden', True) else ''}")
         print(f"  given to: {', '.join(s.programs) or 'no program yet'}" + (f"; proposed: {', '.join(s.proposed)}" if s.proposed else ""))
         return 0
+
+    def run(self, args: Namespace, where: Where) -> int:
+        secret = self.named(args.secret)
+        if not secret.helpers and where.session and self.workers.by_session(where.session):
+            raise Refused(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
+        code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.env)
+        self.secrets.save(secret.with_(used_at=datetime.now(timezone.utc)), where.actor)
+        print(output.decode(errors="replace"), end="")
+        return code
+
+    def named(self, given: str) -> Secret:
+        """A live secret by its number or its title."""
+        found = [s for s in self.secrets.live() if str(s.id) == given or s.title.lower() == given.lower()]
+        if not found:
+            raise Refused(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
+        return found[0]
 
     def where(self, args: Namespace, where: Where) -> int:
         print(self.values.path)
