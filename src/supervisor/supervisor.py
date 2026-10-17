@@ -12,11 +12,13 @@ from supervisor.status_line import StatusLine
 from supervisor.header import Header
 from supervisor.inbox import Inbox
 from supervisor.instructions.instruction import Instruction
+from supervisor.instructions.keys import Keys
 from supervisor.instructions.restart_agent import RestartAgent
 from supervisor.instructions.restart_journal import RestartJournal
 from supervisor.instructions.stop import Stop
 from supervisor.instructions.type import Type
 from supervisor.journal_process import JournalProcess
+from supervisor.mirror import Mirror
 from supervisor.terminal import Terminal
 
 LONGEST = 65536
@@ -25,8 +27,10 @@ LONGEST = 65536
 class Supervisor:
     """One loop: stdin to the agent, the agent to stdout under the band, the inbox's instructions carried out, the journal kept running, the status line kept current."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, status: StatusLine, stdin: int | None = 0, stdout: int = 1, viewer: str = "", header: Header | None = None) -> None:
+    def __init__(self, terminal: Terminal, inbox: Inbox, journal: JournalProcess, status: StatusLine, stdin: int | None = 0, stdout: int = 1, viewer: str = "", header: Header | None = None, mirror: Mirror | None = None) -> None:
         self.terminal, self.inbox, self.journal, self.status, self.stdin, self.stdout = terminal, inbox, journal, status, stdin, stdout
+        self.mirror = mirror
+        """The agent's newest output written where the journal reads it; none in a supervisor with nobody to read it."""
         """stdin is None for a supervisor started by the journal, with nobody at a keyboard."""
         self.header = header
         """The band kept at the top of the screen; none when the output is not a terminal."""
@@ -83,12 +87,16 @@ class Supervisor:
                 self._ended()
                 return
             os.write(self.stdout, self.header.shield(data) if self.header else data)
+            if self.mirror:
+                self.mirror.add(data)
         if self.stdin is not None and self.stdin in readable:
             data = os.read(self.stdin, LONGEST)
             if not data:
                 self.stop()
                 return
             self.terminal.write(data)
+        if self.mirror:
+            self.mirror.flush()
         if (code := self.terminal.exited()) is not None and not self._stopping:
             self._code = code
 
@@ -119,11 +127,14 @@ class Supervisor:
             return False
 
     def carry_out(self, instruction: Instruction) -> None:
-        """Dispatches on the instruction's type to one of the four below."""
-        {Type: self.type, RestartAgent: self.restart_agent, RestartJournal: self.restart_journal, Stop: self.stop}[type(instruction)](instruction)
+        """Dispatches on the instruction's type to one of the five below."""
+        {Type: self.type, Keys: self.keys, RestartAgent: self.restart_agent, RestartJournal: self.restart_journal, Stop: self.stop}[type(instruction)](instruction)
 
     def type(self, instruction: Type) -> None:
         self.terminal.type(instruction.line, instruction.after)
+
+    def keys(self, instruction: Keys) -> None:
+        self.terminal.write(instruction.keys.encode())
 
     def restart_agent(self, instruction: RestartAgent) -> None:
         self._stopping = True

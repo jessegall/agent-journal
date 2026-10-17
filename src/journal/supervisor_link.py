@@ -28,6 +28,16 @@ class SupervisorLink:
         """What the user typed in the viewer's terminal pane, as the user, without the mark."""
         self._send(environment_id, {"type": "Type", "line": line, "after": 0.0})
 
+    def keys(self, environment_id: int, keys: str) -> None:
+        """Keys written to the agent's terminal as they are, with no Enter after them: an arrow, Enter, Escape."""
+        self._send(environment_id, {"type": "Keys", "keys": keys})
+
+    def screen(self, environment_id: int) -> str:
+        """The newest output of the agent's terminal, as the supervisor mirrors it, read as text; empty when there is none."""
+        name = self.environment_name(environment_id)
+        path = self.config.root / ".journal" / "runtime" / "screens" / f"{name}.out" if name else None
+        return path.read_bytes().decode(errors="replace") if path and path.exists() else ""
+
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, {"type": "RestartAgent", "resume": list(resume)})
 

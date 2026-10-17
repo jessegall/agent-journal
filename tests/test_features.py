@@ -1583,9 +1583,9 @@ def test_a_journal_gets_each_shipped_workflow_it_lacks_at_boot_keeps_edited_ones
     seed.run()
     assert charts.for_pair("idle", "idle") and len(charts.nodes_of(charts.for_pair("idle", "idle"))) >= 3, "a journal lacking a shipped workflow gets it at boot"
     assert len(charts.shipped()) == len(seed.drawings) and all(c.event and c.drawing for c in charts.shipped()), "one shipped workflow per drawing: a state's at a trigger it has steps at, an Always one or the guards at an event"
-    unedited = charts.save(Chart(title="Agent stops", shipped=True, event="idle"), by)
+    unedited = charts.save(Chart(title="Stop", shipped=True, event="idle"), by)
     charts.add_node(unedited, Node(kind=NodeKind.TRIGGER, key="idle", shipped=True), by)
-    edited = charts.save(Chart(title="Tool about to run", shipped=True, event="tool_starting"), by)
+    edited = charts.save(Chart(title="Pre tool use", shipped=True, event="tool_starting"), by)
     charts.add_node(edited, Node(kind=NodeKind.TRIGGER, key="tool_starting", shipped=True), by)
     charts.add_node(edited, Node(kind=NodeKind.CHECK, key="open_tasks"), by)
     seed.run()
@@ -2353,7 +2353,7 @@ def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monke
     assert all(w["last_walk"] == {} and w["last_failure"] == {} for w in read()), "nothing walked yet"
     hook(app, "SessionStart")
     base = next(w for w in read() if w["state"] == "" and w["event"] == "session_started")
-    assert base["last_walk"]["trigger"] == "Session starts" and base["last_walk"]["at"] > 0 and base["last_failure"] == {}
+    assert base["last_walk"]["trigger"] == "Session start" and base["last_walk"]["at"] > 0 and base["last_failure"] == {}
     app.console().run(["message", "send", "a word for the agent"], USER)
 
     def broken(self, ctx, text):
@@ -3027,7 +3027,7 @@ def test_ended_ships_a_workflow_at_session_starts_with_nothing_of_its_own(app):
     from journal.repositories.charts import Charts
     charts = app.container.get(Charts)
     ended = charts.for_pair("ended", "session_started")
-    assert ended and ended.shipped and [n.kind for n in charts.nodes_of(ended)] == [NodeKind.TRIGGER], "Ended at Session starts is shipped with its trigger alone"
+    assert ended and ended.shipped and [n.kind for n in charts.nodes_of(ended)] == [NodeKind.TRIGGER], "Ended at Session start is shipped with its trigger alone"
     named = app.container.get(ChartController).named(ended)
     assert named["title"] == "No workflow for this state yet" and named["off"] is False and named["edited"] is False, "the page lists it with its marks"
     assert any(s["key"] == "ended" for s in app.container.get(ChartController).listed_states()), "and Ended among the states"

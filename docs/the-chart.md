@@ -47,8 +47,8 @@ are read from the journal's own record. What the agent owes the journal, the jou
 look at what is in flight, a decision at a context mark, is the engine's: the skills, briefing and memory features
 set each debt and hold a write and a stop on it, with no node on the canvas.
 
-At Session starts: tell the agent the journal's rules, facts and what waits; say what is unread; tell the agent how to
-talk to the user. At Prompt sent and Agent stops: say what is unread. At Tool about to run: hold a write while
+At Session start: tell the agent the journal's rules, facts and what waits; tell the agent how to talk to the user;
+what is unread is the engine's delivery there, catching the agent up on a line it may have missed. At User prompt submit and Stop: say what is unread. At Pre tool use: hold a write while
 messages stay unread after a number of reminders; name the unread messages every so many tool uses; hold the tools
 while a read message stays unanswered; ask for an answer after so many tool uses; each on the agent's own tool use, never a subagent's.
 Idle at a stop holds it while a task is parked, then in auto mode while tasks are open; at a tick it asks about a
@@ -68,11 +68,11 @@ inbox is named every so many tool uses and the write held after so many namings,
 before the next tool, held after so many uses. Every Always or Guards workflow at an agent event opens with the
 context mark, locked: the context crossing a quarter, a half or four fifths holds the agent at it, told to decide
 what survives, and the mark owed is a fact on its row until it does. Then the conduct for every
-state, one Always workflow per event, bound to no state and placed after the locked ones: the Always workflow at Session starts
+state, one Always workflow per event, bound to no state and placed after the locked ones: the Always workflow at Session start
 requires the journal skill (locked), names the inbox, requires a look at what is in flight (locked) and then says the start block line by line, ready, quiet, the laws (locked), a takeover when another session worked here lately, the rules, facts and reminders when there are any, what waits, and how to talk to the user, owing the look that
-`journal environment here` pays, the Always workflow at Prompt sent requires the skills a prompt names
-(locked) and names the inbox, the Always workflow at Agent stops holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox. Delivering a message to the agent is the engine's, not a workflow: the messages feature types a message you leave into the agent's terminal by number and starts its counts of tool uses and inbox namings, and starts the count of uses it owes an answer on at the first message read and left unanswered; nothing is shipped at Message created or Message updated. A state whose feature has a
-skill requires it at Session starts in that state, in the state's own workflow there. Require a skill names the
+`journal environment here` pays, the Always workflow at User prompt submit requires the skills a prompt names
+(locked) and names the inbox, the Always workflow at Stop holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox. Delivering a message to the agent is the engine's, not a workflow: the messages feature types a message you leave into the agent's terminal by number and starts its counts of tool uses and inbox namings, and starts the count of uses it owes an answer on at the first message read and left unanswered; nothing is shipped at Message created or Message updated. A state whose feature has a
+skill requires it at Session start in that state, in the state's own workflow there. Require a skill names the
 skill in its text; empty, it takes the skills the prompt names at a prompt and the state's skill elsewhere. A state's workflow at an event carries only the state's own
 steps, and a state with nothing of its own at an event has no workflow there; a copy from before, edited by you,
 keeps your steps and the state's and loses the shared ones at the boot that moves them. Each state's own:
@@ -191,7 +191,7 @@ skill are no states, the engine lists nine, and a journal whose agent stood in o
 the state it held with the fact set. So a state's own workflows run as they would:
 Working at a tick still says the task is open after a quiet quarter hour while the look is owed, the inbox is named
 at a prompt while a skill is owed, a wait is released by its row event while a mark is owed. The debt holds only
-what it must: a write, through the guards at Tool about to run, and a stop, through the Always workflow at Agent stops, each
+what it must: a write, through the guards at Pre tool use, and a stop, through the Always workflow at Stop, each
 naming what it awaits; the read, the command or the decision that pays it goes through. Beneath every workflow the
 engine keeps a floor: a journal command and the read of a skill's file are never held, whatever a hold says, since
 they are how a debt is paid; the hold's words still reach the agent. The save warns of a Hold the tool at Tool

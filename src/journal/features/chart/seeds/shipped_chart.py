@@ -1,6 +1,6 @@
 import re
 from journal.engine.states_catalogue import StatesCatalogue
-from journal.features.chart.catalogue import Catalogue
+from journal.features.chart.catalogue import FORMER_TITLES, Catalogue
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.registry import Registry
 from journal.features.seed import Seed
@@ -22,7 +22,6 @@ SETTING = re.compile(r"\{([a-z_]+\.[a-z_]+)\}")
 """A setting a shipped title names, filled with its value when the title is drawn."""
 STATELESS = (
     (":session_started:start", "Tell the agent the journal's rules, facts and what waits", "start_block"),
-    (":session_started:inbox", "Say what is unread", "shared_inbox"),
     (":session_started:voice", "Tell the agent how to talk to the user", "say_voice"),
     (":prompt_submitted:inbox", "Say what is unread", "shared_inbox"),
     (":idle:inbox", "Say what is unread", "shared_inbox"),
@@ -65,7 +64,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 16
+DRAWINGS_VERSION = 17
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -148,9 +147,10 @@ class ShippedChart(Seed):
         return f"{whose} at {event}"
 
     def old_titles(self, chart: Chart) -> set[str]:
-        """Every title a shipped workflow carried before its drawing said what it does."""
+        """Every title a shipped workflow carried before its drawing said what it does, under the event's name now and the one it had before."""
         event = self.catalogue.entry(NodeKind.TRIGGER, chart.event).title if self.catalogue.has(NodeKind.TRIGGER, chart.event) else chart.event
-        return {self.old_title(chart), f"Guards at {event}"}
+        whose = self.states.title_of(chart.state) if chart.state else "Always"
+        return {f"{who} at {name}" for who in (whose, "Guards") for name in (event, FORMER_TITLES.get(event, event))}
 
     def retitle_the_shipped(self, by: Actor) -> None:
         """A shipped workflow still titled by its state and event, or by its own title with older numbers, which the user never renamed, takes the title that says what it does with the settings' numbers now."""

@@ -4,18 +4,20 @@ from journal.models.all_models import AllModels
 from journal.models.node_kind import NodeKind
 from journal.refused import Refused
 
+FORMER_TITLES = {"Session start": "Session starts", "User prompt submit": "Prompt sent", "Pre tool use": "Tool about to run", "Post tool use": "Tool finished", "Stop": "Agent stops", "Message display": "Agent writes to you", "Subagent start": "Subagent starts", "Subagent stop": "Subagent ends", "Pre compact": "Context compacts", "Session end": "Session ends", "Tick": "Clock ticks"}
+"""The agent events' titles before they took the providers' hook names: a shipped workflow still titled by one is retitled at boot."""
 AGENT_EVENTS = (
-    ("session_started", "Session starts", "Claude or Codex starts or resumes a conversation here"),
-    ("prompt_submitted", "Prompt sent", "you, or a typed line, send the agent a prompt"),
-    ("tool_starting", "Tool about to run", "before a read, a write, a command or a dispatch; where a tool can be held or denied"),
-    ("tool_finished", "Tool finished", "after a tool ran, with its result"),
-    ("idle", "Agent stops", "the agent finishes responding; where the stop can be blocked or the journal can speak"),
-    ("turn_written", "Agent writes to you", "a turn of the agent's reaches the chat; Claude only"),
-    ("subagent_started", "Subagent starts", "the agent dispatched a subagent"),
-    ("subagent_ended", "Subagent ends", "a subagent reported back"),
-    ("compacting", "Context compacts", "the conversation is about to be summarised"),
-    ("session_ended", "Session ends", "the agent's process is gone"),
-    ("ticked", "Clock ticks", "every few seconds for each live agent"),
+    ("session_started", "Session start", "Claude or Codex starts or resumes a conversation here"),
+    ("prompt_submitted", "User prompt submit", "you, or a typed line, send the agent a prompt"),
+    ("tool_starting", "Pre tool use", "before a read, a write, a command or a dispatch; where a tool can be held or denied"),
+    ("tool_finished", "Post tool use", "after a tool ran, with its result"),
+    ("idle", "Stop", "the agent finishes responding; where the stop can be blocked or the journal can speak"),
+    ("turn_written", "Message display", "a turn of the agent's reaches the chat; Claude only"),
+    ("subagent_started", "Subagent start", "the agent dispatched a subagent"),
+    ("subagent_ended", "Subagent stop", "a subagent reported back"),
+    ("compacting", "Pre compact", "the conversation is about to be summarised"),
+    ("session_ended", "Session end", "the agent's process is gone"),
+    ("ticked", "Tick", "every few seconds for each live agent"),
 )
 OWN = ("agents", "entries", "links", "counts")
 """The engine's own tables, which a walk writes itself when it moves an agent, records itself, draws a line or counts: a trigger on them would walk without end, so no workflow may name them."""

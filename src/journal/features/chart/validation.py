@@ -111,7 +111,7 @@ class Validation:
         return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart)
 
     def hold_warnings(self, chart: Chart) -> list[str]:
-        """A Hold the tool at Tool about to run with neither Tool changes files? nor Journal command? on its path holds every tool, reads included; the engine still lets a journal command and the read of a skill's file through, the rest waits."""
+        """A Hold the tool at Pre tool use with neither Tool changes files? nor Journal command? on its path holds every tool, reads included; the engine still lets a journal command and the read of a skill's file through, the rest waits."""
         if chart.event != "tool_starting":
             return []
         nodes = self.charts.nodes_of(chart)

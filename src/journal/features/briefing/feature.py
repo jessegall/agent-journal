@@ -11,7 +11,7 @@ from journal.models.node_kind import NodeKind
 class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
-    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, drawn in the Always workflow at Session starts."
+    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, drawn in the Always workflow at Session start."
     listeners = (OweTheLookAtStart, HoldWritesUntilOriented, KeepFromStoppingUntilOriented, EndSilentSessions)
     checks = (
         Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),
