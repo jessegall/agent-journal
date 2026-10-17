@@ -193,6 +193,8 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     agent = app.container.get(Machine).agent("s1", 1)
     screens = app.config.home / "runtime" / "screens"
     screens.mkdir(parents=True, exist_ok=True)
+    (app.config.home / "runtime" / "inboxes").mkdir(parents=True, exist_ok=True)
+    (app.config.home / "runtime" / "inboxes" / "main").write_text(json.dumps({"socket": "/tmp/none.sock", "protocol": 1, "screen": str(screens / "main.out")}))
     def shown(text: str, still_for: float = 5.0) -> None:
         path = screens / "main.out"
         path.write_text(text)

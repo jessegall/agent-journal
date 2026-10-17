@@ -354,3 +354,12 @@ def test_the_mirror_goes_with_its_supervisor(tmp_path: Path):
     assert mirror.path.exists() and mirror.path.with_suffix(".keyed").exists()
     mirror.close()
     assert not mirror.path.exists() and not mirror.path.with_suffix(".keyed").exists(), "no screen is left for a process that is gone"
+
+
+def test_the_inbox_announces_where_the_screen_is_mirrored(tmp_path: Path):
+    inbox = Inbox.for_(tmp_path, "main")
+    inbox.open(screen=str(tmp_path / "screens" / "main.out"))
+    try:
+        assert json.loads(inbox.announced_at.read_text())["screen"] == str(tmp_path / "screens" / "main.out"), "the journal reads the screen where the supervisor says it is"
+    finally:
+        inbox.close()

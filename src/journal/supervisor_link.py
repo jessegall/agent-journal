@@ -1,6 +1,7 @@
 import json
 import socket
 import time
+from pathlib import Path
 
 from journal.config import Config
 from journal.engine.typed_lines import TypedLines
@@ -56,20 +57,22 @@ class SupervisorLink:
     def screen(self, environment_id: int) -> str:
         """The newest output of the agent's terminal, as the supervisor mirrors it, read as text; empty when there is none."""
         path = self.mirrored(environment_id, "out")
-        return path.read_bytes().decode(errors="replace") if path.exists() else ""
+        return path.read_bytes().decode(errors="replace") if path and path.exists() else ""
 
     def screen_changed_at(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "out")
-        return path.stat().st_mtime if path.exists() else 0.0
+        return path.stat().st_mtime if path and path.exists() else 0.0
 
     def keyed_at(self, environment_id: int) -> float:
         """When the user last pressed a key for the agent: at the keyboard, as the supervisor notes it, or in the viewer's terminal pane."""
         path = self.mirrored(environment_id, "keyed")
-        at_keyboard = path.stat().st_mtime if path.exists() else 0.0
+        at_keyboard = path.stat().st_mtime if path and path.exists() else 0.0
         return max(at_keyboard, self._viewer_keyed_at.get(environment_id, 0.0))
 
-    def mirrored(self, environment_id: int, kind: str):
-        return self.config.home / "runtime" / "screens" / f"{self.environments.find(environment_id).name}.{kind}"
+    def mirrored(self, environment_id: int, kind: str) -> Path | None:
+        """The mirror of the agent's screen, or the file noting keys beside it, where the supervisor announced it; none when no supervisor runs."""
+        screen = self.announced(environment_id).get("screen", "")
+        return Path(screen).with_suffix(f".{kind}") if screen else None
 
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, {"verb": "restart", "name": AGENT, "resume": list(resume)})
@@ -87,7 +90,7 @@ class SupervisorLink:
         """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a supervisor before the protocol; nothing when none runs."""
         path = self.config.home / "runtime" / "inboxes" / self.environments.find(environment_id).name
         text = path.read_text().strip() if path.is_file() else ""
-        return json.loads(text) if text.startswith("{") else {"socket": text} if text else {}
+        return json.loads(text) if text.startswith("{") else {"socket": text, "screen": OldSupervisor.screen(self.config.home, path.name)} if text else {}
 
     def _send(self, environment_id: int, request: dict) -> dict:
         announced = self.announced(environment_id)

@@ -43,7 +43,7 @@ class Supervisor:
 
     def run(self) -> int:
         saved = self._raw()
-        self.inbox.open()
+        self.inbox.open(**({"screen": str(self.mirror.path)} if self.mirror else {}))
         self.services.start_all()
         self._started_at = time.time()
         self.terminal.start()

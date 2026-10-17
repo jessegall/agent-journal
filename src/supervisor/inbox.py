@@ -29,7 +29,8 @@ class Inbox:
     def fd(self) -> int:
         return self._socket.fileno()
 
-    def open(self) -> None:
+    def open(self, **told: str) -> None:
+        """The socket opened and announced, with what else the journal is told about this supervisor, such as where its screen is mirrored."""
         self.path.parent.mkdir(mode=0o700, exist_ok=True)
         self.path.parent.chmod(0o700)
         self.path.unlink(missing_ok=True)
@@ -39,7 +40,7 @@ class Inbox:
         self._socket.listen(8)
         self._socket.setblocking(False)
         self.announced_at.parent.mkdir(parents=True, exist_ok=True)
-        self.announced_at.write_text(json.dumps({"socket": str(self.path), "protocol": PROTOCOL}))
+        self.announced_at.write_text(json.dumps({"socket": str(self.path), "protocol": PROTOCOL, **told}))
 
     def answer(self, handle: Callable[[dict], dict]) -> None:
         """Every request waiting, each answered on its own connection."""
