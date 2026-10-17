@@ -3257,6 +3257,34 @@ def test_runs_nest_never_in_themselves_and_only_the_users_words_start_one(app):
     hook(app, "UserPromptSubmit", prompt="give me an update")
     assert running.in_hand("s1", 1).title == "Writing an update", "the user's own words do"
 
+def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+
+    def api(method: str, path: str):
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{path}", data=b"{}" if method == "POST" else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        try:
+            with urlopen(request, timeout=5) as reply:
+                return reply.status, json.loads(reply.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    made = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
+    console.run(["sequence", "run", made], AGENT)
+    app.runtime().deferred.drain()
+    shown = json.dumps(api("GET", "agent/1")[1])
+    assert '"title": "release"' in shown and '"step": 1' in shown and "Not taken up yet" in shown, "the panel shows the run, its step and why it holds"
+    assert api("POST", "agent/1/skip_step")[0] == 200 and any("the user skipped step 1" in line and "step 2: tag" in line for line in sent), "Skip step moves the run on and tells the agent"
+    assert api("POST", "agent/1/end_sequence")[0] == 200 and any(f"the user ended sequence {made}" in line for line in sent) and app.container.get(Running).in_hand("s1", 1) is None, "End ends the run"
+    app.runtime().deferred.drain()
+    history = json.dumps(api("GET", "agent/1")[1])
+    assert "release: started" in history and "release: moved on to step 2" in history and "release: ended at step 2" in history, "the panel lists what the run did"
+    assert api("POST", "agent/1/end_sequence")[0] != 200, "with no run there is nothing to end"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

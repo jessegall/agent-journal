@@ -9,6 +9,7 @@ from journal.features.sequences.listeners.carry_runs_to_the_next_session import 
 from journal.features.sequences.listeners.end_runs_of_a_cancelled_row import EndRunsOfACancelledRow
 from journal.features.sequences.listeners.end_runs_of_a_deleted_row import EndRunsOfADeletedRow
 from journal.features.sequences.listeners.hold_writes_for_the_step import HoldWritesForTheStep
+from journal.features.sequences.listeners.record_run_changes import RecordRunChanges
 from journal.features.sequences.listeners.say_the_step_at_a_pace import SayTheStepAtAPace
 from journal.features.sequences.listeners.say_the_step_at_a_stop import SayTheStepAtAStop
 from journal.features.sequences.listeners.say_the_step_at_start import SayTheStepAtStart
@@ -22,7 +23,7 @@ class Sequences(Feature):
     title = "Sequences"
     help = "Steps the agent follows one at a time."
     commands = (SequenceCommand,)
-    listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtStart, SayTheStepAtAStop, HoldWritesForTheStep, SayTheStepWhenAWaitEnds, SayTheStepAtAPace, EndRunsOfADeletedRow, EndRunsOfACancelledRow)
+    listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtStart, SayTheStepAtAStop, HoldWritesForTheStep, SayTheStepWhenAWaitEnds, SayTheStepAtAPace, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
     actions = (
         Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
     )
@@ -36,7 +37,9 @@ class Sequences(Feature):
     ENDED = Nudge(name, "ended", "sequence {{n}} ran its last step", repeat_after=0)
     ABANDONED = Nudge(name, "abandoned", "sequence {{n}} abandoned", repeat_after=0)
     CANNOT_FINISH = Nudge(name, "cannot_finish", "sequence {{n}} ended: {{why}}", repeat_after=0)
-    nudges = (STEP, FOLLOWING, HELD, STALE, PARKED, ENDED, ABANDONED, CANNOT_FINISH)
+    SKIPPED = Nudge(name, "skipped", "the user skipped step {{step}} of sequence {{n}}", repeat_after=0)
+    ENDED_BY_USER = Nudge(name, "ended_by_user", "the user ended sequence {{n}}", repeat_after=0)
+    nudges = (STEP, FOLLOWING, HELD, STALE, PARKED, ENDED, ABANDONED, CANNOT_FINISH, SKIPPED, ENDED_BY_USER)
 
     STALE_AFTER = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
     SAY_EVERY = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")

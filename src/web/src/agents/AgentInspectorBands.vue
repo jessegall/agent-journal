@@ -4,6 +4,7 @@ import {briefOpen} from "../composables/briefBand.js";
 import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
 import OpenableText from "../kit/OpenableText.vue";
+import SequenceBand from "./SequenceBand.vue";
 
 defineProps({
     confirm: {type: Object, default: null},
@@ -13,8 +14,11 @@ defineProps({
     stateKey: {type: String, default: ""},
     plan: {type: Number, default: 0},
     resume: {type: Object, default: null},
+    sequence: {type: Object, default: null},
+    sequenceHistory: {type: Array, default: () => []},
+    sequenceBusy: {type: String, default: ""},
 });
-const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume"]);
+const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume", "skip-step", "end-sequence"]);
 </script>
 
 <template>
@@ -33,7 +37,13 @@ const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume"]);
         </template>
         <template v-if="brief">
             <Notice tone="brief">
-                <OpenableText label="Brief" title="Brief from the main agent" :text="brief.text" :shown="briefOpen" @close="briefOpen = false">
+                <OpenableText
+                    label="Brief"
+                    title="Brief from the main agent"
+                    :text="brief.text"
+                    :shown="briefOpen"
+                    @close="briefOpen = false"
+                >
                     <template #more>
                         <small class="inspector-sent">Sent {{ clock(brief.at) }}</small>
                     </template>
@@ -50,6 +60,15 @@ const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume"]);
                     </template>
                 </OpenableText>
             </Notice>
+        </template>
+        <template v-if="sequence">
+            <SequenceBand
+                :sequence="sequence"
+                :history="sequenceHistory"
+                :busy="sequenceBusy"
+                @skip="emit('skip-step')"
+                @end="emit('end-sequence')"
+            />
         </template>
         <template v-if="stateKey === 'waiting' && plan">
             <Notice tone="wait">

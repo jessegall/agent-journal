@@ -65,6 +65,26 @@ class Running:
         self.kept(agent, [*runs[:-2], outer])
         return f"{ended}\n{self.said(outer)}"
 
+    def skip(self, session: str, environment_id: int) -> str:
+        """The user's word: the step in hand passed over, whether or not it was taken up or its row is ready; the last ends the run."""
+        from journal.features.sequences.feature import Sequences
+        agent = self.machine.agent(session, environment_id)
+        runs = self.runs(agent)
+        run = runs[-1]
+        skipped = Sequences.SKIPPED.about(n=run.sequence_id, step=run.step + 1).rendered()
+        if run.last:
+            return self.ended(agent, runs, f"{skipped}\n{Sequences.ENDED.about(n=run.sequence_id).rendered()}")
+        moved = run.moved_on().said(self.now())
+        self.kept(agent, [*runs[:-1], moved])
+        return f"{skipped}\n{self.said(moved)}"
+
+    def end(self, session: str, environment_id: int) -> str:
+        """The user's word: the run in hand ended where it stands."""
+        from journal.features.sequences.feature import Sequences
+        agent = self.machine.agent(session, environment_id)
+        runs = self.runs(agent)
+        return self.ended(agent, runs, Sequences.ENDED_BY_USER.about(n=runs[-1].sequence_id).rendered())
+
     def refuse_an_unfinished_end(self, run: SequenceRun) -> None:
         """The last step may not be done while the row the run is about stands short of the states the sequence names; a row gone no longer holds it."""
         state = self.rows.state_of(Ref.parse(run.about)) if run.last and run.about and run.finishes_in else ""

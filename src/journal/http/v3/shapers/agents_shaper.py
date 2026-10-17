@@ -1,5 +1,6 @@
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
+from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.tasks.states.working import Working
 from journal.features.thinking.thoughts import Thoughts
@@ -8,15 +9,18 @@ from journal.hooks.context_file import ContextFile
 from journal.http.v3.project_files import ProjectFiles
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import AGENT, SYSTEM, V3Row, seconds
+from journal.models.sequence_run import SequenceRun
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 
 STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan"})
-"""The states in which the agent has declared its work: only then is it working, as version 3 had it; an agent merely running is busy."""
+"""The states in which the agent has declared its work: only then is it working; an agent merely running is busy."""
 EVENT = {"ToolStarting": "PreToolUse", "ToolFinished": "PostToolUse", "PromptSubmitted": "UserPromptSubmit", "Idle": "Stop", "SessionStarted": "SessionStart", "SessionEnded": "SessionEnd", "Compacting": "PreCompact"}
 PAUSED = frozenset({"waiting", "awaiting", "stuck"})
 KEPT = 400
+HISTORY = 5
+"""How many of an agent's latest sequence changes its panel shows."""
 TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
 
 
@@ -51,8 +55,23 @@ class AgentsShaper(Shaper):
             "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thoughts.latest(a.session), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "cards": self.commit_cards(entries), "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
             "subagent_rows": (subagents := self.subagents.rows(a.session)), "subagents": len(subagents), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
+            "sequence": self.sequence_of(a), "sequence_history": [self.change_of(e) for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)
+
+    @staticmethod
+    def sequence_of(a) -> dict | None:
+        """The run in hand, as the agent's panel shows it: the step, and what it holds."""
+        runs = [SequenceRun.of(raw) for raw in a.sequence_runs or ()]
+        if not runs:
+            return None
+        run = runs[-1]
+        holds = f"Parked: {run.parked_why}" if run.parked_why else "Taken up" if run.taken_up_at else "Not taken up yet: the agent's writes wait until it takes this step up"
+        return {"n": run.sequence_id, "title": run.title, "step": run.step + 1, "steps": len(run.steps), "text": run.text, "holds": holds, "about": run.about, "under": len(runs) - 1}
+
+    @staticmethod
+    def change_of(entry) -> dict:
+        return {"at": seconds(entry.created_at), "text": f"Sequence {entry.data['n']}, {entry.data['title']}: {entry.data['what']}"}
 
     def doing(self, a, state, hooks) -> str:
         """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state says."""

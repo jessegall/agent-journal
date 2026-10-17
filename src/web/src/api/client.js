@@ -474,6 +474,14 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${n}/${action}`), body);
     }
 
+    skipSequenceStep(agent) {
+        return this.act("agent", agent, "skip_step");
+    }
+
+    endSequence(agent) {
+        return this.act("agent", agent, "end_sequence");
+    }
+
     answerSuggestion(n, how) {
         return this.act("suggestion", n, "decide", {how});
     }

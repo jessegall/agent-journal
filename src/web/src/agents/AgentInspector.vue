@@ -215,6 +215,21 @@ function choose(key) {
     else perform(key);
 }
 
+const sequenceBusy = ref("");
+const SEQUENCE_ACTIONS = {skip: (n) => there.skipSequenceStep(n), end: (n) => there.endSequence(n)};
+
+async function onSequence(key) {
+    refusal.value = "";
+    sequenceBusy.value = key;
+    try {
+        await SEQUENCE_ACTIONS[key](agent.value.n);
+    } catch (e) {
+        refusal.value = e.message;
+    } finally {
+        sequenceBusy.value = "";
+    }
+}
+
 const showing = (view) => panes.value && panes.value.show(view);
 const openSkills = () => go("skills");
 </script>
@@ -261,10 +276,15 @@ const openSkills = () => go("skills");
             :state-key="stateKey"
             :plan="plan"
             :resume="actionOf('resume')"
+            :sequence="subagent ? null : agent?.data?.sequence"
+            :sequence-history="agent?.data?.sequence_history || []"
+            :sequence-busy="sequenceBusy"
             @cancel="asking = ''"
             @confirmed="perform(question.key)"
             @show-plan="showing('plan')"
             @resume="choose('resume')"
+            @skip-step="onSequence('skip')"
+            @end-sequence="onSequence('end')"
         />
         <AgentPanes ref="panes" :views="VIEWS" :available="available" :flushable="['feed']">
             <template #view="{view, pane, tune}">
