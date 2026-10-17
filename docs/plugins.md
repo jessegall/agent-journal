@@ -75,7 +75,13 @@ A row event's `data` is the row's `table`, `id`, who wrote it (`by`) and, when u
 - `answer`: `allow`, `refuse` with a `reason`, or `tell` a line. An empty answer is `allow`. Only `tool_starting` and
   `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. What it says reaches
   the agent as `[plugin <name>] ...`.
-- `cards`: shown in the chat, a card with a `key` replacing the earlier one of that key.
-- `commands`: journal command lines run as the plugin, at most 20.
+- `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`, its kind one the manifest's
+  `cards` names; a card with a `key` replaces the plugin's earlier card of that key.
+- `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
+  entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands
+  write in turn by none: past that one step the cut is recorded as `plugin_cut`, so two plugins never answer each
+  other forever.
+- What it says, its `reason`, `tell` and cards, reaches the agent and the chat with `[journal]` and `[!reply:` made plain
+  text and every secret value masked.
 - An answer that does not parse is a fault: the event goes through and the fault is recorded. A fault is never a
   refusal.

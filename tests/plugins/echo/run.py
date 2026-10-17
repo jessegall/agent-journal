@@ -23,5 +23,7 @@ elif line["event"] == "prompt_submitted":
     print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"}))
 elif line["event"] == "tasks.created":
     print(json.dumps({"v": 1, "cards": [{"kind": "echoed", "key": f"task {data['id']}", "label": f"Echoed task {data['id']}"}], "commands": [f"journal task log {data['id']} \"echoed\""]}))
+elif line["event"] == "messages.created":
+    print(json.dumps({"v": 1, "commands": [f"journal message send 'heard message {data['id']}'"]}))
 else:
     print("")

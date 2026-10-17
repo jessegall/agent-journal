@@ -14,3 +14,9 @@ class Cards:
         """The card, written by whoever's act it marks: the system's own notices, or the user's act shown on the user's side."""
         data = {"kind": kind, "session": session, "icon": icon, "tone": tone, "detail": detail, "row": row}
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), by)
+
+    def keyed(self, environment_id: int, key: str, label: str, data: dict, by: Actor) -> Message:
+        """A card that stands for one thing, such as a file's findings: it replaces the earlier card of its key by the same writer. With no key it is a card like any other."""
+        for earlier in self.messages.keyed(key, by) if key else ():
+            self.messages.delete(earlier, by)
+        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data={"session": "", "row": "", **data, "key": key}), by)

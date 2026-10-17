@@ -40,6 +40,10 @@ class Messages(ScopedRepository[Message]):
     def reacted_by_agent(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.on(message))
 
+    def keyed(self, key: str, by: Actor) -> list[Message]:
+        rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND json_extract(data, '$.key') = ? AND created_by = ?", (self.scope.id, key, by.stamp))
+        return [self._load(row) for row in rows]
+
     def recent(self, last: int) -> list[Message]:
         return self.in_()[-last:]
 

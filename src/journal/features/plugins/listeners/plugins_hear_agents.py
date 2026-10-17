@@ -3,6 +3,7 @@ from time import monotonic
 from journal.events.agent.agent_event import AgentEvent
 from journal.features.agent_listener import AgentListener
 from journal.features.plugins.plugin_hearing import PluginHearing
+from journal.features.plugins.plugin_words import PluginWords
 from journal.hooks.decision import Decision
 from journal.hooks.deferred import Deferred
 from journal.hooks.floor import Floor
@@ -20,12 +21,12 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     blocking = True
     asked_while_free = True
 
-    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: Settings, floor: Floor) -> None:
-        self.hearing, self.deferred, self.settings, self.floor = hearing, deferred, settings, floor
+    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: Settings, floor: Floor, words: PluginWords) -> None:
+        self.hearing, self.deferred, self.settings, self.floor, self.words = hearing, deferred, settings, floor, words
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
-        heard = self.hearing.heard_by(event)
+        heard = self.hearing.heard_by(event, event.environment_id)
         deadline = monotonic() + float(self.settings.option(PluginsFeature.DEADLINE))
         decision = Decision()
         for plugin in heard:
@@ -35,10 +36,8 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
                 self.deferred.add(lambda plugin=plugin: self.hearing.later(plugin, event, event.environment_id))
         return self.floor.under(event, decision)
 
-    @staticmethod
-    def decided(plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
-        said = f"[plugin {plugin.name}] "
+    def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and event.key in REFUSABLE:
-            return Decision.refuse(said + answer.reason)
+            return Decision.refuse(self.words.said(plugin, answer.reason))
         words = answer.reason if answer.answer == "refuse" else answer.tell
-        return Decision.tell(said + words) if words else Decision()
+        return Decision.tell(self.words.said(plugin, words)) if words else Decision()
