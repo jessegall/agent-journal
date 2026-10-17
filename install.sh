@@ -30,11 +30,18 @@ else
   SRC="$TMP/pkg/src"
 fi
 mkdir -p .journal/src
+# Each part is copied beside the one in use and renamed into place, so the running hooks and shell runner never find it gone.
+swap() {
+  rm -rf "$2.new" "$2.old"
+  cp -R "$1" "$2.new"
+  find "$2.new" -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null || true
+  [ -e "$2" ] && mv "$2" "$2.old"
+  mv "$2.new" "$2"
+  rm -rf "$2.old"
+}
 for name in journal supervisor journal.py journal.sh; do
-  rm -rf ".journal/src/$name"
-  cp -R "$SRC/$name" ".journal/src/$name"
+  swap "$SRC/$name" ".journal/src/$name"
 done
-mkdir -p .journal/src/web && rm -rf .journal/src/web/dist && cp -R "$SRC/web/dist" .journal/src/web/dist
-find .journal/src -name __pycache__ -type d -prune -exec rm -rf {} +
+mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist
 [ -z "$TMP" ] || rm -rf "$TMP"
 JOURNAL_ROOT="$PWD" exec "$PY" .journal/src/journal.py setup here
