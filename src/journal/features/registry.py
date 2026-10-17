@@ -25,8 +25,8 @@ class Registry:
         return [option for feature in self.features for option in feature.options]
 
     def services(self) -> list[Service]:
-        """The processes the features that are on need beside the agent."""
-        return [service for feature in self.features if self.is_on(feature) for service in feature.services]
+        """The processes the features need beside the agent: one runs for the whole journal, so a feature switched off in one environment still has its service."""
+        return [service for feature in self.features for service in feature.services]
 
     def skills(self) -> list[Skill]:
         return [feature.skill for feature in self.features if feature.skill]
