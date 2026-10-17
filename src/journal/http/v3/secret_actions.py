@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 
+from journal.features.secrets.login_window import LoginWindow
 from journal.features.secrets.programs import Programs
 from journal.models.actor import Actor
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
 from journal.refused import Refused
+from journal.repositories.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.secret_values import SecretValues
 
@@ -12,8 +14,8 @@ from journal.secret_values import SecretValues
 class SecretActions:
     """What the Secrets page does to a secret: make it, change it, fill a value, delete, restore and stop a login. A value goes straight to the values file and never into the row."""
 
-    def __init__(self, secrets: Secrets, values: SecretValues) -> None:
-        self.secrets, self.values = secrets, values
+    def __init__(self, secrets: Secrets, values: SecretValues, window: LoginWindow, scope: Scope) -> None:
+        self.secrets, self.values, self.window, self.scope = secrets, values, window, scope
 
     def create(self, body: dict, by: Actor) -> Secret:
         kind = SecretKind.named(body.get("kind") or SecretKind.CUSTOM.value)
@@ -48,8 +50,20 @@ class SecretActions:
     def restore(self, n: int, body: dict, by: Actor) -> Secret:
         return self.secrets.save(self.secrets.find(n).restored(), by)
 
+    def login(self, n: int, body: dict, by: Actor) -> Secret:
+        return self.window.open(self.secrets.find(n), self.scope.id, by)
+
+    def allow_login(self, n: int, body: dict, by: Actor) -> Secret:
+        """The agent may log in to this site on its own from now on, and a login is taken now."""
+        return self.window.open(self.secrets.save(self.secrets.find(n).with_(auto_login=True), by), self.scope.id, by)
+
     def revoke_login(self, n: int, body: dict, by: Actor) -> Secret:
+        """The agent asks with a Log in button again; the saved login stays."""
         return self.secrets.save(self.secrets.find(n).with_(auto_login=False), by)
+
+    def forget_login(self, n: int, body: dict, by: Actor) -> Secret:
+        """The saved login deleted and taken from the agent's browser."""
+        return self.window.forgotten(self.secrets.find(n), by)
 
     def read(self, n: int, body: dict, by: Actor) -> Secret:
         return self.secrets.find(n)

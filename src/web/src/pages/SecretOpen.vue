@@ -30,6 +30,18 @@ async function save() {
     if (await keep()) emit("back");
 }
 
+async function logIn() {
+    await attempt(() => api.loginSecret(props.n));
+}
+
+async function letLogIn() {
+    await attempt(() => api.allowSecretLogin(props.n));
+}
+
+async function forget() {
+    await attempt(() => api.forgetSecretLogin(props.n));
+}
+
 async function askEachTime() {
     await attempt(() => api.revokeSecretLogin(props.n));
 }
@@ -60,6 +72,25 @@ async function remove() {
                     <Btn @click="emit('back')">Cancel</Btn>
                 </div>
             </SecretForm>
+            <template v-if="one.data.kind === 'browser login'">
+                <div class="secrets-delete">
+                    <b>Log in to {{ one.data.url }}</b>
+                    <p>
+                        A browser opens on the computer the journal runs on. Log in, then close its window: the login is saved beside
+                        the values and the agent's browser starts with it.
+                        <template v-if="one.data.logging_in">The window is open now.</template>
+                        <template v-else-if="one.data.session">Logged in.</template>
+                    </p>
+                    <p>The agent's browser can read this login's cookies, and a page it opens can act on the site as you.</p>
+                    <Btn small :busy="busy" :disabled="Boolean(one.data.logging_in)" @click="logIn">Log in</Btn>
+                    <template v-if="!one.data.auto_login">
+                        <Btn small :busy="busy" :disabled="Boolean(one.data.logging_in)" @click="letLogIn">Let the agent log in on its own</Btn>
+                    </template>
+                    <template v-if="one.data.session">
+                        <Btn kind="danger" small :busy="busy" @click="forget">Forget this login</Btn>
+                    </template>
+                </div>
+            </template>
             <template v-if="one.data.auto_login">
                 <div class="secrets-delete">
                     <b>The agent logs in to this site on its own</b>

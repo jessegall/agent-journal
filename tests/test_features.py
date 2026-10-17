@@ -3489,3 +3489,45 @@ def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
     app.container.get(SecretActions).update(secret.id, {"programs": ["gh"], "proposed": []}, Actor.user("u"))
     app.runtime().deferred.drain()
     assert any("the user let secret 1, Github, go to gh" in r.get("line", "") for r in sent)
+
+
+def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_taken_back(app, tmp_path, monkeypatch):
+    import json as j
+    import time
+    from journal.features.mcp.installing import Installing
+    from journal.features.secrets.browser_logins import BrowserLogins
+    from journal.http.v3.secret_actions import SecretActions
+    from journal.models.mcp_server import McpServer
+    from journal.models.secret import Secret
+    from journal.models.secret_kind import SecretKind
+    from journal.repositories.mcp_servers import McpServers
+    from journal.repositories.secrets import Secrets
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    applied = []
+    monkeypatch.setattr(Installing, "applied", lambda self: applied.append(True))
+
+    def recorded(self, title, url):
+        self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
+        saved = self.saved_for(title)
+        saved.write_text(j.dumps({"cookies": [{"name": "sid", "domain": ".example.com", "path": "/", "expires": 4102444800}], "origins": []}))
+        return saved
+
+    monkeypatch.setattr(BrowserLogins, "record", recorded)
+    servers, secrets = app.container.get(McpServers), app.container.get(Secrets)
+    servers.save(McpServer(name="playwright", title="Playwright", command="npx", args=("-y", "@playwright/mcp@latest", "--headless")), Actor.system())
+    secret = secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://app.example.com/login"), Actor.user("u"))
+    assert "the user logs in to Example with the Log in button" in app.console().run(["secret", "login", str(secret.id)], AGENT).err, "the agent logs in on its own only where the user allows it"
+    app.container.get(SecretActions).allow_login(secret.id, {}, Actor.user("u"))
+    began = time.time()
+    while secrets.find(secret.id).logging_in_at and time.time() - began < 5:
+        time.sleep(0.05)
+    done = secrets.find(secret.id)
+    assert done.auto_login and done.session_at and done.session_expires.year == 2100
+    merged = app.container.get(BrowserLogins).merged
+    args = servers.named("playwright").args
+    assert args[-3:] == ("--storage-state", str(merged), "--isolated") and merged.is_file() and applied, "the agent's browser starts with the login, and the agents restart to use it"
+    assert "logged in to Example" in app.console().run(["secret", "login", str(secret.id), "--wait"], AGENT).out
+    app.container.get(SecretActions).revoke_login(secret.id, {}, Actor.user("u"))
+    assert not secrets.find(secret.id).auto_login and merged.exists(), "asking each time keeps the saved login"
+    app.container.get(SecretActions).forget_login(secret.id, {}, Actor.user("u"))
+    assert "--storage-state" not in servers.named("playwright").args and not merged.exists() and secrets.find(secret.id).session_at is None

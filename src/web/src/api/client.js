@@ -534,6 +534,18 @@ export class ApiClient {
         return this.act("secret", n, "delete", {why: "deleted from the viewer"});
     }
 
+    loginSecret(n) {
+        return this.act("secret", n, "login");
+    }
+
+    allowSecretLogin(n) {
+        return this.act("secret", n, "allow_login");
+    }
+
+    forgetSecretLogin(n) {
+        return this.act("secret", n, "forget_login");
+    }
+
     revokeSecretLogin(n) {
         return this.act("secret", n, "revoke_login");
     }

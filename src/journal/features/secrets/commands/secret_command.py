@@ -1,8 +1,11 @@
+import time
 from argparse import Namespace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
+from journal.features.secrets.browser_logins import WINDOW
+from journal.features.secrets.login_window import LoginWindow
 from journal.features.secrets.programs import Programs
 from journal.features.secrets.secret_run import SecretRun
 from journal.models.author import Author
@@ -12,6 +15,7 @@ from journal.models.secret_kind import SecretKind
 from journal.refused import Refused
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
+from journal.repositories.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.repositories.workers import Workers
 from journal.secret_values import SecretValues
@@ -22,8 +26,8 @@ class SecretCommand(Command):
 
     noun = "secret"
 
-    def __init__(self, secrets: Secrets, values: SecretValues, messages: Messages, servers: McpServers, runner: SecretRun, workers: Workers) -> None:
-        self.secrets, self.values, self.messages, self.servers, self.runner, self.workers = secrets, values, messages, servers, runner, workers
+    def __init__(self, secrets: Secrets, values: SecretValues, messages: Messages, servers: McpServers, runner: SecretRun, workers: Workers, window: LoginWindow, scope: Scope) -> None:
+        self.secrets, self.values, self.messages, self.servers, self.runner, self.workers, self.window, self.scope = secrets, values, messages, servers, runner, workers, window, scope
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "a secret with its fields, empty until the user fills them")
@@ -50,6 +54,9 @@ class SecretCommand(Command):
         propose = self.verb(verbs, "propose", "propose a program a secret may go to; the user allows it on the Secrets page")
         propose.add_argument("n", type=int)
         propose.add_argument("program")
+        login = self.verb(verbs, "login", "log in to a browser login's site, only where the user lets the agent log in on its own; --wait waits for the window to close")
+        login.add_argument("n", type=int)
+        login.add_argument("--wait", action="store_true")
         self.verb(verbs, "where", "the file the values live in, outside the project")
         self.verb(verbs, "delete", "a secret put away; its values are kept thirty days for a restore").add_argument("n", type=int)
         self.verb(verbs, "restore", "a deleted secret back, with its values").add_argument("n", type=int)
@@ -65,7 +72,8 @@ class SecretCommand(Command):
         if reaching:
             raise Refused(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
         secret = self.secrets.save(self.made(args.title, "", SecretKind.named(args.kind), where).with_(url=args.url, asked_at=datetime.now(timezone.utc)), where.actor)
-        self.messages.save(Message(author=Author.AGENT, text=f"Please fill in the secret {secret.title} on the Secrets page, never in the chat: I need it {args.why}.\n\nsecret {secret.id}"), where.actor)
+        asking = f"Please log in to {secret.title} with the Log in button on the Secrets page; a browser opens on your computer, and the login is saved when you close it" if secret.kind == SecretKind.BROWSER_LOGIN else f"Please fill in the secret {secret.title} on the Secrets page, never in the chat"
+        self.messages.save(Message(author=Author.AGENT, text=f"{asking}: I need it {args.why}.\n\nsecret {secret.id}"), where.actor)
         print(f"secret {secret.id} asked for: the user fills it on the Secrets page")
         return 0
 
@@ -116,6 +124,25 @@ class SecretCommand(Command):
         self.secrets.save(secret.with_(proposed=(*secret.proposed, name)), where.actor)
         print(f"{name} proposed for secret {secret.id}: the user allows it on the Secrets page")
         return 0
+
+    def login(self, args: Namespace, where: Where) -> int:
+        secret = self.secrets.find(args.n)
+        if args.wait:
+            return self.waited(secret)
+        if not secret.auto_login:
+            raise Refused(f"the user logs in to {secret.title} with the Log in button on the Secrets page; ask for it with `journal secret request {secret.title} --kind 'browser login' --url <address> --why <what for>`")
+        self.window.open(secret, self.scope.id, where.actor)
+        print(f"a browser opens on {secret.url} on the user's computer: wait for it with `journal secret login {secret.id} --wait`")
+        return 0
+
+    def waited(self, secret: Secret) -> int:
+        """Until the login window closes, then whether a login was saved."""
+        began = time.time()
+        while self.secrets.find(secret.id).logging_in_at and time.time() - began < WINDOW:
+            time.sleep(1)
+        done = self.secrets.find(secret.id)
+        print(f"logged in to {done.title}" if done.session_at else f"no login to {done.title} is saved")
+        return 0 if done.session_at else 1
 
     def named(self, given: str) -> Secret:
         """A live secret by its number or its title."""
