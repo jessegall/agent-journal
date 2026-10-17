@@ -4095,6 +4095,18 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
     assert app.container.get(DashboardRows).of("echo") == [], "purged with its plugin"
 
 
+def test_a_plugins_line_after_the_reply_reaches_the_agent_at_its_next_hook(app):
+    from journal.hooks.deferred import Deferred
+    echo(app, hears=["tool_finished", "tool_starting"], holds=["tool_starting"])
+    hook(app, "SessionStart")
+    hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": "notice.py"}, tool_response={})
+    app.container.get(Deferred).drain()
+    _, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "[plugin echo] echo noticed the edit" in body["hookSpecificOutput"]["additionalContext"], "the line said after an edit reaches the agent at its next tool"
+    _, again = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})
+    assert "echo noticed the edit" not in json.dumps(again), "and only once"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

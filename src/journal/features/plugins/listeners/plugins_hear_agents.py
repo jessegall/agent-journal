@@ -12,6 +12,8 @@ from journal.models.plugin import Plugin
 from journal.models.plugin_answer import PluginAnswer
 from journal.repositories.settings import Settings
 
+CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
+"""The hooks whose answer can carry a line to the agent without holding it, where a plugin's waiting lines are handed over."""
 REFUSABLE = ("tool_starting", "idle")
 """The held events a plugin may refuse; at a prompt and a start its refusal is only said, and a stop it holds once a turn, never again after the agent went on because a stop was held."""
 
@@ -29,7 +31,8 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         from journal.features.plugins.feature import PluginsFeature
         heard = self.hearing.heard_by(event, event.environment_id)
         deadline = monotonic() + float(self.settings.option(PluginsFeature.DEADLINE))
-        decision = Decision()
+        waiting = self.hearing.waiting_for(event.session) if event.key in CARRIES else []
+        decision = Decision.tell("\n".join(waiting)) if waiting else Decision()
         for plugin in heard:
             if decision.allowed and self.holds(plugin, event):
                 decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, deadline - monotonic())))

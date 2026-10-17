@@ -20,6 +20,8 @@ def answer(line: dict) -> str:
     data = line.get("data", {})
     if line["event"] == "tool_starting" and "forbidden" in json.dumps(data.get("input", {})):
         return json.dumps({"v": 1, "answer": "refuse", "reason": f"echo refuses a forbidden tool{os.environ.get('ECHO_VIA', '')}"})
+    if line["event"] == "tool_finished" and "notice" in json.dumps(data.get("input", {})):
+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo noticed the edit"})
     if line["event"] == "idle":
         return json.dumps({"v": 1, "answer": "refuse", "reason": "echo holds the stop"})
     if line["event"] == "prompt_submitted":

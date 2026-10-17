@@ -64,8 +64,8 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   never sent, nor a row the plugin wrote itself. A subagent's events come with `subagent` set and are held only at
   `tool_starting`.
 - `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
-  `prompt_submitted` and `session_started` only told. A line told at an event it hears but does not hold never
-  reaches the agent; hold it to be heard.
+  `prompt_submitted` and `session_started` only told. A line told at an event it hears but does not hold reaches the
+  agent at its next tool use or prompt; hold the event for the line to come with it.
 - `settings`: a path to its settings file, described under Settings.
 - `skills`: a folder holding one folder per skill with its `SKILL.md`, published under that folder's name, which no
   skill of the journal's or another plugin's may have. Each is published into `.claude/skills` and `.agents/skills` with
@@ -130,8 +130,9 @@ One line of JSON on its output, the last line counting; an empty output is `allo
   `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
   stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
   the agent as `[plugin <name>] ...`.
-- At an event it does not hold, only the `cards` and `commands` count: they apply after the reply, a `tell` is
-  dropped and a `refuse` is recorded as `plugin_unanswered`.
+- At an event it does not hold, everything applies after the reply: the `cards` and `commands` at once, a `tell` at
+  the agent's next tool use or prompt (to the environment's live agent for a row event), and a `refuse` is recorded
+  as `plugin_unanswered`.
 - `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`. Its `kind` is one the
   manifest's `cards` names, and its tone is the kind's unless it gives one; a kind marked `collapsed` keeps the detail
   to the card's tooltip. A `key` is any text, unique within the plugin, and a card with a key settles the plugin's
