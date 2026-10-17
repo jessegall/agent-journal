@@ -23,6 +23,7 @@ SETTING = re.compile(r"\{([a-z_]+\.[a-z_]+)\}")
 STATELESS = (
     (":session_started:start", "Tell the agent the journal's rules, facts and what waits", "start_block"),
     (":session_started:voice", "Tell the agent how to talk to the user", "say_voice"),
+    (":session_started:stale", "Ask whether facts, rules and reminders {memory.stale_after} days old still hold", "ask_about_old_memory"),
     (":prompt_submitted:inbox", "Say what is unread", "shared_inbox"),
     (":idle:inbox", "Say what is unread", "shared_inbox"),
     (":tool_starting:unread_held", "Hold a write while messages stay unread after {messages.hold_after_reminders} reminders", "hold_write_while_unread"),
@@ -65,7 +66,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 18
+DRAWINGS_VERSION = 19
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -90,6 +91,7 @@ FACTS = "[briefing.facts] facts about this environment: {{facts}}"
 REMINDERS = "[briefing.reminders] reminders here: {{reminders}}"
 WAITING = "[briefing.waiting] waiting for you here: {{waiting}}. journal task list, journal message unread, journal question list"
 VOICE = "[voices.voice] how to talk to the user. {{voice}}"
+STALE = "[memory.stale] these are {{stale_after}} days old or more, check they still hold: {{stale}}. strike what no longer holds (journal fact strike <n>), reword what drifted, and keep the rest"
 WHERE = "[briefing.where] after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}}. pick up from there, and log what the summary does not say"
 UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages. journal message unread before any other write"
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; an emoji reaction answers only a short message"
@@ -381,6 +383,16 @@ class ShippedChart(Seed):
             ends = [(asked, NO), (said, THEN)]
             y += 184
         return ends
+
+    def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
+        """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
+        after = self.node(chart, NodeKind.CHECK, "after_compaction", x=720, y=92)
+        old = self.node(chart, NodeKind.CHECK, "memory_older_than", "memory.stale_after", x=720, y=184)
+        ask = self.node(chart, NodeKind.ACTION, "say", STALE, x=720, y=276)
+        self.chain(ends, after)
+        self.line(after, old, NO)
+        self.line(old, ask, YES)
+        return [(after, YES), (old, NO), (ask, THEN)]
 
     def say_voice(self, chart: Chart, ends: list) -> list:
         """How to talk to the user, from the chosen voice."""

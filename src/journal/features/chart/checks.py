@@ -49,7 +49,7 @@ SECONDS = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1, "m": 60, "min
 """A time in a check's text, by its unit; a bare number is seconds."""
 TAKEN_OVER_WITHIN = timedelta(days=1)
 """Another session that worked here this recently makes a start a takeover."""
-COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over", "context_over")
+COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over", "context_over", "memory_older_than")
 WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
 """The checks that take a number: the node's text, or the setting named there."""
@@ -248,6 +248,16 @@ class Checks:
     def after_compaction(self, ctx: Context) -> bool:
         """The start is the same session going on after its context was compacted."""
         return isinstance(ctx.event, SessionStarted) and ctx.event.source == "compact"
+
+    def memory_older_than(self, ctx: Context, days: int) -> bool:
+        """A fact, rule or reminder here has stood at least so many days."""
+        return bool(self.old_memory(days))
+
+    def old_memory(self, days: int) -> list[str]:
+        """The facts, rules and reminders standing at least so many days, each named by its kind, number and age."""
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        rows = [("fact", r) for r in self.facts.in_()] + [("rule", r) for r in self.rules.all()] + [("reminder", r) for r in self.reminders.in_()]
+        return [f"{kind} {row.id}, {(datetime.now(timezone.utc) - (row.updated_at or row.created_at)).days} days" for kind, row in rows if (row.updated_at or row.created_at) and (row.updated_at or row.created_at) <= cutoff]
 
     def has_rules(self, ctx: Context) -> bool:
         return bool(self.rules.all())

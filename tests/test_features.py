@@ -3144,3 +3144,22 @@ def test_a_start_after_a_compaction_says_where_the_work_stands(app):
     assert "after the compaction" not in fresh, "a fresh start says nothing of a compaction"
     said = hook(app, "SessionStart", source="compact")[1]["hookSpecificOutput"]["additionalContext"]
     assert 'after the compaction, the work stands here: task 1' in said and '"halfway through the footer"' in said and "uncommitted files:" in said, "the task, its last log whole and the files not committed"
+
+
+def test_a_fresh_start_asks_whether_old_facts_rules_and_reminders_still_hold(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.repositories.facts import Facts
+    from journal.repositories.scope import Scope
+    console = app.console()
+    console.run(["fact", "create", "the api lives on port 9"], USER)
+    console.run(["fact", "create", "the login is new"], USER)
+    with app.container.get(Scope).of(1):
+        facts = app.container.get(Facts)
+        old = facts.in_()[0]
+        facts.connection.execute(f"UPDATE {facts.table} SET created_at = ?, updated_at = ? WHERE id = ?", ((datetime.now(timezone.utc) - timedelta(days=9)).isoformat(),) * 2 + (old.id,))
+    said = hook(app, "SessionStart", source="startup")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "these are 7 days old or more, check they still hold: fact 1, 9 days" in said and "fact 2" not in said.split("check they still hold:")[1].split("\n")[0], "the old one is named with its age, the new one is not"
+    again = hook(app, "SessionStart", source="startup")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "check they still hold" not in again, "at most once a day"
+    compacted = hook(app, "SessionStart", source="compact")[1]["hookSpecificOutput"]["additionalContext"]
+    assert "check they still hold" not in compacted, "never after a compaction"

@@ -131,6 +131,14 @@ class Fillers:
         state = self.state(ctx)
         return state.named() if isinstance(state, Working) else ""
 
+    def stale_after(self, ctx: Context) -> str:
+        """The days a fact, rule or reminder stands before the agent is asked whether it still holds."""
+        return str(self.checks.number("memory.stale_after"))
+
+    def stale(self, ctx: Context) -> str:
+        """The facts, rules and reminders that old, each by its kind, number and age."""
+        return "; ".join(self.checks.old_memory(self.checks.number("memory.stale_after")))
+
     def last_log(self, ctx: Context) -> str:
         """The task in hand's last log line, whole, or that nothing is logged yet."""
         state = self.state(ctx)
