@@ -97,7 +97,7 @@
       "name": "running a sequence",
       "answer": {
         "decision": "block",
-        "reason": "sequence 3, step 1: tag it. `journal sequence follow` to take it up, `journal sequence next` when it is done\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [

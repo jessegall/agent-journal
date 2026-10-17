@@ -10,6 +10,7 @@ from journal.models.agent import Agent
 from journal.models.sequence import Sequence
 from journal.models.sequence_run import SequenceRun
 from journal.repositories.agents import Agents
+from journal.repositories.workers import Workers
 
 NAMED = re.compile(r"`([^`<]+)")
 """A command a step names: the words in backticks, up to the first <placeholder>."""
@@ -18,8 +19,8 @@ NAMED = re.compile(r"`([^`<]+)")
 class Running:
     """The sequences an agent works through, kept on its row as a stack: one started inside another is the one in hand, and when it ends the other comes back. Every start goes through here."""
 
-    def __init__(self, machine: Machine, agents: Agents, requiring: Requiring) -> None:
-        self.machine, self.agents, self.requiring = machine, agents, requiring
+    def __init__(self, machine: Machine, agents: Agents, requiring: Requiring, workers: Workers) -> None:
+        self.machine, self.agents, self.requiring, self.workers = machine, agents, requiring, workers
 
     def runs(self, agent: Agent) -> list[SequenceRun]:
         return [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
@@ -34,7 +35,7 @@ class Running:
         runs = self.runs(agent)
         if any(run.sequence_id == sequence.id for run in runs) or not sequence.steps:
             return ""
-        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about)
+        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about, started_at=self.now(), said_at=self.now())
         self.kept(agent, [*runs, run])
         owed = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.named("sequences")))
         return "\n".join([*owed, self.said(run)])
@@ -46,22 +47,26 @@ class Running:
         runs = self.runs(agent)
         run = runs[-1]
         if not run.last:
-            moved = run.moved_on()
+            moved = run.moved_on().said(self.now())
             self.kept(agent, [*runs[:-1], moved])
             return self.said(moved)
-        self.kept(agent, runs[:-1])
         ended = Sequences.ENDED.about(n=run.sequence_id).rendered()
-        return f"{ended}\n{self.said(runs[-2])}" if len(runs) > 1 else ended
+        if len(runs) == 1:
+            self.kept(agent, [])
+            return ended
+        outer = runs[-2].said(self.now())
+        self.kept(agent, [*runs[:-2], outer])
+        return f"{ended}\n{self.said(outer)}"
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
         """The step in hand taken up now, and a parked run resumed with it."""
-        return self.changed(session, environment_id, lambda run: run.taken_up(self.now()).parked(""))
+        return self.changed(session, environment_id, lambda run: run.taken_up(self.now()).said(self.now()).parked(""))
 
     def park(self, session: str, environment_id: int, why: str) -> SequenceRun:
         return self.changed(session, environment_id, lambda run: run.parked(why))
 
-    def held(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.held(self.now()))
+    def said_now(self, session: str, environment_id: int) -> SequenceRun:
+        return self.changed(session, environment_id, lambda run: run.said(self.now()))
 
     def changed(self, session: str, environment_id: int, change) -> SequenceRun:
         agent = self.machine.agent(session, environment_id)
@@ -86,6 +91,16 @@ class Running:
         """Whether a part of the shell line runs a command the step in hand names."""
         named = [words.strip() for words in NAMED.findall(run.text) if words.strip()]
         return any(part.text.strip().startswith(words) for part in Chain.parts(line) for words in named)
+
+    def typed_to(self, session: str, environment_id: int) -> bool:
+        """Whether a line for this session may be typed to it: a worker's cannot, it is told at its next stop."""
+        return not any(session in (w.session, w.resume) for w in self.workers.where(environment_id=environment_id))
+
+    @classmethod
+    def reminder(cls, run: SequenceRun) -> Said:
+        """The step in hand, or for a parked run, that it is parked and why."""
+        from journal.features.sequences.feature import Sequences
+        return Sequences.PARKED.about(n=run.sequence_id, step=run.step + 1, why=run.parked_why) if run.parked_why else cls.step(run)
 
     @staticmethod
     def step(run: SequenceRun) -> Said:

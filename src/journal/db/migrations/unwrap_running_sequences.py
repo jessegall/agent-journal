@@ -18,7 +18,7 @@ class UnwrapRunningSequences(Migration):
         sequences = {row["id"]: row for row in connection.all("SELECT id, title, steps FROM sequences")}
         for row in connection.all("SELECT id, state, data, sequence_runs FROM agents WHERE state = ? OR data LIKE ?", (RUNNING, f'%"{RUNNING}"%')):
             state, data, found = self.unwrapped(row["state"], json.loads(row["data"] or "{}"))
-            runs = [*json.loads(row["sequence_runs"] or "[]"), *(self.run(raw, sequences) for raw in found)]
+            runs = [*json.loads(row["sequence_runs"] or "[]"), *(self.run(raw, sequences, now) for raw in found)]
             connection.execute("UPDATE agents SET state = ?, data = ?, sequence_runs = ?, updated_at = ?, updated_by = ? WHERE id = ?", (state, json.dumps(data), json.dumps(runs), now, "system", row["id"]))
 
     def unwrapped(self, state: str, data: dict) -> tuple[str, dict, list[dict]]:
@@ -30,8 +30,8 @@ class UnwrapRunningSequences(Migration):
         return state, {**data, "resume": {"state": inner_state, "data": inner_data}} if resume else data, found
 
     @staticmethod
-    def run(raw: dict, sequences: dict) -> dict:
+    def run(raw: dict, sequences: dict, now: str) -> dict:
         sequence = sequences.get(raw.get("sequence_id"))
         steps = json.loads(sequence["steps"]) if sequence else [raw.get("text", "")]
         step = min(int(raw.get("step", 0)), len(steps) - 1) if sequence else 0
-        return {"sequence_id": raw.get("sequence_id", 0), "title": sequence["title"] if sequence else "", "steps": steps, "step": step, "about": "", "taken_up": False, "parked_why": ""}
+        return {"sequence_id": raw.get("sequence_id", 0), "title": sequence["title"] if sequence else "", "steps": steps, "step": step, "about": "", "started_at": now, "taken_up_at": "", "said_at": now, "parked_why": ""}

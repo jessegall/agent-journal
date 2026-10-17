@@ -246,7 +246,9 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     console.run(["task", "create", "t", "--start"], AGENT)
     edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"})[1]
     assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
-    assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"]
+    assert "step 1" not in json.dumps(hook(app, "Stop")[1]), "a stop right after the step was told passes it by"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"], "a tool used since, the stop is held with the step"
     assert "step 1" not in json.dumps(hook(app, "Stop", stop_hook_active=True)[1]), "the step is said once until the agent uses a tool again"
     assert "a write waits for sequence" in json.dumps(edit()), "a write waits until the step is taken up"
     assert "a write waits" not in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1]), "a read goes through"
@@ -3128,6 +3130,7 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, m
     running = app.container.get(Running)
     assert running.in_hand("s2", 1).title == "Building a plan" and running.in_hand("s1", 1) is None and not any("Building" in line or "step 1" in line for line in sent), "the run is the worker's, and its step is not typed to the agent"
     hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal-sequences/SKILL.md")}, tool_response="", session_id="s2")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, session_id="s2")
     assert "step 1" in hook(app, "Stop", session_id="s2")[1]["reason"], "the worker is told the step at its stop"
 
 def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_paid_in_turn(skilled):
@@ -3146,6 +3149,39 @@ def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_
     assert "a write waits for sequence" in json.dumps(edit()[1]), "every debt paid, the step holds the write"
     console.run(["sequence", "follow"], AGENT)
     assert edit()[0] == 200, "the step taken up, the write goes through"
+
+def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    made = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    console.run(["sequence", "run", made], AGENT)
+    assert "step 1: bump" in json.dumps(hook(app, "SessionStart", source="compact")[1]), "after a compaction the step is told"
+    console.run(["await", "the build"], AGENT)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    app.runtime().deferred.drain()
+    assert any("step 1: bump" in line for line in sent), "a wait that ends types the step"
+    sent.clear()
+
+    def tick():
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=120.0))
+        app.runtime().deferred.drain()
+    tick()
+    assert sent == [], "a step just said is not said again"
+    app.container.get(Settings).set("sequences.say_every", 0, Actor.user(1))
+    tick()
+    assert any("step 1: bump" in line for line in sent), "a step unheard for the set minutes is typed again to a quiet agent"
+    console.run(["sequence", "park", "--why", "docs first"], AGENT)
+    sent.clear()
+    tick()
+    assert any("is parked at step 1: docs first" in line for line in sent), "a parked run is recalled at the same pace"
+    assert "is parked at step 1" in json.dumps(hook(app, "SessionStart", source="resume")[1]), "and at a start"
 
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
