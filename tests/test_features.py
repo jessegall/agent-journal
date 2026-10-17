@@ -3942,6 +3942,19 @@ def test_a_plugins_settings_follow_its_schema_and_its_secret_comes_from_the_user
     assert runner.environment(plugins.named("echo"), "main")[variable] == "tok_0123456789abcdef"
 
 
+def test_a_plugins_skills_are_published_stamped_and_taken_away(app):
+    console = app.console()
+    console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
+    published = [app.config.root / home / "echo-guide" for home in (".claude/skills", ".agents/skills")]
+    assert all((p / "SKILL.md").read_text().startswith("---\nplugin: echo\nname: echo-guide\n") and (p / ".gitignore").read_text() == "*\n" for p in published), "published beside the journal's, stamped and kept out of git"
+    console.run(["plugin", "disable", "echo"], USER)
+    assert not any(p.exists() for p in published), "switched off, its skills go"
+    console.run(["plugin", "enable", "echo"], USER)
+    assert all(p.is_dir() for p in published)
+    console.run(["plugin", "remove", "echo"], USER)
+    assert not any(p.exists() for p in published), "removed, its skills go"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

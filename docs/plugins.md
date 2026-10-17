@@ -58,7 +58,9 @@ plugin's environment, under the secret's variable. No command ever sets it.
 - `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
   `prompt_submitted` and `session_started` only told.
 - `skills`: a folder holding one folder per skill with its `SKILL.md`, published under that folder's name, which no
-  skill of the journal's or another plugin's may have.
+  skill of the journal's or another plugin's may have. Each is published into `.claude/skills` and `.agents/skills` with
+  `plugin: <name>` in its front matter and a `.gitignore` that keeps it out of git. It is taken away when the plugin
+  is switched off or removed.
 - Every path stays inside the folder, a symlink leading out included.
 
 ## How it runs

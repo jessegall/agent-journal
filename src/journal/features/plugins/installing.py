@@ -11,6 +11,7 @@ from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_hashes import PluginHashes
 from journal.features.plugins.plugin_settings import PluginSettings
+from journal.features.plugins.plugin_skills import PluginSkills
 from journal.models.actor import Actor
 from journal.models.actor_kind import ActorKind
 from journal.models.plugin import Plugin
@@ -27,8 +28,8 @@ COMPARED = ("version", "program", "hears", "holds", "services", "settings", "ski
 class Installing:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings) -> None:
-        self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings = config, reader, plugins, folders, hashes, settings
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills) -> None:
+        self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills = config, reader, plugins, folders, hashes, settings, skills
 
     def preview(self, source: str) -> tuple[PluginManifest, str]:
         """The manifest as read, and all it would run, said."""
@@ -46,6 +47,7 @@ class Installing:
                 shutil.copytree(folder, self.config.home / "plugins" / manifest.name, ignore=shutil.ignore_patterns(".git"))
             plugin = self.plugins.save(Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest), hashes=self.hashes.of(folder, asdict(manifest))), by)
             self.folders.data(plugin)
+            self.skills.publish(plugin)
             return self.settings.started(plugin, by)
 
     def upgrade_preview(self, name: str, ref: str) -> str:
@@ -62,7 +64,11 @@ class Installing:
             if not plugin.linked:
                 shutil.rmtree(self.folders.of(plugin))
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
-            return self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(folder, asdict(manifest))), by)
+            upgraded = self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(folder, asdict(manifest))), by)
+            self.skills.withdraw(upgraded)
+            if upgraded.enabled:
+                self.skills.publish(upgraded)
+            return upgraded
 
     @staticmethod
     def changes(was: dict, now: dict) -> list[str]:
@@ -80,14 +86,18 @@ class Installing:
         """On, with its files' hashes taken anew: switching it on is the user's word that its code is read."""
         self.only_the_user(by, "switches on")
         plugin = self.plugins.named(name)
+        self.skills.publish(plugin)
         return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), by)
 
     def disable(self, name: str, by: Actor) -> Plugin:
-        return self.plugins.save(self.plugins.named(name).with_(enabled=False), by)
+        plugin = self.plugins.named(name)
+        self.skills.withdraw(plugin)
+        return self.plugins.save(plugin.with_(enabled=False), by)
 
     def remove(self, name: str, by: Actor) -> None:
         """Its row and its fetched copy go; its data folder stays."""
         plugin = self.plugins.named(name)
+        self.skills.withdraw(plugin)
         if not plugin.linked:
             shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
         self.plugins.delete(plugin, by)

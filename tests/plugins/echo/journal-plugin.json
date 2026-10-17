@@ -19,5 +19,6 @@
       "tone": "good"
     }
   ],
-  "settings": "settings.json"
+  "settings": "settings.json",
+  "skills": "skills"
 }
