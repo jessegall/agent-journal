@@ -3,6 +3,7 @@ from journal.events.agent.ticked import Ticked
 from journal.features.chart.checks import COUNT_CHECKS, READINGS, Checks
 from journal.features.chart.context import Context
 from journal.features.chart.walk import WALKED
+from journal.features.registry import Registry
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
 from journal.repositories.agents import Agents
@@ -16,8 +17,8 @@ LOOKED_BACK = 300
 class Standing:
     """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), the counts the workflow keeps for it, and the readings its count checks compare, with what each counts."""
 
-    def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine) -> None:
-        self.charts, self.agents, self.entries, self.checks, self.machine = charts, agents, entries, checks, machine
+    def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine, registry: Registry) -> None:
+        self.charts, self.agents, self.entries, self.checks, self.machine, self.registry = charts, agents, entries, checks, machine, registry
 
     def of(self, chart: Chart) -> dict:
         nodes = {n.id: n for n in self.charts.nodes_of(chart)}
@@ -39,8 +40,10 @@ class Standing:
         }
 
     def limits(self, nodes: dict) -> dict:
-        """Each count check's number, a setting it names read as its value."""
-        return {str(n.id): self.checks.number(n.text.strip().partition(" ")[2]) for n in nodes.values() if n.key in COUNT_CHECKS and n.text.strip().partition(" ")[2]}
+        """Each count check's number, and when its text names a setting, that setting's title, so the card says the number and where it comes from."""
+        titles = {o.key: o.title for o in self.registry.options()}
+        named = {str(n.id): n.text.strip().partition(" ")[2] for n in nodes.values() if n.key in COUNT_CHECKS and n.text.strip().partition(" ")[2]}
+        return {node: {"number": self.checks.number(text), "setting": titles.get(text, "")} for node, text in named.items()}
 
     def readings(self, nodes: dict) -> dict:
         """What each reading a count check of the workflow compares counts, in plain words."""

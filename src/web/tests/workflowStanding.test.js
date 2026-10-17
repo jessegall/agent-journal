@@ -7,7 +7,7 @@ const standing = {
         {n: 4, session: "s2", node: 9, port: "then", waits: false, counts: {}, readings: {uses: 1}},
     ],
     readings: {uses: "Tool uses since the newest unread message came."},
-    limits: {12: 5},
+    limits: {12: {number: 5, setting: "Hold the write after"}},
 };
 
 test("a node an agent waits at says so, and how many when several", () => {

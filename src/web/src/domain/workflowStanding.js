@@ -16,7 +16,7 @@ export function countWords(standing, node) {
     if (!name || !agent) return "";
     const value = name in (agent.counts || {}) ? agent.counts[name] : (agent.readings || {})[name];
     if (value === undefined) return "";
-    const number = standing?.limits?.[String(node.id)] ?? (/^\d+$/.test(limit || "") ? limit : null);
+    const number = standing?.limits?.[String(node.id)]?.number ?? (/^\d+$/.test(limit || "") ? limit : null);
     return number ? `${name} ${value} of ${number}` : `${name} ${value}`;
 }
 
@@ -32,4 +32,9 @@ export function standingLines(standing, nodeId) {
 
 export function readingLines(standing) {
     return Object.entries(standing?.readings || {}).map(([name, meaning]) => ({label: `${name}, a reading`, words: meaning}));
+}
+
+// the number a count check compares with, and the setting it comes from when it names one
+export function limitOf(standing, node) {
+    return standing?.limits?.[String(node.id)] || null;
 }

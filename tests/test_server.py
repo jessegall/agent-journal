@@ -770,3 +770,4 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     agent = standing["agents"][0]
     assert agent["counts"] == {"reminders": 2} and agent["waits"] is True and agent["port"] == "no", "the agent waits at the last check's No with its count"
     assert "uses" in agent["readings"] and "uses" in standing["readings"] and standing["readings"]["uses"], "a reading a check compares is served with what it counts"
+    assert {"number": 3, "setting": ""} in standing["limits"].values() and {"number": 5, "setting": ""} in standing["limits"].values(), "each count check's number is served"

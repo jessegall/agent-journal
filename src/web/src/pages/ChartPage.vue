@@ -4,10 +4,10 @@ import {overlapping, tidy} from "../domain/tidy.js";
 import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
 import {markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {nodeRunWords, readWords} from "../domain/workflowRuns.js";
-import {countWords, readingLines, standingLines, waitingWords} from "../domain/workflowStanding.js";
+import {countWords, limitOf, readingLines, standingLines, waitingWords} from "../domain/workflowStanding.js";
 import {usePoll} from "../composables/poll.js";
-import {cardTitle} from "../domain/cardTitle.js";
-import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
+import {cardTitle, limitNote, messageShown} from "../domain/cardTitle.js";
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
@@ -23,7 +23,8 @@ import Skeleton from "../kit/Skeleton.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import ChartList from "./ChartList.vue";
 
-const CARD = {width: 208, plain: 48, text: 84};
+const CARD = {width: 240, plain: 48, text: 84};
+const PER_LINE = {title: 30, message: 32};
 const PORT_AT = {then: 50, yes: 30, no: 70};
 const WORD = {then: "Next", yes: "Yes", no: "No"};
 const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
@@ -109,6 +110,9 @@ const detailLines = computed(() => {
     if (stopsTheWalk(node)) lines.push({label: "No later workflows", words: STOPS_WHY});
     return lines;
 });
+const MAIN_LINES = ["Message", "Count now"];
+const detailMain = computed(() => detailLines.value.find((l) => MAIN_LINES.includes(l.label)) || detailLines.value[0] || null);
+const detailRest = computed(() => detailLines.value.filter((l) => l !== detailMain.value));
 const messageText = ref("");
 const messageBox = ref(null);
 let fresh = 0;
@@ -300,8 +304,19 @@ function setText(node, text) {
 const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
 const STOPS_WHY = "When this step runs, no later workflow of the event runs; the agent is not stopped by it";
 const stopsTheWalk = (node) => node.kind === "action" && ["stop_here", "block_stop"].includes(node.key);
-const heightOf = (node) => (entryOf(node).takes_text ? CARD.text : CARD.plain);
+const linesOf = (words, perLine) => Math.max(1, Math.ceil((words || "").length / perLine));
+const heightOf = (node) => {
+    const title = 30 + 18 * linesOf(cardTitle(entryOf(node), node, limitOf(standing.value, node)), PER_LINE.title);
+    const note = limitNote(limitOf(standing.value, node)) ? 16 : 0;
+    if (!entryOf(node).takes_text) return Math.max(CARD.plain, title + note);
+    const text = node.kind === "action" ? 18 + 16 * linesOf(messageShown(node.text) || "x", PER_LINE.message) : 36;
+    return Math.max(CARD.text, title + note + text);
+};
 const sizing = {width: CARD.width, heightOf: (node) => heightOf(node)};
+// a card grows when the standing names its number, so the cards are laid out again while nothing is being edited
+watch(standing, () => {
+    if (!unlocked.value && overlapping(nodes.value, sizing)) nodes.value = tidy(nodes.value, lines.value, sizing);
+});
 
 // the cards laid out anew by the layout package: a draft change while editing, a view while reading
 function tidyUp() {
@@ -994,7 +1009,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                     <Icon name="close" :size="12" />
                                 </button>
                             </div>
-                            <div class="chart-node-title" :title="entryOf(node).about">{{ cardTitle(entryOf(node), node) }}</div>
+                            <div class="chart-node-title" :title="entryOf(node).about">
+                                {{ cardTitle(entryOf(node), node, limitOf(standing, node)) }}
+                            </div>
+                            <div v-if="limitNote(limitOf(standing, node))" class="chart-node-note">
+                                {{ limitNote(limitOf(standing, node)) }}
+                            </div>
                             <template v-if="entryOf(node).takes_text">
                                 <button
                                     v-if="node.kind === 'action'"
@@ -1005,7 +1025,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                     @pointerdown.stop
                                     @click.stop="openMessage(node)"
                                 >
-                                    {{ node.text || placeholderOf(node) }}
+                                    {{ node.text ? messageShown(node.text) : placeholderOf(node) }}
                                 </button>
                                 <input
                                     v-else
@@ -1183,12 +1203,19 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 
         <template v-if="details">
             <SidePanel :title="cardTitle(entryOf(details), details)" :abstract="KIND[details.kind]" @close="selected = null">
-                <dl class="chart-details">
-                    <template v-for="line in detailLines" :key="line.label">
-                        <dt>{{ line.label }}</dt>
-                        <dd>{{ line.words }}</dd>
-                    </template>
+                <dl v-if="detailMain" class="chart-details">
+                    <dt>{{ detailMain.label }}</dt>
+                    <dd>{{ detailMain.words }}</dd>
                 </dl>
+                <details v-if="detailRest.length" class="chart-details-more">
+                    <summary>More about this step</summary>
+                    <dl class="chart-details">
+                        <template v-for="line in detailRest" :key="line.label">
+                            <dt>{{ line.label }}</dt>
+                            <dd>{{ line.words }}</dd>
+                        </template>
+                    </dl>
+                </details>
             </SidePanel>
         </template>
         <template v-if="editing">
@@ -1902,13 +1929,27 @@ g:hover .chart-wire {
 }
 
 .chart-node-title {
-    overflow: hidden;
     color: var(--text);
     font-size: 13px;
     font-weight: 500;
     line-height: 18px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+}
+
+.chart-details-more {
+    margin-top: 12px;
+}
+
+.chart-details-more > summary {
+    color: var(--text-2);
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.chart-node-note {
+    color: var(--text-3);
+    font-size: 11px;
+    line-height: 16px;
 }
 
 .chart-node-text {
@@ -1928,6 +1969,10 @@ g:hover .chart-wire {
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: text;
+}
+
+button.chart-node-text {
+    white-space: normal;
 }
 
 .chart-node-text.empty {
