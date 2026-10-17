@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {CHANGE_WORDS, PREVIEW_KINDS, SAME_VERSION} from "../../domain/pluginWords.js";
+import {PREVIEW_KINDS, SAME_VERSION} from "../../domain/pluginWords.js";
 import Button from "../kit/Button.vue";
 import PhoneSheet from "../PhoneSheet.vue";
 import PhoneTerm from "./PhoneTerm.vue";
@@ -47,7 +47,7 @@ const sheet = ref(null);
                     }}
                 </p>
                 <template v-for="(change, i) in previewed.changes || []" :key="i">
-                    <p class="preview-row"><b>{{ CHANGE_WORDS[change.kind] }}</b><code>{{ change.line }}</code></p>
+                    <p class="preview-row"><code>{{ change }}</code></p>
                 </template>
             </template>
             <p class="preview-lead">It runs as you, with your files and your network. This is everything it does:</p>

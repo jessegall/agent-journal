@@ -5,6 +5,7 @@ from journal.http.v3.shapers.memory_shaper import MemoryShaper
 from journal.http.v3.shapers.messages_shaper import MessagesShaper
 from journal.http.v3.shapers.nudges_shaper import NudgesShaper
 from journal.http.v3.shapers.plans_shaper import PlansShaper
+from journal.http.v3.shapers.plugins_shaper import PluginsShaper
 from journal.http.v3.shapers.profiles_shaper import ProfilesShaper
 from journal.http.v3.shapers.questions_shaper import QuestionsShaper
 from journal.http.v3.shapers.reactions_shaper import ReactionsShaper
@@ -29,7 +30,7 @@ from journal.repositories.sequences import Sequences
 from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 
-EMPTY = ("notification", "suggestion", "tool", "plugin", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "share", "phone")
+EMPTY = ("notification", "suggestion", "tool", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "share", "phone")
 
 
 class Shapers:
@@ -39,7 +40,7 @@ class Shapers:
         get = container.get
         own = [
             get(MessagesShaper), get(CommentsShaper), get(NoticesShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
-            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper), get(SecretsShaper),
+            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper), get(SecretsShaper), get(PluginsShaper),
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports), get(Links), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
             WritingShaper(get(Docs), get(Links), "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),

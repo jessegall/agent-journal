@@ -55,6 +55,22 @@ function pick(event) {
 
         <p class="description">{{ plugin.description }}</p>
 
+        <template v-if="plugin.state === 'failing'">
+            <p class="fault">Failing since {{ span(now - plugin.failingSince) }} ago, so events go through without it: {{ plugin.lastFault }}</p>
+        </template>
+        <template v-else-if="plugin.lastFault">
+            <p class="fault quiet">Last fault: {{ plugin.lastFault }}</p>
+        </template>
+
+        <template v-if="plugin.holds.length">
+            <div class="pages">
+                <span class="label">Holds before the agent goes on</span>
+                <template v-for="held in plugin.holds" :key="held">
+                    <span class="held">{{ held }}</span>
+                </template>
+            </div>
+        </template>
+
         <p class="source" :title="plugin.source">
             <Icon name="branch" :size="12" />
             <span class="source-text">{{ where }}</span>
@@ -107,7 +123,6 @@ function pick(event) {
         <template v-if="menu">
             <MenuPanel :anchor="more" align="end" :min-width="190" @click.stop @close="menu = false">
                 <MenuItem @click="pick('upgrade')">Check for updates</MenuItem>
-                <MenuItem @click="pick('setup')">Run setup again</MenuItem>
                 <MenuItem class="danger" @click="pick('remove')">Remove</MenuItem>
             </MenuPanel>
         </template>
@@ -242,6 +257,26 @@ function pick(event) {
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+}
+
+.fault {
+    margin: 0;
+    color: var(--danger);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.fault.quiet {
+    color: var(--text-3);
+}
+
+.held {
+    padding: 1px 7px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-2);
+    font-family: var(--mono);
+    font-size: 11.5px;
 }
 
 .pages .label {

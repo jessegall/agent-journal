@@ -8,6 +8,9 @@ from journal.features.plugins.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
 from journal.repositories.scope import Scope
 
+SAID = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
+"""Each kind of preview row as the command line says it."""
+
 
 class PluginCommand(Command):
     noun = "plugin"
@@ -44,7 +47,7 @@ class PluginCommand(Command):
         return 0
 
     def install(self, args: Namespace, where: Where) -> int:
-        print(self.installing.preview(args.source)[1])
+        print(self.said(self.installing.preview(args.source)))
         if not args.yes:
             print(f"nothing installed yet: journal plugin install {args.source} --yes")
             return 0
@@ -53,13 +56,14 @@ class PluginCommand(Command):
         return 0
 
     def propose(self, args: Namespace, where: Where) -> int:
-        manifest, preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {manifest.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{preview}\n\nTo install it: journal plugin install {args.source} --yes", by=where.actor)
-        print(f"proposed {manifest.name}: the user installs it if they want it")
+        preview = self.installing.preview(args.source)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview['name']}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", by=where.actor)
+        print(f"proposed {preview['name']}: the user installs it if they want it")
         return 0
 
     def upgrade(self, args: Namespace, where: Where) -> int:
-        print(self.installing.upgrade_preview(args.name, args.ref))
+        preview = self.installing.upgrade_preview(args.name, args.ref)
+        print("\n".join([f"{args.name} from {preview['was'][:12] or preview['source']} to {preview['commit'][:12] or 'the folder as it is now'}", *(preview["changes"] or ["nothing it runs, hears or holds changes"]), *(["", "the code:", *preview["code"]] if preview["code"] else [])]))
         if not args.yes:
             print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref else ''} --yes")
             return 0
@@ -98,3 +102,8 @@ class PluginCommand(Command):
             shown = f"secret {value['secret']}, filled on the Secrets page" if isinstance(value, dict) else value
             print(f"{setting['key']:<16} {setting['kind']:<7} {shown}  {setting.get('title', '')}" + (f": {setting['help']}" if setting.get("help") else ""))
         return 0
+
+    @staticmethod
+    def said(preview: dict) -> str:
+        head = [f"{preview['name']} {preview['version']}" + (f": {preview['title']}" if preview["title"] != preview["name"] else ""), f"from {preview['source']}" + (f" at {preview['commit'][:12]}" if preview["commit"] else " (linked: read where it lies)")]
+        return "\n".join(head + [f"{SAID[r['kind']]} {r['label']}: {r['command']}".rstrip(": ") for r in preview["rows"]])

@@ -3851,7 +3851,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
     folder = Path(__file__).parent / "plugins" / "echo"
     console = app.console()
     preview = console.run(["plugin", "install", str(folder)], USER)
-    assert preview.code == 0 and "echo 1.0.0" in preview.out and "run.py for each event it hears" in preview.out and "holds tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
+    assert preview.code == 0 and "echo 1.0.0" in preview.out and "runs for each event it hears: " in preview.out and "run.py" in preview.out and "holds before the agent goes on: tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
     assert app.container.get(Plugins).all() == [], "a preview installs nothing"
     assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
     plugin = app.container.get(Plugins).named("echo")
@@ -4022,13 +4022,36 @@ def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tm
     failing = installed(setup=[*steps, {"name": "third", "run": "echo broken >&2; exit 3"}])
     assert "setup step 'third' failed, so nothing is installed: broken" in failing.err and plugins.all() == [] and not (app.config.home / "plugin-data" / "echo").exists(), "a failed step leaves nothing"
     preview = console.run(["plugin", "install", str(folder)], USER).out
-    assert "runs at install: first:" in preview
+    assert 'runs at install first: echo one >> "$JOURNAL_PLUGIN_DATA/steps"' in preview
     done = installed(requires={"sh": {"check": "command -v sh"}}, setup=steps, installed="echo '{\"repeat\": 5}'", hears=[*manifest["hears"], "plugin.updated"])
     assert done.code == 0, done.err
     assert (app.config.home / "plugin-data" / "echo" / "steps").read_text() == "one\ntwo\n" and plugins.named("echo").settings["repeat"] == 5, "the steps ran in order and the installed command's answer filled the settings"
     console.run(["plugin", "configure", "echo", "repeat", "2"], USER)
     app.container.get(Deferred).drain()
     assert echo_heard(app) == ["plugin.updated"], "a plugin hears its own settings change"
+
+
+def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
+    from journal.repositories.plugins import Plugins
+    port = app.server().port
+
+    def api(method, path, body=None):
+        request = HttpRequest(f"http://127.0.0.1:{port}/api/{path}", data=json.dumps(body).encode() if body is not None else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        try:
+            with urlopen(request, timeout=10) as reply:
+                return reply.status, json.loads(reply.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+    folder = str(Path(__file__).parent / "plugins" / "echo")
+    status, preview = api("POST", "plugins/preview", {"source": folder})
+    assert status == 200 and preview["name"] == "echo" and {"kind": "holds", "label": "before the agent goes on", "command": "tool_starting, prompt_submitted"} in preview["rows"]
+    status, made = api("POST", "plugin/install", {"source": folder, "yes": True})
+    assert status == 200 and made["name"] == "echo"
+    row = api("GET", "plugin")[1]["rows"][0]
+    assert (row["title"], row["state"], row["data"]["holds"], row["data"]["manifest"]["settings"]["mode"]["type"], row["data"]["settings"]["chosen"]["token"].startswith("secret ")) == ("echo", "on", ["tool_starting", "prompt_submitted"], "options", True)
+    assert api("POST", f"plugin/{made['n']}/configure", {"key": "repeat", "value": "4"})[0] == 200 and app.container.get(Plugins).named("echo").settings["repeat"] == 4
+    assert api("POST", f"plugin/{made['n']}/disable", {})[0] == 200 and api("GET", "plugin")[1]["rows"][0]["state"] == "off"
+    assert api("POST", f"plugin/{made['n']}/remove", {})[0] == 200 and app.container.get(Plugins).all() == []
 
 
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):

@@ -1,5 +1,6 @@
 from journal.container import Container
 from journal.http.router import Router
+from journal.http.v3.plugins_controller import PluginsController
 from journal.http.v3.rows_controller import RowsController
 from journal.http.v3.transcript_controller import TranscriptController
 from journal.http.v3.v3_controller import V3Controller
@@ -47,6 +48,11 @@ class V3Routes:
         router.get(f"{API}/helper/{{n}}/transcript", transcripts.worker)
         router.post(f"{API}/agent/{{session}}/shell", c.post_agent_shell)
         router.post(f"{API}/agent/{{session}}/control", c.post_agent_control)
+        plugins = self.container.get(PluginsController)
+        router.post(f"{API}/plugins/preview", plugins.preview)
+        router.post(f"{API}/plugin/install", plugins.install)
+        router.post(f"{API}/plugins/{{n}}/upgrade-preview", plugins.upgrade_preview)
+        router.get(f"{API}/plugins/{{name}}/log", plugins.log)
         router.get(f"{API}/{{type}}", self.container.get(RowsController).index)
         router.post(f"{API}/{{type}}", c.post_create)
         router.get(f"{API}/{{type}}/{{n}}", c.get_one)

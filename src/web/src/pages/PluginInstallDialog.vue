@@ -1,5 +1,5 @@
 <script setup>
-import {CHANGE_WORDS, PREVIEW_KINDS, SAME_VERSION} from "../domain/pluginWords.js";
+import {PREVIEW_KINDS, SAME_VERSION} from "../domain/pluginWords.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
 import Dialog from "../kit/Dialog.vue";
@@ -47,11 +47,14 @@ const emit = defineEmits(["close", "back", "install"]);
                     <div class="preview-rows changes">
                         <template v-for="(c, i) in previewed.changes" :key="i">
                             <div class="preview-row">
-                                <span :class="['preview-kind', c.kind]">{{ CHANGE_WORDS[c.kind] }}</span>
-                                <code class="preview-command">{{ c.line }}</code>
+                                <code class="preview-command">{{ c }}</code>
                             </div>
                         </template>
                     </div>
+                </template>
+                <template v-if="previewed.code && previewed.code.length">
+                    <p class="preview-lead">The code that changes:</p>
+                    <Console fill :text="previewed.code.join('\n')" />
                 </template>
             </template>
             <p class="preview-lead">It runs as you, with your files and your network. This is everything it does:</p>
@@ -74,7 +77,7 @@ const emit = defineEmits(["close", "back", "install"]);
             </template>
             <template v-else>
                 <Btn :disabled="busy === 'install'" @click="emit('close')">Cancel</Btn>
-                <Btn kind="primary" :busy="busy === 'install'" :disabled="busy === 'install'" @click="emit('install')">Run</Btn>
+                <Btn kind="primary" :busy="busy === 'install'" :disabled="busy === 'install'" @click="emit('install')">{{ previewed.upgrading ? "Upgrade" : "Install" }}</Btn>
             </template>
         </template>
     </Dialog>

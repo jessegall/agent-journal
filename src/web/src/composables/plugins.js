@@ -11,6 +11,10 @@ export const pluginFrom = (p) => ({
     source: p.data.source,
     commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
     enabled: !!p.data.enabled,
+    state: p.state || (p.data.enabled ? "on" : "off"),
+    holds: p.data.holds || [],
+    lastFault: p.data.last_fault || "",
+    failingSince: p.data.failing_since || 0,
     dashboards: (p.data.manifest || {}).dashboards || [],
     settings: Object.entries((p.data.manifest || {}).settings || {}).map(([key, s]) => ({
         key,

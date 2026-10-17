@@ -1,15 +1,14 @@
 export const PREVIEW_KINDS = {
     needs: "Needs",
     setup: "On install",
-    service: "Runs",
-    on: "Reacts to",
-    refuse: "Can block",
-    page: "Page",
-    setting: "Setting",
+    installed: "After install",
+    program: "Runs",
+    service: "Keeps running",
+    hears: "Hears",
+    holds: "Can hold",
+    skill: "Skill",
 };
 
-export const CHANGE_WORDS = {new: "Now also runs", gone: "No longer runs"};
-
-export const SAME_VERSION = "You already have this version. Install runs its setup steps again.";
+export const SAME_VERSION = "Nothing it runs, hears or holds changes, and neither does its code.";
 
 export const GUIDE_LINE = "A repository with one file that says what the plugin reacts to, runs and shows";

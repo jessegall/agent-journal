@@ -7,14 +7,14 @@ import Segmented from "../kit/Segmented.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TextArea from "../kit/TextArea.vue";
 import TextInput from "../kit/TextInput.vue";
-import SecretPicker from "../kit/SecretPicker.vue";
+import {href} from "../route.js";
 
 const props = defineProps({setting: {type: Object, required: true}, children: {type: Array, default: () => []}, dim: Boolean});
 const emit = defineEmits(["change"]);
 const id = useId();
 const flag = computed(() => props.setting.type === "flag");
 const on = computed(() => props.setting.value === "true");
-const segments = computed(() => props.setting.options.map((option) => ({key: String(option), label: String(option)})));
+const segments = computed(() => props.setting.options.map((option) => ({key: String(option), label: String(option) || "None"})));
 </script>
 
 <template>
@@ -40,13 +40,11 @@ const segments = computed(() => props.setting.options.map((option) => ({key: Str
                         <LineList :value="setting.value" @change="(value) => emit('change', setting.key, value)" />
                     </template>
                     <template #secret>
-                        <SecretPicker
-                            :value="setting.value"
-                            picked-line="The plugin gets the secret {title}."
-                            none-line="No secret is picked, so the plugin gets no value."
-                            note="The plugin's services get this secret's value. Nothing else does."
-                            @pick="(value) => emit('change', setting.key, value)"
-                        />
+                        <p class="setting-secret">
+                            {{ setting.value ? `Kept as ${setting.value}.` : "A secret." }} You fill it on the Secrets page and allow it to
+                            the plugin there; no command sets it.
+                            <a :href="href.page('secrets')">Open Secrets</a>
+                        </p>
                     </template>
                     <template #textarea>
                         <TextArea
@@ -112,6 +110,13 @@ const segments = computed(() => props.setting.options.map((option) => ({key: Str
     color: var(--text-3);
     font-size: 11.5px;
     line-height: 1.45;
+}
+
+.setting-secret {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+    line-height: 1.5;
 }
 
 .setting-value {
