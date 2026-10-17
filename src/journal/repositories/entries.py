@@ -20,6 +20,13 @@ class Entries(ScopedRepository[Entry]):
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (self.scope.id, f"agent:{session}", last))
         return [self._load(row) for row in rows]
 
+    def said_since(self, session: str, key: str) -> int:
+        """How many lines the journal said to this session since it last said the one with this key, or ever when it never did."""
+        newest = self.connection.one(f"SELECT MAX(id) AS id FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (self.scope.id, session, key))
+        since = int(newest["id"] or 0) if newest else 0
+        row = self.connection.one(f"SELECT COUNT(*) AS n FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (self.scope.id, session, since))
+        return int(row["n"]) if row else 0
+
     def of_kind(self, kind: str, last: int = 50) -> list[Entry]:
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = ? ORDER BY id DESC LIMIT ?", (self.scope.id, kind, last))
         return [self._load(row) for row in rows]

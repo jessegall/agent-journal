@@ -7,6 +7,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
+from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.created import Created
@@ -111,6 +112,11 @@ class Checks:
         """The reminders of the unread messages the agent has had: its tool uses since the newest one came, by the reminder interval; read from the record, so no workflow's lines change it."""
         every = self.number("messages.remind_every")
         return self.derived_uses(ctx) // every if every else 0
+
+    def derived_lines(self, ctx: Context) -> int:
+        """Lines the journal said to the agent since it last reminded it what a journal line is."""
+        from journal.features.etiquette.feature import Etiquette
+        return self.entries.said_since(ctx.session, Etiquette.REMIND.key)
 
     def tool_uses_since(self, session: str, since) -> list:
         """The agent's own tool uses since the moment, newest first: a subagent's share the session and are not counted."""
@@ -350,7 +356,7 @@ class Checks:
 
     def own_tool(self, ctx: Context) -> bool:
         """The tool use is the agent's own, not a subagent's: a subagent's reads and writes are not the agent working again."""
-        return isinstance(ctx.event, ToolStarting) and not ctx.event.subagent
+        return isinstance(ctx.event, (ToolStarting, ToolFinished)) and not ctx.event.subagent
 
     def tool_writes(self, ctx: Context) -> bool:
         event = ctx.event

@@ -2088,7 +2088,8 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     n, trigger = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
-    assert console.run(["chart", "order", "tool_finished", str(second), str(n)], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
+    shipped = [str(c.id) for c in charts.for_event("tool_finished") if c.shipped]
+    assert console.run(["chart", "order", "tool_finished", str(second), str(n), *shipped], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
     assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
     assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
@@ -2112,26 +2113,20 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     assert "[always at idle, place" in console.run(["chart", "show"], USER).out
 
 
-def test_the_etiquette_reminder_comes_every_fiftieth_line_and_never_floods(app, monkeypatch):
-    typed = []
+def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     from journal.engine.nudger import Nudger
-    from journal.repositories.entries import Entries
     from journal.features.chart.feature import ChartFeature
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    machine, nudger = app.container.get(Machine), app.container.get(Nudger)
-    agent = machine.agent("s1", 1)
-    before = len([t for t in typed if "chat etiquette" in t])
-    said = app.container.get(Entries).said_to("s1")
-    for i in range(said + 1, 101):
+    agent, nudger = app.container.get(Machine).agent("s1", 1), app.container.get(Nudger)
+    after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    for i in range(50):
         nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
-    reminders = [t for t in typed if "chat etiquette" in t]
-    assert len(reminders) - before == 1, "the fiftieth line brings the reminder; the hundredth falls inside its window"
-    for i in range(101, 1101):
-        nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
-    assert len([t for t in typed if "chat etiquette" in t]) - before == 1, "a thousand lines later the count is still exact: no flood once the entries outgrow a window"
+    assert "chat etiquette" in after_tool(), "fifty lines since the last reminder bring it at the next tool use"
+    assert "chat etiquette" not in after_tool(), "said, the count starts again"
+    for i in range(1000):
+        nudger.say(agent, ChartFeature.LINE.about(text=f"more {i}"))
+    assert "chat etiquette" not in after_tool(), "a thousand lines later but inside the reminder's own window, none again: no flood"
 
 
 def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_ones(app):
@@ -2206,7 +2201,7 @@ def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     console.run(["plan", "add", "1", "its own"], USER)
     console.run(["plan", "cancel", "1"], USER)
     for kind in ("plan", "todo"):
-        with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main&completed=1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
             assert reply.status == 200, f"a cancelled {kind} is shaped for the page"
             assert "abandoned" in j.dumps(j.loads(reply.read()))
 
@@ -2713,8 +2708,9 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
     first, t1 = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     charts.save(charts.find(second).with_(locked=True), USER.actor)
-    assert "is locked" in console.run(["chart", "order", "tool_finished", str(first), str(second)], USER).err, "the locked ones keep the head of the list"
-    assert console.run(["chart", "order", "tool_finished", str(second), str(first)], USER).code == 0
+    shipped = [str(c.id) for c in charts.for_event("tool_finished") if c.shipped]
+    assert "is locked" in console.run(["chart", "order", "tool_finished", str(first), str(second), *shipped], USER).err, "the locked ones keep the head of the list"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(first), *shipped], USER).code == 0
     assert "is locked" in console.run(["chart", "drop", str(second)], USER).err, "a locked workflow stays"
     add = lambda wf, kind, key, *text: int(console.run(["chart", "node", kind, key, *text, "--in", str(wf)], USER).out.split()[1].rstrip(":"))
     hold = add(first, "action", "say", "--text", "[chart] the law")
@@ -3163,3 +3159,25 @@ def test_a_fresh_start_asks_whether_old_facts_rules_and_reminders_still_hold(app
     assert "check they still hold" not in again, "at most once a day"
     compacted = hook(app, "SessionStart", source="compact")[1]["hookSpecificOutput"]["additionalContext"]
     assert "check they still hold" not in compacted, "never after a compaction"
+
+
+def test_a_cancelled_task_is_finished_and_never_counted_open(app):
+    from journal.db.migrations.finish_cancelled_tasks import FinishCancelledTasks
+    from journal.db.connection import Connection
+    from journal.repositories.scope import Scope
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "a task of its own"], USER)
+    console.run(["task", "create", "a task of nobody's"], USER)
+    console.run(["plan", "cancel", "1"], USER)
+    with app.container.get(Scope).of(1):
+        cancelled = app.container.get(Tasks).find(1)
+        assert cancelled.state.value == "cancelled" and cancelled.finished_at is not None, "a cancel stamps when it finished"
+        connection = app.container.get(Connection)
+        connection.execute("UPDATE tasks SET finished_at = NULL WHERE id = 1")
+        FinishCancelledTasks().up(connection)
+        assert app.container.get(Tasks).find(1).finished_at is not None, "and one cancelled before that is finished by the migration"
+    from journal.http.v3.v3_controller import V3Controller
+    with app.container.get(Scope).of(1):
+        assert app.container.get(V3Controller).open_count("todo") == 1, "only the task still open is counted"

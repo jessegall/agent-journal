@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from journal.db.connection import Connection
 from journal.features.bus import Bus
 from journal.models.actor import Actor
@@ -36,7 +37,7 @@ class Plans(ScopedRepository[Plan]):
         for task in self.tasks_of(plan):
             if task.state in (TaskState.DONE, TaskState.CANCELLED) or self.held_elsewhere(task, plan):
                 continue
-            cancelled.append(self.tasks.save(task.cancelled(), by))
+            cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), by))
         self.save(plan.cancelled(), by)
         return cancelled
 

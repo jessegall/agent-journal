@@ -114,7 +114,7 @@ def clockless(text: str) -> str:
     return re.sub(r"\b\d\d:\d\d\b", "HH:MM", text)
 
 
-DERIVED = ("edits", "uses", "owed", "namings")
+DERIVED = ("edits", "uses", "owed", "namings", "lines")
 """The counts the shipped workflows read, now derived from the journal's record and kept by no workflow: what the agent heard proves them, not a row."""
 
 

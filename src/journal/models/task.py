@@ -23,8 +23,9 @@ class Task(Scoped):
     def parked(self, why: str) -> "Task":
         return self.with_(state=TaskState.PARKED, parked_why=why)
 
-    def cancelled(self) -> "Task":
-        return self.with_(state=TaskState.CANCELLED)
+    def cancelled(self, at: datetime) -> "Task":
+        """Given up: finished, with no outcome, so nothing counts it as open."""
+        return self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or at)
 
     def blocked(self, why: str) -> "Task":
         return self.with_(state=TaskState.BLOCKED, blocked_why=why)
