@@ -44,6 +44,9 @@ const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compactin
 // An idle agent's figure falls asleep after this many seconds of nothing.
 export const ASLEEP_AFTER = 600;
 
+// A tool's pose stays this many seconds after it finishes, so a tool that runs for a moment is still seen.
+export const TOOL_LINGERS = 3;
+
 // How long a wait on the user lasts before the figure makes its one pointed remark, in seconds.
 export const POINTED_AFTER = 180;
 
@@ -57,7 +60,8 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
     if (bar === "idle" && (waitingSince || agent?.data.asking)) return {state: "asking", since: waitingSince || since};
     if (bar === "idle") return {state: now - since >= ASLEEP_AFTER ? "asleep" : "idle", since};
     const tool = agent?.data.tool;
-    const inFlight = agent?.data.event === "PreToolUse" && ((tool === "Bash" && SHELL_STATES[agent.data.effect]) || TOOL_STATES[tool]);
+    const shown = agent?.data.event === "PreToolUse" || (agent?.data.event === "PostToolUse" && now - since < TOOL_LINGERS);
+    const inFlight = shown && ((tool === "Bash" && SHELL_STATES[agent.data.effect]) || TOOL_STATES[tool]);
     return {state: inFlight || "thinking", since};
 }
 

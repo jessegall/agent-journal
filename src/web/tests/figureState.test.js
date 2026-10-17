@@ -1,8 +1,27 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {AIRBORNE, ASLEEP_AFTER, EGGS, GROUNDED, LANDING, POINTED_AFTER, RESTS, TRAVELLING, WORKING, beatsAfter, canSwitch, clipFor, clipOf, closeAt, eggFor, figureStateOf, frameIn, modeOf, waitingSinceAt} =
-    await import("../src/domain/figureState.js");
+const {
+    AIRBORNE,
+    ASLEEP_AFTER,
+    EGGS,
+    GROUNDED,
+    LANDING,
+    POINTED_AFTER,
+    RESTS,
+    TRAVELLING,
+    WORKING,
+    beatsAfter,
+    canSwitch,
+    clipFor,
+    clipOf,
+    closeAt,
+    eggFor,
+    figureStateOf,
+    frameIn,
+    modeOf,
+    waitingSinceAt,
+} = await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
 const {drawnIn, pointedView} = await import("../src/figure/places.js");
 const {CLIPS} = await import("../src/figure/figure.js");
@@ -16,7 +35,7 @@ test("the figure does what the tool in flight says the agent does, and thinks be
     expect(stateAt({event: "PreToolUse", tool: "Grep"})).toBe("searching");
     expect(stateAt({event: "PreToolUse", tool: "Edit"})).toBe("writing");
     expect(stateAt({event: "PreToolUse", tool: "Bash"})).toBe("running");
-    expect(stateAt({event: "PostToolUse", tool: "Bash"})).toBe("thinking");
+    expect(stateAt({event: "PostToolUse", tool: "Bash", at: NOW - 30})).toBe("thinking");
 });
 
 test("a stopped, paused or compacting agent keeps its figure, plainly not working; absence is never a state", () => {
@@ -39,7 +58,7 @@ test("something waiting on the user is the asking state, timed from when it arri
 
 test("while the agent works the figure shows the work, as the bar says Working, even with something waiting on the user", () => {
     expect(stateAt({event: "PreToolUse", tool: "Grep"}, NOW - 30)).toBe("searching");
-    expect(stateAt({event: "PostToolUse", tool: "Grep"}, NOW - 30)).toBe("thinking");
+    expect(stateAt({event: "PostToolUse", tool: "Grep", at: NOW - 30}, NOW - 30)).toBe("thinking");
 });
 
 test("a beat fires only for what reached the row after it was last seen, oldest first", () => {
@@ -55,7 +74,20 @@ test("a beat fires only for what reached the row after it was last seen, oldest 
 });
 
 const VOICES = ["bare", "butler", "homie", "coach", "colleague", "squire"];
-const STATES = ["idle", "asleep", "thinking", "searching", "reading", "writing", "running", "waiting", "asking", "compacting", "paused", "stopped"];
+const STATES = [
+    "idle",
+    "asleep",
+    "thinking",
+    "searching",
+    "reading",
+    "writing",
+    "running",
+    "waiting",
+    "asking",
+    "compacting",
+    "paused",
+    "stopped",
+];
 // every moment the figure can meet: each beat, and each held state both fresh and long held
 const MOMENTS = [
     ...[...new Set(REACTIONS.map((each) => each.moment))].map((beat) => ({beat, at: 1})),
@@ -195,7 +227,6 @@ test("something waiting on the user is timed from when it began to wait, and not
     expect(waitingSinceAt(none, 20, 50)).toBe(0);
 });
 
-
 test("reads have their own working state; search tools and search-only shells keep the glass", () => {
     expect(clipOf("reading")).toBe("read");
     expect(WORKING.has("reading")).toBe(true);
@@ -206,8 +237,8 @@ test("reads have their own working state; search tools and search-only shells ke
         expect(stateAt({event: "PreToolUse", tool}), tool).toBe("searching");
     }
     expect(stateAt({event: "PreToolUse", tool: "Write", effect: "reads"})).toBe("writing");
-    expect(stateAt({event: "PostToolUse", tool: "Read"})).toBe("thinking");
-    expect(stateAt({event: "PostToolUse", tool: "Bash", effect: "reads"})).toBe("thinking");
+    expect(stateAt({event: "PostToolUse", tool: "Read", at: NOW - 30})).toBe("thinking");
+    expect(stateAt({event: "PostToolUse", tool: "Bash", effect: "reads", at: NOW - 30})).toBe("thinking");
 });
 
 test("a book opens once, keeps reading across loops, and closes only when asked to finish", () => {
@@ -215,7 +246,7 @@ test("a book opens once, keeps reading across loops, and closes only when asked 
     const hold = clip.frames - clip.intro - clip.outro;
     for (let index = 0; index < clip.intro; index++) expect(frameIn(clip, index)).toBe(index);
     for (let index = clip.intro; index < clip.frames * 10; index++) {
-        expect(frameIn(clip, index)).toBe(clip.intro + (index - clip.intro) % hold);
+        expect(frameIn(clip, index)).toBe(clip.intro + ((index - clip.intro) % hold));
         expect(frameIn(clip, index)).toBeLessThan(clip.frames - clip.outro);
     }
     for (let index = 0; index < clip.frames * 3; index++) {
@@ -248,4 +279,14 @@ test("the layers give way highest first: a fall beats a beat, a beat waits for t
     expect(clipFor(scene({beat}), canDraw)).toMatchObject({clip: "cheer", once: true});
     expect(clipFor(scene({mode: AIRBORNE, leaving: true}), canDraw).clip).toBe("fall");
     expect(clipFor(scene({mode: GROUNDED, leaving: true}), canDraw).clip).toBe("exit");
+});
+
+test("each prop is chosen for its tools, and stays a moment after a quick tool finishes", () => {
+    const prop = (data) => clipOf(stateAt({status: "working", ...data}));
+    ["Read"].forEach((tool) => expect(prop({event: "PreToolUse", tool})).toBe("read"));
+    ["Grep", "Glob"].forEach((tool) => expect(prop({event: "PreToolUse", tool})).toBe("search"));
+    ["Edit", "Write"].forEach((tool) => expect(prop({event: "PreToolUse", tool})).toBe("write"));
+    expect(prop({event: "PostToolUse", tool: "Read", at: NOW - 1})).toBe("read");
+    expect(prop({event: "PostToolUse", tool: "Grep", at: NOW - 1})).toBe("search");
+    expect(prop({event: "PostToolUse", tool: "Read", at: NOW - 10})).toBe("think");
 });
