@@ -179,3 +179,36 @@ def test_a_write_needs_no_task(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     assert write(app)[0] == 200, "a quick edit is the agent's own; a task is for work worth tracking"
+
+def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot_place_and_leaves_the_users_own(app, monkeypatch):
+    import os
+    import time
+    from journal.engine.menu_watcher import MenuWatcher
+    from journal.repositories.messages import Messages
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    hook(app, "SessionStart")
+    watcher, link = app.container.get(MenuWatcher), app.container.get(SupervisorLink)
+    agent = app.container.get(Machine).agent("s1", 1)
+    screens = app.config.home / "runtime" / "screens"
+    screens.mkdir(parents=True, exist_ok=True)
+    def shown(text: str, still_for: float = 5.0) -> None:
+        path = screens / "main.out"
+        path.write_text(text)
+        os.utime(path, (time.time() - still_for, time.time() - still_for))
+    switch = "\x1b[1mSwitch model?\x1b[0m\r\nYour next response will be slower\r\n\r\n❯ 1. Yes, switch to Opus 5.5\r\n  2. No, go back\r\n"
+    link.choose(1, "/model opus")
+    shown(switch)
+    assert watcher.look(agent) == "\r" and sent[-1] == {"type": "Keys", "keys": "\r"}, "a confirmation the journal's pick caused is taken with Enter"
+    assert watcher.look(agent) == "", "and answered once"
+    shown("Something new?\r\n❯ 1. Turn it on\r\n  2. Leave it\r\n")
+    assert watcher.look(agent) == "\x1b", "a menu it cannot place is closed with Escape"
+    from journal.repositories.scope import Scope
+    with app.container.get(Scope).of(1):
+        assert any("closed it with Escape" in m.text for m in app.container.get(Messages).in_()), "and a card says so"
+    (screens / "main.keyed").touch()
+    shown("Pick a theme\r\n❯ 1. Dark\r\n  2. Light\r\n")
+    assert watcher.look(agent) == "", "a menu that came up right after keys at the keyboard is the user's own"
+    shown("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\n", still_for=0.0)
+    assert watcher.look(agent) == "", "a screen still changing is not answered yet"

@@ -95,6 +95,8 @@ class Supervisor:
                 self.stop()
                 return
             self.terminal.write(data)
+            if self.mirror:
+                self.mirror.keyed()
         if self.mirror:
             self.mirror.flush()
         if (code := self.terminal.exited()) is not None and not self._stopping:

@@ -1,5 +1,6 @@
 import os
 from journal.engine.clock import Clock
+from journal.engine.menu_watcher import MenuWatcher
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
@@ -18,10 +19,11 @@ from journal.http.server import Server
 
 
 class Runtime:
-    """What the server process keeps alive: the HTTP server, the deferred worker and the clock, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
+    """What the server process keeps alive: the HTTP server, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope) -> None:
+    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
+        self.watcher = watcher
 
     def boot(self) -> None:
         """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
@@ -44,6 +46,7 @@ class Runtime:
         self.container.get(SkillFiles).write_all()
         self.deferred.start()
         self.clock.start()
+        self.watcher.start()
         self.server.start()
 
     def run(self) -> None:
@@ -57,4 +60,5 @@ class Runtime:
     def stop(self) -> None:
         self.server.stop()
         self.clock.stop()
+        self.watcher.stop()
         self.deferred.stop()

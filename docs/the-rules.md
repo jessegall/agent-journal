@@ -123,6 +123,12 @@ Idle from a state that owns something is refused, and no node enters a state tha
   a state's skill (skills: skills.required at a write, skills.stopped_owing at a stop), the look at what is in
   flight (briefing: briefing.orient, briefing.stopped_unoriented), a decision at a context mark (memory:
   memory.held, memory.stopped_at_mark); engine code, never a node.
+- A menu in the agent's terminal (engine/menu_watcher, providers/menu): the supervisor mirrors the agent's newest
+  output and the keyboard's last key; the watcher, a service of the journal's own, reads the mirror every second,
+  recognises a menu by its shape and, once the screen is still, confirms one the journal's agent-bar pick caused,
+  accepts the trust question for the launched folder, declines one that offers a no, and closes the rest with
+  Escape, with a card in the chat each time; a menu opened from the keyboard or the viewer is left to the user.
+  The supervisor only carries the keys and the bytes.
 - The floor under every hold: a journal command and the read of a skill's file always run, whatever a workflow
   holds; the engine drops the refusal and keeps the words (chart/walk).
 - A session's start: the journal skill and the look at what is in flight are owed by the Always workflow at

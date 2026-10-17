@@ -232,7 +232,7 @@ class V3Controller:
         choice = next((c for g in provider.controls["groups"] if g["key"] == action for c in g["choices"] if c["value"] == value), None)
         if choice is None:
             return Response.refused(f"{action} {value} is not a choice the agent bar offers")
-        self.supervisor.type_raw(self.scope.id, choice["command"])
+        self.supervisor.choose(self.scope.id, choice["command"])
         return Response.json({"queued": True})
 
     def get_skills(self, request: Request) -> Response:

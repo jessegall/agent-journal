@@ -18,6 +18,11 @@ class Mirror:
     def for_(cls, root: Path, environment: str) -> "Mirror":
         return cls(root / ".journal" / "runtime" / "screens" / f"{environment}.out")
 
+    def keyed(self) -> None:
+        """Notes that a key came from the keyboard, by touching the file beside the mirror."""
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.with_suffix(".keyed").touch()
+
     def add(self, data: bytes) -> None:
         self._kept += data
         del self._kept[:-KEPT]
