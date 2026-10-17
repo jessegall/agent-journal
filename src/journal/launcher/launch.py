@@ -62,9 +62,9 @@ class Launch:
         return Menu(self.root, self.package / "journal.py").choose(self.agent, self.env, self.new, self.aside, self.skip, self.yes)
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
-        resume = RESUME[self.agent](choice.resume) if choice.resume else []
+        """The agent's command without the arguments that resume a conversation, which the launch file carries apart so a restart can replace them."""
         skip = [flag for flag in SKIP[self.agent] if choice.skip_prompts and flag not in self.args]
-        return [self.agent, *resume, *skip, *STATUS[self.agent](status), *self.args]
+        return [self.agent, *skip, *STATUS[self.agent](status), *self.args]
 
     def journal_command(self) -> list[str]:
         return [sys.executable, str(self.package / "journal.py"), "serve"]
@@ -127,7 +127,7 @@ class Launch:
         environ = self.environ(choice)
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
-            "front": {"command": self.agent_command(choice, status), "folder": str(self.root), "env": environ},
+            "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(self.root), "env": environ},
             "services": [] if self.no_journal else [journal],
             "socket": str(self.socket(choice.environment)),
             "announce": str(self.runtime / "inboxes" / choice.environment),

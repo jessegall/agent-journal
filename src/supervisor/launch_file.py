@@ -39,4 +39,4 @@ class LaunchFile:
         services = Services(*(Service(s["name"], s["command"], Path(s["folder"]), s["env"], Path(s["log"]), s.get("keep", True)) for s in self.data.get("services", [])))
         band = Band(**self.data["band"]) if self.data.get("band") and os.isatty(1) else None
         mirror = Mirror(Path(self.data["screen"])) if self.data.get("screen") else None
-        return Supervisor(Terminal(front["command"], front["folder"], front["env"]), Inbox(Path(self.data["socket"]), Path(self.data["announce"])), services, stdin=0 if os.isatty(0) else None, band=band, mirror=mirror)
+        return Supervisor(Terminal(front["command"], front["folder"], front["env"], tuple(front.get("resume", ()))), Inbox(Path(self.data["socket"]), Path(self.data["announce"])), services, stdin=0 if os.isatty(0) else None, band=band, mirror=mirror)

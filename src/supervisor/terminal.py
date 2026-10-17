@@ -15,8 +15,9 @@ ENTER_AFTER = 0.5
 class Terminal:
     """The agent in a pty: the user's keys go in, its screen comes out, and the journal can type a line."""
 
-    def __init__(self, command: list[str], cwd: str, environ: dict[str, str]) -> None:
-        self.command, self.cwd, self.environ = command, cwd, environ
+    def __init__(self, command: list[str], cwd: str, environ: dict[str, str], resume: tuple[str, ...] = ()) -> None:
+        self.command, self.cwd, self.environ, self.resume = command, cwd, environ, resume
+        """resume: the arguments that pick the conversation up, placed right after the program; a restart replaces them and keeps the rest."""
         self.fd, self.pid = -1, -1
         self._pieces: list[tuple[bytearray, bool]] = []
         """What goes in, each piece in a write of its own: the user's keys, a typed line (True: its Enter follows), an Enter."""
@@ -28,13 +29,14 @@ class Terminal:
         pid, fd = pty.fork()
         if pid == 0:
             os.chdir(self.cwd)
-            os.execvpe(self.command[0], self.command, self.environ)
+            argv = [self.command[0], *self.resume, *self.command[1:]]
+            os.execvpe(argv[0], argv, self.environ)
         self.pid, self.fd = pid, fd
 
     def restart(self, resume: tuple[str, ...]) -> None:
-        """Stops the agent and starts it again with the arguments that resume its conversation."""
+        """Stops the agent and starts it again with the arguments that resume its conversation, the rest of its command as it was."""
         self.stop(3.0)
-        self.command = [self.command[0], *resume]
+        self.resume = resume
         self.start()
 
     def write(self, data: bytes) -> None:

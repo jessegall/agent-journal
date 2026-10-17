@@ -98,7 +98,7 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     launch = Launch.parse(["claude", "--env", "spike", "--aside", "--", "--model", "x"], tmp_path)
     assert launch.env == "spike" and launch.aside and launch.args == ("--model", "x")
     status = StatusLine("p", "spike", tmp_path)
-    assert launch.agent_command(Choice("spike", "s-1", True), status) == ["claude", "--resume", "s-1", "--settings", status.settings(), "--model", "x"]
+    assert launch.agent_command(Choice("spike", "s-1", True), status) == ["claude", "--settings", status.settings(), "--model", "x"], "the resume goes in the launch file apart"
     assert launch.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["claude", "--dangerously-skip-permissions", "--settings", status.settings(), "--model", "x"]
     environ = launch.environ(Choice("spike", "", True))
     assert environ["AGENT_JOURNAL_ACTIVE"] == "1" and environ["JOURNAL_ENV"] == "spike", "the journal's own hooks always run"
@@ -174,7 +174,7 @@ def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_r
     from supervisor.__main__ import main
     launch = Launch.parse(["claude", "--env", "spike", "--no-journal"], tmp_path)
     written = launch.launch_file(Choice("spike", "s1"), StatusLine("p", "spike", tmp_path))
-    assert written["front"]["command"][:3] == ["claude", "--resume", "s1"] and written["services"] == [], "a launch with a journal running already starts none of its own"
+    assert written["front"]["command"][0] == "claude" and written["front"]["resume"] == ["--resume", "s1"] and written["services"] == [], "a launch with a journal running already starts none of its own; the resume apart, for a restart to replace"
     assert written["announce"].endswith("runtime/inboxes/spike") and written["screen"].endswith("runtime/screens/spike.out") and f"journal-{os.getuid()}" in written["socket"]
     with_journal = Launch.parse(["claude", "--env", "spike"], tmp_path).launch_file(Choice("spike", ""), StatusLine("p", "spike", tmp_path))
     assert [s["name"] for s in with_journal["services"]] == ["journal"]

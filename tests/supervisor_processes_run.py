@@ -3,6 +3,7 @@
 
 import json
 import os
+import select
 import socket
 import stat
 import time
@@ -198,3 +199,20 @@ def test_stopping_a_service_ends_every_process_it_started(tmp_path: Path):
     except ProcessLookupError:
         alive = False
     assert not alive, "the child it left in the background went with it"
+
+
+def test_a_restart_replaces_only_the_resume_and_keeps_the_rest_of_the_command(tmp_path: Path):
+    terminal = Terminal(["env", "KEPT=yes", "sh", "-c", "echo seen:$KEPT:$RESUMED; sleep 5"], str(tmp_path), {"PATH": os.environ["PATH"]}, ("RESUMED=first",))
+
+    def output(until: bytes) -> bytes:
+        seen, began = b"", time.time()
+        while until not in seen and time.time() - began < 3:
+            seen += terminal.read() if select.select([terminal.fd], [], [], 0.1)[0] else b""
+        return seen
+
+    terminal.start()
+    assert b"seen:yes:first" in output(b"seen:")
+    terminal.restart(("RESUMED=second",))
+    seen = output(b"seen:")
+    terminal.stop(1.0)
+    assert b"seen:yes:second" in seen, "the restart put its own resume after the program and kept the rest of the command"
