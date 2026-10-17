@@ -4,12 +4,14 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
+from journal.db.masks import Masks
+
 
 class Connection:
-    """The one place SQL is executed. Each thread reads on a sqlite connection leased from a pool and returned with release(), so a server thread that ends leaves nothing open; writes take the one lock, so the threaded server never contends."""
+    """The one place SQL is executed, a secret value masked out of every text it writes. Each thread reads on a sqlite connection leased from a pool and returned with release(), so a server thread that ends leaves nothing open; writes take the one lock, so the threaded server never contends."""
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
+    def __init__(self, path: Path, masks: Masks) -> None:
+        self.path, self.masks = path, masks
         self._threads = threading.local()
         self._writing = threading.RLock()
         self._pooling = threading.Lock()
@@ -26,7 +28,8 @@ class Connection:
             self._free.append(local)
 
     def execute(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
-        return self._local().execute(sql, params)
+        """Every text it is given masked first, so no secret value is ever written."""
+        return self._local().execute(sql, tuple(self.masks.masked(p) if isinstance(p, str) else p for p in params))
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
         return self.execute(sql, params).fetchone()

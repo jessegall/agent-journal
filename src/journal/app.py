@@ -3,6 +3,7 @@ from journal.container import Container
 from journal.console.console import Console
 from journal.console.standard_commands import StandardCommands
 from journal.db.connection import Connection
+from journal.db.masks import Masks
 from journal.db.migrations import MIGRATIONS
 from journal.db.migrator import Migrator
 from journal.db.schema import Schema
@@ -38,7 +39,7 @@ class App:
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)
-        connection = Connection(self.config.database)
+        connection = Connection(self.config.database, self.container.get(Masks))
         schema = Schema(connection, AllModels.MODELS)
         schema.create()
         Migrator(connection, schema, MIGRATIONS).run()

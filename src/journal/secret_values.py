@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from functools import cached_property
 from pathlib import Path
 
 from journal.config import Config
@@ -11,13 +12,13 @@ HEADER = """# The values of this project's secrets, written by agent-journal.
 """
 
 
-class ValuesFile:
+class SecretValues:
     """The project's secret values, one file in the private folder named by the project's id, readable by its user alone and written whole, so a crash never leaves half a file."""
 
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    @property
+    @cached_property
     def path(self) -> Path:
         return PrivateFolder(self.config.root).secrets() / f"{self.project_id()}.env"
 

@@ -1,3 +1,6 @@
+from journal.config import Config
+from journal.db.masks import Masks
+from journal.secret_values import SecretValues
 import shutil
 from pathlib import Path
 
@@ -16,7 +19,7 @@ from journal.repositories.scope import Scope
 
 @pytest.fixture
 def connection(tmp_path: Path) -> Connection:
-    connection = Connection(tmp_path / "journal.db")
+    connection = Connection(tmp_path / "journal.db", Masks(SecretValues(Config(tmp_path))))
     Schema(connection, AllModels.MODELS).create()
     yield connection
     connection.close()

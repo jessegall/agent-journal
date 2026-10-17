@@ -3367,12 +3367,12 @@ def test_a_quiet_workflow_walks_after_the_reply_and_a_walk_ended_before_it_ends_
 def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app, tmp_path, monkeypatch):
     import stat
     from datetime import datetime, timezone
-    from journal.features.secrets.values_file import ValuesFile
+    from journal.secret_values import SecretValues
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
     from journal.repositories.secrets import Secrets
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
-    secrets, values = app.container.get(Secrets), app.container.get(ValuesFile)
+    secrets, values = app.container.get(Secrets), app.container.get(SecretValues)
     secret = secrets.save(Secret(title="Github", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Github")), Actor.user("u"))
     assert secret.fields == ({"name": "key", "hidden": True, "variable": "GITHUB_KEY"},) and secret.waiting()
     values.put("GITHUB_KEY", 'gh-"quoted"-token')
@@ -3380,9 +3380,34 @@ def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app
     assert not secrets.find(secret.id).waiting() and values.values() == {"GITHUB_KEY": 'gh-"quoted"-token'}
     assert stat.S_IMODE(values.path.stat().st_mode) == 0o600 and stat.S_IMODE(values.path.parent.stat().st_mode) == 0o700
     assert values.path.name == f"{(app.config.home / 'project-id').read_text().strip()}.env", "the file is named by the project's id, kept in its journal folder"
-    raw = (app.config.home / "journal.db").read_bytes()
+    raw = b"".join(path.read_bytes() for path in app.config.home.glob("journal.db*"))
     assert b"gh-" not in raw, "no value ever reaches the database"
     values.drop(["GITHUB_KEY"])
     assert values.values() == {}
     gone = secrets.save(secrets.find(secret.id).deleted(datetime.now(timezone.utc)), Actor.user("u"))
     assert secrets.live() == [] and secrets.gone() == [gone]
+
+
+def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, tmp_path, monkeypatch):
+    from journal.db.masks import Masks
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    from journal.repositories.scope import Scope
+    from journal.secret_values import SecretValues
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    hook(app, "SessionStart")
+    app.container.get(SecretValues).put("GITHUB_KEY", "ghp_0123456789abcdef")
+    app.container.get(SecretValues).put("PIN", "1234")
+    with app.container.get(Scope).of(1):
+        saved = app.container.get(Messages).save(Message(text="the key is ghp_0123456789abcdef and the pin 1234"), Actor.system())
+        assert app.container.get(Messages).find(saved.id).text == "the key is [secret GITHUB_KEY] and the pin 1234", "a value too short to mask stands as it is"
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "echo ghp_0123456789abcdef"}, tool_response="ghp_0123456789abcdef")
+    stored = b"".join(path.read_bytes() for path in app.config.home.glob("journal.db*"))
+    assert b"[secret GITHUB_KEY]" in stored and b"ghp_0123456789abcdef" not in stored, "not in a hook's entry either, in the database or its log"
+    assert app.container.get(Masks).leaks
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert any("was masked: GITHUB_KEY" in m.text for m in app.container.get(Messages).in_()), "the leak is shown once"
