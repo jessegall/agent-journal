@@ -3081,6 +3081,23 @@ def test_a_run_stands_through_the_agents_moves_and_a_workflow_action_starts_one(
     console.run(["stuck", "the build is broken"], AGENT)
     assert machine.current("s1").name == "stuck" and running.in_hand("s1", 1).text == "bump", "a task, a wait, the user's word and being stuck leave the run standing"
 
+def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, monkeypatch):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
+    hook(app, "SessionStart", session_id="s2")
+    app.console().run(["plan", "create", "Side work", "--brief", "b"], Where("main", "s2"))
+    app.runtime().deferred.drain()
+    running = app.container.get(Running)
+    assert running.in_hand("s2", 1).title == "Building a plan" and running.in_hand("s1", 1) is None and not any("Building" in line or "step 1" in line for line in sent), "the run is the worker's, and its step is not typed to the agent"
+    assert "step 1" in hook(app, "Stop", session_id="s2")[1]["reason"], "the worker is told the step at its stop"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
