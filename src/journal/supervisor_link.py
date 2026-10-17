@@ -15,7 +15,7 @@ AGENT, JOURNAL = "agent", "journal"
 
 
 class SupervisorLink:
-    """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor from before the protocol, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
+    """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor that takes datagrams, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
     def __init__(self, config: Config, environments: Environments, typed: TypedLines) -> None:
         self.config, self.environments, self.typed = config, environments, typed
@@ -97,7 +97,7 @@ class SupervisorLink:
             return False
 
     def announced(self, environment_id: int) -> dict:
-        """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a supervisor before the protocol; nothing when none runs."""
+        """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a datagram supervisor; nothing when none runs."""
         path = self.config.home / "runtime" / "inboxes" / self.environments.find(environment_id).name
         text = path.read_text().strip() if path.is_file() else ""
         return json.loads(text) if text.startswith("{") else {"socket": text, "screen": OldSupervisor.screen(self.config.home, path.name)} if text else {}

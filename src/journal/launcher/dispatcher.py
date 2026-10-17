@@ -19,7 +19,7 @@ exit 1
 
 
 class Dispatcher:
-    """The one command outside a project, at ~/.local/bin/journal: it only finds the project's own journal and hands over to it, version 4's shim or version 3's launcher."""
+    """The one command outside a project, at ~/.local/bin/journal: it only finds the project's own journal and hands over to it, its journal.sh or the launcher an older install keeps at .journal/journal."""
 
     def __init__(self, home: Path) -> None:
         self.path = home / ".local" / "bin" / "journal"

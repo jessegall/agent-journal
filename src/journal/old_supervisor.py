@@ -6,15 +6,15 @@ OLD = {
     "restart": lambda request: {"type": "RestartAgent", "resume": request.get("resume", [])} if request["name"] == "agent" else {"type": "RestartJournal"},
     "stop": lambda request: {"type": "Stop"},
 }
-"""Each verb as the datagram a supervisor from before the protocol took."""
+"""Each verb as the datagram a datagram supervisor takes."""
 
 
 class OldSupervisor:
-    """A supervisor from before the protocol, announced by a bare path: a request said as the datagram it took, nothing read back. It goes once the one restart has moved every session onto the protocol."""
+    """A supervisor that takes datagrams, announced by a bare path: a request said as the datagram it takes, nothing read back."""
 
     @staticmethod
     def screen(home: Path, environment: str) -> str:
-        """Where a supervisor from before the protocol mirrors its agent's screen, which it does not announce."""
+        """Where a datagram supervisor mirrors its agent's screen, which it does not announce."""
         return str(home / "runtime" / "screens" / f"{environment}.out")
 
     @staticmethod

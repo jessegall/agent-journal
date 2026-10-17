@@ -49,7 +49,7 @@ SILENT_AFTER = 900.0
 
 
 class V3Controller:
-    """Version 3's API, answered from version 4's rows, so the viewer sees nothing changed."""
+    """The API the viewer speaks, answered from the journal's rows."""
 
     def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events, scope: Scope, edits: Edits) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions

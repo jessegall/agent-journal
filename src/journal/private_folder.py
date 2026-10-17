@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 SECRETS_VARIABLE = "AGENT_JOURNAL_SECRETS"
-"""Moves the secrets folder, as it did in version 3."""
+"""Moves the secrets folder elsewhere."""
 
 
 class PrivateFolder:
@@ -15,7 +15,7 @@ class PrivateFolder:
         return self.made(Path.home() / ".journal" / "keys") / f"{str(self.root.resolve()).strip('/').replace('/', '-')}.json"
 
     def secrets(self) -> Path:
-        """Version 3's place, so its values open unchanged: the folder the variable names, else under the config home."""
+        """The folder the variable names, else agent-journal/secrets under the config home."""
         if SECRETS_VARIABLE in os.environ:
             return self.made(Path(os.environ[SECRETS_VARIABLE]))
         return self.made(Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-journal" / "secrets")
