@@ -38,3 +38,8 @@ class Mirror:
         part.write_bytes(bytes(self._kept))
         os.replace(part, self.path)
         self._written_at, self._changed = now, False
+
+    def close(self) -> None:
+        """The mirror taken down with its supervisor, so nobody reads a screen no process shows any more."""
+        self.path.unlink(missing_ok=True)
+        self.path.with_suffix(".keyed").unlink(missing_ok=True)

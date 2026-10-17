@@ -342,3 +342,15 @@ def test_stopping_a_service_ends_every_process_it_started(tmp_path: Path):
     except ProcessLookupError:
         alive = False
     assert not alive, "the child it left in the background went with it"
+
+
+def test_the_mirror_goes_with_its_supervisor(tmp_path: Path):
+    from supervisor.mirror import Mirror
+    mirror = Mirror.for_(tmp_path, "main")
+    mirror.add(b"Switch model?")
+    mirror._written_at = 0
+    mirror.flush()
+    mirror.keyed()
+    assert mirror.path.exists() and mirror.path.with_suffix(".keyed").exists()
+    mirror.close()
+    assert not mirror.path.exists() and not mirror.path.with_suffix(".keyed").exists(), "no screen is left for a process that is gone"

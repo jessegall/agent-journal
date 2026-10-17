@@ -59,6 +59,8 @@ class Supervisor:
         finally:
             self.services.stop_all()
             self.inbox.close()
+            if self.mirror:
+                self.mirror.close()
             if saved is not None and self.stdin is not None:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
         return self._code
