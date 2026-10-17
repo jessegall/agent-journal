@@ -9,6 +9,7 @@ from typing import Iterator
 from journal.config import Config
 from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
+from journal.features.plugins.plugin_changes import PluginChanges
 from journal.features.plugins.plugin_hashes import PluginHashes
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.features.plugins.plugin_skills import PluginSkills
@@ -21,8 +22,6 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.plugins import Plugins
 
 FETCH_SECONDS = 120
-COMPARED = ("version", "program", "hears", "holds", "services", "settings", "skills")
-"""What an upgrade shows changing: what the plugin runs, hears and holds."""
 
 
 class Installing:
@@ -53,34 +52,23 @@ class Installing:
     def upgrade_preview(self, name: str, ref: str) -> str:
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
-            changes = self.changes(plugin.manifest, asdict(self.reader.read(folder)))
-            return "\n".join([f"{name} from {plugin.commit_sha[:12] or plugin.source} to {commit[:12] or 'the folder as it is now'}", *(changes or ["nothing it runs, hears or holds changes"])])
+            changes = PluginChanges.manifest(plugin.manifest, asdict(self.same(plugin, self.reader.read(folder))))
+            code = [] if plugin.linked else PluginChanges.code(self.folders.of(plugin), folder)
+            return "\n".join([f"{name} from {plugin.commit_sha[:12] or plugin.source} to {commit[:12] or 'the folder as it is now'}", *(changes or ["nothing it runs, hears or holds changes"]), *(["", "the code:", *code] if code else [])])
 
     def upgrade(self, name: str, ref: str, by: Actor) -> Plugin:
         self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
-            manifest = self.reader.read(folder)
+            manifest = self.same(plugin, self.reader.read(folder))
             if not plugin.linked:
                 shutil.rmtree(self.folders.of(plugin))
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
-            upgraded = self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(folder, asdict(manifest))), by)
+            upgraded = self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(self.folders.of(plugin), asdict(manifest)), waiting=""), by)
             self.skills.withdraw(upgraded)
             if upgraded.enabled:
                 self.skills.publish(upgraded)
             return upgraded
-
-    @staticmethod
-    def changes(was: dict, now: dict) -> list[str]:
-        lines = []
-        for key in COMPARED:
-            before, after = was.get(key), now.get(key)
-            if isinstance(after, (list, tuple)):
-                before, after = list(before or ()), list(after)
-                lines += [f"{key}: + {item}" for item in after if item not in before] + [f"{key}: - {item}" for item in before if item not in after]
-            elif before != after:
-                lines.append(f"{key}: {before} -> {after}")
-        return lines
 
     def enable(self, name: str, by: Actor) -> Plugin:
         """On, with its files' hashes taken anew: switching it on is the user's word that its code is read."""
@@ -107,6 +95,12 @@ class Installing:
         data = self.folders.data(self.plugins.named(name))
         self.remove(name, by)
         shutil.rmtree(data, ignore_errors=True)
+
+    @staticmethod
+    def same(plugin: Plugin, manifest: PluginManifest) -> PluginManifest:
+        if manifest.name != plugin.name:
+            raise Refused(f"{plugin.source} now holds the plugin {manifest.name}, not {plugin.name}: install it as a plugin of its own")
+        return manifest
 
     @staticmethod
     def only_the_user(by: Actor, does: str) -> None:

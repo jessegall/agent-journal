@@ -1,5 +1,6 @@
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.event import Event
+from journal.features.plugins.linked_manifests import LinkedManifests
 from journal.features.plugins.plugin_answers import PluginAnswers
 from journal.features.plugins.plugin_fault import PluginFault
 from journal.features.plugins.plugin_faults import PluginFaults
@@ -27,9 +28,9 @@ CUT = "plugin_cut"
 class PluginHearing:
     """Which plugins hear an event, and one plugin asked about it: the line built where the event happened, and a fault recorded, never raised."""
 
-    def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: Deferred, hashes: PluginHashes) -> None:
+    def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: Deferred, hashes: PluginHashes, linked: LinkedManifests) -> None:
         self.plugins, self.runner, self.protocol, self.faults, self.answers, self.steps = plugins, runner, protocol, faults, answers, steps
-        self.environments, self.agents, self.entries, self.deferred, self.hashes = environments, agents, entries, deferred, hashes
+        self.environments, self.agents, self.entries, self.deferred, self.hashes, self.linked = environments, agents, entries, deferred, hashes, linked
 
     def heard_by(self, event: Event, environment_id: int) -> list[Plugin]:
         """The enabled plugins that hear it, in the order they were installed; never the plugin that wrote the row, and none past a step of plugin commands, the cut recorded."""
@@ -42,6 +43,7 @@ class PluginHearing:
     def ask(self, plugin: Plugin, event: Event, environment_id: int, within: float) -> PluginAnswer:
         if not self.hashes.intact(plugin, environment_id):
             return PluginAnswer()
+        self.linked.notice(plugin, environment_id)
         environment = self.environments.find(environment_id).name if environment_id else ""
         try:
             answer = self.runner.ask(plugin, environment, self.protocol.line_of(event, environment, self.state_of(event)), within)

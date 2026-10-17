@@ -13,7 +13,9 @@ until the same line is given `--yes`. A folder is linked and read where it lies;
 journal refuses installs nothing. `journal plugin list` shows each plugin, whether it is on, and its last fault.
 
 `journal plugin upgrade <name>` shows what changes in what the plugin runs, hears and holds, at its newest commit or
-at `--ref <commit>`, and upgrades it with `--yes`. `journal plugin disable <name>` and `enable <name>` switch it off
+at `--ref <commit>`, and upgrades it with `--yes`. For a fetched plugin it also shows the code: a diff of every file that
+changes. When a linked folder's manifest changes, the plugin goes on as it was installed, and a card shows the change
+once, until you apply it with `journal plugin upgrade <name> --yes`. `journal plugin disable <name>` and `enable <name>` switch it off
 and on for the whole project. `journal plugin remove <name>` takes it out and keeps its data folder; `--purge` deletes
 that too. A linked folder is never deleted.
 

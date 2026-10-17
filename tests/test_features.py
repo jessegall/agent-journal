@@ -3744,10 +3744,13 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
             assert words in str(fault), f"{broken}: {fault}"
 
 def echo(app, name="echo", **manifest):
+    """The echo plugin as a fetched copy in the journal's plugins folder, its row's manifest changed as given."""
+    import shutil
     from journal.models.plugin import Plugin
     from journal.repositories.plugins import Plugins
     folder = Path(__file__).parent / "plugins" / "echo"
-    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), linked=True, manifest=json.loads((folder / "journal-plugin.json").read_text()) | manifest), Actor.user(1))
+    shutil.copytree(folder, app.config.home / "plugins" / name, dirs_exist_ok=True)
+    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), manifest=json.loads((folder / "journal-plugin.json").read_text()) | manifest), Actor.user(1))
 
 
 def echo_heard(app, name="echo") -> list[str]:
@@ -3968,6 +3971,37 @@ def test_plugins_come_back_when_the_journal_starts_again(app):
         assert (again.config.home / "plugin-data" / "echo" / "kept.txt").read_text() == "kept"
     finally:
         again.runtime().stop()
+
+
+def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, tmp_path):
+    import shutil
+    from journal.models.plugin import Plugin
+    from journal.repositories.messages import Messages
+    from journal.repositories.plugins import Plugins
+    echo_folder = Path(__file__).parent / "plugins" / "echo"
+    console, plugins, messages = app.console(), app.container.get(Plugins), app.container.get(Messages)
+    newer = tmp_path / "newer"
+    shutil.copytree(echo_folder, newer)
+    (newer / "run.py").write_text((newer / "run.py").read_text().replace("echo heard your prompt", "echo heard you"))
+    shutil.copytree(echo_folder, app.config.home / "plugins" / "echo")
+    fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=json.loads((echo_folder / "journal-plugin.json").read_text())), Actor.user(1))
+    shown = console.run(["plugin", "upgrade", "echo"], USER).out
+    assert "the code:" in shown and '-    print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"}))' in shown and '+    print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"}))' in shown, "the program's changed body is in the diff"
+    plugins.save(fetched.with_(name="copied"), Actor.user(1))
+    assert "now holds the plugin echo, not copied" in console.run(["plugin", "upgrade", "copied"], USER).err, "an upgrade never turns one plugin into another"
+    plugins.delete(plugins.named("copied"), Actor.user(1))
+    linked = tmp_path / "linked"
+    shutil.copytree(echo_folder, linked)
+    console.run(["plugin", "install", str(linked), "--yes"], USER)
+    manifest = json.loads((linked / "journal-plugin.json").read_text())
+    (linked / "journal-plugin.json").write_text(json.dumps({**manifest, "hears": [*manifest["hears"], "idle"], "holds": [*manifest["holds"], "idle"]}))
+    hook(app, "SessionStart")
+    for _ in range(2):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    waiting = [m for m in messages.recent(10) if m.text.startswith("Plugin echo's manifest changed")]
+    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.named("echo").manifest["holds"], "shown once, and the plugin runs as installed"
+    console.run(["plugin", "upgrade", "echo", "--yes"], USER)
+    assert "idle" in plugins.named("echo").manifest["holds"] and plugins.named("echo").waiting == "", "the user's upgrade applies it"
 
 
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
