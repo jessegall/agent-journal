@@ -34,11 +34,11 @@ class Verbs:
         return {"protocol": PROTOCOL, "verbs": list(VERBS)}
 
     def start(self, request: dict) -> dict:
-        """A service started under its name, with its command, folder, environment and log; one already running under the name is left as it is."""
+        """A service started under its name, with its command, folder, environment and log, and whether it is started again when it dies; one already running under the name is left as it is."""
         name = request["name"]
         started = not self.supervisor.services.runs(name)
         log = Path(request.get("log", os.devnull))
-        self.supervisor.services.add(Service(name, list(request["command"]), Path(request.get("folder", ".")), {**os.environ, **request.get("env", {})}, log))
+        self.supervisor.services.add(Service(name, list(request["command"]), Path(request.get("folder", ".")), {**os.environ, **request.get("env", {})}, log, bool(request.get("keep", True))))
         return {"started": started}
 
     def list(self, request: dict) -> dict:

@@ -308,3 +308,23 @@ def test_the_supervisor_imports_every_module_at_start_so_an_upgrade_never_change
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 late += [f"{path.name}:{inner.lineno}" for inner in ast.walk(node) if isinstance(inner, (ast.Import, ast.ImportFrom))]
     assert late == [], "an import inside a function would load what an upgrade put on disk into a supervisor already running"
+
+
+def test_a_service_that_keeps_dying_is_started_again_less_often_then_left_down_as_failed(tmp_path: Path, monkeypatch):
+    import supervisor.service as service
+    monkeypatch.setattr(service, "BACKOFF", 0.05)
+    crashing = Service("crashing", ["sh", "-c", "exit 1"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "crash.log")
+    crashing.start()
+    began = time.time()
+    while not crashing.failed() and time.time() - began < 5:
+        crashing.keep_alive()
+        time.sleep(0.02)
+    shown = crashing.described()
+    assert shown["failed"] and not shown["running"] and shown["restarts"] == service.GIVE_UP - 1, "started again four times, then left down"
+    crashing.keep_alive()
+    assert crashing.described()["restarts"] == service.GIVE_UP - 1, "a failed process is not started again"
+    once = Service("once", ["true"], tmp_path, {}, tmp_path / "once.log", keep=False)
+    once.start()
+    time.sleep(0.2)
+    once.keep_alive()
+    assert once.described()["restarts"] == 0, "a process not kept is left down when it ends"
