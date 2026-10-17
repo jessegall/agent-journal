@@ -67,6 +67,7 @@ const VIEWS = {
     hooks: {title: "Hooks", icon: "activity"},
 };
 const subagent = props.kind === "subagent";
+const ownTranscript = subagent || Boolean(props.recorded);
 
 const elsewhere = Boolean(props.env) && props.env !== route.value.env;
 const scope = elsewhere ? scopeIn(props.env) : null;
@@ -146,7 +147,7 @@ refreshers.push([
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const recordedReader = {env: () => api.env(), transcript: (_agent, _session, fields) => api.helperTranscript(props.recorded, fields)};
-const transcriptViews = () => shown("transcript") || (subagent && shown("chat"));
+const transcriptViews = () => shown("transcript") || (ownTranscript && shown("chat"));
 const transcript = useTranscript(
     () => props.recorded || (agent.value ? agent.value.n : 0),
     props.session,
@@ -276,7 +277,7 @@ const openSkills = () => go("skills");
             :state-key="stateKey"
             :plan="plan"
             :resume="actionOf('resume')"
-            :sequence="subagent ? null : agent?.data?.sequence"
+            :sequence="ownTranscript ? null : agent?.data?.sequence"
             :sequence-history="agent?.data?.sequence_history || []"
             :sequence-busy="sequenceBusy"
             @cancel="asking = ''"
@@ -290,7 +291,7 @@ const openSkills = () => go("skills");
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
-                        <template v-if="subagent">
+                        <template v-if="ownTranscript">
                             <SubagentChat
                                 :turns="turns"
                                 :loading="transcriptLoading"

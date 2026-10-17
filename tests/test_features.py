@@ -3285,6 +3285,23 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     assert "release: started" in history and "release: moved on to step 2" in history and "release: ended at step 2" in history, "the panel lists what the run did"
     assert api("POST", "agent/1/end_sequence")[0] != 200, "with no run there is nothing to end"
 
+def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
+    from journal.models.author import Author
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
+    console.run(["worker", "report", "1", "the parser is written"], Where("main", "w1"))
+    messages = app.container.get(Messages)
+    for i in range(250):
+        messages.save(Message(author=Author.USER, text=f"word {i}"), USER.actor)
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/helper", method="GET", headers={"X-Journal-Env": "main"})
+    with urlopen(request, timeout=5) as reply:
+        helper = json.loads(reply.read())["rows"][0]
+    assert helper["data"]["report"] == "the parser is written", "the report is linked from the worker, not found among the recent messages"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
