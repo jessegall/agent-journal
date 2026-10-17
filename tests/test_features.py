@@ -3288,6 +3288,9 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     app.runtime().deferred.drain()
     history = json.dumps(api("GET", "agent/1")[1])
     assert "release: started" in history and "release: moved on to step 2" in history and "release: ended at step 2" in history, "the panel lists what the run did"
+    from journal.repositories.messages import Messages
+    cards = [m.text for m in app.container.get(Messages).in_() if m.author == "system"]
+    assert f"Sequence {made}, release: started" in cards and f"Sequence {made}, release: moved on to step 2" in cards and f"Sequence {made}, release: ended at step 2" in cards, "each change is a card in the chat"
     assert api("POST", "agent/1/end_sequence")[0] != 200, "with no run there is nothing to end"
 
 def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
