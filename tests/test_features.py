@@ -1397,7 +1397,9 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     refused = console.run(["plan", "ready", "1"], AGENT)
     assert refused.code == 1 and "phase 1, 2 of plan 1 has no task yet" in refused.err
     console.run(["plan", "todos", "1", "1", "1", "3"], AGENT)
-    console.run(["plan", "todos", "1", "2", "2"], AGENT)
+    console.run(["plan", "todos", "1", "2", "2", "3"], AGENT)
+    console.run(["plan", "todos", "1", "1", "3"], AGENT)
+    assert console.run(["plan", "show", "1"], AGENT).out.count("level the slab") == 1, "a task moved to another phase leaves the one it was in"
     assert console.run(["plan", "ready", "1"], AGENT).code == 0
     shown = console.run(["plan", "show", "1"], AGENT).out
     assert "phase 2: Raise the walls (complete when the walls stand) [checkpoint]" in shown
@@ -1424,8 +1426,10 @@ def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved
     assert console.run(["plan", "review", "1"], AGENT).code == 0
     assert "is in review" in console.run(["plan", "approve", "1"], USER).err, "no approval while reviewers read it"
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u1")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the plugins", "prompt": "Map version 3 plugins.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u2")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "map the plugins", "prompt": "Map version 3 plugins.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u2", tool_response={"isAsync": True, "agentId": "r2"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u1", tool_response={"isAsync": True, "agentId": "r1"})
-    assert "1 of your subagents are still out" in console.run(["plan", "ready", "1"], AGENT).err
+    assert "1 of its reviewers are still out" in console.run(["plan", "ready", "1"], AGENT).err
     hook(app, "SubagentStop", agent_id="r1")
     assert console.run(["plan", "ready", "1"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
     assert console.run(["plan", "approve", "1"], USER).code == 0

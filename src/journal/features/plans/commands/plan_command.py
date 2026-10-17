@@ -86,6 +86,7 @@ class PlanCommand(Command):
         return 0
 
     def todos(self, args: Namespace, where: Where) -> int:
+        """Tasks put under a phase, in the order given and after the ones it has: a task under another phase of the plan moves from it."""
         plan = self.plans.find(args.n)
         phases = self.plans.phases_of(plan)
         if not 1 <= args.phase <= len(phases):
@@ -95,7 +96,7 @@ class PlanCommand(Command):
             task = self.tasks.find(n)
             if not self.links.between(task, plan):
                 self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
-            for link in self.links.between(task, phase):
+            for link in [link for other in phases for link in self.links.between(task, other)]:
                 self.links.delete(link, where.actor)
             self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=IN_PHASE), where.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}: {phase.title}")
@@ -109,9 +110,9 @@ class PlanCommand(Command):
         empty = [i for i, phase in enumerate(phases, 1) if not self.plans.tasks_in(phase)]
         if empty:
             raise Refused(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
-        out = self.subagents.running(where.session) if plan.state == PlanState.REVIEWING and where.session else 0
+        out = self.subagents.running_about(where.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and where.session else 0
         if out:
-            raise Refused(f"plan {plan.id} is in review and {out} of your subagents are still out: wait for them, put what they found into the plan, then ready it")
+            raise Refused(f"plan {plan.id} is in review and {out} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
         plan = self.plans.save(plan.ready(), where.actor)
         print(f"plan {plan.id} ready: the user approves it on the plan page")
         return 0

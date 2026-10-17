@@ -1,6 +1,8 @@
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import V3Row, seconds
 from journal.models.plan_state import PlanState
+from journal.features.workers.subagents import Subagents
+from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
 
 STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.REVIEWING: "reviewing", PlanState.APPROVED: "approved", PlanState.STARTED: "active", PlanState.PARKED: "parked", PlanState.DONE: "done", PlanState.CANCELLED: "abandoned"}
@@ -9,8 +11,8 @@ STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.REVIE
 class PlansShaper(Shaper):
     type = "plan"
 
-    def __init__(self, plans: Plans) -> None:
-        self.plans = plans
+    def __init__(self, plans: Plans, agents: Agents, subagents: Subagents) -> None:
+        self.plans, self.agents, self.subagents = plans, agents, subagents
 
     def rows(self) -> list[V3Row]:
         return [self.row(p) for p in self.plans.in_()]
@@ -23,7 +25,13 @@ class PlansShaper(Shaper):
         if loose:
             drawn.append({"title": "Under no phase yet", "todos": loose, "when": "", "checkpoint": False})
         return V3Row.of("plan", p, title=p.title, brief=p.brief, refs=[f"todo:{t.id}" for t in tasks], completed=seconds(p.updated_at) if p.state == PlanState.DONE else 0.0,
-                        data={"status": STATUS[p.state], "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False})
+                        data={"status": STATUS[p.state], "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False, "reviewers": self.reviewers(p)})
+
+    def reviewers(self, p) -> int:
+        """The plan's reviewers still out while it is in review: the subagents of the live agents whose brief names it."""
+        if p.state != PlanState.REVIEWING:
+            return 0
+        return sum(self.subagents.running_about(a.session, f"plan {p.id}") for a in self.agents.in_() if a.state != "ended")
 
     @staticmethod
     def stage(p, phases, tasks) -> str:

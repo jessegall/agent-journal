@@ -1,5 +1,5 @@
 <script setup>
-import {otherPlans, othersLine, PLAN_STATES, reviewersAtWork, reviewersLine, sizeOf, stoppedOf} from "../domain/plans.js";
+import {otherPlans, othersLine, PLAN_STATES, reviewersLine, sizeOf, stoppedOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -24,7 +24,7 @@ const error = ref("");
 const status = computed(() => props.plan.data.status);
 const parked = computed(() => status.value === "parked");
 const reviewing = computed(() => status.value === "reviewing");
-const reviewers = computed(() => (reviewing.value ? reviewersLine(reviewersAtWork(rows("agent"))) : ""));
+const reviewers = computed(() => (reviewing.value ? reviewersLine(props.plan.data.reviewers || 0) : ""));
 const building = computed(() => status.value === "building" || status.value === "draft");
 const others = computed(() => otherPlans(rows("plan"), props.plan));
 const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
