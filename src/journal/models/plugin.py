@@ -21,4 +21,5 @@ class Plugin(Model):
     hashes: dict = field(default_factory=dict)
     """Each file it runs, by path, with its hash at install, checked before each run."""
     last_fault: str = ""
+    faults_in_a_row: int = 0
     failing_since: datetime | None = None

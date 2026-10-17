@@ -11,7 +11,7 @@ MANIFEST = "journal-plugin.json"
 NAME = re.compile(r"^[a-z0-9][a-z0-9-]{1,31}$")
 PROTOCOLS = (1,)
 """The protocol versions this journal speaks; a later one adds fields and never changes one."""
-AGENT_EVENTS = ("tool_starting", "tool_finished", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
+AGENT_EVENTS = ("tool_starting", "tool_finished", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked")
 HOLDABLE = ("tool_starting", "idle", "prompt_submitted", "session_started")
 """The events a plugin may answer before the agent goes on; at a prompt and a start it may only tell, never refuse."""
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")

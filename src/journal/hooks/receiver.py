@@ -61,6 +61,9 @@ class Receiver:
         """Every blocking listener runs; the first hold wins, and a later refusal adds its words to the answer without a second reason."""
         decision = Decision()
         for listener in self._split(event)[0]:
+            if not decision.allowed and getattr(listener, "asked_while_free", False):
+                self.deferred.add(lambda listener=listener: listener.handle(event))
+                continue
             said = self._guarded(listener, event)
             if said is None:
                 continue

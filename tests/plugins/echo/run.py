@@ -1,10 +1,16 @@
+#!/usr/bin/env python3
 import json
 import os
 import sys
 import time
 
 line = json.loads(sys.stdin.readline())
-mode = os.environ.get("ECHO_MODE", "")
+data_folder = os.environ["JOURNAL_PLUGIN_DATA"]
+with open(os.path.join(data_folder, "heard.jsonl"), "a") as heard:
+    heard.write(json.dumps(line) + "\n")
+with open(os.path.join(data_folder, "environment.json"), "w") as given:
+    json.dump(dict(os.environ), given)
+mode = json.load(open(os.environ["JOURNAL_SETTINGS"])).get("mode", "")
 if mode == "slow":
     time.sleep(30)
 if mode == "broken":

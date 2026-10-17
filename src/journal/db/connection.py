@@ -2,7 +2,7 @@ import sqlite3
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
+from typing import Callable, Iterator
 
 from journal.db.masks import Masks
 
@@ -46,12 +46,23 @@ class Connection:
                 yield self
                 return
             local.execute("BEGIN IMMEDIATE")
+            self._threads.committed = []
             try:
                 yield self
             except BaseException:
                 local.execute("ROLLBACK")
+                self._threads.committed = []
                 raise
             local.execute("COMMIT")
+        for work in self._threads.__dict__.pop("committed", []):
+            work()
+
+    def after_commit(self, work: Callable[[], None]) -> None:
+        """Runs once the open write commits, and never if it rolls back; at once when no write is open."""
+        if self._local().in_transaction:
+            self._threads.committed.append(work)
+            return
+        work()
 
     def close(self) -> None:
         for open_ in self._open:

@@ -13,6 +13,7 @@ class Switched(Listener[Event]):
     def __init__(self, feature: type[Feature], inner: Listener, registry: Registry, scope: Scope) -> None:
         self.feature, self.inner, self.registry, self.scope = feature, inner, registry, scope
         self.blocking = getattr(inner, "blocking", False)
+        self.asked_while_free = getattr(inner, "asked_while_free", False)
 
     def handle(self, event: Event) -> object:
         with self.scope.of(self.environment_of(event)):

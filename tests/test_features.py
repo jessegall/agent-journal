@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import time
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
@@ -3726,37 +3727,75 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
         except PluginFault as fault:
             assert words in str(fault), f"{broken}: {fault}"
 
-def test_the_echo_test_plugin_answers_each_case(app):
-    import subprocess
-    import sys
-    from journal.events.agent.prompt_submitted import PromptSubmitted
-    from journal.events.agent.tool_starting import ToolStarting
-    from journal.events.models.created import Created
-    from journal.features.plugins.manifest_reader import ManifestReader
-    from journal.features.plugins.plugin_fault import PluginFault
-    from journal.features.plugins.protocol import Protocol
-    from journal.models.task import Task
+def echo(app, name="echo", **manifest):
+    from journal.models.plugin import Plugin
+    from journal.repositories.plugins import Plugins
     folder = Path(__file__).parent / "plugins" / "echo"
-    manifest, protocol = app.container.get(ManifestReader).read(folder), app.container.get(Protocol)
+    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), linked=True, manifest=json.loads((folder / "journal-plugin.json").read_text()) | manifest), Actor.user(1))
 
-    def asked(event, mode: str = "", timeout: float = 5.0):
-        ran = subprocess.run([sys.executable, str(folder / manifest.program)], input=protocol.line_of(event, "main") + "\n", capture_output=True, text=True, timeout=timeout, env={**os.environ, "ECHO_MODE": mode})
-        return protocol.answer_of(ran.stdout)
-    assert asked(ToolStarting(tool="Bash", input={"command": "rm forbidden"}).placed("s1", 1, "claude", 0.0)).answer == "refuse"
-    assert asked(ToolStarting(tool="Read", input={"file_path": "a.py"}).placed("s1", 1, "claude", 0.0)).answer == "allow"
-    assert asked(PromptSubmitted(prompt="hello").placed("s1", 1, "claude", 0.0)).tell == "echo heard your prompt"
-    made = asked(Created(model=Task(id=4, environment_id=1, title="t"), by=Actor.user(1)))
-    assert made.cards[0]["key"] == "task 4" and made.commands == ('journal task log 4 "echoed"',)
-    try:
-        asked(ToolStarting(tool="Read", input={}).placed("s1", 1, "claude", 0.0), mode="broken")
-        raise AssertionError("a broken answer is a fault")
-    except PluginFault:
-        pass
-    try:
-        asked(ToolStarting(tool="Read", input={}).placed("s1", 1, "claude", 0.0), mode="slow", timeout=0.5)
-        raise AssertionError("a slow plugin runs past its time")
-    except subprocess.TimeoutExpired:
-        pass
+
+def echo_heard(app, name="echo") -> list[str]:
+    file = app.config.home / "plugin-data" / name / "heard.jsonl"
+    return [json.loads(line)["event"] for line in file.read_text().splitlines()] if file.is_file() else []
+
+
+def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
+    from journal.db.connection import Connection
+    from journal.hooks.deferred import Deferred
+    from journal.repositories.entries import Entries
+    from journal.models.task import Task
+    from journal.repositories.tasks import Tasks
+    echo(app, hears=["tool_starting", "tool_finished", "prompt_submitted", "tasks.created"])
+    hook(app, "SessionStart")
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
+    assert status == 409 and "[plugin echo] echo refuses a forbidden tool" in body["error"], "a held tool is refused inside the hook, naming the plugin"
+    status, body = hook(app, "UserPromptSubmit", prompt="hi")
+    assert "[plugin echo] echo heard your prompt" in body["hookSpecificOutput"]["additionalContext"], "a prompt is told a line"
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response={})
+    tasks = app.container.get(Tasks)
+    tasks.save(Task(environment_id=1, title="by the user"), Actor.user(1))
+    tasks.save(Task(environment_id=1, title="by echo"), Actor.plugin("echo"))
+    with pytest.raises(RuntimeError), app.container.get(Connection).transaction():
+        tasks.save(Task(environment_id=1, title="rolled back"), Actor.user(1))
+        raise RuntimeError
+    app.container.get(Deferred).drain()
+    assert echo_heard(app) == ["tool_starting", "prompt_submitted", "tool_finished", "tasks.created"], "each event heard once, the plugin's own row not at all"
+    given = json.loads((app.config.home / "plugin-data" / "echo" / "environment.json").read_text())
+    assert (given["JOURNAL_PLUGIN"], given["JOURNAL_ENV"], Path(given["JOURNAL_PLUGIN_DIR"]).name, Path(given["JOURNAL_PLUGIN_DATA"]).name) == ("echo", "main", "echo", "echo") and given["JOURNAL_PLUGIN_TOKEN"] and given["JOURNAL_URL"].startswith("http://127.0.0.1:")
+    assert "PYTEST_CURRENT_TEST" not in given and json.loads(Path(given["JOURNAL_SETTINGS"]).read_text()) == {}, "nothing of the journal's own environment beyond what names it"
+    echo(app, "echo-two")
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
+    app.container.get(Deferred).drain()
+    assert status == 409 and "plugin echo-two" not in body["error"] and [e.data["plugin"] for e in app.container.get(Entries).where(kind="plugin_unanswered")] == ["echo-two"], "the first plugin's refusal answers; the second hears it after the reply, recorded unanswered"
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list forbidden"})
+    assert status == 200 and "echo refuses a forbidden tool" in body["hookSpecificOutput"]["additionalContext"], "a journal command goes through a plugin's refusal, its words told"
+
+
+def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
+    from journal.features.plugins.feature import PluginsFeature
+    from journal.repositories.entries import Entries
+    from journal.repositories.messages import Messages
+    from journal.repositories.plugins import Plugins
+    from journal.repositories.settings import Settings
+    plugins, messages = app.container.get(Plugins), app.container.get(Messages)
+    plugins.save(echo(app).with_(settings={"mode": "broken"}), Actor.user(1))
+    hook(app, "SessionStart")
+    for _ in range(5):
+        assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[0] == 200, "a fault is never a refusal"
+    row = plugins.named("echo")
+    assert row.faults_in_a_row == 5 and row.failing_since and "not JSON" in row.last_fault
+    assert len(app.container.get(Entries).where(kind="plugin_fault")) == 5 and [m.text for m in messages.recent(20)].count("Plugin echo is failing: it faulted 5 times in a row, and events go through without it") == 1, "the failing card comes once, at the fifth"
+    plugins.save(row.with_(settings={}), Actor.user(1))
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
+    assert plugins.named("echo").faults_in_a_row == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
+    app.container.get(Settings).set(PluginsFeature.DEADLINE.key, 1, Actor.user(1))
+    plugins.save(plugins.named("echo").with_(settings={"mode": "slow"}), Actor.user(1))
+    plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
+    began = time.monotonic()
+    status, _ = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
+    assert status == 200 and time.monotonic() - began < 3, "two slow plugins share one deadline and the event goes through"
+    assert "no answer within" in plugins.named("echo").last_fault and "used the event's whole deadline" in plugins.named("echo-two").last_fault, "each fault recorded"
+
 
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
