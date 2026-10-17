@@ -426,6 +426,10 @@ export class ApiClient {
         return this.get(`/plugins/${name}/log${query({lines})}`);
     }
 
+    pluginRecord(name) {
+        return this.get(`/plugins/${encodeURIComponent(name)}/record`);
+    }
+
     onlineAgents() {
         return this.get("/agents");
     }

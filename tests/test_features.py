@@ -4055,6 +4055,26 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
     assert api("POST", f"plugin/{made['n']}/remove", {})[0] == 200 and app.container.get(Plugins).all() == []
 
 
+def test_a_plugins_record_lists_what_it_did(app):
+    from journal.hooks.deferred import Deferred
+    from journal.models.task import Task
+    from journal.repositories.tasks import Tasks
+    echo(app)
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
+    task = app.container.get(Tasks).save(Task(environment_id=1, title="echo me"), Actor.user(1))
+    app.container.get(Deferred).drain()
+    app.container.get(Deferred).drain()
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/plugins/echo/record", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        record = json.loads(reply.read())["record"]
+    texts = [line["text"] for line in record]
+    assert "held at tool_starting: echo refuses a forbidden tool" in texts, "a hold is in its record"
+    assert f'ran journal task log {task.id} "echoed"' in texts, "a command it ran"
+    logged = [line for line in record if line["kind"] == "row" and line["text"].startswith("made task log")]
+    assert logged and logged[0]["ref"].startswith("todo:"), "a row it wrote, opening"
+    assert record == sorted(record, key=lambda line: -line["at"]), "newest first"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

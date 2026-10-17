@@ -25,6 +25,10 @@ agent's writes into `.journal/plugins` are held. The files a plugin runs are has
 switch it on, and checked before each run. A plugin whose program changed is switched off with a card until you read
 the change and switch it on again. A linked folder stays open to the agent; this check is what guards it.
 
+What it did in the journal shows under What it did on its card: each hold and line to the agent (`plugin_said`), each
+command it ran, each fault, and every row it wrote, newest first, a row opening from there. What it did outside the
+journal, straight to files or to the database, cannot be listed. Switching it off stops its services at once.
+
 ## Settings
 
 A manifest's `settings` names a JSON file listing each setting: its `key`, `title`, `kind` (`text`, `number`,

@@ -16,6 +16,7 @@ import LogDialog from "../kit/LogDialog.vue";
 import PluginMakeCard from "./PluginMakeCard.vue";
 import PluginMakeDialog from "./PluginMakeDialog.vue";
 import PluginRemoveDialog from "./PluginRemoveDialog.vue";
+import PluginRecord from "./PluginRecord.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {installedPlugins} from "../composables/plugins.js";
@@ -32,6 +33,7 @@ const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
 const removing = ref(null);
+const recording = ref(null);
 const viewing = ref(null);
 const busy = ref("");
 const plugins = installedPlugins();
@@ -192,6 +194,7 @@ watch(
                         @settings="settingsOf(p.name)"
                         @dashboard="(board) => (viewing = {plugin: p, board})"
                         @log="toggleLog(p)"
+                        @record="recording = p"
                         @remove="removing = p"
                         @services="servicesFor = p.name"
                     />
@@ -225,6 +228,9 @@ watch(
         </template>
         <template v-if="viewing">
             <PluginDashboard :plugin="viewing.plugin" :board="viewing.board" @close="viewing = null" />
+        </template>
+        <template v-if="recording">
+            <PluginRecord :plugin="recording" @close="recording = null" />
         </template>
         <template v-if="removing">
             <PluginRemoveDialog :title="removing.title" @close="removing = null" @remove="remove" />

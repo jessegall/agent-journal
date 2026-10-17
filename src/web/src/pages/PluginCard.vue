@@ -18,7 +18,7 @@ const props = defineProps({
     busy: Boolean,
     reading: Boolean,
 });
-const emit = defineEmits(["toggle", "upgrade", "setup", "settings", "dashboard", "log", "remove", "services"]);
+const emit = defineEmits(["toggle", "upgrade", "setup", "settings", "dashboard", "log", "record", "remove", "services"]);
 
 const now = useNow();
 const more = ref(null);
@@ -112,6 +112,7 @@ function pick(event) {
             <template v-for="board in plugin.dashboards" :key="board.name">
                 <Btn small @click="emit('dashboard', board)">{{ board.title }}</Btn>
             </template>
+            <Btn small @click="emit('record')">What it did</Btn>
             <Btn small @click="emit('log')">{{ reading ? "Hide log" : "Log" }}</Btn>
             <span ref="more" class="more">
                 <Btn kind="icon" small :busy="busy" v-tip="'Upgrade, set up again or remove'" @click.stop="menu = !menu">

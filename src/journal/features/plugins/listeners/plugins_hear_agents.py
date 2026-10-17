@@ -47,6 +47,10 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
             self.hearing.unanswered(plugin, event, event.environment_id, answer.reason)
             return Decision()
         if answer.answer == "refuse" and event.key in REFUSABLE:
+            self.hearing.said(plugin, event, event.environment_id, "held", answer.reason)
             return Decision.refuse(self.words.said(plugin, answer.reason))
         words = answer.reason if answer.answer == "refuse" else answer.tell
-        return Decision.tell(self.words.said(plugin, words)) if words else Decision()
+        if not words:
+            return Decision()
+        self.hearing.said(plugin, event, event.environment_id, "told", words)
+        return Decision.tell(self.words.said(plugin, words))

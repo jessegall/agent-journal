@@ -21,6 +21,8 @@ from journal.hooks.deferred import Deferred
 LATER = 10
 """Seconds a plugin has to answer an event it hears after the reply."""
 UNANSWERED = "plugin_unanswered"
+SAID = "plugin_said"
+"""The entry a plugin's hold or line to the agent leaves: the event, held or told, and the words."""
 CUT = "plugin_cut"
 """The entry a row leaves that no plugin heard because plugin commands led to it more than a step deep."""
 
@@ -60,6 +62,9 @@ class PluginHearing:
         answer = self.ask(plugin, event, environment_id, LATER)
         if answer.answer == "refuse":
             self.unanswered(plugin, event, environment_id, answer.reason)
+
+    def said(self, plugin: Plugin, event: Event, environment_id: int, how: str, words: str) -> None:
+        self.entries.save(Entry(environment_id=environment_id, kind=SAID, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "how": how, "words": words}), Actor.plugin(plugin.name))
 
     def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "reason": reason}), Actor.system())

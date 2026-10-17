@@ -36,6 +36,11 @@ class Entries(ScopedRepository[Entry]):
         rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id = ? ORDER BY id DESC LIMIT ?", (self.scope.id, last))
         return [self._load(row) for row in rows]
 
+    def of_actor(self, stamp: str, last: int = 200) -> list[Entry]:
+        """The newest entries an actor left, in every environment, newest first."""
+        rows = self.connection.all(f"SELECT * FROM {self.table} WHERE actor = ? ORDER BY id DESC LIMIT ?", (stamp, last))
+        return [self._load(row) for row in rows]
+
     def last_of_session(self, session: str) -> Entry | None:
         """The latest hook entry this session sent, which says what the agent is doing right now."""
         row = self.connection.one(f"SELECT * FROM {self.table} WHERE environment_id = ? AND actor = ? AND kind != 'nudge' ORDER BY id DESC LIMIT 1", (self.scope.id, f"agent:{session}"))

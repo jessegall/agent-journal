@@ -49,6 +49,12 @@ def test_a_plugins_service_answers_a_held_event_on_its_socket(app, tmp_path: Pat
         hook(app, "SessionStart")
         status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
         assert status == 409 and "echo refuses a forbidden tool through its service" in body["error"], "the held event was answered by the service"
+        app.console().run(["plugin", "disable", "echo"], USER)
+        until = time.time() + 5
+        while any(p["name"] == "plugin.echo.serve" and p.get("running") for p in supervisor.described()) and time.time() < until:
+            time.sleep(0.1)
+        assert not any(p["name"] == "plugin.echo.serve" and p.get("running") for p in supervisor.described()), "turning it off stops its service"
+        app.console().run(["plugin", "enable", "echo"], USER)
     finally:
         stopping.set()
         loop.join()
