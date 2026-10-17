@@ -1,6 +1,6 @@
 import re
 from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.checks import COUNT_CHECKS
+from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.features.chart.fault import Fault
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
@@ -109,7 +109,7 @@ class Validation:
 
     def warnings(self, chart: Chart) -> list[str]:
         """What a saved workflow should still hear about: a hold at a tool use that no check narrows, a Run no later workflows that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
-        return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart)
+        return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart) + self.count_warnings(chart)
 
     def hold_warnings(self, chart: Chart) -> list[str]:
         """A Hold the tool at Pre tool use with neither Tool changes files? nor Journal command? on its path holds every tool, reads included; the engine still lets a journal command and the read of a skill's file through, the rest waits."""
@@ -119,6 +119,13 @@ class Validation:
         lines = [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in self.charts.lines_of(chart)]
         narrowing = {str(n.id) for n in nodes if n.kind == NodeKind.CHECK and n.key in ("tool_writes", "journal_command")}
         return [f"Hold the tool at step {n.id} holds every tool, reads included: put Tool changes files? or Journal command? before it; a journal command and the read of a skill's file go through regardless" for n in nodes if n.kind == NodeKind.ACTION and n.key == "hold" and not narrowing & self.before(lines, {str(n.id)})]
+
+    def count_warnings(self, chart: Chart) -> list[str]:
+        """A count check reading a count that nothing in this workflow starts or counts, which stays at nought."""
+        nodes = self.charts.nodes_of(chart)
+        kept = {n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_ACTIONS}
+        read = sorted({n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_CHECKS} - kept - set(READINGS) - {""})
+        return [f"nothing in this workflow starts or counts {name}, so it stays at nought" for name in read]
 
     def off_fault(self, chart: Chart) -> list[Fault]:
         """A locked workflow, or one holding a locked step, is not turned off: that would switch off the journal's law."""
@@ -190,10 +197,12 @@ class Validation:
     def action_faults(self, nodes: list[dict]) -> list[Fault]:
         """A wait names what for and being stuck why; a count node names its count, and a count check the number after it."""
         faults = []
-        for n in (n for n in nodes if n.get("key") in ("count_start", "count_begin", "count_one", *COUNT_CHECKS)):
+        for n in (n for n in nodes if n.get("key") in (*COUNT_ACTIONS, *COUNT_CHECKS)):
             words = n.get("text", "").split()
             if not words:
                 faults.append(Fault(f"node {n.get('id')} names no count: its text is the count's name", str(n.get("id", ""))))
+            elif n.get("key") in COUNT_ACTIONS and words[0] in READINGS:
+                faults.append(Fault(f"{words[0]} is a reading of the journal's record, not a count a workflow keeps: name the count something else", str(n.get("id", ""))))
             elif n.get("kind") == NodeKind.CHECK and len(words) < 2:
                 faults.append(Fault(f"node {n.get('id')} names no number: its text is the count's name, then N or a setting's name", str(n.get("id", ""))))
         for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") in ("wait_outside", "mark_stuck") and not n.get("text", "").strip()):

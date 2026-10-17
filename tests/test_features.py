@@ -3486,6 +3486,84 @@ def test_a_workflow_waits_at_a_count_until_it_reaches_its_number(app):
         runs = json.loads(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart/runs?last=10", headers={"X-Journal-Env": "main"}), timeout=5).read())["runs"]
     assert any("reminders 3" in r["counts"] for r in runs), "Recent runs says the count a walk left"
 
+def test_editing_keeps_a_workflows_counts_and_clears_one_no_node_names(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.repositories.messages import Messages
+    from journal.repositories.scope import Scope
+    console, charts = app.console(), app.container.get(Charts)
+    made, trigger = own_workflow(console, charts, "idle", "tool_finished")
+    one = int(console.run(["chart", "node", "action", "count_one", "--text", "reminders", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    for path in ("a", "b"):
+        hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": path})
+    app.runtime().deferred.drain()
+    kept = lambda: {c.name: c.value for c in app.container.get(Counts).all() if c.name.startswith(f"charts:{made}:")}
+    console.run(["chart", "node", "action", "say", "--text", "[chart] hello", "--in", str(made)], USER)
+    app.runtime().deferred.drain()
+    assert kept() == {f"charts:{made}:reminders": 2}, "an edit that leaves the count's node keeps the count"
+    console.run(["chart", "remove", str(one)], USER)
+    app.runtime().deferred.drain()
+    assert kept() == {}, "the count's last node removed, the count is cleared"
+    with app.container.get(Scope).of(1):
+        cards = [m.text for m in app.container.get(Messages).in_() if m.author == "system"]
+    assert any("The count reminders is no longer used in" in c for c in cards), "and the chat says so"
+
+def test_the_canvas_refuses_a_count_named_like_a_reading_and_warns_of_one_nothing_counts(app):
+    from journal.features.chart.validation import Validation
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    made, trigger = own_workflow(console, charts, "idle", "tool_finished")
+    refused = console.run(["chart", "node", "action", "count_one", "--text", "uses", "--in", str(made)], USER)
+    assert "uses is a reading of the journal's record" in refused.err, "a count may not take a reading's name"
+    check = int(console.run(["chart", "node", "check", "count_over", "--text", "reminders 3", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(check)], USER)
+    reading = int(console.run(["chart", "node", "check", "count_over", "--text", "namings 3", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(check), str(reading), "--port", "no"], USER)
+    warned = app.container.get(Validation).warnings(charts.find(made))
+    assert "nothing in this workflow starts or counts reminders, so it stays at nought" in warned and not any("namings" in w for w in warned), "a count nothing counts is warned of, a reading is not"
+
+def test_a_workflow_reading_a_count_another_keeps_is_turned_off_at_boot(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    keeper, start = own_workflow(console, charts, "idle", "subagent_started")
+    count = int(console.run(["chart", "node", "action", "count_start", "--text", "subs", "--in", str(keeper)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(start), str(count)], USER)
+    reader, finish = own_workflow(console, charts, "idle", "tool_finished")
+    check = int(console.run(["chart", "node", "check", "count_over", "--text", "subs 2", "--in", str(reader)], USER).out.split()[1].rstrip(":"))
+    say = int(console.run(["chart", "node", "action", "say", "--text", "[chart] two", "--in", str(reader)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(finish), str(check)], USER)
+    console.run(["chart", "line", str(check), str(say), "--port", "yes"], USER)
+    app.container.get(ShippedChart).run()
+    read = charts.find(reader)
+    assert read.title.endswith("(off, reads another's count subs)"), "the reader says why it is off"
+    assert not [n for n in charts.nodes_of(read) if n.kind == NodeKind.TRIGGER] and [n for n in charts.nodes_of(charts.find(keeper)) if n.kind == NodeKind.TRIGGER], "its trigger is taken out, the keeper's stays"
+    assert not any("(off, reads another's count" in c.title for c in charts.shipped()), "no shipped workflow is turned off by it"
+
+def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch):
+    import sqlite3
+    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    first = App(Config(tmp_path, port=0))
+    first.runtime().start()
+    first.runtime().stop()
+    db = sqlite3.connect(first.config.database)
+    for name in ("subs", "charts:4:subs"):
+        db.execute("INSERT INTO counts (created_at, created_by, updated_at, updated_by, environment_id, session, name, value) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', ?, 2)", (name,))
+    db.execute("DELETE FROM migrations WHERE number = 6")
+    db.commit()
+    db.close()
+    second = App(Config(tmp_path, port=0))
+    second.runtime().start()
+    try:
+        from journal.repositories.counts import Counts
+        assert [c.name for c in second.container.get(Counts).all()] == ["charts:4:subs"], "a count named without its workflow is cleared, a workflow's own kept"
+    finally:
+        second.runtime().stop()
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

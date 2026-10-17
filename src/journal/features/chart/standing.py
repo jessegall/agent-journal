@@ -1,6 +1,6 @@
 from journal.engine.machine import Machine
 from journal.events.agent.ticked import Ticked
-from journal.features.chart.checks import COUNT_CHECKS, Checks
+from journal.features.chart.checks import COUNT_CHECKS, READINGS, Checks
 from journal.features.chart.context import Context
 from journal.features.chart.walk import WALKED
 from journal.models.chart import Chart
@@ -9,8 +9,6 @@ from journal.repositories.agents import Agents
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 
-READINGS = ("edits", "uses", "owed", "namings", "lines")
-"""The counts the journal reads from its record rather than a workflow keeping them."""
 LOOKED_BACK = 300
 """How many of the latest walks are read to find where each agent last stopped."""
 

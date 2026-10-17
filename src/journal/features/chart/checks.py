@@ -56,6 +56,10 @@ WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
 """The checks that take a number: the node's text, or the setting named there."""
 COUNT_CHECKS = ("count_over", "count_at", "count_every", "count_wait")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
+COUNT_ACTIONS = ("count_start", "count_begin", "count_one")
+"""The actions on a count the workflow keeps: the text names the count."""
+READINGS = ("edits", "uses", "owed", "namings", "lines")
+"""The counts the journal reads from its record rather than a workflow keeping them: no workflow's count takes one of these names."""
 
 
 class Checks:

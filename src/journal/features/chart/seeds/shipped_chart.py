@@ -1,6 +1,8 @@
 import re
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.chart.catalogue import FORMER_TITLES, Catalogue
+from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
+from journal.models.title import LONGEST
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.registry import Registry
 from journal.features.seed import Seed
@@ -180,6 +182,7 @@ class ShippedChart(Seed):
         self.rewrite_retired_checks(by)
         self.retire_workflows_of_states_gone(by)
         self.stop_what_names_an_unknown_entry(by)
+        self.stop_what_reads_a_count_it_does_not_keep(by)
         self.name_the_shipped(by)
         self.retitle_the_shipped(by)
         retired = self.retired()
@@ -337,6 +340,20 @@ class ShippedChart(Seed):
             for trigger in triggers:
                 self.charts.remove_node(trigger, by)
             self.charts.save(chart.with_(title=f"{chart.title} (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)"), by)
+
+    def stop_what_reads_a_count_it_does_not_keep(self, by: Actor) -> None:
+        """A user's workflow reading a count none of its own nodes starts or counts, which another workflow kept before each kept its own, is stopped at boot, its triggers taken out and its title saying why."""
+        for chart in [c for c in self.charts.all() if not c.shipped]:
+            nodes = self.charts.nodes_of(chart)
+            kept = {n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_ACTIONS}
+            foreign = sorted({n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_CHECKS} - kept - set(READINGS) - {""})
+            triggers = [n for n in nodes if n.kind == NodeKind.TRIGGER]
+            if not foreign or not triggers:
+                continue
+            for trigger in triggers:
+                self.charts.remove_node(trigger, by)
+            why = f" (off, reads another's count {foreign[0]})"
+            self.charts.save(chart.with_(title=chart.title[:LONGEST - len(why)].rstrip() + why), by)
 
     def reset(self, chart: Chart, by: Actor) -> Chart:
         """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew at the place its state ships at, one more revision."""
