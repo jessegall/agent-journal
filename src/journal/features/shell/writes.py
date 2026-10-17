@@ -11,6 +11,8 @@ MARKERS = re.compile(r"write_text|write_bytes|open\([^)]*[\"'][wax]|\.write\(|un
 """What a script says when it writes."""
 REDIRECT = re.compile(r"(?<![<>&\d])(?:\d?>>?)\s*(?!&|/dev/null)\S")
 """A redirection into a file, not into a descriptor or the void."""
+REDIRECTED = re.compile(r"(?<![<>&\d])\d?>>?\s*(?!&|/dev/null)([^\s;&|]+)")
+"""The file a redirection writes to."""
 PREFIXES = {"sudo", "env", "nohup", "time", "nice", "command", "exec", "xargs"}
 
 
@@ -38,6 +40,24 @@ class Writes:
         if name in INTERPRETERS:
             return bool(MARKERS.search(text))
         return any(cls.part(piped) for piped in cls.unquoted(text).split("|")[1:])
+
+    @classmethod
+    def targets(cls, line: str) -> list[str]:
+        """The words a shell line writes to: each redirection's file, the arguments of a command that writes files, and every path an interpreter's script names when it writes."""
+        return [target for p in Chain.parts(line) if p.recorded for target in cls.part_targets(p.text)]
+
+    @classmethod
+    def part_targets(cls, text: str) -> list[str]:
+        plain = cls.unquoted(text)
+        words = [w for w in plain.split() if "=" not in w or w.startswith("-")]
+        while words and words[0] in PREFIXES:
+            words = words[1:]
+        if not words or words[0].endswith("journal"):
+            return []
+        name = words[0].rsplit("/", 1)[-1]
+        named = [w for w in words[1:] if not w.startswith("-")] if name in COMMANDS and cls.part(text) else []
+        named += [w for w in text.split() if "/" in w] if name in INTERPRETERS and MARKERS.search(text) else []
+        return REDIRECTED.findall(plain) + named + [t for piped in plain.split("|")[1:] for t in cls.part_targets(piped)]
 
     @staticmethod
     def unquoted(text: str) -> str:

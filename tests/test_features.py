@@ -3920,6 +3920,10 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app, tmp_path):
     console.run(["task", "create", "t", "--start"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(app.config.home / "plugins" / "x" / "run.py"), "content": ""})
     assert status == 409 and "an installed plugin's files are the user's to change" in body["error"]
+    installed = ".journal/" + "plugins"
+    for line, held in ((f"{installed}/x/bin/judge --changes > /tmp/judged.txt 2>&1", False), (f"echo hi > {installed}/x/run.py", True), (f"rm -rf {installed}/x", True), (f"cat {installed}/x/run.py | tee {installed}/x/copy.py", True)):
+        status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": line})
+        assert (status == 409 and "plugin's files" in body.get("error", "")) == held, f"{line} held {status == 409}, should be {held}: running a plugin's program is no write to it"
     (folder / "run.py").write_text((folder / "run.py").read_text() + "\n# changed\n")
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[0] == 200, "a changed program is not run"
     assert not plugins.named("echo").enabled and "run.py changed since you installed it" in app.container.get(Messages).recent(1)[0].text
