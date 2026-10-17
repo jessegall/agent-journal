@@ -9,7 +9,9 @@ from typing import Iterator
 from journal.config import Config
 from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
+from journal.features.plugins.plugin_hashes import PluginHashes
 from journal.models.actor import Actor
+from journal.models.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.models.plugin_manifest import PluginManifest
 from journal.refused import Refused
@@ -24,21 +26,24 @@ COMPARED = ("version", "program", "hears", "holds", "services", "settings", "ski
 class Installing:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders) -> None:
-        self.config, self.reader, self.plugins, self.folders = config, reader, plugins, folders
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes) -> None:
+        self.config, self.reader, self.plugins, self.folders, self.hashes = config, reader, plugins, folders, hashes
 
-    def preview(self, source: str) -> str:
+    def preview(self, source: str) -> tuple[PluginManifest, str]:
+        """The manifest as read, and all it would run, said."""
         with self.staged(source) as (folder, commit):
-            return self.described(self.reader.read(folder), folder, source, commit)
+            manifest = self.reader.read(folder)
+            return manifest, self.described(manifest, folder, source, commit)
 
     def install(self, source: str, by: Actor) -> Plugin:
+        self.only_the_user(by, "installs")
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
             self.free(manifest.name)
             linked = Path(source).is_dir()
             if not linked:
                 shutil.copytree(folder, self.config.home / "plugins" / manifest.name, ignore=shutil.ignore_patterns(".git"))
-            plugin = self.plugins.save(Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest)), by)
+            plugin = self.plugins.save(Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest), hashes=self.hashes.of(folder, asdict(manifest))), by)
             self.folders.data(plugin)
             return plugin
 
@@ -49,13 +54,14 @@ class Installing:
             return "\n".join([f"{name} from {plugin.commit_sha[:12] or plugin.source} to {commit[:12] or 'the folder as it is now'}", *(changes or ["nothing it runs, hears or holds changes"])])
 
     def upgrade(self, name: str, ref: str, by: Actor) -> Plugin:
+        self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.reader.read(folder)
             if not plugin.linked:
                 shutil.rmtree(self.folders.of(plugin))
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
-            return self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit), by)
+            return self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(folder, asdict(manifest))), by)
 
     @staticmethod
     def changes(was: dict, now: dict) -> list[str]:
@@ -70,7 +76,10 @@ class Installing:
         return lines
 
     def enable(self, name: str, by: Actor) -> Plugin:
-        return self.plugins.save(self.plugins.named(name).with_(enabled=True), by)
+        """On, with its files' hashes taken anew: switching it on is the user's word that its code is read."""
+        self.only_the_user(by, "switches on")
+        plugin = self.plugins.named(name)
+        return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), by)
 
     def disable(self, name: str, by: Actor) -> Plugin:
         return self.plugins.save(self.plugins.named(name).with_(enabled=False), by)
@@ -87,6 +96,11 @@ class Installing:
         data = self.folders.data(self.plugins.named(name))
         self.remove(name, by)
         shutil.rmtree(data, ignore_errors=True)
+
+    @staticmethod
+    def only_the_user(by: Actor, does: str) -> None:
+        if by.kind != ActorKind.USER:
+            raise Refused(f"only the user {does} a plugin: journal plugin propose <folder or git address> shows them a card to install it themselves")
 
     def free(self, name: str) -> None:
         try:

@@ -17,6 +17,12 @@ at `--ref <commit>`, and upgrades it with `--yes`. `journal plugin disable <name
 and on for the whole project. `journal plugin remove <name>` takes it out and keeps its data folder; `--purge` deletes
 that too. A linked folder is never deleted.
 
+Only you install, upgrade or switch on a plugin. The agent and other plugins are refused, and the agent can
+`journal plugin propose <folder or git address> --why "<what for>"`, which shows you a card with the preview. The
+agent's writes into `.journal/plugins` are held. The files a plugin runs are hashed when you install, upgrade or
+switch it on, and checked before each run. A plugin whose program changed is switched off with a card until you read
+the change and switch it on again. A linked folder stays open to the agent; this check is what guards it.
+
 ## The manifest
 
 `journal-plugin.json` names the plugin and what it runs, hears and holds:

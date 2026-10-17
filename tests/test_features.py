@@ -3894,6 +3894,32 @@ def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(ap
     assert plugins.all() == [] and not data.exists(), "purged with its data"
 
 
+def test_only_the_user_installs_or_switches_on_a_plugin(app, tmp_path):
+    import shutil
+    from journal.repositories.messages import Messages
+    from journal.repositories.plugins import Plugins
+    folder = tmp_path / "echo"
+    shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
+    console, plugins = app.console(), app.container.get(Plugins)
+    hook(app, "SessionStart")
+    refused = console.run(["plugin", "install", str(folder), "--yes"], AGENT)
+    assert refused.code != 0 and "only the user installs a plugin: journal plugin propose" in refused.err and plugins.all() == []
+    assert console.run(["plugin", "propose", str(folder), "--why", "to echo"], AGENT).code == 0
+    card = app.container.get(Messages).recent(1)[0]
+    assert card.text == "The agent proposes the plugin echo: to echo" and f"journal plugin install {folder} --yes" in card.data["detail"]
+    console.run(["plugin", "install", str(folder), "--yes"], USER)
+    console.run(["plugin", "disable", "echo"], AGENT)
+    assert "only the user switches on" in console.run(["plugin", "enable", "echo"], AGENT).err and not plugins.named("echo").enabled
+    console.run(["plugin", "enable", "echo"], USER)
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(app.config.home / "plugins" / "x" / "run.py"), "content": ""})
+    assert status == 409 and "an installed plugin's files are the user's to change" in body["error"]
+    (folder / "run.py").write_text((folder / "run.py").read_text() + "\n# changed\n")
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[0] == 200, "a changed program is not run"
+    assert not plugins.named("echo").enabled and "run.py changed since you installed it" in app.container.get(Messages).recent(1)[0].text
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries
