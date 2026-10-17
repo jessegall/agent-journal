@@ -12,6 +12,11 @@ until the same line is given `--yes`. A folder is linked and read where it lies;
 `.journal/plugins/<name>`. Each plugin gets a data folder of its own in `.journal/plugin-data/<name>`. A manifest the
 journal refuses installs nothing. `journal plugin list` shows each plugin, whether it is on, and its last fault.
 
+`journal plugin upgrade <name>` shows what changes in what the plugin runs, hears and holds, at its newest commit or
+at `--ref <commit>`, and upgrades it with `--yes`. `journal plugin disable <name>` and `enable <name>` switch it off
+and on for the whole project. `journal plugin remove <name>` takes it out and keeps its data folder; `--purge` deletes
+that too. A linked folder is never deleted.
+
 ## The manifest
 
 `journal-plugin.json` names the plugin and what it runs, hears and holds:

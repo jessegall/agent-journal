@@ -3862,6 +3862,38 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
     assert refused.code != 0 and "hears nothing, which is no event" in refused.err and [p.name for p in app.container.get(Plugins).all()] == ["echo"], "a refused manifest installs nothing"
 
 
+def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(app, tmp_path):
+    import shutil
+    from journal.hooks.deferred import Deferred
+    from journal.repositories.plugins import Plugins
+    folder = tmp_path / "echo"
+    shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
+    console, plugins = app.console(), app.container.get(Plugins)
+    console.run(["plugin", "install", str(folder), "--yes"], USER)
+    manifest = json.loads((folder / "journal-plugin.json").read_text())
+    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "version": "1.1.0", "hears": [*manifest["hears"], "tool_finished"], "holds": ["tool_starting"]}))
+    shown = console.run(["plugin", "upgrade", "echo"], USER).out
+    assert "version: 1.0.0 -> 1.1.0" in shown and "hears: + tool_finished" in shown and "holds: - prompt_submitted" in shown and "nothing upgraded yet" in shown
+    assert "tool_finished" not in plugins.named("echo").manifest["hears"], "a preview upgrades nothing"
+    console.run(["plugin", "upgrade", "echo", "--yes"], USER)
+    assert "tool_finished" in plugins.named("echo").manifest["hears"]
+    hook(app, "SessionStart")
+    console.run(["plugin", "disable", "echo"], USER)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response={})
+    app.container.get(Deferred).drain()
+    assert echo_heard(app) == [], "a plugin switched off hears nothing"
+    console.run(["plugin", "enable", "echo"], USER)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response={})
+    app.container.get(Deferred).drain()
+    assert echo_heard(app) == ["tool_finished"]
+    data = app.config.home / "plugin-data" / "echo"
+    console.run(["plugin", "remove", "echo"], USER)
+    assert plugins.all() == [] and data.is_dir() and folder.is_dir(), "removed, its data and a linked folder kept"
+    console.run(["plugin", "install", str(folder), "--yes"], USER)
+    console.run(["plugin", "remove", "echo", "--purge"], USER)
+    assert plugins.all() == [] and not data.exists(), "purged with its data"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

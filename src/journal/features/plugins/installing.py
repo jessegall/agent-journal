@@ -17,6 +17,8 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.plugins import Plugins
 
 FETCH_SECONDS = 120
+COMPARED = ("version", "program", "hears", "holds", "services", "settings", "skills")
+"""What an upgrade shows changing: what the plugin runs, hears and holds."""
 
 
 class Installing:
@@ -40,6 +42,52 @@ class Installing:
             self.folders.data(plugin)
             return plugin
 
+    def upgrade_preview(self, name: str, ref: str) -> str:
+        plugin = self.plugins.named(name)
+        with self.staged(plugin.source, ref) as (folder, commit):
+            changes = self.changes(plugin.manifest, asdict(self.reader.read(folder)))
+            return "\n".join([f"{name} from {plugin.commit_sha[:12] or plugin.source} to {commit[:12] or 'the folder as it is now'}", *(changes or ["nothing it runs, hears or holds changes"])])
+
+    def upgrade(self, name: str, ref: str, by: Actor) -> Plugin:
+        plugin = self.plugins.named(name)
+        with self.staged(plugin.source, ref) as (folder, commit):
+            manifest = self.reader.read(folder)
+            if not plugin.linked:
+                shutil.rmtree(self.folders.of(plugin))
+                shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
+            return self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit), by)
+
+    @staticmethod
+    def changes(was: dict, now: dict) -> list[str]:
+        lines = []
+        for key in COMPARED:
+            before, after = was.get(key), now.get(key)
+            if isinstance(after, (list, tuple)):
+                before, after = list(before or ()), list(after)
+                lines += [f"{key}: + {item}" for item in after if item not in before] + [f"{key}: - {item}" for item in before if item not in after]
+            elif before != after:
+                lines.append(f"{key}: {before} -> {after}")
+        return lines
+
+    def enable(self, name: str, by: Actor) -> Plugin:
+        return self.plugins.save(self.plugins.named(name).with_(enabled=True), by)
+
+    def disable(self, name: str, by: Actor) -> Plugin:
+        return self.plugins.save(self.plugins.named(name).with_(enabled=False), by)
+
+    def remove(self, name: str, by: Actor) -> None:
+        """Its row and its fetched copy go; its data folder stays."""
+        plugin = self.plugins.named(name)
+        if not plugin.linked:
+            shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
+        self.plugins.delete(plugin, by)
+
+    def purge(self, name: str, by: Actor) -> None:
+        """Removed, and its data folder with it."""
+        data = self.folders.data(self.plugins.named(name))
+        self.remove(name, by)
+        shutil.rmtree(data, ignore_errors=True)
+
     def free(self, name: str) -> None:
         try:
             self.plugins.named(name)
@@ -48,8 +96,8 @@ class Installing:
         raise Refused(f"a plugin named {name} is installed already: journal plugin upgrade {name}")
 
     @contextmanager
-    def staged(self, source: str) -> Iterator[tuple[Path, str]]:
-        """A folder is read where it lies; a git address is fetched into a folder of its own, gone once read."""
+    def staged(self, source: str, ref: str = "") -> Iterator[tuple[Path, str]]:
+        """A folder is read where it lies; a git address is fetched into a folder of its own at the commit asked for, or its newest, gone once read."""
         if Path(source).is_dir():
             yield Path(source).resolve(), ""
             return
@@ -57,9 +105,11 @@ class Installing:
         home.mkdir(parents=True, exist_ok=True)
         temporary = Path(tempfile.mkdtemp(prefix=".fetching-", dir=home))
         try:
-            fetched = subprocess.run(["git", "clone", "--depth", "1", source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)
+            fetched = subprocess.run(["git", "clone", "--quiet", source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)
+            if fetched.returncode == 0 and ref:
+                fetched = subprocess.run(["git", "-C", str(temporary / "plugin"), "checkout", "--quiet", ref], capture_output=True, text=True, timeout=FETCH_SECONDS)
             if fetched.returncode != 0:
-                raise Refused(f"could not fetch {source}: {fetched.stderr.strip()[-300:]}")
+                raise Refused(f"could not fetch {source}{' at ' + ref if ref else ''}: {fetched.stderr.strip()[-300:]}")
             commit = subprocess.run(["git", "-C", str(temporary / "plugin"), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=FETCH_SECONDS).stdout.strip()
             yield temporary / "plugin", commit
         finally:
