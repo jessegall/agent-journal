@@ -2,14 +2,16 @@ from journal.features.plugins.installing import Installing
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.models.actor import Actor
 from journal.models.plugin import Plugin
+from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
+from journal.repositories.scope import Scope
 
 
 class PluginActions:
     """What the Plugins page does to a plugin, as the user: set one of its settings, switch it on or off, upgrade it, and remove or purge it."""
 
-    def __init__(self, plugins: Plugins, installing: Installing, settings: PluginSettings) -> None:
-        self.plugins, self.installing, self.settings = plugins, installing, settings
+    def __init__(self, plugins: Plugins, installing: Installing, settings: PluginSettings, scope: Scope, environments: Environments) -> None:
+        self.plugins, self.installing, self.settings, self.scope, self.environments = plugins, installing, settings, scope, environments
 
     def configure(self, n: int, body: dict, by: Actor) -> Plugin:
         return self.settings.configure(self.plugins.find(n).name, body["key"], str(body["value"]), by)
@@ -21,7 +23,7 @@ class PluginActions:
         return self.installing.disable(self.plugins.find(n).name, by)
 
     def upgrade(self, n: int, body: dict, by: Actor) -> Plugin:
-        return self.installing.upgrade(self.plugins.find(n).name, body.get("ref", ""), by)
+        return self.installing.upgrade(self.plugins.find(n).name, body.get("ref", ""), self.environments.find(self.scope.id).name, by)
 
     def remove(self, n: int, body: dict, by: Actor) -> dict:
         self.installing.remove(self.plugins.find(n).name, by)

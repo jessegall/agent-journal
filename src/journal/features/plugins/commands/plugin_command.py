@@ -67,7 +67,7 @@ class PluginCommand(Command):
         if not args.yes:
             print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref else ''} --yes")
             return 0
-        self.installing.upgrade(args.name, args.ref, where.actor)
+        self.installing.upgrade(args.name, args.ref, where.environment, where.actor)
         print(f"upgraded {args.name}")
         return 0
 

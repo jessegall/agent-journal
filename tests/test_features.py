@@ -3853,7 +3853,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
     folder = Path(__file__).parent / "plugins" / "echo"
     console = app.console()
     preview = console.run(["plugin", "install", str(folder)], USER)
-    assert preview.code == 0 and "echo 1.0.0" in preview.out and "runs for each event it hears: " in preview.out and "run.py" in preview.out and "holds before the agent goes on: tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
+    assert preview.code == 0 and "echo 1.0.0" in preview.out and "runs for each event it hears, from its folder: run.py" in preview.out and "holds before the agent goes on: tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
     assert app.container.get(Plugins).all() == [], "a preview installs nothing"
     assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
     plugin = app.container.get(Plugins).named("echo")
@@ -4025,12 +4025,17 @@ def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tm
     assert "setup step 'third' failed, so nothing is installed: broken" in failing.err and plugins.all() == [] and not (app.config.home / "plugin-data" / "echo").exists(), "a failed step leaves nothing"
     preview = console.run(["plugin", "install", str(folder)], USER).out
     assert 'runs at install first: echo one >> "$JOURNAL_PLUGIN_DATA/steps"' in preview
-    done = installed(requires={"sh": {"check": "command -v sh"}}, setup=steps, installed="echo '{\"repeat\": 5}'", hears=[*manifest["hears"], "plugin.updated"])
+    made = {"name": "made", "run": "printf '#!/bin/sh\\n' > made.sh && chmod +x made.sh"}
+    done = installed(requires={"sh": {"check": "command -v sh"}}, setup=[*steps, made], installed="echo '{\"repeat\": 5}'", hears=[*manifest["hears"], "plugin.updated"],
+                     services=[{"name": "made", "command": ["./made.sh"]}])
     assert done.code == 0, done.err
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert plugins.named("echo").enabled, "a file its setup made is hashed as made, so the plugin stays on"
     assert (app.config.home / "plugin-data" / "echo" / "steps").read_text() == "one\ntwo\n" and plugins.named("echo").settings["repeat"] == 5, "the steps ran in order and the installed command's answer filled the settings"
     console.run(["plugin", "configure", "echo", "repeat", "2"], USER)
     app.container.get(Deferred).drain()
-    assert echo_heard(app) == ["plugin.updated"], "a plugin hears its own settings change"
+    assert echo_heard(app) == ["tool_starting", "plugin.updated"], "a plugin hears its own settings change"
 
 
 def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):

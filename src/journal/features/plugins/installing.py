@@ -50,7 +50,7 @@ class Installing:
             manifest = self.reader.read(folder)
             self.free(manifest.name)
             linked = Path(source).is_dir()
-            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest), hashes=self.hashes.of(folder, asdict(manifest)))
+            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest))
             had_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
             if not linked:
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
@@ -62,7 +62,8 @@ class Installing:
                 self.undone(plugin, had_data)
                 raise
             settings = self.settings.started(plugin, by)
-            saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}), by)
+            hashes = self.hashes.of(self.folders.of(plugin), plugin.manifest)
+            saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}, hashes=hashes), by)
             self.folders.data(saved)
             self.skills.publish(saved)
             self.services.start(saved)
@@ -110,21 +111,38 @@ class Installing:
             return {"name": name, "title": manifest.title or name, "version": manifest.version, "description": manifest.description, "source": plugin.source, "commit": commit, "was": plugin.commit_sha,
                     "rows": self.rows(manifest, folder), "changes": changes, "code": code, "current": not changes and not code}
 
-    def upgrade(self, name: str, ref: str, by: Actor) -> Plugin:
+    def upgrade(self, name: str, ref: str, environment: str, by: Actor) -> Plugin:
+        """A fetched plugin's folder replaced and its setup run again, its old folder put back if the setup fails; a linked one read where it lies."""
         self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
-            manifest = self.same(plugin, self.reader.read(folder))
-            if not plugin.linked:
-                shutil.rmtree(self.folders.of(plugin))
-                shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
+            upgraded = plugin.with_(manifest=asdict(self.same(plugin, self.reader.read(folder))), commit_sha=commit, waiting="")
             self.services.stop(plugin)
-            upgraded = self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(self.folders.of(plugin), asdict(manifest)), waiting=""), by)
-            self.skills.withdraw(upgraded)
-            if upgraded.enabled:
-                self.skills.publish(upgraded)
-                self.services.start(upgraded)
-            return upgraded
+            if not plugin.linked:
+                self.replaced(plugin, upgraded, folder, environment)
+            saved = self.plugins.save(upgraded.with_(hashes=self.hashes.of(self.folders.of(upgraded), upgraded.manifest)), by)
+            self.skills.withdraw(saved)
+            if saved.enabled:
+                self.skills.publish(saved)
+                self.services.start(saved)
+            return saved
+
+    def replaced(self, plugin: Plugin, upgraded: Plugin, folder: Path, environment: str) -> None:
+        target = self.folders.of(plugin)
+        kept = target.with_name(f"{target.name}.before-upgrade")
+        shutil.rmtree(kept, ignore_errors=True)
+        target.rename(kept)
+        shutil.copytree(folder, target, ignore=shutil.ignore_patterns(".git"))
+        try:
+            self.required(upgraded, environment)
+            self.set_up(upgraded, environment)
+        except Refused:
+            shutil.rmtree(target)
+            kept.rename(target)
+            if plugin.enabled:
+                self.services.start(plugin)
+            raise
+        shutil.rmtree(kept)
 
     def enable(self, name: str, by: Actor) -> Plugin:
         """On, with its files' hashes taken anew: switching it on is the user's word that its code is read."""
@@ -201,7 +219,7 @@ class Installing:
         rows = [{"kind": "needs", "label": program, "command": need.get("hint", "")} for program, need in manifest.requires.items()]
         rows += [{"kind": "setup", "label": step.get("name", ""), "command": step["run"]} for step in manifest.setup]
         rows += [{"kind": "installed", "label": "fills its settings", "command": manifest.installed}] if manifest.installed else []
-        rows.append({"kind": "program", "label": "for each event it hears", "command": str(folder / manifest.program)})
+        rows.append({"kind": "program", "label": "for each event it hears, from its folder", "command": manifest.program})
         rows += [{"kind": "service", "label": s.get("name", ""), "command": " ".join(s.get("command", ())) + (f"  (where {s['when']})" if s.get("when") else "")} for s in manifest.services]
         rows.append({"kind": "hears", "label": "events", "command": ", ".join(manifest.hears) or "nothing"})
         rows.append({"kind": "holds", "label": "before the agent goes on", "command": ", ".join(manifest.holds) or "nothing"})
