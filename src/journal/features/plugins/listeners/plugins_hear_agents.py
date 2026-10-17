@@ -1,6 +1,7 @@
 from time import monotonic
 
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.agent.idle import Idle
 from journal.features.agent_listener import AgentListener
 from journal.features.plugins.plugin_hearing import PluginHearing
 from journal.features.plugins.plugin_words import PluginWords
@@ -12,7 +13,7 @@ from journal.models.plugin_answer import PluginAnswer
 from journal.repositories.settings import Settings
 
 REFUSABLE = ("tool_starting", "idle")
-"""The held events a plugin may refuse; at a prompt and a start its refusal is only said."""
+"""The held events a plugin may refuse; at a prompt and a start its refusal is only said, and a stop it holds once a turn, never again after the agent went on because a stop was held."""
 
 
 class PluginsHearAgents(AgentListener[AgentEvent]):
@@ -37,6 +38,9 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         return self.floor.under(event, decision)
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
+        if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:
+            self.hearing.unanswered(plugin, event, event.environment_id, answer.reason)
+            return Decision()
         if answer.answer == "refuse" and event.key in REFUSABLE:
             return Decision.refuse(self.words.said(plugin, answer.reason))
         words = answer.reason if answer.answer == "refuse" else answer.tell

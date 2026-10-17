@@ -19,6 +19,8 @@ if mode == "broken":
 data = line.get("data", {})
 if line["event"] == "tool_starting" and "forbidden" in json.dumps(data.get("input", {})):
     print(json.dumps({"v": 1, "answer": "refuse", "reason": "echo refuses a forbidden tool"}))
+elif line["event"] == "idle":
+    print(json.dumps({"v": 1, "answer": "refuse", "reason": "echo holds the stop"}))
 elif line["event"] == "prompt_submitted":
     print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"}))
 elif line["event"] == "tasks.created":

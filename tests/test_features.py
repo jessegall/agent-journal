@@ -3806,6 +3806,18 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     heard = [m.text for m in messages.recent(20) if m.text.startswith("heard message")]
     assert len(heard) == 4 and entries.where(kind="plugin_cut"), "two plugins answer each other's rows one step deep, then the cut is recorded"
 
+def test_a_plugin_holds_a_stop_once_a_turn(app):
+    from journal.repositories.entries import Entries
+    echo(app, hears=["idle"], holds=["idle"])
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    status, body = hook(app, "Stop")
+    assert status == 200 and body["decision"] == "block" and "[plugin echo] echo holds the stop" in body["reason"]
+    status, body = hook(app, "Stop", stop_hook_active=True)
+    assert status == 200 and "decision" not in body, "a stop held once already goes through"
+    assert [e.data["reason"] for e in app.container.get(Entries).where(kind="plugin_unanswered")] == ["echo holds the stop"], "the second refusal is recorded unanswered"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

@@ -73,7 +73,8 @@ A row event's `data` is the row's `table`, `id`, who wrote it (`by`) and, when u
 ```
 
 - `answer`: `allow`, `refuse` with a `reason`, or `tell` a line. An empty answer is `allow`. Only `tool_starting` and
-  `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. What it says reaches
+  `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
+  stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
   the agent as `[plugin <name>] ...`.
 - `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`, its kind one the manifest's
   `cards` names; a card with a `key` replaces the plugin's earlier card of that key.

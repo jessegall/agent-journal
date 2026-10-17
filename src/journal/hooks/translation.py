@@ -27,7 +27,7 @@ class Translation:
         HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool, hook.input)),
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output, response=hook.response, read_paths=provider.read_paths(hook.tool, hook.input), skill_loaded=provider.skill_loaded(hook.tool, hook.input)),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
-        HookKind.STOP: lambda hook, provider: Idle(),
+        HookKind.STOP: lambda hook, provider: Idle(held_before=hook.stop_held_before),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
         HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),

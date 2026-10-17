@@ -54,7 +54,10 @@ class PluginHearing:
         """Heard after the reply: a refusal here comes too late to hold anything and is recorded unanswered."""
         answer = self.ask(plugin, event, environment_id, LATER)
         if answer.answer == "refuse":
-            self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "reason": answer.reason}), Actor.system())
+            self.unanswered(plugin, event, environment_id, answer.reason)
+
+    def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
+        self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "reason": reason}), Actor.system())
 
     def state_of(self, event: Event) -> str:
         if not isinstance(event, AgentEvent):

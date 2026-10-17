@@ -62,5 +62,9 @@ class Hook:
         return self.body.get("source", "")
 
     @property
+    def stop_held_before(self) -> bool:
+        return bool(self.body.get("stop_hook_active"))
+
+    @property
     def subagent(self) -> str:
         return self.body.get("agent_id", "") or self.body.get("subagent_id", "")
