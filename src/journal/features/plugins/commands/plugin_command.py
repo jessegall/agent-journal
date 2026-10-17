@@ -48,7 +48,7 @@ class PluginCommand(Command):
         if not args.yes:
             print(f"nothing installed yet: journal plugin install {args.source} --yes")
             return 0
-        plugin = self.installing.install(args.source, where.actor)
+        plugin = self.installing.install(args.source, where.environment, where.actor)
         print(f"installed {plugin.name}, on")
         return 0
 

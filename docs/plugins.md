@@ -53,8 +53,9 @@ plugin's environment, under the secret's variable. No command ever sets it.
 - `protocol`: the version of the protocol it speaks; this journal speaks 1.
 - `program`: a path inside the folder, run for each event.
 - `hears`: agent events by name (`tool_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
-  `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`) and rows as `<table>.created`,
-  `.updated` or `.deleted`, such as `plugins.updated` when its settings change. The secrets, users and MCP server rows are
+  `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`), `plugin.updated` when someone
+  else changed its own settings, its `data` then being `{"settings": ...}`, and rows as `<table>.created`, `.updated`
+  or `.deleted`. The secrets, users and MCP server rows are
   never sent, nor a row the plugin wrote itself. A subagent's events come with `subagent` set and are held only at
   `tool_starting`.
 - `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
@@ -63,6 +64,11 @@ plugin's environment, under the secret's variable. No command ever sets it.
   skill of the journal's or another plugin's may have. Each is published into `.claude/skills` and `.agents/skills` with
   `plugin: <name>` in its front matter and a `.gitignore` that keeps it out of git. It is taken away when the plugin
   is switched off or removed.
+- `requires`: each program it needs, as `{"<program>": {"check": "<shell line>", "hint": "<how to get it>"}}`; without
+  a check the program is looked up on the path. A missing one refuses the install with its hint.
+- `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell
+  line>"}`. A step that fails stops the install and leaves nothing behind.
+- `installed`: a command run after the setup, whose answer, a JSON object, fills its settings.
 - Every path stays inside the folder, a symlink leading out included.
 
 ## How it runs

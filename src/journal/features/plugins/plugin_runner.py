@@ -37,6 +37,10 @@ class PluginRunner:
             raise PluginFault(f"it exited with {process.returncode}: {err.strip()[-300:]}")
         return self.protocol.answer_of(out)
 
+    def shell(self, plugin: Plugin, environment: str, line: str, seconds: float) -> subprocess.CompletedProcess:
+        """A shell line of the plugin's own, a setup step or a check, run in its folder with its environment."""
+        return subprocess.run(["sh", "-c", line], cwd=self.folders.of(plugin), env=self.environment(plugin, environment), capture_output=True, text=True, timeout=seconds)
+
     def environment(self, plugin: Plugin, environment: str) -> dict[str, str]:
         settings = self.folders.settings(plugin)
         settings.write_text(json.dumps(plugin.settings))

@@ -1353,7 +1353,7 @@ def test_commands_run_at_the_same_moment_keep_their_own_output(app):
         t.start()
     for t in threads:
         t.join()
-    assert all(outs[n] == ("200\n" if n % 2 else "30\n") for n in range(20)), "the capture is process-wide, so runs never overlap"
+    assert all(outs[n] == ("200\n" if n % 2 else "30\n") for n in range(20)), "each run's output is its own, though they run side by side"
 
 
 def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
@@ -4002,6 +4002,33 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.named("echo").manifest["holds"], "shown once, and the plugin runs as installed"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
     assert "idle" in plugins.named("echo").manifest["holds"] and plugins.named("echo").waiting == "", "the user's upgrade applies it"
+
+
+def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tmp_path):
+    import shutil
+    from journal.hooks.deferred import Deferred
+    from journal.repositories.plugins import Plugins
+    console, plugins = app.console(), app.container.get(Plugins)
+    folder = tmp_path / "echo"
+    shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
+    manifest = json.loads((folder / "journal-plugin.json").read_text())
+
+    def installed(**changes):
+        (folder / "journal-plugin.json").write_text(json.dumps({**manifest, **changes}))
+        return console.run(["plugin", "install", str(folder), "--yes"], USER)
+    missing = installed(requires={"no-such-program-here": {"hint": "brew install it"}})
+    assert "echo needs no-such-program-here, which is not here: brew install it" in missing.err and plugins.all() == []
+    steps = [{"name": "first", "run": 'echo one >> "$JOURNAL_PLUGIN_DATA/steps"'}, {"name": "second", "run": 'echo two >> "$JOURNAL_PLUGIN_DATA/steps"'}]
+    failing = installed(setup=[*steps, {"name": "third", "run": "echo broken >&2; exit 3"}])
+    assert "setup step 'third' failed, so nothing is installed: broken" in failing.err and plugins.all() == [] and not (app.config.home / "plugin-data" / "echo").exists(), "a failed step leaves nothing"
+    preview = console.run(["plugin", "install", str(folder)], USER).out
+    assert "runs at install: first:" in preview
+    done = installed(requires={"sh": {"check": "command -v sh"}}, setup=steps, installed="echo '{\"repeat\": 5}'", hears=[*manifest["hears"], "plugin.updated"])
+    assert done.code == 0, done.err
+    assert (app.config.home / "plugin-data" / "echo" / "steps").read_text() == "one\ntwo\n" and plugins.named("echo").settings["repeat"] == 5, "the steps ran in order and the installed command's answer filled the settings"
+    console.run(["plugin", "configure", "echo", "repeat", "2"], USER)
+    app.container.get(Deferred).drain()
+    assert echo_heard(app) == ["plugin.updated"], "a plugin hears its own settings change"
 
 
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):

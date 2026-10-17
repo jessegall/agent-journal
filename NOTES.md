@@ -937,4 +937,7 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 - A plugin's message is the journal's side of the chat (`Author.of`). Plan approve still refuses anyone but you.
 - Plugin commands carry a step count in a context variable. A row written two steps deep is heard by no plugin, and
   a `plugin_cut` entry records it.
-- `plugin.updated` is out of the reader until task 593 delivers it. A plugin can hear `plugins.updated` meanwhile.
+- `plugin.updated` is delivered to a plugin alone when someone else changes its settings. Install writes the settings
+  once, so a plugin hears it only on a later change.
+- The console captures each command's output per context (CapturedStream) and runs commands side by side. A plugin's
+  setup step or installed command may itself run `journal` commands while `journal plugin install` runs.

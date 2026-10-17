@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 import tempfile
@@ -11,6 +12,7 @@ from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_changes import PluginChanges
 from journal.features.plugins.plugin_hashes import PluginHashes
+from journal.features.plugins.plugin_runner import PluginRunner
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.features.plugins.plugin_skills import PluginSkills
 from journal.models.actor import Actor
@@ -22,13 +24,15 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.plugins import Plugins
 
 FETCH_SECONDS = 120
+STEP_SECONDS = 300
+"""The longest a requirement's check, a setup step or the installed command may run."""
 
 
 class Installing:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills) -> None:
-        self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills = config, reader, plugins, folders, hashes, settings, skills
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner) -> None:
+        self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills, self.runner = config, reader, plugins, folders, hashes, settings, skills, runner
 
     def preview(self, source: str) -> tuple[PluginManifest, str]:
         """The manifest as read, and all it would run, said."""
@@ -36,18 +40,61 @@ class Installing:
             manifest = self.reader.read(folder)
             return manifest, self.described(manifest, folder, source, commit)
 
-    def install(self, source: str, by: Actor) -> Plugin:
+    def install(self, source: str, environment: str, by: Actor) -> Plugin:
+        """Its requirements checked, its setup steps run in order and its installed command asked, all before its row is made; a failure leaves nothing."""
         self.only_the_user(by, "installs")
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
             self.free(manifest.name)
             linked = Path(source).is_dir()
+            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest), hashes=self.hashes.of(folder, asdict(manifest)))
+            had_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
             if not linked:
-                shutil.copytree(folder, self.config.home / "plugins" / manifest.name, ignore=shutil.ignore_patterns(".git"))
-            plugin = self.plugins.save(Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest), hashes=self.hashes.of(folder, asdict(manifest))), by)
-            self.folders.data(plugin)
-            self.skills.publish(plugin)
-            return self.settings.started(plugin, by)
+                shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
+            try:
+                self.required(plugin, environment)
+                self.set_up(plugin, environment)
+                filled = self.asked(plugin, environment)
+            except Refused:
+                self.undone(plugin, had_data)
+                raise
+            settings = self.settings.started(plugin, by)
+            saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}), by)
+            self.folders.data(saved)
+            self.skills.publish(saved)
+            return saved
+
+    def required(self, plugin: Plugin, environment: str) -> None:
+        for program, need in plugin.manifest.get("requires", {}).items():
+            check = need.get("check") or f"command -v {program}"
+            if self.runner.shell(plugin, environment, check, STEP_SECONDS).returncode != 0:
+                raise Refused(f"{plugin.name} needs {program}, which is not here" + (f": {need['hint']}" if need.get("hint") else ""))
+
+    def set_up(self, plugin: Plugin, environment: str) -> None:
+        for step in plugin.manifest.get("setup", ()):
+            ran = self.runner.shell(plugin, environment, step["run"], STEP_SECONDS)
+            if ran.returncode != 0:
+                raise Refused(f"{plugin.name}'s setup step {step.get('name', step['run'])!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+
+    def asked(self, plugin: Plugin, environment: str) -> dict:
+        """The settings its installed command answers with, as a JSON object."""
+        command = plugin.manifest.get("installed", "")
+        if not command:
+            return {}
+        ran = self.runner.shell(plugin, environment, command, STEP_SECONDS)
+        try:
+            answer = json.loads(ran.stdout or "{}")
+        except json.JSONDecodeError:
+            answer = None
+        if ran.returncode != 0 or not isinstance(answer, dict):
+            raise Refused(f"{plugin.name}'s installed command {command!r} did not answer with its settings as a JSON object, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+        return answer
+
+    def undone(self, plugin: Plugin, had_data: bool) -> None:
+        if not plugin.linked:
+            shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
+        if not had_data:
+            shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
     def upgrade_preview(self, name: str, ref: str) -> str:
         plugin = self.plugins.named(name)
@@ -141,6 +188,10 @@ class Installing:
         lines += [f"runs the service {s.get('name', '')}: {' '.join(s.get('command', ()))}" for s in manifest.services]
         lines.append(f"hears {', '.join(manifest.hears) or 'nothing'}")
         lines.append(f"holds {', '.join(manifest.holds) or 'nothing'}")
+        lines += [f"needs {program}" + (f": {need['hint']}" if need.get("hint") else "") for program, need in manifest.requires.items()]
+        lines += [f"runs at install: {step.get('name', '')}: {step['run']}" for step in manifest.setup]
+        if manifest.installed:
+            lines.append(f"runs at install, its answer filling the settings: {manifest.installed}")
         if manifest.settings:
             lines.append(f"settings from {manifest.settings}")
         skills = ManifestReader.skill_names(folder, manifest)

@@ -1,8 +1,7 @@
 import argparse
-import contextlib
 import io
-import threading
 
+from journal.console.captured_stream import CapturedStream
 from journal.console.command import Command
 from journal.console.creations import Creations
 from journal.console.outcome import Outcome
@@ -20,7 +19,6 @@ class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
 
     def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope) -> None:
-        self._capture = threading.Lock()
         self.container, self.environments, self.agents, self.scope = container, environments, agents, scope
         self.commands: dict[str, Command] = {}
         self._parser: argparse.ArgumentParser | None = None
@@ -37,18 +35,20 @@ class Console:
         return where.as_(live.session) if live else where
 
     def parser(self) -> argparse.ArgumentParser:
+        """Built whole before it is kept, so a command on another thread never parses with one half made."""
         if self._parser is None:
-            self._parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
-            nouns = self._parser.add_subparsers(dest="noun", required=True)
+            parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
+            nouns = parser.add_subparsers(dest="noun", required=True)
             for noun, command in self.commands.items():
                 verbs = nouns.add_parser(noun).add_subparsers(dest="verb", required=True)
                 command.arguments(verbs)
+            self._parser = parser
         return self._parser
 
     def run(self, argv: list[str], where: Where) -> Outcome:
-        """Runs one command with its output captured, in the environment it names, so the same call serves the terminal and the server. The capture is process-wide, so commands run one at a time."""
+        """Runs one command with its output captured, in the environment it names, so the same call serves the terminal and the server; commands on several threads run side by side."""
         out, err = io.StringIO(), io.StringIO()
-        with self._capture, self.scope.of(self.environments.named(where.environment).id):
+        with self.scope.of(self.environments.named(where.environment).id):
             return self.captured(argv, where, out, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
@@ -60,7 +60,7 @@ class Console:
     def captured(self, argv: list[str], where: Where, out: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(argv)
         made = Creations.begin()
-        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        with CapturedStream.into(out, err):
             try:
                 args = self.parser().parse_args(argv)
                 code = self.commands[args.noun].perform(args, self.attributed(where))

@@ -13,7 +13,7 @@ MANIFEST = "journal-plugin.json"
 NAME = re.compile(r"^[a-z0-9][a-z0-9-]{1,31}$")
 PROTOCOLS = (1,)
 """The protocol versions this journal speaks; a later one adds fields and never changes one."""
-AGENT_EVENTS = ("tool_starting", "tool_finished", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked")
+AGENT_EVENTS = ("tool_starting", "tool_finished", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
 HOLDABLE = ("tool_starting", "idle", "prompt_submitted", "session_started")
 """The events a plugin may answer before the agent goes on; at a prompt and a start it may only tell, never refuse."""
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
@@ -37,7 +37,7 @@ class ManifestReader:
         unknown = sorted(set(raw) - KEYS)
         if unknown:
             raise Refused(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
-        manifest = PluginManifest(**{**raw, **{key: tuple(raw[key]) for key in ("hears", "holds", "services", "cards", "requires", "setup") if key in raw}})
+        manifest = PluginManifest(**{**raw, **{key: tuple(raw[key]) for key in ("hears", "holds", "services", "cards", "setup") if key in raw}})
         self.named(manifest)
         self.spoken(manifest)
         self.heard(manifest)
@@ -90,6 +90,8 @@ class ManifestReader:
         root = folder.resolve()
         named = [(key, getattr(manifest, key)) for key in PATHS if getattr(manifest, key)]
         named += [(f"service {s.get('name', '')}", s["command"][0]) for s in manifest.services if s.get("command") and "/" in s["command"][0]]
+        named += [(f"setup step {step.get('name', '')}", word) for step in manifest.setup for word in step.get("run", "").split()[:2] if "/" in word]
+        named += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
         for key, path in named:
             if Path(path).is_absolute() or not (root / path).resolve().is_relative_to(root):
                 raise Refused(f"{manifest.name}'s {key} {path} leads outside its folder")

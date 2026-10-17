@@ -26,7 +26,10 @@ class PluginManifest:
     """A folder of its skills."""
     cards: tuple[dict, ...] = ()
     """The kinds of card it shows, each a kind, a label and a tone."""
-    requires: tuple[dict, ...] = ()
+    requires: dict = field(default_factory=dict)
+    """Each program it needs, with the shell check that it is there and a hint for when it is not."""
     setup: tuple[dict, ...] = ()
+    """Steps run in order at install in its folder, each a name and a shell line to run."""
     installed: str = ""
+    """A command run after the setup, whose JSON answer fills its settings."""
     dashboard: dict = field(default_factory=dict)

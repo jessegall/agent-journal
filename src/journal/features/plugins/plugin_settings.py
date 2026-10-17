@@ -25,7 +25,7 @@ class PluginSettings:
         path = plugin.manifest.get("settings", "")
         return json.loads((self.folders.of(plugin) / path).read_text()) if path else []
 
-    def started(self, plugin: Plugin, by: Actor) -> Plugin:
+    def started(self, plugin: Plugin, by: Actor) -> dict:
         """Its settings at their defaults, and a secret asked for each secret setting, proposed for the plugin."""
         settings = {}
         for setting in self.schema(plugin):
@@ -34,7 +34,7 @@ class PluginSettings:
                 settings[setting["key"]] = {"secret": secret.id}
             else:
                 settings[setting["key"]] = setting.get("default")
-        return self.plugins.save(plugin.with_(settings=settings), by)
+        return settings
 
     def configure(self, name: str, key: str, value: str, by: Actor) -> Plugin:
         if by.kind != ActorKind.USER:
