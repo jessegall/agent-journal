@@ -8,6 +8,7 @@ from journal.features.workers.feature import Workers
 from journal.features.laws.feature import Laws
 from journal.features.delivery.feature import Delivery
 from journal.features.mcp.feature import Mcp
+from journal.features.secrets.feature import Secrets
 from journal.features.pins.feature import Pins
 from journal.features.reports.feature import ReportsFeature
 from journal.features.templates.feature import TemplatesFeature
@@ -28,7 +29,7 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Delivery, TemplatesFeature, ReportsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature)
+    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Secrets, Delivery, TemplatesFeature, ReportsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature)
     """The engine's own listeners first, the skill, the look and the mark each owed and held by its feature, and the workflows' walk last, so a workflow reads the facts the engine set at this very event."""
 
     @classmethod

@@ -3362,3 +3362,27 @@ def test_a_quiet_workflow_walks_after_the_reply_and_a_walk_ended_before_it_ends_
     hook(app, "SubagentStart", agent_id="a2")
     app.runtime().deferred.drain()
     assert not any("typed after the reply" in t for t in typed), "a walk ended by an earlier workflow ends the quiet part too"
+
+
+def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app, tmp_path, monkeypatch):
+    import stat
+    from datetime import datetime, timezone
+    from journal.features.secrets.values_file import ValuesFile
+    from journal.models.secret import Secret
+    from journal.models.secret_kind import SecretKind
+    from journal.repositories.secrets import Secrets
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    secrets, values = app.container.get(Secrets), app.container.get(ValuesFile)
+    secret = secrets.save(Secret(title="Github", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Github")), Actor.user("u"))
+    assert secret.fields == ({"name": "key", "hidden": True, "variable": "GITHUB_KEY"},) and secret.waiting()
+    values.put("GITHUB_KEY", 'gh-"quoted"-token')
+    secret = secrets.save(secret.filled_in("key"), Actor.user("u"))
+    assert not secrets.find(secret.id).waiting() and values.values() == {"GITHUB_KEY": 'gh-"quoted"-token'}
+    assert stat.S_IMODE(values.path.stat().st_mode) == 0o600 and stat.S_IMODE(values.path.parent.stat().st_mode) == 0o700
+    assert values.path.name == f"{(app.config.home / 'project-id').read_text().strip()}.env", "the file is named by the project's id, kept in its journal folder"
+    raw = (app.config.home / "journal.db").read_bytes()
+    assert b"gh-" not in raw, "no value ever reaches the database"
+    values.drop(["GITHUB_KEY"])
+    assert values.values() == {}
+    gone = secrets.save(secrets.find(secret.id).deleted(datetime.now(timezone.utc)), Actor.user("u"))
+    assert secrets.live() == [] and secrets.gone() == [gone]
