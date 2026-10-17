@@ -89,7 +89,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Features register states; features depend on the engine, never the reverse.** The engine
   holds `AgentState`, `Paused`, `Transition`, `Machine`, `Nudger`, the catalogue and the
   generic `Ended` and `Subagent`. Every other state lives in its feature's `states/` folder:
-  tasks (Idle, Working, Stuck), plans (FollowingPlan), sequences (RunningSequence), helpers
+  tasks (Idle, Working, Stuck), plans (FollowingPlan), helpers
   (Awaiting), questions (Waiting), memory (AtMark), briefing (CatchingUp). A feature off
   takes its states out of the catalogue; an agent found in one goes back to Idle.
 - **A feature lives beside the states.** It owns its states, its nudges (declared `Nudge`
@@ -193,7 +193,7 @@ project never hand-holds them. Loading is forced by the engine, not left to the 
 ## v3 features, sorted
 
 Became states: work_tracking (Idle, Working), awaited (Awaiting), catching_up (CatchingUp),
-memory_checkpoints (AtMark), plans' flow (FollowingPlan), sequences' flow (RunningSequence),
+memory_checkpoints (AtMark), plans' flow (FollowingPlan),
 ask_questions' hold (Waiting), halt (Stuck), subagent tracking (Subagent).
 
 Features to port first, with what they fold in and what they say:
@@ -542,8 +542,10 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   approval before `plan start`, from the plan page's Approve button or `journal plan approve`. The agent is told
   of the approval by a typed line. The shaper derives the building stage from the rows.
 - Sequences may start on a row event (`starts_on`, as `plan.created`); the shipped "Building a plan" sequence is
-  seeded at boot (feature `seeds`, run by the runtime) and tells the plan's steps. A step may wait on the user, so
-  the same stop again goes through.
+  seeded at boot (feature `seeds`, run by the runtime) and tells the plan's steps. A run is engine flow, not a state
+  and not a workflow: the runs are a stack on the agent's row (`sequence_runs`), the one in hand last, each with the
+  step titles it began with and the row it is about; every start goes through `Running`; the next session takes over
+  the runs of the last one that ended with some; a stop outside a wait is held with the step (plan 10).
 - Delivery: every line the journal types is held in `TypedLines` until its prompt hook brings it back; one not back
   after ten quiet seconds between turns is typed again, three tries, each a card.
 - The supervisor pins nothing to the screen any more: its line is Claude Code's own status line, read from

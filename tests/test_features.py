@@ -3061,6 +3061,26 @@ def test_a_run_goes_with_the_agent_to_its_next_session(app):
     running = app.container.get(Running)
     assert running.in_hand("s2", 1).title == "release" and running.in_hand("s1", 1) is None, "the next session takes the run over"
 
+def test_a_run_stands_through_the_agents_moves_and_a_workflow_action_starts_one(app):
+    from journal.repositories.charts import Charts
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER)
+    n, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
+    start = int(console.run(["chart", "node", "action", "start_sequence", "--text", "release", "--in", str(n)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(start)], USER)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
+    app.runtime().deferred.drain()
+    running, machine = app.container.get(Running), app.container.get(Machine)
+    assert running.in_hand("s1", 1).title == "release", "a workflow's start a sequence action starts the run"
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["await", "the deploy"], AGENT)
+    console.run(["message", "send", "how is it going?"], USER)
+    hook(app, "UserPromptSubmit", prompt="carry on")
+    console.run(["stuck", "the build is broken"], AGENT)
+    assert machine.current("s1").name == "stuck" and running.in_hand("s1", 1).text == "bump", "a task, a wait, the user's word and being stuck leave the run standing"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
