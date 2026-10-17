@@ -87,3 +87,37 @@ test("a card for the user's own act sits on the user's side", () => {
     expect([mine.who, mine.data.side]).toEqual(["user", "user"]);
     expect(turns.find((t) => t.ref === "message:3").data.side).toBe("");
 });
+
+test("a plugin's card is drawn by its kind with the plugin's name on it, and its settled replacement stands in its place", async () => {
+    window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
+    const {default: Turn} = await import("../src/chat/Turn.vue");
+    const sin = (label, detail, updated) => ({
+        ...message(5, 50, "system", label, {actor: "plugin:lint", ...card("plugin", {plugin: "lint", card: "sin", key: "a.py", icon: "warn", tone: "warn", detail})}),
+        updated,
+    });
+    const drawn = async (row) => {
+        const {turns} = threadTurns({...rows, message: [...rows.message, row]}, [], "main");
+        const host = document.createElement("div");
+        document.body.append(host);
+        const app = createApp({render: () => h(Turn, {turn: turns.find((t) => t.ref === "message:5")})});
+        app.provide("scope", scope);
+        app.directive("tip", {});
+        app.mount(host);
+        await nextTick();
+        const mark = host.querySelector(".thread-turn.card .mark");
+        const name = mark.querySelector(".head strong").textContent.trim();
+        const shown = {label: mark.querySelector(".head").textContent.replace(name, "").trim(), name, detail: mark.querySelector(".detail")?.textContent.trim() || ""};
+        app.unmount();
+        host.remove();
+        return shown;
+    };
+    expect(await drawn(sin("A sin in a.py", "a long method", 50))).toEqual({label: "A sin in a.py", name: "lint", detail: "a long method"});
+    expect(await drawn(sin("a.py is clean", "", 60))).toEqual({label: "a.py is clean", name: "lint", detail: ""});
+});
+
+test("a plugin's plain message is a card of the plugin's, not a crash", () => {
+    const said = message(6, 60, "system", "heard message 4", {actor: "plugin:echo", card: {}});
+    const {turns} = threadTurns({...rows, message: [...rows.message, said]}, [], "main");
+    const turn = turns.find((t) => t.ref === "message:6");
+    expect([turn.type, turn.data.icon, turn.data.name, turn.data.label]).toEqual(["card", "plug", "echo", "heard message 4"]);
+});

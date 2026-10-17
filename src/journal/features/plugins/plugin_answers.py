@@ -31,7 +31,7 @@ class PluginAnswers:
     def show(self, plugin: Plugin, card: dict, environment_id: int) -> None:
         kind = next((k for k in plugin.manifest.get("cards", ()) if k.get("kind") == card.get("kind")), {})
         label = self.words.plain(str(card.get("label") or kind.get("label", plugin.name)))
-        data = {"kind": "plugin", "plugin": plugin.name, "card": card.get("kind", ""), "icon": kind.get("icon", "plug"), "tone": card.get("tone") or kind.get("tone", ""), "detail": self.words.plain(str(card.get("detail", "")))}
+        data = {"kind": "plugin", "plugin": plugin.name, "card": card.get("kind", ""), "icon": kind.get("icon", "plug"), "tone": card.get("tone") or kind.get("tone", ""), "detail": self.words.plain(str(card.get("detail", ""))), "collapsed": bool(kind.get("collapsed"))}
         self.cards.keyed(environment_id, str(card.get("key", "")), label, data, Actor.plugin(plugin.name))
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:

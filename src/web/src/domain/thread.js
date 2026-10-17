@@ -98,15 +98,23 @@ const SYSTEM_TURNS = {
         type: "card",
         data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row},
     }),
+    plugin: (card, label) => ({
+        type: "card",
+        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.collapsed ? "" : card.detail, title: card.detail, row: card.row},
+    }),
 };
+
+const pluginOf = (m) => ((m.data.actor || "").startsWith("plugin:") ? m.data.actor.slice("plugin:".length) : "");
+
+const plainTurn = (m, label) => ({type: "card", data: {icon: pluginOf(m) ? "plug" : "dot", label, name: pluginOf(m)}});
 
 const fromSystem = (m) => m.data.author === "system";
 
 const byUser = (m) => (m.data.actor || "").startsWith("user");
 
 const systemTurn = (m) => {
-    const card = m.data.card;
-    const turn = SYSTEM_TURNS[card.kind](card, m.brief);
+    const card = m.data.card || {};
+    const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.brief);
     return {
         ...m,
         who: byUser(m) ? "user" : "agent",

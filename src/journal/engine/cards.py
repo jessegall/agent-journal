@@ -16,7 +16,9 @@ class Cards:
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), by)
 
     def keyed(self, environment_id: int, key: str, label: str, data: dict, by: Actor) -> Message:
-        """A card that stands for one thing, such as a file's findings: it replaces the earlier card of its key by the same writer. With no key it is a card like any other."""
-        for earlier in self.messages.keyed(key, by) if key else ():
-            self.messages.delete(earlier, by)
-        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data={"session": "", "row": "", **data, "key": key}), by)
+        """A card that stands for one thing, such as a file's findings: a later card of its key by the same writer settles it in place, where it already stands in the chat. With no key it is a card like any other."""
+        data = {"session": "", "row": "", **data, "key": key}
+        earlier = self.messages.keyed(key, by) if key else []
+        if earlier:
+            return self.messages.save(earlier[0].with_(text=label, data=data), by)
+        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), by)

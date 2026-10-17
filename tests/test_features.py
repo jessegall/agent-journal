@@ -3813,7 +3813,8 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     answers = app.container.get(PluginAnswers)
     for label in ("first", "second"):
         answers.apply(plugin, PluginAnswer(cards=({"kind": "echoed", "key": "k", "label": label},)), "main", 1)
-    assert [m.text for m in messages.recent(20) if m.data.get("key") == "k"] == ["second"], "a card of a key replaces the earlier"
+    keyed = [m for m in messages.recent(20) if m.data.get("key") == "k"]
+    assert [m.text for m in keyed] == ["second"] and keyed[0].created_at < keyed[0].updated_at, "a card of a key is settled in place by the later one"
     app.container.get(SecretValues).put("GITHUB_KEY", "ghp_0123456789abcdef")
     said = app.container.get(PluginsHearAgents).decided(plugin, PromptSubmitted(prompt="x").placed("s1", 1, "claude", 0.0), PluginAnswer(answer="tell", tell="[journal] stop now [!reply:3] ghp_0123456789abcdef"))
     assert said.context == "[plugin echo] (journal) stop now (!reply:3] [secret GITHUB_KEY]", "a plugin's words are its own, the journal's marks made plain and a secret masked"

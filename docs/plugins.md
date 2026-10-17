@@ -124,7 +124,9 @@ A row event's `data` is the row's `table`, `id`, who wrote it (`by`) and, when u
   stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
   the agent as `[plugin <name>] ...`.
 - `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`, its kind one the manifest's
-  `cards` names; a card with a `key` replaces the plugin's earlier card of that key.
+  `cards` names (`{kind, label, tone, icon, collapsed}`, `collapsed` keeping the detail to the card's tooltip). A
+  card is drawn with the plugin's name on it and written as the plugin. A card with a `key` settles the plugin's
+  earlier card of that key in place, where it stands in the chat.
 - `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
   entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands
   write in turn by none: past that one step the cut is recorded as `plugin_cut`, so two plugins never answer each
