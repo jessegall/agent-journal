@@ -5,6 +5,11 @@ the program, writes one line of JSON to its input, and reads one line of JSON fr
 agent, say it a line, show a card in the chat or run journal commands as the plugin. A plugin runs with your account
 and nothing confines it: installing one is trusting it.
 
+Three words used below: to **hold** an event is to answer it before the agent goes on, so the answer can stop a tool
+or a stop or reach the agent at once; an **environment** is one of the project's journals, each with its own agent,
+named in `JOURNAL_ENV` (most projects have one, `main`); the **supervisor** is the process that runs the agent's
+terminal and any services beside it.
+
 ## A first plugin
 
 A folder `echo` with two files. `journal-plugin.json`:
@@ -48,7 +53,8 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
 
 ## The manifest
 
-- `name`: 2 to 32 lowercase letters, digits and dashes, never one of the journal's own features.
+- `name`: 2 to 32 lowercase letters, digits and dashes, never the name of one of the journal's own features (such as
+  `tasks`, `plans`, `messages`, `secrets` or `plugins`); install names the clash when there is one.
 - `protocol`: the version of the protocol it speaks; this journal speaks 1.
 - `program`: a path inside the folder, run for each event: an executable file, its first line naming its interpreter.
 - `hears`: agent events by name (`tool_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
@@ -58,7 +64,9 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   never sent, nor a row the plugin wrote itself. A subagent's events come with `subagent` set and are held only at
   `tool_starting`.
 - `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
-  `prompt_submitted` and `session_started` only told.
+  `prompt_submitted` and `session_started` only told. A line told at an event it hears but does not hold never
+  reaches the agent; hold it to be heard.
+- `settings`: a path to its settings file, described under Settings.
 - `skills`: a folder holding one folder per skill with its `SKILL.md`, published under that folder's name, which no
   skill of the journal's or another plugin's may have. Each is published into `.claude/skills` and `.agents/skills` with
   `plugin: <name>` in its front matter and a `.gitignore` that keeps it out of git. It is taken away when the plugin
@@ -69,10 +77,13 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   started on install, switch-on and when the journal starts, stopped on switch-off and removal, and restarted by an
   upgrade. A service with `answers` listens on `JOURNAL_PLUGIN_SOCKET` and is asked in place of the program, one line
   in and one line out. With no supervisor, or with its socket gone, the program answers.
-- `dashboard`: `{"name": ..., "title": ...}`, a panel on the Plugins page drawn from lines the plugin writes with
-  `journal dashboard set <key> <label> --badge <text> --tone good|warn|danger|note|muted --note <text> --heading
-  <text>`, one line per key, rewritten in place; `journal dashboard unset <key>` and `journal dashboard clear` take
-  lines off. Only the plugin's own program writes them. No page of a plugin's runs in the viewer.
+- `dashboard`: `{"name": ..., "title": ...}`, a panel opened from a button on the plugin's card, `title` naming the
+  button and the panel and `name` the dashboard in its address; the panel is drawn from lines
+  the plugin writes with `journal dashboard set <key> "<label>" [--badge <text>] [--tone good|warn|danger|note|muted]
+  [--note <text>] [--heading <text>]`: the label is the line's words, the badge a short state beside it, the heading
+  the title it is listed under; one line per key, rewritten in place. `journal dashboard unset <key>` and
+  `journal dashboard clear` take lines off. The program runs these itself, or names them in its answer's `commands`;
+  either way they are the plugin's, and nothing else may write its dashboard. No page of a plugin's runs in the viewer.
 - `requires`: each program it needs, as `{"<program>": {"check": "<shell line>", "hint": "<how to get it>"}}`; without
   a check the program is looked up on the path. A missing one refuses the install with its hint.
 - `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell
@@ -94,17 +105,21 @@ One line of JSON, ending in a newline:
  "data": {"tool": "Bash", "input": {"command": "ls"}, "writes": false}}
 ```
 
-- `event`: the event's name as the manifest's `hears` spells it. `state`: what the agent is doing, when an agent event.
+- `event`: the event's name as the manifest's `hears` spells it. `state`: the agent's state at an agent event, one
+  word such as `working`, `idle` or `awaiting`, empty at a row event.
 - `session`, `provider`, `subagent`: whose event it was, sent with agent events only.
 - `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `tool_finished` the same with its
   `output` and `response`; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
   was `held_before`; `ticked` the time `at` and the seconds the agent was `quiet_for`; `subagent_started` and
   `subagent_ended` the `subagent`; `plugin.updated` its `settings`. A row event's `data` is the row's `table`, `id`,
-  who wrote it (`by`) and, when updated, the fields that `changed`; a plugin reads the row itself with a journal command.
+  who wrote it (`by`) and, when updated, the fields that `changed`; tables go by their plural names (`tasks`,
+  `messages`, `plans`, `questions`, `docs`, `reports`, `facts`, `rules`, `reminders`, `checks`), and a plugin reads the
+  row itself with a journal command, such as `journal task list`. `journal <noun> --help` lists a noun's commands.
 
 ## The line out
 
-One line of JSON on its output, the last line counting; an empty output is `allow`:
+One line of JSON on its output, the last line counting; an empty output is `allow`, and so is an answer with no
+`answer` key:
 
 ```json
 {"v": 1, "answer": "refuse", "reason": "not on main", "tell": "",
@@ -115,10 +130,13 @@ One line of JSON on its output, the last line counting; an empty output is `allo
   `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
   stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
   the agent as `[plugin <name>] ...`.
-- `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`, its kind one the manifest's
-  `cards` names (`{kind, label, tone, icon, collapsed}`, `collapsed` keeping the detail to the card's tooltip). A
-  card is drawn with the plugin's name on it and written as the plugin. A card with a `key` settles the plugin's
-  earlier card of that key in place, where it stands in the chat.
+- At an event it does not hold, only the `cards` and `commands` count: they apply after the reply, a `tell` is
+  dropped and a `refuse` is recorded as `plugin_unanswered`.
+- `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`. Its `kind` is one the
+  manifest's `cards` names, and its tone is the kind's unless it gives one; a kind marked `collapsed` keeps the detail
+  to the card's tooltip. A `key` is any text, unique within the plugin, and a card with a key settles the plugin's
+  earlier card of that key in place, where it stands in the chat. A card is drawn with the plugin's name on it and
+  written as the plugin.
 - `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
   entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands
   write in turn by none: past that one step the cut is recorded as `plugin_cut`, so two plugins never answer each
@@ -138,9 +156,12 @@ input. It is given these variables and nothing else of the journal's environment
 - `JOURNAL_PLUGIN` and `JOURNAL_PLUGIN_TOKEN`: its name and the token that makes a `journal` command or an API call
   (headers `X-Journal-Plugin` and `X-Journal-Plugin-Token`) the plugin's own. What it writes is stamped `plugin:<name>`;
   it can never act as you, and a plan is never approved by it.
-- `JOURNAL_PLUGIN_DIR`, `JOURNAL_PLUGIN_DATA` (a folder of its own under `.journal/plugin-data/`) and
-  `JOURNAL_SETTINGS` (a file with its settings as JSON).
-- `PATH` with the `journal` command on it.
+- `JOURNAL_PLUGIN_DIR`, `JOURNAL_PLUGIN_DATA` and `JOURNAL_SETTINGS`: its folder; a folder of its own under
+  `.journal/plugin-data/`, kept between runs and across upgrades, where it keeps what it must remember, since each
+  event starts the program afresh; and a file with its settings as one JSON object of key to value, the defaults
+  filled in, numbers as numbers.
+- `PATH`: the journal's own `.journal/bin` with the `journal` command, then `/usr/local/bin`, `/opt/homebrew/bin`,
+  `/usr/bin` and `/bin`. A program it needs from elsewhere belongs in `requires`.
 
 An event it holds is answered inside the hook: the plugins holding one event are asked in the order they were
 installed and share one deadline, the setting `plugins.deadline` (6 seconds), below the hook's own ten. A plugin is
@@ -155,12 +176,20 @@ failing, until a card says it answers again.
 
 ## Settings
 
-A manifest's `settings` names a JSON file listing each setting: its `key`, `title`, `kind` (`text`, `number`,
-`flag`, `choice` with its `choices`, `list`, or `secret`), `default` and `help`. Install sets each to its default.
+A manifest's `settings` names a JSON file holding a list of settings, each with its `key`, `title`, `kind` (`text`,
+`number`, `flag`, `choice` with its `choices`, `list`, or `secret`), `default` and `help`; a secret has no default:
+
+```json
+[{"key": "repeat", "title": "Repeat", "kind": "number", "default": 1, "help": "How many times it says its line"},
+ {"key": "token", "title": "Token", "kind": "secret", "help": "The key it sends"}]
+```
+
+Install sets each to its default, and the program reads them from `JOURNAL_SETTINGS` as `{"repeat": 1, ...}`.
 `journal plugin settings <name>` lists them, and `journal plugin configure <name> <key> <value>` sets one, checked
 against its kind; only you configure a plugin. A `secret` setting becomes a secret of the Secrets feature, proposed for
 `plugin:<name>`. You fill it on the Secrets page and allow it to the plugin there; only then is its value in the
-plugin's environment, under the secret's variable. No command ever sets it.
+plugin's environment, under the secret's variable, which the Secrets page shows. In `JOURNAL_SETTINGS` it stands as
+`{"secret": <number>}`, never its value. No command ever sets it.
 
 ## Installing and managing
 

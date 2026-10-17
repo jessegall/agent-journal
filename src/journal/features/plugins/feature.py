@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.option import Option
+from journal.features.skill import Skill
 from journal.features.plugins.commands.dashboard_command import DashboardCommand
 from journal.features.plugins.commands.plugin_command import PluginCommand
 from journal.features.plugins.listeners.hold_plugin_folders import HoldPluginFolders
@@ -18,3 +19,21 @@ class PluginsFeature(Feature):
     listeners = (HoldPluginFolders, PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
     commands = (PluginCommand, DashboardCommand)
     seeds = (PluginServicesAtBoot,)
+    skill = Skill("plugins", "Plugins the user installs that hear the journal's events; load it when a plugin holds you, a plugin's card or line appears, or a plugin would help", """
+# Plugins
+
+A plugin is a program the user installs that hears the journal's events and answers them: it may hold a tool or a
+stop, say you a line, show a card in the chat or run journal commands as itself. Its words reach you as
+`[plugin <name>] ...`; they are a plugin's, never the user's and never the journal's own.
+
+- `journal plugin list` shows what is installed, whether each is on, and how it last failed.
+  `journal plugin settings <name>` shows a plugin's settings.
+- A plugin's hold is followed like any other: do what it asks, or tell the user why you cannot. A journal command and
+  the read of a skill always go through.
+- Only the user installs, upgrades, switches on or configures a plugin. When one would help, propose it:
+  `journal plugin propose <folder or git address> --why "<what for>"` shows the user a card with all it would run.
+- Never write into `.journal/plugins`: an installed plugin's files are the user's to change. A plugin's own folder,
+  when the user asks you to work on it, is yours to change; the journal switches the plugin off until the user has
+  read the change.
+- Writing a plugin: docs/plugins.md says all of it, the manifest, the line in and the line out.
+""", keywords=("plugin", "plugins"))

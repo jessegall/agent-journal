@@ -939,5 +939,16 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
   a `plugin_cut` entry records it.
 - `plugin.updated` is delivered to a plugin alone when someone else changes its settings. Install writes the settings
   once, so a plugin hears it only on a later change.
+- Only the user installs, upgrades, switches on or configures. The agent proposes with `journal plugin propose`. The
+  agent's writes into `.journal/plugins` are held. A linked folder is not held, since it is the user's own working copy
+  (code-commandments is one); the hash check switches the plugin off when its program changes.
+- Services run per environment, one copy under each running supervisor, each on a short socket path in /tmp. The
+  program answers when no supervisor runs or the socket is gone.
+- A dashboard is lines the plugin writes (`journal dashboard set`), drawn by the viewer's own dashboard. No plugin page
+  runs in the viewer.
+- A keyed card settles the earlier one in place. A plugin's plain message is drawn as a card of the plugin's.
+- What a plugin did is its record: the entries it left (`plugin_said`, `plugin_command`, `plugin_fault`,
+  `plugin_unanswered`) and every row change stamped with it.
+- Requiring a plugin's skill in a state waits for a workflow action that names a skill.
 - The console captures each command's output per context (CapturedStream) and runs commands side by side. A plugin's
   setup step or installed command may itself run `journal` commands while `journal plugin install` runs.
