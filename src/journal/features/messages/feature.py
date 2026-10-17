@@ -43,7 +43,7 @@ class Messages(Feature):
     ONLY_A_FACE = Nudge(name, "only_a_face", "your reply was only {{face}}, so it was not posted", "an emoji on its own is a reaction: journal message react <n> \"{{face}}\" puts it on the message it answers; write words when there is something to say", repeat_after=0)
     UNREAD_HELD = Nudge(name, "unread_held", "you have {{count}} unread messages", "journal message unread before any other write", repeat_after=0)
     ANSWER = Nudge(name, "answer", "answer message {{messages}} before you do anything else", "a reply with [!reply:N]; an emoji reaction answers only a short message", repeat_after=300, answered_in_chat=True)
-    ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through", repeat_after=0, answered_in_chat=True)
+    ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N] in words, or journal message send '<words>' --reply-to N, which always counts; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through", repeat_after=0, answered_in_chat=True)
     WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after journal message read or journal question show", "run it on its own; every word is for you", repeat_after=0)
     nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE)
 
@@ -84,7 +84,7 @@ The user leaves messages; you answer them before anything else.
 - Other tags, each opening a line of its own, run the command they stand for with the turn's words as its text:
   `[!todo="the title"]` files a task with the turn as its brief; `[!log:N]` makes the turn task N's log line and keeps it
   out of the chat; `[!end:N]` finishes task N with the turn as what landed; `[!fact="the claim"]`, `[!rule="the ruling"]`
-  and `[!reminder="the note"]` record one with the turn as its reason. A tag that cannot run is typed back to you. `journal message send "<text>" --reply-to N` answers from a command; `journal message list` shows the thread,
+  and `[!reminder="the note"]` record one with the turn as its reason. A tag that cannot run is typed back to you. `journal message send "<text>" --reply-to N` answers from a command, and always counts: a reply written just before a tool call is sometimes not saved in Claude Code's transcript, so the journal never sees it; `journal message list` shows the thread,
   unread ones marked with `*`.
 - Everything you write for the user reaches the chat as a message; keep it about the work, never about the
   journal's own commands.

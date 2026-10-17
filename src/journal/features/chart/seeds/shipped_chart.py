@@ -67,7 +67,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 20
+DRAWINGS_VERSION = 21
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -97,7 +97,7 @@ STALE = "[memory.stale] these are {{stale_after}} days old or more, check they s
 WHERE = "[briefing.where] after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}}. pick up from there, and log what the summary does not say"
 UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages. journal message unread before any other write"
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; an emoji reaction answers only a short message"
-ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
+ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words, or journal message send '<words>' --reply-to N, which always counts; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
 PARKED = "[tasks.parked] parked tasks, still open: {{parked_tasks}}. journal task resume <n> picks one up; leave them parked only on purpose"
 CHECKPOINT = "[plans.checkpoint] plan {{plan_n}}: phase {{checkpoint_phase}} is complete and a checkpoint. the user looks before the next phase; wait for their word, then journal plan start {{plan_n}}"
 CHECKPOINT_PASSED = "[plans.checkpoint_passed] plan {{plan_n}}: phase {{checkpoint_phase}} is complete, and in auto mode it does not stop you. journal plan start {{plan_n}} begins the next phase; carry on"
