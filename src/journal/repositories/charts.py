@@ -44,8 +44,8 @@ class Charts(Repository[Chart]):
         return next((c for c in self.for_event(event) if c.state == state), None)
 
     def for_event(self, event: str) -> list[Chart]:
-        """Every workflow that answers the event, in the order they run."""
-        return sorted((c for c in self.all() if c.event == event), key=lambda c: (c.place, c.id))
+        """Every workflow that answers the event, its first event or one it holds another trigger for, in the order they run."""
+        return sorted((c for c in self.all() if c.event == event or event in self.graph(c).triggers), key=lambda c: (c.place, c.id))
 
     def reorder(self, event: str, ids: list[int], by: Actor) -> list[Chart]:
         """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor."""

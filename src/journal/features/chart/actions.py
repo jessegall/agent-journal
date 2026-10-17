@@ -119,12 +119,12 @@ class Actions:
     def count_start(self, text: str, ctx: Context) -> Decision:
         """The agent's count by that name back at nought."""
         if ctx.session and text.strip():
-            self.counts.set(ctx.session, text.strip(), 0, Actor.system())
+            self.counts.set(ctx.session, ctx.counted(text.strip()), 0, Actor.system())
         return Decision()
 
     def count_one(self, text: str, ctx: Context) -> Decision:
         if ctx.session and text.strip():
-            self.counts.save(self.counts.named(ctx.session, text.strip()).up(), Actor.system())
+            self.counts.save(self.counts.named(ctx.session, ctx.counted(text.strip())).up(), Actor.system())
         return Decision()
 
     def show_card(self, text: str, ctx: Context) -> Decision:

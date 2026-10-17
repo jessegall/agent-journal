@@ -106,7 +106,8 @@ const dirty = computed(() => past.value.length > 0);
 const matches = (e) => !search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase());
 const offeredChecks = computed(() => catalogue.value.filter((e) => e.kind === "check" && matches(e)));
 const offeredActions = computed(() => catalogue.value.filter((e) => e.kind === "action" && matches(e)));
-const offeredTriggers = computed(() => (trigger.value ? [] : catalogue.value.filter((e) => e.kind === "trigger" && matches(e))));
+const heldTriggers = computed(() => new Set(nodes.value.filter((n) => n.kind === "trigger").map((n) => n.key)));
+const offeredTriggers = computed(() => catalogue.value.filter((e) => e.kind === "trigger" && !heldTriggers.value.has(e.key) && matches(e)));
 
 // where a node added from the menu lands: under the node a dragged line came from, else under the selected node, on its first free output
 const landing = computed(() => {
@@ -1122,7 +1123,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 <p class="chart-landing">{{ landingWords }}</p>
                 <MenuLabel>Triggers</MenuLabel>
                 <p v-if="trigger" class="chart-menu-about">
-                    This workflow has its trigger: {{ triggerTitle }}. For another event, create a new workflow.
+                    A trigger for another event makes this workflow answer that event too, sharing its counts.
                 </p>
                 <template v-for="entry in offeredTriggers" :key="`trigger:${entry.key}`">
                     <MenuItem :description="described(entry)" @click="add(entry)">

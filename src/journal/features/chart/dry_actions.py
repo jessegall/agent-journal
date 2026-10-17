@@ -14,7 +14,7 @@ class DryActions:
         if key == "stop_here":
             return Decision.tell("would run no later workflows of the event")
         if key in ("count_start", "count_one"):
-            self.count(key, text.strip())
+            self.count(key, ctx.counted(text.strip()))
         named = NAMED.match(text)
         words = named.group(2) if named else text
         return Decision.tell(f"would {key.replace('_', ' ')}{f' as {named.group(1)}' if named else ''}: {self.fillers.fill(words, ctx)}")

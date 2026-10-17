@@ -84,7 +84,7 @@ class Checks:
         if not ctx.session:
             return 0
         derived = getattr(self, f"derived_{name}", None)
-        return derived(ctx) if derived else self.counts.named(ctx.session, name).value
+        return derived(ctx) if derived else self.counts.named(ctx.session, ctx.counted(name)).value
 
     def derived_edits(self, ctx: Context) -> int:
         """Writes since the task in hand was last logged, or started, a held one not counted; at a write, the ones before it, so the write in hand is read against the edits so far."""

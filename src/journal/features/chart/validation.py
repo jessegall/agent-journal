@@ -202,11 +202,11 @@ class Validation:
 
     @staticmethod
     def trigger_faults(chart: Chart, nodes: list[dict]) -> list[Fault]:
-        """A workflow holds one trigger, of the event it is for."""
+        """A workflow holds one trigger per event it answers, its first event's among them."""
         keys = [n.get("key", "") for n in nodes if n.get("kind") == NodeKind.TRIGGER]
-        if len(keys) > 1:
-            return [Fault(f"a workflow holds one trigger, of the event it is for; this one has {len(keys)}")]
-        return [Fault(f"the trigger is {keys[0]}, but this workflow is for {chart.state} at {chart.event}") for k in keys[:1] if k != chart.event]
+        twice = sorted({k for k in keys if keys.count(k) > 1})
+        faults = [Fault(f"a workflow holds one trigger of each event; this one has {keys.count(k)} of {k}") for k in twice]
+        return faults + ([Fault(f"this workflow is for {chart.event} but holds no trigger of it")] if keys and chart.event not in keys else [])
 
     @staticmethod
     def port_fault(source: dict, target: dict, port: str) -> list[Fault]:

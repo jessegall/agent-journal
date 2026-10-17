@@ -1937,13 +1937,13 @@ def test_a_workflow_holds_one_trigger(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    assert "a workflow holds one trigger" in console.run(["chart", "node", "--edit-default", "trigger", "tool_starting", "--in", "1"], AGENT).err
+    assert "a workflow holds one trigger of each event; this one has 2 of idle" in console.run(["chart", "node", "--edit-default", "trigger", "idle", "--in", "1"], AGENT).err
     port = app.server().port
-    nodes = [{"id": "a", "kind": "trigger", "key": "idle"}, {"id": "b", "kind": "trigger", "key": "ticked"}]
+    nodes = [{"id": "a", "kind": "trigger", "key": "idle"}, {"id": "b", "kind": "trigger", "key": "idle"}]
     try:
         urlopen(R(f"http://127.0.0.1:{port}/journal/chart/1", data=j.dumps({"revision": 0, "nodes": nodes, "lines": []}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5)
     except HTTPError as error:
-        assert error.code == 409 and "holds one trigger, of the event it is for; this one has 2" in j.loads(error.read())["error"]
+        assert error.code == 409 and "holds one trigger of each event; this one has 2 of idle" in j.loads(error.read())["error"]
 
 
 def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app):
@@ -2237,7 +2237,7 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     shipped = [str(c.id) for c in charts.for_event("tool_finished") if c.shipped]
     assert console.run(["chart", "order", "tool_finished", str(second), str(n), *shipped], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
     assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
-    assert "a workflow holds one trigger, of the event it is for" in console.run(["chart", "node", "trigger", "idle", "--in", str(n)], USER).err
+    assert "a workflow holds one trigger of each event" in console.run(["chart", "node", "trigger", "tool_finished", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(trigger), str(say)], USER)
     assert "your own workflow speaks" in json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")[1]), "a workflow of your own answers its state at its event"
@@ -2364,8 +2364,8 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert twice.code == 0 and charts.find(int(twice.out.split()[1].rstrip(":"))).place > charts.for_pair("working", "tool_starting").place, "a second workflow for a state at an event takes its place after the shipped one"
     working, idle = charts.for_pair("working", "tool_starting").id, charts.for_pair("idle", "idle").id
     node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
-    assert "a workflow holds one trigger, of the event it is for; this one has 2" in node(working, "trigger", "tool_starting").err
-    assert "a workflow holds one trigger, of the event it is for" in node(idle, "trigger", "tool_finished").err
+    assert "a workflow holds one trigger of each event; this one has 2 of tool_starting" in node(working, "trigger", "tool_starting").err
+    assert "a workflow holds one trigger of each event" in node(idle, "trigger", "idle").err
     assert node(idle, "check", "open_tasks").code == 0
     shown = console.run(["chart", "show"], USER).out
     assert f"workflow {idle} [idle at idle, place 40], revision 1 by user:1: Hold the stop while a task is parked" in shown and f"workflow {working} [working at tool_starting, place" in shown
@@ -2661,7 +2661,8 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
         assert out.code == 0, out.err
     started = add(starting, "action", "count_start", "--text", "subs")
     link(starting, start_trigger, started)
-    finishing, finish_trigger = own_workflow(console, charts, "idle", "tool_finished")
+    finishing, finish_trigger = starting, add(starting, "trigger", "tool_finished")
+    assert app.container.get(Charts).find(starting) in app.container.get(Charts).for_event("tool_finished"), "a second trigger makes the workflow answer its event too"
     one = add(finishing, "action", "count_one", "--text", "subs")
     over = add(finishing, "check", "count_over", "--text", "subs 2")
     enough = add(finishing, "action", "say", "--text", "[chart] two tools since the subagent started")
@@ -2682,11 +2683,11 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     counts, scope = app.container.get(Counts), app.container.get(Scope)
     hook(app, "SubagentStart", agent_id="a1")
     with scope.of(1):
-        assert [c.value for c in counts.where(session="s1", name="subs")] == [0], "the start put the count at nought"
+        assert [c.value for c in counts.where(session="s1", name=f"charts:{starting}:subs")] == [0], "the start put the workflow's count at nought"
     said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
     with scope.of(1):
-        assert [c.value for c in counts.where(session="s1", name="subs")] == [1], "one tool use counted"
+        assert [c.value for c in counts.where(session="s1", name=f"charts:{starting}:subs")] == [1], "one tool use counted, by the same workflow's other trigger"
     assert "two tools" not in said(body) and "every second tool" not in said(body), "one tool use: the count stands at one, no multiple of two"
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})
     assert "two tools since the subagent started" in said(body) and "every second tool" in said(body), "the second tool use reaches two: the checks answer yes and the lines ride the hook's answer"
@@ -3338,6 +3339,29 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app):
     console.run(["question", "answer", "1", "red"], USER)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
     assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
+
+def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    console, charts = app.console(), app.container.get(Charts)
+
+    def counting(times: int) -> int:
+        made, trigger = own_workflow(console, charts, "idle", "tool_finished")
+        previous = trigger
+        for _ in range(times):
+            one = int(console.run(["chart", "node", "action", "count_one", "--text", "uses", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+            console.run(["chart", "line", str(previous), str(one)], USER)
+            previous = one
+        return made
+    once, twice = counting(1), counting(2)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        counted = {c.name: c.value for c in app.container.get(Counts).where(session="s1")}
+    assert counted == {f"charts:{once}:uses": 1, f"charts:{twice}:uses": 2}, "each workflow keeps its own count of uses"
 
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart

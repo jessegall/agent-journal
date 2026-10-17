@@ -581,7 +581,7 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     assert status == 201 and made["state"] == "idle" and made["event"] == "tool_finished" and [n["key"] for n in made["nodes"]] == ["tool_finished"]
     moved = [{**node, "key": "idle"} for node in made["nodes"]]
     status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
-    assert status >= 400 and "the trigger is idle, but this workflow is for idle at tool_finished" in json.dumps(body)
+    assert status >= 400 and "this workflow is for tool_finished but holds no trigger of it" in json.dumps(body)
 
 
 

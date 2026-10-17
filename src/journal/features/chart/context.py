@@ -31,3 +31,8 @@ class Context:
     """The workflows a Run a workflow step is running now, innermost last, so a call into one already running is refused."""
     """The workflows walked, in order, by id."""
     """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""
+
+    def counted(self, name: str) -> str:
+        """A count's name as kept for the workflow being walked, the one a Run a workflow step called or else the event's: each workflow keeps its own counts."""
+        workflow = self.calling[-1] if self.calling else self.walked[-1] if self.walked else 0
+        return f"charts:{workflow}:{name}"
