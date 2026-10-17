@@ -44,5 +44,8 @@ by you, approved by them, and then followed: finishing one task starts the next 
   puts tasks under a phase by its number from 1.
 - `journal plan ready <n>` when every phase has its tasks. Only the user approves, on the plan page or with
   `journal plan approve <n>`; you are told, and `journal plan start <n>` begins its first task.
+- Asked for a review of a plan: `journal plan review <n>` before the reviewers go out. In review it cannot be approved,
+  and `journal plan ready <n>` waits until every subagent is back. Put what they find straight into the plan as tasks
+  under its phases, then ready it again.
 - `journal plan show <n>` lists its phases and tasks; `journal plan park <n>` puts it aside.
 """, keywords=('plan', 'plans', 'roadmap', 'phases'), required_in=('following_plan',))

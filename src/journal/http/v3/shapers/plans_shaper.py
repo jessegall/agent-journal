@@ -3,7 +3,7 @@ from journal.http.v3.v3_row import V3Row, seconds
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
 
-STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.APPROVED: "approved", PlanState.STARTED: "active", PlanState.PARKED: "parked", PlanState.DONE: "done", PlanState.CANCELLED: "abandoned"}
+STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.REVIEWING: "reviewing", PlanState.APPROVED: "approved", PlanState.STARTED: "active", PlanState.PARKED: "parked", PlanState.DONE: "done", PlanState.CANCELLED: "abandoned"}
 
 
 class PlansShaper(Shaper):

@@ -1338,6 +1338,25 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     assert app.container.get(Machine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"
 
 
+def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "the goal"], AGENT)
+    console.run(["plan", "phase", "1", "Lay the floor"], AGENT)
+    console.run(["plan", "add", "1", "pour the slab"], AGENT)
+    console.run(["plan", "todos", "1", "1", "1"], AGENT)
+    console.run(["plan", "ready", "1"], AGENT)
+    assert console.run(["plan", "review", "1"], AGENT).code == 0
+    assert "is in review" in console.run(["plan", "approve", "1"], USER).err, "no approval while reviewers read it"
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u1", tool_response={"isAsync": True, "agentId": "r1"})
+    assert "1 of your subagents are still out" in console.run(["plan", "ready", "1"], AGENT).err
+    hook(app, "SubagentStop", agent_id="r1")
+    assert console.run(["plan", "ready", "1"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
+    assert console.run(["plan", "approve", "1"], USER).code == 0
+
+
 def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)

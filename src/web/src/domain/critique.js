@@ -6,5 +6,5 @@ export const critiqueTemplates = (rows) => rows.filter((row) => !row.completed &
 export function critiqueBrief({agents, size, plan, template}) {
     const who = agents === 1 ? "one agent" : `${agents} agents`;
     const guide = template ? `, following template ${template.n} (${template.title})` : "";
-    return `Please have ${who} give plan ${plan.n} ${size}${guide}, and compile what they find into a report linked to the plan.`;
+    return `Please have ${who} give plan ${plan.n} ${size}${guide}, and put what they find straight into the plan.`;
 }

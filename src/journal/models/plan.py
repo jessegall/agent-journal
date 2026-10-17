@@ -6,7 +6,7 @@ from journal.models.scoped import Scoped
 
 @dataclass(frozen=True)
 class Plan(Scoped):
-    """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, approved by the user, then followed: finishing one task starts the next."""
+    """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, held in review while reviewers read it, approved by the user, then followed: finishing one task starts the next."""
 
     title: str = ""
     brief: str = ""
@@ -14,6 +14,9 @@ class Plan(Scoped):
 
     def ready(self) -> "Plan":
         return self.with_(state=PlanState.READY)
+
+    def reviewing(self) -> "Plan":
+        return self.with_(state=PlanState.REVIEWING)
 
     def approved(self) -> "Plan":
         return self.with_(state=PlanState.APPROVED)

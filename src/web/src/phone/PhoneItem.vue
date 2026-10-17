@@ -87,7 +87,7 @@ const template = ref(null);
 async function review() {
     hold(critiqueBrief({agents: agents.value, size: depth.value, plan: row.value, template: template.value}), `plan:${row.value.n}`);
     reviewing.value = false;
-    tell(notice, "Asked for a review. The findings come back as a report linked to this plan.");
+    tell(notice, "Asked for a review. The plan can be approved once the reviewers are back and their findings are in it.");
     try {
         await flush();
         refresh();

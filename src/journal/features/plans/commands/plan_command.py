@@ -6,6 +6,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.plans.states.following_plan import FollowingPlan
+from journal.features.workers.subagents import Subagents
 from journal.models.actor_kind import ActorKind
 from journal.models.link import Link
 from journal.models.phase import Phase
@@ -23,8 +24,8 @@ from journal.repositories.tasks import Tasks
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine) -> None:
-        self.plans, self.phases, self.tasks, self.links, self.machine = plans, phases, tasks, links, machine
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents) -> None:
+        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents = plans, phases, tasks, links, machine, subagents
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "draft a plan")
@@ -48,6 +49,7 @@ class PlanCommand(Command):
         todos.add_argument("phase", type=int)
         todos.add_argument("tasks", type=int, nargs="+")
         self.verb(verbs, "ready", "the plan is built: every phase has its tasks, and the user may approve it").add_argument("n", type=int)
+        self.verb(verbs, "review", "reviewers are reading the plan: it cannot be approved until they are back and their findings are in it").add_argument("n", type=int)
         self.verb(verbs, "approve", "the user's word: the plan may start").add_argument("n", type=int)
         self.verb(verbs, "start", "follow an approved plan, or go on past a checkpoint: its next open task is started").add_argument("n", type=int)
         self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
@@ -107,8 +109,19 @@ class PlanCommand(Command):
         empty = [i for i, phase in enumerate(phases, 1) if not self.plans.tasks_in(phase)]
         if empty:
             raise Refused(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
+        out = self.subagents.running(where.session) if plan.state == PlanState.REVIEWING and where.session else 0
+        if out:
+            raise Refused(f"plan {plan.id} is in review and {out} of your subagents are still out: wait for them, put what they found into the plan, then ready it")
         plan = self.plans.save(plan.ready(), where.actor)
         print(f"plan {plan.id} ready: the user approves it on the plan page")
+        return 0
+
+    def review(self, args: Namespace, where: Where) -> int:
+        plan = self.plans.find(args.n)
+        if plan.state not in (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED):
+            raise Refused(f"plan {plan.id} is {plan.state}: only a plan not yet started goes into review")
+        self.plans.save(plan.reviewing(), where.actor)
+        print(f"plan {plan.id} in review: put what the reviewers find straight into it, then journal plan ready {plan.id}")
         return 0
 
     def approve(self, args: Namespace, where: Where) -> int:

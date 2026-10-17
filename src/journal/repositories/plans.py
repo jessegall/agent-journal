@@ -5,6 +5,7 @@ from journal.models.actor import Actor
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
+from journal.refused import Refused
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
@@ -26,7 +27,9 @@ class Plans(ScopedRepository[Plan]):
         self.links, self.tasks, self.phases = links, tasks, phases
 
     def approve(self, plan: Plan, by: Actor) -> Plan:
-        """The user's word on a plan: approved from ready, and left as it is once started, so a second word cannot set a running plan back."""
+        """The user's word on a plan: approved from ready, refused while it is in review, and left as it is once started, so a second word cannot set a running plan back."""
+        if plan.state == PlanState.REVIEWING:
+            raise Refused(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
         if plan.state in (PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED):
             return plan
         return self.save(plan.approved(), by)
