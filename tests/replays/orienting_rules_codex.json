@@ -17,7 +17,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write before the look",
@@ -26,21 +27,32 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "looked at what is in flight",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write after the look",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "the session starts again after a compaction",
@@ -65,7 +77,8 @@
         "tasks.carry_on",
         "briefing.where"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write before the second look",
@@ -74,21 +87,40 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 1,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "looked again",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write after the second look",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 2,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     }
   ]
 }

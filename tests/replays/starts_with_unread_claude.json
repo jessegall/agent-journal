@@ -6,7 +6,8 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a session starts",
@@ -26,7 +27,8 @@
         "briefing.waiting",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

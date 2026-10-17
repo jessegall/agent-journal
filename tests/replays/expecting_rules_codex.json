@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "five quiet minutes",
@@ -23,21 +24,28 @@
       "nudges": [
         "tasks.check_awaited"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "five more",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a tool use lifts the wait",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     }
   ]
 }

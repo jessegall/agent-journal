@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a message arrives",
@@ -23,7 +24,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

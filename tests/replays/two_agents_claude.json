@@ -18,7 +18,8 @@
         "briefing.takeover",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a message arrives",
@@ -29,7 +30,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "the worker reports",
@@ -42,7 +44,8 @@
         "workers.reported",
         "workers.returned"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a read past the first mark",
@@ -26,7 +27,12 @@
       "nudges": [
         "memory.decide"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a write at the mark",
@@ -35,28 +41,50 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "a fact recorded",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write after the fact",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "a read: the mark asks once",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a stop past the second mark",
@@ -69,7 +97,8 @@
         "memory.decide",
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write at the second mark",
@@ -78,21 +107,38 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 1,
+          "24": 1,
+          "29": 1
+        }
+      ]
     },
     {
       "name": "nothing survives",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write after",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 1,
+          "24": 1,
+          "29": 1
+        }
+      ]
     }
   ]
 }

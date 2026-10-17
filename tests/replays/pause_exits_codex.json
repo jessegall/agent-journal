@@ -12,14 +12,20 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a tool use lifts the await",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a stop back at work",
@@ -31,28 +37,36 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "stuck",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a tool use lifts being stuck",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "waiting on a question",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "the answer releases the wait",
@@ -67,14 +81,16 @@
         "chart.line",
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "awaiting a worker",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "the report releases the wait",
@@ -91,7 +107,8 @@
         "workers.returned",
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "running a sequence",
@@ -103,7 +120,8 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "the last step ends the sequence",
@@ -115,7 +133,8 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

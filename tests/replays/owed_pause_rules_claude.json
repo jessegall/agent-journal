@@ -15,7 +15,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a tool use at the mark",
@@ -29,7 +30,12 @@
       "nudges": [
         "memory.decide"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a stop under the mark",
@@ -39,7 +45,8 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

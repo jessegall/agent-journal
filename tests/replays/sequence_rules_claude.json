@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write before the step is taken up",
@@ -21,7 +22,12 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a stop at step one",
@@ -31,14 +37,24 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a write once it is taken up",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "a stop at step two",
@@ -48,7 +64,12 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     }
   ]
 }

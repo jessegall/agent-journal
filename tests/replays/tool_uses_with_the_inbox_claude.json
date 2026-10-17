@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "message 1 arrives",
@@ -23,21 +24,34 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "read 1",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 1
+        }
+      ]
     },
     {
       "name": "read 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 2
+        }
+      ]
     },
     {
       "name": "read 3",
@@ -51,21 +65,39 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 1,
+          "130": 3
+        }
+      ]
     },
     {
       "name": "read 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 1,
+          "130": 4
+        }
+      ]
     },
     {
       "name": "read 5",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 1,
+          "130": 5
+        }
+      ]
     },
     {
       "name": "read 6",
@@ -79,21 +111,39 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 2,
+          "130": 6
+        }
+      ]
     },
     {
       "name": "read 7",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 2,
+          "130": 7
+        }
+      ]
     },
     {
       "name": "read 8",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 2,
+          "130": 8
+        }
+      ]
     },
     {
       "name": "read 9",
@@ -107,21 +157,39 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 3,
+          "130": 9
+        }
+      ]
     },
     {
       "name": "read 10",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 3,
+          "130": 10
+        }
+      ]
     },
     {
       "name": "read 11",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 3,
+          "130": 11
+        }
+      ]
     },
     {
       "name": "read 12",
@@ -135,21 +203,39 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 4,
+          "130": 12
+        }
+      ]
     },
     {
       "name": "read 13",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 4,
+          "130": 13
+        }
+      ]
     },
     {
       "name": "read 14",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 4,
+          "130": 14
+        }
+      ]
     },
     {
       "name": "read 15",
@@ -163,14 +249,26 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 5,
+          "130": 15
+        }
+      ]
     },
     {
       "name": "read 16",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 5,
+          "130": 16
+        }
+      ]
     },
     {
       "name": "a write at 17",
@@ -179,14 +277,24 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 5,
+          "130": 17,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "message 1 read",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a read while owed",
@@ -197,35 +305,60 @@
       "nudges": [
         "messages.answer"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "142": 1,
+          "147": 1
+        }
+      ]
     },
     {
       "name": "a journal command while owed",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "147": 2
+        }
+      ]
     },
     {
       "name": "a look at its files",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "147": 3
+        }
+      ]
     },
     {
       "name": "the reply",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a read after the reply",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     }
   ]
 }

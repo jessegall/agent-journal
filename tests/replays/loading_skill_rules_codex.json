@@ -18,7 +18,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write before the skill is read",
@@ -27,14 +28,24 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "the journal skill read",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "102": 6
+        }
+      ]
     },
     {
       "name": "a write before the look",
@@ -43,14 +54,20 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     },
     {
       "name": "looked at what is in flight",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "message 1 arrives",
@@ -61,7 +78,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a prompt naming plans",
@@ -76,7 +94,8 @@
         "skills.required",
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write before the plans skill is read",
@@ -85,21 +104,38 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 1
+        }
+      ]
     },
     {
       "name": "the plans skill read",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "102": 9
+        }
+      ]
     },
     {
       "name": "a write after",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 2
+        }
+      ]
     }
   ]
 }

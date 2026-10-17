@@ -12,14 +12,30 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "write 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 1,
+          "24": 1,
+          "29": 1
+        }
+      ]
     },
     {
       "name": "a message read and owed",
@@ -30,7 +46,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a write held twice over",
@@ -41,7 +58,17 @@
       "nudges": [
         "messages.answer"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "142": 1,
+          "147": 1,
+          "19": 2,
+          "24": 2,
+          "29": 2
+        }
+      ]
     }
   ]
 }

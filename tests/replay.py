@@ -50,16 +50,19 @@ class Replay:
 
     def __init__(self, app, monkeypatch) -> None:
         """On a started journal, the lines typed to its agent caught."""
-        self.app, self.typed, self.steps, self.seen = app, [], [], 0
+        self.app, self.typed, self.steps, self.seen, self.last_walk = app, [], [], 0, 0
         monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, instruction: self.typed.append(instruction["line"]))
 
     def step(self, name: str, answer=None) -> None:
-        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, and the agent's counts as they stand."""
+        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the agent's counts as they stand, and what the count checks of the walks since read."""
         with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
-            nudges = [e.data["key"] for e in reversed(self.app.container.get(Entries).of_kind_in(1000)) if e.kind == "nudge"]
+            entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
+            nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
+            walks = [e for e in entries if e.kind == "walk"]
             counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).where(session="s1"), key=lambda c: c.name)}
-        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:], "counts": counts})
-        self.seen = len(nudges)
+        read = [w.data["read"] for w in walks if w.id > self.last_walk and w.data.get("read")]
+        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:], "counts": counts, "read": read})
+        self.seen, self.last_walk = len(nudges), max([self.last_walk, *(w.id for w in walks)])
         self.typed.clear()
 
     def record(self) -> list[dict]:
@@ -131,6 +134,8 @@ def differences(left: list[dict], right: list[dict], nudges: bool = False) -> li
         kept = lambda counts: {k: v for k, v in counts.items() if k not in DERIVED}
         if "counts" in a and "counts" in b and kept(a["counts"]) != kept(b["counts"]):
             found.append(f"{a['name']}: the counts differ: {a['counts']} against {b['counts']}")
+        if "read" in a and "read" in b and a["read"] != b["read"]:
+            found.append(f"{a['name']}: what the count checks read differs: {a['read']} against {b['read']}")
     if len(left) != len(right):
         found.append(f"{len(left)} steps against {len(right)}")
     return found

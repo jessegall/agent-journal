@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "message 1 arrives",
@@ -23,7 +24,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a prompt after 1",
@@ -37,7 +39,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "message 2 arrives",
@@ -48,7 +51,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "message 3 arrives",
@@ -59,7 +63,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a prompt after 3",
@@ -73,7 +78,8 @@
       "nudges": [
         "messages.some"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "message 4 arrives",
@@ -84,7 +90,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a prompt after 4",
@@ -98,14 +105,16 @@
       "nudges": [
         "messages.many"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a prompt again after 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

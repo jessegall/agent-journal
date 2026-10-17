@@ -12,14 +12,16 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "quiet for a minute",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "quiet for half an hour",
@@ -30,21 +32,24 @@
       "nudges": [
         "tasks.check_in"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "quiet for half an hour again",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a task parked",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a minute with a task parked",
@@ -55,21 +60,24 @@
       "nudges": [
         "tasks.parked_still"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a minute more",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "awaiting the deploy",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "five quiet minutes awaiting",
@@ -80,21 +88,28 @@
       "nudges": [
         "tasks.check_awaited"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "five more awaiting",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "the agent's own tool use lifts the wait",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
     }
   ]
 }

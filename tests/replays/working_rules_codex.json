@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a stop with the task in hand",
@@ -24,7 +25,8 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "the session starts again",
@@ -43,7 +45,8 @@
         "voices.voice",
         "tasks.carry_on"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "quiet for a quarter of an hour",
@@ -54,7 +57,8 @@
       "nudges": [
         "tasks.open"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

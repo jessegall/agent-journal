@@ -12,182 +12,383 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "write 1",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "write 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 1,
+          "24": 1,
+          "29": 1
+        }
+      ]
     },
     {
       "name": "write 3",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 2,
+          "24": 2,
+          "29": 2
+        }
+      ]
     },
     {
       "name": "write 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 3,
+          "24": 3,
+          "29": 3
+        }
+      ]
     },
     {
       "name": "write 5",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 4,
+          "24": 4,
+          "29": 4
+        }
+      ]
     },
     {
       "name": "write 6",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 5,
+          "24": 5,
+          "29": 5
+        }
+      ]
     },
     {
       "name": "write 7",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 6,
+          "24": 6,
+          "29": 6
+        }
+      ]
     },
     {
       "name": "write 8",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 7,
+          "24": 7,
+          "29": 7
+        }
+      ]
     },
     {
       "name": "write 9",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 8,
+          "24": 8,
+          "29": 8
+        }
+      ]
     },
     {
       "name": "write 10",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 9,
+          "24": 9,
+          "29": 9
+        }
+      ]
     },
     {
       "name": "write 11",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 10,
+          "24": 10,
+          "29": 10
+        }
+      ]
     },
     {
       "name": "write 12",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 11,
+          "24": 11,
+          "29": 11
+        }
+      ]
     },
     {
       "name": "write 13",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 12,
+          "24": 12,
+          "29": 12
+        }
+      ]
     },
     {
       "name": "write 14",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 13,
+          "24": 13,
+          "29": 13
+        }
+      ]
     },
     {
       "name": "write 15",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 14,
+          "24": 14,
+          "29": 14
+        }
+      ]
     },
     {
       "name": "write 16",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 15,
+          "24": 15,
+          "29": 15
+        }
+      ]
     },
     {
       "name": "write 17",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 16,
+          "24": 16,
+          "29": 16
+        }
+      ]
     },
     {
       "name": "write 18",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 17,
+          "24": 17,
+          "29": 17
+        }
+      ]
     },
     {
       "name": "write 19",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 18,
+          "24": 18,
+          "29": 18
+        }
+      ]
     },
     {
       "name": "write 20",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 19,
+          "24": 19,
+          "29": 19
+        }
+      ]
     },
     {
       "name": "write 21",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 20,
+          "24": 20,
+          "29": 20
+        }
+      ]
     },
     {
       "name": "write 22",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 21,
+          "24": 21,
+          "29": 21
+        }
+      ]
     },
     {
       "name": "write 23",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 22,
+          "24": 22,
+          "29": 22
+        }
+      ]
     },
     {
       "name": "write 24",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 23,
+          "24": 23,
+          "29": 23
+        }
+      ]
     },
     {
       "name": "write 25",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 24,
+          "24": 24,
+          "29": 24
+        }
+      ]
     },
     {
       "name": "write 26",
@@ -202,196 +403,413 @@
         "tasks.log_soon",
         "tasks.in_hand"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 25,
+          "24": 25,
+          "29": 25
+        }
+      ]
     },
     {
       "name": "write 27",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 26,
+          "24": 26,
+          "29": 26
+        }
+      ]
     },
     {
       "name": "logged",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "write 1 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 0,
+          "24": 0,
+          "29": 0
+        }
+      ]
     },
     {
       "name": "write 2 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 1,
+          "24": 1,
+          "29": 1
+        }
+      ]
     },
     {
       "name": "write 3 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 2,
+          "24": 2,
+          "29": 2
+        }
+      ]
     },
     {
       "name": "write 4 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 3,
+          "24": 3,
+          "29": 3
+        }
+      ]
     },
     {
       "name": "write 5 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 4,
+          "24": 4,
+          "29": 4
+        }
+      ]
     },
     {
       "name": "write 6 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 5,
+          "24": 5,
+          "29": 5
+        }
+      ]
     },
     {
       "name": "write 7 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 6,
+          "24": 6,
+          "29": 6
+        }
+      ]
     },
     {
       "name": "write 8 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 7,
+          "24": 7,
+          "29": 7
+        }
+      ]
     },
     {
       "name": "write 9 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 8,
+          "24": 8,
+          "29": 8
+        }
+      ]
     },
     {
       "name": "write 10 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 9,
+          "24": 9,
+          "29": 9
+        }
+      ]
     },
     {
       "name": "write 11 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 10,
+          "24": 10,
+          "29": 10
+        }
+      ]
     },
     {
       "name": "write 12 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 11,
+          "24": 11,
+          "29": 11
+        }
+      ]
     },
     {
       "name": "write 13 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 12,
+          "24": 12,
+          "29": 12
+        }
+      ]
     },
     {
       "name": "write 14 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 13,
+          "24": 13,
+          "29": 13
+        }
+      ]
     },
     {
       "name": "write 15 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 14,
+          "24": 14,
+          "29": 14
+        }
+      ]
     },
     {
       "name": "write 16 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 15,
+          "24": 15,
+          "29": 15
+        }
+      ]
     },
     {
       "name": "write 17 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 16,
+          "24": 16,
+          "29": 16
+        }
+      ]
     },
     {
       "name": "write 18 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 17,
+          "24": 17,
+          "29": 17
+        }
+      ]
     },
     {
       "name": "write 19 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 18,
+          "24": 18,
+          "29": 18
+        }
+      ]
     },
     {
       "name": "write 20 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 19,
+          "24": 19,
+          "29": 19
+        }
+      ]
     },
     {
       "name": "write 21 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 20,
+          "24": 20,
+          "29": 20
+        }
+      ]
     },
     {
       "name": "write 22 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 21,
+          "24": 21,
+          "29": 21
+        }
+      ]
     },
     {
       "name": "write 23 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 22,
+          "24": 22,
+          "29": 22
+        }
+      ]
     },
     {
       "name": "write 24 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 23,
+          "24": 23,
+          "29": 23
+        }
+      ]
     },
     {
       "name": "write 25 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 24,
+          "24": 24,
+          "29": 24
+        }
+      ]
     },
     {
       "name": "write 26 after the log",
@@ -406,175 +824,375 @@
         "tasks.log_soon",
         "tasks.in_hand"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 25,
+          "24": 25,
+          "29": 25
+        }
+      ]
     },
     {
       "name": "write 27 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 26,
+          "24": 26,
+          "29": 26
+        }
+      ]
     },
     {
       "name": "write 28 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 27,
+          "24": 27,
+          "29": 27
+        }
+      ]
     },
     {
       "name": "write 29 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 28,
+          "24": 28,
+          "29": 28
+        }
+      ]
     },
     {
       "name": "write 30 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 29,
+          "24": 29,
+          "29": 29
+        }
+      ]
     },
     {
       "name": "write 31 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 30,
+          "24": 30,
+          "29": 30
+        }
+      ]
     },
     {
       "name": "write 32 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 31,
+          "24": 31,
+          "29": 31
+        }
+      ]
     },
     {
       "name": "write 33 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 32,
+          "24": 32,
+          "29": 32
+        }
+      ]
     },
     {
       "name": "write 34 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 33,
+          "24": 33,
+          "29": 33
+        }
+      ]
     },
     {
       "name": "write 35 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 34,
+          "24": 34,
+          "29": 34
+        }
+      ]
     },
     {
       "name": "write 36 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 35,
+          "24": 35,
+          "29": 35
+        }
+      ]
     },
     {
       "name": "write 37 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 36,
+          "24": 36,
+          "29": 36
+        }
+      ]
     },
     {
       "name": "write 38 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 37,
+          "24": 37,
+          "29": 37
+        }
+      ]
     },
     {
       "name": "write 39 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 38,
+          "24": 38,
+          "29": 38
+        }
+      ]
     },
     {
       "name": "write 40 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 39,
+          "24": 39,
+          "29": 39
+        }
+      ]
     },
     {
       "name": "write 41 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 40,
+          "24": 40,
+          "29": 40
+        }
+      ]
     },
     {
       "name": "write 42 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 41,
+          "24": 41,
+          "29": 41
+        }
+      ]
     },
     {
       "name": "write 43 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 42,
+          "24": 42,
+          "29": 42
+        }
+      ]
     },
     {
       "name": "write 44 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 43,
+          "24": 43,
+          "29": 43
+        }
+      ]
     },
     {
       "name": "write 45 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 44,
+          "24": 44,
+          "29": 44
+        }
+      ]
     },
     {
       "name": "write 46 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 45,
+          "24": 45,
+          "29": 45
+        }
+      ]
     },
     {
       "name": "write 47 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 46,
+          "24": 46,
+          "29": 46
+        }
+      ]
     },
     {
       "name": "write 48 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 47,
+          "24": 47,
+          "29": 47
+        }
+      ]
     },
     {
       "name": "write 49 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 48,
+          "24": 48,
+          "29": 48
+        }
+      ]
     },
     {
       "name": "write 50 after the log",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 49,
+          "24": 49,
+          "29": 49
+        }
+      ]
     },
     {
       "name": "write 51 after the log",
@@ -585,7 +1203,15 @@
       "nudges": [
         "tasks.in_hand"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "130": 0,
+          "19": 50,
+          "24": 50,
+          "29": 50
+        }
+      ]
     }
   ]
 }

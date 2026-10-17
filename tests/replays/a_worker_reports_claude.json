@@ -12,7 +12,8 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "worker 1 reports",
@@ -23,7 +24,8 @@
       "nudges": [
         "workers.reported"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "worker 2 is stopped",
@@ -36,7 +38,8 @@
         "workers.stopped",
         "workers.returned"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     }
   ]
 }

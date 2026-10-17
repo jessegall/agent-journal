@@ -15,21 +15,34 @@
         "voices.voice",
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "read 1",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 1
+        }
+      ]
     },
     {
       "name": "read 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 0,
+          "130": 2
+        }
+      ]
     },
     {
       "name": "a stop",
@@ -41,7 +54,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "a prompt",
@@ -55,7 +69,8 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "read 3, the third use since the message",
@@ -69,7 +84,13 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 1,
+          "130": 3
+        }
+      ]
     },
     {
       "name": "the session starts again",
@@ -89,21 +110,34 @@
         "briefing.waiting",
         "voices.voice"
       ],
-      "counts": {}
+      "counts": {},
+      "read": []
     },
     {
       "name": "read 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 1,
+          "130": 4
+        }
+      ]
     },
     {
       "name": "read 5",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 1,
+          "130": 5
+        }
+      ]
     },
     {
       "name": "read 6, the sixth",
@@ -117,7 +151,13 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {}
+      "counts": {},
+      "read": [
+        {
+          "125": 2,
+          "130": 6
+        }
+      ]
     }
   ]
 }
