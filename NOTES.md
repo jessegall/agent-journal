@@ -841,3 +841,17 @@ Context over N percent read the event's own content, answered the same for Claud
 shows the locks and a card's own number in its title. Phase five has nothing to build: its guards are engine
 behaviour by the user's ruling and stay where they are, listed under Kept in code. The suite: 248 tests; the
 replays: 58; the dev journal after the restart: 9 states, 27 shipped workflows, none behind, 142 catalogue entries.
+
+Phase five had nothing to build: its guards are engine behaviour by the user's ruling. Phase six of plan 7, closed on
+2026-10-17 in the night, turned on the user's rulings of the evening: one concern per workflow in the run order, a held
+stop and Run no later workflows ending the walk, a child state running its parent's workflows after its own, the
+agent's debts each feature's own code, the counts read from the journal's record and kept by no workflow, two Opus
+reviewers' findings applied (task 417). The start block is the Always workflow Tell the agent the journal's rules,
+facts and what waits (395); the voice is its own workflow (396); the fiftieth-line reminder a workflow at Post tool use
+reading the lines said since the last one (397); the silent session's end and the delivery retype stay the engine's
+(398, 399); what is unread at a start is delivery (on message 1672). Alongside: the agent events take the providers'
+hook names (425), titles say their settings' numbers (424), a card's run-ending steps carry the no later workflows
+badge (418, 426), the menu watcher answers Claude Code's menus by the user's rules (420), a start after a compaction
+says where the work stands (409), old facts are asked about once a day (410), and a cancel stamps a task finished so
+the sidebar counts only open tasks (on message 1729). The rules table is final: every row names its workflow by title
+or says the engine keeps it. The suite: 250 tests; the replays: 56.

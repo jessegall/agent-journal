@@ -29,11 +29,11 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 
 | Event | Line (nudge key) | Checks it needs | Action | Catalogue today |
 | --- | --- | --- | --- | --- |
-| Pre tool use | messages.unread_held: "you have N unread messages" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | in the locked workflow the guards at Pre tool use, on the counts of uses and namings; its listener is deleted |
-| Pre tool use | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | in the locked workflow the guards at Pre tool use, on the count of uses owed; its listener is deleted |
+| Pre tool use | messages.unread_held: "you have N unread messages" | a message unread; every 3rd tool use since it came; 5 namings gone by; the tool writes | hold the tool, else say | the Always workflows Hold a write while messages stay unread after N reminders and Name the unread messages every N tool uses, on the agent's own tool use; the uses and reminders are read from the record |
+| Pre tool use | messages.answer / answer_held: "answer message N before you do anything else" | a message read and unanswered; the tool is not a journal command; the tool does not read the message's own files | hold the tool (after `messages.hold_after`), say before | the Always workflows Hold the tools while a read message stays unanswered and Ask for an answer to a read message after N tool uses, on the agent's own tool use |
 | Pre tool use | messages.whole: "read the user's words whole" | the command pipes a message or question read | hold the tool | stays in code: a shell-syntax guard, with the mixed-journal and narrow-read refusals |
-| Pre tool use | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | in the workflow Working at Pre tool use, on the edits count the workflows keep; its listener is deleted |
-| Pre tool use | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | a workflow in phase 3, in the base at a tool use, with the check same command N times running and the command filler |
+| Pre tool use | tasks.log_soon / in_hand / log_overdue | a task in hand; edits since the log at, every and over the three settings; the tool writes | say, say, hold | Working's three workflows at Pre tool use: hold the write when the log is overdue, ask after N edits, name the task every N edits; the edits since the log are read from the record |
+| Pre tool use | tasks.polling: "you ran the same check N times in a row" | the same shell command three times running | say | the engine's: the tasks feature's SpotPolling listener, ruled engine behaviour (plan 7, task 393) |
 | Pre tool use | laws.no_model / no_job | the tool dispatches a subagent; the dispatch names no model or no job | hold | stays in code: a law of the journal, L1 and L2, which no workflow may switch off |
 | Pre tool use | questions.own_tool | the tool is the agent's own question tool | hold | stays in code: a guard on the provider's own tool, as the shell guards are |
 | Pre tool use | shell.alone | a journal command chained with other commands | hold | stays in code: a shell-syntax guard |
@@ -41,43 +41,40 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Pre tool use | triggers.denied | a trigger of the user's matches the tool | hold | stays with the triggers feature: the user's own watch words are conduct of their own kind, edited on their page |
 | Post tool use | laws.large_result | the result ran over N lines | say | stays in code: a law of the journal, L3 |
 | Post tool use | git.closed_by_commit | a commit's message named tasks | say | stays with the git feature: it reads commit messages, which no check reads |
-| User prompt submit | messages.new / some / many | messages unread, by count | say | in the workflow the Always workflow at User prompt submit; its listener is deleted |
+| User prompt submit | messages.new / some / many | messages unread, by count | say | the Always workflow Say what is unread at User prompt submit |
 | User prompt submit | skills.required | the prompt names a skill's keyword; the skill not read since | say, then hold the tool until read | in the workflow the Always workflow at User prompt submit (Require a skill, locked) and the hold in the guards at Pre tool use; the skill is owed as a link on the agent's row |
-| Stop | tasks.carry_on / carry_on_log | a task in hand; its log stale (10 min) | block the stop | the workflow Working at a stop, in phase 2 (task 162), with the frozen record of the Working rules as its proof |
+| Stop | tasks.carry_on / log_old | a task in hand; its log stale (10 min) | block the stop | Working's two workflows at Stop: tell the agent to carry on, and ask for a log when the task's log is old |
 | Stop | plans.checkpoint / checkpoint_passed | a started plan at a completed checkpoint phase; auto mode | say, or hold the stop and carry on | in the workflow Following a plan; the plan's advance stops at the checkpoint in the plans feature, the agent standing in the plan's state |
-| Stop | messages.new / some / many | messages unread | say on the stop | in the workflow the Always workflow at Stop; its listener is deleted |
-| Stop | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | Idle's workflows, in phase 2 (task 161) |
+| Stop | messages.new / some / many | messages unread | say on the stop | the Always workflow Say what is unread at Stop |
+| Stop | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | Idle's two workflows at Stop: hold the stop while a task is parked, and in auto mode while tasks are open; a held stop runs no later workflows |
 | Stop | chart.awaiting: "you stopped while the journal awaits ..." | something owed: a skill, the look at what is in flight, a decision at a mark | block the stop, naming the debt | in the workflow the Always workflow at Stop (Something owed?, locked); the pause's own stop rule is deleted |
 | Session start | briefing.ready, quiet, laws (locked), takeover, rules, facts, reminders, waiting | always; the rows that exist; another session lately | say | in the Always workflow at Session start, the start block drawn line by line after the look is owed (plan 7, task 395); its listener is deleted; the orient line is the Require a look node's |
 | Session start | messages.new / some / many | messages unread | say | the engine's delivery: the messages feature catches a starting session up on what is unread (DeliverUnreadAtStart), on the user's ruling of message 1672 |
-| Session start | voices.voice | the voice chosen | say | the last node of the start block in the Always workflow at Session start, with the filler {{voice}} (plan 7, task 396); its listener is deleted |
+| Session start | voices.voice | the voice chosen | say | the Always workflow Tell the agent how to talk to the user at Session start, with the filler {{voice}} (plan 7, task 396); its listener is deleted |
 | Session start | voices.introduce | a fresh conversation | type, after a delay | stays with the voices feature: a typed line after a delay, which no node does |
 | Tick | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in Idle's workflows; its listener is deleted |
 | Tick | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in Idle's workflows; its listener is deleted |
-| Tick | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | Expecting's workflows, in phase 2 (task 165), with the frozen record as its proof |
+| Tick | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | Expecting's workflow at Tick, Remind the agent what it waits for after five minutes of quiet |
 | Tick | delivery retype | a typed line unconfirmed for 10 s between turns | type again | stays in the engine: delivery |
 | Message created by the user | messages.new: "new message N" | the author is the user; a live agent | type | the engine's own delivery: the messages feature's DeliverMessage listener types it and starts the counts; not a workflow, since nobody would open a canvas to decide whether the agent gets a message |
 | Message created by the user | triggers (watch words) | the words match a trigger | say or start a sequence | stays with the triggers feature, as above |
-| Reaction created by the user | messages.reacted | a face on a message | type | a workflow later, in every state's on reactions.created, with the check reaction by the user and the face and message fillers |
-| Rule created | memory.rule_review | a new rule | type once | a workflow later, in every state's on rules.created, with the rule filler |
-| Message by the agent created | etiquette.remind | now and then | type | a workflow later, in every state's, with the check every N lines said; its flood of today is fixed at the source already |
+| Reaction created by the user | messages.reacted | a face on a message | type | the engine's delivery: the messages feature's TellReaction listener tells the agent of a reaction you put on its message |
+| Rule created | memory.rule_review | a new rule | type once | stays with the memory feature: ReviewNewRule asks once about a rule the agent just made |
+| Message by the agent created | etiquette.remind | now and then | type | the Always workflow at Post tool use, Remind the agent what a journal line is every N lines, on the agent's own tool use, reading the lines said since the last reminder (plan 7, task 397); its listener is deleted |
 | Worker updated | workers.reported / stopped / returned | the worker reported or stopped; agents awaiting it; the last one back | say, release the wait | in Awaiting's workflow at Worker updated, which sends the agent back when the last worker is back; its listener is deleted |
 | Question updated | questions.answered | the question answered; agents waiting on it | type, release the wait | in Waiting's workflow at Question updated, which sends the agent back; its listener is deleted |
-| Plan updated | plans.approved, next, done, parked | the plan's state changed | type | a workflow later, in every state's on plans.updated, with plan-state checks and fillers |
+| Plan updated | plans.approved, next, done, parked | the plan's state changed | type | the engine's: the plans feature's listeners tell the agent of a plan's approval and follow it from task to task, its own moves (plan 7, ruled with task 414) |
 | Setting saved | voices.changed | a voice setting changed | type | stays with the voices feature |
 | Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |
 | Any event at a mark | memory.decide / held | context at 25, 50, 80 percent | say, hold | in every Always and Guards workflow at an agent event (Context over a mark not taken?, Hold the agent at a context mark, locked) and the write hold in the guards at Pre tool use; the mark owed is a fact on the agent's row, paid by fact, rule or nothing |
 | Any event | memory.whisper | a fact, rule or reminder's keyword in the prompt | say | stays with the memory feature: it reads the keywords of facts, rules and reminders, which no check reads |
 
-What stays in code by design, with why: delivery of typed lines, the shell runner's
-parts and limits with its three refusals (a mixed journal chain, a whole read of a long file, a piped read of the
-user's words: each a guard on shell syntax), the reading of the agent's turn for etiquette and faces, and the state
-rules (carry on in hand, the awaited check) until each moves with its state. Every other line in the table above is
-a workflow's to carry. Ruled under plan 3 (task 176): each row's last cell says which of three it is. A row that
-says "stays in code" is a law of the journal or a guard on syntax, data or a provider's tool, which no workflow
-may switch off; a row that "stays with" a feature is that feature's own conduct of another kind, the voice, the
-watch words, the memory's keywords; a row that says "a workflow in phase 3" moves into every state's workflow once its
-check is built, and the rows marked phase 2 move into their state's workflow with the frozen records as proof.
+What stays in code by design, with why: delivery of a message and of typed lines, the shell runner's parts and limits
+with its three refusals (a mixed journal chain, a whole read of a long file, a piped read of the user's words: each a
+guard on shell syntax), the reading of the agent's turn for etiquette and faces, what the agent owes the journal (the
+skills, the look, the mark), the moves the journal makes itself and the menu watcher. Every other line in the table
+above is a workflow's to carry. Ruled under plan 3 (task 176) and closed in plan 7: each row's last cell says whether a workflow
+carries it, by its title, or the engine keeps it, and why. No row waits for a later phase.
 
 ## Every state, and who holds its conduct
 
@@ -102,7 +99,7 @@ title and the state by its name.
 | orienting | a fact, held in the Always workflow | the look at what is in flight is a fact on the agent's row, marked by the Always workflow at Session start, held at a write by the guards and at a stop by the Always workflow at Stop, paid by journal environment here |
 | at_mark | a fact, held in the Always workflow | the mark owed is a fact on the agent's row, taken by Hold the agent at a context mark in every Always and Guards workflow, held the same way, paid by fact, rule or nothing |
 | loading_skill | a fact, held in the Always workflow | a skill owed is a link from the agent's row, set by Require a skill, held the same way, paid by the read of the file; an agent standing in one of the three at boot is unwrapped with its fact set, a user's workflow bound to one kept turned off and named |
-| ended | the workflow Does nothing yet, its trigger alone | a session that ended says nothing; its end and its start move into the workflows in phase six (task 398) |
+| ended | the workflow No workflow for this state yet, its trigger alone | a session that ended says nothing; an hour's silence ending it is the engine's own move (plan 7, task 398) |
 
 A state not in this table does not exist: the subagent state nothing ever entered is gone. A state change a workflow
 makes is named by its outcome, Wait for something outside, Mark the agent stuck, Change state to Idle, Send the agent
