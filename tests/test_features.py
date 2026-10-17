@@ -3438,8 +3438,10 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     from journal.repositories.scope import Scope
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     console = app.console()
-    made = console.run(["secret", "create", "Github", "--kind", "api key", "--brief", "gh api with GITHUB_KEY"], AGENT)
-    assert made.code == 0 and "secret 1 made: Github, waiting for the user to fill key on the Secrets page" in made.out
+    import shutil
+    monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
+    made = console.run(["secret", "create", "Github", "--kind", "api key", "--brief", "Run `curl -H @- https://api.github.com/user` or `bash -c x`, with GITHUB_KEY"], AGENT)
+    assert made.code == 0 and "secret 1 made: Github, waiting for the user to fill key on the Secrets page; proposed for the user to allow: curl" in made.out, "a shell named in the instructions is never proposed"
     assert console.run(["secret", "request", "Stripe", "--why", "to read the invoices"], AGENT).code == 0
     with app.container.get(Scope).of(1):
         assert any("Please fill in the secret Stripe on the Secrets page" in m.text and "secret 2" in m.text for m in app.container.get(Messages).in_())
@@ -3447,7 +3449,7 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     listed = console.run(["secret", "list"], AGENT).out
     assert "Github  waiting for the user" in listed and "Stripe" in listed
     shown = console.run(["secret", "show", "1"], AGENT).out
-    assert "GITHUB_KEY" in shown and "waiting for the user, hidden" in shown and "gh api with GITHUB_KEY" in shown
+    assert "GITHUB_KEY" in shown and "waiting for the user, hidden" in shown and "proposed: curl" in shown
     assert console.run(["secret", "update", "1", "--title", "GitHub"], AGENT).code == 0 and "GitHub" in console.run(["secret", "list"], AGENT).out
     assert console.run(["secret", "where"], AGENT).out.strip().endswith(".env")
     console.run(["secret", "delete", "2"], AGENT)

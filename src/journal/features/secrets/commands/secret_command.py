@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
+from journal.features.secrets.programs import Programs
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.secret import Secret
@@ -45,7 +46,8 @@ class SecretCommand(Command):
 
     def create(self, args: Namespace, where: Where) -> int:
         secret = self.made(args.title, args.brief, SecretKind.named(args.kind), where)
-        print(f"secret {secret.id} made: {secret.title}, waiting for the user to fill {', '.join(f['name'] for f in secret.fields) or 'its fields'} on the Secrets page")
+        proposed = f"; proposed for the user to allow: {', '.join(secret.proposed)}" if secret.proposed else ""
+        print(f"secret {secret.id} made: {secret.title}, waiting for the user to fill {', '.join(f['name'] for f in secret.fields) or 'its fields'} on the Secrets page{proposed}")
         return 0
 
     def request(self, args: Namespace, where: Where) -> int:
@@ -58,7 +60,7 @@ class SecretCommand(Command):
         return 0
 
     def made(self, title: str, brief: str, kind: SecretKind, where: Where) -> Secret:
-        return self.secrets.save(Secret(title=title, brief=brief, kind=kind, fields=kind.first_fields(title)), where.actor)
+        return self.secrets.save(Secret(title=title, brief=brief, kind=kind, fields=kind.first_fields(title), proposed=Programs.named_in(brief)), where.actor)
 
     def update(self, args: Namespace, where: Where) -> int:
         secret = self.secrets.find(args.n)
