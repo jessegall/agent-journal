@@ -83,6 +83,10 @@ class Provider:
         """The journal's own hook, by the one path only this package's script has; version 3's hook.sh is somebody else's."""
         return "journal/hooks/hook.sh" in json.dumps(block)
 
+    def hooks_trusted(self, project: Path) -> bool:
+        """Whether the program runs the journal's hooks in this project without asking the user first."""
+        return True
+
     def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
         """The files this tool use reads: the read tool's file, or those a shell line prints."""
         if tool == self.read_tool:

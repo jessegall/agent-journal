@@ -8,6 +8,7 @@ from journal.launcher.option import Option
 from journal.launcher.other_hooks import OtherHooks
 from journal.launcher.remembered import Remembered
 from journal.launcher.screen import Screen
+from journal.providers.providers import Providers
 
 
 class Menu:
@@ -45,6 +46,8 @@ class Menu:
         hooks_aside = aside or (self._hooks(OtherHooks(self.root, agent).others(), before.get("hooks_aside", False)) if asking else before.get("hooks_aside", False))
         self.remembered.write(skip_prompts=skip_prompts, hooks_aside=hooks_aside)
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
+        if not yes:
+            self._hooks_to_trust(agent)
         self._summary(choice)
         return choice
 
@@ -85,6 +88,13 @@ class Menu:
         found = [f"Found now, in {len(others)} file{'s' if len(others) != 1 else ''}:", *(f"  {path}" for path in others)] if others else ["None found in the settings right now."]
         notes = ["They might conflict with the journal's. Set aside, a copy is kept and they are put back when the journal ends.", *found]
         return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
+
+    def _hooks_to_trust(self, agent: str) -> None:
+        """A program that asks before it runs the journal's hooks is named before it starts, so the user knows to trust them when it asks."""
+        if Providers().named(agent).hooks_trusted(self.root):
+            return
+        notes = [f"{agent.capitalize()} asks once to trust the hooks the journal wrote into this project. Choose Trust all and continue", f"when {agent.capitalize()} asks, or the journal cannot follow what {agent.capitalize()} does."]
+        self.screen.pick(f"Trust the journal's hooks in {agent.capitalize()}", notes, [Option("Understood")], 0)
 
     def _summary(self, choice: Choice) -> None:
         self.screen.summary([("environment", choice.environment), ("conversation", f"continued from {choice.resume[:8]}" if choice.resume else "new"),

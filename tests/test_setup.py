@@ -18,7 +18,9 @@ def app(tmp_path: Path, monkeypatch):
     return App(Config(tmp_path, port=0))
 
 
-def test_setup_wires_hooks_skills_and_the_law(app):
+def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
+    import shutil
+    monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
     (root / "AGENTS.md").write_text("# my project\n\nMy own rules.\n")
     out = app.console().run(["setup", "here"], Where("main")).out
@@ -32,7 +34,9 @@ def test_setup_wires_hooks_skills_and_the_law(app):
     assert agents.startswith("# my project") and "My own rules." in agents and "L9 - A subagent only reads" in agents
     assert (root / "CLAUDE.md").read_text().strip() == "@AGENTS.md"
     assert "hooks   .claude/settings.json" in out
-    assert not (root / ".codex").exists(), "Codex is wired only where its folder exists"
+    assert not (root / ".codex").exists(), "Codex is wired only where its folder exists or its program is installed"
+    monkeypatch.setattr(shutil, "which", lambda name: f"/usr/local/bin/{name}")
+    assert "hooks   .codex/hooks.json" in app.console().run(["setup", "here"], Where("main")).out, "a fresh project is wired for Codex when Codex is installed"
     assert (root / ".journal/bin/journal").is_file() and "/.journal" in (root / ".gitignore").read_text().splitlines()
     dispatcher = (root / "home/.local/bin/journal").read_text()
     assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
@@ -68,3 +72,14 @@ def test_a_command_from_inside_an_agent_is_the_live_agents(app):
         assert app.container.get(Tasks).find(1).created_by == Actor.agent("live-1")
     finally:
         app.runtime().stop()
+
+
+def test_codex_hooks_count_as_trusted_once_codex_notes_them(tmp_path, monkeypatch):
+    from journal.providers.codex import Codex
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    project = tmp_path / "proj"
+    project.mkdir()
+    assert not Codex().hooks_trusted(project), "no Codex settings: not trusted, and the launch says to trust them"
+    (tmp_path / ".codex").mkdir()
+    (tmp_path / ".codex" / "config.toml").write_text(f'[hooks.state."{project.resolve()}/.codex/hooks.json:session_start:0:0"]\ntrusted_hash = "x"\n')
+    assert Codex().hooks_trusted(project)
