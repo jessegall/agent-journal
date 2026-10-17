@@ -4,6 +4,8 @@ import {overlapping, tidy} from "../domain/tidy.js";
 import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
 import {markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {nodeRunWords, readWords} from "../domain/workflowRuns.js";
+import {countWords, readingLines, standingLines, waitingWords} from "../domain/workflowStanding.js";
+import {usePoll} from "../composables/poll.js";
 import {cardTitle} from "../domain/cardTitle.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
@@ -36,6 +38,14 @@ const LEAD =
 const loaded = ref(false);
 const workflows = ref([]);
 const current = ref(0);
+const standing = ref(null);
+usePoll(
+    "chart-standing",
+    () => (current.value ? api.chartStanding(current.value) : Promise.resolve(null)),
+    5000,
+    (got) => (standing.value = got),
+    () => Boolean(current.value)
+);
 const shipped = ref(false);
 const title = ref("");
 const revision = ref(0);
@@ -89,6 +99,11 @@ const detailLines = computed(() => {
     if (isLit(node.id) && readWords(litRead.value, node.id))
         lines.push({label: "On the run shown", words: readWords(litRead.value, node.id)});
     if (node.runs) lines.push({label: "Ran", words: `${nodeRunWords(node)}${node.last ? `, last ${ago(node.last)}` : ""}`});
+    lines.push(...standingLines(standing.value, node.id));
+    if (node.kind === "check" && countWords(standing.value, node))
+        lines.push({label: "Count now", words: countWords(standing.value, node)});
+    if (node.kind === "check")
+        lines.push(...readingLines(standing.value).filter((l) => (node.text || "").startsWith(l.label.split(",")[0])));
     if (node.locked) lines.push({label: "Locked", words: LOCK_WHY});
     if (stopsTheWalk(node)) lines.push({label: "No later workflows", words: STOPS_WHY});
     return lines;
@@ -954,6 +969,16 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                 <span>{{ KIND[node.kind] }}</span>
                                 <Icon v-if="node.locked" name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
                                 <span v-if="stopsTheWalk(node)" class="chart-node-stops" :title="STOPS_WHY">no later workflows</span>
+                                <span
+                                    v-if="waitingWords(standing, node.id)"
+                                    class="chart-node-waiting"
+                                    title="An agent's last walk of this workflow stopped here"
+                                >
+                                    {{ waitingWords(standing, node.id) }}
+                                </span>
+                                <span v-if="node.kind === 'check' && countWords(standing, node)" class="chart-node-count">
+                                    {{ countWords(standing, node) }}
+                                </span>
                                 <span v-if="isLit(node.id) && readWords(litRead, node.id)" class="chart-node-read">
                                     {{ readWords(litRead, node.id) }}
                                 </span>
@@ -1342,6 +1367,22 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
     opacity: 0.5;
 }
 .chart-item-lock,
+.chart-node-waiting {
+    margin-left: auto;
+    padding: 0 6px;
+    border-radius: 999px;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 16%, transparent);
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+
+.chart-node-count {
+    color: var(--text-2);
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+
 .chart-node-lock {
     flex: none;
     color: var(--text-3);

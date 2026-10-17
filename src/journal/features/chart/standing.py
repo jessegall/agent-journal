@@ -16,7 +16,7 @@ LOOKED_BACK = 300
 
 
 class Standing:
-    """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there, the counts the workflow keeps for it, and the readings its count checks compare, with what each counts."""
+    """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), the counts the workflow keeps for it, and the readings its count checks compare, with what each counts."""
 
     def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine) -> None:
         self.charts, self.agents, self.entries, self.checks, self.machine = charts, agents, entries, checks, machine
@@ -35,7 +35,7 @@ class Standing:
         return {
             "session": agent.session, "n": agent.id,
             "node": stop["node"] if stop else 0, "port": stop["port"] if stop else "", "at": at,
-            "waits": bool(node and node.kind == NodeKind.CHECK and stop["port"] == "no"),
+            "waits": bool(node and node.key in COUNT_CHECKS and stop["port"] == "no"),
             "counts": self.checks.counts_kept(agent.session, chart.id),
             "readings": {name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)},
         }
