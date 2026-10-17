@@ -551,7 +551,13 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   held. A stop is told the step once until the agent uses a tool again, and is quiet in a wait, while a question
   is open, while the run is parked and while the agent owes the look, the mark or a skill (`Requiring.owes_anything`),
   so those debts are paid first. A run's start owes the sequences skill. An unedited shipped sequence follows the
-  shipped text at boot.
+  shipped text at boot. A sequence names the states its row must reach (`finishes_in`; Building a plan: ready or
+  later) and its last step is refused until then; `abandon --why --sure` gives a run up with a card to the user; a
+  cancelled or deleted row, or a deleted sequence, ends the runs about it. Only the user's own words start a sequence
+  by trigger (`PromptSubmitted.by_user`). The step is said again at a start, when a wait ends and every
+  `sequences.say_every` minutes to a quiet agent. The agent inspector's sequence band shows the run and its last
+  changes (entries of kind `sequence_run`) with Skip step and End sequence; that history is not in the chart's
+  Recent runs, which is the canvas's.
 - Delivery: every line the journal types is held in `TypedLines` until its prompt hook brings it back; one not back
   after ten quiet seconds between turns is typed again, three tries, each a card.
 - The supervisor pins nothing to the screen any more: its line is Claude Code's own status line, read from
