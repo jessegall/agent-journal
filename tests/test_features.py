@@ -3411,3 +3411,24 @@ def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, 
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
         assert any("was masked: GITHUB_KEY" in m.text for m in app.container.get(Messages).in_()), "the leak is shown once"
+
+
+def test_the_agent_is_kept_out_of_the_secrets_and_the_mcp_keys(app, tmp_path, monkeypatch):
+    from journal.secret_values import SecretValues
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    monkeypatch.setattr(Path, "home", lambda: tmp_path / "home")
+    hook(app, "SessionStart")
+    read_skill(app, "journal")
+    app.console().run(["environment", "here"], AGENT)
+    values = app.container.get(SecretValues).path
+    keys = tmp_path / "home" / ".journal" / "keys"
+    refused = lambda tool, given: hook(app, "PreToolUse", tool_name=tool, tool_input=given)[0] == 409
+    assert refused("Read", {"file_path": str(values)})
+    assert refused("Bash", {"command": f"cat {values.parent}/*.env"})
+    assert refused("Bash", {"command": "cat ~/.config/agent-journal/secrets/x.env"})
+    assert refused("Bash", {"command": "echo $AGENT_JOURNAL_SECRETS"})
+    assert refused("Grep", {"pattern": "KEY", "path": str(keys)})
+    climbed = "../" * len(app.config.root.resolve().parts) + str(keys.resolve()).lstrip("/") + "/x.json"
+    assert refused("Read", {"file_path": climbed}), "a path that climbs into the keys is refused too"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "a.py")})[0] == 200
+    assert "journal secret run" in hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(values)})[1]["error"]
