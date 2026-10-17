@@ -1,46 +1,13 @@
 # Plugins
 
-A plugin is a folder with a `journal-plugin.json` and a program. The journal runs the program for each event the
-plugin hears, sends it one line, and reads one line back. A plugin runs with your account and nothing confines it:
-installing one is trusting it.
+A plugin is a folder with a `journal-plugin.json` and a program. For each event the plugin hears, the journal starts
+the program, writes one line of JSON to its input, and reads one line of JSON from its output. The answer may hold the
+agent, say it a line, show a card in the chat or run journal commands as the plugin. A plugin runs with your account
+and nothing confines it: installing one is trusting it.
 
-## Installing
+## A first plugin
 
-`journal plugin install <folder or git address>` prints everything the plugin would run: its program, its services,
-the events it hears and holds, its settings and its skills, and the commit it was fetched at. Nothing is installed
-until the same line is given `--yes`. A folder is linked and read where it lies; a git address is fetched into
-`.journal/plugins/<name>`. Each plugin gets a data folder of its own in `.journal/plugin-data/<name>`. A manifest the
-journal refuses installs nothing. `journal plugin list` shows each plugin, whether it is on, and its last fault.
-
-`journal plugin upgrade <name>` shows what changes in what the plugin runs, hears and holds, at its newest commit or
-at `--ref <commit>`, and upgrades it with `--yes`. For a fetched plugin it also shows the code: a diff of every file that
-changes. When a linked folder's manifest changes, the plugin goes on as it was installed, and a card shows the change
-once, until you apply it with `journal plugin upgrade <name> --yes`. `journal plugin disable <name>` and `enable <name>` switch it off
-and on for the whole project. `journal plugin remove <name>` takes it out and keeps its data folder; `--purge` deletes
-that too. A linked folder is never deleted.
-
-Only you install, upgrade or switch on a plugin. The agent and other plugins are refused, and the agent can
-`journal plugin propose <folder or git address> --why "<what for>"`, which shows you a card with the preview. The
-agent's writes into `.journal/plugins` are held. The files a plugin runs are hashed when you install, upgrade or
-switch it on, and checked before each run. A plugin whose program changed is switched off with a card until you read
-the change and switch it on again. A linked folder stays open to the agent; this check is what guards it.
-
-What it did in the journal shows under What it did on its card: each hold and line to the agent (`plugin_said`), each
-command it ran, each fault, and every row it wrote, newest first, a row opening from there. What it did outside the
-journal, straight to files or to the database, cannot be listed. Switching it off stops its services at once.
-
-## Settings
-
-A manifest's `settings` names a JSON file listing each setting: its `key`, `title`, `kind` (`text`, `number`,
-`flag`, `choice` with its `choices`, `list`, or `secret`), `default` and `help`. Install sets each to its default.
-`journal plugin settings <name>` lists them, and `journal plugin configure <name> <key> <value>` sets one, checked
-against its kind; only you configure a plugin. A `secret` setting becomes a secret of the Secrets feature, proposed for
-`plugin:<name>`. You fill it on the Secrets page and allow it to the plugin there; only then is its value in the
-plugin's environment, under the secret's variable. No command ever sets it.
-
-## The manifest
-
-`journal-plugin.json` names the plugin and what it runs, hears and holds:
+A folder `echo` with two files. `journal-plugin.json`:
 
 ```json
 {
@@ -48,14 +15,42 @@ plugin's environment, under the secret's variable. No command ever sets it.
   "version": "1.0.0",
   "protocol": 1,
   "program": "run.py",
-  "hears": ["tool_starting", "tasks.created"],
-  "holds": ["tool_starting"]
+  "hears": ["tool_starting", "prompt_submitted", "tasks.created"],
+  "holds": ["tool_starting", "prompt_submitted"],
+  "cards": [{"kind": "echoed", "label": "Echoed", "tone": "good"}]
 }
 ```
 
+`run.py`, made executable with `chmod +x run.py`:
+
+```python
+#!/usr/bin/env python3
+import json
+import sys
+
+line = json.loads(sys.stdin.readline())
+data = line["data"]
+if line["event"] == "tool_starting" and "forbidden" in json.dumps(data["input"]):
+    print(json.dumps({"v": 1, "answer": "refuse", "reason": "echo refuses a forbidden tool"}))
+elif line["event"] == "prompt_submitted":
+    print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"}))
+elif line["event"] == "tasks.created":
+    print(json.dumps({"v": 1, "cards": [{"kind": "echoed", "key": f"task {data['id']}", "label": f"Echoed task {data['id']}"}],
+                      "commands": [f'journal task log {data["id"]} "echoed"']}))
+else:
+    print("")
+```
+
+`journal plugin install ./echo` shows what it would run; `journal plugin install ./echo --yes` installs it. From then
+on a tool whose input says forbidden is refused with `[plugin echo] echo refuses a forbidden tool`, each prompt is told
+`[plugin echo] echo heard your prompt`, and each new task gets a card in the chat and a log line written as `plugin:echo`.
+The journal's own tests run this plugin, from `tests/plugins/echo`.
+
+## The manifest
+
 - `name`: 2 to 32 lowercase letters, digits and dashes, never one of the journal's own features.
 - `protocol`: the version of the protocol it speaks; this journal speaks 1.
-- `program`: a path inside the folder, run for each event.
+- `program`: a path inside the folder, run for each event: an executable file, its first line naming its interpreter.
 - `hears`: agent events by name (`tool_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
   `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`), `plugin.updated` when someone
   else changed its own settings, its `data` then being `{"settings": ...}`, and rows as `<table>.created`, `.updated`
@@ -83,7 +78,55 @@ plugin's environment, under the secret's variable. No command ever sets it.
 - `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell
   line>"}`. A step that fails stops the install and leaves nothing behind.
 - `installed`: a command run after the setup, whose answer, a JSON object, fills its settings.
-- Every path stays inside the folder, a symlink leading out included.
+- `version`, `title`, `description`: what the Plugins page shows; `journal`: the least journal version it runs on.
+- `cards`: the kinds of card it shows, each `{"kind": ..., "label": ..., "tone": "good" | "warn" | "danger" | "note" |
+  "muted", "icon": ..., "collapsed": true}`.
+- Every path stays inside the folder, a symlink leading out included. A key the journal does not know refuses the
+  manifest, by name.
+
+## The line in
+
+One line of JSON, ending in a newline:
+
+```json
+{"v": 1, "event": "tool_starting", "at": "2026-10-17T18:00:00+00:00", "environment": "main", "state": "working",
+ "session": "…", "provider": "claude", "subagent": "",
+ "data": {"tool": "Bash", "input": {"command": "ls"}, "writes": false}}
+```
+
+- `event`: the event's name as the manifest's `hears` spells it. `state`: what the agent is doing, when an agent event.
+- `session`, `provider`, `subagent`: whose event it was, sent with agent events only.
+- `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `tool_finished` the same with its
+  `output` and `response`; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
+  was `held_before`; `ticked` the time `at` and the seconds the agent was `quiet_for`; `subagent_started` and
+  `subagent_ended` the `subagent`; `plugin.updated` its `settings`. A row event's `data` is the row's `table`, `id`,
+  who wrote it (`by`) and, when updated, the fields that `changed`; a plugin reads the row itself with a journal command.
+
+## The line out
+
+One line of JSON on its output, the last line counting; an empty output is `allow`:
+
+```json
+{"v": 1, "answer": "refuse", "reason": "not on main", "tell": "",
+ "cards": [{"kind": "sin", "key": "a.py", "label": "A sin in a.py"}], "commands": ["journal task list"]}
+```
+
+- `answer`: `allow`, `refuse` with a `reason`, or `tell` a line. An empty answer is `allow`. Only `tool_starting` and
+  `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
+  stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
+  the agent as `[plugin <name>] ...`.
+- `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`, its kind one the manifest's
+  `cards` names (`{kind, label, tone, icon, collapsed}`, `collapsed` keeping the detail to the card's tooltip). A
+  card is drawn with the plugin's name on it and written as the plugin. A card with a `key` settles the plugin's
+  earlier card of that key in place, where it stands in the chat.
+- `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
+  entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands
+  write in turn by none: past that one step the cut is recorded as `plugin_cut`, so two plugins never answer each
+  other forever.
+- What it says, its `reason`, `tell` and cards, reaches the agent and the chat with `[journal]` and `[!reply:` made plain
+  text and every secret value masked.
+- An answer that does not parse is a fault: the event goes through and the fault is recorded. A fault is never a
+  refusal.
 
 ## How it runs
 
@@ -110,39 +153,39 @@ A time-out, a crash, a non-zero exit or an answer that does not parse is a fault
 `plugin_fault` entry names the plugin, the event and the words, and at the fifth in a row a card says the plugin is
 failing, until a card says it answers again.
 
-## The line in
+## Settings
 
-```json
-{"v": 1, "event": "tool_starting", "at": "2026-10-17T18:00:00+00:00", "environment": "main", "state": "working",
- "session": "…", "provider": "claude", "subagent": "",
- "data": {"tool": "Bash", "input": {"command": "ls"}, "writes": false}}
-```
+A manifest's `settings` names a JSON file listing each setting: its `key`, `title`, `kind` (`text`, `number`,
+`flag`, `choice` with its `choices`, `list`, or `secret`), `default` and `help`. Install sets each to its default.
+`journal plugin settings <name>` lists them, and `journal plugin configure <name> <key> <value>` sets one, checked
+against its kind; only you configure a plugin. A `secret` setting becomes a secret of the Secrets feature, proposed for
+`plugin:<name>`. You fill it on the Secrets page and allow it to the plugin there; only then is its value in the
+plugin's environment, under the secret's variable. No command ever sets it.
 
-A row event's `data` is the row's `table`, `id`, who wrote it (`by`) and, when updated, the fields that `changed`.
+## Installing and managing
 
-## The line out
+`journal plugin install <folder or git address>` prints everything the plugin would run: its program, its services,
+the events it hears and holds, its settings and its skills, and the commit it was fetched at. Nothing is installed
+until the same line is given `--yes`. A folder is linked and read where it lies; a git address is fetched into
+`.journal/plugins/<name>`. Each plugin gets a data folder of its own in `.journal/plugin-data/<name>`. A manifest the
+journal refuses installs nothing. `journal plugin list` shows each plugin, whether it is on, and its last fault.
 
-```json
-{"v": 1, "answer": "refuse", "reason": "not on main", "tell": "",
- "cards": [{"kind": "sin", "key": "a.py", "label": "A sin in a.py"}], "commands": ["journal task list"]}
-```
+`journal plugin upgrade <name>` shows what changes in what the plugin runs, hears and holds, at its newest commit or
+at `--ref <commit>`, and upgrades it with `--yes`. For a fetched plugin it also shows the code: a diff of every file that
+changes. When a linked folder's manifest changes, the plugin goes on as it was installed, and a card shows the change
+once, until you apply it with `journal plugin upgrade <name> --yes`. `journal plugin disable <name>` and `enable <name>` switch it off
+and on for the whole project. `journal plugin remove <name>` takes it out and keeps its data folder; `--purge` deletes
+that too. A linked folder is never deleted.
 
-- `answer`: `allow`, `refuse` with a `reason`, or `tell` a line. An empty answer is `allow`. Only `tool_starting` and
-  `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
-  stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
-  the agent as `[plugin <name>] ...`.
-- `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`, its kind one the manifest's
-  `cards` names (`{kind, label, tone, icon, collapsed}`, `collapsed` keeping the detail to the card's tooltip). A
-  card is drawn with the plugin's name on it and written as the plugin. A card with a `key` settles the plugin's
-  earlier card of that key in place, where it stands in the chat.
-- `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
-  entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands
-  write in turn by none: past that one step the cut is recorded as `plugin_cut`, so two plugins never answer each
-  other forever.
-- What it says, its `reason`, `tell` and cards, reaches the agent and the chat with `[journal]` and `[!reply:` made plain
-  text and every secret value masked.
-- An answer that does not parse is a fault: the event goes through and the fault is recorded. A fault is never a
-  refusal.
+Only you install, upgrade or switch on a plugin. The agent and other plugins are refused, and the agent can
+`journal plugin propose <folder or git address> --why "<what for>"`, which shows you a card with the preview. The
+agent's writes into `.journal/plugins` are held. The files a plugin runs are hashed when you install, upgrade or
+switch it on, and checked before each run. A plugin whose program changed is switched off with a card until you read
+the change and switch it on again. A linked folder stays open to the agent; this check is what guards it.
+
+What it did in the journal shows under What it did on its card: each hold and line to the agent (`plugin_said`), each
+command it ran, each fault, and every row it wrote, newest first, a row opening from there. What it did outside the
+journal, straight to files or to the database, cannot be listed. Switching it off stops its services at once.
 
 ## From version 3
 
@@ -164,8 +207,8 @@ Every key of a version 3 `plugin.json` and of its answers, and where it went.
   every plugin, and the service's socket replaces the refusal socket.
 - `reads`: dropped. The line for `tool_starting` says whether the tool `writes`, and the plugin decides for itself.
 - `events` (a plugin's own kinds of card, each with a title and a tone): become `cards`.
-- `load` (skills the agent must load at an event): dropped. A plugin's skills are published with the journal's, and
-  the skills feature requires them like any other.
+- `load` (skills the agent must load at an event): dropped. A plugin's skills are published with the journal's;
+  requiring one in a state waits for a workflow action that names a skill.
 - `command` (a command of the plugin's own under `journal`): dropped. A plugin acts through the journal's own commands,
   as itself.
 - `dashboards`: kept as one `dashboard`.

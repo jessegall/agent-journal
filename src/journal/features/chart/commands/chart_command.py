@@ -176,6 +176,7 @@ class ChartCommand(Command):
             print(f"  assumed: {', '.join(ran['assumed'])}")
         for line in ran["would"]:
             print(f"  {line}")
+        print(f"  {ran['plugins']}")
         return 0
 
     def reset(self, args: Namespace, where: Where) -> int:

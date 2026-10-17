@@ -543,7 +543,7 @@ const trialWords = computed(() => {
     const would = ran.would.length ? ran.would.join(" ") : "the journal would do nothing.";
     const order = ran.titles && ran.titles.length ? ` It would run ${ran.titles.join(", then ")}.` : "";
     const stopped = ran.stopped_at ? ` It would run no later workflows after step ${ran.stopped_at}.` : "";
-    return `Test run: ${would}${order}${stopped}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""}`;
+    return `Test run: ${would}${order}${stopped}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""} Plugins are not asked in a test run.`;
 });
 const states = ref([]);
 const pickedEvent = ref("idle");

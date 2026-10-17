@@ -1,0 +1,54 @@
+{
+  "nudges": false,
+  "steps": [
+    {
+      "name": "session starts",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "a forbidden read",
+      "answer": {
+        "error": "[plugin echo] echo refuses a forbidden tool"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {},
+      "read": [
+        {
+          "130": 0
+        }
+      ]
+    },
+    {
+      "name": "a prompt",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "UserPromptSubmit",
+          "additionalContext": "[plugin echo] echo heard your prompt"
+        }
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "a task is made",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {},
+      "read": []
+    }
+  ]
+}

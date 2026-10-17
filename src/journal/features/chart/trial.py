@@ -51,6 +51,8 @@ EVENTS = {
 BEFORE = {"messages": lambda m: m, "workers": lambda w: w.with_(state=WorkerState.DISPATCHED), "questions": lambda q: q.with_(answer=None)}
 """The rows a trial can stand a row event in for, each with the row as it stood before the change the event means: a worker dispatched, a question unanswered."""
 
+NOT_ASKED = "plugins not asked: a test run walks the workflows alone and never runs a plugin's program"
+
 
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
@@ -84,7 +86,8 @@ class Trial:
         ledger: dict = {}
         decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions, ledger), ledger).on_with_trace(ctx, passed)
         return {"trigger": trigger, "row": row, "state": state.name if state else "", "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described(),
-                "workflows": list(ctx.walked), "read": {str(k): v for k, v in ctx.read.items()}, "stopped_at": ctx.stopped[0] if ctx.stopped else 0}
+                "workflows": list(ctx.walked), "read": {str(k): v for k, v in ctx.read.items()}, "stopped_at": ctx.stopped[0] if ctx.stopped else 0,
+                "plugins": NOT_ASKED}
 
     def state_for(self, agent, assumptions: Assumptions):
         """The live agent's state, or the state assumed: with the live agent's data when it is in that state, else the state with nothing in hand."""
