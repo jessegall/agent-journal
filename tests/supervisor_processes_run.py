@@ -11,7 +11,6 @@ from pathlib import Path
 from supervisor.inbox import Inbox
 from supervisor.service import Service
 from supervisor.services import Services
-from supervisor.status_line import StatusLine
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
@@ -36,9 +35,9 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
     out_r, out_w = os.pipe()
     in_r, in_w = os.pipe()
     terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
-    inbox = Inbox.for_(tmp_path, "main")
+    inbox = Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"test-{os.getpid()}.sock", tmp_path / "inboxes" / "main")
     journal = Service("journal", ["sh", "-c", "sleep 30"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
-    supervisor = Supervisor(terminal, inbox, Services(journal), StatusLine("p", "main", tmp_path), stdin=in_r, stdout=out_w)
+    supervisor = Supervisor(terminal, inbox, Services(journal), stdin=in_r, stdout=out_w)
     inbox.open()
     journal.start()
     terminal.start()
@@ -66,9 +65,9 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
     out_r, out_w = os.pipe()
     in_r, in_w = os.pipe()
     terminal = Terminal(["sh", "-c", "while read line; do echo \"got:$line\"; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
-    inbox = Inbox.for_(tmp_path, "main")
+    inbox = Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"test-{os.getpid()}.sock", tmp_path / "inboxes" / "main")
     journal = Service("journal", ["sh", "-c", "sleep 30"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
-    supervisor = Supervisor(terminal, inbox, Services(journal), StatusLine("p", "main", tmp_path), stdin=in_r, stdout=out_w)
+    supervisor = Supervisor(terminal, inbox, Services(journal), stdin=in_r, stdout=out_w)
     inbox.open()
     journal.start()
     terminal.start()
@@ -89,16 +88,17 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
 def test_the_inbox_answers_each_request_and_a_stop_ends_the_supervisor_and_takes_its_inbox_down(tmp_path: Path):
     out_r, out_w = os.pipe()
     terminal = Terminal(["sh", "-c", "trap '' TERM; while true; do sleep 1; done"], str(tmp_path), {"PATH": os.environ["PATH"]})
-    inbox = Inbox.for_(tmp_path, "main")
+    inbox = Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"test-{os.getpid()}.sock", tmp_path / "inboxes" / "main")
     journal = Service("journal", ["sh", "-c", "sleep 30"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
-    supervisor = Supervisor(terminal, inbox, Services(journal), StatusLine("p", "main", tmp_path), stdin=None, stdout=out_w)
+    supervisor = Supervisor(terminal, inbox, Services(journal), stdin=None, stdout=out_w)
     inbox.open()
     journal.start()
     terminal.start()
     try:
         assert json.loads(inbox.announced_at.read_text()) == {"socket": str(inbox.path), "protocol": 1}
         assert stat.S_IMODE(inbox.path.stat().st_mode) == 0o600 and stat.S_IMODE(inbox.path.parent.stat().st_mode) == 0o700, "only its user can reach the socket"
-        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "start", "stop", "restart", "list", "keys", "type", "send"]}
+        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "start", "stop", "restart", "list", "keys", "type", "send", "band"]}
+        assert ask(supervisor, verb="band", left="agent-journal", middle="p · main", right="http://127.0.0.1:8420/") == {"ok": True}, "a supervisor with no band takes new words and shows none"
         sleeper = {"verb": "start", "name": "sleeper", "command": ["sh", "-c", "sleep 30"], "folder": str(tmp_path), "log": str(tmp_path / "sleeper.log")}
         assert ask(supervisor, **sleeper) == {"ok": True, "started": True}
         assert ask(supervisor, **sleeper) == {"ok": True, "started": False}, "a name already running is left as it is"

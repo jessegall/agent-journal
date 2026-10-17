@@ -1,7 +1,4 @@
-import hashlib
 import json
-import os
-import re
 import socket
 from collections.abc import Callable
 from pathlib import Path
@@ -13,17 +10,11 @@ WAIT = 2.0
 
 
 class Inbox:
-    """A unix socket the journal asks through, one per supervisor: a request is a line of JSON and its answer one line back. The socket lives in a folder only its user can open; while it is open, the project's runtime folder names it and the protocol it speaks."""
+    """A unix socket the journal asks through, one per supervisor: a request is a line of JSON and its answer one line back. The socket lives in a folder only its user can open; while it is open, the announce file names it and the protocol it speaks."""
 
     def __init__(self, path: Path, announced_at: Path) -> None:
         self.path, self.announced_at = path, announced_at
         self._socket: socket.socket | None = None
-
-    @classmethod
-    def for_(cls, root: Path, environment: str) -> "Inbox":
-        key = hashlib.sha1(str(root.resolve()).encode()).hexdigest()[:12]
-        slug = re.sub(r"[^A-Za-z0-9_-]", "-", environment)[:24]
-        return cls(Path("/tmp") / f"journal-{os.getuid()}" / f"{key}-{slug}.sock", root / ".journal" / "runtime" / "inboxes" / environment)
 
     @property
     def fd(self) -> int:

@@ -1,0 +1,50 @@
+import threading
+import time
+import urllib.request
+import webbrowser
+from pathlib import Path
+
+from journal.launcher.status_line import StatusLine
+from journal.supervisor_socket import SupervisorSocket
+
+PATIENCE = 30.0
+"""How long the launch waits for the journal's page before it stops looking."""
+
+
+class PageWait:
+    """The launch's watch for the journal's page: the first time the port in the port file answers, the status line and the band show its address and the viewer opens in the browser; a port file a dead journal left answers nothing."""
+
+    def __init__(self, port_file: Path, status: StatusLine, socket: str, band: tuple[str, str], viewer: str) -> None:
+        self.port_file, self.status, self.socket, self.band, self.viewer = port_file, status, socket, band, viewer
+        """band: the left and middle words of the band, the address going on the right; viewer: the page to open, empty for none."""
+
+    def start(self) -> None:
+        threading.Thread(target=self.wait, daemon=True).start()
+
+    def wait(self) -> None:
+        began = time.time()
+        while time.time() - began < PATIENCE:
+            url = self.answering()
+            if url:
+                self.shown(url)
+                return
+            time.sleep(0.5)
+
+    def answering(self) -> str:
+        url = f"http://127.0.0.1:{self.port_file.read_text().strip()}/" if self.port_file.is_file() else ""
+        if not url:
+            return ""
+        try:
+            with urllib.request.urlopen(url, timeout=0.5) as reply:
+                return url if reply.status == 200 else ""
+        except OSError:
+            return ""
+
+    def shown(self, url: str) -> None:
+        self.status.set_url(url)
+        try:
+            SupervisorSocket.ask(self.socket, {"verb": "band", "left": self.band[0], "middle": self.band[1], "right": url})
+        except OSError:
+            pass
+        if self.viewer:
+            webbrowser.open(url + self.viewer, new=2)

@@ -3,11 +3,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from supervisor.choice import Choice
-from supervisor.option import Option
-from supervisor.other_hooks import OtherHooks
-from supervisor.remembered import Remembered
-from supervisor.screen import Screen
+from journal.launcher.choice import Choice
+from journal.launcher.option import Option
+from journal.launcher.other_hooks import OtherHooks
+from journal.launcher.remembered import Remembered
+from journal.launcher.screen import Screen
 
 
 class Menu:

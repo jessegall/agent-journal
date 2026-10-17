@@ -12,8 +12,8 @@ from journal.features.skills.skill_files import SkillFiles
 from journal.providers.providers import Providers
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
-from supervisor.dispatcher import Dispatcher
-from supervisor.project_command import ProjectCommand
+from journal.launcher.dispatcher import Dispatcher
+from journal.launcher.project_command import ProjectCommand
 
 
 

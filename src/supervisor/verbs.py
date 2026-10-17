@@ -9,7 +9,7 @@ from supervisor.service import Service
 if TYPE_CHECKING:
     from supervisor.supervisor import Supervisor
 
-VERBS = ("hello", "start", "stop", "restart", "list", "keys", "type", "send")
+VERBS = ("hello", "start", "stop", "restart", "list", "keys", "type", "send", "band")
 """The verbs this supervisor takes; a later protocol adds verbs and never changes one."""
 
 
@@ -55,6 +55,11 @@ class Verbs:
     def send(self, request: dict) -> dict:
         """Text carried to a named process's input, as it is."""
         self.supervisor.send(request["name"], request["data"].encode())
+        return {}
+
+    def band(self, request: dict) -> dict:
+        """The words of the line at the top of the screen, left, middle and right."""
+        self.supervisor.say(request["left"], request["middle"], request["right"])
         return {}
 
     def restart(self, request: dict) -> dict:

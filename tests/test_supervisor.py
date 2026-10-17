@@ -1,19 +1,16 @@
 """The supervisor's parts that start no process: the launch, the picker, the hooks set aside, the status line, the inbox's announce file, the mirror, and that it imports every module at start. Its processes are tested in supervisor_processes_run.py."""
 
 import json
+import os
 import time
 from pathlib import Path
 
 from supervisor.inbox import Inbox
-from supervisor.service import Service
-from supervisor.services import Services
-from supervisor.launch import Launch
-from supervisor.choice import Choice
-from supervisor.menu import Menu
-from supervisor.screen import Screen
-from supervisor.status_line import StatusLine
-from supervisor.supervisor import Supervisor
-from supervisor.terminal import Terminal
+from journal.launcher.launch import Launch
+from journal.launcher.choice import Choice
+from journal.launcher.menu import Menu
+from journal.launcher.screen import Screen
+from journal.launcher.status_line import StatusLine
 
 
 ROWS = [{"name": "main", "last_session": "abc", "last_used": "2 hours ago", "working": True}, {"name": "spike", "last_session": "", "last_used": "", "working": False}]
@@ -53,7 +50,7 @@ def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_
 
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
-    from supervisor.other_hooks import OtherHooks
+    from journal.launcher.other_hooks import OtherHooks
     assert not OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
     assert OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
@@ -76,7 +73,7 @@ def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_ag
 
 
 def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_path: Path):
-    from supervisor.other_hooks import OtherHooks
+    from journal.launcher.other_hooks import OtherHooks
     path = settings_with_other_hooks(tmp_path)
     hooks = OtherHooks(tmp_path, "claude")
     assert hooks.others() == [path]
@@ -92,8 +89,8 @@ def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_pa
 
 
 def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path):
-    from supervisor.option import Option
-    from supervisor.screen import Screen as Picker
+    from journal.launcher.option import Option
+    from journal.launcher.screen import Screen as Picker
     assert Picker._moved(0, "\x1b[B", 3) == 1 and Picker._moved(0, "\x1b[A", 3) == 2 and Picker._moved(0, "3", 3) == 2 and Picker._moved(1, "q", 3) == 1
 
 
@@ -110,20 +107,16 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
 
 
 def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Path):
-    from supervisor.other_hooks import OtherHooks
+    from journal.launcher.other_hooks import OtherHooks
     path = settings_with_other_hooks(tmp_path)
-
-    class Dies:
-        def run(self):
-            assert len(json.loads(path.read_text())["hooks"]) == 1, "the other hooks are aside while the agent runs"
-            raise RuntimeError("the agent fell over")
 
     class Launched(Launch):
         def choice(self):
             return Choice("main", "", hooks_aside=True)
 
-        def supervisor(self, choice):
-            return Dies()
+        def supervise(self, choice):
+            assert len(json.loads(path.read_text())["hooks"]) == 1, "the other hooks are aside while the agent runs"
+            raise RuntimeError("the agent fell over")
 
     try:
         Launched.parse(["claude", "--env", "main", "--aside", "--yes"], tmp_path).run()
@@ -132,17 +125,16 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
     assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and OtherHooks(tmp_path, "claude").put_back() == []
 
 
-def test_the_supervisor_notices_the_journal_when_it_answers(tmp_path: Path, monkeypatch):
+def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, monkeypatch):
     from journal.app import App
     from journal.config import Config
     app = App(Config(tmp_path, port=0))
     app.server().start()
     try:
+        from journal.launcher.page_wait import PageWait
         status = StatusLine("p", "main", tmp_path)
-        supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox.for_(tmp_path, "main"), Services(Service("journal", ["true"], tmp_path, {}, tmp_path / "log")), status, port_file=tmp_path / ".journal" / "port")
-        supervisor._started_at = time.time()
-        supervisor.notice_journal_once()
-        assert status.url == f"http://127.0.0.1:{app.server().port}/"
+        PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "").wait()
+        assert status.url == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
     finally:
         app.server().stop()
 
@@ -159,7 +151,7 @@ def test_the_supervisor_imports_every_module_at_start_so_an_upgrade_never_change
 
 def test_the_mirror_goes_with_its_supervisor(tmp_path: Path):
     from supervisor.mirror import Mirror
-    mirror = Mirror.for_(tmp_path, "main")
+    mirror = Mirror(tmp_path / "screens" / "main.out")
     mirror.add(b"Switch model?")
     mirror._written_at = 0
     mirror.flush()
@@ -170,9 +162,35 @@ def test_the_mirror_goes_with_its_supervisor(tmp_path: Path):
 
 
 def test_the_inbox_announces_where_the_screen_is_mirrored(tmp_path: Path):
-    inbox = Inbox.for_(tmp_path, "main")
+    inbox = Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"test-{os.getpid()}.sock", tmp_path / "inboxes" / "main")
     inbox.open(screen=str(tmp_path / "screens" / "main.out"))
     try:
         assert json.loads(inbox.announced_at.read_text())["screen"] == str(tmp_path / "screens" / "main.out"), "the journal reads the screen where the supervisor says it is"
     finally:
         inbox.close()
+
+
+def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_refused(tmp_path: Path, capsys):
+    from supervisor.__main__ import main
+    launch = Launch.parse(["claude", "--env", "spike", "--no-journal"], tmp_path)
+    written = launch.launch_file(Choice("spike", "s1"), StatusLine("p", "spike", tmp_path))
+    assert written["front"]["command"][:3] == ["claude", "--resume", "s1"] and written["services"] == [], "a launch with a journal running already starts none of its own"
+    assert written["announce"].endswith("runtime/inboxes/spike") and written["screen"].endswith("runtime/screens/spike.out") and f"journal-{os.getuid()}" in written["socket"]
+    with_journal = Launch.parse(["claude", "--env", "spike"], tmp_path).launch_file(Choice("spike", ""), StatusLine("p", "spike", tmp_path))
+    assert [s["name"] for s in with_journal["services"]] == ["journal"]
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"front": {"command": ["claude"]}}))
+    assert main([str(bad)]) == 2
+    assert "has no socket, announce, front's folder, front's env" in capsys.readouterr().err
+    assert main([str(tmp_path / "missing.json")]) == 2 and "cannot be read" in capsys.readouterr().err
+
+
+def test_the_supervisor_imports_nothing_but_the_standard_library_and_itself():
+    import ast
+    import sys
+    foreign = []
+    for path in sorted((Path(__file__).parent.parent / "src" / "supervisor").glob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text())):
+            names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module] if isinstance(node, ast.ImportFrom) and node.module else []
+            foreign += [f"{path.name}: {name}" for name in names if name.split(".")[0] not in (*sys.stdlib_module_names, "supervisor")]
+    assert foreign == [], "the supervisor knows no journal module and needs nothing installed"

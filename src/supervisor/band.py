@@ -8,12 +8,11 @@ DISTURBS = re.compile(rb"\x1b\[[0-9;]*r|\x1b\[[0-3]?J|\x1b\[(?:1|0)?(?:;[0-9]*)?
 """A scroll-region reset, a screen clear, a move to the first row or a full reset: each would wipe the line."""
 
 
-class Header:
-    """The one line always at the top of the agent's screen: the package on the left, the project and environment in the middle, the viewer's URL on the right. The agent has the rows under it, as a scroll region, and its screen clears never reach the line."""
+class Band:
+    """The one line always at the top of the agent's screen, in the words it is given: one on the left, one in the middle, one on the right. The agent has the rows under it, as a scroll region, and its screen clears never reach the line."""
 
-    def __init__(self, project: str, environment: str, stdout: int = 1) -> None:
-        self.project, self.environment, self.stdout = project, environment, stdout
-        self.url = ""
+    def __init__(self, left: str, middle: str, right: str, stdout: int = 1) -> None:
+        self.left, self.middle, self.right, self.stdout = left, middle, right, stdout
         self.rows, self.columns = 24, 80
 
     def begin(self, rows: int, columns: int) -> None:
@@ -27,15 +26,15 @@ class Header:
     def resize(self, rows: int, columns: int) -> None:
         self.begin(rows, columns)
 
-    def set_url(self, url: str) -> None:
-        self.url = url
+    def say(self, left: str, middle: str, right: str) -> None:
+        self.left, self.middle, self.right = left, middle, right
         self.redraw()
 
     def redraw(self) -> None:
         os.write(self.stdout, b"\x1b7" + self.line() + b"\x1b8")
 
     def line(self) -> bytes:
-        left, middle, right = "agent-journal", f"{self.project} · {self.environment}", self.url or "journal starting…"
+        left, middle, right = self.left, self.middle, self.right
         gap = self.columns - len(left) - len(right)
         centred = middle.center(gap) if len(middle) <= gap else middle[: max(gap, 0)]
         text = f"{left}{centred}{right}"[: self.columns]

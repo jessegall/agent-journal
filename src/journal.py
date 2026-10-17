@@ -14,7 +14,7 @@ AGENTS = ("claude", "codex")
 def main(argv: list[str]) -> int:
     root = Path(os.environ.get("JOURNAL_ROOT") or Path.cwd())
     if argv[:1] and argv[0] in AGENTS:
-        from supervisor.launch import Launch
+        from journal.launcher.launch import Launch
         return Launch.parse(argv, root).run()
     app = App(Config.at(root))
     if argv[:1] == ["serve"]:

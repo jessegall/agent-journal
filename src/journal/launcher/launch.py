@@ -1,24 +1,20 @@
+import hashlib
 import json
 import os
-from datetime import datetime
-import traceback
+import re
 import subprocess
 import sys
+import traceback
+from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
 
-from supervisor.header import Header
-from supervisor.inbox import Inbox
-from supervisor.choice import Choice
-from supervisor.status_line import StatusLine
-from supervisor.menu import Menu
-from supervisor.mirror import Mirror
-from supervisor.other_hooks import OtherHooks
-from supervisor.project_command import ProjectCommand
-from supervisor.service import Service
-from supervisor.services import Services
-from supervisor.supervisor import Supervisor
-from supervisor.terminal import Terminal
+from journal.launcher.choice import Choice
+from journal.launcher.menu import Menu
+from journal.launcher.other_hooks import OtherHooks
+from journal.launcher.page_wait import PageWait
+from journal.launcher.project_command import ProjectCommand
+from journal.launcher.status_line import StatusLine
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
 SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
@@ -57,7 +53,7 @@ class Launch:
 
     @property
     def package(self) -> Path:
-        return Path(__file__).resolve().parents[1]
+        return Path(__file__).resolve().parents[2]
 
     def choice(self) -> Choice:
         if not sys.stdin.isatty():
@@ -95,7 +91,7 @@ class Launch:
             if choice.hooks_aside:
                 others.set_aside()
             try:
-                code = self.supervisor(choice).run()
+                code = self.supervise(choice)
             finally:
                 others.put_back()
             self.log(f"ended: the agent exited with {code}")
@@ -105,15 +101,46 @@ class Launch:
             raise
 
     def log(self, line: str) -> None:
-        path = self.root / ".journal" / "runtime" / "supervisor.log"
+        path = self.runtime / "supervisor.log"
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a") as out:
             out.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {line}\n")
 
-    def supervisor(self, choice: Choice) -> Supervisor:
-        environ = self.environ(choice)
+    def supervise(self, choice: Choice) -> int:
+        """The supervisor run as a process of its own from the launch file, this process waiting on it and watching for the journal's page meanwhile; the file holds the agent's keys, so only its user reads it, and it goes when the supervisor ends."""
         status = StatusLine(self.root.name, choice.environment, self.root)
-        terminal = Terminal(self.agent_command(choice, status), str(self.root), environ)
-        services = Services() if self.no_journal else Services(Service("journal", self.journal_command(), self.root, environ, self.root / ".journal" / "runtime" / "server.log"))
-        header = Header(self.root.name, choice.environment) if sys.stdout.isatty() else None
-        return Supervisor(terminal, Inbox.for_(self.root, choice.environment), services, status, stdin=0 if sys.stdin.isatty() else None, viewer="" if self.no_open else f"#/{choice.environment}", header=header, mirror=Mirror.for_(self.root, choice.environment), port_file=self.root / ".journal" / "port")
+        status.begin()
+        launch = self.launch_file(choice, status)
+        path = self.runtime / "launches" / f"{choice.environment}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch(mode=0o600)
+        path.chmod(0o600)
+        path.write_text(json.dumps(launch))
+        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"#/{choice.environment}").start()
+        try:
+            return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
+        finally:
+            path.unlink(missing_ok=True)
+
+    def launch_file(self, choice: Choice, status: StatusLine) -> dict:
+        """What the supervisor starts: the agent in front, the journal beside it unless one runs already, its socket, announce file and mirror, and the band's words."""
+        environ = self.environ(choice)
+        journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
+        return {
+            "front": {"command": self.agent_command(choice, status), "folder": str(self.root), "env": environ},
+            "services": [] if self.no_journal else [journal],
+            "socket": str(self.socket(choice.environment)),
+            "announce": str(self.runtime / "inboxes" / choice.environment),
+            "screen": str(self.runtime / "screens" / f"{choice.environment}.out"),
+            "band": {"left": "agent-journal", "middle": f"{self.root.name} · {choice.environment}", "right": "journal starting…"},
+        }
+
+    def socket(self, environment: str) -> Path:
+        """The supervisor's socket, in a folder of its user's under /tmp, named by the project and the environment so two never meet."""
+        key = hashlib.sha1(str(self.root.resolve()).encode()).hexdigest()[:12]
+        slug = re.sub(r"[^A-Za-z0-9_-]", "-", environment)[:24]
+        return Path("/tmp") / f"journal-{os.getuid()}" / f"{key}-{slug}.sock"
+
+    @property
+    def runtime(self) -> Path:
+        return self.root / ".journal" / "runtime"
