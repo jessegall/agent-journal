@@ -291,3 +291,13 @@ def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
     assert os.read(read_end, 1024) == b"\r"
     os.close(read_end)
     os.close(write_end)
+
+
+def test_the_supervisor_imports_every_module_at_start_so_an_upgrade_never_changes_a_running_one():
+    import ast
+    late = []
+    for path in sorted((Path(__file__).parent.parent / "src" / "supervisor").glob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                late += [f"{path.name}:{inner.lineno}" for inner in ast.walk(node) if isinstance(inner, (ast.Import, ast.ImportFrom))]
+    assert late == [], "an import inside a function would load what an upgrade put on disk into a supervisor already running"

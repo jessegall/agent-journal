@@ -865,7 +865,7 @@ Who owns what, decided at the start of the plan (task 443) on the rulings of mes
 - Every process lives as long as its supervisor: when the host ends, its journal and services end with it, as the journal does today when its parent is gone, and the next launch hosts them again.
 - Workers stay outside the protocol: the journal runs them itself.
 - send stays in the protocol: it is the message bus of message 1613; its first user comes with a later service.
-- "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself still needs a restart; the supervisor stays small so that is rare, and an upgrade installs a new supervisor beside the running one (task 438).
+- "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself reaches a user at their next launch: the supervisor imports every module at start, so an upgrade that overwrites its files leaves a running one untouched (task 438, a test), and it stays small so such a fix is rare.
 - The menu watcher stays a thread in the journal server (question 6, the user's answer): it reads every environment's mirror and shares what it chose with SupervisorLink in memory. Phase 3 proves services through the protocol with the next real one, or a fake one in its test.
 
 The protocol, first version (tasks 436, 437, 439):
