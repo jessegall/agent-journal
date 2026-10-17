@@ -89,20 +89,28 @@ onUnmounted(() => clearInterval(checking));
             <div>
                 <h1>MCP</h1>
                 <p class="integrations-lead">
-                    These are the MCP servers the agents are given, from here or from Claude Code itself. Installing or
-                    removing one restarts the running agents once they are idle, so it applies at once. A key is kept outside
-                    the project and never written into it.
+                    These are the MCP servers the agents are given, from here or from Claude Code itself. Installing or removing one
+                    restarts the running agents once they are idle, so it applies at once. A key is kept outside the project and never
+                    written into it.
                 </p>
             </div>
             <Btn kind="ghost" :busy="busy === 'check'" :disabled="!servers.length" @click="check">Check all</Btn>
         </header>
 
         <p v-if="notice" class="integrations-notice">{{ notice }}</p>
-        <p v-if="restartPending.length" class="integrations-pending"><span class="integrations-spinner" /> The agent restarts as soon as it finishes what it is doing; the change applies then.</p>
+        <p v-if="restartPending.length" class="integrations-pending">
+            <span class="integrations-spinner" />
+            The agent restarts as soon as it finishes what it is doing; the change applies then.
+        </p>
 
         <ul v-if="!loaded" class="integrations-list" aria-label="Loading the MCP servers">
             <li v-for="n in 3" :key="n" class="integration">
-                <SkeletonLine :bars="[{width: '28%', height: 16}, {width: '40%', height: 14}]" />
+                <SkeletonLine
+                    :bars="[
+                        {width: '28%', height: 16},
+                        {width: '40%', height: 14},
+                    ]"
+                />
                 <SkeletonLine :bars="[{width: '62%', height: 12}]" />
             </li>
         </ul>
@@ -113,10 +121,11 @@ onUnmounted(() => clearInterval(checking));
                 <div class="integration-row">
                     <StateDot :state="DOTS[s.state] || 'draft'" />
                     <strong>{{ s.title }}</strong>
-                    <span class="integration-state" :title="s.last_error">{{ WORDS[s.state] || s.state }}<template v-if="s.last_error">: {{ s.last_error }}</template></span>
+                    <span class="integration-state">{{ WORDS[s.state] || s.state }}</span>
                     <span class="integration-grow" />
                     <Btn kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
                 </div>
+                <p v-if="s.last_error" class="integration-error">{{ s.last_error }}</p>
                 <code class="integration-how">{{ s.url || s.command }}</code>
                 <div v-if="s.managed && s.auth === 'key'" class="integration-key">
                     <TextInput
@@ -130,7 +139,10 @@ onUnmounted(() => clearInterval(checking));
                     </Btn>
                 </div>
                 <div v-else-if="s.managed && s.auth === 'oauth' && signingIn === s.name" class="integration-key">
-                    <span class="integration-note integrations-pending"><span class="integrations-spinner" /> Signing in: approve it in the browser window the agent opened.</span>
+                    <span class="integration-note integrations-pending">
+                        <span class="integrations-spinner" />
+                        Signing in: approve it in the browser window the agent opened.
+                    </span>
                 </div>
                 <div v-else-if="s.managed && s.auth === 'oauth'" class="integration-key">
                     <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>
@@ -264,6 +276,13 @@ onUnmounted(() => clearInterval(checking));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.integration-error {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 13px;
+    overflow-wrap: anywhere;
 }
 
 .integration-how {
