@@ -17,6 +17,7 @@ import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import ChartList from "./ChartList.vue";
 
@@ -742,8 +743,9 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
             <template v-else-if="!listsHidden">
                 <aside class="chart-col chart-events" aria-label="Event">
                     <h2 class="chart-col-head">Event</h2>
+                    <Skeleton v-if="!loaded" :count="8" label="Loading the events" />
                     <button
-                        v-for="row in eventRows"
+                        v-for="row in loaded ? eventRows : []"
                         :key="row.key"
                         type="button"
                         :class="['chart-row', 'chart-event', {on: row.key === pickedEvent, none: !row.count}]"
@@ -779,9 +781,10 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                             @pick="stateFilter = $event.key"
                         />
                     </div>
-                    <p v-if="!listRows.length" class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
+                    <Skeleton v-if="!loaded" :count="5" label="Loading the workflows" />
+                    <p v-else-if="!listRows.length" class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
                     <button
-                        v-for="row in listRows"
+                        v-for="row in loaded ? listRows : []"
                         :key="row.id"
                         type="button"
                         :class="[
