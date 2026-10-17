@@ -44,5 +44,9 @@ class StatesCatalogue:
         state = self._states.get(name) or self._states["idle"]
         return state.from_data(data or {})
 
+    def resumed(self, paused: Paused) -> AgentState:
+        """The state a pause goes back to."""
+        return self.named(paused.resume.get("state", "idle"), paused.resume.get("data", {}))
+
     def first(self) -> AgentState:
         return self.named("idle", {})

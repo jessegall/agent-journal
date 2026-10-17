@@ -29,7 +29,7 @@ class CurrentWork:
         awaiting, on = "", ""
         while isinstance(state, Paused):
             awaiting, on = (awaiting, on) if awaiting else state.awaiting()
-            state = self.states.named(state.resume.get("state", "idle"), state.resume.get("data", {}))
+            state = self.states.resumed(state)
         if not isinstance(state, Working):
             return None
         try:

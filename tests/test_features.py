@@ -137,8 +137,9 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     machine = app.container.get(Machine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
+    console.run(["await", "the build"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
-    assert "task 2 is next, tag it" in out
+    assert "task 2 is next, tag it" in out, "a task finished while the agent waits on something still advances the plan"
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=2)
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out

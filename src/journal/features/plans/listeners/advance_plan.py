@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
+from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
 from journal.features.listener import Listener
 from journal.features.plans.states.following_plan import FollowingPlan
@@ -20,13 +21,15 @@ class AdvancePlan(Listener[Updated]):
         self.machine, self.plans, self.tasks = machine, plans, tasks
 
     def following(self, event: Updated) -> FollowingPlan | None:
-        """The plan-following state of the agent that closed the task, when an agent did and it follows a plan."""
+        """The plan-following state of the agent that closed the task, when an agent did and it follows a plan, now or once its pause ends."""
         if event.by.kind != ActorKind.AGENT:
             return None
         try:
             state = self.machine.current(event.by.id)
         except NotFound:
             return None
+        if isinstance(state, Paused):
+            state = self.machine.states.resumed(state)
         return state if isinstance(state, FollowingPlan) else None
 
     def handle(self, event: Updated) -> None:

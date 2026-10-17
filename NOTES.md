@@ -855,3 +855,15 @@ badge (418, 426), the menu watcher answers Claude Code's menus by the user's rul
 says where the work stands (409), old facts are asked about once a day (410), and a cancel stamps a task finished so
 the sidebar counts only open tasks (on message 1729). The rules table is final: every row names its workflow by title
 or says the engine keeps it. The suite: 250 tests; the replays: 56.
+
+## The thin supervisor (plan 8, 2026-10-18)
+
+Who owns what, decided at the start of the plan (task 443) on the rulings of messages 1611, 1613 and 1616 and the review in report 11:
+
+- One supervisor runs per agent terminal, as now. The one launched with the journal hosts it: the journal server is a named process in its table. A supervisor started with --no-journal runs its agent only.
+- The supervisor starts what its launch file lists, the agent and, on the host, the journal. Once up, the journal asks its host to start the services it declares. Starting a name that is already running does nothing, so a journal restart starts nothing twice. The journal never asks to start itself.
+- Every process lives as long as its supervisor: when the host ends, its journal and services end with it, as the journal does today when its parent is gone, and the next launch hosts them again.
+- Workers stay outside the protocol: the journal runs them itself.
+- send stays in the protocol: it is the message bus of message 1613; its first user comes with a later service.
+- "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself still needs a restart; the supervisor stays small so that is rare, and an upgrade installs a new supervisor beside the running one (task 438).
+- The menu watcher stays a thread in the journal server (question 6, the user's answer): it reads every environment's mirror and shares what it chose with SupervisorLink in memory. Phase 3 proves services through the protocol with the next real one, or a fake one in its test.
