@@ -3181,3 +3181,29 @@ def test_a_cancelled_task_is_finished_and_never_counted_open(app):
     from journal.http.v3.v3_controller import V3Controller
     with app.container.get(Scope).of(1):
         assert app.container.get(V3Controller).open_count("todo") == 1, "only the task still open is counted"
+
+
+def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app):
+    import subprocess
+    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.models.actor import Actor as A
+    from journal.repositories.messages import Messages
+    from journal.repositories.scope import Scope
+    from journal.repositories.workers import Workers
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n")
+    git("add", ".gitignore")
+    git("commit", "-qm", "start")
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    with app.container.get(Scope).of(1):
+        worker = app.container.get(Workers).find(1)
+        app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo parsed > parser.txt && git add parser.txt && git commit -qm 'the parser' && echo half > notes.txt && echo the parser is written"], A.agent("s1"))
+        report = next(m.text for m in app.container.get(Messages).in_() if "Lady Lovelace reports" in m.text)
+    assert "the parser is written" in report and "its 1 commits were taken into this branch" in report and "the parser" in report.split("taken into this branch:")[1], "its commit is merged and named"
+    assert (root / "parser.txt").exists(), "the worker's file is in the project now"
+    assert "it left 1 files uncommitted in its worktree" in report and "notes.txt" in report, "what it never committed is named, not lost"

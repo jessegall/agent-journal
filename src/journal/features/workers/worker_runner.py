@@ -3,6 +3,7 @@ import subprocess
 import threading
 
 from journal.config import Config
+from journal.features.workers.worker_branch import WorkerBranch
 from journal.features.workers.worker_reports import WorkerReports
 from journal.models.actor import Actor
 from journal.models.worker import Worker
@@ -15,8 +16,8 @@ TAIL = 4000
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope) -> None:
-        self.config, self.providers, self.reports, self.scope = config, providers, reports, scope
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch) -> None:
+        self.config, self.providers, self.reports, self.scope, self.branch = config, providers, reports, scope, branch
         self._running: dict[int, subprocess.Popen] = {}
 
     def start(self, worker: Worker, by: Actor) -> None:
@@ -41,7 +42,9 @@ class WorkerRunner:
         self._running.pop(worker.id, None)
         printed, resume = self.providers.named(worker.provider).worker_outcome(out, err)
         report = printed[-TAIL:] or "(nothing printed)"
-        self.reports.file(worker.with_(resume=resume or worker.resume), report if process.returncode == 0 else f"failed with code {process.returncode}: {report}", by)
+        said = report if process.returncode == 0 else f"failed with code {process.returncode}: {report}"
+        branch = self.branch.summary(worker)
+        self.reports.file(worker.with_(resume=resume or worker.resume), f"{said}\n\n{branch}" if branch else said, by)
 
     def stop(self, worker_id: int) -> None:
         process = self._running.get(worker_id)
@@ -52,7 +55,7 @@ class WorkerRunner:
         """The project root, or a worktree of its own on a branch named for the worker."""
         if not worker.worktree:
             return str(self.config.root)
-        folder = self.config.home / "worktrees" / f"{worker.id}-{worker.name}".replace(" ", "-")
+        folder = self.branch.folder(worker)
         if not folder.is_dir():
-            subprocess.run(["git", "worktree", "add", "-q", "-b", f"worker/{worker.id}-{worker.name}".replace(" ", "-"), str(folder)], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder)], cwd=self.config.root, capture_output=True, text=True, timeout=60)
         return str(folder)
