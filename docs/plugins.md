@@ -4,6 +4,14 @@ A plugin is a folder with a `journal-plugin.json` and a program. The journal run
 plugin hears, sends it one line, and reads one line back. A plugin runs with your account and nothing confines it:
 installing one is trusting it.
 
+## Installing
+
+`journal plugin install <folder or git address>` prints everything the plugin would run: its program, its services,
+the events it hears and holds, its settings and its skills, and the commit it was fetched at. Nothing is installed
+until the same line is given `--yes`. A folder is linked and read where it lies; a git address is fetched into
+`.journal/plugins/<name>`. Each plugin gets a data folder of its own in `.journal/plugin-data/<name>`. A manifest the
+journal refuses installs nothing. `journal plugin list` shows each plugin, whether it is on, and its last fault.
+
 ## The manifest
 
 `journal-plugin.json` names the plugin and what it runs, hears and holds:

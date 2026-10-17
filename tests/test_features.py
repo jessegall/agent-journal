@@ -3843,6 +3843,25 @@ def test_a_subagents_event_reaches_a_plugin_and_is_held_only_at_a_tool(app):
     assert not PluginsHearAgents.holds(plugin, PromptSubmitted(prompt="x", subagent="a1")) and PluginsHearAgents.holds(plugin, PromptSubmitted(prompt="x")), "a subagent's other events are heard, never held"
 
 
+def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
+    from journal.repositories.plugins import Plugins
+    folder = Path(__file__).parent / "plugins" / "echo"
+    console = app.console()
+    preview = console.run(["plugin", "install", str(folder)], USER)
+    assert preview.code == 0 and "echo 1.0.0" in preview.out and "run.py for each event it hears" in preview.out and "holds tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
+    assert app.container.get(Plugins).all() == [], "a preview installs nothing"
+    assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
+    plugin = app.container.get(Plugins).named("echo")
+    assert plugin.linked and plugin.source == str(folder.resolve()) and plugin.manifest["holds"] == ["tool_starting", "prompt_submitted"] and (app.config.home / "plugin-data" / "echo").is_dir()
+    assert "installed already" in console.run(["plugin", "install", str(folder), "--yes"], USER).err
+    bad = tmp_path / "bad"
+    bad.mkdir()
+    (bad / "journal-plugin.json").write_text(json.dumps({"name": "bad", "version": "1", "program": "run.py", "hears": ["nothing"]}))
+    (bad / "run.py").write_text("")
+    refused = console.run(["plugin", "install", str(bad), "--yes"], USER)
+    assert refused.code != 0 and "hears nothing, which is no event" in refused.err and [p.name for p in app.container.get(Plugins).all()] == ["echo"], "a refused manifest installs nothing"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries
