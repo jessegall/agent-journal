@@ -154,6 +154,10 @@ export class ApiClient {
         return this.ownGet(`/chart/${id}`);
     }
 
+    chartStanding(id) {
+        return this.ownGet(`/chart/${id}/standing`);
+    }
+
     chartNew(body) {
         return this.ownPost("/chart", body);
     }

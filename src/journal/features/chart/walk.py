@@ -71,8 +71,12 @@ class Walk:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
                 queue = [c for c in self.in_part(self.workflows_for(ctx, key), ctx.event, part) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, "read": {str(k): v for k, v in ctx.read.items()}}), Actor.system())
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, "read": {str(k): v for k, v in ctx.read.items()}, "stops": self.stopped_with_counts(ctx)}), Actor.system())
         return decision
+
+    def stopped_with_counts(self, ctx: Context) -> list[dict]:
+        """Each stop of this walk with its workflow's counts for the agent as the walk left them."""
+        return [{**stop, "counts": self.checks.counts_kept(ctx.session, stop["workflow"])} for stop in ctx.stops]
 
     def in_part(self, charts: list[Chart], event: Event, part: str) -> list[Chart]:
         """The workflows of the part asked for: before the reply those that can change the answer, after it the quiet ones placed before any that ended the walk."""
@@ -119,7 +123,10 @@ class Walk:
             except Exception as fault:
                 self.failed(node, ctx, fault)
                 port = NO if node.kind == NodeKind.CHECK else THEN
-            at += after.get((node.id, port), [])
+            following = after.get((node.id, port), [])
+            if not following:
+                ctx.stops.append({"workflow": ctx.workflow, "node": node.id, "port": port})
+            at += following
         if at and not ctx.stopped:
             self.failed(node, ctx, RuntimeError(f"the path ran past {STEPS} nodes and was cut off"))
         return decision

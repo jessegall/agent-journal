@@ -3445,6 +3445,26 @@ def test_a_line_says_a_workflows_count_by_name(app):
     tried = console.run(["chart", "try", "tool_finished"], USER).out
     assert "reminder 3" in tried, "a dry walk says the count as its ledger raised it over the live one"
 
+def test_the_walk_records_where_each_workflow_stopped_with_its_counts(app):
+    from journal.features.chart.walk import WALKED
+    from journal.repositories.charts import Charts
+    from journal.repositories.entries import Entries
+    from journal.repositories.scope import Scope
+    console = app.console()
+    made, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, "--text", text, "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    one, enough = node("action", "count_one", "reminders"), node("check", "count_over", "reminders 3")
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    console.run(["chart", "line", str(one), str(enough)], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    for path in ("a", "b"):
+        hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": path})
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        walk = next(e for e in app.container.get(Entries).of_kind(WALKED, 50) if made in e.data["workflows"])
+    assert {"workflow": made, "node": enough, "port": "no", "counts": {"reminders": 2}} in walk.data["stops"], "the path ended at the count check's No, with the count it read"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

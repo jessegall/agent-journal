@@ -752,3 +752,21 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
     assert [t["text"] for t in sub["turns"]] == ["Read the login."]
     assert call(server, "GET", f"/api/agent/{agent['n']}/subagent/..%2Fx/transcript")[0] == 404
     assert call(server, "GET", "/api/helper/99/transcript")[0] == 404
+
+
+def test_where_each_agent_stands_in_a_workflow_is_served(server):
+    call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
+    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Counting"})
+    trigger = made["nodes"][0]["id"]
+    nodes = [*made["nodes"], {"id": "one", "kind": "action", "key": "count_one", "text": "reminders"}, {"id": "enough", "kind": "check", "key": "count_over", "text": "reminders 3"}, {"id": "uses", "kind": "check", "key": "count_over", "text": "uses 5"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] enough"}]
+    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "enough"}, {"from": "enough", "to": "uses", "port": "no"}, {"from": "enough", "to": "say", "port": "yes"}, {"from": "uses", "to": "say", "port": "yes"}]
+    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
+    assert status == 200, saved
+    for path in ("a", "b"):
+        call(server, "POST", "/hooks/claude", {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": path}})
+    import time
+    time.sleep(0.5)
+    standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
+    agent = standing["agents"][0]
+    assert agent["counts"] == {"reminders": 2} and agent["waits"] is True and agent["port"] == "no", "the agent waits at the last check's No with its count"
+    assert "uses" in agent["readings"] and "uses" in standing["readings"] and standing["readings"]["uses"], "a reading a check compares is served with what it counts"

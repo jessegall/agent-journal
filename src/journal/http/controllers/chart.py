@@ -4,6 +4,7 @@ from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.fillers import Fillers
+from journal.features.chart.standing import Standing
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import LOCK_WHY, Validation
@@ -28,9 +29,9 @@ NEW_TITLE = "New workflow"
 class ChartController:
     """The workflow page: every workflow by title, one read whole with its nodes and lines, saved whole as the user, made, taken out, the shipped one reset, and any event tried dry."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue) -> None:
+    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue, standing: Standing) -> None:
         self.charts, self.catalogue, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
-        self.traces, self.states = traces, states
+        self.traces, self.states, self.standing = traces, states, standing
 
     def index(self, request: Request) -> Response:
         return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed()})
@@ -90,6 +91,13 @@ class ChartController:
     def one(self, request: Request) -> Response:
         try:
             return Response.json(self.drawn(self.charts.find(request.number("id"))))
+        except NotFound as missing:
+            return Response.not_found(str(missing))
+
+    def stands(self, request: Request) -> Response:
+        """Where each live agent stands in the workflow: the node it last stopped at, its counts and the readings."""
+        try:
+            return Response.json(self.standing.of(self.charts.find(request.number("id"))))
         except NotFound as missing:
             return Response.not_found(str(missing))
 

@@ -27,12 +27,18 @@ class Context:
     read: dict = field(default_factory=dict)
     """What each count check read on this walk, by node: the value the check compared."""
     walked: list = field(default_factory=list)
+    stops: list = field(default_factory=list)
+    """Where each path of this walk ended: the workflow, the node and the port it ended at, a check's No with no line after it being where the workflow waits."""
     calling: list = field(default_factory=list)
     """The workflows a Run a workflow step is running now, innermost last, so a call into one already running is refused."""
     """The workflows walked, in order, by id."""
     """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""
 
+    @property
+    def workflow(self) -> int:
+        """The workflow being walked: the one a Run a workflow step called, else the event's."""
+        return self.calling[-1] if self.calling else self.walked[-1] if self.walked else 0
+
     def counted(self, name: str) -> str:
-        """A count's name as kept for the workflow being walked, the one a Run a workflow step called or else the event's: each workflow keeps its own counts."""
-        workflow = self.calling[-1] if self.calling else self.walked[-1] if self.walked else 0
-        return f"charts:{workflow}:{name}"
+        """A count's name as kept for the workflow being walked: each workflow keeps its own counts."""
+        return f"charts:{self.workflow}:{name}"

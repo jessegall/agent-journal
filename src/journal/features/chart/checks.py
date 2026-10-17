@@ -86,6 +86,11 @@ class Checks:
         derived = getattr(self, f"derived_{name}", None)
         return derived(ctx) if derived else self.counts.named(ctx.session, ctx.counted(name)).value
 
+    def counts_kept(self, session: str, workflow: int) -> dict[str, int]:
+        """The counts a workflow keeps for the agent, by their names."""
+        prefix = f"charts:{workflow}:"
+        return {c.name[len(prefix):]: c.value for c in self.counts.where(session=session) if c.name.startswith(prefix)} if session else {}
+
     def derived_edits(self, ctx: Context) -> int:
         """Writes since the task in hand was last logged, or started, a held one not counted; at a write, the ones before it, so the write in hand is read against the edits so far."""
         state = ctx.state
