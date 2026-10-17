@@ -41,7 +41,7 @@ journal clears the compiled graphs, so the next walk reads the edit.
 Every shipped workflow holds one concern, and the run order and the end of a walk carry the design: at an event the
 Always workflows run first, then each state's in the order its state ships at, a child state before its parent (the
 agent following a plan runs its own workflows and then Working's), and the first workflow that keeps the agent from
-stopping, or says Stop here, ends the walk so nothing after it runs. No workflow keeps a count for another: the edits
+stopping, or says Run no later workflows, ends the walk so nothing after it runs. No workflow keeps a count for another: the edits
 since the log, the tool uses since the newest unread message, the uses since a message was read and left unanswered
 are read from the journal's own record. What the agent owes the journal, the journal skill and a state's skill, the
 look at what is in flight, a decision at a context mark, is the engine's: the skills, briefing and memory features
@@ -205,7 +205,7 @@ which the page marks Claude only.
 
 A lock marks the journal's law. A locked workflow runs first at its event, keeps the head of the list, and cannot
 be deleted or turned off. A locked step, the holds the journal ships as guards of its protocol, cannot be taken
-out, reworded or turned off, and you cannot put a check or Stop here before it on its path: nothing the user
+out, reworded or turned off, and you cannot put a check or Run no later workflows before it on its path: nothing the user
 adds decides whether the law runs. What you can do around it: add steps after it, change the numbers in its text,
 and Reset to default, which draws it back. A workflow holding a locked step cannot be turned off either. The page
 shows the lock on the row and on the card, with one line saying why, and the save, the commands and the order

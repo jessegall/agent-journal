@@ -38,7 +38,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.ACTION, 'type', 'Type to the agent', "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", takes_text=True),
         Entry(NodeKind.ACTION, 'count_start', 'Start a count', "sets the agent's count named in the text to zero; a check at a later event reads it", takes_text=True),
         Entry(NodeKind.ACTION, 'count_one', 'Count one', "adds one to the agent's count named in the text", takes_text=True),
-        Entry(NodeKind.ACTION, 'stop_here', 'Stop here', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),
+        Entry(NodeKind.ACTION, 'stop_here', 'Run no later workflows', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),
         Entry(NodeKind.ACTION, 'show_card', 'Show a card in the chat', 'a card in the chat with the message, so the user sees what the journal did', takes_text=True),
         Entry(NodeKind.ACTION, 'wait_outside', 'Wait for something outside', 'the agent waits for what the text names, it stays in effect until the agent uses a tool itself, you send it a word, or Send the agent back runs; one wait at a time', takes_text=True),
         Entry(NodeKind.ACTION, 'mark_stuck', 'Mark the agent stuck', "the agent is stuck for the reason in the text, and the journal says nothing until the agent's next tool use; one wait at a time", takes_text=True),
@@ -58,7 +58,7 @@ The journal's conduct toward the agent is workflows: each answers one event, bou
 event's workflows run in the order the user sets, the locked guards first, then the Always ones, then the states'.
 A trigger is an event, a check a yes or no question, an action what the journal does; lines join them, then from a
 trigger or an action, yes or no from a check, one line per port. A locked workflow or step ships with the journal and cannot be removed:
-not deleted, not turned off, not reworded or gated; a Stop here node ends the event's walk for everything after
+not deleted, not turned off, not reworded or gated; a Run no later workflows node ends the event's walk for everything after
 it; the first hold of an event wins and one move per event is taken. A count the workflow keeps for the agent is
 started, counted one and read by its name on the canvas.
 

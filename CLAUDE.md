@@ -64,7 +64,7 @@ and not as a note; a workflow is drawn on the canvas, in the user's order, and c
 
 **One subject per workflow.** A workflow is about one thing: the inbox, the start block, the voice, a
 task's log, a plan's next step. Never a chain of subjects drawn as one workflow because they happen
-at the same event; each is its own workflow in the event's run order, and Stop here is the only thing
+at the same event; each is its own workflow in the event's run order, and Run no later workflows is the only thing
 that keeps a later one from running. What the agent owes the journal before it may write or stop,
 the journal skill, the look at what is in flight, a decision at a context mark, is the engine's:
 each feature sets its own debt and holds a write and a stop on it through listeners, and no node on the canvas carries it.

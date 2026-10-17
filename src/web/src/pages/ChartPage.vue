@@ -89,7 +89,7 @@ const detailLines = computed(() => {
         lines.push({label: "On the run shown", words: readWords(litRead.value, node.id)});
     if (node.runs) lines.push({label: "Ran", words: `${nodeRunWords(node)}${node.last ? `, last ${ago(node.last)}` : ""}`});
     if (node.locked) lines.push({label: "Locked", words: LOCK_WHY});
-    if (stopsTheWalk(node)) lines.push({label: "Stops here", words: STOPS_WHY});
+    if (stopsTheWalk(node)) lines.push({label: "No later workflows", words: STOPS_WHY});
     return lines;
 });
 const messageText = ref("");
@@ -280,7 +280,7 @@ function setText(node, text) {
 
 // the flow reads down the page: a line leaves a card by its bottom edge and enters the next by its top; a check's Yes and No sit side by side
 const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
-const STOPS_WHY = "When this step runs, no later workflow of the event runs";
+const STOPS_WHY = "When this step runs, no later workflow of the event runs; the agent is not stopped by it";
 const stopsTheWalk = (node) => node.kind === "action" && ["stop_here", "block_stop"].includes(node.key);
 const heightOf = (node) => (entryOf(node).takes_text ? CARD.text : CARD.plain);
 const sizing = {width: CARD.width, heightOf: (node) => heightOf(node)};
@@ -509,7 +509,7 @@ const trialWords = computed(() => {
     if (!ran) return "";
     const would = ran.would.length ? ran.would.join(" ") : "the journal would do nothing.";
     const order = ran.titles && ran.titles.length ? ` It would run ${ran.titles.join(", then ")}.` : "";
-    const stopped = ran.stopped_at ? ` It would stop at step ${ran.stopped_at}.` : "";
+    const stopped = ran.stopped_at ? ` It would run no later workflows after step ${ran.stopped_at}.` : "";
     return `Test run: ${would}${order}${stopped}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""}`;
 });
 const states = ref([]);
@@ -949,7 +949,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                 <span :class="['chart-glyph', node.kind]" />
                                 <span>{{ KIND[node.kind] }}</span>
                                 <Icon v-if="node.locked" name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
-                                <span v-if="stopsTheWalk(node)" class="chart-node-stops" :title="STOPS_WHY">stops here</span>
+                                <span v-if="stopsTheWalk(node)" class="chart-node-stops" :title="STOPS_WHY">no later workflows</span>
                                 <span v-if="isLit(node.id) && readWords(litRead, node.id)" class="chart-node-read">
                                     {{ readWords(litRead, node.id) }}
                                 </span>

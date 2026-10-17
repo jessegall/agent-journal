@@ -444,7 +444,7 @@ const steps = computed(() => {
                             :sub="
                                 [
                                     node.locked ? LOCK_WHY : described(entryOf(node)),
-                                    stopsTheWalk(node) ? 'Stops here: no later workflow of the event runs' : '',
+                                    stopsTheWalk(node) ? 'No later workflows: none after this one runs at the event' : '',
                                 ]
                                     .filter(Boolean)
                                     .join(' · ')

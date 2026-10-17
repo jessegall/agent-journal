@@ -635,7 +635,7 @@ def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(server):
     assert status == 409 and "would come before a locked step" in body["error"], "no check of the user's decides whether the law runs"
     stop = {"id": "new2", "kind": "action", "key": "stop_here", "text": "", "x": 0, "y": 0}
     status, body = save(one["nodes"] + [stop], one["lines"] + [{"from": trigger["id"], "to": "new2", "port": "then"}, {"from": "new2", "to": lock["id"], "port": "then"}])
-    assert status == 409, "a Stop here before a locked step is refused too"
+    assert status == 409, "a Run no later workflows before a locked step is refused too"
     after = {"id": "new3", "kind": "action", "key": "say", "text": "after the law", "x": 0, "y": 0}
     out = next((l for l in one["lines"] if l["from"] == lock["id"]), None)
     onward = [{"from": "new3", "to": out["to"], "port": "then"}] if out else []

@@ -22,7 +22,7 @@ class Context:
     held: list = field(default_factory=list)
     """The node whose hold answers this event, the first to hold; empty while nothing holds."""
     stopped: list = field(default_factory=list)
-    """The Stop here node that ended this event's walk, when one did: nothing after it ran, in its workflow or a later one."""
+    """The Run no later workflows node that ended this event's walk, when one did: nothing after it ran, in its workflow or a later one."""
     unanswered: list = field(default_factory=list)
     read: dict = field(default_factory=dict)
     """What each count check read on this walk, by node: the value the check compared."""

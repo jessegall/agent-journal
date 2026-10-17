@@ -2691,18 +2691,18 @@ def test_a_stop_here_node_ends_the_events_walk_so_no_later_workflow_runs(app):
     after = add(first, "action", "say", "--text", "[chart] never said")
     link(t1, speaks)
     link(speaks, stop)
-    assert "leads out of Stop here" in console.run(["chart", "line", str(stop), str(after)], USER).err, "nothing follows a Stop here"
+    assert "leads out of Run no later workflows" in console.run(["chart", "line", str(stop), str(after)], USER).err, "nothing follows a Run no later workflows"
     second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     t2 = next(n.id for n in charts.nodes_of(charts.find(second)) if n.key == "tool_finished")
     later = add(second, "action", "say", "--text", "[chart] the later one speaks")
     link(t2, later)
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
-    assert "first speaks" in said(body) and "the later one speaks" not in said(body) and "never said" not in said(body), "the walk ends at Stop here: nothing after it, no later workflow"
+    assert "first speaks" in said(body) and "the later one speaks" not in said(body) and "never said" not in said(body), "the walk ends at Run no later workflows: nothing after it, no later workflow"
     walked = entries.of_kind(WALKED, 3)[0]
     assert walked.data["stopped_at"] == stop and [w for w in walked.data["workflows"] if charts.find(w).state] == [first] and second not in walked.data["workflows"], "the record says where the walk stopped and that the later workflow never ran"
-    assert any("Stop here in this workflow skips" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Stop here skips, by name"
+    assert any("Run no later workflows in this workflow skips" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Run no later workflows skips, by name"
     out = console.run(["chart", "try", "tool_finished"], AGENT).out
-    assert "would stop here: no later workflow of the event runs" in out and "the later one speaks" not in out, "the dry run says where it would stop"
+    assert "would run no later workflows of the event" in out and "the later one speaks" not in out, "the dry run says where it would stop"
 
 
 def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_command(app):

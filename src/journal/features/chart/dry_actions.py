@@ -12,7 +12,7 @@ class DryActions:
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
         from journal.features.chart.actions import NAMED
         if key == "stop_here":
-            return Decision.tell("would stop here: no later workflow of the event runs")
+            return Decision.tell("would run no later workflows of the event")
         if key in ("count_start", "count_one"):
             self.count(key, text.strip())
         named = NAMED.match(text)

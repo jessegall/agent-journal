@@ -12,7 +12,7 @@ TEXT_LIMIT = 500
 
 HOLDS = ("hold", "block_stop")
 LOCK_WHY = "it ships with the journal"
-LOCK_RULE = "a locked step cannot be taken out, reworded or turned off, and you cannot put a check or Stop here before it; you can add steps after it, change its numbers, and Reset to default brings it back"
+LOCK_RULE = "a locked step cannot be taken out, reworded or turned off, and you cannot put a check or Run no later workflows before it; you can add steps after it, change its numbers, and Reset to default brings it back"
 """What a user can and cannot do around a locked node, said in every refusal."""
 """The actions that stop the agent until what their message names is done."""
 
@@ -107,7 +107,7 @@ class Validation:
         return seen
 
     def warnings(self, chart: Chart) -> list[str]:
-        """What a saved workflow should still hear about: a hold at a tool use that no check narrows, a Stop here that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
+        """What a saved workflow should still hear about: a hold at a tool use that no check narrows, a Run no later workflows that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
         return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart)
 
     def hold_warnings(self, chart: Chart) -> list[str]:
@@ -132,7 +132,7 @@ class Validation:
         if not any(n.key == "stop_here" for n in self.charts.nodes_of(chart)):
             return []
         skipped = [c.title for c in self.charts.for_event(chart.event) if c.place > chart.place]
-        return [f"Stop here in this workflow skips what comes after it at {chart.event}: {', '.join(skipped)}"] if skipped else []
+        return [f"Run no later workflows in this workflow skips what comes after it at {chart.event}: {', '.join(skipped)}"] if skipped else []
 
     def wait_warnings(self, chart: Chart) -> list[str]:
         if chart.state not in self.states.waits():
@@ -190,7 +190,7 @@ class Validation:
         if target.get("kind") == NodeKind.TRIGGER:
             return [Fault(f"a line leads into trigger {target.get('id')}: a trigger only starts a path", str(target.get("id", "")))]
         if source.get("key") == "stop_here":
-            return [Fault(f"a line leads out of Stop here {source.get('id')}: it ends the walk, nothing follows it", str(source.get("id", "")))]
+            return [Fault(f"a line leads out of Run no later workflows {source.get('id')}: it ends the walk, nothing follows it", str(source.get("id", "")))]
         if source.get("kind") == NodeKind.CHECK and port not in (YES, NO):
             return [Fault(f"check {source.get('id')} leaves by yes or no, not {port}", str(source.get("id", "")))]
         if source.get("kind") != NodeKind.CHECK and port != THEN:

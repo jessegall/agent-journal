@@ -759,18 +759,18 @@ as report 5; it waits on the user's word before a plan.
 Plan 7, Everything through the workflow, approved on 2026-10-16 late at night after the user redrew the model
 (messages 1133 to 1143) and three Opus reads were folded in: a workflow answers one trigger and is bound to a state
 or to none (always); an event's workflows run in the place order the user drags; the laws and guards become locked
-workflows at the head; Stop here ends an event's walk; Orienting, Loading a skill and At a context mark become facts
+workflows at the head; Run no later workflows ends an event's walk; Orienting, Loading a skill and At a context mark become facts
 the agent owes. Phase one so far: a shipped workflow remembers its shipping (drawn_version) and an edited one the
 shipping moved past is kept and told so; shipped workflows are named after their drawing (state:event), a retired
 one is remembered and reset by state and event draws it back; Chart.place orders an event's workflows, a state is
 optional, the walk runs the event's list in order with the nearest state in the lineage replacing its parents';
 one move per event, the first hold wins and later holds are recorded unanswered, the new state's workflows run at
-their place after a move, the waits are placed before the states they go back to; a Stop here node ends the event's
+their place after a move, the waits are placed before the states they go back to; a Run no later workflows node ends the event's
 walk, warned on save for what it skips; the order endpoint and chart order take an event's list at the revisions
 read, refusing a stale one naming who saved first; the page is an event list and the event's ordered list, dragged
 to reorder, filtered by state; a locked workflow or step is the journal's law: the seed draws the holds locked, a
 locked workflow keeps the head of its event's list and is neither deleted nor turned off, a locked step is neither
-taken out, reworded (its numbers may change) nor gated by a check or a Stop here of the user's, and the
+taken out, reworded (its numbers may change) nor gated by a check or a Run no later workflows of the user's, and the
 DRAWINGS_VERSION bump that locks the holds in a standing journal came with the Always workflows: the tool conduct
 is the locked the guards at Tool about to run (whole, the holds and the naming around them, since one path cannot be
 split), the inbox and the message named are Always workflows per shared event after the locked ones, a state's
