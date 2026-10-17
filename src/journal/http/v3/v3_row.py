@@ -42,6 +42,7 @@ class V3Row:
     deleted: float = 0.0
     completed: float = 0.0
     outcome: str = ""
+    state: str = ""
 
     @classmethod
     def of(cls, type: str, model: Model, **fields) -> "V3Row":

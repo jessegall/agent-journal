@@ -308,9 +308,6 @@ class V3Controller:
             self.supervisor.type_raw(self.scope.id, command)
         return Response.json({"queued": bool(command)})
 
-    def get_agent_transcript(self, request: Request) -> Response:
-        return Response.json({"turns": [], "rows": [], "more": False})
-
     # events
 
     def get_events(self, request: Request) -> Response:

@@ -3,6 +3,7 @@ import shlex
 from pathlib import Path
 
 from journal.providers.provider import Provider
+from journal.providers.turn import Turn
 
 
 TAIL = 400_000
@@ -28,6 +29,32 @@ class Claude(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"
         return path if path.is_file() else None
+
+    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
+        path = Path.home() / ".claude" / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
+        return path if path.is_file() else None
+
+    def turns(self, path: Path) -> list[Turn]:
+        return [turn for number, row in self.json_lines(path) if (turn := self.turn(number, row))]
+
+    def turn(self, number: int, row: dict) -> Turn | None:
+        if row.get("type") not in ("user", "assistant"):
+            return None
+        content = row.get("message", {}).get("content", [])
+        blocks = [{"type": "text", "text": content}] if isinstance(content, str) else [b for b in content if isinstance(b, dict)]
+        text = "\n".join(b.get("text", "") for b in blocks if b.get("type") == "text")
+        results = [b for b in blocks if b.get("type") == "tool_result"]
+        if results and not text.strip():
+            text = "\n".join(self.result_text(b.get("content", "")) for b in results)
+        tools = [b.get("name", "") for b in blocks if b.get("type") == "tool_use"]
+        if not text.strip() and not tools:
+            return None
+        kind = "summary" if row.get("isCompactSummary") else "agent" if row["type"] == "assistant" else "tool" if results else "injected" if row.get("isMeta") else "human"
+        return Turn(number, "user" if kind in ("human", "injected") else kind, kind, text, self.seconds(row.get("timestamp", "")), tools)
+
+    @staticmethod
+    def result_text(content) -> str:
+        return content if isinstance(content, str) else "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
 
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
         """The thinking blocks after the last prompt, read from the transcript's tail."""

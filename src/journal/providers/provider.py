@@ -1,7 +1,8 @@
 import json
 import re
+from datetime import datetime
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, Iterator
 
 from journal.features.shell.reads import Reads
 from journal.features.shell.writes import Writes
@@ -9,6 +10,7 @@ from journal.hooks.decision import Decision
 from journal.hooks.hook import Hook
 from journal.hooks.hook_kind import HookKind
 from journal.http.response import Response
+from journal.providers.turn import Turn
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
@@ -29,6 +31,24 @@ class Provider:
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
+
+    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
+        """The file a subagent of the parent session wrote its conversation in; none for a provider that keeps no such file."""
+        return None
+
+    def turns(self, path: Path) -> list[Turn]: ...
+
+    @staticmethod
+    def json_lines(path: Path) -> Iterator[tuple[int, dict]]:
+        """Each whole line of a transcript with its number; a last line still being written is left for the next read."""
+        text = path.read_text(errors="replace")
+        for number, line in enumerate(text[: text.rfind("\n") + 1].splitlines(), 1):
+            if line.startswith("{"):
+                yield number, json.loads(line)
+
+    @staticmethod
+    def seconds(stamp: str) -> float:
+        return datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() if stamp else 0.0
 
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
         """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""

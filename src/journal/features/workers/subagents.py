@@ -43,9 +43,10 @@ class Subagents:
                 open_[use or f"entry:{e.id}"] = rows[-1]
             elif e.kind == "ToolFinished" and open_:
                 done = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
-                launched = Subagents.launched(e.data.get("tool_response"))
-                if launched:
-                    background[launched] = done
+                answer = Subagents.answered(e.data.get("tool_response"))
+                done["session"] = answer.get("agentId", "")
+                if answer.get("isAsync") and done["session"]:
+                    background[done["session"]] = done
                 else:
                     done.update(status="done", running=False, ended=e.created_at.timestamp())
         return rows
@@ -58,11 +59,11 @@ class Subagents:
         running.clear()
 
     @staticmethod
-    def launched(response) -> str:
-        """The id of a subagent the Agent tool launched in the background, from its answer; empty when the answer is the finished work."""
+    def answered(response) -> dict:
+        """The Agent tool's answer as a mapping: its agentId names the subagent's transcript, and isAsync says it was launched in the background; empty when the answer is plain text."""
         if isinstance(response, str):
             try:
                 response = json.loads(response)
             except ValueError:
-                return ""
-        return response.get("agentId", "") if isinstance(response, dict) and response.get("isAsync") else ""
+                return {}
+        return response if isinstance(response, dict) else {}

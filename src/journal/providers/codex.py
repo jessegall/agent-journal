@@ -3,6 +3,7 @@ from pathlib import Path
 
 from journal.hooks.hook_kind import HookKind
 from journal.providers.provider import Provider
+from journal.providers.turn import Turn
 
 
 class Codex(Provider):
@@ -21,6 +22,24 @@ class Codex(Provider):
 
     def transcript(self, project: Path, session: str) -> Path | None:
         return next((Path.home() / ".codex" / "sessions").glob(f"**/rollout-*-{session}.jsonl"), None)
+
+    def turns(self, path: Path) -> list[Turn]:
+        return [turn for number, row in self.json_lines(path) if (turn := self.turn(number, row))]
+
+    def turn(self, number: int, row: dict) -> Turn | None:
+        item = row.get("payload", {})
+        if row.get("type") != "response_item":
+            return None
+        at = self.seconds(row.get("timestamp", ""))
+        if item.get("type") == "message" and item.get("role") in ("user", "assistant"):
+            text = "\n".join(b.get("text", "") for b in item.get("content", []) if isinstance(b, dict))
+            kind = "agent" if item["role"] == "assistant" else "human"
+            return Turn(number, "user" if kind == "human" else kind, kind, text, at) if text.strip() else None
+        if item.get("type") in ("function_call", "custom_tool_call"):
+            return Turn(number, "agent", "agent", "", at, [item.get("name", "")])
+        if item.get("type") in ("function_call_output", "custom_tool_call_output"):
+            return Turn(number, "tool", "tool", str(item.get("output", "")), at)
+        return None
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)

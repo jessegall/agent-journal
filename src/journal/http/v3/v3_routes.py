@@ -1,6 +1,7 @@
 from journal.container import Container
 from journal.http.router import Router
 from journal.http.v3.rows_controller import RowsController
+from journal.http.v3.transcript_controller import TranscriptController
 from journal.http.v3.v3_controller import V3Controller
 
 API = "/api"
@@ -40,7 +41,10 @@ class V3Routes:
         router.get(f"{API}/agent/{{n}}/edits/older", c.get_agent_edits)
         router.get(f"{API}/agent/{{n}}/edits/file", c.get_agent_edited_file)
         router.get(f"{API}/agent/{{n}}/terminal", c.get_agent_terminal)
-        router.get(f"{API}/agent/{{n}}/transcript", c.get_agent_transcript)
+        transcripts = self.container.get(TranscriptController)
+        router.get(f"{API}/agent/{{n}}/transcript", transcripts.agent)
+        router.get(f"{API}/agent/{{n}}/subagent/{{session}}/transcript", transcripts.subagent)
+        router.get(f"{API}/helper/{{n}}/transcript", transcripts.worker)
         router.post(f"{API}/agent/{{session}}/shell", c.post_agent_shell)
         router.post(f"{API}/agent/{{session}}/control", c.post_agent_control)
         router.get(f"{API}/{{type}}", self.container.get(RowsController).index)

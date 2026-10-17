@@ -4,7 +4,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import ChatMark from "../kit/ChatMark.vue";
 import SubagentMark from "./SubagentMark.vue";
 import TicketAgent from "../agents/TicketAgent.vue";
-import {helperCard, helperEnvironment, helperName, helperState} from "../domain/helpers.js";
+import {helperCard, helperEnvironment, helperName} from "../domain/helpers.js";
 import {rows} from "../sync/rows.js";
 import {useKept} from "../composables/kept.js";
 import WhisperMark from "./WhisperMark.vue";
@@ -76,7 +76,7 @@ function markClick(data) {
                         :card="helperCard(helper)"
                         :env="helperEnvironment(helper)"
                         kind="helper"
-                        :recorded="helperState(helper) === 'finished' ? helper.n : 0"
+                        :recorded="helper.n"
                         :label="helperName(helper)"
                         @close="inspecting = 0"
                     />
