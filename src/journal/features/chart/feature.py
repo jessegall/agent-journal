@@ -38,6 +38,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.ACTION, 'block_stop', 'Keep the agent from stopping', 'the agent carries on, with the message', takes_text=True),
         Entry(NodeKind.ACTION, 'type', 'Type to the agent', "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", takes_text=True),
         Entry(NodeKind.ACTION, 'count_start', 'Start a count', "sets the agent's count named in the text to zero; a check at a later event reads it", takes_text=True),
+        Entry(NodeKind.ACTION, 'count_begin', 'Start a count if not started', "sets the agent's count named in the text to zero only when this workflow has not started it, so it is not reset on every event", takes_text=True),
         Entry(NodeKind.ACTION, 'count_one', 'Count one', "adds one to the agent's count named in the text", takes_text=True),
         Entry(NodeKind.ACTION, 'run_workflow', 'Run a workflow', 'runs the workflow named in the text by its title, from its trigger on, as part of this event and in place, so one workflow is used in several; a workflow cannot run itself, directly or through another', takes_text=True),
         Entry(NodeKind.ACTION, 'stop_here', 'Run no later workflows', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),

@@ -190,7 +190,7 @@ class Validation:
     def action_faults(self, nodes: list[dict]) -> list[Fault]:
         """A wait names what for and being stuck why; a count node names its count, and a count check the number after it."""
         faults = []
-        for n in (n for n in nodes if n.get("key") in ("count_start", "count_one", *COUNT_CHECKS)):
+        for n in (n for n in nodes if n.get("key") in ("count_start", "count_begin", "count_one", *COUNT_CHECKS)):
             words = n.get("text", "").split()
             if not words:
                 faults.append(Fault(f"node {n.get('id')} names no count: its text is the count's name", str(n.get("id", ""))))

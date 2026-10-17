@@ -12,7 +12,19 @@ class Counts(ScopedRepository[Count]):
         return rows[0] if rows else Count(environment_id=self.scope.id, session=session, name=name)
 
     def set(self, session: str, name: str, value: int, by: Actor) -> Count:
-        return self.save(self.named(session, name).with_(value=value), by)
+        with self.connection.transaction():
+            return self.save(self.named(session, name).with_(value=value), by)
+
+    def begin(self, session: str, name: str, by: Actor) -> Count:
+        """The count at nought unless it is already kept."""
+        with self.connection.transaction():
+            standing = self.named(session, name)
+            return standing if standing.id is not None else self.save(standing, by)
+
+    def count_one(self, session: str, name: str, by: Actor) -> Count:
+        """One more, read and written in one transaction, so walks on other threads raising the same count lose no step."""
+        with self.connection.transaction():
+            return self.save(self.named(session, name).up(), by)
 
     def forget(self, session: str, by: Actor) -> None:
         """A session's counts gone with it."""

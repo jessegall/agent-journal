@@ -3350,7 +3350,7 @@ def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
         made, trigger = own_workflow(console, charts, "idle", "tool_finished")
         previous = trigger
         for _ in range(times):
-            one = int(console.run(["chart", "node", "action", "count_one", "--text", "uses", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+            one = int(console.run(["chart", "node", "action", "count_one", "--text", "tools", "--in", str(made)], USER).out.split()[1].rstrip(":"))
             console.run(["chart", "line", str(previous), str(one)], USER)
             previous = one
         return made
@@ -3361,7 +3361,89 @@ def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
         counted = {c.name: c.value for c in app.container.get(Counts).where(session="s1")}
-    assert counted == {f"charts:{once}:uses": 1, f"charts:{twice}:uses": 2}, "each workflow keeps its own count of uses"
+    assert counted == {f"charts:{once}:tools": 1, f"charts:{twice}:tools": 2}, "each workflow keeps its own count of tools"
+
+def test_a_count_started_only_when_not_started_keeps_counting(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    console = app.console()
+    made, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
+    node = lambda key: int(console.run(["chart", "node", "action", key, "--text", "tools", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    begin, one = node("count_begin"), node("count_one")
+    console.run(["chart", "line", str(trigger), str(begin)], USER)
+    console.run(["chart", "line", str(begin), str(one)], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    for path in ("a", "b", "c"):
+        hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": path})
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).named("s1", f"charts:{made}:tools").value == 3, "the count started once and was not reset on each event"
+
+def test_two_walks_of_one_agent_at_once_lose_no_count(app, monkeypatch):
+    import contextvars
+    import threading
+    import time
+    from journal.events.agent.tool_finished import ToolFinished
+    from journal.features.chart.context import Context
+    from journal.features.chart.walk import Walk
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    console = app.console()
+    made = int(console.run(["chart", "new", "Counting", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in app.container.get(Charts).nodes_of(app.container.get(Charts).find(made)) if n.key == "tool_finished")
+    one = int(console.run(["chart", "node", "action", "count_one", "--text", "tools", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    named = Counts.named
+    monkeypatch.setattr(Counts, "named", lambda self, session, name: (named(self, session, name), time.sleep(0.003))[0])
+    walk, event = app.container.get(Walk), ToolFinished(tool="Read", input={}, output="").placed("s1", 1, "claude", 0.0)
+
+    def walks():
+        for _ in range(20):
+            walk.on(Context(event=event, session="s1", environment_id=1))
+    threads = [threading.Thread(target=contextvars.copy_context().run, args=(walks,)) for _ in range(2)]
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    assert named(app.container.get(Counts), "s1", f"charts:{made}:tools").value == 40, "every walk's Count one is kept"
+
+def test_a_workflow_that_only_counts_walks_after_the_reply(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    made, trigger = own_workflow(console, charts, "idle", "tool_starting")
+    one = int(console.run(["chart", "node", "action", "count_one", "--text", "tools", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    assert not charts.graph(charts.find(made)).answers, "counting changes no answer, so the workflow is quiet"
+
+def test_a_row_event_with_no_agent_keeps_no_count(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.repositories.scope import Scope
+    console, charts = app.console(), app.container.get(Charts)
+    made = int(console.run(["chart", "new", "Tasks made", "--on", "tasks.created"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tasks.created")
+    one = int(console.run(["chart", "node", "action", "count_one", "--text", "made", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    console.run(["task", "create", "a task with no agent here"], USER)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).where(environment_id=1) == [], "a walk about no agent keeps no count"
+
+def test_a_line_says_a_workflows_count_by_name(app):
+    from journal.repositories.charts import Charts
+    console = app.console()
+    made, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, "--text", text, "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    one, say = node("action", "count_one", "reminders"), node("action", "say", "[chart] reminder {{value.reminders}}")
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    console.run(["chart", "line", str(one), str(say)], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    said = json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})[1])
+    assert "reminder 2" in said, "the line says the workflow's own count"
+    tried = console.run(["chart", "try", "tool_finished"], USER).out
+    assert "reminder 3" in tried, "a dry walk says the count as its ledger raised it over the live one"
 
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart

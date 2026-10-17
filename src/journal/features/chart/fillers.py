@@ -1,4 +1,5 @@
 import subprocess
+from copy import copy
 from datetime import datetime, timezone
 import re
 
@@ -31,6 +32,8 @@ from journal.config import Config
 from journal.repositories.tasks import Tasks
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
+VALUE = re.compile(r"\{\{value\.(\w+)\}\}")
+"""A count of the workflow being walked, or a reading, by its name: {{value.uses}}."""
 
 
 class Fillers:
@@ -46,10 +49,18 @@ class Fillers:
     @classmethod
     def listed(cls) -> list[dict]:
         """Every placeholder a node's text may name, with what it stands for, for the page's insert panel."""
-        return [{"key": "{{" + name + "}}", "about": method.__doc__} for name, method in vars(cls).items() if not name.startswith("_") and name not in ("fill", "listed", "state", "agent", "plan_at_checkpoint") and method.__doc__]
+        named = [{"key": "{{" + name + "}}", "about": method.__doc__} for name, method in vars(cls).items() if not name.startswith("_") and name not in ("fill", "listed", "state", "agent", "plan_at_checkpoint") and method.__doc__]
+        return [*named, {"key": "{{value.<name>}}", "about": "A count this workflow keeps for the agent, or a reading such as uses or edits, by its name."}]
+
+    def reading(self, checks: Checks) -> "Fillers":
+        """The same fillers reading the counts through other checks, as a dry walk's, which lay its ledger over the live counts."""
+        dry = copy(self)
+        dry.checks = checks
+        return dry
 
     def fill(self, text: str, ctx: Context) -> str:
-        return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), text)
+        counted = VALUE.sub(lambda m: str(self.checks.count_of(ctx, m.group(1))), text)
+        return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), counted)
 
     def env(self, ctx: Context) -> str:
         """The environment's name."""

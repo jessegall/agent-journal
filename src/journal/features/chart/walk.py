@@ -45,7 +45,7 @@ class Walk:
 
     def dry(self, fillers, checks: Checks, ledger: dict) -> "Walk":
         """The same walk with nothing done: each action tells what it would do, the checks given answer, assumed or live, and the counts the dry walk makes are read through the ledger shared with them."""
-        return Walk(self.charts, checks, DryActions(fillers, ledger), self.entries, self.states, self.machine, self.floor)
+        return Walk(self.charts, checks, DryActions(fillers.reading(checks), ledger), self.entries, self.states, self.machine, self.floor)
 
     def on(self, ctx: Context, part: str = ALL) -> Decision:
         """The walk's decision under the floor: no workflow holds a journal command or the read of a skill's file, the ways a debt is paid; the hold's words still reach the agent. The part says which workflows walk: those that can change the answer before the reply, the quiet ones after it, or all."""
