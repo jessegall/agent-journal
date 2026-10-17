@@ -4075,6 +4075,25 @@ def test_a_plugins_record_lists_what_it_did(app):
     assert record == sorted(record, key=lambda line: -line["at"]), "newest first"
 
 
+def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
+    from journal.repositories.plugins import Plugins
+    console = app.console()
+    console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
+    plugin = app.container.get(Plugins).named("echo")
+    as_echo = Where("main", plugin="echo")
+    assert "written by its plugin's program" in console.run(["dashboard", "set", "a.py", "a.py"], AGENT).err, "only a plugin writes its dashboard"
+    console.run(["dashboard", "set", "a.py", "a.py", "--badge", "2 sins", "--tone", "warn", "--heading", "Files"], as_echo)
+    console.run(["dashboard", "set", "b.py", "b.py", "--badge", "clean", "--tone", "good", "--heading", "Files"], as_echo)
+    console.run(["dashboard", "set", "a.py", "a.py", "--badge", "1 sin", "--tone", "warn", "--heading", "Files"], as_echo)
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/plugin/{plugin.id}/dashboard/echoes", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        document = json.loads(reply.read())
+    view = document["pages"]["start"]
+    assert view["title"] == "Echoes" and view["view"]["children"] == [{"type": "heading", "text": "Files", "level": 3}, {"type": "list", "items": [{"label": "a.py", "badge": "1 sin", "tone": "warn", "note": ""}, {"label": "b.py", "badge": "clean", "tone": "good", "note": ""}]}], "one line per key, rewritten in place"
+    console.run(["plugin", "remove", "echo", "--purge"], USER)
+    from journal.repositories.dashboard_rows import DashboardRows
+    assert app.container.get(DashboardRows).of("echo") == [], "purged with its plugin"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

@@ -54,6 +54,7 @@ class V3Routes:
         router.post(f"{API}/plugins/{{n}}/upgrade-preview", plugins.upgrade_preview)
         router.get(f"{API}/plugins/{{name}}/log", plugins.log)
         router.get(f"{API}/plugins/{{name}}/record", plugins.record_of)
+        router.get(f"{API}/plugin/{{n}}/dashboard/{{name}}", plugins.dashboard)
         router.get(f"{API}/{{type}}", self.container.get(RowsController).index)
         router.post(f"{API}/{{type}}", c.post_create)
         router.get(f"{API}/{{type}}/{{n}}", c.get_one)

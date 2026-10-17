@@ -1,0 +1,15 @@
+from journal.models.dashboard_row import DashboardRow
+from journal.repositories.repository import Repository
+
+
+class DashboardRows(Repository[DashboardRow]):
+    """The lines plugins keep on their dashboards, the same for every environment."""
+
+    model = DashboardRow
+
+    def of(self, plugin: str) -> list[DashboardRow]:
+        return self.where(plugin=plugin)
+
+    def keyed(self, plugin: str, key: str) -> DashboardRow | None:
+        found = self.where(plugin=plugin, key=key)
+        return found[0] if found else None

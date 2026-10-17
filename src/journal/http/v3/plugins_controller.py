@@ -1,3 +1,4 @@
+from journal.features.plugins.dashboard_document import DashboardDocument
 from journal.features.plugins.installing import Installing
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_record import PluginRecord
@@ -11,8 +12,9 @@ from journal.repositories.environments import Environments
 class PluginsController:
     """The Plugins page's paths that are no act on a row: the preview of a source, an install from it, an upgrade's preview, a plugin's service logs and its record."""
 
-    def __init__(self, installing: Installing, plugins: Plugins, folders: PluginFolders, scope: Scope, environments: Environments, record: PluginRecord) -> None:
+    def __init__(self, installing: Installing, plugins: Plugins, folders: PluginFolders, scope: Scope, environments: Environments, record: PluginRecord, dashboards: DashboardDocument) -> None:
         self.installing, self.plugins, self.folders, self.scope, self.environments, self.record = installing, plugins, folders, scope, environments, record
+        self.dashboards = dashboards
 
     def preview(self, request: Request) -> Response:
         return Response.json(self.installing.preview(request.body.get("source", "").strip()))
@@ -33,3 +35,6 @@ class PluginsController:
 
     def record_of(self, request: Request) -> Response:
         return Response.json({"record": self.record.of(request.params["name"])})
+
+    def dashboard(self, request: Request) -> Response:
+        return Response.json(self.dashboards.of(self.plugins.find(request.number("n"))))

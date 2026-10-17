@@ -21,6 +21,7 @@ from journal.models.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.models.plugin_manifest import PluginManifest
 from journal.refused import Refused
+from journal.repositories.dashboard_rows import DashboardRows
 from journal.repositories.not_found import NotFound
 from journal.repositories.plugins import Plugins
 
@@ -32,9 +33,9 @@ STEP_SECONDS = 300
 class Installing:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner, services: PluginServices) -> None:
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner, services: PluginServices, dashboard: DashboardRows) -> None:
         self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills, self.runner = config, reader, plugins, folders, hashes, settings, skills, runner
-        self.services = services
+        self.services, self.dashboard = services, dashboard
 
     def preview(self, source: str) -> dict:
         """What the plugin is and, row by row, everything it would run, hear and hold."""
@@ -149,10 +150,12 @@ class Installing:
         self.plugins.delete(plugin, by)
 
     def purge(self, name: str, by: Actor) -> None:
-        """Removed, and its data folder with it."""
+        """Removed, and its data folder and its dashboard's lines with it."""
         data = self.folders.data(self.plugins.named(name))
         self.remove(name, by)
         shutil.rmtree(data, ignore_errors=True)
+        for line in self.dashboard.of(name):
+            self.dashboard.delete(line, by)
 
     @staticmethod
     def same(plugin: Plugin, manifest: PluginManifest) -> PluginManifest:
