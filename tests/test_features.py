@@ -3558,3 +3558,24 @@ def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(
         app.runtime().deferred.drain()
     asked = [m for m in app.container.get(Messages).in_() if "Your login to Example has run out" in m.text]
     assert len(asked) == 1, "asked once for each time it runs out"
+
+
+def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp_path, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.models.secret import Secret
+    from journal.models.secret_kind import SecretKind
+    from journal.repositories.secrets import Secrets
+    from journal.secret_values import AT, RETIRED, SecretValues
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    values, secrets = app.container.get(SecretValues), app.container.get(Secrets)
+    long_ago = datetime.now(timezone.utc) - timedelta(days=31)
+    old = secrets.save(Secret(title="Old", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Old"), deleted_at=long_ago), Actor.user("u"))
+    recent = secrets.save(Secret(title="Recent", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Recent"), deleted_at=datetime.now(timezone.utc)), Actor.user("u"))
+    values.write({"OLD_KEY": "a", "RECENT_KEY": "b", f"{RETIRED}X{AT}{int(long_ago.timestamp())}": "c", "LIVE_KEY": "d"})
+    hook(app, "SessionStart")
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    app.runtime().deferred.drain()
+    assert [s.id for s in secrets.all()] == [recent.id], "the one deleted thirty days ago is gone, the recent one kept for a restore"
+    assert values.values() == {"RECENT_KEY": "b", "LIVE_KEY": "d"}, "its values and the old retired one go with it"

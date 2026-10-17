@@ -4,6 +4,7 @@ from journal.features.secrets.commands.secret_command import SecretCommand
 from journal.features.secrets.listeners.keep_out_of_private import KeepOutOfPrivate
 from journal.features.secrets.listeners.alarm_on_leak import AlarmOnLeak
 from journal.features.secrets.listeners.ask_when_expired import AskWhenExpired
+from journal.features.secrets.listeners.purge_after_thirty_days import PurgeAfterThirtyDays
 from journal.features.secrets.listeners.tell_allowed import TellAllowed
 from journal.features.secrets.seeds.secret_files import SecretFiles
 
@@ -17,4 +18,4 @@ class Secrets(Feature):
     nudges = (KEPT_OUT, ALLOWED)
     commands = (SecretCommand,)
     seeds = (SecretFiles,)
-    listeners = (AlarmOnLeak, KeepOutOfPrivate, TellAllowed, AskWhenExpired)
+    listeners = (AlarmOnLeak, KeepOutOfPrivate, TellAllowed, AskWhenExpired, PurgeAfterThirtyDays)
