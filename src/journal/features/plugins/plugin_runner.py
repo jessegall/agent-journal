@@ -6,6 +6,7 @@ import subprocess
 from journal.config import Config
 from journal.features.plugins.plugin_fault import PluginFault
 from journal.features.plugins.plugin_folders import PluginFolders
+from journal.features.plugins.plugin_settings import PluginSettings
 from journal.features.plugins.plugin_tokens import PluginTokens
 from journal.features.plugins.protocol import Protocol
 from journal.models.plugin import Plugin
@@ -18,8 +19,8 @@ KEPT = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 class PluginRunner:
     """Runs a plugin's program for one event: the line on its input, in its own folder and process group, with a clean environment that names the journal and the plugin, and at most the time it is given."""
 
-    def __init__(self, config: Config, folders: PluginFolders, tokens: PluginTokens, protocol: Protocol) -> None:
-        self.config, self.folders, self.tokens, self.protocol = config, folders, tokens, protocol
+    def __init__(self, config: Config, folders: PluginFolders, tokens: PluginTokens, protocol: Protocol, settings: PluginSettings) -> None:
+        self.config, self.folders, self.tokens, self.protocol, self.settings = config, folders, tokens, protocol, settings
 
     def ask(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
         if within <= 0:
@@ -50,4 +51,4 @@ class PluginRunner:
             "JOURNAL_PLUGIN_DIR": str(self.folders.of(plugin)),
             "JOURNAL_PLUGIN_DATA": str(self.folders.data(plugin)),
             "JOURNAL_SETTINGS": str(settings),
-        }
+        } | self.settings.given(plugin)

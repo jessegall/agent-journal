@@ -10,6 +10,7 @@ from journal.config import Config
 from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_hashes import PluginHashes
+from journal.features.plugins.plugin_settings import PluginSettings
 from journal.models.actor import Actor
 from journal.models.actor_kind import ActorKind
 from journal.models.plugin import Plugin
@@ -26,8 +27,8 @@ COMPARED = ("version", "program", "hears", "holds", "services", "settings", "ski
 class Installing:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes) -> None:
-        self.config, self.reader, self.plugins, self.folders, self.hashes = config, reader, plugins, folders, hashes
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings) -> None:
+        self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings = config, reader, plugins, folders, hashes, settings
 
     def preview(self, source: str) -> tuple[PluginManifest, str]:
         """The manifest as read, and all it would run, said."""
@@ -45,7 +46,7 @@ class Installing:
                 shutil.copytree(folder, self.config.home / "plugins" / manifest.name, ignore=shutil.ignore_patterns(".git"))
             plugin = self.plugins.save(Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest), hashes=self.hashes.of(folder, asdict(manifest))), by)
             self.folders.data(plugin)
-            return plugin
+            return self.settings.started(plugin, by)
 
     def upgrade_preview(self, name: str, ref: str) -> str:
         plugin = self.plugins.named(name)

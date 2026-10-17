@@ -4,6 +4,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.cards import Cards
 from journal.features.plugins.installing import Installing
+from journal.features.plugins.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
 from journal.repositories.scope import Scope
 
@@ -11,8 +12,8 @@ from journal.repositories.scope import Scope
 class PluginCommand(Command):
     noun = "plugin"
 
-    def __init__(self, plugins: Plugins, installing: Installing, cards: Cards, scope: Scope) -> None:
-        self.plugins, self.installing, self.cards, self.scope = plugins, installing, cards, scope
+    def __init__(self, plugins: Plugins, installing: Installing, cards: Cards, scope: Scope, settings: PluginSettings) -> None:
+        self.plugins, self.installing, self.cards, self.scope, self.schemas = plugins, installing, cards, scope, settings
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the plugins installed here, each on or off and how it last failed")
@@ -28,6 +29,11 @@ class PluginCommand(Command):
         upgrade.add_argument("--yes", action="store_true", help="upgrade it after the preview")
         self.verb(verbs, "enable", "switch a plugin on, for the whole project").add_argument("name")
         self.verb(verbs, "disable", "switch a plugin off: it hears nothing until switched on").add_argument("name")
+        configure = self.verb(verbs, "configure", "set one of a plugin's settings, checked against its kind; a secret is filled on the Secrets page")
+        configure.add_argument("name")
+        configure.add_argument("key")
+        configure.add_argument("value")
+        self.verb(verbs, "settings", "a plugin's settings, what each is and how it is set").add_argument("name")
         remove = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
         remove.add_argument("name")
         remove.add_argument("--purge", action="store_true", help="delete its data folder too")
@@ -78,4 +84,17 @@ class PluginCommand(Command):
             return 0
         self.installing.remove(args.name, where.actor)
         print(f"removed {args.name}; its data folder stays in .journal/plugin-data/{args.name}")
+        return 0
+
+    def configure(self, args: Namespace, where: Where) -> int:
+        plugin = self.schemas.configure(args.name, args.key, args.value, where.actor)
+        print(f"{args.name} {args.key} = {plugin.settings[args.key]}")
+        return 0
+
+    def settings(self, args: Namespace, where: Where) -> int:
+        plugin = self.plugins.named(args.name)
+        for setting in self.schemas.schema(plugin):
+            value = plugin.settings.get(setting["key"])
+            shown = f"secret {value['secret']}, filled on the Secrets page" if isinstance(value, dict) else value
+            print(f"{setting['key']:<16} {setting['kind']:<7} {shown}  {setting.get('title', '')}" + (f": {setting['help']}" if setting.get("help") else ""))
         return 0

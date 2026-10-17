@@ -3920,6 +3920,28 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app, tmp_path):
     assert not plugins.named("echo").enabled and "run.py changed since you installed it" in app.container.get(Messages).recent(1)[0].text
 
 
+def test_a_plugins_settings_follow_its_schema_and_its_secret_comes_from_the_user(app):
+    from journal.features.plugins.plugin_runner import PluginRunner
+    from journal.repositories.plugins import Plugins
+    from journal.repositories.secrets import Secrets
+    from journal.secret_values import SecretValues
+    console, plugins = app.console(), app.container.get(Plugins)
+    console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
+    plugin = plugins.named("echo")
+    secret = app.container.get(Secrets).find(plugin.settings["token"]["secret"])
+    assert (plugin.settings["mode"], plugin.settings["repeat"]) == ("", 1) and secret.title == "echo Token" and secret.proposed == ("plugin:echo",), "defaults set, and a secret asked for, proposed for the plugin"
+    assert console.run(["plugin", "configure", "echo", "repeat", "3"], USER).code == 0 and plugins.named("echo").settings["repeat"] == 3
+    assert "repeat is a number; 'three' is not" in console.run(["plugin", "configure", "echo", "repeat", "three"], USER).err
+    assert "the user fills it on the Secrets page" in console.run(["plugin", "configure", "echo", "token", "abc"], USER).err
+    assert "only the user configures" in console.run(["plugin", "configure", "echo", "repeat", "2"], AGENT).err
+    variable = secret.fields[0]["variable"]
+    app.container.get(SecretValues).put(variable, "tok_0123456789abcdef")
+    runner = app.container.get(PluginRunner)
+    assert variable not in runner.environment(plugins.named("echo"), "main"), "a filled secret is not given until the user allows it"
+    app.container.get(Secrets).save(secret.with_(programs=("plugin:echo",)), Actor.user(1))
+    assert runner.environment(plugins.named("echo"), "main")[variable] == "tok_0123456789abcdef"
+
+
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.features.plugins.feature import PluginsFeature
     from journal.repositories.entries import Entries

@@ -23,6 +23,15 @@ agent's writes into `.journal/plugins` are held. The files a plugin runs are has
 switch it on, and checked before each run. A plugin whose program changed is switched off with a card until you read
 the change and switch it on again. A linked folder stays open to the agent; this check is what guards it.
 
+## Settings
+
+A manifest's `settings` names a JSON file listing each setting: its `key`, `title`, `kind` (`text`, `number`,
+`flag`, `choice` with its `choices`, `list`, or `secret`), `default` and `help`. Install sets each to its default.
+`journal plugin settings <name>` lists them, and `journal plugin configure <name> <key> <value>` sets one, checked
+against its kind; only you configure a plugin. A `secret` setting becomes a secret of the Secrets feature, proposed for
+`plugin:<name>`. You fill it on the Secrets page and allow it to the plugin there; only then is its value in the
+plugin's environment, under the secret's variable. No command ever sets it.
+
 ## The manifest
 
 `journal-plugin.json` names the plugin and what it runs, hears and holds:
