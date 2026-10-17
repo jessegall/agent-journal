@@ -10,7 +10,7 @@ from journal.repositories.not_found import NotFound
 
 
 class McpController:
-    """The integrations page: the project's MCP servers and how they stand, the suggestions, and the acts on them."""
+    """The MCP page: the project's MCP servers and how they stand, the suggestions, and the acts on them."""
 
     def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing, health: Health, pending: PendingRestarts) -> None:
         self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending

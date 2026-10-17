@@ -13,7 +13,7 @@ SUGGESTED = (
 
 
 class Catalogue:
-    """The servers suggested on the integrations page, by name."""
+    """The servers suggested on the MCP page, by name."""
 
     def all(self) -> tuple[Suggestion, ...]:
         return SUGGESTED

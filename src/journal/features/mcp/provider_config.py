@@ -24,7 +24,7 @@ class ProviderConfig:
 
     @staticmethod
     def toml(servers) -> str:
-        lines = ["# Written by the journal: the project's MCP servers. Edit them on the viewer's Integrations page.", ""]
+        lines = ["# Written by the journal: the project's MCP servers. Edit them on the viewer's MCP page.", ""]
         for s in servers:
             lines.append(f"[mcp_servers.{s.name}]")
             if s.transport == "stdio":

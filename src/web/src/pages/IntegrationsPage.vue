@@ -87,9 +87,9 @@ onUnmounted(() => clearInterval(checking));
     <section class="integrations">
         <header class="integrations-head">
             <div>
-                <h1>Integrations</h1>
+                <h1>MCP</h1>
                 <p class="integrations-lead">
-                    An integration is an MCP server the agents are given, from here or from Claude Code itself. Installing or
+                    These are the MCP servers the agents are given, from here or from Claude Code itself. Installing or
                     removing one restarts the running agents once they are idle, so it applies at once. A key is kept outside
                     the project and never written into it.
                 </p>
@@ -100,13 +100,13 @@ onUnmounted(() => clearInterval(checking));
         <p v-if="notice" class="integrations-notice">{{ notice }}</p>
         <p v-if="restartPending.length" class="integrations-pending"><span class="integrations-spinner" /> The agent restarts as soon as it finishes what it is doing; the change applies then.</p>
 
-        <ul v-if="!loaded" class="integrations-list" aria-label="Loading the integrations">
+        <ul v-if="!loaded" class="integrations-list" aria-label="Loading the MCP servers">
             <li v-for="n in 3" :key="n" class="integration">
                 <SkeletonLine :bars="[{width: '28%', height: 16}, {width: '40%', height: 14}]" />
                 <SkeletonLine :bars="[{width: '62%', height: 12}]" />
             </li>
         </ul>
-        <p v-else-if="!servers.length" class="integrations-none">No integration yet. Install one of the suggestions below.</p>
+        <p v-else-if="!servers.length" class="integrations-none">No MCP server yet. Install one of the suggestions below.</p>
 
         <ul v-else class="integrations-list">
             <li v-for="s in servers" :key="s.name" class="integration">
