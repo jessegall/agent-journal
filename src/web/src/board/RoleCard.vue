@@ -83,8 +83,8 @@ const CARDINALITY = {worktree: "one per ticket", plural: "any number at once", p
 
 .facts {
     display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 4px 12px;
+    grid-template-columns: 1fr;
+    gap: 2px;
     margin: 0;
     font-size: 12.5px;
 }
@@ -94,7 +94,7 @@ const CARDINALITY = {worktree: "one per ticket", plural: "any number at once", p
 }
 
 .facts dd {
-    margin: 0;
+    margin: 0 0 6px;
     color: var(--text-2);
 }
 

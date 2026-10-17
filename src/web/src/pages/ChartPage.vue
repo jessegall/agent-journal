@@ -1364,16 +1364,17 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 }
 .chart-details {
     display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 8px 14px;
+    grid-template-columns: 1fr;
     margin: 0;
     font-size: 13px;
 }
 .chart-details dt {
     color: var(--text-3);
+    font-size: 12px;
+    margin-bottom: 2px;
 }
 .chart-details dd {
-    margin: 0;
+    margin: 0 0 12px;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }

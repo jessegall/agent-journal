@@ -94,9 +94,8 @@ function pick(field, item) {
 <style scoped>
 .data-fields {
     display: grid;
-    grid-template-columns: max-content 1fr;
-    align-items: center;
-    gap: 10px 16px;
+    grid-template-columns: 1fr;
+    gap: 2px;
     margin: 4px 0 18px;
 }
 
@@ -108,6 +107,10 @@ function pick(field, item) {
     color: var(--text-3);
     font-size: 11.5px;
     font-weight: 500;
+}
+
+.data-field + .data-field .data-label {
+    margin-top: 10px;
 }
 
 .data-fixed {
