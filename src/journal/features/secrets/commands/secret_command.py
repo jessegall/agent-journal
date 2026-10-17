@@ -1,5 +1,6 @@
 import time
 from argparse import Namespace
+from pathlib import Path
 from datetime import datetime, timezone
 
 from journal.console.command import Command
@@ -44,6 +45,10 @@ class SecretCommand(Command):
         update.add_argument("--title", default="")
         update.add_argument("--brief", default="")
         self.verb(verbs, "fill", "the user fills a value on the Secrets page, never by a command").add_argument("n", type=int)
+        store = self.verb(verbs, "store", "move a value you made yourself, such as a generated password, from a file into a secret; the file is deleted")
+        store.add_argument("n", type=int)
+        store.add_argument("field")
+        store.add_argument("file")
         self.verb(verbs, "list", "every secret, with what it waits for")
         self.verb(verbs, "show", "a secret's fields, which are filled and the programs it may be given to").add_argument("n", type=int)
         run = self.verb(verbs, "run", "give a secret to a program it may go to: its value on the program's input, or in variables with --env, and masked in what it prints")
@@ -88,6 +93,20 @@ class SecretCommand(Command):
 
     def fill(self, args: Namespace, where: Where) -> int:
         raise Refused("a secret's value is filled by the user on the Secrets page, never by a command: ask for it with `journal secret request`")
+
+    def store(self, args: Namespace, where: Where) -> int:
+        secret = self.secrets.find(args.n)
+        made = Path(args.file)
+        if not made.is_file():
+            raise Refused(f"no file at {args.file}: write the value you made to a file, and the journal moves it into the secret")
+        value = made.read_text().strip()
+        made.unlink()
+        if not value:
+            raise Refused(f"{args.file} held no value; it is deleted all the same")
+        self.values.put(secret.field(args.field).variable, value)
+        self.secrets.save(secret.filled_in(args.field), where.actor)
+        print(f"{args.field} of secret {secret.id} stored, and {args.file} deleted")
+        return 0
 
     def list(self, args: Namespace, where: Where) -> int:
         for s in self.secrets.live():

@@ -3452,6 +3452,11 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     assert "GITHUB_KEY" in shown and "waiting for the user, hidden" in shown and "proposed: curl" in shown
     assert console.run(["secret", "update", "1", "--title", "GitHub"], AGENT).code == 0 and "GitHub" in console.run(["secret", "list"], AGENT).out
     assert console.run(["secret", "where"], AGENT).out.strip().endswith(".env")
+    made = tmp_path / "made.txt"
+    made.write_text("  generated-password-value  \n")
+    assert console.run(["secret", "store", "1", "key", str(made)], AGENT).code == 0 and not made.exists()
+    from journal.secret_values import SecretValues
+    assert app.container.get(SecretValues).values()["GITHUB_KEY"] == "generated-password-value"
     console.run(["secret", "delete", "2"], AGENT)
     assert "Stripe" not in console.run(["secret", "list"], AGENT).out
     console.run(["secret", "restore", "2"], AGENT)
