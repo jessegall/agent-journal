@@ -232,12 +232,19 @@ def test_the_inbox_answers_each_request_and_a_stop_ends_the_supervisor_and_takes
     try:
         assert json.loads(inbox.announced_at.read_text()) == {"socket": str(inbox.path), "protocol": 1}
         assert stat.S_IMODE(inbox.path.stat().st_mode) == 0o600 and stat.S_IMODE(inbox.path.parent.stat().st_mode) == 0o700, "only its user can reach the socket"
-        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "start", "stop", "restart", "list", "keys", "type"]}
+        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "start", "stop", "restart", "list", "keys", "type", "send"]}
         sleeper = {"verb": "start", "name": "sleeper", "command": ["sh", "-c", "sleep 30"], "folder": str(tmp_path), "log": str(tmp_path / "sleeper.log")}
         assert ask(supervisor, **sleeper) == {"ok": True, "started": True}
         assert ask(supervisor, **sleeper) == {"ok": True, "started": False}, "a name already running is left as it is"
         listed = {p["name"]: p for p in ask(supervisor, verb="list")["processes"]}
         assert listed["agent"]["front"] and listed["agent"]["terminal"] and listed["journal"]["running"] and listed["sleeper"]["running"] and listed["sleeper"]["pid"] > 0
+        echo = {"verb": "start", "name": "echo", "command": ["sh", "-c", "read line; echo \"heard:$line\""], "folder": str(tmp_path), "log": str(tmp_path / "echo.log")}
+        ask(supervisor, **echo)
+        assert ask(supervisor, verb="send", name="echo", data="hello\n") == {"ok": True}
+        began = time.time()
+        while "heard:hello" not in (tmp_path / "echo.log").read_text() and time.time() - began < 3:
+            time.sleep(0.05)
+        assert "heard:hello" in (tmp_path / "echo.log").read_text(), "send carries text to a process's input"
         pid = listed["sleeper"]["pid"]
         ask(supervisor, verb="restart", name="sleeper")
         assert {p["name"]: p for p in ask(supervisor, verb="list")["processes"]}["sleeper"]["pid"] not in (0, pid)

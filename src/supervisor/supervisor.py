@@ -131,6 +131,13 @@ class Supervisor:
             raise LookupError(f"no terminal process is named {name!r}")
         return self.terminal
 
+    def send(self, name: str, data: bytes) -> None:
+        """Bytes for a process's input: the agent's terminal, or a service's."""
+        if name == FRONT:
+            self.terminal.write(data)
+            return
+        self.services.named(name).send(data)
+
     def restart(self, name: str, resume: tuple[str, ...]) -> None:
         """The agent started again with the arguments that resume its session, or a service started again."""
         if name != FRONT:
