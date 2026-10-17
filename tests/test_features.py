@@ -3456,3 +3456,21 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     assert "Stripe" not in console.run(["secret", "list"], AGENT).out
     console.run(["secret", "restore", "2"], AGENT)
     assert "Stripe" in console.run(["secret", "list"], AGENT).out
+
+
+def test_secrets_kept_as_files_in_the_project_folder_become_rows_once(app):
+    import json as j
+    from journal.features.secrets.seeds.secret_files import SecretFiles
+    from journal.repositories.secrets import Secrets
+    folder = app.config.home / "project" / "secret"
+    folder.mkdir(parents=True)
+    head = {"n": 1, "title": "flespi", "data": {"kind": "api key", "secret_fields": [{"name": "key", "hidden": True, "variable": "FLESPI_KEY"}], "filled": {"key": 1791556011.2}, "programs": ["curl"], "used": 1791706718.7}, "deleted": 0.0}
+    (folder / "001.md").write_text("---\n" + j.dumps(head, indent=2) + "\n---\nThe flespi token, used with curl.\n")
+    (folder / "changes.log").write_text("not a secret")
+    seed = app.container.get(SecretFiles)
+    seed.run()
+    seed.run()
+    rows = app.container.get(Secrets).all()
+    assert len(rows) == 1, "brought in once, however often the journal boots"
+    flespi = rows[0]
+    assert flespi.title == "flespi" and flespi.kind == "api key" and flespi.filled == ("key",) and flespi.programs == ("curl",) and flespi.brief == "The flespi token, used with curl." and flespi.used_at is not None and not flespi.waiting()
