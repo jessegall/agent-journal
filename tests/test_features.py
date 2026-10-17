@@ -445,6 +445,7 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
         Path(path).unlink(missing_ok=True)
         old.bind(path)
         announced.write_text(path)
+        assert link.runs(environment), "an old supervisor runs while its socket is open"
         link.restart_agent(environment, ("--resume", "s1"))
         assert json.loads(old.recv(4096)) == {"type": "RestartAgent", "resume": ["--resume", "s1"]}, "a bare path is a supervisor from before the protocol"
     Path(path).unlink(missing_ok=True)
@@ -466,6 +467,7 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
         answering.join(2)
     Path(path).unlink(missing_ok=True)
     assert heard == [{"verb": "restart", "name": "journal"}]
+    assert not link.runs(environment), "an announce file a dead supervisor left answers nothing"
 
 
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
@@ -1175,7 +1177,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     from journal.features.mcp.keys import Keys
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
     from journal.features.mcp.known import Known
@@ -1253,7 +1255,7 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     from journal.features.bus import Bus
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     hook(app, "SessionStart")
     link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
@@ -1304,7 +1306,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
 def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
@@ -1344,7 +1346,7 @@ def test_a_task_added_first_goes_before_the_plans_tasks(app):
 def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_phase_by_phase(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
@@ -1565,7 +1567,7 @@ def test_the_catalogue_names_providers_and_a_nodes_text_is_bounded(app):
 def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_next(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "SessionStart")
@@ -1724,7 +1726,7 @@ def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
 def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     hook(app, "SessionStart")
     console = app.console()
@@ -1784,7 +1786,7 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     from journal.features.mcp.known import Known
     from journal.supervisor_link import SupervisorLink
     sent, removed = [], []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
     monkeypatch.setattr(Health, "asked", lambda self: {"blender": Known("blender", "uvx blender-mcp", "connected", "")})
     monkeypatch.setattr(Health, "remove", lambda self, name: removed.append(name) or name == "blender")
@@ -1804,7 +1806,7 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
 def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
     hook(app, "SessionStart")
     console = app.console()
@@ -1882,7 +1884,7 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     from journal.http.v3.shapers.shapers import Shapers
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "inbox_of", lambda self, environment_id: "/tmp/an-inbox")
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
     hook(app, "SessionStart")
     console = app.console()

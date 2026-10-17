@@ -83,8 +83,15 @@ class SupervisorLink:
     def stop(self, environment_id: int) -> None:
         self._send(environment_id, {"verb": "stop", "name": AGENT})
 
-    def inbox_of(self, environment_id: int) -> str:
-        return self.announced(environment_id).get("socket", "")
+    def runs(self, environment_id: int) -> bool:
+        """Whether a supervisor answers for the environment: one on the protocol says hello, one from before it has its socket open; an announce file a dead supervisor left answers nothing."""
+        announced = self.announced(environment_id)
+        if "protocol" not in announced:
+            return bool(announced) and Path(announced["socket"]).is_socket()
+        try:
+            return self._send(environment_id, {"verb": "hello"}).get("ok", False)
+        except OSError:
+            return False
 
     def announced(self, environment_id: int) -> dict:
         """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a supervisor before the protocol; nothing when none runs."""

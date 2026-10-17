@@ -57,7 +57,7 @@ class SetupCommand(Command):
 
     def restarted(self) -> list[str]:
         """Every environment with an agent running is told to restart its journal, so an install is live at once."""
-        names = [e.name for e in self.environments.all() if self.supervisor.inbox_of(e.id)]
+        names = [e.name for e in self.environments.all() if self.supervisor.runs(e.id)]
         for environment in self.environments.all():
             if environment.name in names:
                 self.supervisor.restart_journal(environment.id)

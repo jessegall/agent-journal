@@ -63,7 +63,7 @@ class Installing:
         return False
 
     def running(self):
-        return [a for a in self.agents.all() if a.state != "ended" and self.supervisor.inbox_of(a.environment_id)]
+        return [a for a in self.agents.all() if a.state != "ended" and self.supervisor.runs(a.environment_id)]
 
     def applied(self) -> None:
         """The configuration written and every running agent restarted on its own conversation: at once when it sits idle, else the moment its turn ends."""
