@@ -20,5 +20,15 @@
     }
   ],
   "settings": "settings.json",
-  "skills": "skills"
+  "skills": "skills",
+  "services": [
+    {
+      "name": "serve",
+      "command": [
+        "./serve.py"
+      ],
+      "restart": "always",
+      "answers": true
+    }
+  ]
 }

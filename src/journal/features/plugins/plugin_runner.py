@@ -1,6 +1,7 @@
 import json
 import os
 import signal
+import socket
 import subprocess
 
 from journal.config import Config
@@ -23,8 +24,29 @@ class PluginRunner:
         self.config, self.folders, self.tokens, self.protocol, self.settings = config, folders, tokens, protocol, settings
 
     def ask(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
+        """Its answering service on its socket when one listens, else its program."""
         if within <= 0:
             raise PluginFault("not asked: the plugins before it used the event's whole deadline")
+        listening = self.folders.socket(plugin, environment)
+        if any(s.get("answers") for s in plugin.manifest.get("services", ())) and listening.is_socket():
+            try:
+                return self.asked_service(listening, line, within)
+            except (ConnectionRefusedError, FileNotFoundError):
+                return self.asked_program(plugin, environment, line, within)
+        return self.asked_program(plugin, environment, line, within)
+
+    def asked_service(self, listening, line: str, within: float) -> PluginAnswer:
+        """One line to the service and one back; a socket nobody listens on any more is left to the caller, which asks the program."""
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
+            link.settimeout(within)
+            link.connect(str(listening))
+            try:
+                link.sendall((line + "\n").encode())
+                return self.protocol.answer_of(link.makefile("rb").readline().decode())
+            except OSError as failed:
+                raise PluginFault(f"its service did not answer on its socket: {failed}") from failed
+
+    def asked_program(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
         folder = self.folders.of(plugin)
         process = subprocess.Popen([str(folder / plugin.manifest["program"])], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:

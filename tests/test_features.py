@@ -3986,7 +3986,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     shutil.copytree(echo_folder, app.config.home / "plugins" / "echo")
     fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=json.loads((echo_folder / "journal-plugin.json").read_text())), Actor.user(1))
     shown = console.run(["plugin", "upgrade", "echo"], USER).out
-    assert "the code:" in shown and '-    print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"}))' in shown and '+    print(json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"}))' in shown, "the program's changed body is in the diff"
+    assert "the code:" in shown and '-        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"})' in shown and '+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"})' in shown, "the program's changed body is in the diff"
     plugins.save(fetched.with_(name="copied"), Actor.user(1))
     assert "now holds the plugin echo, not copied" in console.run(["plugin", "upgrade", "copied"], USER).err, "an upgrade never turns one plugin into another"
     plugins.delete(plugins.named("copied"), Actor.user(1))

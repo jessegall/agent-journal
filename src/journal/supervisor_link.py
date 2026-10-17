@@ -77,6 +77,13 @@ class SupervisorLink:
         """A service started under the environment's supervisor; one already running under the name is left as it is."""
         return self._send(environment_id, {"verb": "start", "name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log)})
 
+    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, keep: bool) -> dict:
+        """A service started with the environment it is given and nothing of the supervisor's own, such as a plugin's; keep says whether it is started again when it dies."""
+        return self._send(environment_id, {"verb": "start", "name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": keep})
+
+    def stop_service(self, environment_id: int, name: str) -> None:
+        self._send(environment_id, {"verb": "stop", "name": name})
+
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, {"verb": "restart", "name": AGENT, "resume": list(resume)})
 

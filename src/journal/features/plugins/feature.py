@@ -5,6 +5,7 @@ from journal.features.plugins.listeners.hold_plugin_folders import HoldPluginFol
 from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
 from journal.features.plugins.listeners.plugins_hear_rows import PluginsHearRows
 from journal.features.plugins.listeners.tell_a_plugin_its_settings import TellAPluginItsSettings
+from journal.features.plugins.seeds.plugin_services_at_boot import PluginServicesAtBoot
 
 
 class PluginsFeature(Feature):
@@ -15,3 +16,4 @@ class PluginsFeature(Feature):
     options = (DEADLINE,)
     listeners = (HoldPluginFolders, PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
     commands = (PluginCommand,)
+    seeds = (PluginServicesAtBoot,)

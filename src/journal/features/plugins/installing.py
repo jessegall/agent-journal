@@ -13,6 +13,7 @@ from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_changes import PluginChanges
 from journal.features.plugins.plugin_hashes import PluginHashes
 from journal.features.plugins.plugin_runner import PluginRunner
+from journal.features.plugins.plugin_services import PluginServices
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.features.plugins.plugin_skills import PluginSkills
 from journal.models.actor import Actor
@@ -31,8 +32,9 @@ STEP_SECONDS = 300
 class Installing:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner) -> None:
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner, services: PluginServices) -> None:
         self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills, self.runner = config, reader, plugins, folders, hashes, settings, skills, runner
+        self.services = services
 
     def preview(self, source: str) -> tuple[PluginManifest, str]:
         """The manifest as read, and all it would run, said."""
@@ -62,6 +64,7 @@ class Installing:
             saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}), by)
             self.folders.data(saved)
             self.skills.publish(saved)
+            self.services.start(saved)
             return saved
 
     def required(self, plugin: Plugin, environment: str) -> None:
@@ -111,10 +114,12 @@ class Installing:
             if not plugin.linked:
                 shutil.rmtree(self.folders.of(plugin))
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
+            self.services.stop(plugin)
             upgraded = self.plugins.save(plugin.with_(manifest=asdict(manifest), commit_sha=commit, hashes=self.hashes.of(self.folders.of(plugin), asdict(manifest)), waiting=""), by)
             self.skills.withdraw(upgraded)
             if upgraded.enabled:
                 self.skills.publish(upgraded)
+                self.services.start(upgraded)
             return upgraded
 
     def enable(self, name: str, by: Actor) -> Plugin:
@@ -122,17 +127,20 @@ class Installing:
         self.only_the_user(by, "switches on")
         plugin = self.plugins.named(name)
         self.skills.publish(plugin)
+        self.services.start(plugin)
         return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), by)
 
     def disable(self, name: str, by: Actor) -> Plugin:
         plugin = self.plugins.named(name)
         self.skills.withdraw(plugin)
+        self.services.stop(plugin)
         return self.plugins.save(plugin.with_(enabled=False), by)
 
     def remove(self, name: str, by: Actor) -> None:
         """Its row and its fetched copy go; its data folder stays."""
         plugin = self.plugins.named(name)
         self.skills.withdraw(plugin)
+        self.services.stop(plugin)
         if not plugin.linked:
             shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
         self.plugins.delete(plugin, by)

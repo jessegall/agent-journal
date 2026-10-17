@@ -64,6 +64,12 @@ plugin's environment, under the secret's variable. No command ever sets it.
   skill of the journal's or another plugin's may have. Each is published into `.claude/skills` and `.agents/skills` with
   `plugin: <name>` in its front matter and a `.gitignore` that keeps it out of git. It is taken away when the plugin
   is switched off or removed.
+- `services`: processes kept running beside it, each `{"name": ..., "command": ["./serve.py", ...], "restart":
+  "always" | "on-failure" | "never", "when": "<shell line>", "answers": true}`. The environment's supervisor runs each
+  as `plugin.<plugin>.<service>` with the plugin's clean environment, only where its `when` check passes. It is
+  started on install, switch-on and when the journal starts, stopped on switch-off and removal, and restarted by an
+  upgrade. A service with `answers` listens on `JOURNAL_PLUGIN_SOCKET` and is asked in place of the program, one line
+  in and one line out. With no supervisor, or with its socket gone, the program answers.
 - `requires`: each program it needs, as `{"<program>": {"check": "<shell line>", "hint": "<how to get it>"}}`; without
   a check the program is looked up on the path. A missing one refuses the install with its hint.
 - `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell
