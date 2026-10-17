@@ -102,9 +102,18 @@ const SYSTEM_TURNS = {
 
 const fromSystem = (m) => m.data.author === "system";
 
+const byUser = (m) => (m.data.actor || "").startsWith("user");
+
 const systemTurn = (m) => {
     const card = m.data.card;
-    return {...m, who: "agent", title: m.brief, ...SYSTEM_TURNS[card.kind](card, m.brief)};
+    const turn = SYSTEM_TURNS[card.kind](card, m.brief);
+    return {
+        ...m,
+        who: byUser(m) ? "user" : "agent",
+        title: m.brief,
+        ...turn,
+        data: {...turn.data, side: byUser(m) ? "user" : ""},
+    };
 };
 
 const cards = (agents) =>

@@ -3328,6 +3328,17 @@ def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     said = [m for m in app.container.get(Messages).in_() if m.text == "Checking the worker's inspector now."]
     assert len(said) == 1, "the transcript's copy and the display hook's copy, handled at once, make one message"
 
+def test_the_card_for_a_question_the_user_answered_is_the_users(app):
+    from journal.models.actor_kind import ActorKind
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    console.run(["question", "answer", "1", "red"], USER)
+    card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
+    assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

@@ -76,3 +76,14 @@ test("a system message is drawn as a card with its label and detail", async () =
     host.remove();
     expect(shown).toEqual({ref: "message:3", label: "Check lint passed", detail: "all clean"});
 });
+
+test("a card for the user's own act sits on the user's side", () => {
+    const answered = message(5, 50, "system", "You answered question 9", {
+        actor: "user:1",
+        ...card("card", {icon: "question", tone: "good"}),
+    });
+    const {turns} = threadTurns({...rows, message: [...rows.message, answered]}, [], "main");
+    const mine = turns.find((t) => t.ref === "message:5");
+    expect([mine.who, mine.data.side]).toEqual(["user", "user"]);
+    expect(turns.find((t) => t.ref === "message:3").data.side).toBe("");
+});

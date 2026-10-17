@@ -10,6 +10,7 @@ class Cards:
     def __init__(self, messages: Messages) -> None:
         self.messages = messages
 
-    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: str = "", kind: str = "card") -> Message:
+    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: str = "", kind: str = "card", by: Actor = Actor.system()) -> Message:
+        """The card, written by whoever's act it marks: the system's own notices, or the user's act shown on the user's side."""
         data = {"kind": kind, "session": session, "icon": icon, "tone": tone, "detail": detail, "row": row}
-        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), Actor.system())
+        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), by)

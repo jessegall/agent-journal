@@ -1,5 +1,6 @@
 from journal.engine.cards import Cards
 from journal.models.actor import Actor
+from journal.models.actor_kind import ActorKind
 from journal.models.question import Question
 from journal.repositories.questions import Questions
 
@@ -12,5 +13,6 @@ class Answering:
 
     def answer(self, question: Question, text: str, by: Actor) -> Question:
         answered = self.questions.save(question.answered(text), by)
-        self.cards.show(answered.environment_id, "", f"You answered question {answered.id}", "question", "good", answered.answer, f"question:{answered.id}")
+        label = f"You answered question {answered.id}" if by.kind == ActorKind.USER else f"Question {answered.id} answered by the agent"
+        self.cards.show(answered.environment_id, "", label, "question", "good", answered.answer, f"question:{answered.id}", by=by)
         return answered
