@@ -24,11 +24,14 @@ installing one is trusting it.
 - `program`: a path inside the folder, run for each event.
 - `hears`: agent events by name (`tool_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
   `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`) and rows as `<table>.created`,
-  `.updated` or `.deleted`, such as `plugins.updated` when its settings change. The secrets and MCP server rows are
-  never sent, nor a row the plugin wrote itself.
+  `.updated` or `.deleted`, such as `plugins.updated` when its settings change. The secrets, users and MCP server rows are
+  never sent, nor a row the plugin wrote itself. A subagent's events come with `subagent` set and are held only at
+  `tool_starting`.
 - `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
   `prompt_submitted` and `session_started` only told.
-- Every path stays inside the folder.
+- `skills`: a folder holding one folder per skill with its `SKILL.md`, published under that folder's name, which no
+  skill of the journal's or another plugin's may have.
+- Every path stays inside the folder, a symlink leading out included.
 
 ## How it runs
 
@@ -86,3 +89,52 @@ A row event's `data` is the row's `table`, `id`, who wrote it (`by`) and, when u
   text and every secret value masked.
 - An answer that does not parse is a fault: the event goes through and the fault is recorded. A fault is never a
   refusal.
+
+## From version 3
+
+Every key of a version 3 `plugin.json` and of its answers, and where it went.
+
+**Manifest keys**
+
+- `name`, `version`, `title`, `description`, `journal`: kept as they were.
+- `requires`, `setup`, `installed`: kept. A requirement names a program and a hint, setup steps run in order at
+  install, and the installed command's answer fills the settings.
+- `services`: kept as a list. Each has a name, a command, a restart policy and an optional `when`, and runs under the
+  supervisor. `port`, `ready`, `grace` and `show` are dropped, because the journal talks to a service on its socket.
+- `settings`, `skills`: kept. A secret setting is a secret of the Secrets feature, filled by you only.
+- `env`: dropped. A plugin's program gets a clean environment that names the journal and the plugin. What it needs
+  beyond that is a setting or a secret.
+- `on` (handlers per event pattern) and `hooks` (each hook sync or async): become `hears` and `holds`. One program
+  answers every event it hears, and an event it holds is answered inside the hook.
+- `refuse`, `refuse_seconds`, `refuse_socket`: become holding `tool_starting`. One deadline, `plugins.deadline`, covers
+  every plugin, and the service's socket replaces the refusal socket.
+- `reads`: dropped. The line for `tool_starting` says whether the tool `writes`, and the plugin decides for itself.
+- `events` (a plugin's own kinds of card, each with a title and a tone): become `cards`.
+- `load` (skills the agent must load at an event): dropped. A plugin's skills are published with the journal's, and
+  the skills feature requires them like any other.
+- `command` (a command of the plugin's own under `journal`): dropped. A plugin acts through the journal's own commands,
+  as itself.
+- `dashboards`: kept as one `dashboard`.
+- `pages` (pages a service served inside the viewer): dropped. The viewer serves no plugin's code.
+- `chat` (rules rewriting the agent's chat text): dropped. The journal never rewrites what the agent wrote.
+- `cancels` (a command run when an event was cancelled): dropped. Nothing in version 4 cancels an event after the
+  hook's reply.
+- `fits` (the languages and files a plugin is for): dropped. A service's `when` starts it only where it applies, and
+  installing a plugin is your choice.
+
+**Answer keys**
+
+- `whisper`, `say`: become `tell`, said as `[plugin <name>] ...`.
+- `notify`, `notice`: become `cards`.
+- `todo`: becomes a journal command, such as `journal task create`.
+- `hold`: becomes `refuse` with a `reason`.
+- `raise` and its `settle`: become a card with a `key`, which a later card of the same key replaces.
+- `settings`: dropped from the answer. Settings change through `journal plugin configure` and the Plugins page.
+
+**The host**
+
+- The queue file a plugin wrote answers into: becomes the answer to the line, applied after the reply.
+- The HTTP handler a plugin posted to, and its token: become the plugin token. A `journal` command or an API call
+  that carries the token is the plugin's own.
+- The polling host that ran each plugin: dropped. The journal runs a plugin's program for each event, or asks its
+  service.

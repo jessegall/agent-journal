@@ -31,11 +31,16 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         deadline = monotonic() + float(self.settings.option(PluginsFeature.DEADLINE))
         decision = Decision()
         for plugin in heard:
-            if decision.allowed and event.key in plugin.manifest.get("holds", ()):
+            if decision.allowed and self.holds(plugin, event):
                 decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, deadline - monotonic())))
             else:
                 self.deferred.add(lambda plugin=plugin: self.hearing.later(plugin, event, event.environment_id))
         return self.floor.under(event, decision)
+
+    @staticmethod
+    def holds(plugin: Plugin, event: AgentEvent) -> bool:
+        """It holds what its manifest says; a subagent's event only at a tool."""
+        return event.key in plugin.manifest.get("holds", ()) and (not event.subagent or event.key == "tool_starting")
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:

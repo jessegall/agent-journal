@@ -921,3 +921,20 @@ The agent proposes a program (`journal secret propose`), the user allows it on t
 - A count no node names any more is cleared with a card; a user's workflow reading another's count is turned off at
   boot; migration 6 cleared counts of the old shape.
 - The replays record what the count checks read in each step, so a change in a reading fails them.
+
+## Plugins (plan 11, 2026-10-17)
+
+The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Decided while building it:
+
+- One listener per kind of event, on the bus from boot, reads the enabled plugins at each event. There is no
+  Bus.unlisten, so switching a plugin off between two events neither drops nor doubles one.
+- One deadline, `plugins.deadline` (6 seconds), is shared by every plugin holding an event. It replaces the per-plugin
+  2 and 10 second budgets. A plugin not reached in time is not asked, and its fault is recorded.
+- A plugin is asked to hold only while nothing has held the event yet (`asked_while_free` on the listener). After that
+  it hears the event after the reply, and a refusal then is recorded as `plugin_unanswered`.
+- A stop is held once a turn: Idle carries `held_before` from `stop_hook_active`. There is no count of four in a row.
+- The plugin token is made per server run and kept only in the server's memory, never in a column.
+- A plugin's message is the journal's side of the chat (`Author.of`). Plan approve still refuses anyone but you.
+- Plugin commands carry a step count in a context variable. A row written two steps deep is heard by no plugin, and
+  a `plugin_cut` entry records it.
+- `plugin.updated` is out of the reader until task 593 delivers it. A plugin can hear `plugins.updated` meanwhile.

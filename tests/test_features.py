@@ -3648,6 +3648,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
         folder = tmp_path / str(len(list(tmp_path.iterdir())))
         folder.mkdir()
         for file in files:
+            (folder / file).parent.mkdir(parents=True, exist_ok=True)
             (folder / file).write_text("print()")
         (folder / "journal-plugin.json").write_text(json.dumps({**good, **changes}))
         return folder
@@ -3665,13 +3666,28 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
         "program ../run.py leads outside its folder": {"program": "../run.py"},
         "service serve /usr/bin/serve leads outside": {"services": [{"name": "serve", "command": ["/usr/bin/serve"]}]},
         "program missing.py is not in its folder": {"program": "missing.py"},
+        "the users rows are never sent": {"hears": ["users.updated"]},
+        "skill journal-tasks has the name of a skill of the journal": ({"skills": "skills"}, ("run.py", "skills/journal-tasks/SKILL.md")),
+        "skills /tmp leads outside": {"skills": "/tmp"},
     }
     for words, changes in refusals.items():
         try:
-            reader.read(made(changes))
+            reader.read(made(*changes) if isinstance(changes, tuple) else made(changes))
             raise AssertionError(f"not refused: {changes}")
         except Refused as refused:
             assert words in str(refused), f"{changes} refused as {refused}"
+    outside = tmp_path / "elsewhere.py"
+    outside.write_text("print()")
+    linked = made({}, ())
+    (linked / "run.py").symlink_to(outside)
+    with pytest.raises(Refused, match="program run.py leads outside its folder"):
+        reader.read(linked)
+    from journal.models.plugin import Plugin
+    from journal.repositories.plugins import Plugins
+    lint = made({"name": "lint", "skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md"))
+    app.container.get(Plugins).save(Plugin(name="lint", source=str(lint), linked=True, manifest={**good, "name": "lint", "skills": "skills"}), Actor.user(1))
+    with pytest.raises(Refused, match="skill lint-rules has the name of a skill of plugin lint"):
+        reader.read(made({"skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md")))
 
 def test_a_plugin_is_a_row_and_writes_as_itself(app):
     from journal.models.actor_kind import ActorKind
@@ -3816,6 +3832,15 @@ def test_a_plugin_holds_a_stop_once_a_turn(app):
     status, body = hook(app, "Stop", stop_hook_active=True)
     assert status == 200 and "decision" not in body, "a stop held once already goes through"
     assert [e.data["reason"] for e in app.container.get(Entries).where(kind="plugin_unanswered")] == ["echo holds the stop"], "the second refusal is recorded unanswered"
+
+
+def test_a_subagents_event_reaches_a_plugin_and_is_held_only_at_a_tool(app):
+    from journal.events.agent.prompt_submitted import PromptSubmitted
+    from journal.events.agent.tool_starting import ToolStarting
+    from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
+    plugin = echo(app)
+    assert PluginsHearAgents.holds(plugin, ToolStarting(tool="Read", input={}, subagent="a1")), "a subagent's tool is held like the agent's"
+    assert not PluginsHearAgents.holds(plugin, PromptSubmitted(prompt="x", subagent="a1")) and PluginsHearAgents.holds(plugin, PromptSubmitted(prompt="x")), "a subagent's other events are heard, never held"
 
 
 def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):

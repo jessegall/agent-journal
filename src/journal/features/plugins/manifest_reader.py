@@ -2,9 +2,11 @@ import json
 import re
 from pathlib import Path
 
+from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.registry import Registry
 from journal.models.plugin_manifest import PluginManifest
 from journal.refused import Refused
+from journal.repositories.plugins import Plugins
 
 MANIFEST = "journal-plugin.json"
 """The file in a plugin's folder that says what it is."""
@@ -15,17 +17,17 @@ AGENT_EVENTS = ("tool_starting", "tool_finished", "idle", "prompt_submitted", "s
 HOLDABLE = ("tool_starting", "idle", "prompt_submitted", "session_started")
 """The events a plugin may answer before the agent goes on; at a prompt and a start it may only tell, never refuse."""
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
-NEVER_TABLES = ("secrets", "mcp_servers")
+NEVER_TABLES = ("secrets", "mcp_servers", "users")
 """Rows no plugin is sent, whatever it asks."""
 KEYS = {f for f in PluginManifest.__dataclass_fields__}
 PATHS = ("program", "settings", "skills")
 
 
 class ManifestReader:
-    """A plugin's manifest read from its folder and checked: every key known, its name free, its protocol spoken, what it holds heard and holdable, and every path it names inside its folder; anything else is refused by name."""
+    """A plugin's manifest read from its folder and checked: every key known, its name free, its protocol spoken, what it holds heard and holdable, every path it names inside its folder, and its skills' names free; anything else is refused by name."""
 
-    def __init__(self, registry: Registry) -> None:
-        self.registry = registry
+    def __init__(self, registry: Registry, plugins: Plugins, folders: PluginFolders) -> None:
+        self.registry, self.plugins, self.folders = registry, plugins, folders
 
     def read(self, folder: Path) -> PluginManifest:
         file = folder / MANIFEST
@@ -40,7 +42,23 @@ class ManifestReader:
         self.spoken(manifest)
         self.heard(manifest)
         self.inside(folder, manifest)
+        self.skills_free(folder, manifest)
         return manifest
+
+    @staticmethod
+    def skill_names(folder: Path, manifest: PluginManifest) -> list[str]:
+        """The skills it brings: each folder under its skills folder with a SKILL.md, published under that folder's name."""
+        skills = folder / manifest.skills
+        return sorted(d.name for d in skills.iterdir() if (d / "SKILL.md").is_file()) if manifest.skills and skills.is_dir() else []
+
+    def skills_free(self, folder: Path, manifest: PluginManifest) -> None:
+        taken = {skill.folder: "the journal" for skill in self.registry.skills()}
+        for plugin in self.plugins.all():
+            if plugin.name != manifest.name:
+                taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.of(plugin), PluginManifest(**plugin.manifest))}
+        for name in self.skill_names(folder, manifest):
+            if name in taken:
+                raise Refused(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
 
     def named(self, manifest: PluginManifest) -> None:
         if not NAME.match(manifest.name):
