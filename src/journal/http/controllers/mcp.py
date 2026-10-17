@@ -23,6 +23,7 @@ class McpController:
         return Response.json({
             "servers": present,
             "restart_pending": self.pending.sessions(),
+            "checked_at": self.health.checked_at,
             "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
         })
 

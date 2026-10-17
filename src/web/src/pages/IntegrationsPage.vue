@@ -1,6 +1,8 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {usePoll} from "../composables/poll.js";
+import {ago} from "../format/time.js";
 import {agentOnline} from "../composables/leadAgent.js";
 import Btn from "../kit/Btn.vue";
 import StateDot from "../kit/StateDot.vue";
@@ -26,14 +28,17 @@ const WORDS = {
     installed: "Installed, not checked yet",
 };
 
-async function reload() {
-    const got = await api.mcp();
+const checkedAt = ref(0);
+function take(got) {
+    if (!got) return;
+    checkedAt.value = got.checked_at || 0;
     servers.value = got.servers;
     suggested.value = got.suggested;
     restartPending.value = got.restart_pending || [];
     loaded.value = true;
 }
-onMounted(reload);
+const reload = async () => take(await api.mcp());
+usePoll("mcp", () => api.mcp(), 30000, take);
 let waiting = 0;
 watch(restartPending, (sessions) => {
     clearInterval(waiting);
@@ -94,6 +99,7 @@ onUnmounted(() => clearInterval(checking));
                     written into it.
                 </p>
             </div>
+            <span v-if="checkedAt" class="integrations-checked">States checked {{ ago(checkedAt) }}</span>
             <Btn kind="ghost" :busy="busy === 'check'" :disabled="!servers.length" @click="check">Check all</Btn>
         </header>
 
@@ -276,6 +282,11 @@ onUnmounted(() => clearInterval(checking));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.integrations-checked {
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .integration-error {

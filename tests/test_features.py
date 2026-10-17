@@ -3609,6 +3609,23 @@ def test_a_report_about_several_rows_links_each_and_refuses_one_it_cannot_read(a
     refused = console.run(["report", "create", "Wrong", "--body", "words", "--about", "plans:1,the second plan"], USER)
     assert refused.code == 1 and "not a row: the second plan" in refused.err, "a row it cannot read is refused by name, and no report is made"
 
+def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_it_anew(app, monkeypatch):
+    import json as j
+    from urllib.request import Request as R, urlopen as open_url
+    from journal.features.mcp.health import Health
+    from journal.features.mcp.known import Known
+    answers = [{"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "failed", "rejected your login")},
+               {"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "connected", "")}]
+    monkeypatch.setattr(Health, "asked", lambda self: answers.pop(0) if len(answers) > 1 else answers[0])
+    port = app.server().port
+    read = lambda: j.load(open_url(R(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
+    before = read()
+    design = next(s for s in before["servers"] if s["name"] == "claude_design")
+    assert design["state"] == "failed" and before["checked_at"] > 0, "the page is told the state and when it was checked"
+    open_url(R(f"http://127.0.0.1:{port}/journal/mcp/check", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5)
+    after = next(s for s in read()["servers"] if s["name"] == "claude_design")
+    assert after["state"] == "connected", "Check all asks the program anew, so a login done since shows"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

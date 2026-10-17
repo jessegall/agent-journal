@@ -30,6 +30,11 @@ class Health:
         self._found, self._at = self.asked(), time.time()
         return self._found
 
+    @property
+    def checked_at(self) -> float:
+        """When the program was last asked, as a timestamp; nought before the first time."""
+        return self._at
+
     def remove(self, name: str) -> bool:
         """A server the program has from elsewhere taken out through the program's own command, whichever scope holds it; the next check is fresh."""
         for scope in ("local", "project", "user"):
