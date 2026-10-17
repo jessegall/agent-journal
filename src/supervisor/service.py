@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -62,11 +64,21 @@ class Service:
         return {"name": self.name, "pid": self._process.pid if self.alive() else 0, "running": self.alive(), "terminal": False, "front": False, "restarts": self._restarts, "failed": self.failed()}
 
     def stop(self) -> None:
+        """The process and every process it started, its whole group, ended: asked first, then made to."""
         if self._process and self._process.poll() is None:
-            self._process.terminate()
+            self.signal_group(signal.SIGTERM)
             try:
                 self._process.wait(5)
             except subprocess.TimeoutExpired:
-                self._process.kill()
+                self.signal_group(signal.SIGKILL)
                 self._process.wait()
+        if self._process:
+            self.signal_group(signal.SIGKILL)
         self._process = None
+
+    def signal_group(self, sent: signal.Signals) -> None:
+        """A signal to the process's group, which it leads since it started in a session of its own; a group already gone is left."""
+        try:
+            os.killpg(self._process.pid, sent)
+        except ProcessLookupError:
+            return

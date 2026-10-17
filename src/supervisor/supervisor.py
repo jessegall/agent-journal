@@ -50,6 +50,7 @@ class Supervisor:
         self.fit()
         signal.signal(signal.SIGWINCH, lambda *_: self.fit())
         signal.signal(signal.SIGTERM, lambda *_: self.stop())
+        signal.signal(signal.SIGHUP, lambda *_: self.stop())
         try:
             while self._code is None:
                 self.relay_once(0.5)

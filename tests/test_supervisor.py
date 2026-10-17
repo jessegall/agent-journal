@@ -328,3 +328,17 @@ def test_a_service_that_keeps_dying_is_started_again_less_often_then_left_down_a
     time.sleep(0.2)
     once.keep_alive()
     assert once.described()["restarts"] == 0, "a process not kept is left down when it ends"
+
+
+def test_stopping_a_service_ends_every_process_it_started(tmp_path: Path):
+    family = Service("family", ["sh", "-c", "sleep 30 & sleep 30"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "family.log")
+    family.start()
+    time.sleep(0.2)
+    group = family._process.pid
+    family.stop()
+    try:
+        os.killpg(group, 0)
+        alive = True
+    except ProcessLookupError:
+        alive = False
+    assert not alive, "the child it left in the background went with it"
