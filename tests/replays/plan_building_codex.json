@@ -1,0 +1,68 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "the plan is created and Building a plan starts",
+      "answer": null,
+      "typed": [
+        "[journal] sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` to take it up, `journal sequence next` when it is done"
+      ],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {}
+    },
+    {
+      "name": "a write before the goal is taken up",
+      "answer": {
+        "error": "a write waits for sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
+      "name": "the goal's command takes the step up",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
+      "name": "the phases' command takes the step up",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
+      "name": "the tasks' command takes the step up",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
+      "name": "the last step refused before the plan is ready",
+      "answer": {
+        "err": "sequence 1 ends when plans:1 is ready or approved or started or done; it is draft. finish it first, or `journal sequence abandon --why \"<why>\"`\n"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
+      "name": "the last step once it is ready",
+      "answer": {
+        "out": "sequence 1 ran its last step\n"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    }
+  ]
+}

@@ -15,7 +15,26 @@
       "counts": {}
     },
     {
+      "name": "a write before the step is taken up",
+      "answer": {
+        "error": "a write waits for sequence 3, step 1: tag it. `journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
       "name": "a stop at step one",
+      "answer": {
+        "decision": "block",
+        "reason": "sequence 3, step 1: tag it. `journal sequence follow` to take it up, `journal sequence next` when it is done"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {}
+    },
+    {
+      "name": "a write once it is taken up",
       "answer": {},
       "typed": [],
       "nudges": [],
@@ -23,7 +42,10 @@
     },
     {
       "name": "a stop at step two",
-      "answer": {},
+      "answer": {
+        "decision": "block",
+        "reason": "sequence 3, step 2: push. `journal sequence follow` to take it up, `journal sequence next` when it is done"
+      },
       "typed": [],
       "nudges": [],
       "counts": {}

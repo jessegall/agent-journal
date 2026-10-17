@@ -382,16 +382,47 @@ def expecting_rules(app, replay: Replay, provider: str) -> None:
 
 
 def sequence_rules(app, replay: Replay, provider: str) -> None:
-    """The steps: a sequence of two steps run, a stop at each step."""
+    """The steps: a sequence of two steps run; a write before the step is taken up, a stop after a tool use, the step followed and a write, then a stop at step two."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
     console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER)
-    console.run(["sequence", "run", "1"], AGENT)
+    console.run(["sequence", "run", "3"], AGENT)
     replay.step("the sequence runs")
+    replay.step("a write before the step is taken up", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
+    hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})
     replay.step("a stop at step one", hook_as(app, provider, "Stop")[1])
+    console.run(["sequence", "follow"], AGENT)
+    replay.step("a write once it is taken up", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
     console.run(["sequence", "next"], AGENT)
+    hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})
     replay.step("a stop at step two", hook_as(app, provider, "Stop")[1])
+
+
+def plan_building(app, replay: Replay, provider: str) -> None:
+    """The steps: the agent creates a plan and Building a plan carries it through the goal, the phases and the tasks to a ready plan, each step taken up by the command it names."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    shell = lambda line: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].shell, tool_input={"command": line})[1]
+    console.run(["plan", "create", "Release", "--brief", "a release"], AGENT)
+    app.runtime().deferred.drain()
+    replay.step("the plan is created and Building a plan starts")
+    replay.step("a write before the goal is taken up", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
+    replay.step("the goal's command takes the step up", shell('journal plan brief 1 "a tagged release"'))
+    console.run(["plan", "brief", "1", "a tagged release"], AGENT)
+    console.run(["sequence", "next"], AGENT)
+    replay.step("the phases' command takes the step up", shell('journal plan phase 1 "Tag" --when "tagged"'))
+    console.run(["plan", "phase", "1", "Tag", "--when", "tagged"], AGENT)
+    console.run(["sequence", "next"], AGENT)
+    replay.step("the tasks' command takes the step up", shell('journal plan add 1 "Tag it" --brief "tagged"'))
+    console.run(["plan", "add", "1", "Tag it", "--brief", "tagged"], AGENT)
+    console.run(["plan", "todos", "1", "1", "1"], AGENT)
+    console.run(["sequence", "next"], AGENT)
+    console.run(["sequence", "follow"], AGENT)
+    replay.step("the last step refused before the plan is ready", {"err": console.run(["sequence", "next"], AGENT).err})
+    console.run(["plan", "ready", "1"], AGENT)
+    replay.step("the last step once it is ready", {"out": console.run(["sequence", "next"], AGENT).out})
 
 
 def owed_pause_rules(app, replay: Replay, provider: str) -> None:
@@ -637,7 +668,7 @@ def silent_session_ends(app, replay: Replay, provider: str) -> None:
     replay.step("the session starts again", hook_as(app, provider, "SessionStart")[1])
 
 
-STATE_RULES = {"session_starts": session_starts, "silent_session_ends": silent_session_ends, "pause_exits": pause_exits, "ended_restarts": ended_restarts, "plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
+STATE_RULES = {"plan_building": plan_building, "session_starts": session_starts, "silent_session_ends": silent_session_ends, "pause_exits": pause_exits, "ended_restarts": ended_restarts, "plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
 """What the states say of their own, frozen before any of it moves into a workflow."""
 
 
