@@ -5,3 +5,4 @@ class ActorKind(StrEnum):
     SYSTEM = "system"
     AGENT = "agent"
     USER = "user"
+    PLUGIN = "plugin"

@@ -13,6 +13,9 @@ class Registry:
         self._by_name = {feature.name: feature for feature in features}
         self._by_state = {state.name: feature for feature in features for state in feature.states}
 
+    def has_feature(self, name: str) -> bool:
+        return name in self._by_name
+
     def is_on(self, feature: type[Feature]) -> bool:
         """On in the scope's environment."""
         return bool(self.settings.get(f"features.{feature.name}", feature.default))

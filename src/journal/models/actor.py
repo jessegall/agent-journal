@@ -5,7 +5,7 @@ from journal.models.actor_kind import ActorKind
 
 @dataclass(frozen=True)
 class Actor:
-    """Who did something: the system, an agent by its session, or a user by their id. Stored as one string, kind:id, on every row and every entry."""
+    """Who did something: the system, an agent by its session, a user by their id, or a plugin by its name. Stored as one string, kind:id, on every row and every entry."""
 
     kind: ActorKind
     id: str = ""
@@ -21,6 +21,10 @@ class Actor:
     @classmethod
     def user(cls, id: int) -> "Actor":
         return cls(ActorKind.USER, str(id))
+
+    @classmethod
+    def plugin(cls, name: str) -> "Actor":
+        return cls(ActorKind.PLUGIN, name)
 
     @classmethod
     def parse(cls, stamp: str) -> "Actor":

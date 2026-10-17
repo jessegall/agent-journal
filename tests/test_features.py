@@ -3636,6 +3636,54 @@ def test_the_end_of_a_session_never_begun_makes_no_agent(app):
         sessions = [a.session for a in app.container.get(Agents).in_()]
     assert sessions == ["s1"], "a one-off run of the program, such as claude mcp list, ends a session that never began: no agent is made for it"
 
+def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_path):
+    from journal.features.plugins.manifest_reader import ManifestReader
+    from journal.refused import Refused
+    reader = app.container.get(ManifestReader)
+    good = {"name": "echo", "version": "1.0.0", "program": "run.py", "protocol": 1, "hears": ["tool_starting", "tasks.created"], "holds": ["tool_starting"],
+            "services": [{"name": "serve", "command": ["bin/serve"], "restart": "always"}]}
+
+    def made(changes: dict, files=("run.py",)) -> Path:
+        folder = tmp_path / str(len(list(tmp_path.iterdir())))
+        folder.mkdir()
+        for file in files:
+            (folder / file).write_text("print()")
+        (folder / "journal-plugin.json").write_text(json.dumps({**good, **changes}))
+        return folder
+    manifest = reader.read(made({}))
+    assert manifest.name == "echo" and manifest.holds == ("tool_starting",) and manifest.services[0]["name"] == "serve"
+    refusals = {
+        "keys the journal does not know: hook": {"hook": "x"},
+        "is not": {"name": "Echo!"},
+        "one of the journal's own features": {"name": "tasks"},
+        "speaks protocol 2": {"protocol": 2},
+        "hears nothing.created!, which is no event": {"hears": ["nothing.created!"]},
+        "the secrets rows are never sent": {"hears": ["secrets.created"]},
+        "holds idle but does not hear it": {"holds": ["idle"]},
+        "holds tool_finished, which no plugin may hold": {"hears": ["tool_finished"], "holds": ["tool_finished"]},
+        "program ../run.py leads outside its folder": {"program": "../run.py"},
+        "service serve /usr/bin/serve leads outside": {"services": [{"name": "serve", "command": ["/usr/bin/serve"]}]},
+        "program missing.py is not in its folder": {"program": "missing.py"},
+    }
+    for words, changes in refusals.items():
+        try:
+            reader.read(made(changes))
+            raise AssertionError(f"not refused: {changes}")
+        except Refused as refused:
+            assert words in str(refused), f"{changes} refused as {refused}"
+
+def test_a_plugin_is_a_row_and_writes_as_itself(app):
+    from journal.models.actor_kind import ActorKind
+    from journal.models.plugin import Plugin
+    from journal.models.task import Task
+    from journal.repositories.plugins import Plugins
+    from journal.repositories.tasks import Tasks
+    plugins = app.container.get(Plugins)
+    plugins.save(Plugin(name="lint", source="/tmp/lint", manifest={"name": "lint"}), Actor.user(1))
+    assert plugins.named("lint").enabled and [p.name for p in plugins.enabled()] == ["lint"]
+    task = app.container.get(Tasks).save(Task(environment_id=1, title="written by a plugin"), Actor.plugin("lint"))
+    assert task.created_by == Actor(ActorKind.PLUGIN, "lint") and task.created_by.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.created_by
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart
