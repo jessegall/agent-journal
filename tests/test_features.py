@@ -3531,3 +3531,30 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     assert not secrets.find(secret.id).auto_login and merged.exists(), "asking each time keeps the saved login"
     app.container.get(SecretActions).forget_login(secret.id, {}, Actor.user("u"))
     assert "--storage-state" not in servers.named("playwright").args and not merged.exists() and secrets.find(secret.id).session_at is None
+
+
+def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(app, tmp_path, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from journal.events.agent.ticked import Ticked
+    from journal.features.bus import Bus
+    from journal.models.message import Message
+    from journal.models.secret import Secret
+    from journal.models.secret_kind import SecretKind
+    from journal.repositories.messages import Messages
+    from journal.repositories.secrets import Secrets
+    from journal.secret_values import SecretValues
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    values = app.container.get(SecretValues)
+    values.put("GITHUB_KEY", "ghp_oldvalue_0001")
+    values.put("GITHUB_KEY", "ghp_newvalue_0002")
+    saved = app.container.get(Messages).save(Message(text="old ghp_oldvalue_0001 new ghp_newvalue_0002"), Actor.system())
+    assert app.container.get(Messages).find(saved.id).text == "old [secret GITHUB_KEY] new [secret GITHUB_KEY]", "the replaced value is still masked"
+    assert values.values()["GITHUB_KEY"] == "ghp_newvalue_0002" and len(values.retired_before(9e12)) == 1
+    secrets = app.container.get(Secrets)
+    secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://example.com", session_at=datetime.now(timezone.utc) - timedelta(days=2), session_expires=datetime.now(timezone.utc) - timedelta(days=1)), Actor.user("u"))
+    hook(app, "SessionStart")
+    for _ in range(2):
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+        app.runtime().deferred.drain()
+    asked = [m for m in app.container.get(Messages).in_() if "Your login to Example has run out" in m.text]
+    assert len(asked) == 1, "asked once for each time it runs out"

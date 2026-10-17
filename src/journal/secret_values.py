@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import uuid
 from functools import cached_property
 from pathlib import Path
@@ -7,6 +8,9 @@ from pathlib import Path
 from journal.config import Config
 from journal.private_folder import PrivateFolder
 
+RETIRED = "RETIRED_"
+AT = "_AT_"
+"""A replaced value's name: RETIRED_<variable>_AT_<when it was replaced>."""
 HEADER = """# The values of this project's secrets, written by agent-journal.
 # One line per field: NAME="value". The journal never copies this file anywhere.
 """
@@ -37,7 +41,14 @@ class SecretValues:
         return dict(found for found in map(self.parsed, path.read_text().splitlines()) if found)
 
     def put(self, variable: str, value: str) -> None:
-        self.write({**self.values(), variable: value})
+        """The value set; one it replaces is kept under a retired name for thirty days, so it is still masked wherever it was printed."""
+        current = self.values()
+        retired = {f"{RETIRED}{variable}{AT}{int(time.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
+        self.write({**current, **retired, variable: value})
+
+    def retired_before(self, at: float) -> list[str]:
+        """The retired names older than the moment given."""
+        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(AT, 1)[1]) < at]
 
     def drop(self, variables: list[str]) -> None:
         self.write({name: value for name, value in self.values().items() if name not in variables})

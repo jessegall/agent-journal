@@ -1,6 +1,6 @@
 import time
 
-from journal.secret_values import SecretValues
+from journal.secret_values import AT, RETIRED, SecretValues
 
 SHORTEST = 8
 """A value shorter than this is too likely to stand in ordinary text to be masked."""
@@ -28,5 +28,5 @@ class Masks:
         changed = path.stat().st_mtime if path.is_file() else 0.0
         if changed != self._read_at:
             self._read_at = changed
-            self._masks = {value: variable for variable, value in self.values.values().items() if len(value) >= SHORTEST}
+            self._masks = {value: variable.removeprefix(RETIRED).rsplit(AT, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST}
         return self._masks
