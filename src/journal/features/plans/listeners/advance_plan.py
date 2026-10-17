@@ -15,7 +15,7 @@ from journal.repositories.tasks import Tasks
 
 
 class AdvancePlan(Listener[Updated]):
-    """A plan is done when its last task closes, whoever closes it. When an agent following a plan finishes the task it was on, the next open task is started for it; at a checkpoint phase's end the plan waits and the agent keeps following it with no task in hand, the Idle workflow saying what the mode makes of it; when no task is left, the agent is idle."""
+    """A plan is done when its last task closes, whoever closes it. When an agent following a plan finishes the task it was on, the next open task is started for it; at a checkpoint phase's end the plan waits and the agent keeps following it with no task in hand, the Idle workflow saying what the mode makes of it; when only blocked or parked tasks are left, the plan waits with the agent following it; when every task is closed, the plan is done and the agent idle."""
 
     def __init__(self, machine: Machine, plans: Plans, tasks: Tasks) -> None:
         self.machine, self.plans, self.tasks = machine, plans, tasks
@@ -38,7 +38,7 @@ class AdvancePlan(Listener[Updated]):
         if not isinstance(task, Task) or task.state != TaskState.DONE:
             return
         for plan in self.plans.holding(task):
-            if self.plans.next_task(plan) is None:
+            if self.plans.finished(plan):
                 self.plans.save(plan.done(), event.by)
                 print(PlansFeature.DONE.about(n=plan.id).rendered())
         state = self.following(event)
@@ -54,6 +54,11 @@ class AdvancePlan(Listener[Updated]):
             print(PlansFeature.CHECKPOINT.about(n=plan.id, phase=checkpoint.title).rendered())
             return
         following = self.plans.next_task(plan)
+        if following is None:
+            self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id))
+            blocked = [str(t.id) for t in self.plans.tasks_of(plan) if t.state in (TaskState.BLOCKED, TaskState.PARKED)]
+            print(PlansFeature.WAITING.about(n=plan.id, blocked=f"tasks {', '.join(blocked)} wait" if len(blocked) > 1 else f"task {blocked[0]} waits").rendered())
+            return
         started = self.tasks.save(following.started(datetime.now(timezone.utc)), event.by)
         self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id, task_id=started.id))
         print(PlansFeature.NEXT.about(n=plan.id, task=started.id, title=started.title).rendered())

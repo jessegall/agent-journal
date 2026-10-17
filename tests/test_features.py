@@ -148,6 +148,24 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
+def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app):
+    from journal.models.plan_state import PlanState
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "release", "--brief", "ship 4.0"], USER)
+    console.run(["plan", "add", "1", "write the notes"], USER)
+    console.run(["plan", "add", "1", "the user's restart"], USER)
+    hook(app, "SessionStart")
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "block", "2", "the user picks the moment"], AGENT)
+    out = console.run(["task", "done", "1"], AGENT).out
+    assert "plan 1: no open task is left, and task 2 waits on something outside" in out and "plan 1 is done" not in out
+    assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a blocked task keeps the plan open"
+    console.run(["task", "unblock", "2"], AGENT)
+    assert "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
+
+
 def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     from journal.repositories.messages import Messages
     console = app.console()

@@ -73,6 +73,10 @@ class Plans(ScopedRepository[Plan]):
         """The open tasks an agent may take up on its own: a plan hands out its own in its order, so those are never offered."""
         return [t for t in self.tasks.in_state(TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]
 
+    def finished(self, plan: Plan) -> bool:
+        """Every task of the plan done or cancelled: a blocked or parked one keeps it open."""
+        return all(t.state in (TaskState.DONE, TaskState.CANCELLED) for t in self.tasks_of(plan))
+
     def next_task(self, plan: Plan) -> Task | None:
         return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN), None)
 
