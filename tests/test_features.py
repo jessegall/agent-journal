@@ -3564,6 +3564,40 @@ def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch
     finally:
         second.runtime().stop()
 
+def test_a_hold_after_reminders_drawn_by_hand_holds_where_the_shipped_one_does(app):
+    from journal.features.chart.standing import Standing
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    console, charts, settings = app.console(), app.container.get(Charts), app.container.get(Settings)
+    settings.set("messages.remind_every", 3, Actor.user(1))
+    settings.set("messages.hold_after_reminders", 2, Actor.user(1))
+    shipped = next(c for c in charts.for_event("tool_starting") if c.title.startswith("Hold a write while messages stay unread"))
+
+    def held_at(session: str) -> list[int]:
+        console.run(["message", "send", f"a word for {session}"], USER)
+        app.runtime().deferred.drain()
+        return [i for i in range(1, 9) if hook(app, "PreToolUse", session_id=session, tool_name="Edit", tool_input={"file_path": f"{session}{i}.py", "old_string": "a", "new_string": "b"})[0] == 409]
+    for session in ("s1", "s2"):
+        hook(app, "SessionStart", session_id=session)
+        console.run(["environment", "here"], Where("main", session))
+    by_the_shipped = held_at("s1")
+    assert by_the_shipped, "the shipped workflow holds once enough reminders came"
+    for trigger in [n for n in charts.nodes_of(shipped) if n.kind == NodeKind.TRIGGER]:
+        charts.remove_node(trigger, Actor.user(1))
+    made = int(console.run(["chart", "new", "Hold after reminders, by hand", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
+    node = lambda kind, key, text="": int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    line = lambda a, b, port="then": console.run(["chart", "line", str(a), str(b), "--port", port], USER)
+    start = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tool_starting")
+    arrived, reset_on_arrival = node("trigger", "messages.created"), node("action", "count_start", "tools")
+    own, unread, reset, one = node("check", "own_tool"), node("check", "unread_messages"), node("action", "count_start", "tools"), node("action", "count_one", "tools")
+    wait, writes, hold = node("check", "count_wait", "tools 6"), node("check", "tool_writes"), node("action", "hold", "[chart] read your messages before the next write")
+    for a, b, port in ((start, own, "then"), (own, unread, "yes"), (unread, reset, "no"), (unread, one, "yes"), (one, wait, "then"), (wait, writes, "yes"), (writes, hold, "yes"), (arrived, reset_on_arrival, "then")):
+        assert line(a, b, port).code == 0
+    by_hand = held_at("s2")
+    assert by_hand == by_the_shipped, f"the hand-drawn workflow holds at the same tool uses: {by_hand} against {by_the_shipped}"
+    standing = app.container.get(Standing).of(charts.find(made))
+    assert any(a["session"] == "s2" and a["counts"].get("tools", 0) >= 6 for a in standing["agents"]), "its count stands on the canvas"
+
 def test_a_users_workflow_bound_to_a_retired_state_is_kept_turned_off_and_named(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.models.chart import Chart

@@ -65,8 +65,10 @@ event's workflows run in the order the user sets, the locked guards first, then 
 A trigger is an event, a check a yes or no question, an action what the journal does; lines join them, then from a
 trigger or an action, yes or no from a check, one line per port. A locked workflow or step ships with the journal and cannot be removed:
 not deleted, not turned off, not reworded or gated; a Run no later workflows node ends the event's walk for everything after
-it; the first hold of an event wins and one move per event is taken. A count the workflow keeps for the agent is
-started, counted one and read by its name on the canvas.
+it; the first hold of an event wins and one move per event is taken. A workflow keeps its own counts for each agent:
+started, counted one and read by name, Wait here until a count reaches N waiting until it has; a workflow may hold a
+trigger for each event it needs, its counts shared by them; the canvas shows each agent's count and where it waits,
+and a line says a count with {{value.<name>}}.
 
 - `journal chart show` prints every workflow in its event's order; `journal chart catalogue` lists everything a node may be.
 - `journal chart new "<title>" --on <event> [--for <state>]` makes one, at the end of its event's list; `journal chart order <event> <n>...` sets the order.

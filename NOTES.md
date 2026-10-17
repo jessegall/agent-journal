@@ -903,3 +903,21 @@ A secret is a key or a login the agent may use without seeing it. The row (model
 Engine, kept in code because no user would want them different: masking every text the connection writes (db/masks.py) and every form of a value in a program's output (features/secrets/output_mask.py); the allow-list, the never-given programs and the search path without the project (features/secrets/programs.py, secret_run.py); the guard that refuses the agent's tools the secrets folder and the MCP keys (listeners/keep_out_of_private.py); telling the agent a program was allowed (listeners/tell_allowed.py); the leak alarm card (listeners/alarm_on_leak.py); the thirty-day purge. A workflow a user may shape: none yet; a nudge to use `journal secret run` at a tool use that names a key would be one.
 
 The agent proposes a program (`journal secret propose`), the user allows it on the Secrets page; no command takes a value, the user fills it on the page. How the viewer proves it is the user is question 8, open.
+
+## A workflow's counts (plan 12, 2026-10-17)
+
+- A workflow keeps its own counts for each agent, named `charts:<id>:<name>` in the counts table (question 9:
+  no sharing by name across workflows). A count started at one event and counted at another is one workflow with
+  a trigger for each event (question 10); `Charts.for_event` lists a workflow under every event it holds a
+  trigger for.
+- Every event still walks a workflow from its trigger; a run never resumes at a node (the three readers of
+  report 18 showed resuming skips the count it waits on). Waiting is drawn: Wait here until a count reaches N.
+- The readings (edits, uses, owed, namings, lines) stay the journal's, read from the record, and are shown on the
+  canvas with what they count; a count may not take a reading's name.
+- Raising, starting and setting a count happen in one database transaction; a lock around the walk deadlocked
+  against a row's save, which walks its workflows inside the transaction.
+- The walk entry records where each path ended with the workflow's counts (`stops`); `GET /journal/chart/<n>/standing`
+  serves each agent's last stop, its counts, readings and the numbers checks compare with.
+- A count no node names any more is cleared with a card; a user's workflow reading another's count is turned off at
+  boot; migration 6 cleared counts of the old shape.
+- The replays record what the count checks read in each step, so a change in a reading fails them.

@@ -41,9 +41,10 @@ journal clears the compiled graphs, so the next walk reads the edit.
 Every shipped workflow holds one concern, and the run order and the end of a walk carry the design: at an event the
 Always workflows run first, then each state's in the order its state ships at, a child state before its parent (the
 agent following a plan runs its own workflows and then Working's), and the first workflow that keeps the agent from
-stopping, or says Run no later workflows, ends the walk so nothing after it runs. No workflow keeps a count for another: the edits
-since the log, the tool uses since the newest unread message, the uses since a message was read and left unanswered
-are read from the journal's own record. What the agent owes the journal, the journal skill and a state's skill, the
+stopping, or says Run no later workflows, ends the walk so nothing after it runs. Two kinds of number are read: the
+readings, which the journal takes from its own record (edits since the log, uses since the newest unread message,
+owed since a message was read and left unanswered, namings of an unread inbox, lines since the etiquette reminder),
+and the counts a workflow keeps itself, each its own and for each agent. What the agent owes the journal, the journal skill and a state's skill, the
 look at what is in flight, a decision at a context mark, is the engine's: the skills, briefing and memory features
 set each debt and hold a write and a stop on it, with no node on the canvas.
 
@@ -121,17 +122,23 @@ a workflow already running in the same call is refused and recorded.
   message unread, is auto mode on, does the tool about to run write. A check leaves
   by a yes line and a no line; one of them may be left out, and the path then ends on that answer. Counter
   checks take a number in their text, or the name of a setting that holds it: four or more messages unread, quiet
-  for so many seconds, the log older than so many seconds. A count check reads a
-  count the workflow keeps for the agent, named first in its text, against the number after it: is the count
-  over N, is it at N, is it at every Nth (a multiple of N, never nought). The counts are the engine's own: no
-  workflow starts at a count's write, and a session's counts go when it ends. A row event's checks read the row the
+  for so many seconds, the log older than so many seconds. A count check reads a count the workflow keeps for the
+  agent, or a reading, named first in its text, against the number after it: is the count over N, at N, at every
+  Nth (a multiple of N, never nought), and Wait here until a count reaches N, which goes on once it has and waits
+  there until then, its No needing no line. Each workflow keeps its own counts, so two workflows' counts of one
+  name never meet, and one workflow may hold a trigger for each event it needs, its counts shared by all of them: a
+  count started when a message comes and counted at each tool is one workflow with two triggers. A count may not take
+  a reading's name. No workflow starts at a count's write, a session's counts go when it ends, a count no node of its
+  workflow names any more is cleared and the chat says so, and a workflow reading a count none of its own nodes
+  keeps is turned off at boot with its title saying why. A row event's checks read the row the
   event is about: a message just read, a task just started by this agent, a log line for the task in hand, a
   message written by you.
 - An **action** is what the journal does, with the line it says: say a line to the agent, hold the tool it was
-  about to use, block its stop, type a line into its terminal, start a sequence by its title. Start a count and
-  Count one keep a number for the agent between events, named in their text, so what one event starts a later
-  event's check can read: a count of tool uses started when a message comes, counted at every tool and asked at
-  each. The line may name
+  about to use, block its stop, type a line into its terminal, start a sequence by its title. Start a count, Start a
+  count if not started and Count one keep a number for the agent between events, named in their text: Start a count
+  sets it to nought every time, so it is how a count starts again where its reason ends; Start a count if not started
+  only the first time. A workflow that only counts walks after the hook's reply. A line says a count or a reading
+  with `{{value.<name>}}`. The line may name
   rows with placeholders: `{{next_task}}`, `{{next_task_title}}`, `{{parked_tasks}}`, `{{parked_n}}`, `{{parked_title}}`, `{{parked_why}}`,
   `{{inbox}}`, `{{unread_count}}`, `{{unread_numbers}}`, `{{owed}}`, `{{task}}`, `{{task_edits}}`, `{{log_command}}`, `{{awaited}}`,
   `{{quiet_minutes}}`, `{{row}}`, `{{worker_n}}`, `{{worker_name}}`, `{{question_n}}`, `{{sequence_n}}`, `{{sequence_step}}` and
@@ -180,10 +187,13 @@ A journal whose shipped workflows still carry the older "State at Event" titles,
 titles at boot. The moves the engine makes itself, such as moving the agent to Working when a task starts, are not workflows and are
 not shown among them. Recent runs names a
 state change in words, by the step that moved the agent or the journal's own move that came first, and the answer
-the agent was given, said or held. On the canvas each card says how often it ran, and a count card carries its own
-number in its title. Opening a run lights its path and, on each count card it passed, the number the check read.
-Test run says which workflows it would run, in order, where it would stop, and reads the counts as the live walk
-would, a count started or counted on the dry path included. A mark says the one
+the agent was given, said or held, with the counts each walk left. On the canvas each card says how often it ran; a
+count check shows each agent's count against its number, reminders 2 of 3, the number read from its setting, and
+where an agent's last walk stopped on a count check's No the card says Waiting here; the step's side panel lists the
+waiting agents' counts and what each reading counts. Opening a run lights its path and, on each count card it
+passed, the number the check read. Test run says which workflows it would run, in order, where it would stop, and
+reads the counts as the live walk would, a count started or counted on the dry path included; `journal chart try
+--value <name>=<n>` stands a count in. A mark says the one
 thing that sets a workflow apart: nothing for a default, a diamond for one changed or made by you, a crossed ring
 for one turned off, a red ring when its last run failed, a dash for none. Under the title the status and when the
 workflow runs, when it last ran and what it said, the last step that failed since, and the warning of a wait
