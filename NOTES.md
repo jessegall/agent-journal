@@ -881,3 +881,11 @@ The protocol, first version (tasks 436, 437, 439):
 ## A reply the transcript never kept (2026-10-17)
 
 A text block written just before a tool call reaches the journal only through the agent's transcript, which the journal reads at every hook. Claude Code sometimes does not save such a block at all: replies to messages 1787, 1795 and 1814 of this session are in no transcript file, while 1790's is. The journal cannot record what never arrives, so the answer hold names `journal message send "<words>" --reply-to N`, which always counts, and the messages skill says why (task 457).
+
+## Secrets (plan 9, 2026-10-17)
+
+A secret is a key or a login the agent may use without seeing it. The row (models/secret.py) holds its fields, which are filled, the programs it may go to and those proposed, whether helpers may have it, and its login's times; never a value. The values live in a NAME="value" file in the private folder (private_folder.py, secret_values.py), named by the project's .journal/project-id, 0600 in a 0700 folder with a .gitignore of *; AGENT_JOURNAL_SECRETS moves it. Secrets kept as files under .journal/project/secret come in as rows once at boot.
+
+Engine, kept in code because no user would want them different: masking every text the connection writes (db/masks.py) and every form of a value in a program's output (features/secrets/output_mask.py); the allow-list, the never-given programs and the search path without the project (features/secrets/programs.py, secret_run.py); the guard that refuses the agent's tools the secrets folder and the MCP keys (listeners/keep_out_of_private.py); telling the agent a program was allowed (listeners/tell_allowed.py); the leak alarm card (listeners/alarm_on_leak.py); the thirty-day purge. A workflow a user may shape: none yet; a nudge to use `journal secret run` at a tool use that names a key would be one.
+
+The agent proposes a program (`journal secret propose`), the user allows it on the Secrets page; no command takes a value, the user fills it on the page. How the viewer proves it is the user is question 8, open.
