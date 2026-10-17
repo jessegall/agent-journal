@@ -15,6 +15,7 @@ from journal.launcher.other_hooks import OtherHooks
 from journal.launcher.page_wait import PageWait
 from journal.launcher.project_command import ProjectCommand
 from journal.launcher.status_line import StatusLine
+from journal.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
 SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
@@ -76,7 +77,7 @@ class Launch:
 
     def keys(self) -> dict[str, str]:
         """The keys the project's MCP servers sign in with, kept by the journal in the home folder and handed to the agent as environment variables."""
-        path = Path.home() / ".journal" / "keys" / f"{str(self.root.resolve()).strip('/').replace('/', '-')}.json"
+        path = PrivateFolder(self.root).keys_file()
         return {k: str(v) for k, v in json.loads(path.read_text()).items()} if path.is_file() else {}
 
     def run(self) -> int:

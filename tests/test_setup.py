@@ -83,3 +83,18 @@ def test_codex_hooks_count_as_trusted_once_codex_notes_them(tmp_path, monkeypatc
     (tmp_path / ".codex").mkdir()
     (tmp_path / ".codex" / "config.toml").write_text(f'[hooks.state."{project.resolve()}/.codex/hooks.json:session_start:0:0"]\ntrusted_hash = "x"\n')
     assert Codex().hooks_trusted(project)
+
+
+def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(tmp_path, monkeypatch):
+    import stat
+    from journal.private_folder import SECRETS_VARIABLE, PrivateFolder
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    monkeypatch.delenv(SECRETS_VARIABLE, raising=False)
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+    folder = PrivateFolder(tmp_path / "proj")
+    keys, secrets = folder.keys_file(), folder.secrets()
+    assert keys.parent == tmp_path / ".journal" / "keys" and secrets == tmp_path / ".config" / "agent-journal" / "secrets", "version 3's secrets folder, so its values open unchanged"
+    for made in (keys.parent, secrets):
+        assert stat.S_IMODE(made.stat().st_mode) == 0o700 and (made / ".gitignore").read_text() == "*\n"
+    monkeypatch.setenv(SECRETS_VARIABLE, str(tmp_path / "moved"))
+    assert folder.secrets() == tmp_path / "moved"
