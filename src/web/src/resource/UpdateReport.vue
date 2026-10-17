@@ -29,7 +29,7 @@ const held = computed(() => ({question: rows("question").filter((q) => !q.env), 
 const also = computed(() => updateAlso(props.resource));
 
 function open(item) {
-    const href = commitHref(item.ref, route.value.env);
+    const href = commitHref(item.ref);
     if (href) location.hash = href;
     else peekRef(item.ref);
 }

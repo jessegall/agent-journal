@@ -13,6 +13,7 @@ import RailWaiting from "../rail/RailWaiting.vue";
 import PhoneDialog from "./PhoneDialog.vue";
 import ShareTunnel from "./ShareTunnel.vue";
 import {href, route} from "../route.js";
+import {choose} from "../state/environment.js";
 import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
 import {connectedPhones} from "../composables/phones.js";
@@ -34,8 +35,8 @@ const owner = computed(() => (place.value && place.value.data.owner) || "");
 const from = computed(() => (place.value && place.value.data.launched_from) || "");
 const envLink = computed(() =>
     owner.value && from.value
-        ? href.opened(from.value, owner.value.startsWith("ticket:") ? "kanban" : "", owner.value)
-        : href.page(route.value.env)
+        ? href.opened(owner.value.startsWith("ticket:") ? "kanban" : "", owner.value)
+        : href.page()
 );
 const {floatingChat, toggleChat} = useFloatingChat();
 const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
@@ -50,18 +51,18 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 </button>
             </template>
             <template v-if="full">
-                <a class="icon-btn back" :href="href.page(route.env)" v-tip="'Back to Home'"><Icon name="back" /></a>
+                <a class="icon-btn back" :href="href.page()" v-tip="'Back to Home'"><Icon name="back" /></a>
             </template>
             <a
                 class="crumb-link crumb-project"
-                :href="href.page(route.env, demo ? '' : 'hub')"
+                :href="href.page(demo ? '' : 'hub')"
                 v-tip="demo ? '' : 'The journals running on this machine'"
             >
                 <span class="crumb-tint" :style="{background: tint}" />
                 <span class="crumb-name">{{ project }}</span>
             </a>
             <span class="sep crumb-wide">/</span>
-            <a class="crumb-link" :href="envLink" v-tip="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
+            <a class="crumb-link" :href="envLink" @click="owner && from && choose(from)" v-tip="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
                 {{ route.env }}
             </a>
             <span class="sep crumb-wide">/</span>
@@ -110,7 +111,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     <PhoneDialog @close="phoneOpen = false" />
                 </template>
             </template>
-            <a class="icon-btn" :href="href.page(route.env, 'search')" v-tip="'Search'"><Icon name="search" /></a>
+            <a class="icon-btn" :href="href.page('search')" v-tip="'Search'"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
                 <button type="button" :class="['icon-btn', {on: drop}]" v-tip="'Notifications'" :aria-expanded="drop" @click="drop = !drop">
                     <Icon name="bell" />

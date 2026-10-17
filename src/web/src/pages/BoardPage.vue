@@ -197,7 +197,7 @@ watch(
         <template v-if="!boardOn">
             <p class="off">
                 Kanban boards are switched off.
-                <a :href="href.page(route.env, 'settings')">Turn it on in Settings</a>
+                <a :href="href.page('settings')">Turn it on in Settings</a>
             </p>
         </template>
         <template v-else>

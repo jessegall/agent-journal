@@ -14,7 +14,7 @@ const {groups} = useNavigation();
                 <div class="resources-tiles">
                     <template v-for="link in g.links" :key="link.key">
                         <NavTile
-                            :href="href.page(route.env, link.page)"
+                            :href="href.page(link.page)"
                             :icon="link.icon"
                             :title="link.title"
                             :text="link.text"

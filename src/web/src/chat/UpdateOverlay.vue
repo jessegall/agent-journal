@@ -132,7 +132,7 @@ async function toPanel() {
 
 function all() {
     done();
-    location.hash = href.reportUpdates(route.value.env);
+    location.hash = href.reportUpdates();
 }
 
 useEscape(shrink, () => !route.value.open);

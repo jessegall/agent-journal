@@ -38,7 +38,7 @@ defineProps({page: {type: String, required: true}});
         <template #about><AboutPage /></template>
         <template #plugins><PluginsPage /></template>
         <template #secrets><SecretsPage /></template>
-        <template #integrations><IntegrationsPage /></template>
+        <template #mcp><IntegrationsPage /></template>
         <template #chart><ChartPage /></template>
         <template #kanban><BoardPage /></template>
         <template #organization><OrganizationPage /></template>

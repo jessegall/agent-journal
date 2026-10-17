@@ -81,7 +81,7 @@ function pick(event) {
             <div class="pages">
                 <span class="label">Pages</span>
                 <template v-for="page in pages" :key="page.name">
-                    <a class="page" :href="href.pluginPage(route.env, page)">
+                    <a class="page" :href="href.pluginPage(page)">
                         {{ page.title }}
                         <Icon name="arrow" :size="11" />
                     </a>

@@ -1,6 +1,7 @@
 <script setup>
 import {ui} from "../state/ui.js";
 import {href} from "../route.js";
+import {choose} from "../state/environment.js";
 import FoldGroup from "../kit/FoldGroup.vue";
 import {useToggledSet} from "../composables/toggledSet.js";
 
@@ -19,7 +20,7 @@ const light = (n) => (ui.litCard = n);
                     <span class="board-roles-work-title">{{ chip.title }}</span>
                     <span class="board-roles-cards">#{{ chip.n }}</span>
                     <template v-if="chip.env">
-                        <a :href="href.page(chip.env)">Open chat</a>
+                        <a :href="href.page()" @click="choose(chip.env)">Open chat</a>
                     </template>
                 </div>
             </template>

@@ -2,6 +2,8 @@
 import {expect, test, vi} from "vitest";
 
 const order = [];
+globalThis.location = {search: "", pathname: "/", hash: "#/"};
+globalThis.history = {replaceState: () => {}};
 const later = (value) => new Promise((resolve) => setTimeout(() => resolve(value), 20));
 
 vi.mock("../src/api/client.js", () => ({
@@ -14,7 +16,7 @@ vi.mock("../src/api/client.js", () => ({
         pages: () => later([]),
     },
 }));
-vi.mock("../src/route.js", () => ({route: {value: {env: "main", page: ""}}, go: vi.fn()}));
+vi.mock("../src/route.js", () => ({route: {value: {env: "main", page: ""}}, go: vi.fn(), knowPages: vi.fn(), PAGES: []}));
 vi.mock("../src/domain/spec.js", () => ({types: {value: []}}));
 vi.mock("../src/sync/rows.js", () => ({
     load: () => {
@@ -23,6 +25,7 @@ vi.mock("../src/sync/rows.js", () => ({
     },
     recallEvents: () => {},
     reload: () => Promise.resolve(),
+    rows: () => [{title: "main", deleted: false}],
 }));
 vi.mock("../src/sync/stream.js", () => ({listen: () => order.push("listening")}));
 

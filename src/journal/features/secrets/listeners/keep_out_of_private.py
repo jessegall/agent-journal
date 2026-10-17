@@ -25,9 +25,11 @@ class KeepOutOfPrivate(AgentListener[ToolStarting]):
         return Decision.refuse(Secrets.KEPT_OUT.about().rendered()) if self.reaches(event.input) else None
 
     def reaches(self, given: dict) -> bool:
-        folders = [self.values.path.parent.resolve(), PrivateFolder(self.config.root).keys_file().parent.resolve()]
+        named = [self.values.path.parent, PrivateFolder(self.config.root).keys_file().parent]
+        folders = [folder.resolve() for folder in named]
         text = json.dumps(given)
-        spellings = [s for folder in folders for s in (str(folder), str(folder).replace(str(Path.home()), "~", 1), str(folder).replace(str(Path.home()), "$HOME", 1))]
+        home = str(Path.home())
+        spellings = [s for folder in {*named, *folders} for s in (str(folder), str(folder).replace(home, "~", 1), str(folder).replace(home, "$HOME", 1))]
         if any(word in text for word in (*MARKERS, *spellings)):
             return True
         paths = [value for key, value in given.items() if key in ("file_path", "path", "notebook_path") and isinstance(value, str)]

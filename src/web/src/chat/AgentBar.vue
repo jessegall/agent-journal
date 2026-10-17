@@ -54,7 +54,7 @@ function pickPreset(key) {
 }
 function openSkills() {
     open.value = "";
-    go(route.value.env, "skills");
+    go("skills");
 }
 </script>
 

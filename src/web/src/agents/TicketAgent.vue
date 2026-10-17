@@ -56,7 +56,7 @@ const filed = computed(() => {
     return [...reports].filter((r) => !r.deleted).sort((a, b) => b.created - a.created)[0] || null;
 });
 const reportLink = computed(() =>
-    filed.value ? {href: href.page(env.value || route.value.env, "report", filed.value.n), label: `Open report ${filed.value.n}`} : {}
+    filed.value ? {href: href.page("report", filed.value.n), label: `Open report ${filed.value.n}`} : {}
 );
 const state = computed(() => (helper.value ? HELPER_STATES[helperState(helper.value)] : agentState(props.card)));
 const kicker = computed(() => ({plan: "Plan agent", helper: "Helper"})[props.kind] || "Ticket agent");

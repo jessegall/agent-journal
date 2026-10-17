@@ -52,7 +52,7 @@ export function carriedOver(r, reports) {
 
 export const refLabel = (ref) => (ref.startsWith("commit:") ? ref.slice(7, 14) : ref.replace(/^todo:/, "to-do ").replace(":", " "));
 
-export const commitHref = (ref, env) => (ref.startsWith("commit:") ? href.commit(env, ref.slice(7)) : "");
+export const commitHref = (ref) => (ref.startsWith("commit:") ? href.commit(ref.slice(7)) : "");
 
 const WAITING_PLANS = ["ready", "waiting"];
 

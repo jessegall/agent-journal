@@ -1,6 +1,6 @@
 <script setup>
 import {ui} from "../state/ui.js";
-import {go} from "../route.js";
+import {goIn} from "../route.js";
 
 defineProps({
     title: {type: String, required: true},
@@ -19,7 +19,7 @@ const light = (n) => (ui.litCard = n);
         :title="n ? `${title}: #${n} ${task}, opens its chat` : `${title}: idle`"
         @mouseenter="light(n)"
         @mouseleave="light(0)"
-        @click="go(env)"
+        @click="goIn(env)"
     >
         {{ title }}
         <span class="board-role-card">{{ n ? `#${n}` : "idle" }}</span>

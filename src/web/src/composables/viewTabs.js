@@ -3,8 +3,8 @@ import {onUnmounted} from "vue";
 
 const CHANNEL = "journal-views";
 
-export function openViewTab(env, view, id) {
-    window.open(`${location.origin}/?view=${view}&float=${id}${href.page(env)}`, `journal-view-${id}`);
+export function openViewTab(view, id) {
+    window.open(`${location.origin}/?view=${view}&float=${id}${href.page()}`, `journal-view-${id}`);
 }
 
 export function listenViewTabs(handlers) {

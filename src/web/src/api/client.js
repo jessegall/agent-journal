@@ -1044,8 +1044,8 @@ export class ApiClient {
         return new EventSource(this.address("/stream"));
     }
 
-    page(env, page = "") {
-        return `${this.base}/${href.page(env, page)}`;
+    page(env = "", page = "") {
+        return `${this.base}/${env ? `?env=${encoded(env)}` : ""}${href.page(page)}`;
     }
 
     origin() {

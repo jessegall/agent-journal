@@ -12,7 +12,7 @@ vi.mock("../src/api/client.js", () => ({
     api: {newFeatures: () => asked(), markNewFeatureSeen: (id) => marked(id), publicUrl: (path) => `/${path}`},
 }));
 vi.mock("../src/platform/faults.js", () => ({report: (...args) => reported(...args)}));
-vi.mock("../src/route.js", () => ({go: (env, page) => went(env, page), route: {value: {env: "main"}}}));
+vi.mock("../src/route.js", () => ({go: (page) => went(page), route: {value: {env: "main"}}}));
 vi.mock("../src/state/store.js", () => ({store: {}}));
 vi.mock("../src/composables/profiles.js", () => ({
     loadProfiles: vi.fn(),
@@ -102,7 +102,7 @@ describe("the button on a card that points at a page", () => {
         asked.mockResolvedValue([{...second, opens: "settings"}, second]);
         await loadNewFeatures();
         await useNewFeature();
-        expect(went).toHaveBeenCalledWith("main", "settings");
+        expect(went).toHaveBeenCalledWith("settings");
         expect(marked).toHaveBeenCalledWith("owl");
 
         went.mockReset();

@@ -71,7 +71,7 @@ watch(
             <div class="skill-panel-text">
                 <div class="skill-panel-head">
                     <h3>Instructions</h3>
-                    <Btn small @click="showFile(route.env, skill.path)">Open SKILL.md</Btn>
+                    <Btn small @click="showFile(skill.path)">Open SKILL.md</Btn>
                 </div>
                 <template v-if="failed">
                     <p class="skill-panel-status">{{ failed }}</p>

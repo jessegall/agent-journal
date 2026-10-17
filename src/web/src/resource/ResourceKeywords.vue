@@ -42,7 +42,7 @@ const matchIn = (value) => api.act(noun.value, props.resource.n, "set", {key: "k
             <p class="note">Your own messages don't count here.</p>
             <p class="note">
                 It is repeated at most once {{ cadence }}.
-                <a :href="href.page(route.env, 'settings')">Change that in Settings</a>
+                <a :href="href.page('settings')">Change that in Settings</a>
             </p>
         </WatchedWords>
     </ResourceBlock>

@@ -17,7 +17,7 @@ const lists = computed(() => [
 
 function jump(page) {
     anchor.value = null;
-    go(route.value.env, page);
+    go(page);
 }
 </script>
 

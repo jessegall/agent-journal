@@ -120,7 +120,7 @@ function openFile(file) {
     if (!file) return;
     if (file.folder) return browseFiles(file.path);
     emit("close");
-    showFile(route.value.env, file.path);
+    showFile(file.path);
 }
 
 const fileCommand = {label: "Open project file", keys: "file files open", hk: "f", icon: "file", run: browseFiles, opens: true};
@@ -134,7 +134,7 @@ defineExpose({spaceAgain: () => !q.value && write(""), findInProject: () => brow
 
 const goTo = (page) => () => {
     emit("close");
-    go(route.value.env, page);
+    go(page);
 };
 
 async function switchAuto(on) {

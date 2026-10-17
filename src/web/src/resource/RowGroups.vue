@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {go, route} from "../route.js";
+import {goIn, route} from "../route.js";
 import ResourceEnd from "./ResourceEnd.vue";
 import ResourceRow from "./ResourceRow.vue";
 defineProps({groups: Array, type: String});
@@ -28,7 +28,7 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
                                 <ResourceRow
                                     :resource="r"
                                     :selected="r.n === route.n && (g.env || route.env) === route.env"
-                                    @click="go(g.env || route.env, type, r.n)"
+                                    @click="goIn(g.env || route.env, type, r.n)"
                                 />
                                 <ResourceEnd :resource="r" />
                             </slot>

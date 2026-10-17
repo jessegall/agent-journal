@@ -1,13 +1,14 @@
-from journal.config import Config
-from journal.db.masks import Masks
-from journal.secret_values import SecretValues
+import os
 import shutil
+import tempfile
 from pathlib import Path
 
 import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.db.masks import Masks
+from journal.secret_values import SecretValues
 
 from journal.db.connection import Connection
 from journal.db.schema import Schema
@@ -15,6 +16,10 @@ from journal.features.bus import Bus
 from journal.models.all_models import AllModels
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
+
+
+os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
+"""Every test, and every journal a test boots, keeps its secret values in a scratch folder, never the user's own."""
 
 
 @pytest.fixture
@@ -42,8 +47,9 @@ def template_journal(tmp_path_factory) -> Path:
 
 @pytest.fixture
 def journal_root(tmp_path: Path, template_journal: Path) -> Path:
-    """The test's own journal folder, a copy of the booted template."""
+    """The test's own journal folder, a copy of the booted template, with a project id of its own so no two tests share secret values."""
     shutil.copytree(template_journal, tmp_path, dirs_exist_ok=True)
+    (tmp_path / ".journal" / "project-id").unlink(missing_ok=True)
     return tmp_path
 
 

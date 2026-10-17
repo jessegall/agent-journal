@@ -25,7 +25,7 @@ const domains = computed(() => {
     }
     return grouped.map((domain) => ({...domain, working: domain.roles.filter((role) => role.busy).length}));
 });
-const organization = computed(() => href.organization(route.value.env, props.roles[0].domain));
+const organization = computed(() => href.organization(props.roles[0].domain));
 const MORE = 140;
 const cards = computed(() => [...new Set(working.value.map((chip) => `#${chip.n}`))].join(", "));
 const summary = computed(() =>

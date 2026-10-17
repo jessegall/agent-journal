@@ -21,7 +21,7 @@ function showArrival(version) {
     if (!target || !version) return;
     forgetUpdate();
     if (target === version)
-        arrived.value = {text: `Updated to ${version}`, label: "See what changed", action: () => go(route.value.env, "about")};
+        arrived.value = {text: `Updated to ${version}`, label: "See what changed", action: () => go("about")};
 }
 
 const reload = () => window.location.reload();

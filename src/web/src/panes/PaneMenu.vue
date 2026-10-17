@@ -58,7 +58,7 @@ const hide = (list) => emit("hide", props.pane, list);
 
 function openAll() {
     emit("close");
-    go(route.value.env, props.all.page);
+    go(props.all.page);
 }
 
 function pick(event, ...args) {

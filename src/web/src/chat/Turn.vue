@@ -45,7 +45,7 @@ function markClick(data) {
         return {click: () => (store.pluginPage = {plugin: data.name, open: data.page, settled})};
     }
     if (data.helper) return {click: () => (inspecting.value = data.helper)};
-    if (data.go) return {click: () => go(route.value.env, data.go)};
+    if (data.go) return {click: () => go(data.go)};
     return data.row ? {click: () => openRef(data.row)} : {};
 }
 </script>

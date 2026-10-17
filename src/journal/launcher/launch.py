@@ -117,7 +117,7 @@ class Launch:
         path.touch(mode=0o600)
         path.chmod(0o600)
         path.write_text(json.dumps(launch))
-        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"#/{choice.environment}").start()
+        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}").start()
         try:
             return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
         finally:

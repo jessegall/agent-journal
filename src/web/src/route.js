@@ -1,13 +1,39 @@
-import {computed, ref} from "vue";
+import {computed, ref, shallowRef} from "vue";
+import {choose, environment} from "./state/environment.js";
 
 const hash = ref(location.hash);
+const isPage = shallowRef(null);
+
+const RENAMED = {integrations: "mcp"};
+
+function leaveOldAddress() {
+    if (!isPage.value) return;
+    const [path, query] = location.hash.replace(/^#\/?/, "").split("?");
+    const [first = "", ...rest] = path.split("/");
+    if (RENAMED[first]) {
+        location.replace(`#/${[RENAMED[first], ...rest].join("/")}${query ? `?${query}` : ""}`);
+        hash.value = location.hash;
+        return;
+    }
+    if (!first || isPage.value(first)) return;
+    choose(first);
+    location.replace(`#/${rest.join("/")}${query ? `?${query}` : ""}`);
+    hash.value = location.hash;
+}
+
 window.addEventListener("hashchange", () => {
     hash.value = location.hash;
+    leaveOldAddress();
 });
+
+export function knowPages(test) {
+    isPage.value = test;
+    leaveOldAddress();
+}
 
 export const route = computed(() => {
     const [path, query = ""] = hash.value.replace(/^#\/?/, "").split("?");
-    const [env = "", page = "", n = ""] = path.split("/");
+    const [page = "", n = ""] = path.split("/");
     const params = new URLSearchParams(query);
     const stack = (params.get("open") || "")
         .split(",")
@@ -18,7 +44,7 @@ export const route = computed(() => {
             return {type, n: Number(n), comment: Number(comment) || 0, env};
         });
     return {
-        env,
+        env: environment.value,
         page,
         n: n ? (/^\d+$/.test(n) ? Number(n) : n) : 0,
         q: params.get("q") || "",
@@ -33,23 +59,27 @@ export const route = computed(() => {
 });
 
 export const href = {
-    page: (env, page = "", n = 0, q = "") =>
-        `#/${env}${page ? `/${page}` : ""}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`,
-    file: (env, path, line = 0, sub = "") =>
-        `#/${env}/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}${sub ? `&sub=${sub}` : ""}`,
-    commit: (env, sha) => `#/${env}/commit/${sha}`,
-    pluginPage: (env, page) => `#/${env}/page/${page.plugin}.${page.name}`,
-    organization: (env, domain = "") => `#/${env}/organization${domain ? `/${domain}` : ""}`,
-    reportUpdates: (env) => `#/${env}/report?sub=updates`,
-    opened: (env, page, ref) => `${href.page(env, page)}?open=${ref}`,
+    page: (page = "", n = 0, q = "") => `#/${page}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+    file: (path, line = 0, sub = "") => `#/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}${sub ? `&sub=${sub}` : ""}`,
+    commit: (sha) => `#/commit/${sha}`,
+    pluginPage: (page) => `#/page/${page.plugin}.${page.name}`,
+    organization: (domain = "") => `#/organization${domain ? `/${domain}` : ""}`,
+    reportUpdates: () => "#/report?sub=updates",
+    opened: (page, ref) => `${href.page(page)}?open=${ref}`,
 };
 
-export function go(env, page = "", n = 0, q = "") {
-    location.hash = href.page(env, page, n, q);
+export function go(page = "", n = 0, q = "") {
+    location.hash = href.page(page, n, q);
 }
 
-export function showFile(env, path, line = 0) {
-    location.hash = href.file(env, path, line);
+export function goIn(env, page = "", n = 0, q = "") {
+    choose(env);
+    go(page, n, q);
+}
+
+export function showFile(path, line = 0, env = "") {
+    if (env) choose(env);
+    location.hash = href.file(path, line);
 }
 
 const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
@@ -71,7 +101,7 @@ export function openInChat(type, open) {
 }
 
 export function peek(type, n, comment = 0, sub = "") {
-    if (type === "plugin") return (location.hash = `#/${route.value.env}/plugins?plugin=${n}`);
+    if (type === "plugin") return (location.hash = `#/plugins?plugin=${n}`);
     if (!comment && !sub && inChat[type]?.(n)) return;
     const stack = route.value.stack;
     const at = stack.findIndex((open) => open.type === type && open.n === n);
@@ -142,7 +172,7 @@ export const PAGES = [
     "profiles",
     "plugins",
     "secrets",
-    "integrations",
+    "mcp",
     "chart",
     "page",
     "hub",

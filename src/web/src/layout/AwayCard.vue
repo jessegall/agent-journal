@@ -17,7 +17,7 @@ function open(n) {
 
 function toInbox() {
     ui.away.open = false;
-    go(route.value.env);
+    go();
 }
 useEscape(
     () => (ui.away.open = false),

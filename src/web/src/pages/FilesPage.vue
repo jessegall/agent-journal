@@ -94,7 +94,7 @@ const pickKind = (picked) => {
             />
             <Segmented class="kinds" :options="kinds" :value="kind" @pick="pickKind" />
             <span class="grow" />
-            <a class="flat" :href="href.page(route.env, 'doc')">Documents</a>
+            <a class="flat" :href="href.page('doc')">Documents</a>
         </div>
         <template v-if="!view">
             <EmptyState class="none" loading shape="rows" />

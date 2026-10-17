@@ -109,10 +109,10 @@ const held = computed(() =>
 
 async function select(n) {
     adding.value = false;
-    go(route.value.env, props.type, n);
+    go(props.type, n);
 }
 
-const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0, "new") : (adding.value = true));
+const startNew = () => (props.type === "board" ? go("kanban", 0, "new") : (adding.value = true));
 useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open");
 </script>
 
@@ -139,7 +139,7 @@ useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open")
             </template>
             <template v-if="kind.view === 'document'">
                 <span class="sep" />
-                <a class="flat" :href="href.page(route.env, 'files')">Files</a>
+                <a class="flat" :href="href.page('files')">Files</a>
             </template>
             <span class="grow" />
             <template v-if="kind.created_in_viewer">
@@ -181,7 +181,7 @@ useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open")
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">
                         <div :class="['card-wrap', {shipped: r.data.system}]">
-                            <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                            <ResourceCard :resource="r" @click="go(type, r.n)" />
                             <ResourceEnd :resource="r" />
                         </div>
                     </template>
@@ -190,7 +190,7 @@ useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open")
             <template #check>
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">
-                        <CheckCard :resource="r" @click="go(route.env, type, r.n)" />
+                        <CheckCard :resource="r" @click="go(type, r.n)" />
                     </template>
                 </div>
             </template>

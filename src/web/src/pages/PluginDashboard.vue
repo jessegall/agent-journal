@@ -22,7 +22,7 @@ usePoll(
     REFRESH_EVERY,
     (got) => (document.value = got)
 );
-const opened = (file) => showFile(route.value.env, file.path, file.line || 0);
+const opened = (file) => showFile(file.path, file.line || 0);
 </script>
 
 <template>

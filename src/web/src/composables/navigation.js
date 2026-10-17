@@ -40,7 +40,7 @@ export function useNavigation() {
                 ...daily("project"),
                 pageLink("code"),
                 ...(demo ? [] : [pageLink("plugins")]),
-                pageLink("integrations"),
+                pageLink("mcp"),
                 pageLink("chart"),
                 pageLink("profiles"),
                 pageLink("secrets"),

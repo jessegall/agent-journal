@@ -37,7 +37,7 @@ onMounted(() => nextTick(() => input.value?.focus()));
 async function run() {
     const current = ++request;
     const query = q.value.trim();
-    go(route.value.env, "search", 0, q.value);
+    go("search", 0, q.value);
     hits.value = [];
     more.value = 0;
     removed.value = [];

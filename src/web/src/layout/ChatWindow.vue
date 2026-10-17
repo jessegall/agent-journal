@@ -6,7 +6,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import Thread from "../chat/Thread.vue";
-import {go, route} from "../route.js";
+import {goIn, route} from "../route.js";
 import {dragShell, tellShell} from "../platform/extension.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
@@ -47,7 +47,7 @@ function pick(name) {
     shell.journals = false;
     shell.envs = false;
     toShell("pick", {url: location.origin, env: name});
-    go(name);
+    goIn(name);
 }
 
 function pickJournal(journal) {

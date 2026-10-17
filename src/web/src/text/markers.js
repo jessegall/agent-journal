@@ -10,9 +10,9 @@ const RENDERERS = {
         `<a class="row-pill" href="#" data-peek="${value}">${label.replace(/(\d+)$/, '<span class="row-pill-num">$1</span>')}</a>`,
     file: (value, label, context) => {
         const [path, line] = value.split("#L");
-        return `<a class="row-pill file-pill" href="${href.file(context.env, path, line)}">${FILE_ICON}${label}</a>`;
+        return `<a class="row-pill file-pill" href="${href.file(path, line)}">${FILE_ICON}${label}</a>`;
     },
-    commit: (value, label, context) => `<a class="row-pill" href="${href.commit(context.env, value)}" data-commit="${value}">${label}</a>`,
+    commit: (value, label, context) => `<a class="row-pill" href="${href.commit(value)}" data-commit="${value}">${label}</a>`,
     url: (value, label) => `<a href="${value}" target="_blank" rel="noopener">${label}</a>`,
 };
 

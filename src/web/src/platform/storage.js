@@ -21,3 +21,21 @@ export function remember(key, value) {
 export function kept(key, source) {
     watch(source, (value) => remember(key, value), {deep: true});
 }
+
+export function rememberedInTab(key, fallback) {
+    try {
+        const got = sessionStorage.getItem(key);
+        return got === null ? fallback : JSON.parse(got);
+    } catch (e) {
+        return fallback;
+    }
+}
+
+export function rememberInTab(key, value) {
+    try {
+        sessionStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}

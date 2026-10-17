@@ -47,7 +47,7 @@ const blocks = (f) => statBlocks(f, largest.value);
             <div class="files">
                 <template v-for="f in files" :key="f.path">
                     <div class="file">
-                        <a class="path" :href="href.file(route.env, renamedTo(f.path))" :title="`Open ${f.path}`">
+                        <a class="path" :href="href.file(renamedTo(f.path))" :title="`Open ${f.path}`">
                             {{ f.path }}
                         </a>
                         <span class="count">{{ f.count }}</span>
@@ -59,7 +59,7 @@ const blocks = (f) => statBlocks(f, largest.value);
                     </div>
                 </template>
             </div>
-            <Diff :text="commit.diff" :file-href="(path) => href.file(route.env, path)" />
+            <Diff :text="commit.diff" :file-href="(path) => href.file(path)" />
         </template>
     </section>
 </template>

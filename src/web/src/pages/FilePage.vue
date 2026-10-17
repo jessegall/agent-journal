@@ -19,7 +19,7 @@ const lines = computed(() => (file.value && !matches.value.length ? highlight(fi
 
 const diff = ref("");
 const changes = computed(() => route.value.sub === "diff");
-const modeHref = (sub) => href.file(route.value.env, route.value.q, 0, sub);
+const modeHref = (sub) => href.file(route.value.q, 0, sub);
 
 async function load() {
     error.value = "";
@@ -84,7 +84,7 @@ watch(() => route.value.line, reveal);
             <ul class="matches">
                 <template v-for="path in matches" :key="path">
                     <li>
-                        <a :href="href.file(route.env, path)">
+                        <a :href="href.file(path)">
                             <Icon name="file" />
                             <code>{{ path }}</code>
                         </a>
@@ -111,7 +111,7 @@ watch(() => route.value.line, reveal);
             </template>
             <template v-if="changes">
                 <template v-if="diff">
-                    <Diff :text="diff" :file-href="(path) => href.file(route.env, path)" />
+                    <Diff :text="diff" :file-href="(path) => href.file(path)" />
                 </template>
                 <template v-else>
                     <EmptyState class="empty">No changes since the last commit.</EmptyState>

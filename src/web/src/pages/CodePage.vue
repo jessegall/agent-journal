@@ -9,7 +9,7 @@ import {href, route} from "../route.js";
 const path = computed(() => route.value.q || "");
 const folder = computed(() => path.value.split("/").slice(0, -1).join("/") || "the project root");
 
-const open = (entry) => (window.location.hash = href.page(route.value.env, "code", 0, entry.path).slice(1));
+const open = (entry) => (window.location.hash = href.page("code", 0, entry.path).slice(1));
 </script>
 
 <template>
@@ -35,7 +35,7 @@ const open = (entry) => (window.location.hash = href.page(route.value.env, "code
                     <dt>Folder</dt>
                     <dd>{{ folder }}</dd>
                 </dl>
-                <a class="code-elsewhere" :href="href.file(route.env, path)">Open this file on its own page</a>
+                <a class="code-elsewhere" :href="href.file(path)">Open this file on its own page</a>
             </template>
             <template v-else>
                 <p class="code-none">No file is open.</p>

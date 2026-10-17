@@ -34,7 +34,7 @@ function toggleMenu(e, id) {
 }
 
 function away(id) {
-    const f = sendAway(id, route.value.env);
+    const f = sendAway(id);
     if (f) toast.value = {text: `${views.value[f.view].title} opened in another tab`, label: "Restore", action: () => bringBack(id)};
 }
 </script>

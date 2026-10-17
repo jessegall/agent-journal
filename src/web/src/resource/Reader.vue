@@ -72,7 +72,7 @@ watchEffect(() => {
     if (!part || props.depth) return;
     const [type, n] = part.split(":");
     if (route.value.open) swap(type, Number(n));
-    else go(route.value.env, type, Number(n));
+    else go(type, Number(n));
 });
 const kind = computed(() => (props.type ? meta(props.type) : null));
 const kindTitle = computed(() => (kind.value ? kind.value.title : "item"));
@@ -84,15 +84,15 @@ const shape = computed(() =>
 const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
-const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
+const close = () => (route.value.open ? unpeek() : go(props.type));
 useWindowEvent("keydown", (event) => {
     if (event.key !== "Escape" || !route.value.open || route.value.open.type !== props.type || route.value.open.n !== props.n) return;
     if (event.target.matches("input, textarea") && event.target.value) return;
     event.preventDefault();
     unpeek();
 });
-const stepTo = (n) => (route.value.open ? swap("report", n) : go(route.value.env, "report", n));
-const allUpdates = () => (location.hash = href.reportUpdates(route.value.env));
+const stepTo = (n) => (route.value.open ? swap("report", n) : go("report", n));
+const allUpdates = () => (location.hash = href.reportUpdates());
 const swapping = ref(false);
 let settle = 0;
 watch(

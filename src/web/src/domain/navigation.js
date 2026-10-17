@@ -9,7 +9,7 @@ export const PAGES = {
     code: {title: "Code", icon: "file", text: "The project's files, as they are on disk"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
     secrets: {title: "Secrets", icon: "key", text: "Keys and logins the agent may use without ever seeing them"},
-    integrations: {title: "MCP", icon: "share", text: "The MCP servers the agents are given"},
+    mcp: {title: "MCP", icon: "share", text: "The MCP servers the agents are given"},
     chart: {title: "Workflows", icon: "bolt", text: "How the journal treats the agent, as flowcharts you edit"},
     plugins: {title: "Plugins", icon: "plug", text: "Installed plugins, with their pages and settings"},
     settings: {title: "Settings", icon: "settings", text: "Features, notifications and how the viewer behaves"},

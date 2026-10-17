@@ -88,11 +88,11 @@ function shared() {
         setTimeout(() => settle(id), LAND);
     }
 
-    function sendAway(id, env) {
+    function sendAway(id) {
         const f = find(id);
         if (!f) return null;
         takeBack(id);
-        openViewTab(env, f.view, id);
+        openViewTab(f.view, id);
         replace(sentAway(layout.value, id));
         return f;
     }

@@ -12,7 +12,7 @@ export function useTurnLinks() {
         const file = event.target.closest("[data-file]");
         if (file) {
             event.preventDefault();
-            return showFile(env.value, file.dataset.file);
+            return showFile(file.dataset.file, 0, scope.env);
         }
         if (!scope.env) return peekChip(event);
         const target = chipTarget(event);

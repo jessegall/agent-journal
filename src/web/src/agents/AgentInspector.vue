@@ -216,7 +216,7 @@ function choose(key) {
 }
 
 const showing = (view) => panes.value && panes.value.show(view);
-const openSkills = () => go(route.value.env, "skills");
+const openSkills = () => go("skills");
 </script>
 
 <template>
