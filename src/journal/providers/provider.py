@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from typing import ClassVar
 
+from journal.features.shell.reads import Reads
 from journal.features.shell.writes import Writes
 from journal.hooks.decision import Decision
 from journal.hooks.hook import Hook
@@ -82,8 +83,11 @@ class Provider:
         """The journal's own hook, by the one path only this package's script has; version 3's hook.sh is somebody else's."""
         return "journal/hooks/hook.sh" in json.dumps(block)
 
-    def read_path(self, tool: str, input: dict) -> str:
-        return input.get("file_path", "") or input.get("path", "") if tool == self.read_tool else ""
+    def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
+        """The files this tool use reads: the read tool's file, or those a shell line prints."""
+        if tool == self.read_tool:
+            return tuple(p for p in (input.get("file_path", "") or input.get("path", ""),) if p)
+        return Reads.of(input.get("command", "")) if tool == self.shell_tool else ()
 
     def skill_loaded(self, tool: str, input: dict) -> str:
         """The skill folder a skill tool call loaded, or empty."""

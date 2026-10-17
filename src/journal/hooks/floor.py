@@ -16,7 +16,7 @@ class Floor:
         if decision.allowed or not isinstance(event, ToolStarting):
             return decision
         provider = self.providers.named(event.provider or "claude")
-        pays = self.journal_command(event, provider) or self.files.skill_read(provider.read_path(event.tool, event.input)) is not None
+        pays = self.journal_command(event, provider) or any(self.files.skill_read(path) for path in provider.read_paths(event.tool, event.input))
         return Decision.tell("\n".join(line for line in (decision.context, decision.reason) if line)) if pays else decision
 
     @staticmethod

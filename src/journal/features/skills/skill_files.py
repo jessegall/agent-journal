@@ -35,8 +35,8 @@ class SkillFiles:
         return next((skill for skill in self.registry.skills() if skill.folder == folder), None)
 
     def skill_read(self, path: str) -> Skill | None:
-        """The skill a read of this path loads, if it is one of ours."""
+        """The skill a read of this path loads, if it is one of ours; a relative path is the project's."""
         for skill in self.registry.skills():
-            if any(Path(path).resolve() == self.path(skill, home).resolve() for home in HOMES):
+            if any((self.config.root / path).resolve() == self.path(skill, home).resolve() for home in HOMES):
                 return skill
         return None

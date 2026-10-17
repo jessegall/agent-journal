@@ -12,7 +12,7 @@ class ToolFinished(AgentEvent):
     output: str
     response: dict = field(default_factory=dict)
     """The tool's answer as it came, when it came as a structure: a shell's output in parts, an edit's patch."""
-    read_path: str = ""
-    """The file this call read, when it was a read."""
+    read_paths: tuple[str, ...] = ()
+    """The files this call read, by the read tool or a shell line that prints them."""
     skill_loaded: str = ""
     """The skill folder this call loaded, when it was the skill tool."""

@@ -420,6 +420,17 @@ def test_the_skill_tool_loads_a_skill_too(skilled):
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", "")
 
 
+def test_a_shell_line_printing_skill_files_loads_each_of_them(skilled):
+    app = skilled
+    hook(app, "SessionStart")
+    from journal.repositories.agents import Agents
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "cat .claude/skills/journal/SKILL.md .claude/skills/journal-tasks/SKILL.md | head -40"}, tool_response="")
+    loaded = app.container.get(Agents).for_session("s1").skills_loaded
+    assert {"journal", "tasks"} <= set(loaded), "one cat of two skill files, by paths relative to the project, loads both"
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "cat .claude/skills/journal-workers/SKILL.md > copy.md"}, tool_response="")
+    assert "workers" not in app.container.get(Agents).for_session("s1").skills_loaded, "a line that writes reads nothing"
+
+
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
