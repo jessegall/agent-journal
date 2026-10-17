@@ -7,15 +7,18 @@ LOCAL_USER = 1
 
 @dataclass(frozen=True)
 class Where:
-    """Where a command runs and who runs it: the environment's name, and the agent's session when an agent ran it."""
+    """Where a command runs and who runs it: the environment's name, the agent's session when an agent ran it, and the plugin's name when a plugin's program did."""
 
     environment: str = "main"
     session: str = ""
     from_agent_shell: bool = False
     """True inside an agent's own shell with no session named: the command is the environment's live agent's."""
+    plugin: str = ""
 
     @property
     def actor(self) -> Actor:
+        if self.plugin:
+            return Actor.plugin(self.plugin)
         return Actor.agent(self.session) if self.session else Actor.user(LOCAL_USER)
 
     @classmethod

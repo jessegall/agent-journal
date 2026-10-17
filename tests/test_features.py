@@ -3684,6 +3684,27 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app):
     task = app.container.get(Tasks).save(Task(environment_id=1, title="written by a plugin"), Actor.plugin("lint"))
     assert task.created_by == Actor(ActorKind.PLUGIN, "lint") and task.created_by.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.created_by
 
+def test_a_plugin_runs_as_itself_never_as_the_user(app):
+    from journal.features.plugins.plugin_tokens import PluginTokens
+    from journal.http.identity import Identity
+    from journal.repositories.messages import Messages
+    token = app.container.get(PluginTokens).of("echo")
+    port = app.server().port
+    def cli(argv, plugin="echo", given=token):
+        try:
+            with urlopen(HttpRequest(f"http://127.0.0.1:{port}/cli", data=json.dumps({"argv": argv, "env": "main", "plugin": plugin, "token": given}).encode(), method="POST", headers={"Content-Type": "application/json"}), timeout=5) as r:
+                return r.status, json.loads(r.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+    status, out = cli(["message", "send", "a word from echo"])
+    message = app.container.get(Messages).recent(1)[0]
+    assert status == 200 and message.created_by == Actor.plugin("echo") and message.author == "system", "a plugin's command is stamped as the plugin and its message is the journal's, never yours"
+    assert "only the user approves" in cli(["plan", "approve", "1"])[1]["err"], "a plugin never approves a plan"
+    assert cli(["task", "list"], given="wrong")[0] == 403 and cli(["task", "list"], plugin="lint")[0] == 403, "a wrong token, or a plugin's name without its own, is refused"
+    identity = app.container.get(Identity)
+    assert identity.of({"x-journal-plugin": "echo", "x-journal-plugin-token": token}) == Actor.plugin("echo") and identity.of({"x-journal-plugin": "echo", "x-journal-plugin-token": "x"}) == Actor.user(1), "the API names the plugin only with its token"
+
+
 def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.events.agent.tool_starting import ToolStarting
     from journal.events.models.created import Created

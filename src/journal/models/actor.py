@@ -32,5 +32,10 @@ class Actor:
         return cls(ActorKind(kind), id)
 
     @property
+    def named(self) -> str:
+        """The actor as a label names it: the journal, the agent, you, or the plugin by its name."""
+        return {ActorKind.SYSTEM: "the journal", ActorKind.AGENT: "the agent", ActorKind.USER: "you"}.get(self.kind, f"plugin {self.id}")
+
+    @property
     def stamp(self) -> str:
         return f"{self.kind.value}:{self.id}" if self.id else self.kind.value

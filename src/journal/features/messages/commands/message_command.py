@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.models.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.ref import Ref
@@ -40,7 +39,7 @@ class MessageCommand(Command):
         react.add_argument("face")
 
     def send(self, args: Namespace, where: Where) -> int:
-        author = Author.AGENT if where.actor.kind == ActorKind.AGENT else Author.USER
+        author = Author.of(where.actor)
         message = self.messages.save(Message(author=author, text=args.text, reply_to=args.reply_to), where.actor)
         if args.reply_to and author == Author.AGENT:
             self.messages.mark_read(self.messages.find(args.reply_to), where.actor)
@@ -75,7 +74,7 @@ class MessageCommand(Command):
         if args.face not in Faces.ALL:
             print(f"a reaction is one of {' '.join(Faces.ALL)}")
             return 1
-        author = Author.AGENT if where.actor.kind == ActorKind.AGENT else Author.USER
+        author = Author.of(where.actor)
         message = self.messages.find(args.n)
         made = self.reactions.toggle(message, args.face, author, where.actor)
         if made and author == Author.AGENT:
