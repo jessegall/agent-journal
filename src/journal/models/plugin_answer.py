@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from journal.models.plugin_card import PluginCard
+
 
 @dataclass(frozen=True)
 class PluginAnswer:
@@ -8,6 +10,6 @@ class PluginAnswer:
     answer: str = "allow"
     reason: str = ""
     tell: str = ""
-    cards: tuple[dict, ...] = ()
+    cards: tuple[PluginCard, ...] = ()
     commands: tuple[str, ...] = ()
     v: int = 1

@@ -101,9 +101,9 @@ class PluginCommand(Command):
     def settings(self, args: Namespace, where: Where) -> int:
         plugin = self.plugins.named(args.name)
         for setting in self.schemas.schema(plugin):
-            value = plugin.settings.get(setting["key"])
+            value = plugin.settings.get(setting.key)
             shown = f"secret {value['secret']}, filled on the Secrets page" if isinstance(value, dict) else value
-            print(f"{setting['key']:<16} {setting['kind']:<7} {shown}  {setting.get('title', '')}" + (f": {setting['help']}" if setting.get("help") else ""))
+            print(f"{setting.key:<16} {setting.kind:<7} {shown}  {setting.title}" + (f": {setting.help}" if setting.help else ""))
         return 0
 
     @staticmethod

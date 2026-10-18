@@ -2,6 +2,7 @@ import json
 import shlex
 from pathlib import Path
 
+from journal.providers.claude_row import ClaudeRow
 from journal.providers.provider import Provider
 from journal.providers.turn import Turn
 
@@ -35,26 +36,20 @@ class Claude(Provider):
         return path if path.is_file() else None
 
     def turns(self, path: Path) -> list[Turn]:
-        return [turn for number, row in self.json_lines(path) if (turn := self.turn(number, row))]
+        return [turn for number, row in self.json_lines(path) if (turn := self.turn(number, ClaudeRow.from_json(row)))]
 
-    def turn(self, number: int, row: dict) -> Turn | None:
-        if row.get("type") not in ("user", "assistant"):
+    def turn(self, number: int, row: ClaudeRow) -> Turn | None:
+        if row.type not in ("user", "assistant"):
             return None
-        content = row.get("message", {}).get("content", [])
-        blocks = [{"type": "text", "text": content}] if isinstance(content, str) else [b for b in content if isinstance(b, dict)]
-        text = "\n".join(b.get("text", "") for b in blocks if b.get("type") == "text")
-        results = [b for b in blocks if b.get("type") == "tool_result"]
+        text = "\n".join(b.text for b in row.of_type("text"))
+        results = row.of_type("tool_result")
         if results and not text.strip():
-            text = "\n".join(self.result_text(b.get("content", "")) for b in results)
-        tools = [b.get("name", "") for b in blocks if b.get("type") == "tool_use"]
+            text = "\n".join(b.result for b in results)
+        tools = [b.name for b in row.of_type("tool_use")]
         if not text.strip() and not tools:
             return None
-        kind = "summary" if row.get("isCompactSummary") else "agent" if row["type"] == "assistant" else "tool" if results else "injected" if row.get("isMeta") else "human"
-        return Turn(number, "user" if kind in ("human", "injected") else kind, kind, text, self.seconds(row.get("timestamp", "")), tools)
-
-    @staticmethod
-    def result_text(content) -> str:
-        return content if isinstance(content, str) else "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
+        kind = row.kind
+        return Turn(number, "user" if kind in ("human", "injected") else kind, kind, text, self.seconds(row.timestamp), tools)
 
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
         """The thinking blocks after the last prompt, read from the transcript's tail."""
@@ -65,14 +60,12 @@ class Claude(Provider):
             start = max(0, path.stat().st_size - TAIL)
             file.seek(start)
             lines = file.read().decode(errors="replace").splitlines()[1 if start else 0:]
-        rows = [json.loads(line) for line in lines if line.startswith("{")]
         thoughts: list[str] = []
-        for row in rows:
-            content = row.get("message", {}).get("content", [])
-            if row.get("type") == "user" and not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content):
+        for row in (ClaudeRow.from_json(json.loads(line)) for line in lines if line.startswith("{")):
+            if row.is_prompt:
                 thoughts = []
-            elif row.get("type") == "assistant":
-                thoughts += [b["thinking"] for b in content if isinstance(b, dict) and b.get("type") == "thinking"]
+            elif row.type == "assistant":
+                thoughts += [b.thinking for b in row.of_type("thinking")]
         return thoughts
 
     def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
@@ -89,8 +82,8 @@ class Claude(Provider):
             file.seek(read)
             raw = file.read()
         whole = raw.rfind(b"\n") + 1
-        rows = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
-        texts = [block["text"] for row in rows if row.get("type") == "assistant" for block in row.get("message", {}).get("content", []) if isinstance(block, dict) and block.get("type") == "text" and block.get("text", "").strip()]
+        rows = [ClaudeRow.from_json(json.loads(line)) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
+        texts = [block.text for row in rows if row.type == "assistant" for block in row.of_type("text") if block.text.strip()]
         return texts, read + whole
 
     @staticmethod

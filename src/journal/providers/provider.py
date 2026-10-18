@@ -10,6 +10,7 @@ from journal.hooks.decision import Decision
 from journal.hooks.hook import Hook
 from journal.hooks.hook_kind import HookKind
 from journal.http.response import Response
+from journal.providers.tool_input import ToolInput
 from journal.providers.turn import Turn
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
@@ -109,16 +110,16 @@ class Provider:
     def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
         """The files this tool use reads: the read tool's file, or those a shell line prints."""
         if tool == self.read_tool:
-            return tuple(p for p in (input.get("file_path", "") or input.get("path", ""),) if p)
-        return Reads.of(input.get("command", "")) if tool == self.shell_tool else ()
+            return tuple(p for p in (ToolInput.from_json(input).file,) if p)
+        return Reads.of(ToolInput.from_json(input).command) if tool == self.shell_tool else ()
 
     def skill_loaded(self, tool: str, input: dict) -> str:
         """The skill folder a skill tool call loaded, or empty."""
-        return input.get("skill", "") if tool == "Skill" else ""
+        return ToolInput.from_json(input).skill if tool == "Skill" else ""
 
     def writes(self, tool: str, input: dict) -> bool:
         """Whether this tool use changes files: the editor's writing tools, or a shell line that writes."""
-        return tool in self.write_tools or (tool == self.shell_tool and Writes.of(input.get("command", "")))
+        return tool in self.write_tools or (tool == self.shell_tool and Writes.of(ToolInput.from_json(input).command))
 
     @staticmethod
     def folder_name(project: Path) -> str:

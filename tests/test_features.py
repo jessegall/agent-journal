@@ -3788,7 +3788,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
     answer = protocol.answer_of(json.dumps({"v": 1, "answer": "refuse", "reason": "not on main", "cards": [{"kind": "sin", "label": "a sin"}], "commands": ["journal task list"]}))
-    assert (answer.answer, answer.reason, answer.cards[0]["kind"], answer.commands) == ("refuse", "not on main", "sin", ("journal task list",))
+    assert (answer.answer, answer.reason, answer.cards[0].kind, answer.commands) == ("refuse", "not on main", "sin", ("journal task list",))
     for broken, words in (("{nope", "not JSON"), ('["a"]', "not a JSON object"), ('{"answer": "maybe"}', "allow, refuse or tell"), ('{"v": 2}', "protocol 2"), ('{"say": "x"}', "keys the protocol does not know: say"), (json.dumps({"commands": ["journal x"] * 21}), "at most 20")):
         try:
             protocol.answer_of(broken)
@@ -3848,6 +3848,7 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     from journal.features.plugins.plugin_answers import PluginAnswers
     from journal.hooks.deferred import Deferred
     from journal.models.plugin_answer import PluginAnswer
+    from journal.models.plugin_card import PluginCard
     from journal.models.task import Task
     from journal.repositories.entries import Entries
     from journal.repositories.messages import Messages
@@ -3865,7 +3866,7 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     assert [(l.line, l.created_by) for l in app.container.get(TaskLogs).where(task_id=task.id)] == [("echoed", Actor.plugin("echo"))], "its command ran as the plugin and found the task its row event named"
     answers = app.container.get(PluginAnswers)
     for label in ("first", "second"):
-        answers.apply(plugin, PluginAnswer(cards=({"kind": "echoed", "key": "k", "label": label},)), "main", 1)
+        answers.apply(plugin, PluginAnswer(cards=(PluginCard("echoed", label, key="k"),)), "main", 1)
     keyed = [m for m in messages.recent(20) if m.data.get("key") == "k"]
     assert [m.text for m in keyed] == ["second"] and keyed[0].created_at < keyed[0].updated_at, "a card of a key is settled in place by the later one"
     app.container.get(SecretValues).put("GITHUB_KEY", "ghp_0123456789abcdef")

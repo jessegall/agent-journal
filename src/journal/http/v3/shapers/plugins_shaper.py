@@ -21,7 +21,7 @@ class PluginsShaper(Shaper):
 
     def row(self, p: Plugin) -> V3Row:
         manifest = p.manifest
-        schema = {s["key"]: {"title": s.get("title", s["key"]), "help": s.get("help", ""), "type": TYPES.get(s["kind"], "text"), "options": s.get("choices", []), "default": s.get("default", "")} for s in self.settings.schema(p)}
+        schema = {s.key: {"title": s.title, "help": s.help, "type": TYPES.get(s.kind, "text"), "options": list(s.choices), "default": "" if s.default is None else s.default} for s in self.settings.schema(p)}
         chosen = {key: (f"secret {value['secret']}" if isinstance(value, dict) else value) for key, value in p.settings.items()}
         return V3Row.of("plugin", p, title=manifest.get("title") or p.name, abstract=manifest.get("description", ""), state=self.state_of(p), data={
             "manifest": {"name": p.name, "settings": schema, "dashboards": [manifest["dashboard"]] if manifest.get("dashboard") else []},

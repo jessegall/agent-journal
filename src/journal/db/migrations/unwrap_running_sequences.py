@@ -4,6 +4,8 @@ from typing import ClassVar
 
 from journal.db.connection import Connection
 from journal.db.migration import Migration
+from journal.db.migrations.stored_state import StoredState
+from journal.models.sequence_run import SequenceRun
 
 RUNNING = "running_sequence"
 
@@ -17,21 +19,15 @@ class UnwrapRunningSequences(Migration):
         now = datetime.now(timezone.utc).isoformat()
         sequences = {row["id"]: row for row in connection.all("SELECT id, title, steps FROM sequences")}
         for row in connection.all("SELECT id, state, data, sequence_runs FROM agents WHERE state = ? OR data LIKE ?", (RUNNING, f'%"{RUNNING}"%')):
-            state, data, found = self.unwrapped(row["state"], json.loads(row["data"] or "{}"))
-            runs = [*json.loads(row["sequence_runs"] or "[]"), *(self.run(raw, sequences, now) for raw in found)]
-            connection.execute("UPDATE agents SET state = ?, data = ?, sequence_runs = ?, updated_at = ?, updated_by = ? WHERE id = ?", (state, json.dumps(data), json.dumps(runs), now, "system", row["id"]))
-
-    def unwrapped(self, state: str, data: dict) -> tuple[str, dict, list[dict]]:
-        """The state with every running sequence layer taken out, and those layers' data, the innermost first."""
-        resume = data.get("resume")
-        inner_state, inner_data, found = self.unwrapped(resume.get("state", "idle"), resume.get("data") or {}) if resume else ("idle", {}, [])
-        if state == RUNNING:
-            return inner_state, inner_data, [*found, data]
-        return state, {**data, "resume": {"state": inner_state, "data": inner_data}} if resume else data, found
+            unwrapped = StoredState.from_json(row["state"], json.loads(row["data"] or "{}")).without(RUNNING)
+            runs = [*json.loads(row["sequence_runs"] or "[]"), *(self.run(layer.data.get("sequence_id", 0), int(layer.data.get("step", 0)), layer.data.get("text", ""), sequences, now).as_dict() for layer in unwrapped.taken)]
+            connection.execute("UPDATE agents SET state = ?, data = ?, sequence_runs = ?, updated_at = ?, updated_by = ? WHERE id = ?", (unwrapped.state.name, json.dumps(unwrapped.state.to_json()), json.dumps(runs), now, "system", row["id"]))
 
     @staticmethod
-    def run(raw: dict, sequences: dict, now: str) -> dict:
-        sequence = sequences.get(raw.get("sequence_id"))
-        steps = json.loads(sequence["steps"]) if sequence else [raw.get("text", "")]
-        step = min(int(raw.get("step", 0)), len(steps) - 1) if sequence else 0
-        return {"sequence_id": raw.get("sequence_id", 0), "title": sequence["title"] if sequence else "", "steps": steps, "step": step, "about": "", "started_at": now, "taken_up_at": "", "said_at": now, "parked_why": ""}
+    def run(sequence_id: int, step: int, text: str, sequences: dict, now: str) -> SequenceRun:
+        """The run a running sequence layer was, its steps read from its sequence, or its own line when the sequence is gone."""
+        sequence = sequences.get(sequence_id)
+        if sequence is None:
+            return SequenceRun(sequence_id, "", (text,), started_at=now, said_at=now)
+        steps = tuple(json.loads(sequence["steps"]))
+        return SequenceRun(sequence_id, sequence["title"], steps, min(step, len(steps) - 1), started_at=now, said_at=now)
