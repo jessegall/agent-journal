@@ -3,6 +3,7 @@ import subprocess
 import time
 
 from journal.config import Config
+from journal.features.mcp.health_report import HealthReport
 from journal.features.mcp.known import Known
 
 LINE = re.compile(r"^(?P<name>.+?): (?P<how>.+?) - (?P<mark>[✔✘!]) (?P<words>.*)$")
@@ -16,16 +17,16 @@ class Health:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self._found: dict[str, Known] = {}
+        self._found = HealthReport()
         self._at = 0.0
 
-    def of_all(self) -> dict[str, Known]:
+    def of_all(self) -> HealthReport:
         """The answer of the last minute, else a fresh one."""
         if time.time() - self._at < FRESH_FOR:
             return self._found
         return self.fresh()
 
-    def fresh(self) -> dict[str, Known]:
+    def fresh(self) -> HealthReport:
         """Asked anew, whatever the last answer: what a check from the page wants."""
         self._found, self._at = self.asked(), time.time()
         return self._found
@@ -44,13 +45,13 @@ class Health:
                 return True
         return False
 
-    def asked(self) -> dict[str, Known]:
+    def asked(self) -> HealthReport:
         try:
             out = subprocess.run(["claude", "mcp", "list"], cwd=self.config.root, capture_output=True, text=True, timeout=60).stdout
         except (OSError, subprocess.TimeoutExpired) as failed:
-            return {"*": Known("*", "", "failed", str(failed))}
+            return HealthReport(failure=str(failed))
         found = {}
         for line in out.splitlines():
             if match := LINE.match(line.strip()):
                 found[match["name"]] = Known(match["name"], match["how"].replace(" (HTTP)", "").replace(" (SSE)", ""), STATES[match["mark"]], match["words"].strip())
-        return found
+        return HealthReport(found)

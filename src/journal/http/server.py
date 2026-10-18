@@ -14,8 +14,8 @@ class Server:
 
     def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles, database: Connection) -> None:
         self.config, self.router, self.identity, self.static, self.database = config, router, identity, static, database
-        self._server: ThreadingHTTPServer | None = None
-        self._thread: threading.Thread | None = None
+        self._server = self._build()
+        self._thread = threading.Thread(target=lambda: self._server.serve_forever(poll_interval=0.05), name="http", daemon=True)
 
     @property
     def port(self) -> int:
@@ -23,10 +23,8 @@ class Server:
 
     def start(self) -> None:
         """Serves on a thread of its own until stop()."""
-        self._server = self._build()
         self.config.home.mkdir(parents=True, exist_ok=True)
         self.config.port_file.write_text(str(self.port))
-        self._thread = threading.Thread(target=lambda: self._server.serve_forever(poll_interval=0.05), name="http", daemon=True)
         self._thread.start()
 
     def serve(self) -> None:
@@ -35,10 +33,10 @@ class Server:
         self._thread.join()
 
     def stop(self) -> None:
-        if self._server:
+        if self._thread.is_alive():
             self._server.shutdown()
-            self._server.server_close()
-            self.config.port_file.unlink(missing_ok=True)
+        self._server.server_close()
+        self.config.port_file.unlink(missing_ok=True)
 
     def _build(self) -> ThreadingHTTPServer:
         bound = type("BoundHandler", (Handler,), {"router": self.router, "identity": self.identity, "static": self.static, "database": self.database})

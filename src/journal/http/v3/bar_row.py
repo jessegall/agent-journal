@@ -19,7 +19,7 @@ class BarRow:
     ended: bool
 
     @staticmethod
-    def shows(entry: Entry) -> bool:
+    def is_shown(entry: Entry) -> bool:
         return entry.kind in (RUNNING, RAN) or (entry.kind in TOOLS and entry.data.get("tool_name") != "Bash")
 
     @classmethod

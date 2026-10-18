@@ -8,6 +8,7 @@ class Turn:
     line: int
     who: str
     kind: str
-    text: str
     at: float
+    text: str = ""
+    """What was said; a call of a tool says nothing but its tool."""
     tools: list[str] = field(default_factory=list)

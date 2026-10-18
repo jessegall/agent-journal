@@ -19,7 +19,7 @@ class McpController:
     def index(self, request: Request) -> Response:
         """The journal's own servers and, after them, the ones the program has from elsewhere: shown with their state, not managed from here."""
         own = [self.row(s) for s in self.servers.all()]
-        elsewhere = [self.known_row(k) for name, k in self.health.of_all().items() if name != "*" and name not in {s.name for s in own}]
+        elsewhere = [self.known_row(k) for name, k in self.health.of_all().servers.items() if name not in {s.name for s in own}]
         present = [*own, *elsewhere]
         return Response.json({
             "servers": present,
@@ -35,14 +35,14 @@ class McpController:
         return any(s.name == suggestion.name or any(s.runs_from(m) for m in marks) for s in servers)
 
     def row(self, server) -> ListedServer:
-        return ListedServer(server.name, server.title, server.transport, " ".join([server.command, *server.args]).strip(), server.url,
-                            server.auth, server.key_var, server.needs_key and self.keys.has(server.key_var), server.state, server.last_error, True)
+        return ListedServer(server.name, server.title, server.transport, server.state, True, command=" ".join([server.command, *server.args]).strip(), url=server.url,
+                            auth=server.auth, key_var=server.key_var, has_key=server.needs_key and self.keys.has(server.key_var), last_error=server.last_error)
 
     @staticmethod
     def known_row(known) -> ListedServer:
-        http = known.how.startswith("http")
-        return ListedServer(known.name, known.name, "http" if http else "stdio", "" if http else known.how, known.how if http else "",
-                            "none", "", False, known.state, known.words if known.state == "failed" else "", False)
+        if known.how.startswith("http"):
+            return ListedServer(known.name, known.name, "http", known.state, False, url=known.how, last_error=known.error)
+        return ListedServer(known.name, known.name, "stdio", known.state, False, command=known.how, last_error=known.error)
 
     def install(self, request: Request) -> Response:
         try:

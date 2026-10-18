@@ -8,7 +8,7 @@ CHANGES = {"created": "made", "updated": "changed", "deleted": "deleted"}
 
 
 class PluginRecord:
-    """What a plugin did in the journal, newest first: its holds and lines to the agent, the commands it ran, its faults, and every row it wrote, each with when; what it did outside the journal is not here."""
+    """What a plugin did in the journal, newest first: its holds and lines to the agent, the commands it ran, its faults, and every row it wrote, each with when."""
 
     def __init__(self, entries: Entries) -> None:
         self.entries = entries

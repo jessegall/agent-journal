@@ -9,3 +9,8 @@ class Known:
     how: str
     state: str
     words: str
+
+    @property
+    def error(self) -> str:
+        """Its words when it failed; a server that did not fail has no error."""
+        return self.words if self.state == "failed" else ""

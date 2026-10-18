@@ -32,13 +32,13 @@ class Codex(Provider):
             return None
         at = self.seconds(row.timestamp)
         if row.item == "message" and row.role == "assistant" and row.text.strip():
-            return Turn(number, "agent", "agent", row.text, at)
+            return Turn(number, "agent", "agent", at, row.text)
         if row.item == "message" and row.role == "user" and row.text.strip():
-            return Turn(number, "user", "human", row.text, at)
+            return Turn(number, "user", "human", at, row.text)
         if row.item in ("function_call", "custom_tool_call"):
-            return Turn(number, "agent", "agent", "", at, [row.name])
+            return Turn(number, "agent", "agent", at, tools=[row.name])
         if row.item in ("function_call_output", "custom_tool_call_output"):
-            return Turn(number, "tool", "tool", row.output, at)
+            return Turn(number, "tool", "tool", at, row.output)
         return None
 
     def resume(self, session: str) -> tuple[str, ...]:

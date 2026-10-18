@@ -28,6 +28,6 @@ class UnwrapRunningSequences(Migration):
         """The run a running sequence layer was, its steps read from its sequence, or its own line when the sequence is gone."""
         sequence = sequences.get(sequence_id)
         if sequence is None:
-            return SequenceRun(sequence_id, "", (text,), started_at=now, said_at=now)
+            return SequenceRun(sequence_id, f"sequence {sequence_id}", (text,), started_at=now, said_at=now)
         steps = tuple(json.loads(sequence["steps"]))
         return SequenceRun(sequence_id, sequence["title"], steps, min(step, len(steps) - 1), started_at=now, said_at=now)

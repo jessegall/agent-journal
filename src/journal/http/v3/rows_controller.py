@@ -19,8 +19,6 @@ class RowsController:
 
     def index(self, request: Request) -> Response:
         shaper = self.shapers.named(request.params["type"])
-        if shaper is None:
-            return Response.not_found(request.params["type"])
         listing = Listing.from_query(request.query)
         if shaper.type in TIMELINES:
             listing = replace(listing, timeline=True)

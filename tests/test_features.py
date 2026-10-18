@@ -1264,8 +1264,9 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
+    from journal.features.mcp.health_report import HealthReport
     from journal.features.mcp.known import Known
-    monkeypatch.setattr(Health, "asked", lambda self: {"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")})
+    monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")}))
     hook(app, "SessionStart")
     port = app.server().port
     def post(path, body):
@@ -1914,12 +1915,13 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     import json as j
     from urllib.request import Request as R, urlopen
     from journal.features.mcp.health import Health
+    from journal.features.mcp.health_report import HealthReport
     from journal.features.mcp.known import Known
     from journal.supervisor_link import SupervisorLink
     sent, removed = [], []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
-    monkeypatch.setattr(Health, "asked", lambda self: {"blender": Known("blender", "uvx blender-mcp", "connected", "")})
+    monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"blender": Known("blender", "uvx blender-mcp", "connected", "")}))
     monkeypatch.setattr(Health, "remove", lambda self, name: removed.append(name) or name == "blender")
     hook(app, "SessionStart")
     port = app.server().port
@@ -3669,9 +3671,10 @@ def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_
     import json as j
     from urllib.request import Request as R, urlopen as open_url
     from journal.features.mcp.health import Health
+    from journal.features.mcp.health_report import HealthReport
     from journal.features.mcp.known import Known
-    answers = [{"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "failed", "rejected your login")},
-               {"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "connected", "")}]
+    answers = [HealthReport({"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "failed", "rejected your login")}),
+               HealthReport({"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "connected", "")})]
     monkeypatch.setattr(Health, "asked", lambda self: answers.pop(0) if len(answers) > 1 else answers[0])
     port = app.server().port
     read = lambda: j.load(open_url(R(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))

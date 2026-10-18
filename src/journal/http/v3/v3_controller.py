@@ -131,7 +131,7 @@ class V3Controller:
         live = self.agents.live()
         if not live:
             return Response.json({"queue": []})
-        recent = [e for e in reversed(self.entries.of_kind_in(60)) if e.actor and e.actor.id == live.session and BarRow.shows(e)]
+        recent = [e for e in reversed(self.entries.of_kind_in(60)) if e.actor and e.actor.id == live.session and BarRow.is_shown(e)]
         queue, open_ = [], {}
         for row in map(BarRow.of, recent):
             if not row.ended:
@@ -156,7 +156,7 @@ class V3Controller:
     def get_one(self, request: Request) -> Response:
         shaper = self.shapers.named(request.params["type"])
         n = request.number("n")
-        row = next((r for r in (shaper.rows() if shaper else []) if r.n == n), None)
+        row = next((r for r in shaper.rows() if r.n == n), None)
         return Response.json(row.to_json()) if row else Response.not_found(f"no {request.params['type']} {n}")
 
     def get_choices(self, request: Request) -> Response:
@@ -360,6 +360,7 @@ class V3Controller:
         return (self.environments.all() or [self.environments.named("main")])[0]
 
     def row_of(self, type_: str, n: int) -> dict | None:
-        shaper = self.shapers.named(type_)
-        row = next((r for r in (shaper.rows() if shaper else []) if r.n == n), None)
+        if type_ not in self.shapers.types():
+            return None
+        row = next((r for r in self.shapers.named(type_).rows() if r.n == n), None)
         return row.to_json() if row else None

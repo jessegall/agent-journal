@@ -51,10 +51,10 @@ class PluginRunner:
         process = subprocess.Popen([str(folder / plugin.manifest.program)], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:
             out, err = process.communicate(line + "\n", timeout=within)
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as late:
             os.killpg(process.pid, signal.SIGKILL)
             process.communicate()
-            raise PluginFault(f"it gave no answer within {within:.1f} seconds")
+            raise PluginFault(f"it gave no answer within {within:.1f} seconds") from late
         if process.returncode != 0:
             raise PluginFault(f"it exited with {process.returncode}: {err.strip()[-300:]}")
         return self.protocol.answer_of(out)

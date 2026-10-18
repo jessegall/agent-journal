@@ -20,6 +20,7 @@ from journal.http.v3.shapers.works_shaper import WorksShaper
 from journal.http.v3.shapers.notices_shaper import NoticesShaper
 from journal.http.v3.shapers.writing_shaper import WritingShaper
 from journal.container import Container
+from journal.repositories.not_found import NotFound
 from journal.repositories.checks import Checks
 from journal.repositories.docs import Docs
 from journal.repositories.facts import Facts
@@ -56,8 +57,10 @@ class Shapers:
             empty.type = name
             self._by_type.setdefault(name, empty)
 
-    def named(self, type: str) -> Shaper | None:
-        return self._by_type.get(type)
+    def named(self, type: str) -> Shaper:
+        if type not in self._by_type:
+            raise NotFound("row types", type)
+        return self._by_type[type]
 
     def types(self) -> list[str]:
         return list(self._by_type)

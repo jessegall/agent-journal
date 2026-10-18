@@ -26,14 +26,12 @@ class MenuWatcher:
     def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, states: StatesCatalogue) -> None:
         self.agents, self.supervisor, self.cards, self.scope, self.states = agents, supervisor, cards, scope, states
         self._stopping = threading.Event()
-        self._thread: threading.Thread | None = None
         self._seen: dict[int, tuple] = {}
         self._seen_at: dict[int, float] = {}
         self._answered: dict[int, tuple] = {}
 
     def start(self) -> None:
-        self._thread = threading.Thread(target=self._run, name="menu-watcher", daemon=True)
-        self._thread.start()
+        threading.Thread(target=self._run, name="menu-watcher", daemon=True).start()
 
     def stop(self) -> None:
         self._stopping.set()

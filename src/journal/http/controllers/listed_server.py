@@ -8,14 +8,14 @@ class ListedServer:
     name: str
     title: str
     transport: str
-    command: str
-    url: str
-    auth: str
-    key_var: str
-    has_key: bool
     state: str
-    last_error: str
     managed: bool
+    command: str = ""
+    url: str = ""
+    auth: str = "none"
+    key_var: str = ""
+    has_key: bool = False
+    last_error: str = ""
 
     def runs_from(self, mark: str) -> bool:
         return bool(mark) and mark in f"{self.command} {self.url}"

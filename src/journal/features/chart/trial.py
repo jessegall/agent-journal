@@ -36,13 +36,13 @@ from journal.repositories.workers import Workers
 
 EVENTS = {
     "session_started": lambda s, e: SessionStarted(session=s, environment_id=e, source="startup"),
-    "prompt_submitted": lambda s, e: PromptSubmitted(session=s, environment_id=e, prompt=""),
+    "prompt_submitted": lambda s, e: PromptSubmitted(session=s, environment_id=e, prompt="a prompt"),
     "tool_starting": lambda s, e: ToolStarting(session=s, environment_id=e, tool="Edit", input={"file_path": "a file"}),
-    "tool_finished": lambda s, e: ToolFinished(session=s, environment_id=e, tool="Edit", input={}, output=""),
+    "tool_finished": lambda s, e: ToolFinished(session=s, environment_id=e, tool="Edit", input={"file_path": "a file"}, output="the file edited"),
     "idle": lambda s, e: Idle(session=s, environment_id=e),
-    "turn_written": lambda s, e: TurnWritten(session=s, environment_id=e, text="", final=True),
-    "subagent_started": lambda s, e: SubagentStarted(session=s, environment_id=e, subagent=""),
-    "subagent_ended": lambda s, e: SubagentEnded(session=s, environment_id=e, subagent=""),
+    "turn_written": lambda s, e: TurnWritten(session=s, environment_id=e, text="a turn", final=True),
+    "subagent_started": lambda s, e: SubagentStarted(session=s, environment_id=e, subagent="a subagent"),
+    "subagent_ended": lambda s, e: SubagentEnded(session=s, environment_id=e, subagent="a subagent"),
     "compacting": lambda s, e: Compacting(session=s, environment_id=e),
     "session_ended": lambda s, e: SessionEnded(session=s, environment_id=e),
     "ticked": lambda s, e: Ticked(session=s, environment_id=e, at=0.0, quiet_for=0.0),

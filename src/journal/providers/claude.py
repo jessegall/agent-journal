@@ -49,7 +49,7 @@ class Claude(Provider):
         if not text.strip() and not tools:
             return None
         kind = row.kind
-        return Turn(number, "user" if kind in ("human", "injected") else kind, kind, text, self.seconds(row.timestamp), tools)
+        return Turn(number, "user" if kind in ("human", "injected") else kind, kind, self.seconds(row.timestamp), text, tools)
 
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
         """The thinking blocks after the last prompt, read from the transcript's tail."""

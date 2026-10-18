@@ -25,6 +25,10 @@ class McpServer(Model):
     def noun(cls) -> str:
         return "MCP server"
 
+    def unchecked(self, state: str) -> "McpServer":
+        """How it stands before the program has said, with no error."""
+        return self.with_(state=state, last_error="")
+
     def checked(self, state: str, words: str) -> "McpServer":
         """How it stood when checked; the words are its error only when it failed."""
         return self.with_(state=state, last_error=words if state == "failed" else "")

@@ -1,3 +1,4 @@
+from journal.features.mcp.health_report import HealthReport
 from journal.features.mcp.health import Health
 from journal.features.mcp.pending_restarts import PendingRestarts
 from journal.features.mcp.keys import Keys
@@ -26,7 +27,7 @@ class Installing:
 
     def keyed(self, server: McpServer, value: str, by: Actor) -> McpServer:
         self.keys.set(server.key_var, value)
-        saved = self.servers.save(server.checked("installed", ""), by)
+        saved = self.servers.save(server.unchecked("installed"), by)
         self.applied()
         return saved
 
@@ -48,12 +49,17 @@ class Installing:
         return "needs_key" if server.needs_key and not self.keys.has(server.key_var) else "installed"
 
     def checked(self, by: Actor) -> list[McpServer]:
-        found = self.health.fresh()
-        checked = []
-        for server in self.servers.all():
-            known = found.get(server.name) or found.get("*")
-            checked.append(self.servers.save(server.checked(known.state, known.words) if known else server.checked(self.unchecked_state(server), ""), by))
-        return checked
+        report = self.health.fresh()
+        return [self.servers.save(self.checked_one(server, report), by) for server in self.servers.all()]
+
+    def checked_one(self, server: McpServer, report: HealthReport) -> McpServer:
+        """How the server stands by the program's check: failed with the check itself, as the program saw it, or, unseen, by whether its key is there."""
+        if report.failure is not None:
+            return server.checked("failed", report.failure)
+        known = report.servers.get(server.name)
+        if known is None:
+            return server.unchecked(self.unchecked_state(server))
+        return server.checked(known.state, known.words)
 
     def sign_in(self, server: McpServer) -> bool:
         """The first running agent is asked to sign in to the server through its own authenticate tool: the browser opens from its terminal."""
