@@ -416,6 +416,13 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
     assert status == 409 and "no recursive deletes here" in body["error"]
 
 
+def test_a_check_keeps_its_description_for_the_page(app):
+    app.console().run(["check", "create", "Check for sins", "--command", "true", "--brief", "Judges the project; a failure lists the sins found"], USER)
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/check", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        row = json.loads(reply.read())["rows"][0]
+    assert (row["title"], row["brief"], row["data"]["command"], row["data"]["last"]["at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", 0.0), "the description is the row's brief, and a check never run says so by its last run's time"
+
+
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink

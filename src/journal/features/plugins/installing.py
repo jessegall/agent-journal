@@ -176,6 +176,13 @@ class Installing:
             self.dashboard.delete(line, by)
 
     @staticmethod
+    def clear_stale_fetches(home: Path) -> None:
+        """A fetch folder older than any fetch may take was left by one that was killed: it goes."""
+        for stale in home.glob(".fetching-*"):
+            if time.time() - stale.stat().st_mtime > 2 * FETCH_SECONDS:
+                shutil.rmtree(stale, ignore_errors=True)
+
+    @staticmethod
     def same(plugin: Plugin, manifest: PluginManifest) -> PluginManifest:
         if manifest.name != plugin.name:
             raise Refused(f"{plugin.source} now holds the plugin {manifest.name}, not {plugin.name}: install it as a plugin of its own")
@@ -201,9 +208,11 @@ class Installing:
             return
         home = self.config.home / "plugins"
         home.mkdir(parents=True, exist_ok=True)
+        self.clear_stale_fetches(home)
         temporary = Path(tempfile.mkdtemp(prefix=".fetching-", dir=home))
         try:
-            fetched = subprocess.run(["git", "clone", "--quiet", source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)
+            shallow = [] if ref else ["--depth", "1"]
+            fetched = subprocess.run(["git", "clone", "--quiet", *shallow, source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)
             if fetched.returncode == 0 and ref:
                 fetched = subprocess.run(["git", "-C", str(temporary / "plugin"), "checkout", "--quiet", ref], capture_output=True, text=True, timeout=FETCH_SECONDS)
             if fetched.returncode != 0:

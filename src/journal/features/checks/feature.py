@@ -22,7 +22,8 @@ class Checks(Feature):
 A check is a script that passes or fails, run by hand or every so many minutes. A failure is told to you;
 the next pass clears it.
 
-- `journal check create "<title>" --command "<shell>" --every <minutes>`; `--every 0` runs by hand only.
+- `journal check create "<title>" --command "<shell>" --every <minutes> --brief "<what it checks and what a failure means>"`;
+  `--every 0` runs by hand only.
 - `journal check run <n>` runs it now and prints the tail on failure. `journal check list` shows how each last went.
 - When a check fails, fix what it found before anything else, then run it again.
 """, keywords=("check", "checks", "ci", "suite"))

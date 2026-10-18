@@ -17,12 +17,13 @@ class CheckCommand(Command):
         create = self.verb(verbs, "create", "a script that passes or fails")
         create.add_argument("title")
         create.add_argument("--command", required=True)
+        create.add_argument("--brief", default="", help="what it checks and what a failure means")
         create.add_argument("--every", type=int, default=0, help="minutes; 0 runs it by hand only")
         self.verb(verbs, "run", "run a check now").add_argument("n", type=int)
         self.verb(verbs, "list", "every check and how it last went")
 
     def create(self, args: Namespace, where: Where) -> int:
-        check = self.checks.save(Check(title=args.title, command=args.command, every=args.every), where.actor)
+        check = self.checks.save(Check(title=args.title, brief=args.brief, command=args.command, every=args.every), where.actor)
         print(f"check {check.id}: {check.title}")
         return 0
 

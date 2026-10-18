@@ -9,6 +9,8 @@ class Check(Model):
     """A script that passes or fails about the project, run by hand or every so many minutes."""
 
     title: str = ""
+    brief: str = ""
+    """What it checks and what its failure means, in a few lines."""
     command: str = ""
     every: int = 0
     """Minutes between runs; 0 runs it only by hand."""
