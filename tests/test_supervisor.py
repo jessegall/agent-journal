@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from supervisor.inbox import Inbox
+from journal.launcher.environment_row import EnvironmentRow
 from journal.launcher.launch import Launch
 from journal.launcher.choice import Choice
 from journal.launcher.menu import Menu
@@ -13,7 +14,7 @@ from journal.launcher.screen import Screen
 from journal.launcher.status_line import StatusLine
 
 
-ROWS = [{"name": "main", "last_sessions": {"claude": "abc"}, "last_used": "2 hours ago", "working": True}, {"name": "spike", "last_sessions": {}, "last_used": "", "working": False}]
+ROWS = [EnvironmentRow("main", True, "2 hours ago", {"claude": "abc"}), EnvironmentRow("spike")]
 OTHER = {"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "say done"}]}]}, "model": "opus"}
 
 

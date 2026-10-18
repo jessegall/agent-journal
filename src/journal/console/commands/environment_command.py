@@ -1,5 +1,6 @@
 import json
 from argparse import Namespace
+from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from journal.console.where import Where
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.shell.commands.shell_command import ENDED, MOVED
+from journal.launcher.environment_row import EnvironmentRow
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
@@ -40,7 +42,7 @@ class EnvironmentCommand(Command):
         self.verb(verbs, "create", "a new line of work").add_argument("name")
         self.verb(verbs, "delete", "an environment and everything recorded in it").add_argument("name")
 
-    def rows(self) -> list[dict]:
+    def rows(self) -> list[EnvironmentRow]:
         """Each environment for the boot menu: for each agent program, its newest session whose conversation it can still find, so a carry-on never names one it has lost nor one of another program."""
         rows = []
         for environment in self.environments.all() or [self.environments.named("main")]:
@@ -48,8 +50,7 @@ class EnvironmentCommand(Command):
                 agents = self.agents.in_()
             last = agents[-1] if agents else None
             resumable = [a for a in agents if a.session and self.providers.named(a.provider or "claude").transcript(self.config.root, a.session)]
-            rows.append({"name": environment.name, "last_sessions": {a.provider or "claude": a.session for a in resumable}, "working": bool(last) and last.state != "ended",
-                         "last_used": self.ago(last.updated_at) if last else ""})
+            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.ago(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
         return rows
 
     def here(self, args: Namespace, where: Where) -> int:
@@ -101,11 +102,11 @@ class EnvironmentCommand(Command):
 
     def list(self, args: Namespace, where: Where) -> int:
         for row in self.rows():
-            print(f"{row['name']:<20} {row['last_used']}")
+            print(f"{row.name:<20} {row.last_used}")
         return 0
 
     def json(self, args: Namespace, where: Where) -> int:
-        print(json.dumps(self.rows()))
+        print(json.dumps([asdict(row) for row in self.rows()]))
         return 0
 
     def create(self, args: Namespace, where: Where) -> int:

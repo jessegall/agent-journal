@@ -1,5 +1,8 @@
 import json
+from dataclasses import asdict
 from pathlib import Path
+
+from journal.launcher.answers import Answers
 
 
 class Remembered:
@@ -8,11 +11,11 @@ class Remembered:
     def __init__(self, root: Path) -> None:
         self.path = root / ".journal" / "launch.json"
 
-    def read(self) -> dict:
+    def read(self) -> Answers:
         if not self.path.is_file():
-            return {}
-        return json.loads(self.path.read_text() or "{}")
+            return Answers()
+        return Answers.from_json(json.loads(self.path.read_text() or "{}"))
 
-    def write(self, **answers) -> None:
+    def write(self, answers: Answers) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps({**self.read(), **answers}))
+        self.path.write_text(json.dumps(asdict(answers)))
