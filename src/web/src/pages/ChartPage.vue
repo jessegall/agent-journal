@@ -23,6 +23,8 @@ import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import SidePanel from "../kit/SidePanel.vue";
+import ChartGuideDialog from "./ChartGuideDialog.vue";
+import ChartRunsPanel from "./ChartRunsPanel.vue";
 import ChartList from "./ChartList.vue";
 
 const CARD = {width: 240, plain: 48, text: 84};
@@ -36,8 +38,6 @@ const VIEWS = [
     {key: "canvas", label: "Chart"},
     {key: "list", label: "Steps"},
 ];
-const LEAD =
-    "The journal answers the agent with one workflow per state per event: pick what the agent is doing, then what happens, and the workflow for that pair shows. A state with a parent uses the parent's workflow where it has none of its own.";
 
 const loaded = ref(false);
 const workflows = ref([]);
@@ -1194,41 +1194,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
         </div>
 
         <template v-if="runs">
-            <SidePanel
-                title="Recent runs"
-                abstract="The last ten runs across every workflow, newest first. A run opens its workflow with the steps it took lit."
-                @close="runs = null"
-            >
-                <template v-if="!runs.length">
-                    <p class="chart-runs-empty">No runs yet.</p>
-                </template>
-                <template v-else>
-                    <ul class="chart-runs">
-                        <template v-for="run in runs" :key="run.at">
-                            <li>
-                                <button type="button" class="chart-run" @click="openRun(run)">
-                                    <span class="chart-run-when">
-                                        {{ ago(run.at) }}
-                                        <template v-if="run.failed">
-                                            <span class="chart-row-bad">· Failed</span>
-                                        </template>
-                                    </span>
-                                    <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
-                                    <template v-if="run.change">
-                                        <span class="chart-run-said">{{ run.change }}</span>
-                                    </template>
-                                    <template v-if="run.answer">
-                                        <span class="chart-run-said">{{ run.answer }}</span>
-                                    </template>
-                                    <template v-if="run.counts">
-                                        <span class="chart-run-said">Counts: {{ run.counts }}</span>
-                                    </template>
-                                </button>
-                            </li>
-                        </template>
-                    </ul>
-                </template>
-            </SidePanel>
+            <ChartRunsPanel :runs="runs" @close="runs = null" @open="openRun" />
         </template>
 
         <template v-if="adding">
@@ -1336,23 +1302,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
             </SidePanel>
         </template>
         <template v-if="showLead">
-            <Dialog title="How workflows work" fits @close="showLead = false">
-                <p class="chart-dialog-text">{{ LEAD }}</p>
-                <p class="chart-dialog-text">
-                    A trigger is an event, such as the agent stopping. A check is a yes or no question the journal answers from what it
-                    knows, and the flow goes on by the Yes or the No line. An action is what the journal does: send a message to the agent,
-                    block its stop, block a tool, type into its terminal or start a sequence.
-                </p>
-                <p class="chart-dialog-text">
-                    The page opens read-only; Edit switches editing on. Add step puts a step below the selected one and connects it. Drag
-                    from a port onto another step to connect them, click a line to remove it, and drag a step to move it. Nothing changes
-                    until you save. Turn off keeps a workflow's steps but stops it answering; Reset to default brings a default workflow
-                    back; Delete removes one you made.
-                </p>
-                <template #foot>
-                    <Btn kind="primary" @click="showLead = false">Close</Btn>
-                </template>
-            </Dialog>
+            <ChartGuideDialog @close="showLead = false" />
         </template>
         <template v-if="confirmation">
             <Dialog :title="confirmation.title" fits @close="confirming = ''">
@@ -1605,11 +1555,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
     color: var(--text-3);
     font-size: 11.5px;
 }
-.chart-row-bad {
-    color: var(--danger-soft);
-    font-size: 11.5px;
-    font-weight: 400;
-}
 .chart-row-warn {
     color: var(--warn);
     font-size: 11.5px;
@@ -1724,50 +1669,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 }
 .chart-fault:disabled {
     cursor: default;
-}
-.chart-runs {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.chart-runs li + li {
-    border-top: 1px solid var(--line);
-}
-.chart-run {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    padding: 8px 0;
-    border: 0;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-.chart-run:hover .chart-run-title {
-    color: var(--accent-text);
-}
-.chart-run-when {
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-.chart-run-title {
-    font-size: 13px;
-    font-weight: 500;
-}
-.chart-run-said {
-    display: -webkit-box;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: 12px;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
-.chart-runs-empty {
-    margin: 0;
-    color: var(--text-3);
 }
 .chart-node.end {
     border-bottom-width: 3px;
