@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from journal.events.agent.ticked import Ticked
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.models.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message

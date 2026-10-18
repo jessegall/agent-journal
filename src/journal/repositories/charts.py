@@ -1,5 +1,5 @@
 from journal.db.connection import Connection
-from journal.features.bus import Bus
+from journal.events.bus import Bus
 from journal.models.actor import Actor
 from journal.models.chart import Chart
 from journal.models.drawn_line import PORTS, THEN, DrawnLine

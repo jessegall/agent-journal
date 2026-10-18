@@ -1,8 +1,8 @@
 import re
 
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.agent_listener import AgentListener
-from journal.hooks.decision import Decision
+from journal.events.agent_listener import AgentListener
+from journal.events.decision import Decision
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
 """A read of the user's words, a message or a question, as a command and not as words quoted inside another, piped into anything: head, tail, grep, cut. The whole of it is the point."""

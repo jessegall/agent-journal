@@ -2,7 +2,7 @@ import re
 import threading
 
 from journal.events.agent.turn_written import TurnWritten
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.messages.faces import Faces
 from journal.features.messages.tags import Tags
 from journal.features.registry import Registry

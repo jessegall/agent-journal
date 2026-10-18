@@ -1,7 +1,7 @@
 from journal.features.etiquette.listeners.read_turn import ReadTurn
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
-from journal.features.option import Option
+from journal.engine.nudge import Nudge
+from journal.models.option import Option
 
 
 class Etiquette(Feature):

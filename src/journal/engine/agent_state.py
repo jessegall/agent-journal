@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from journal.engine.permission import Permission
 from journal.events.agent.agent_event import AgentEvent
-from journal.features.said import Said
+from journal.engine.said import Said
 
 
 @dataclass(frozen=True)

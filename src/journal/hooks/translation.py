@@ -10,9 +10,9 @@ from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
 from journal.hooks.context_file import ContextFile
-from journal.hooks.hook import Hook
+from journal.providers.hook import Hook
 from journal.hooks.turn_gatherer import TurnGatherer
-from journal.hooks.hook_kind import HookKind
+from journal.providers.hook_kind import HookKind
 from journal.models.environment import Environment
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries

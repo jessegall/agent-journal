@@ -15,7 +15,7 @@ from journal.events.models.saved import Saved
 from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
 from journal.events.models.updating import Updating
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.refused import Refused
 from journal.models.actor import Actor
@@ -139,7 +139,7 @@ def test_a_thread_returns_its_connection_to_the_pool(connection):
 def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     from journal.db.connection import Connection
     from journal.db.schema import Schema
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.models.all_models import AllModels
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions

@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.features.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
 from journal.features.secrets.listeners.keep_out_of_private import KeepOutOfPrivate

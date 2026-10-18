@@ -3,11 +3,11 @@ from datetime import datetime
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.events.agent.idle import Idle
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
 from journal.features.skills.requiring import Requiring
-from journal.hooks.decision import Decision
+from journal.events.decision import Decision
 from journal.models.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.questions import Questions

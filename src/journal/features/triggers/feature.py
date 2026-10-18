@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.features.triggers.commands.trigger_command import TriggerCommand
 from journal.features.triggers.listeners.watch_prompt import WatchPrompt
 from journal.features.triggers.listeners.watch_message import WatchMessage

@@ -3,7 +3,7 @@ import re
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.turn_written import TurnWritten
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink
 
 SHOP_TALK = re.compile(r"\bjournal (task|plan|message|question|fact|rule|reminder|sequence|worker|check|skill|stuck|nothing) [a-z]+\b|\[journal\]", re.I)

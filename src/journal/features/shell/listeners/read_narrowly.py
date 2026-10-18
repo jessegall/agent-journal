@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.agent_listener import AgentListener
-from journal.hooks.decision import Decision
+from journal.events.agent_listener import AgentListener
+from journal.events.decision import Decision
 from journal.repositories.settings import Settings
 
 

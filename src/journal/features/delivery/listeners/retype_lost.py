@@ -3,7 +3,7 @@ from journal.engine.machine import Machine
 from journal.engine.turn import Turn
 from journal.engine.typed_lines import TypedLines
 from journal.events.agent.ticked import Ticked
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink
 
 PATIENCE = 10.0

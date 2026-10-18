@@ -11,10 +11,10 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.agent_listener import AgentListener
-from journal.features.bus import Bus
-from journal.hooks.decision import Decision
-from journal.hooks.deferred import Deferred
+from journal.events.agent_listener import AgentListener
+from journal.events.bus import Bus
+from journal.events.decision import Decision
+from journal.engine.deferred import Deferred
 from journal.repositories.entries import Entries
 from journal.repositories.scope import Scope
 
@@ -91,7 +91,7 @@ def test_every_hook_kind_translates(app):
 
 
 def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     ran = []
     deferred = Deferred()
     deferred.start()

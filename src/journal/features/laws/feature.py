@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.laws.listeners.judge_dispatch import JudgeDispatch
 from journal.features.laws.listeners.measure_result import MeasureResult
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 
 
 class Laws(Feature):

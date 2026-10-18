@@ -2,7 +2,7 @@ import re
 from datetime import datetime, timedelta, timezone
 
 from journal.events.models.created import Created
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message

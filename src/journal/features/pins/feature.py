@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.features.pins.commands.notice_command import NoticeCommand
 from journal.features.pins.listeners.unpinned_link import UnpinnedLink
 from journal.features.skill import Skill

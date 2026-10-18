@@ -8,10 +8,10 @@ from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.refuse_truncated_read import RefuseTruncatedRead
 from journal.features.messages.listeners.run_tags import RunTags
 from journal.features.messages.listeners.tell_reaction import TellReaction
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
-from journal.features.option import Option
-from journal.features.said import Said
+from journal.models.option import Option
+from journal.engine.said import Said
 from journal.features.skill import Skill
 
 

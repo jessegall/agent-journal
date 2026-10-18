@@ -5,8 +5,8 @@ from journal.engine.states.ended import Ended
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.events.agent.ticked import Ticked
 from journal.events.clock_ticked import ClockTicked
-from journal.features.bus import Bus
-from journal.hooks.decision import Decision
+from journal.events.bus import Bus
+from journal.events.decision import Decision
 from journal.models.agent import Agent
 from journal.repositories.agents import Agents
 from journal.repositories.scope import Scope

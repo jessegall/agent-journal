@@ -7,8 +7,9 @@ from journal.db.masks import Masks
 from journal.db.migrations import MIGRATIONS
 from journal.db.migrator import Migrator
 from journal.db.schema import Schema
-from journal.features.bus import Bus
-from journal.engine.runtime import Runtime
+from journal.engine.features_known import FeaturesKnown
+from journal.events.bus import Bus
+from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
 from journal.hooks.context_file import ContextFile
@@ -36,6 +37,7 @@ class App:
         self.container.bind(Console, self._console)
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(Settings)))
+        self.container.bind(FeaturesKnown, lambda: self.container.get(Registry))
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)

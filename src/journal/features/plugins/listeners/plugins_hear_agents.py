@@ -2,12 +2,12 @@ from time import monotonic
 
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.plugins.plugin_hearing import PluginHearing
 from journal.features.plugins.plugin_words import PluginWords
-from journal.hooks.decision import Decision
-from journal.hooks.deferred import Deferred
-from journal.hooks.floor import Floor
+from journal.events.decision import Decision
+from journal.engine.deferred import Deferred
+from journal.features.floor import Floor
 from journal.models.plugin import Plugin
 from journal.models.plugin_answer import PluginAnswer
 from journal.repositories.settings import Settings

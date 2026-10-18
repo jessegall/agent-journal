@@ -12,7 +12,7 @@ from journal.events.models.saved import Saved
 from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
 from journal.events.models.updating import Updating
-from journal.features.bus import Bus
+from journal.events.bus import Bus
 from journal.models.actor import Actor
 from journal.models.model import Model
 from journal.models.title import Title

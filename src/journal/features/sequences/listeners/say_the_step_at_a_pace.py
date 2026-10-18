@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.events.agent.ticked import Ticked
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
 from journal.repositories.settings import Settings

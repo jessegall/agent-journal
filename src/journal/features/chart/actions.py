@@ -17,9 +17,9 @@ from journal.models.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts
 from journal.features.registry import Registry
-from journal.features.said import Said
+from journal.engine.said import Said
 from journal.features.sequences.running import Running
-from journal.hooks.decision import Decision
+from journal.events.decision import Decision
 from journal.refused import Refused
 from journal.repositories.sequences import Sequences
 from journal.supervisor_link import SupervisorLink

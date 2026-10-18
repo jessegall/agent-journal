@@ -1,6 +1,6 @@
 from journal.engine.nudger import Nudger
 from journal.events.models.updated import Updated
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.models.actor_kind import ActorKind
 from journal.models.secret import Secret
 from journal.repositories.agents import Agents

@@ -1,6 +1,6 @@
 from journal.features.entry import Entry
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand

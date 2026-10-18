@@ -1,7 +1,7 @@
 from contextvars import ContextVar
 
 from journal.events.models.created import Created
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.models.actor_kind import ActorKind
 from journal.models.entry import Entry
 from journal.models.model import Model

@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from journal.db.connection import Connection
-from journal.features.bus import Bus
+from journal.events.bus import Bus
 from journal.models.actor import Actor
 from journal.models.scoped import Scoped
 from journal.repositories.repository import Repository

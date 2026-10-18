@@ -1,5 +1,6 @@
+from journal.engine.agent_state import AgentState
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.features.service import Service
 from journal.features.skill import Skill
 from journal.repositories.settings import Settings
@@ -26,6 +27,9 @@ class Registry:
     def options(self) -> list:
         """Every option a feature declares, across features."""
         return [option for feature in self.features for option in feature.options]
+
+    def states(self) -> list[type[AgentState]]:
+        return [state for feature in self.features for state in feature.states]
 
     def services(self) -> list[Service]:
         """The processes the features need beside the agent: one runs for the whole journal, so a feature switched off in one environment still has its service."""

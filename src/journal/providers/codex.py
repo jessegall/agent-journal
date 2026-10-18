@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from journal.hooks.hook_kind import HookKind
+from journal.providers.hook_kind import HookKind
 from journal.providers.codex_row import CodexRow
 from journal.providers.provider import Provider
 from journal.providers.turn import Turn

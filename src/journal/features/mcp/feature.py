@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.features.mcp.commands.mcp_command import McpCommand
 from journal.features.mcp.listeners.restart_when_idle import RestartWhenIdle
 

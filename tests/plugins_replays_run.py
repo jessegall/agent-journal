@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.features.workers.worker_runner import WorkerRunner
-from journal.hooks.deferred import Deferred
+from journal.engine.deferred import Deferred
 from journal.models.actor import Actor
 from journal.models.setting import Setting
 from journal.models.task import Task

@@ -7,7 +7,7 @@ from journal.features.chart.context import Context
 from journal.engine.machine import Machine
 from journal.engine.states.ended import Ended
 from journal.features.chart.walk import Walk
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.models.scoped import Scoped
 from journal.repositories.agents import Agents
 

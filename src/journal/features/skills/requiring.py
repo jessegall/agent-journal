@@ -8,35 +8,33 @@ from journal.features.skill import Skill
 from journal.features.skills.skill_files import SkillFiles
 from journal.models.actor import Actor
 from journal.models.agent import Agent
-from journal.models.link import Link
-from journal.models.ref import Ref
-from journal.repositories.links import Links
-
-OWES = "owes:"
-"""The kind of a link from an agent to a skill it owes a read of, by the skill's name after the colon."""
+from journal.repositories.agents import Agents
 
 
 class Requiring:
-    """What every moment of requiring shares: which skills an agent still owes, as links from its row, and the line that says where each file is."""
+    """What every moment of requiring shares: which skills an agent still owes, as a fact on its row, and the line that says where each file is."""
 
-    def __init__(self, machine: Machine, registry: Registry, files: SkillFiles, nudger: Nudger, links: Links) -> None:
-        self.machine, self.registry, self.files, self.nudger, self.links = machine, registry, files, nudger, links
+    def __init__(self, machine: Machine, registry: Registry, files: SkillFiles, nudger: Nudger, agents: Agents) -> None:
+        self.machine, self.registry, self.files, self.nudger, self.agents = machine, registry, files, nudger, agents
 
     def owes_anything(self, agent: Agent) -> bool:
         """Whether the agent owes the journal the look at what is in flight, a decision at a context mark or a skill's read."""
         return not agent.oriented or bool(agent.mark_owed) or bool(self.owed_names(agent))
 
     def owed_names(self, agent: Agent) -> list[str]:
-        """The skills the agent owes a read of, by name, as its links say."""
-        return [link.kind[len(OWES):] for link in self.links.of(agent) if link.kind.startswith(OWES) and link.source == Ref.to(agent)]
+        """The skills the agent owes a read of, by name."""
+        return list(agent.skills_owed)
 
-    def owe(self, agent: Agent, skill: Skill) -> None:
-        if skill.name not in self.owed_names(agent):
-            self.links.save(Link(source=Ref.to(agent), kind=f"{OWES}{skill.name}"), Actor.system())
+    def owe(self, agent: Agent, skills: list[Skill]) -> None:
+        """The skills owed beside those already owed, in one write, so none owed in the same moment is lost."""
+        owed = (*agent.skills_owed, *(skill.name for skill in skills if skill.name not in agent.skills_owed))
+        if owed != agent.skills_owed:
+            self.agents.touch(agent, Actor.system(), skills_owed=tuple(dict.fromkeys(owed)))
 
     def paid(self, agent: Agent, skill: Skill) -> None:
-        for link in [l for l in self.links.of(agent) if l.kind == f"{OWES}{skill.name}"]:
-            self.links.delete(link, Actor.system())
+        owed = self.owed_names(agent)
+        if skill.name in owed:
+            self.agents.touch(agent, Actor.system(), skills_owed=tuple(name for name in owed if name != skill.name))
 
     def owed(self, agent: Agent, skills: list[Skill]) -> list[Skill]:
         loaded = agent.skills_loaded or {}
@@ -56,12 +54,11 @@ class Requiring:
         return [skill for skill in self.registry.skills() if words & {k.lower() for k in skill.keywords}]
 
     def require(self, agent: Agent, skills: list[Skill]) -> list[str]:
-        """Each skill owed becomes a link from the agent, and the line that says where its file is; nothing is owed while the skills feature is off, as nothing would pay it."""
+        """Each skill owed is noted on the agent's row, with the line that says where its file is; nothing is owed while the skills feature is off, as nothing would pay it."""
         from journal.features.skills.feature import Skills
         if self.registry.silenced(Skills.REQUIRED):
             return []
-        for skill in skills:
-            self.owe(agent, skill)
+        self.owe(agent, skills)
         return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.about(skill=skill.name, path=self.path_of(skill))))]
 
     def path_of(self, skill: Skill):

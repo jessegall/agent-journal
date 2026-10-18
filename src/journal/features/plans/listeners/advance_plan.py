@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.models.actor_kind import ActorKind
 from journal.models.task import Task

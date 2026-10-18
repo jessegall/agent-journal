@@ -5,9 +5,9 @@ from journal.engine.states_catalogue import StatesCatalogue
 from journal.engine.transition import Transition
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.state_entered import StateEntered
-from journal.features.bus import Bus
-from journal.features.agent_listener import AgentListener
-from journal.hooks.decision import Decision
+from journal.events.bus import Bus
+from journal.events.agent_listener import AgentListener
+from journal.events.decision import Decision
 from journal.models.actor import Actor
 from journal.models.agent import Agent
 from journal.repositories.agents import Agents

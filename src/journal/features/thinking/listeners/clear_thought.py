@@ -1,5 +1,5 @@
 from journal.events.agent.turn_written import TurnWritten
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.thinking.listeners.reply_from_thought import FROM_THOUGHT
 from journal.features.thinking.thoughts import Thoughts
 

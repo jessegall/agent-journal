@@ -2,7 +2,7 @@ import re
 from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
-from journal.features.said import Said
+from journal.engine.said import Said
 from journal.features.shell.chain import Chain
 from journal.features.skills.requiring import Requiring
 from journal.models.actor import Actor

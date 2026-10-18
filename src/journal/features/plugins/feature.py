@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.option import Option
+from journal.models.option import Option
 from journal.features.skill import Skill
 from journal.features.plugins.commands.dashboard_command import DashboardCommand
 from journal.features.plugins.commands.plugin_command import PluginCommand

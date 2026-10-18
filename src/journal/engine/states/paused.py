@@ -6,7 +6,7 @@ from journal.engine.resume import Resume
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.engine.transition import Transition
-from journal.features.said import Said
+from journal.engine.said import Said
 
 
 

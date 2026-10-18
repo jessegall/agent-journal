@@ -1,8 +1,8 @@
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
-from journal.features.agent_listener import AgentListener
-from journal.hooks.decision import Decision
+from journal.events.agent_listener import AgentListener
+from journal.events.decision import Decision
 
 LARGE = 400
 

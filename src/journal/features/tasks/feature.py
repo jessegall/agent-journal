@@ -4,9 +4,9 @@ from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.spot_polling import SpotPolling
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
-from journal.features.option import Option
+from journal.models.option import Option
 from journal.features.skill import Skill
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.stuck import Stuck

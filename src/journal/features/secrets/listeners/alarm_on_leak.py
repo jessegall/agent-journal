@@ -3,7 +3,7 @@ import time
 from journal.db.masks import Masks
 from journal.engine.cards import Cards
 from journal.events.agent.ticked import Ticked
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 
 QUIET = 600.0
 """At most one alarm in ten minutes, however many writes carried a value."""

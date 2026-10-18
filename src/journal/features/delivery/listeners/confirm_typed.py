@@ -1,6 +1,6 @@
 from journal.engine.typed_lines import TypedLines
 from journal.events.agent.prompt_submitted import PromptSubmitted
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 
 
 class ConfirmTyped(AgentListener[PromptSubmitted]):

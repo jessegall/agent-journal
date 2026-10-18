@@ -121,7 +121,7 @@ def writes_over_the_log(app, replay: Replay, provider: str) -> None:
 def the_clock_ticks(app, replay: Replay, provider: str) -> None:
     """The steps: an idle agent in auto mode hears the clock at a minute, at half an hour and at half an hour again; then with a task parked, at a minute, twice; then awaiting something outside, at five minutes, twice, until its own tool use lifts the wait."""
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -345,8 +345,8 @@ def test_message_arrives_as_the_shipped_workflow_equals_the_listener(journals, m
 def tick(app, quiet: float) -> None:
     """A tick as the clock gives it: dispatched to every listener, and what a state says on it typed into the terminal."""
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
-    from journal.hooks.decision import Decision
+    from journal.events.bus import Bus
+    from journal.events.decision import Decision
     from journal.supervisor_link import SupervisorLink
     env = app.container.get(Environments).named("main").id
     for answer in app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=0.0, quiet_for=quiet)):

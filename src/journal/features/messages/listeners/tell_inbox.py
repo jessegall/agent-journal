@@ -3,8 +3,8 @@ from typing import TypeVar
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
-from journal.features.agent_listener import AgentListener
-from journal.hooks.decision import Decision
+from journal.events.agent_listener import AgentListener
+from journal.events.decision import Decision
 from journal.repositories.messages import Messages
 
 A = TypeVar("A", bound=AgentEvent)

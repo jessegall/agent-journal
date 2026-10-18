@@ -1,9 +1,9 @@
 from typing import TypeVar
 
 from journal.events.agent.agent_event import AgentEvent
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.triggers.firing import Firing
-from journal.hooks.decision import Decision
+from journal.events.decision import Decision
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.triggers import Triggers
 

@@ -1,8 +1,8 @@
 from journal.events.agent.session_started import SessionStarted
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
-from journal.hooks.decision import Decision
+from journal.events.decision import Decision
 
 
 class SayTheStepAtStart(AgentListener[SessionStarted]):

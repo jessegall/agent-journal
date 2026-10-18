@@ -1,7 +1,7 @@
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.session_started import SessionStarted
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink
 
 FRESH = "startup"

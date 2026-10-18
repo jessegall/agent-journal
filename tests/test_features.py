@@ -533,7 +533,7 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
 
 
 def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_at_boot(app, monkeypatch):
-    from journal.engine.service_start import ServiceStart
+    from journal.service_start import ServiceStart
     from journal.features.registry import Registry
     from journal.features.service import Service
     from journal.supervisor_link import SupervisorLink
@@ -815,7 +815,7 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app)
 
 def test_a_quiet_tick_leaves_no_walk_entry_and_a_tick_that_acts_does(app):
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.repositories.entries import Entries
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -989,7 +989,7 @@ def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app):
 
 def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     hook(app, "SessionStart")
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=3601.0))
     assert app.container.get(Machine).current("s1").name == "ended"
@@ -1337,7 +1337,7 @@ def test_a_long_file_is_not_read_whole(app, tmp_path):
 def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_lost(app, monkeypatch):
     import time
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -3233,7 +3233,7 @@ def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_
 
 def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, monkeypatch):
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -3611,7 +3611,7 @@ def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch
     db = sqlite3.connect(first.config.database)
     for name in ("subs", "charts:4:subs"):
         db.execute("INSERT INTO counts (created_at, created_by, updated_at, updated_by, environment_id, session, name, value) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', ?, 2)", (name,))
-    db.execute("DELETE FROM migrations WHERE number = 6")
+    db.execute("DELETE FROM migrations WHERE number >= 6")
     db.commit()
     db.close()
     second = App(Config(tmp_path, port=0))
@@ -3619,6 +3619,29 @@ def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch
     try:
         from journal.repositories.counts import Counts
         assert [c.name for c in second.container.get(Counts).all()] == ["charts:4:subs"], "a count named without its workflow is cleared, a workflow's own kept"
+    finally:
+        second.runtime().stop()
+
+def test_a_skill_owed_as_a_link_moves_onto_the_agent_at_boot(tmp_path: Path, monkeypatch):
+    import sqlite3
+    from journal.repositories.agents import Agents
+    from journal.repositories.links import Links
+    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    first = App(Config(tmp_path, port=0))
+    first.runtime().start()
+    first.runtime().stop()
+    db = sqlite3.connect(first.config.database)
+    db.execute("INSERT INTO agents (created_at, created_by, updated_at, updated_by, environment_id, session, state, data) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', 'idle', '{}')")
+    agent = db.execute("SELECT MAX(id) FROM agents").fetchone()[0]
+    db.execute("INSERT INTO links (created_at, created_by, updated_at, updated_by, source, target, kind) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', ?, NULL, 'owes:journal')", (f"agents:{agent}",))
+    db.execute("DELETE FROM migrations WHERE number >= 7")
+    db.commit()
+    db.close()
+    second = App(Config(tmp_path, port=0))
+    second.runtime().start()
+    try:
+        assert second.container.get(Agents).find(agent).skills_owed == ("journal",), "the owed skill is a fact on the agent's row"
+        assert not [link for link in second.container.get(Links).all() if link.kind.startswith("owes:")], "and the one-ended link is gone"
     finally:
         second.runtime().stop()
 
@@ -3818,7 +3841,7 @@ def echo_heard(app, name="echo") -> list[str]:
 
 def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
     from journal.db.connection import Connection
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     from journal.repositories.entries import Entries
     from journal.models.task import Task
     from journal.repositories.tasks import Tasks
@@ -3851,7 +3874,7 @@ def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
 def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
     from journal.features.plugins.plugin_answers import PluginAnswers
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     from journal.models.plugin_answer import PluginAnswer
     from journal.models.plugin_card import PluginCard
     from journal.models.task import Task
@@ -3927,7 +3950,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
 
 def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(app, tmp_path):
     import shutil
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     from journal.repositories.plugins import Plugins
     folder = tmp_path / "echo"
     shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
@@ -4070,7 +4093,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
 
 def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tmp_path):
     import shutil
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     from journal.repositories.plugins import Plugins
     console, plugins = app.console(), app.container.get(Plugins)
     folder = tmp_path / "echo"
@@ -4124,7 +4147,7 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
 
 
 def test_a_plugins_record_lists_what_it_did(app):
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     from journal.models.task import Task
     from journal.repositories.tasks import Tasks
     echo(app)
@@ -4168,7 +4191,7 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
 
 
 def test_a_plugins_line_after_the_reply_reaches_the_agent_at_its_next_hook(app):
-    from journal.hooks.deferred import Deferred
+    from journal.engine.deferred import Deferred
     echo(app, hears=["tool_finished", "tool_starting"], holds=["tool_starting"])
     hook(app, "SessionStart")
     hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": "notice.py"}, tool_response={})
@@ -4578,7 +4601,7 @@ def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app
 def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, tmp_path, monkeypatch):
     from journal.db.masks import Masks
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.models.message import Message
     from journal.repositories.messages import Messages
     from journal.repositories.scope import Scope
@@ -4730,7 +4753,7 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
 def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(app, tmp_path, monkeypatch):
     from datetime import datetime, timedelta, timezone
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.models.message import Message
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
@@ -4757,7 +4780,7 @@ def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(
 def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp_path, monkeypatch):
     from datetime import datetime, timedelta, timezone
     from journal.events.agent.ticked import Ticked
-    from journal.features.bus import Bus
+    from journal.events.bus import Bus
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
     from journal.repositories.secrets import Secrets

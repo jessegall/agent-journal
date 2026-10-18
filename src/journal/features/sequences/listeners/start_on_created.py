@@ -1,5 +1,5 @@
 from journal.events.models.created import Created
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.features.sequences.running import Running
 from journal.models.actor_kind import ActorKind
 from journal.models.scoped import Scoped

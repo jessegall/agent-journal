@@ -1,4 +1,4 @@
-from journal.features.option import Option
+from journal.models.option import Option
 from journal.models.setting import Setting
 from journal.repositories.scoped_repository import ScopedRepository
 

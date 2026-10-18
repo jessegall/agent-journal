@@ -9,8 +9,8 @@ from journal.features.memory.listeners.hold_writes_while_mark_owed import HoldWr
 from journal.features.memory.listeners.keep_from_stopping_while_mark_owed import KeepFromStoppingWhileMarkOwed
 from journal.features.memory.listeners.review_new_rule import ReviewNewRule
 from journal.features.memory.listeners.whisper import Whisper
-from journal.features.nudge import Nudge
-from journal.features.option import Option
+from journal.engine.nudge import Nudge
+from journal.models.option import Option
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 

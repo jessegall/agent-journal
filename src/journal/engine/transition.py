@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.engine.agent_state import AgentState
-from journal.features.said import Said
+from journal.engine.said import Said
 
 
 @dataclass(frozen=True)

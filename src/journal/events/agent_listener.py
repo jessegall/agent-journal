@@ -1,8 +1,8 @@
 from typing import ClassVar, TypeVar
 
 from journal.events.agent.agent_event import AgentEvent
-from journal.features.listener import Listener
-from journal.hooks.decision import Decision
+from journal.events.listener import Listener
+from journal.events.decision import Decision
 
 A = TypeVar("A", bound=AgentEvent)
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from journal.hooks.hook_kind import HookKind
+from journal.providers.hook_kind import HookKind
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from journal.engine.machine import Machine
 from journal.engine.states.ended import Ended
 from journal.events.agent.ticked import Ticked
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 
 QUIET_FOR = 3600.0
 """Seconds without a hook before a session is taken for gone: an agent closed without its end hook never says so itself."""

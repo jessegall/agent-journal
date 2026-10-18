@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.option import Option
+from journal.models.option import Option
 
 
 class Profiles(Feature):

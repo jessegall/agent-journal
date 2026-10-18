@@ -1,5 +1,5 @@
 from journal.events.agent.session_ended import SessionEnded
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.models.actor import Actor
 from journal.repositories.counts import Counts
 

@@ -1,6 +1,6 @@
 from journal.events.event import Event
 from journal.features.feature import Feature
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.features.registry import Registry
 from journal.models.scoped import Scoped
 from journal.repositories.scope import Scope

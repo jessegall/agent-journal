@@ -8,8 +8,8 @@ from journal.features.chart.actions import Actions
 from journal.features.chart.checks import COUNT_CHECKS, Checks
 from journal.features.chart.context import Context
 from journal.features.chart.dry_actions import DryActions
-from journal.hooks.decision import Decision
-from journal.hooks.floor import Floor
+from journal.events.decision import Decision
+from journal.features.floor import Floor
 from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused

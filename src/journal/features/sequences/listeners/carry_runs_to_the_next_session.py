@@ -1,5 +1,5 @@
 from journal.events.agent.session_started import SessionStarted
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.sequences.running import Running
 
 

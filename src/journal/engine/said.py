@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass, field
 
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 
 
 @dataclass(frozen=True)

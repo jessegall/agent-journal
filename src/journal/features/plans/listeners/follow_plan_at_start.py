@@ -3,7 +3,7 @@ from dataclasses import replace
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.events.agent.session_started import SessionStarted
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState

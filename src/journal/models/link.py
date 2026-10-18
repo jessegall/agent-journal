@@ -9,6 +9,5 @@ class Link(Model):
     """A relation between any two rows. Models declare no relations themselves; every one is a row here, with a kind that says what it means."""
 
     source: Ref
-    target: Ref | None = None
-    """None for a link that marks its source alone, as a skill an agent owes."""
+    target: Ref
     kind: str

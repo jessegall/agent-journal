@@ -1,7 +1,7 @@
 import os
 from journal.engine.clock import Clock
 from journal.engine.menu_watcher import MenuWatcher
-from journal.engine.service_start import ServiceStart
+from journal.service_start import ServiceStart
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
@@ -10,10 +10,10 @@ from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
-from journal.features.bus import Bus
+from journal.events.bus import Bus
 from journal.features.registry import Registry
 from journal.features.switched import Switched
-from journal.hooks.deferred import Deferred
+from journal.engine.deferred import Deferred
 from journal.container import Container
 from journal.repositories.scope import Scope
 from journal.http.server import Server

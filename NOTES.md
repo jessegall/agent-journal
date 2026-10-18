@@ -962,3 +962,23 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
   running; a clean exit still ends it (message 3331).
 - The supervisor stays a very thin process host; a change to it needs the whole process started again, so changes to
   it are kept rare and every other behaviour lives in the journal (message 3423).
+
+## The package's layers, after the sin sweep (2026-10-19, task 598)
+
+Code commandments judges `src/journal` clean (657 files). Decided on the way:
+
+- The packages import one way: `models` and `events` at the bottom, then `db` and `repositories`, `engine`, `providers`,
+  `features`, `hooks`, `http` and `console`, with `app.py`, `runtime.py` and `service_start.py` at the top. The bus,
+  `Listener`, `AgentListener` and `Decision` live in `events/`; `Said`, `Nudge` and `Deferred` in `engine/`; `Option` in
+  `models/`; `Hook` and `HookKind` in `providers/`; `Floor` in `features/`. The runtime and the service start wire the
+  features, so they sit beside `app.py`, not in `engine/`: the engine imports nothing from `features/`, and asks
+  `FeaturesKnown` (its protocol, which `Registry` implements) for the states and whether a line is switched off.
+  CLAUDE.md still lists the runtime among what the engine holds; that line is the user's to change.
+- A skill an agent owes is a fact on its row, `skills_owed`, like `oriented` and `mark_owed` (migration 7 moves the old
+  one-ended links); a link always has both ends.
+- What crosses into the journal is typed where it enters: the viewer's act body (`ActionBody`), a drawing
+  (`DrawnNode`, `DrawnLine`), a walk entry (`WalkRecord`, `WalkStop`, `WalkFailure`), a plugin's manifest, settings,
+  answer and preview, a transcript row (`ClaudeRow`, `CodexRow`), the supervisor's announcement and replies, the MCP
+  check (`HealthReport`). What the page reads back is a `TypedDict` where it is a JSON shape.
+- code-commandments v5.19.3: an attribute that overrides a base class's `ClassVar` is a constant, so a feature's
+  nudges built from its `name` are in order.

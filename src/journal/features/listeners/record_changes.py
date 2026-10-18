@@ -2,7 +2,7 @@ from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.models.entry import Entry
 from journal.models.scoped import Scoped
 from journal.repositories.entries import Entries

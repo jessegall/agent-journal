@@ -3,9 +3,9 @@ from typing import ClassVar
 from journal.console.command import Command
 from journal.engine.agent_state import AgentState
 from journal.features.entry import Entry
-from journal.features.listener import Listener
-from journal.features.nudge import Nudge
-from journal.features.option import Option
+from journal.events.listener import Listener
+from journal.engine.nudge import Nudge
+from journal.models.option import Option
 from journal.features.seed import Seed
 from journal.features.service import Service
 from journal.features.skill import Skill

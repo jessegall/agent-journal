@@ -1,6 +1,6 @@
 from journal.features.chart.context import Context
 from journal.features.chart.fillers import Fillers
-from journal.hooks.decision import Decision
+from journal.events.decision import Decision
 
 
 class DryActions:

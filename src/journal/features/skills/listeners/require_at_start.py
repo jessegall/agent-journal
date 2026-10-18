@@ -1,9 +1,9 @@
 from journal.engine.machine import Machine
 from journal.events.agent.session_started import SessionStarted
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.skills.requiring import Requiring
-from journal.hooks.decision import Decision
+from journal.events.decision import Decision
 
 
 class RequireAtStart(AgentListener[SessionStarted]):

@@ -7,7 +7,7 @@ from journal.console.where import Where
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
 from journal.features.git.head_commit import HeadCommit
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.models.actor import Actor
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents

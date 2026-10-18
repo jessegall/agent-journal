@@ -1,7 +1,7 @@
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.states.ended import Ended
-from journal.features.registry import Registry
+from journal.engine.features_known import FeaturesKnown
 
 
 class StatesCatalogue:
@@ -9,9 +9,8 @@ class StatesCatalogue:
 
     OWN = (Ended,)
 
-    def __init__(self, registry: Registry) -> None:
-        self.registry = registry
-        self._states = {state.name: state for feature in registry.features for state in feature.states} | {state.name: state for state in self.OWN}
+    def __init__(self, features: FeaturesKnown) -> None:
+        self._states = {state.name: state for state in features.states()} | {state.name: state for state in self.OWN}
 
     def known(self, name: str) -> bool:
         return name in self._states

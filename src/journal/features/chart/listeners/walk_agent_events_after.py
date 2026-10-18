@@ -1,7 +1,7 @@
 from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.ticked import Ticked
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.chart.context import Context
 from journal.features.chart.walk import AFTER, Walk
 

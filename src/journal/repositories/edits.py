@@ -1,5 +1,5 @@
 from journal.db.connection import Connection
-from journal.features.bus import Bus
+from journal.events.bus import Bus
 from journal.models.actor import Actor
 from journal.models.edit import Edit
 from journal.repositories.scope import Scope

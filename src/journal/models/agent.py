@@ -19,5 +19,7 @@ class Agent(Scoped):
     """False from a session start until the agent has looked at what is in flight here; an agent no start made owes no look."""
     mark_owed: int = 0
     """The context mark the agent crossed and has not decided at yet; nought when none is owed."""
+    skills_owed: tuple[str, ...] = ()
+    """The skills the agent owes a read of, by name."""
     sequence_runs: tuple = ()
     """The sequences the agent is working through, the one in hand last; each a SequenceRun as a dict, kept beside the state so no move of the agent loses it."""

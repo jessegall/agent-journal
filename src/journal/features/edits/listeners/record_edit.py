@@ -4,7 +4,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.events.agent.tool_finished import ToolFinished
-from journal.features.agent_listener import AgentListener
+from journal.events.agent_listener import AgentListener
 from journal.features.edits.patch_rows import PatchRows
 from journal.models.actor import Actor
 from journal.models.edit import Edit

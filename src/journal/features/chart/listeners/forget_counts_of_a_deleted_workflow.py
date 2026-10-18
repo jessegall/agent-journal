@@ -1,5 +1,5 @@
 from journal.events.models.deleted import Deleted
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.models.actor import Actor
 from journal.models.chart import Chart
 from journal.repositories.counts import Counts

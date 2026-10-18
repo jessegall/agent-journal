@@ -1,5 +1,5 @@
 from journal.events.models.deleted import Deleted
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.features.sequences.running import Running
 from journal.supervisor_link import SupervisorLink
 

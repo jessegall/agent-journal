@@ -15,7 +15,7 @@ class Nudge:
     """Whether the agent's answer to this line is for the user and belongs in the chat, as an introduction or a reply does; otherwise a turn that only acknowledges the line is kept out of it."""
 
     def about(self, **values) -> "Said":
-        from journal.features.said import Said
+        from journal.engine.said import Said
         return Said(feature=self.feature, name=self.name, title=self.title, brief=self.brief, repeat_after=self.repeat_after, answered_in_chat=self.answered_in_chat, values=values)
 
     @property

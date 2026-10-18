@@ -1,5 +1,5 @@
 from journal.events.event import Event
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 
 
 class Bus:

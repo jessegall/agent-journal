@@ -12,7 +12,7 @@ from journal.secret_values import SecretValues
 
 from journal.db.connection import Connection
 from journal.db.schema import Schema
-from journal.features.bus import Bus
+from journal.events.bus import Bus
 from journal.models.all_models import AllModels
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope

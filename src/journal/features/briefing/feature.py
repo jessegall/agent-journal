@@ -4,7 +4,7 @@ from journal.features.briefing.listeners.keep_from_stopping_until_oriented impor
 from journal.features.briefing.listeners.owe_the_look_at_start import OweTheLookAtStart
 from journal.features.entry import Entry
 from journal.features.feature import Feature
-from journal.features.nudge import Nudge
+from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 
 

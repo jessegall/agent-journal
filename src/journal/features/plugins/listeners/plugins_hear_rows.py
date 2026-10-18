@@ -1,8 +1,8 @@
 from journal.db.connection import Connection
 from journal.events.models.model_event import ModelEvent
-from journal.features.listener import Listener
+from journal.events.listener import Listener
 from journal.features.plugins.plugin_hearing import PluginHearing
-from journal.hooks.deferred import Deferred
+from journal.engine.deferred import Deferred
 from journal.repositories.scope import Scope
 
 
