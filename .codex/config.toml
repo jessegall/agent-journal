@@ -1,4 +1,9 @@
-# Written by the journal: the project's MCP servers. Edit them on the viewer's Integrations page.
+# Written by the journal: the project's MCP servers. Edit them on the viewer's MCP page.
 
 [mcp_servers.linear]
 url = "https://mcp.linear.app/mcp"
+
+[mcp_servers.github]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-github"]
+env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_PERSONAL_ACCESS_TOKEN}" }

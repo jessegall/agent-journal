@@ -14,6 +14,7 @@ from journal.models.author import Author
 from journal.models.fact import Fact
 from journal.models.doc import Doc
 from journal.models.message import Message
+from journal.refused import Refused
 from journal.models.report import Report
 from journal.models.plan import Plan
 from journal.models.question import Question
@@ -194,6 +195,16 @@ class V3Actions:
         if key == "every":
             return self.checks.save(check.with_(every=int(value or 0)), by)
         return check
+
+    def sequence_set(self, n: int, body: dict, by):
+        """What starts a sequence: nothing but a hand, or a row of a kind being created, written <kind>.created."""
+        sequence = self.sequences.find(n)
+        value = str(body.get("value", ""))
+        if body.get("key") != "starts_on":
+            return sequence
+        if value and not value.endswith(".created"):
+            raise Refused(f"a sequence starts by hand or when a row is created, written <kind>.created; {value!r} is neither")
+        return self.sequences.save(sequence.with_(starts_on=value), by)
 
     def sequence_steps(self, n: int, body: dict, by):
         return self.sequences.save(self.sequences.find(n).with_(steps=tuple(step.get("title", "") for step in body.get("steps", []) if step.get("title"))), by)

@@ -1374,6 +1374,25 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
 
 
+def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app):
+    from journal.repositories.sequences import Sequences
+    port = app.server().port
+
+    def api(method, path, body=None):
+        request = HttpRequest(f"http://127.0.0.1:{port}/api/{path}", data=json.dumps(body).encode() if body is not None else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        try:
+            with urlopen(request, timeout=5) as reply:
+                return reply.status, json.loads(reply.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+    building = next(s for s in app.container.get(Sequences).all() if s.title == "Building a plan")
+    shown = next(r for r in api("GET", "sequence")[1]["rows"] if r["n"] == building.id)
+    assert shown["data"]["starts_on"] == "plan.created", "the page is told a new plan starts it, as the engine does"
+    assert api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": ""})[0] == 200 and app.container.get(Sequences).find(building.id).starts_on == ""
+    status, refused = api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": "plan.approved"})
+    assert status != 200 and "is neither" in json.dumps(refused), "only a created row starts a sequence"
+
+
 def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
