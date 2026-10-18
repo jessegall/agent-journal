@@ -16,10 +16,14 @@ function show(next, n = 0) {
 
 <template>
     <section class="secrets-page">
-        <header v-if="screen === 'list'" class="secrets-head">
-            <h1>Secrets</h1>
-            <p class="secrets-lead">A secret is a key or a login the agent may use without seeing it. Its values are kept in a file outside the project.</p>
-        </header>
+        <template v-if="screen === 'list'">
+            <header class="secrets-head">
+                <h1>Secrets</h1>
+                <p class="secrets-lead">
+                    A secret is a key or a login the agent may use without seeing it. Its values are kept in a file outside the project.
+                </p>
+            </header>
+        </template>
         <SwitchCase :value="screen">
             <template #list>
                 <SecretList @open="show('one', $event)" @new="show('new')" />

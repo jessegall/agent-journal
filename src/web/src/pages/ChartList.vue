@@ -50,38 +50,48 @@ function pick(node, port, key) {
 
 <template>
     <ol class="chart-list">
-        <li v-for="node in nodes" :key="node.id" class="chart-list-card">
-            <div class="chart-list-head">
-                <span class="chart-list-kind">{{ numberOf(node) }} · {{ KIND[node.kind] }}</span>
-                <span class="chart-list-grow" />
-                <Btn kind="ghost" small :disabled="locked || node.locked" @click="emit('remove', node)">Delete node</Btn>
-            </div>
-            <strong class="chart-list-title">{{ entryOf(node).title }}</strong>
-            <p v-if="node.locked" class="chart-list-about">{{ LOCK_WHY }}</p>
-            <p v-if="entryOf(node).about" class="chart-list-about">{{ described(node) }}</p>
-            <template v-if="entryOf(node).takes_text">
-                <textarea
-                    class="chart-list-text"
-                    :value="node.text"
-                    rows="2"
-                    :disabled="locked || node.locked"
-                    :placeholder="node.kind === 'check' ? 'A number, or a setting\'s name' : 'Message to the agent'"
-                    @input="emit('text', node, $event.target.value)"
-                />
-                <span v-if="node.kind === 'action'" class="chart-list-help">Insert values with {{ HELP }}</span>
-            </template>
-            <div v-for="port in ports(node)" :key="port" class="chart-list-port">
-                <span :class="['chart-list-dot', port, {on: targetOf(node, port)}]" />
-                <span class="chart-list-port-name">{{ PORT[port] }}</span>
-                <DropList
-                    :label="label(node, port)"
-                    :items="choices(node)"
-                    :picked="picked(node, port)"
-                    :menu-width="280"
-                    @pick="pick(node, port, $event.key)"
-                />
-            </div>
-        </li>
+        <template v-for="node in nodes" :key="node.id">
+            <li class="chart-list-card">
+                <div class="chart-list-head">
+                    <span class="chart-list-kind">{{ numberOf(node) }} · {{ KIND[node.kind] }}</span>
+                    <span class="chart-list-grow" />
+                    <Btn kind="ghost" small :disabled="locked || node.locked" @click="emit('remove', node)">Delete node</Btn>
+                </div>
+                <strong class="chart-list-title">{{ entryOf(node).title }}</strong>
+                <template v-if="node.locked">
+                    <p class="chart-list-about">{{ LOCK_WHY }}</p>
+                </template>
+                <template v-if="entryOf(node).about">
+                    <p class="chart-list-about">{{ described(node) }}</p>
+                </template>
+                <template v-if="entryOf(node).takes_text">
+                    <textarea
+                        class="chart-list-text"
+                        :value="node.text"
+                        rows="2"
+                        :disabled="locked || node.locked"
+                        :placeholder="node.kind === 'check' ? 'A number, or a setting\'s name' : 'Message to the agent'"
+                        @input="emit('text', node, $event.target.value)"
+                    />
+                    <template v-if="node.kind === 'action'">
+                        <span class="chart-list-help">Insert values with {{ HELP }}</span>
+                    </template>
+                </template>
+                <template v-for="port in ports(node)" :key="port">
+                    <div class="chart-list-port">
+                        <span :class="['chart-list-dot', port, {on: targetOf(node, port)}]" />
+                        <span class="chart-list-port-name">{{ PORT[port] }}</span>
+                        <DropList
+                            :label="label(node, port)"
+                            :items="choices(node)"
+                            :picked="picked(node, port)"
+                            :menu-width="280"
+                            @pick="pick(node, port, $event.key)"
+                        />
+                    </div>
+                </template>
+            </li>
+        </template>
     </ol>
 </template>
 

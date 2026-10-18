@@ -29,10 +29,12 @@ const emit = defineEmits(["skip", "end"]);
             <template v-if="history.length">
                 <span class="sequence-label sequence-history-label">Recent</span>
                 <ul class="sequence-history">
-                    <li v-for="change in history" :key="`${change.at}${change.text}`">
-                        <span class="sequence-when">{{ ago(change.at) }}</span>
-                        {{ change.text }}
-                    </li>
+                    <template v-for="change in history" :key="`${change.at}${change.text}`">
+                        <li>
+                            <span class="sequence-when">{{ ago(change.at) }}</span>
+                            {{ change.text }}
+                        </li>
+                    </template>
                 </ul>
             </template>
         </span>

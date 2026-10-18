@@ -99,85 +99,127 @@ onUnmounted(() => clearInterval(checking));
                     written into it.
                 </p>
             </div>
-            <span v-if="checkedAt" class="integrations-checked">States checked {{ ago(checkedAt) }}</span>
+            <template v-if="checkedAt">
+                <span class="integrations-checked">States checked {{ ago(checkedAt) }}</span>
+            </template>
             <Btn kind="ghost" :busy="busy === 'check'" :disabled="!servers.length" @click="check">Check all</Btn>
         </header>
 
-        <p v-if="notice" class="integrations-notice">{{ notice }}</p>
-        <p v-if="restartPending.length" class="integrations-pending">
-            <span class="integrations-spinner" />
-            The agent restarts as soon as it finishes what it is doing; the change applies then.
-        </p>
+        <template v-if="notice">
+            <p class="integrations-notice">{{ notice }}</p>
+        </template>
+        <template v-if="restartPending.length">
+            <p class="integrations-pending">
+                <span class="integrations-spinner" />
+                The agent restarts as soon as it finishes what it is doing; the change applies then.
+            </p>
+        </template>
 
-        <ul v-if="!loaded" class="integrations-list" aria-label="Loading the MCP servers">
-            <li v-for="n in 3" :key="n" class="integration">
-                <SkeletonLine
-                    :bars="[
-                        {width: '28%', height: 16},
-                        {width: '40%', height: 14},
-                    ]"
-                />
-                <SkeletonLine :bars="[{width: '62%', height: 12}]" />
-            </li>
-        </ul>
-        <p v-else-if="!servers.length" class="integrations-none">No MCP server yet. Install one of the suggestions below.</p>
+        <template v-if="!loaded">
+            <ul class="integrations-list" aria-label="Loading the MCP servers">
+                <template v-for="n in 3" :key="n">
+                    <li class="integration">
+                        <SkeletonLine
+                            :bars="[
+                                {width: '28%', height: 16},
+                                {width: '40%', height: 14},
+                            ]"
+                        />
+                        <SkeletonLine :bars="[{width: '62%', height: 12}]" />
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template v-else-if="!servers.length">
+            <p class="integrations-none">No MCP server yet. Install one of the suggestions below.</p>
+        </template>
 
-        <ul v-else class="integrations-list">
-            <li v-for="s in servers" :key="s.name" class="integration">
-                <div class="integration-row">
-                    <StateDot :state="DOTS[s.state] || 'draft'" />
-                    <strong>{{ s.title }}</strong>
-                    <span class="integration-state">{{ WORDS[s.state] || s.state }}</span>
-                    <span class="integration-grow" />
-                    <Btn kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
-                </div>
-                <p v-if="s.last_error" class="integration-error">{{ s.last_error }}</p>
-                <code class="integration-how">{{ s.url || s.command }}</code>
-                <div v-if="s.managed && s.auth === 'key'" class="integration-key">
-                    <TextInput
-                        v-model="keys[s.name]"
-                        type="password"
-                        :placeholder="s.has_key ? `${s.key_var} is set; paste a new one to replace it` : `Paste the ${s.key_var}`"
-                        @keydown.enter="saveKey(s)"
-                    />
-                    <Btn kind="primary" small :busy="busy === s.name" :disabled="!(keys[s.name] || '').trim()" @click="saveKey(s)">
-                        {{ s.has_key ? "Replace key" : "Save key" }}
-                    </Btn>
-                </div>
-                <div v-else-if="s.managed && s.auth === 'oauth' && signingIn === s.name" class="integration-key">
-                    <span class="integration-note integrations-pending">
-                        <span class="integrations-spinner" />
-                        Signing in: approve it in the browser window the agent opened.
-                    </span>
-                </div>
-                <div v-else-if="s.managed && s.auth === 'oauth'" class="integration-key">
-                    <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>
-                    <Btn kind="primary" small :busy="busy === s.name" :disabled="!agentOnline" @click="signIn(s)">Sign in</Btn>
-                </div>
-            </li>
-        </ul>
+        <template v-else>
+            <ul class="integrations-list">
+                <template v-for="s in servers" :key="s.name">
+                    <li class="integration">
+                        <div class="integration-row">
+                            <StateDot :state="DOTS[s.state] || 'draft'" />
+                            <strong>{{ s.title }}</strong>
+                            <span class="integration-state">{{ WORDS[s.state] || s.state }}</span>
+                            <span class="integration-grow" />
+                            <Btn kind="ghost" small :busy="busy === s.name" @click="remove(s)">Remove</Btn>
+                        </div>
+                        <template v-if="s.last_error">
+                            <p class="integration-error">{{ s.last_error }}</p>
+                        </template>
+                        <code class="integration-how">{{ s.url || s.command }}</code>
+                        <template v-if="s.managed && s.auth === 'key'">
+                            <div class="integration-key">
+                                <TextInput
+                                    v-model="keys[s.name]"
+                                    type="password"
+                                    :placeholder="
+                                        s.has_key ? `${s.key_var} is set; paste a new one to replace it` : `Paste the ${s.key_var}`
+                                    "
+                                    @keydown.enter="saveKey(s)"
+                                />
+                                <Btn
+                                    kind="primary"
+                                    small
+                                    :busy="busy === s.name"
+                                    :disabled="!(keys[s.name] || '').trim()"
+                                    @click="saveKey(s)"
+                                >
+                                    {{ s.has_key ? "Replace key" : "Save key" }}
+                                </Btn>
+                            </div>
+                        </template>
+                        <template v-else-if="s.managed && s.auth === 'oauth' && signingIn === s.name">
+                            <div class="integration-key">
+                                <span class="integration-note integrations-pending">
+                                    <span class="integrations-spinner" />
+                                    Signing in: approve it in the browser window the agent opened.
+                                </span>
+                            </div>
+                        </template>
+                        <template v-else-if="s.managed && s.auth === 'oauth'">
+                            <div class="integration-key">
+                                <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>
+                                <Btn kind="primary" small :busy="busy === s.name" :disabled="!agentOnline" @click="signIn(s)">Sign in</Btn>
+                            </div>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </template>
 
         <h2 class="integrations-sub">Suggested</h2>
-        <ul v-if="!loaded" class="integrations-grid" aria-label="Loading the suggestions">
-            <li v-for="n in 4" :key="n" class="suggestion">
-                <SkeletonLine :bars="[{width: '40%', height: 16}]" />
-                <SkeletonLine :bars="[{width: '85%', height: 12}]" />
-                <SkeletonLine :bars="[{width: '50%', height: 12}]" />
-            </li>
-        </ul>
-        <p v-else-if="!offered.length" class="integrations-none">Every suggested server is installed.</p>
-        <ul v-else class="integrations-grid">
-            <li v-for="s in offered" :key="s.name" class="suggestion">
-                <strong>{{ s.title }}</strong>
-                <p>{{ s.about }}</p>
-                <span class="integration-note">
-                    <template v-if="s.auth === 'key'">Needs a key ({{ s.key_var }}).</template>
-                    <template v-else-if="s.auth === 'oauth'">Signs in on its own.</template>
-                    <template v-else>Needs no key.</template>
-                </span>
-                <Btn kind="primary" small :busy="busy === s.name" @click="install(s)">Install</Btn>
-            </li>
-        </ul>
+        <template v-if="!loaded">
+            <ul class="integrations-grid" aria-label="Loading the suggestions">
+                <template v-for="n in 4" :key="n">
+                    <li class="suggestion">
+                        <SkeletonLine :bars="[{width: '40%', height: 16}]" />
+                        <SkeletonLine :bars="[{width: '85%', height: 12}]" />
+                        <SkeletonLine :bars="[{width: '50%', height: 12}]" />
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template v-else-if="!offered.length">
+            <p class="integrations-none">Every suggested server is installed.</p>
+        </template>
+        <template v-else>
+            <ul class="integrations-grid">
+                <template v-for="s in offered" :key="s.name">
+                    <li class="suggestion">
+                        <strong>{{ s.title }}</strong>
+                        <p>{{ s.about }}</p>
+                        <span class="integration-note">
+                            <template v-if="s.auth === 'key'">Needs a key ({{ s.key_var }}).</template>
+                            <template v-else-if="s.auth === 'oauth'">Signs in on its own.</template>
+                            <template v-else>Needs no key.</template>
+                        </span>
+                        <Btn kind="primary" small :busy="busy === s.name" @click="install(s)">Install</Btn>
+                    </li>
+                </template>
+            </ul>
+        </template>
     </section>
 </template>
 

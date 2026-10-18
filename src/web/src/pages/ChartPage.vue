@@ -736,10 +736,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
             <span class="chart-grow" />
             <template v-if="unlocked">
                 <span class="chart-warning">Saving changes this for every agent, from the next {{ eventTitle }}. {{ alsoWords }}</span>
-                <span v-if="conflict" class="chart-unsaved">Save replaces {{ conflict.revised_by }}'s version</span>
-                <span v-else-if="dirty" class="chart-unsaved">
-                    {{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}
-                </span>
+                <template v-if="conflict">
+                    <span class="chart-unsaved">Save replaces {{ conflict.revised_by }}'s version</span>
+                </template>
+                <template v-else-if="dirty">
+                    <span class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
+                </template>
                 <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
                 <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
                 <Btn
@@ -754,15 +756,21 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 </Btn>
                 <Btn kind="ghost" small @click="stopEditing">Done</Btn>
             </template>
-            <Btn v-else kind="ghost" small :disabled="!current" title="Change what the journal does here" @click="unlock">Edit</Btn>
+            <template v-else>
+                <Btn kind="ghost" small :disabled="!current" title="Change what the journal does here" @click="unlock">Edit</Btn>
+            </template>
         </PageBar>
-        <ul v-if="faults.length" class="chart-faults" role="alert">
-            <li v-for="(fault, i) in faults" :key="i">
-                <button type="button" class="chart-fault" :disabled="!fault.node" @click="selected = fault.node">
-                    {{ faultWords(fault) }}
-                </button>
-            </li>
-        </ul>
+        <template v-if="faults.length">
+            <ul class="chart-faults" role="alert">
+                <template v-for="(fault, i) in faults" :key="i">
+                    <li>
+                        <button type="button" class="chart-fault" :disabled="!fault.node" @click="selected = fault.node">
+                            {{ faultWords(fault) }}
+                        </button>
+                    </li>
+                </template>
+            </ul>
+        </template>
 
         <div :class="['chart-page', {folded: unlocked}]">
             <template v-if="unlocked">
@@ -775,23 +783,29 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
             <template v-else-if="!listsHidden">
                 <aside class="chart-col chart-events" aria-label="Event">
                     <h2 class="chart-col-head">Event</h2>
-                    <Skeleton v-if="!loaded" :count="8" label="Loading the events" />
-                    <button
-                        v-for="row in loaded ? eventRows : []"
-                        :key="row.key"
-                        type="button"
-                        :class="['chart-row', 'chart-event', {on: row.key === pickedEvent, none: !row.count}]"
-                        :aria-current="row.key === pickedEvent ? 'true' : null"
-                        @click="pick(row.key)"
-                    >
-                        <span
-                            :class="['chart-mark', row.failed ? 'failed' : row.off ? 'off' : row.count ? 'default' : 'none']"
-                            aria-hidden="true"
-                        />
-                        <span class="chart-row-name">{{ row.title }}</span>
-                        <span v-if="row.count" class="chart-row-words">{{ row.count }}</span>
-                        <span v-else-if="row.claudeOnly" class="chart-row-words">Claude only</span>
-                    </button>
+                    <template v-if="!loaded">
+                        <Skeleton :count="8" label="Loading the events" />
+                    </template>
+                    <template v-for="row in loaded ? eventRows : []" :key="row.key">
+                        <button
+                            type="button"
+                            :class="['chart-row', 'chart-event', {on: row.key === pickedEvent, none: !row.count}]"
+                            :aria-current="row.key === pickedEvent ? 'true' : null"
+                            @click="pick(row.key)"
+                        >
+                            <span
+                                :class="['chart-mark', row.failed ? 'failed' : row.off ? 'off' : row.count ? 'default' : 'none']"
+                                aria-hidden="true"
+                            />
+                            <span class="chart-row-name">{{ row.title }}</span>
+                            <template v-if="row.count">
+                                <span class="chart-row-words">{{ row.count }}</span>
+                            </template>
+                            <template v-else-if="row.claudeOnly">
+                                <span class="chart-row-words">Claude only</span>
+                            </template>
+                        </button>
+                    </template>
                     <DropList
                         class="chart-add-event"
                         label="Add an event"
@@ -813,44 +827,50 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                             @pick="stateFilter = $event.key"
                         />
                     </div>
-                    <Skeleton v-if="!loaded" :count="5" label="Loading the workflows" />
-                    <p v-else-if="!listRows.length" class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
-                    <button
-                        v-for="row in loaded ? listRows : []"
-                        :key="row.id"
-                        type="button"
-                        :class="[
-                            'chart-row',
-                            'chart-item',
-                            row.mark,
-                            {on: row.id === current, dragging: dragging === row.id, locked: row.locked},
-                        ]"
-                        :aria-current="row.id === current ? 'true' : null"
-                        :draggable="!row.locked && !stateFilter"
-                        :title="
-                            row.locked
-                                ? 'Locked: this one always runs here'
-                                : stateFilter
-                                  ? 'Pick Every state to drag the order'
-                                  : 'Drag to change the order'
-                        "
-                        @dragstart="dragging = row.id"
-                        @dragend="dragging = 0"
-                        @dragover.prevent
-                        @drop.prevent="dropOn(row)"
-                        @click="pick(pickedEvent, row.id)"
-                    >
-                        <span class="chart-item-place">{{ row.place }}</span>
-                        <Icon v-if="row.locked" name="lock" :size="11" class="chart-item-lock" :title="LOCK_WHY" />
-                        <span class="chart-item-words">
-                            <span class="chart-row-name">{{ row.title }}</span>
-                            <span class="chart-row-sub">
-                                {{ row.who }}
-                                <template v-if="row.words">· {{ row.words }}</template>
+                    <template v-if="!loaded">
+                        <Skeleton :count="5" label="Loading the workflows" />
+                    </template>
+                    <template v-else-if="!listRows.length">
+                        <p class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
+                    </template>
+                    <template v-for="row in loaded ? listRows : []" :key="row.id">
+                        <button
+                            type="button"
+                            :class="[
+                                'chart-row',
+                                'chart-item',
+                                row.mark,
+                                {on: row.id === current, dragging: dragging === row.id, locked: row.locked},
+                            ]"
+                            :aria-current="row.id === current ? 'true' : null"
+                            :draggable="!row.locked && !stateFilter"
+                            :title="
+                                row.locked
+                                    ? 'Locked: this one always runs here'
+                                    : stateFilter
+                                      ? 'Pick Every state to drag the order'
+                                      : 'Drag to change the order'
+                            "
+                            @dragstart="dragging = row.id"
+                            @dragend="dragging = 0"
+                            @dragover.prevent
+                            @drop.prevent="dropOn(row)"
+                            @click="pick(pickedEvent, row.id)"
+                        >
+                            <span class="chart-item-place">{{ row.place }}</span>
+                            <template v-if="row.locked">
+                                <Icon name="lock" :size="11" class="chart-item-lock" :title="LOCK_WHY" />
+                            </template>
+                            <span class="chart-item-words">
+                                <span class="chart-row-name">{{ row.title }}</span>
+                                <span class="chart-row-sub">
+                                    {{ row.who }}
+                                    <template v-if="row.words">· {{ row.words }}</template>
+                                </span>
                             </span>
-                        </span>
-                        <span :class="['chart-mark', row.mark]" aria-hidden="true" />
-                    </button>
+                            <span :class="['chart-mark', row.mark]" aria-hidden="true" />
+                        </button>
+                    </template>
                     <DropList
                         class="chart-add-event"
                         label="New workflow"
@@ -873,255 +893,305 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                             <Btn ref="addButton" kind="ghost" small :class="{on: adding && !adding.at}" @click.stop="openAdd(null)">
                                 Add step
                             </Btn>
-                            <Btn
-                                v-if="view === 'canvas'"
-                                kind="ghost"
-                                small
-                                :disabled="!nodes.length"
-                                title="Lay the cards out so none overlap"
-                                @click.stop="tidyUp"
-                            >
-                                Tidy up
-                            </Btn>
+                            <template v-if="view === 'canvas'">
+                                <Btn
+                                    kind="ghost"
+                                    small
+                                    :disabled="!nodes.length"
+                                    title="Lay the cards out so none overlap"
+                                    @click.stop="tidyUp"
+                                >
+                                    Tidy up
+                                </Btn>
+                            </template>
                         </template>
                         <template v-else>
                             <template v-if="currentWorkflow">
-                                <Btn
-                                    v-if="canTry"
-                                    kind="ghost"
-                                    small
-                                    :busy="busy === 'try'"
-                                    title="Walks the saved workflow against the agent's rows; nothing is sent"
-                                    @click="test"
-                                >
-                                    Test run
-                                </Btn>
-                                <Btn v-if="currentWorkflow.off" kind="ghost" small :busy="busy === 'on'" @click="turnOn">Turn on</Btn>
-                                <Btn
-                                    v-else
-                                    kind="ghost"
-                                    small
-                                    :disabled="Boolean(stayOn(currentWorkflow))"
-                                    :title="stayOn(currentWorkflow) || null"
-                                    @click="confirming = 'off'"
-                                >
-                                    Turn off
-                                </Btn>
-                                <Btn
-                                    v-if="shipped && (currentWorkflow.edited || currentWorkflow.off)"
-                                    kind="ghost"
-                                    small
-                                    @click="confirming = 'reset'"
-                                >
-                                    Reset to default
-                                </Btn>
-                                <Btn v-if="!shipped && !currentWorkflow.locked" kind="ghost" small @click="confirming = 'remove'">
-                                    Delete
-                                </Btn>
+                                <template v-if="canTry">
+                                    <Btn
+                                        kind="ghost"
+                                        small
+                                        :busy="busy === 'try'"
+                                        title="Walks the saved workflow against the agent's rows; nothing is sent"
+                                        @click="test"
+                                    >
+                                        Test run
+                                    </Btn>
+                                </template>
+                                <template v-if="currentWorkflow.off">
+                                    <Btn kind="ghost" small :busy="busy === 'on'" @click="turnOn">Turn on</Btn>
+                                </template>
+                                <template v-else>
+                                    <Btn
+                                        kind="ghost"
+                                        small
+                                        :disabled="Boolean(stayOn(currentWorkflow))"
+                                        :title="stayOn(currentWorkflow) || null"
+                                        @click="confirming = 'off'"
+                                    >
+                                        Turn off
+                                    </Btn>
+                                </template>
+                                <template v-if="shipped && (currentWorkflow.edited || currentWorkflow.off)">
+                                    <Btn kind="ghost" small @click="confirming = 'reset'">Reset to default</Btn>
+                                </template>
+                                <template v-if="!shipped && !currentWorkflow.locked">
+                                    <Btn kind="ghost" small @click="confirming = 'remove'">Delete</Btn>
+                                </template>
                             </template>
                         </template>
-                        <Btn v-if="!unlocked" kind="ghost" small @click="listsHidden = !listsHidden">
-                            {{ listsHidden ? "Show the lists" : "Hide the lists" }}
-                        </Btn>
+                        <template v-if="!unlocked">
+                            <Btn kind="ghost" small @click="listsHidden = !listsHidden">
+                                {{ listsHidden ? "Show the lists" : "Hide the lists" }}
+                            </Btn>
+                        </template>
                         <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                     </div>
                 </header>
-                <p v-if="notice" class="chart-notice">{{ notice }}</p>
-                <p v-if="failureWords" class="chart-notice">{{ failureWords }}</p>
-                <p v-if="currentWorkflow && currentWorkflow.behind" class="chart-trace">
-                    The shipped version of this workflow changed since you edited it. Reset to default takes the new one and drops your
-                    changes.
-                </p>
-                <p v-if="trialWords" class="chart-trace">{{ trialWords }}</p>
-                <p v-if="currentWorkflow && !unlocked && !entries[`trigger:${pickedEvent}`]?.tried" class="chart-trace">
-                    Test run cannot stand in for {{ eventTitle.toLowerCase() }}: no trial of this event is possible from the rows.
-                </p>
-                <p v-if="stayOn(currentWorkflow)" class="chart-trace">{{ stayOn(currentWorkflow) }}</p>
-                <p v-if="selectedLocked" class="chart-trace">{{ LOCK_WHY }} {{ LOCK_RULE }}</p>
-                <p v-else-if="walkWords" class="chart-trace">{{ walkWords }}</p>
+                <template v-if="notice">
+                    <p class="chart-notice">{{ notice }}</p>
+                </template>
+                <template v-if="failureWords">
+                    <p class="chart-notice">{{ failureWords }}</p>
+                </template>
+                <template v-if="currentWorkflow && currentWorkflow.behind">
+                    <p class="chart-trace">
+                        The shipped version of this workflow changed since you edited it. Reset to default takes the new one and drops your
+                        changes.
+                    </p>
+                </template>
+                <template v-if="trialWords">
+                    <p class="chart-trace">{{ trialWords }}</p>
+                </template>
+                <template v-if="currentWorkflow && !unlocked && !entries[`trigger:${pickedEvent}`]?.tried">
+                    <p class="chart-trace">
+                        Test run cannot stand in for {{ eventTitle.toLowerCase() }}: no trial of this event is possible from the rows.
+                    </p>
+                </template>
+                <template v-if="stayOn(currentWorkflow)">
+                    <p class="chart-trace">{{ stayOn(currentWorkflow) }}</p>
+                </template>
+                <template v-if="selectedLocked">
+                    <p class="chart-trace">{{ LOCK_WHY }} {{ LOCK_RULE }}</p>
+                </template>
+                <template v-else-if="walkWords">
+                    <p class="chart-trace">{{ walkWords }}</p>
+                </template>
 
-                <ChartList
-                    v-if="view === 'list'"
-                    :nodes="nodes"
-                    :lines="lines"
-                    :entry-of="entryOf"
-                    :locked="!unlocked"
-                    @text="setText"
-                    @line="connect"
-                    @unline="disconnect"
-                    @remove="remove"
-                />
-                <div v-else ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
-                    <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
-                        <svg class="chart-wires" overflow="visible">
-                            <g v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
-                                <path :class="['chart-wire', wire.line.port, {lit: litWire(wire.line)}]" :d="wire.d" />
-                                <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
-                                    <title>Click to delete this connection</title>
-                                </path>
-                            </g>
-                            <path v-if="drawing" class="chart-wire drafting" :d="drawingPath" />
-                        </svg>
-                        <div
-                            v-for="node in nodes"
-                            :key="node.id"
-                            :data-node="node.id"
-                            :class="[
-                                'chart-node',
-                                node.kind,
-                                {
-                                    selected: selected === node.id,
-                                    target: drawing && drawing.target && drawing.target.id === node.id,
-                                    lit: isLit(node.id),
-                                    end: node.key === 'stop_here',
-                                    locked: node.locked,
-                                },
-                            ]"
-                            :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${CARD.width}px`, height: `${heightOf(node)}px`}"
-                            @pointerdown="dragNode(node, $event)"
-                        >
-                            <div class="chart-node-kind">
-                                <span :class="['chart-glyph', node.kind]" />
-                                <span>{{ KIND[node.kind] }}</span>
-                                <Icon v-if="node.locked" name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
-                                <span v-if="stopsTheWalk(node)" class="chart-node-stops" :title="STOPS_WHY">no later workflows</span>
-                                <span
-                                    v-if="waitingWords(standing, node.id)"
-                                    class="chart-node-waiting"
-                                    title="An agent's last walk of this workflow stopped here"
-                                >
-                                    {{ waitingWords(standing, node.id) }}
-                                </span>
-                                <span v-if="node.kind === 'check' && countWords(standing, node)" class="chart-node-count">
-                                    {{ countWords(standing, node) }}
-                                </span>
-                                <span v-if="isLit(node.id) && readWords(litRead, node.id)" class="chart-node-read">
-                                    {{ readWords(litRead, node.id) }}
-                                </span>
-                                <button
-                                    v-if="selected === node.id && !node.locked"
-                                    type="button"
-                                    class="chart-node-x"
-                                    title="Delete node"
-                                    @pointerdown.stop
-                                    @click.stop="remove(node)"
-                                >
-                                    <Icon name="close" :size="12" />
-                                </button>
-                            </div>
-                            <div class="chart-node-title" :title="entryOf(node).about">
-                                {{ cardTitle(entryOf(node), node, limitOf(standing, node)) }}
-                            </div>
-                            <div v-if="limitNote(limitOf(standing, node))" class="chart-node-note">
-                                {{ limitNote(limitOf(standing, node)) }}
-                            </div>
-                            <template v-if="entryOf(node).takes_text">
-                                <button
-                                    v-if="node.kind === 'action'"
-                                    type="button"
-                                    :class="['chart-node-text', {empty: !node.text}]"
-                                    :disabled="node.locked"
-                                    :title="node.locked ? LOCK_WHY : 'Click to write the message'"
-                                    @pointerdown.stop
-                                    @click.stop="openMessage(node)"
-                                >
-                                    {{ node.text ? messageShown(node.text) : placeholderOf(node) }}
-                                </button>
-                                <input
-                                    v-else
-                                    class="chart-node-text"
-                                    :value="node.text"
-                                    :placeholder="placeholderOf(node)"
-                                    :disabled="node.locked"
-                                    :title="node.locked ? LOCK_WHY : null"
-                                    @pointerdown.stop
-                                    @focus="selected = node.id"
-                                    @input="setText(node, $event.target.value)"
-                                />
-                            </template>
-                            <span
-                                v-if="node.kind !== 'trigger'"
-                                :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]"
-                            />
-                            <template v-for="port in ports(node)" :key="port">
-                                <span
+                <template v-if="view === 'list'">
+                    <ChartList
+                        :nodes="nodes"
+                        :lines="lines"
+                        :entry-of="entryOf"
+                        :locked="!unlocked"
+                        @text="setText"
+                        @line="connect"
+                        @unline="disconnect"
+                        @remove="remove"
+                    />
+                </template>
+                <template v-else>
+                    <div ref="plane" class="chart-plane" @pointerdown="pan" @wheel="zoom">
+                        <div class="chart-camera" :style="{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}">
+                            <svg class="chart-wires" overflow="visible">
+                                <template v-for="wire in wires" :key="`${wire.line.from}-${wire.line.port}-${wire.line.to}`">
+                                    <g>
+                                        <path :class="['chart-wire', wire.line.port, {lit: litWire(wire.line)}]" :d="wire.d" />
+                                        <path class="chart-wire-grip" :d="wire.d" @click.stop="cut(wire.line)">
+                                            <title>Click to delete this connection</title>
+                                        </path>
+                                    </g>
+                                </template>
+                                <template v-if="drawing">
+                                    <path class="chart-wire drafting" :d="drawingPath" />
+                                </template>
+                            </svg>
+                            <template v-for="node in nodes" :key="node.id">
+                                <div
+                                    :data-node="node.id"
                                     :class="[
-                                        'chart-port',
-                                        port,
+                                        'chart-node',
+                                        node.kind,
                                         {
-                                            on: hooked(node, port),
-                                            hover: isHover(node, port) && !drawing,
-                                            dragging: isDrawingFrom(node, port),
+                                            selected: selected === node.id,
+                                            target: drawing && drawing.target && drawing.target.id === node.id,
+                                            lit: isLit(node.id),
+                                            end: node.key === 'stop_here',
+                                            locked: node.locked,
                                         },
                                     ]"
-                                    :style="{left: `${PORT_AT[port]}%`}"
-                                    :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
-                                    @pointerdown="dragLine(node, port, $event)"
-                                    @pointerenter="hovered = {node: node.id, port}"
-                                    @pointerleave="hovered = null"
+                                    :style="{
+                                        left: `${node.x}px`,
+                                        top: `${node.y}px`,
+                                        width: `${CARD.width}px`,
+                                        height: `${heightOf(node)}px`,
+                                    }"
+                                    @pointerdown="dragNode(node, $event)"
                                 >
-                                    <Icon v-if="isHover(node, port) && !drawing && !hooked(node, port)" name="plus" :size="11" />
-                                </span>
+                                    <div class="chart-node-kind">
+                                        <span :class="['chart-glyph', node.kind]" />
+                                        <span>{{ KIND[node.kind] }}</span>
+                                        <template v-if="node.locked">
+                                            <Icon name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
+                                        </template>
+                                        <template v-if="stopsTheWalk(node)">
+                                            <span class="chart-node-stops" :title="STOPS_WHY">no later workflows</span>
+                                        </template>
+                                        <template v-if="waitingWords(standing, node.id)">
+                                            <span class="chart-node-waiting" title="An agent's last walk of this workflow stopped here">
+                                                {{ waitingWords(standing, node.id) }}
+                                            </span>
+                                        </template>
+                                        <template v-if="node.kind === 'check' && countWords(standing, node)">
+                                            <span class="chart-node-count">
+                                                {{ countWords(standing, node) }}
+                                            </span>
+                                        </template>
+                                        <template v-if="isLit(node.id) && readWords(litRead, node.id)">
+                                            <span class="chart-node-read">
+                                                {{ readWords(litRead, node.id) }}
+                                            </span>
+                                        </template>
+                                        <template v-if="selected === node.id && !node.locked">
+                                            <button
+                                                type="button"
+                                                class="chart-node-x"
+                                                title="Delete node"
+                                                @pointerdown.stop
+                                                @click.stop="remove(node)"
+                                            >
+                                                <Icon name="close" :size="12" />
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <div class="chart-node-title" :title="entryOf(node).about">
+                                        {{ cardTitle(entryOf(node), node, limitOf(standing, node)) }}
+                                    </div>
+                                    <template v-if="limitNote(limitOf(standing, node))">
+                                        <div class="chart-node-note">
+                                            {{ limitNote(limitOf(standing, node)) }}
+                                        </div>
+                                    </template>
+                                    <template v-if="entryOf(node).takes_text">
+                                        <template v-if="node.kind === 'action'">
+                                            <button
+                                                type="button"
+                                                :class="['chart-node-text', {empty: !node.text}]"
+                                                :disabled="node.locked"
+                                                :title="node.locked ? LOCK_WHY : 'Click to write the message'"
+                                                @pointerdown.stop
+                                                @click.stop="openMessage(node)"
+                                            >
+                                                {{ node.text ? messageShown(node.text) : placeholderOf(node) }}
+                                            </button>
+                                        </template>
+                                        <template v-else>
+                                            <input
+                                                class="chart-node-text"
+                                                :value="node.text"
+                                                :placeholder="placeholderOf(node)"
+                                                :disabled="node.locked"
+                                                :title="node.locked ? LOCK_WHY : null"
+                                                @pointerdown.stop
+                                                @focus="selected = node.id"
+                                                @input="setText(node, $event.target.value)"
+                                            />
+                                        </template>
+                                    </template>
+                                    <template v-if="node.kind !== 'trigger'">
+                                        <span :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]" />
+                                    </template>
+                                    <template v-for="port in ports(node)" :key="port">
+                                        <span
+                                            :class="[
+                                                'chart-port',
+                                                port,
+                                                {
+                                                    on: hooked(node, port),
+                                                    hover: isHover(node, port) && !drawing,
+                                                    dragging: isDrawingFrom(node, port),
+                                                },
+                                            ]"
+                                            :style="{left: `${PORT_AT[port]}%`}"
+                                            :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
+                                            @pointerdown="dragLine(node, port, $event)"
+                                            @pointerenter="hovered = {node: node.id, port}"
+                                            @pointerleave="hovered = null"
+                                        >
+                                            <template v-if="isHover(node, port) && !drawing && !hooked(node, port)">
+                                                <Icon name="plus" :size="11" />
+                                            </template>
+                                        </span>
+                                        <template v-if="port !== 'then'">
+                                            <span
+                                                :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
+                                                :style="{left: `${PORT_AT[port]}%`}"
+                                            >
+                                                {{ portWord(node, port) }}
+                                            </span>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                            <template v-if="drawing && drawing.target">
                                 <span
-                                    v-if="port !== 'then'"
-                                    :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
-                                    :style="{left: `${PORT_AT[port]}%`}"
+                                    class="chart-tip"
+                                    :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}"
                                 >
-                                    {{ portWord(node, port) }}
+                                    Release to connect
+                                    <b>{{ WORD[drawing.port] }}</b>
+                                    to {{ entryOf(drawing.target).title }}
                                 </span>
                             </template>
                         </div>
-                        <span
-                            v-if="drawing && drawing.target"
-                            class="chart-tip"
-                            :style="{left: `${drawing.target.x + CARD.width + 14}px`, top: `${drawing.target.y + 10}px`}"
-                        >
-                            Release to connect
-                            <b>{{ WORD[drawing.port] }}</b>
-                            to {{ entryOf(drawing.target).title }}
-                        </span>
-                    </div>
-                    <span v-if="markStyle" ref="dropMark" class="chart-drop-mark" :style="markStyle" />
+                        <template v-if="markStyle">
+                            <span ref="dropMark" class="chart-drop-mark" :style="markStyle" />
+                        </template>
 
-                    <template v-if="loaded && !currentWorkflow">
-                        <EmptyState class="chart-empty" title="Nothing is set up here">
-                            No workflow answers {{ eventTitle.toLowerCase() }} yet.
-                            <br />
-                            <DropList
-                                class="chart-empty-add"
-                                label="New workflow"
-                                icon="plus"
-                                :items="newItems"
-                                :menu-width="260"
-                                @pick="start($event.key)"
-                            />
-                        </EmptyState>
-                    </template>
-                    <template v-else-if="loaded && !nodes.length">
-                        <EmptyState class="chart-empty" title="This workflow is turned off">
-                            Its steps are gone, so the journal does nothing here. {{ parentWords }}
-                            <br />
-                            <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
-                        </EmptyState>
-                    </template>
-                    <template v-else-if="loaded && !trigger">
-                        <EmptyState class="chart-empty" title="This workflow is turned off">
-                            Its {{ nodes.length }} {{ nodes.length === 1 ? "step is" : "steps are" }} kept. Turn on brings
-                            {{ nodes.length === 1 ? "it" : "them" }} back.
-                            {{ parentWords }}
-                            <br />
-                            <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
-                        </EmptyState>
-                    </template>
-                    <template v-else-if="loaded && nodes.length === 1 && trigger">
-                        <div class="chart-hint">
-                            <p class="chart-hint-title">Nothing follows the trigger yet</p>
-                            <p class="chart-hint-text">Add step puts a check or an action below the selected step and connects it.</p>
-                            <Btn v-if="unlocked" @click.stop="((selected = trigger.id), openAdd(null))">Add step</Btn>
-                            <Btn v-else @click.stop="unlock">Edit</Btn>
-                        </div>
-                    </template>
-                </div>
+                        <template v-if="loaded && !currentWorkflow">
+                            <EmptyState class="chart-empty" title="Nothing is set up here">
+                                No workflow answers {{ eventTitle.toLowerCase() }} yet.
+                                <br />
+                                <DropList
+                                    class="chart-empty-add"
+                                    label="New workflow"
+                                    icon="plus"
+                                    :items="newItems"
+                                    :menu-width="260"
+                                    @pick="start($event.key)"
+                                />
+                            </EmptyState>
+                        </template>
+                        <template v-else-if="loaded && !nodes.length">
+                            <EmptyState class="chart-empty" title="This workflow is turned off">
+                                Its steps are gone, so the journal does nothing here. {{ parentWords }}
+                                <br />
+                                <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
+                            </EmptyState>
+                        </template>
+                        <template v-else-if="loaded && !trigger">
+                            <EmptyState class="chart-empty" title="This workflow is turned off">
+                                Its {{ nodes.length }} {{ nodes.length === 1 ? "step is" : "steps are" }} kept. Turn on brings
+                                {{ nodes.length === 1 ? "it" : "them" }} back.
+                                {{ parentWords }}
+                                <br />
+                                <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
+                            </EmptyState>
+                        </template>
+                        <template v-else-if="loaded && nodes.length === 1 && trigger">
+                            <div class="chart-hint">
+                                <p class="chart-hint-title">Nothing follows the trigger yet</p>
+                                <p class="chart-hint-text">Add step puts a check or an action below the selected step and connects it.</p>
+                                <template v-if="unlocked">
+                                    <Btn @click.stop="((selected = trigger.id), openAdd(null))">Add step</Btn>
+                                </template>
+                                <template v-else>
+                                    <Btn @click.stop="unlock">Edit</Btn>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </div>
         </div>
 
@@ -1131,21 +1201,35 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 abstract="The last ten runs across every workflow, newest first. A run opens its workflow with the steps it took lit."
                 @close="runs = null"
             >
-                <p v-if="!runs.length" class="chart-runs-empty">No runs yet.</p>
-                <ul v-else class="chart-runs">
-                    <li v-for="run in runs" :key="run.at">
-                        <button type="button" class="chart-run" @click="openRun(run)">
-                            <span class="chart-run-when">
-                                {{ ago(run.at) }}
-                                <span v-if="run.failed" class="chart-row-bad">· Failed</span>
-                            </span>
-                            <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
-                            <span v-if="run.change" class="chart-run-said">{{ run.change }}</span>
-                            <span v-if="run.answer" class="chart-run-said">{{ run.answer }}</span>
-                            <span v-if="run.counts" class="chart-run-said">Counts: {{ run.counts }}</span>
-                        </button>
-                    </li>
-                </ul>
+                <template v-if="!runs.length">
+                    <p class="chart-runs-empty">No runs yet.</p>
+                </template>
+                <template v-else>
+                    <ul class="chart-runs">
+                        <template v-for="run in runs" :key="run.at">
+                            <li>
+                                <button type="button" class="chart-run" @click="openRun(run)">
+                                    <span class="chart-run-when">
+                                        {{ ago(run.at) }}
+                                        <template v-if="run.failed">
+                                            <span class="chart-row-bad">· Failed</span>
+                                        </template>
+                                    </span>
+                                    <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
+                                    <template v-if="run.change">
+                                        <span class="chart-run-said">{{ run.change }}</span>
+                                    </template>
+                                    <template v-if="run.answer">
+                                        <span class="chart-run-said">{{ run.answer }}</span>
+                                    </template>
+                                    <template v-if="run.counts">
+                                        <span class="chart-run-said">Counts: {{ run.counts }}</span>
+                                    </template>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
             </SidePanel>
         </template>
 
@@ -1169,9 +1253,11 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 />
                 <p class="chart-landing">{{ landingWords }}</p>
                 <MenuLabel>Triggers</MenuLabel>
-                <p v-if="trigger" class="chart-menu-about">
-                    A trigger for another event makes this workflow answer that event too, sharing its counts.
-                </p>
+                <template v-if="trigger">
+                    <p class="chart-menu-about">
+                        A trigger for another event makes this workflow answer that event too, sharing its counts.
+                    </p>
+                </template>
                 <template v-for="entry in offeredTriggers" :key="`trigger:${entry.key}`">
                     <MenuItem :description="described(entry)" @click="add(entry)">
                         <span class="chart-glyph trigger" />
@@ -1203,19 +1289,23 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 
         <template v-if="details">
             <SidePanel :title="cardTitle(entryOf(details), details)" :abstract="KIND[details.kind]" @close="selected = null">
-                <dl v-if="detailMain" class="chart-details">
-                    <dt>{{ detailMain.label }}</dt>
-                    <dd>{{ detailMain.words }}</dd>
-                </dl>
-                <details v-if="detailRest.length" class="chart-details-more">
-                    <summary>More about this step</summary>
+                <template v-if="detailMain">
                     <dl class="chart-details">
-                        <template v-for="line in detailRest" :key="line.label">
-                            <dt>{{ line.label }}</dt>
-                            <dd>{{ line.words }}</dd>
-                        </template>
+                        <dt>{{ detailMain.label }}</dt>
+                        <dd>{{ detailMain.words }}</dd>
                     </dl>
-                </details>
+                </template>
+                <template v-if="detailRest.length">
+                    <details class="chart-details-more">
+                        <summary>More about this step</summary>
+                        <dl class="chart-details">
+                            <template v-for="line in detailRest" :key="line.label">
+                                <dt>{{ line.label }}</dt>
+                                <dd>{{ line.words }}</dd>
+                            </template>
+                        </dl>
+                    </details>
+                </template>
             </SidePanel>
         </template>
         <template v-if="editing">

@@ -77,7 +77,11 @@ onUnmounted(() => sized && sized.disconnect());
 
 <template>
     <section :class="['diff-card', {half, gone, entering, flush, folded, capped}]">
-        <header class="diff-card-head" :title="gone ? null : folded ? 'Show the changes' : 'Collapse this card'" @click="!gone && emit('fold')">
+        <header
+            class="diff-card-head"
+            :title="gone ? null : folded ? 'Show the changes' : 'Collapse this card'"
+            @click="!gone && emit('fold')"
+        >
             <span class="diff-card-path" :title="`${path} · ${OPEN_KEY}-click to open it`" @click="openWithKey">
                 <span class="diff-card-dir">{{ dir }}</span>
                 <span class="diff-card-name">{{ name }}</span>
@@ -108,24 +112,26 @@ onUnmounted(() => sized && sized.disconnect());
                     <img :src="picture" :alt="name" loading="lazy" />
                 </a>
             </template>
-            <div v-else ref="grow" class="diff-card-grow">
-                <div ref="body" class="diff-card-diff">
-                    <div class="diff-card-rows">
-                        <template v-for="(row, i) in listed" :key="i">
-                            <div :class="['diff-row', row.kind, {fresh: fresh && row.edit === fresh}]">
-                                <span class="diff-row-num">{{ numberOf(row) }}</span>
-                                <span class="diff-row-sign">{{ SIGNS[row.kind] }}</span>
-                                <span class="diff-row-code">{{ textOf(row) }}</span>
-                            </div>
-                        </template>
-                        <template v-if="beyond > 0">
-                            <button type="button" class="diff-card-more" @click.stop="opened = true">
-                                {{ beyond }} more {{ beyond === 1 ? "line" : "lines" }}
-                            </button>
-                        </template>
+            <template v-else>
+                <div ref="grow" class="diff-card-grow">
+                    <div ref="body" class="diff-card-diff">
+                        <div class="diff-card-rows">
+                            <template v-for="(row, i) in listed" :key="i">
+                                <div :class="['diff-row', row.kind, {fresh: fresh && row.edit === fresh}]">
+                                    <span class="diff-row-num">{{ numberOf(row) }}</span>
+                                    <span class="diff-row-sign">{{ SIGNS[row.kind] }}</span>
+                                    <span class="diff-row-code">{{ textOf(row) }}</span>
+                                </div>
+                            </template>
+                            <template v-if="beyond > 0">
+                                <button type="button" class="diff-card-more" @click.stop="opened = true">
+                                    {{ beyond }} more {{ beyond === 1 ? "line" : "lines" }}
+                                </button>
+                            </template>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </template>
     </section>
 </template>

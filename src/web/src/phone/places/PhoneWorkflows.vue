@@ -413,11 +413,15 @@ const steps = computed(() => {
                 <Cell label="Workflow" :sub="currentWorkflow ? currentWorkflow.title : 'none yet'" icon="bolt" @pick="sheet = 'list'" />
             </CellGroup>
             <p class="wf-status">{{ statusWords }}</p>
-            <p v-if="stayOn(currentWorkflow)" class="wf-status">{{ stayOn(currentWorkflow) }}</p>
-            <p v-if="currentWorkflow && currentWorkflow.behind" class="wf-status">
-                The shipped version changed since you edited this. Reset to default takes the new one.
-            </p>
-            <p v-if="failed" class="wf-failed">{{ failed }}</p>
+            <template v-if="stayOn(currentWorkflow)">
+                <p class="wf-status">{{ stayOn(currentWorkflow) }}</p>
+            </template>
+            <template v-if="currentWorkflow && currentWorkflow.behind">
+                <p class="wf-status">The shipped version changed since you edited this. Reset to default takes the new one.</p>
+            </template>
+            <template v-if="failed">
+                <p class="wf-failed">{{ failed }}</p>
+            </template>
 
             <template v-if="!currentWorkflow">
                 <EmptyList
@@ -452,7 +456,9 @@ const steps = computed(() => {
                             still
                         />
                     </SwipeRow>
-                    <Cell v-if="node.locked && node.text" :label="node.text" sub="Locked: this text cannot be changed" still />
+                    <template v-if="node.locked && node.text">
+                        <Cell :label="node.text" sub="Locked: this text cannot be changed" still />
+                    </template>
                     <template v-if="entryOf(node).takes_text && !node.locked">
                         <div class="wf-text">
                             <Field

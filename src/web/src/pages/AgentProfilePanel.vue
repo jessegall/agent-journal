@@ -45,14 +45,16 @@ const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.mode
         @close="$emit('close')"
     >
         <div class="profile-panel">
-            <FormField
-                v-if="!profile.name"
-                label="Name"
-                for="profile-name"
-                help="Letters, digits, dashes; the agent dispatches it by this name."
-            >
-                <TextInput id="profile-name" :value="draft.name" placeholder="critic" @input="draft.name = $event.target.value.trim()" />
-            </FormField>
+            <template v-if="!profile.name">
+                <FormField label="Name" for="profile-name" help="Letters, digits, dashes; the agent dispatches it by this name.">
+                    <TextInput
+                        id="profile-name"
+                        :value="draft.name"
+                        placeholder="critic"
+                        @input="draft.name = $event.target.value.trim()"
+                    />
+                </FormField>
+            </template>
             <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to dispatch it.">
                 <TextArea id="profile-description" rows="3" :value="draft.description" @input="draft.description = $event.target.value" />
             </FormField>
@@ -81,7 +83,9 @@ const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.mode
             <FormField label="Instructions" for="profile-body" help="What it is told at every dispatch, after the brief.">
                 <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />
             </FormField>
-            <p v-if="profile.shipped" class="profile-panel-note">The journal ships this profile; setup puts it back as shipped.</p>
+            <template v-if="profile.shipped">
+                <p class="profile-panel-note">The journal ships this profile; setup puts it back as shipped.</p>
+            </template>
         </div>
         <template #foot>
             <span class="profile-panel-grow" />
