@@ -83,7 +83,9 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   [--note <text>] [--heading <text>]`: the label is the line's words, the badge a short state beside it, the heading
   the title it is listed under; one line per key, rewritten in place. `journal dashboard unset <key>` and
   `journal dashboard clear` take lines off. The program runs these itself, or names them in its answer's `commands`;
-  either way they are the plugin's, and nothing else may write its dashboard. No page of a plugin's runs in the viewer.
+  either way they are the plugin's, and nothing else may write its dashboard. No page of a plugin's runs in the viewer. A
+  plugin may instead write the whole dashboard as a document, `dashboards/<name>.json` in its data folder, in the shape
+  the viewer's dashboard draws (`{"title", "start", "pages": {id: {"title", "view"}}}`); when that file is there it is shown.
 - `requires`: each program it needs, as `{"<program>": {"check": "<shell line>", "hint": "<how to get it>"}}`; without
   a check the program is looked up on the path. A missing one refuses the install with its hint.
 - `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell

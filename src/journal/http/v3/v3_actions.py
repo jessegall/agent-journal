@@ -197,13 +197,18 @@ class V3Actions:
         return check
 
     def sequence_set(self, n: int, body: dict, by):
-        """What starts a sequence: nothing but a hand, or a row of a kind being created, written <kind>.created."""
+        """What starts a sequence: nothing but a hand, a row of a kind being created, written <kind>.created, or a trigger, written trigger:<n>, which then starts it and nothing else; a start by hand or by a row takes the sequence off its triggers."""
         sequence = self.sequences.find(n)
         value = str(body.get("value", ""))
         if body.get("key") != "starts_on":
             return sequence
+        if value.startswith("trigger:"):
+            self.triggers.save(self.triggers.find(int(value.removeprefix("trigger:"))).with_(action=TriggerAction.SEQUENCE, text=sequence.title), by)
+            return self.sequences.save(sequence.with_(starts_on=""), by)
         if value and not value.endswith(".created"):
-            raise Refused(f"a sequence starts by hand or when a row is created, written <kind>.created; {value!r} is neither")
+            raise Refused(f"a sequence starts by hand, when a row is created, written <kind>.created, or by a trigger, written trigger:<n>; {value!r} is none of them")
+        for trigger in self.triggers.starting(sequence.title):
+            self.triggers.delete(trigger, by)
         return self.sequences.save(sequence.with_(starts_on=value), by)
 
     def sequence_steps(self, n: int, body: dict, by):

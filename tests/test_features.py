@@ -423,6 +423,17 @@ def test_a_check_keeps_its_description_for_the_page(app):
     assert (row["title"], row["brief"], row["data"]["command"], row["data"]["last"]["at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", 0.0), "the description is the row's brief, and a check never run says so by its last run's time"
 
 
+def test_a_check_run_reaches_the_page_though_a_check_is_the_projects(app):
+    from journal.repositories.entries import Entries
+    console = app.console()
+    console.run(["check", "create", "Fails", "--command", "false"], USER)
+    before = app.container.get(Entries).last_id()
+    console.run(["check", "run", "1"], USER)
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/events?since={before}", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        events = json.loads(reply.read())
+    assert ("check", 1) in [(e["type"], e["n"]) for e in events], "the run's change is told to the page, so it shows the check failed"
+
+
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
@@ -1390,7 +1401,20 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app):
     assert shown["data"]["starts_on"] == "plan.created", "the page is told a new plan starts it, as the engine does"
     assert api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": ""})[0] == 200 and app.container.get(Sequences).find(building.id).starts_on == ""
     status, refused = api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": "plan.approved"})
-    assert status != 200 and "is neither" in json.dumps(refused), "only a created row starts a sequence"
+    assert status != 200 and "none of them" in json.dumps(refused), "only a created row or a trigger starts a sequence"
+    from journal.repositories.triggers import Triggers
+    triggers = app.container.get(Triggers)
+    update = next(s for s in app.container.get(Sequences).all() if s.title == "Writing an update")
+    started_by = triggers.starting("Writing an update")[0]
+    assert next(r for r in api("GET", "sequence")[1]["rows"] if r["n"] == update.id)["data"]["starts_on"] == f"trigger:{started_by.id}", "the page is told the update starts on its words"
+    assert "tldr" in started_by.words and "check agents.md" in triggers.starting("Checking the instruction files")[0].words, "version 3's worded sequences start on their words"
+    api("POST", f"sequence/{update.id}/set", {"key": "starts_on", "value": ""})
+    assert triggers.starting("Writing an update") == [], "by hand, the trigger no longer starts it"
+    from journal.models.trigger import Trigger
+    from journal.models.trigger_action import TriggerAction
+    plan_words = triggers.save(Trigger(words=("plan it",), action=TriggerAction.NUDGE, text="say something"), Actor.user(1))
+    api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": f"trigger:{plan_words.id}"})
+    assert [t.id for t in triggers.starting("Building a plan")] == [plan_words.id] and app.container.get(Sequences).find(building.id).starts_on == "", "a trigger picked on the page starts the sequence"
 
 
 def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkeypatch):
@@ -3251,7 +3275,7 @@ def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_
     console.run(["sequence", "follow"], AGENT)
     unsure = console.run(["sequence", "abandon", "--why", "not needed"], AGENT)
     assert unsure.code == 1 and "leaves undone: 1. bump; 2. tag; 3. push" in unsure.err and running.in_hand("s1", 1), "without --sure it names what it would skip and keeps the run"
-    assert "sequence 3 abandoned" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).out and running.in_hand("s1", 1) is None
+    assert f"sequence {made} abandoned" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).out and running.in_hand("s1", 1) is None
     card = app.container.get(Messages).in_()[-1]
     assert "abandoned at step 1: not needed" in card.text and "left undone: 1. bump" in card.data["detail"], "the user is told, with the reason and what was left undone"
     console.run(["plan", "create", "Side work", "--brief", "b"], AGENT)
@@ -4125,6 +4149,11 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
         document = json.loads(reply.read())
     view = document["pages"]["start"]
     assert view["title"] == "Echoes" and view["view"]["children"] == [{"type": "heading", "text": "Files", "level": 3}, {"type": "list", "items": [{"label": "a.py", "badge": "1 sin", "tone": "warn", "note": ""}, {"label": "b.py", "badge": "clean", "tone": "good", "note": ""}]}], "one line per key, rewritten in place"
+    written = app.config.home / "plugin-data" / "echo" / "dashboards" / "echoes.json"
+    written.parent.mkdir(parents=True, exist_ok=True)
+    written.write_text(json.dumps({"title": "Echoes", "start": "overview", "pages": {"overview": {"title": "Echoes", "view": {"type": "text", "body": "written by echo"}}}}))
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/plugin/{plugin.id}/dashboard/echoes", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        assert json.loads(reply.read())["start"] == "overview", "a document the plugin wrote in its data folder is its dashboard"
     console.run(["plugin", "remove", "echo", "--purge"], USER)
     from journal.repositories.dashboard_rows import DashboardRows
     assert app.container.get(DashboardRows).of("echo") == [], "purged with its plugin"

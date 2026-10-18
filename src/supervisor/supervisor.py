@@ -2,6 +2,7 @@ import os
 import select
 import signal
 import termios
+import time
 import tty
 
 from supervisor.band import Band
@@ -14,6 +15,9 @@ from supervisor.verbs import Verbs
 LONGEST = 65536
 FRONT = "agent"
 """The process in front: the agent, in the user's terminal."""
+REVIVE_WINDOW = 120.0
+REVIVE_LIMIT = 3
+"""Deaths of the agent within the window after which the supervisor ends with it instead of starting it again."""
 
 
 class Supervisor:
@@ -29,6 +33,8 @@ class Supervisor:
         self.verbs = Verbs(self)
         self._stopping = False
         self._code: int | None = None
+        self._deaths: list[float] = []
+        self._revivals = 0
 
     def run(self) -> int:
         saved = self._raw()
@@ -88,7 +94,7 @@ class Supervisor:
         if self.mirror:
             self.mirror.flush()
         if (code := self.terminal.exited()) is not None and not self._stopping:
-            self._code = code
+            self._gone(code)
 
     def terminal_named(self, name: str) -> Terminal:
         if name != FRONT:
@@ -126,7 +132,7 @@ class Supervisor:
 
     def described(self) -> list[dict]:
         """Every process this supervisor runs, the agent in front first."""
-        front = {"name": FRONT, "pid": self.terminal.pid, "running": self.terminal.pid > 0, "terminal": True, "front": True}
+        front = {"name": FRONT, "pid": self.terminal.pid, "running": self.terminal.pid > 0, "terminal": True, "front": True, "restarts": self._revivals}
         return [front, *self.services.described()]
 
     def stop(self) -> None:
@@ -136,10 +142,23 @@ class Supervisor:
             self.band.end()
 
     def _ended(self) -> None:
+        """The agent's terminal closed: its exit code decides what follows, waited for a moment, and an agent that has not ended by then is stopped and its own code taken."""
         if self._stopping:
             return
-        code = self.terminal.exited()
-        self._code = code if code is not None else 0
+        code = self.terminal.ended_within(3.0)
+        self._gone(self.terminal.stop(3.0) if code is None else code)
+
+    def _gone(self, code: int) -> None:
+        """The agent ended: a clean exit ends the supervisor; a death starts it again with the arguments that resume its conversation, the services left running, unless it keeps dying."""
+        now = time.time()
+        self._deaths = [at for at in self._deaths if now - at < REVIVE_WINDOW]
+        if code == 0 or len(self._deaths) >= REVIVE_LIMIT:
+            self._code = code
+            return
+        self._deaths.append(now)
+        self._revivals += 1
+        self.terminal.restart(self.terminal.resume)
+        self.fit()
 
     def _raw(self):
         if self.stdin is None:

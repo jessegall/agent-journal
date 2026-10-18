@@ -37,4 +37,4 @@ class PluginsController:
         return Response.json({"record": self.record.of(request.params["name"])})
 
     def dashboard(self, request: Request) -> Response:
-        return Response.json(self.dashboards.of(self.plugins.find(request.number("n"))))
+        return Response.json(self.dashboards.of(self.plugins.find(request.number("n"))).to_json())

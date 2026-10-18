@@ -952,3 +952,11 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 - Requiring a plugin's skill in a state waits for a workflow action that names a skill.
 - The console captures each command's output per context (CapturedStream) and runs commands side by side. A plugin's
   setup step or installed command may itself run `journal` commands while `journal plugin install` runs.
+
+## Rulings of 2026-10-18
+
+- Triggers are engine code. A user trigger never becomes a workflow of its own (message 3400); the Triggers page stays
+  as it is.
+- Documents are project-wide, never per environment (message 3311).
+- The supervisor starts an agent that dies again, resuming its session, and keeps the journal and the services
+  running; a clean exit still ends it (message 3331).

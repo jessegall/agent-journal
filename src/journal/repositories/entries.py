@@ -1,5 +1,6 @@
 from journal.models.entry import Entry
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.settings import PROJECT
 
 
 class Entries(ScopedRepository[Entry]):
@@ -63,6 +64,16 @@ class Entries(ScopedRepository[Entry]):
         rows = self.connection.all(
             f"SELECT * FROM {self.table} WHERE environment_id = ? AND kind = 'ToolStarting' AND json_extract(data, '$.tool_name') IN ('Agent', 'Task') ORDER BY id DESC LIMIT ?",
             (self.scope.id, last))
+        return [self._load(row) for row in rows]
+
+    def shown_since(self, id: int) -> list[Entry]:
+        """What the viewer is told of after an id: this environment's entries and the project's, such as a check run or a plugin changed."""
+        rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id IN (?, ?) AND id > ? ORDER BY id", (self.scope.id, PROJECT, id))
+        return [self._load(row) for row in rows]
+
+    def shown_recent(self, last: int) -> list[Entry]:
+        """The newest entries the viewer is told of, this environment's and the project's, newest first."""
+        rows = self.connection.all(f"SELECT * FROM {self.table} WHERE environment_id IN (?, ?) ORDER BY id DESC LIMIT ?", (self.scope.id, PROJECT, last))
         return [self._load(row) for row in rows]
 
     def since(self, id: int) -> list[Entry]:

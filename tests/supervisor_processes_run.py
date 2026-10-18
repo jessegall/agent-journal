@@ -216,3 +216,37 @@ def test_a_restart_replaces_only_the_resume_and_keeps_the_rest_of_the_command(tm
     seen = output(b"seen:")
     terminal.stop(1.0)
     assert b"seen:yes:second" in seen, "the restart put its own resume after the program and kept the rest of the command"
+
+
+def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervisor(tmp_path: Path):
+    marker = tmp_path / "died once"
+    terminal = Terminal(["sh", "-c", f'test -f "{marker}" || {{ touch "{marker}"; exit 1; }}; sleep 60'], str(tmp_path), {"PATH": os.environ["PATH"]})
+    inbox = Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"revive-{os.getpid()}.sock", tmp_path / "inboxes" / "main")
+    journal = Service("journal", ["sh", "-c", "sleep 60"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "server.log")
+    keys, _ = os.pipe()
+    supervisor = Supervisor(terminal, inbox, Services(journal), stdin=keys, stdout=os.open(os.devnull, os.O_WRONLY))
+    inbox.open()
+    journal.start()
+    terminal.start()
+    try:
+        until = time.time() + 5
+        while time.time() < until and not (marker.exists() and terminal.pid > 0 and supervisor._revivals):
+            supervisor.relay_once(0.05)
+        pump(supervisor, 0.5)
+        front = supervisor.described()[0]
+        assert supervisor._code is None and front["running"] and front["restarts"] == 1 and journal.alive(), "the agent died, was started again, and the journal kept running"
+    finally:
+        supervisor.stop()
+        supervisor.services.stop_all()
+        inbox.close()
+    quitting = Terminal(["sh", "-c", "exit 0"], str(tmp_path), {"PATH": os.environ["PATH"]})
+    quits = Supervisor(quitting, Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"quit-{os.getpid()}.sock", tmp_path / "inboxes" / "other"), Services(Service("journal", ["sh", "-c", "sleep 60"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "s.log")), stdin=keys, stdout=os.open(os.devnull, os.O_WRONLY))
+    quits.inbox.open()
+    quitting.start()
+    try:
+        until = time.time() + 5
+        while time.time() < until and quits._code is None:
+            quits.relay_once(0.05)
+        assert quits._code == 0, "a clean exit ends the supervisor"
+    finally:
+        quits.inbox.close()

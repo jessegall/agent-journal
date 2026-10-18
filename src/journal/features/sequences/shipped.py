@@ -19,8 +19,21 @@ WRITING_AN_UPDATE = Sequence(
         "Tell the user in one short line that the update is on the reports page, with the report's reference on a line of its own, like report 3; talk about the work, never about rows or commands",
     ),
 )
+CHECKING_THE_INSTRUCTION_FILES = Sequence(
+    title="Checking the instruction files",
+    steps=(
+        "Read AGENTS.md and CLAUDE.md at the project root and the journal's block at the head of each, narrowly: grep for the headings, then sed the sections you need; note every place where two of them tell an agent opposite things, with the file and line on both sides",
+        "Write what you found as a report from a markdown file with `journal report create \"Instruction files checked\" --file <path>`: each contradiction with both sides quoted, and the fix you propose for it; never edit the files",
+        "Tell the user in one short line how many contradictions you found, with the report's reference on a line of its own, like report 3; the user decides which fixes to make",
+    ),
+)
 UPDATE_WORDS = ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up", "what happened since",
                 "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken", "praat me bij", "bijpraten", "wat is er gebeurd")
 """The words that start Writing an update, as a shipped trigger."""
-SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE)
+CHECKING_WORDS = ("check the instruction files", "check agents.md", "check claude.md", "contradictions in the instructions",
+                  "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies")
+"""The words that start Checking the instruction files, as a shipped trigger."""
+WORDS = {WRITING_AN_UPDATE.title: UPDATE_WORDS, CHECKING_THE_INSTRUCTION_FILES.title: CHECKING_WORDS}
+"""The words each shipped sequence starts on, written as a trigger with the sequence and never again, so a project may take them off."""
+SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES)
 """The sequences the journal ships: written at boot when a sequence of that title is not there yet, and brought up to date while nobody but the journal has changed it, so a project may edit its copy."""

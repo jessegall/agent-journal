@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+import time
 from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
@@ -177,7 +178,7 @@ class Installing:
 
     @staticmethod
     def clear_stale_fetches(home: Path) -> None:
-        """A fetch folder older than any fetch may take was left by one that was killed: it goes."""
+        """A fetch folder in the plugins folder, older than any fetch may take, was left there by a killed fetch before fetches moved outside the project: it goes."""
         for stale in home.glob(".fetching-*"):
             if time.time() - stale.stat().st_mtime > 2 * FETCH_SECONDS:
                 shutil.rmtree(stale, ignore_errors=True)
@@ -202,14 +203,14 @@ class Installing:
 
     @contextmanager
     def staged(self, source: str, ref: str = "") -> Iterator[tuple[Path, str]]:
-        """A folder is read where it lies; a git address is fetched into a folder of its own at the commit asked for, or its newest, gone once read."""
+        """A folder is read where it lies; a git address is fetched at the commit asked for, or its newest, into a folder of the system's outside the project, so the agent's program never sees a whole repository appear in the tree it watches, and gone once read."""
         if Path(source).is_dir():
             yield Path(source).resolve(), ""
             return
         home = self.config.home / "plugins"
         home.mkdir(parents=True, exist_ok=True)
         self.clear_stale_fetches(home)
-        temporary = Path(tempfile.mkdtemp(prefix=".fetching-", dir=home))
+        temporary = Path(tempfile.mkdtemp(prefix="journal-plugin-fetch-"))
         try:
             shallow = [] if ref else ["--depth", "1"]
             fetched = subprocess.run(["git", "clone", "--quiet", *shallow, source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)

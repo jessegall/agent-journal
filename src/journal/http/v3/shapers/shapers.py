@@ -44,7 +44,7 @@ class Shapers:
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports), get(Links), "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
             WritingShaper(get(Docs), get(Links), "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),
-            SimpleShaper(get(Sequences), "sequence", lambda r: r.title, lambda r: "", lambda r: {"runs": {}, "system": False, "starts_on": r.starts_on}, sections=lambda r: [{"title": s, "body": ""} for s in r.steps]),
+            SimpleShaper(get(Sequences), "sequence", lambda r: r.title, lambda r: "", lambda r: {"runs": {}, "system": False, "starts_on": r.starts_on or next((f"trigger:{t.id}" for t in get(Triggers).starting(r.title)), "")}, sections=lambda r: [{"title": s, "body": ""} for s in r.steps]),
             SimpleShaper(get(Templates), "template", lambda r: r.title, lambda r: r.brief, lambda r: {"purpose": r.purpose, "applies_to": list(r.applies_to), "fields": []},
                          sections=lambda r: [{"title": part.split(":", 1)[0].strip(), "body": part.split(":", 1)[1].strip() if ":" in part else ""} for part in r.parts]),
             SimpleShaper(get(Triggers), "trigger", lambda r: ", ".join(r.words), lambda r: r.text, lambda r: {"words": list(r.words), "action": r.action.value}),

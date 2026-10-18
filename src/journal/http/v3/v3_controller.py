@@ -319,7 +319,7 @@ class V3Controller:
         """The events after an id; a viewer asking from an id ahead of the record remembers a journal that was reset, and is given the recent page so it falls back in step."""
         if since > self.entries.last_id():
             since = 0
-        entries = self.entries.since(since) if since else list(reversed(self.entries.of_kind_in(last or 100)))
+        entries = self.entries.shown_since(since) if since else list(reversed(self.entries.shown_recent(last or 100)))
         agent_n = {a.session: a.id for a in self.agents.in_()}
         found = [self.events.of(e, environment.name, agent_n.get(e.actor.id if e.actor else "", 0)) for e in entries]
         return [e for e in found if e]
@@ -339,7 +339,7 @@ class V3Controller:
             while True:
                 time.sleep(0.5)
                 quiet += 0.5
-                fresh = read(lambda: self.entries.since(last))
+                fresh = read(lambda: self.entries.shown_since(last))
                 for entry in fresh:
                     last = entry.id
                     event = self.events.of(entry, environment.name)
