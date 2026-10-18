@@ -1,4 +1,5 @@
 <script setup>
+import {useNamedAct} from "../composables/namedAct.js";
 import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
@@ -14,8 +15,16 @@ const suggested = ref([]);
 const restartPending = ref([]);
 const signingIn = ref("");
 const loaded = ref(false);
-const busy = ref("");
 const notice = ref("");
+const {busy, act: run} = useNamedAct(notice);
+
+// each act on a server is followed by the page read again
+function act(name, work) {
+    return run(name, async () => {
+        await work();
+        await reload();
+    });
+}
 const keys = ref({});
 
 const offered = computed(() => suggested.value.filter((s) => !s.installed));
@@ -46,18 +55,6 @@ watch(restartPending, (sessions) => {
 });
 onUnmounted(() => clearInterval(waiting));
 
-async function act(name, work) {
-    busy.value = name;
-    notice.value = "";
-    try {
-        await work();
-        await reload();
-    } catch (e) {
-        notice.value = e.message;
-    } finally {
-        busy.value = "";
-    }
-}
 const install = (s) => act(s.name, () => api.mcpInstall(s.name));
 const remove = (s) => act(s.name, () => api.mcpRemove(s.name));
 const check = () => act("check", () => api.mcpCheck());
@@ -86,6 +83,11 @@ watch(signingIn, (name) => {
     }, 10000);
 });
 onUnmounted(() => clearInterval(checking));
+
+// how a suggested server is let in, in words
+function letIn(suggestion) {
+    return {key: `Needs a key (${suggestion.key_var}).`, oauth: "Signs in on its own."}[suggestion.auth] || "Needs no key.";
+}
 </script>
 
 <template>
@@ -211,9 +213,7 @@ onUnmounted(() => clearInterval(checking));
                         <strong>{{ s.title }}</strong>
                         <p>{{ s.about }}</p>
                         <span class="integration-note">
-                            <template v-if="s.auth === 'key'">Needs a key ({{ s.key_var }}).</template>
-                            <template v-else-if="s.auth === 'oauth'">Signs in on its own.</template>
-                            <template v-else>Needs no key.</template>
+                            {{ letIn(s) }}
                         </span>
                         <Btn kind="primary" small :busy="busy === s.name" @click="install(s)">Install</Btn>
                     </li>

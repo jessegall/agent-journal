@@ -20,7 +20,7 @@ const countsLine = computed(() =>
 );
 const OPEN_SECTIONS = [
     {key: "working", title: "Working"},
-    {key: "waiting", title: "Waiting for work"},
+    {key: "waiting", title: "Idle"},
     {key: "closed", title: "Closed, can take more work"},
 ];
 const retiredOpen = ref(false);

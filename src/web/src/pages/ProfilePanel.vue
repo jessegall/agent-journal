@@ -195,7 +195,7 @@ function startFrom(row) {
             </FormField>
             <FormField
                 label="Introduction"
-                help="A short “who am I” in its own voice. It is shown on the profile's card and in the first-start dialog."
+                help="A short introduction in its own voice. It is shown on the profile's card and in the first-start dialog."
             >
                 <TextArea
                     :value="draft.introduction"

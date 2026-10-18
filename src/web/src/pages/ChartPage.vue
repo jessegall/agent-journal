@@ -1,4 +1,6 @@
 <script setup>
+import {useNamedAct} from "../composables/namedAct.js";
+import {useDrawingHistory} from "../composables/drawingHistory.js";
 import {ago} from "../format/time.js";
 import {overlapping, tidy} from "../domain/tidy.js";
 import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
@@ -54,9 +56,9 @@ const revision = ref(0);
 const catalogue = ref([]);
 const nodes = ref([]);
 const lines = ref([]);
-const past = ref([]);
-const busy = ref("");
+const {past, dirty, remember, undo, discard, forget} = useDrawingHistory(nodes, lines);
 const notice = ref("");
+const {busy, act} = useNamedAct(notice);
 const lastWalk = ref({});
 const lastFailure = ref({});
 const walkWords = computed(() => {
@@ -122,7 +124,6 @@ const entryOf = (node) => entries.value[`${node.kind}:${node.key}`] || {title: n
 const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.id), n])));
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
 const selectedNode = computed(() => (selected.value ? byId.value[String(selected.value)] || null : null));
-const dirty = computed(() => past.value.length > 0);
 const matches = (e) => !search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase());
 const offeredChecks = computed(() => catalogue.value.filter((e) => e.kind === "check" && matches(e)));
 const offeredActions = computed(() => catalogue.value.filter((e) => e.kind === "action" && matches(e)));
@@ -151,7 +152,7 @@ function take(got) {
     nodes.value = got.nodes.map((n) => ({...n}));
     lines.value = got.lines.map((l) => ({...l}));
     if (overlapping(nodes.value, sizing)) nodes.value = tidy(nodes.value, lines.value, sizing);
-    past.value = [];
+    forget();
     selected.value = null;
     loaded.value = true;
     unlocked.value = false;
@@ -198,28 +199,10 @@ onMounted(() => window.addEventListener("resize", fit));
 onUnmounted(() => window.removeEventListener("resize", fit));
 
 // every change goes on the draft, kept apart from what the server holds until Save; Undo steps the draft back
-function remember() {
-    past.value = [...past.value.slice(-39), {nodes: nodes.value.map((n) => ({...n})), lines: lines.value.map((l) => ({...l}))}];
-}
 
 function change(work) {
     remember();
     work();
-}
-
-function undo() {
-    const last = past.value.pop();
-    if (!last) return;
-    nodes.value = last.nodes;
-    lines.value = last.lines;
-}
-
-function discard() {
-    if (!past.value.length) return;
-    const first = past.value[0];
-    nodes.value = first.nodes;
-    lines.value = first.lines;
-    past.value = [];
 }
 
 function openAdd(from) {
@@ -346,6 +329,16 @@ function planePoint(event) {
     return {x: (event.clientX - box.left - camera.x) / camera.scale, y: (event.clientY - box.top - camera.y) / camera.scale};
 }
 
+// the pointer is followed until it is let go
+function followPointer(move) {
+    const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+}
+
 function pan(event) {
     if (event.target !== plane.value && !event.target.classList.contains("chart-wires") && !event.target.classList.contains("chart-camera"))
         return;
@@ -354,12 +347,7 @@ function pan(event) {
         camera.x = start.cx + e.clientX - start.x;
         camera.y = start.cy + e.clientY - start.y;
     };
-    const up = () => {
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", up);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    followPointer(move);
     selected.value = null;
 }
 
@@ -389,12 +377,7 @@ function dragNode(node, event) {
         node.x = Math.round(start.nx + (e.clientX - start.x) / camera.scale);
         node.y = Math.round(start.ny + (e.clientY - start.y) / camera.scale);
     };
-    const up = () => {
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", up);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    followPointer(move);
 }
 
 // a line dropped on a card connects to it; dropped on empty canvas, it offers a new node where it fell
@@ -446,17 +429,6 @@ const markStyle = computed(() =>
         : null
 );
 
-async function act(name, work) {
-    busy.value = name;
-    notice.value = "";
-    try {
-        await work();
-    } catch (e) {
-        notice.value = e.message;
-    } finally {
-        busy.value = "";
-    }
-}
 // a refused save keeps the draft: its faults go under the bar, each a click away from its step; a stale one names who saved first
 const save = () =>
     act("save", async () => {
@@ -614,6 +586,31 @@ const parentWords = computed(() => {
     return parent ? `${titleOf(parent)}'s runs here again.` : "";
 });
 
+// what each change asked from the workflow's menu says before it is done
+const confirmation = computed(
+    () =>
+        ({
+            reset: {
+                title: `Reset ‘${title.value}’ to default?`,
+                text: "Your changes to this workflow are lost. The other workflows stay as they are.",
+                label: "Reset to default",
+                run: reset,
+            },
+            off: {
+                title: `Turn ‘${title.value}’ off?`,
+                text: `The journal stops answering here; its steps are kept and Turn on brings them back. ${parentWords.value}`,
+                label: "Turn off",
+                run: turnOff,
+            },
+            remove: {
+                title: `Delete ‘${title.value}’?`,
+                text: `The workflow and its steps are deleted. ${parentWords.value || "Nothing is left here."}`,
+                label: "Delete workflow",
+                run: removeWorkflow,
+            },
+        })[confirming.value]
+);
+
 // picking an event opens the first workflow of its list; picking a row opens that workflow
 async function pick(event, id = 0) {
     if (dirty.value) {
@@ -637,7 +634,7 @@ function empty() {
     title.value = "";
     nodes.value = [];
     lines.value = [];
-    past.value = [];
+    forget();
     selected.value = null;
     unlocked.value = false;
     notice.value = "";
@@ -648,7 +645,7 @@ function empty() {
 }
 
 function leaveAnyway() {
-    past.value = [];
+    forget();
     const to = leaving.value;
     leaving.value = null;
     pick(to.event, to.id);
@@ -762,7 +759,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
         </PageBar>
         <template v-if="faults.length">
             <ul class="chart-faults" role="alert">
-                <template v-for="(fault, i) in faults" :key="i">
+                <template v-for="fault in faults" :key="`${fault.node}:${faultWords(fault)}`">
                     <li>
                         <button type="button" class="chart-fault" :disabled="!fault.node" @click="selected = fault.node">
                             {{ faultWords(fault) }}
@@ -912,7 +909,7 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                         kind="ghost"
                                         small
                                         :busy="busy === 'try'"
-                                        title="Walks the saved workflow against the agent's rows; nothing is sent"
+                                        title="Runs the saved workflow against what is on record now; nothing is sent to the agent"
                                         @click="test"
                                     >
                                         Test run
@@ -965,7 +962,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 </template>
                 <template v-if="currentWorkflow && !unlocked && !entries[`trigger:${pickedEvent}`]?.tried">
                     <p class="chart-trace">
-                        Test run cannot stand in for {{ eventTitle.toLowerCase() }}: no trial of this event is possible from the rows.
+                        Test run cannot stand in for {{ eventTitle.toLowerCase() }}: no test run of this event is possible from what is on
+                        record.
                     </p>
                 </template>
                 <template v-if="stayOn(currentWorkflow)">
@@ -1356,32 +1354,12 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 </template>
             </Dialog>
         </template>
-        <template v-if="confirming === 'reset'">
-            <Dialog :title="`Reset ‘${title}’ to default?`" fits @close="confirming = ''">
-                <p class="chart-dialog-text">Your changes to this workflow are lost. The other workflows stay as they are.</p>
+        <template v-if="confirmation">
+            <Dialog :title="confirmation.title" fits @close="confirming = ''">
+                <p class="chart-dialog-text">{{ confirmation.text }}</p>
                 <template #foot>
                     <Btn @click="confirming = ''">Cancel</Btn>
-                    <Btn kind="danger" :busy="busy === 'reset'" @click="reset">Reset to default</Btn>
-                </template>
-            </Dialog>
-        </template>
-        <template v-if="confirming === 'off'">
-            <Dialog :title="`Turn ‘${title}’ off?`" fits @close="confirming = ''">
-                <p class="chart-dialog-text">
-                    The journal stops answering here; its steps are kept and Turn on brings them back. {{ parentWords }}
-                </p>
-                <template #foot>
-                    <Btn @click="confirming = ''">Cancel</Btn>
-                    <Btn kind="danger" :busy="busy === 'off'" @click="turnOff">Turn off</Btn>
-                </template>
-            </Dialog>
-        </template>
-        <template v-if="confirming === 'remove'">
-            <Dialog :title="`Delete ‘${title}’?`" fits @close="confirming = ''">
-                <p class="chart-dialog-text">The workflow and its steps are deleted. {{ parentWords || "Nothing is left here." }}</p>
-                <template #foot>
-                    <Btn @click="confirming = ''">Cancel</Btn>
-                    <Btn kind="danger" :busy="busy === 'remove'" @click="removeWorkflow">Delete workflow</Btn>
+                    <Btn kind="danger" :busy="busy === confirming" @click="confirmation.run">{{ confirmation.label }}</Btn>
                 </template>
             </Dialog>
         </template>

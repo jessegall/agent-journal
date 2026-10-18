@@ -23,7 +23,7 @@ function open(line) {
 <template>
     <Dialog :title="`What ${plugin.title} did`" @close="emit('close')">
         <p class="record-lead">
-            Its holds and lines to the agent, the commands it ran, its faults and every row it wrote, newest first. What it wrote outside the
+            Its holds and lines to the agent, the commands it ran, its faults and everything it wrote in the journal, newest first. What it wrote outside the
             journal, straight to files or to the database, cannot be listed here.
         </p>
         <template v-if="record && !record.length">

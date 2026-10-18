@@ -3934,7 +3934,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
     folder = Path(__file__).parent / "plugins" / "echo"
     console = app.console()
     preview = console.run(["plugin", "install", str(folder)], USER)
-    assert preview.code == 0 and "echo 1.0.0" in preview.out and "runs for each event it hears, from its folder: run.py" in preview.out and "holds before the agent goes on: tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
+    assert preview.code == 0 and "echo 1.0.0" in preview.out and "runs for each event it hears, from its folder: run.py" in preview.out and "holds before the agent continues: tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
     assert app.container.get(Plugins).all() == [], "a preview installs nothing"
     assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
     plugin = app.container.get(Plugins).named("echo")
@@ -4002,7 +4002,8 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app, tmp_path):
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(app.config.home / "plugins" / "x" / "run.py"), "content": ""})
     assert status == 409 and "an installed plugin's files are the user's to change" in body["error"]
     installed = ".journal/" + "plugins"
-    for line, held in ((f"{installed}/x/bin/judge --changes > /tmp/judged.txt 2>&1", False), (f"echo hi > {installed}/x/run.py", True), (f"rm -rf {installed}/x", True), (f"cat {installed}/x/run.py | tee {installed}/x/copy.py", True)):
+    script = "python3 - <<'EOF'\nfrom pathlib import Path\nPath({}).write_text('x')\nEOF\n"
+    for line, held in ((f"{installed}/x/bin/judge --changes > /tmp/judged.txt 2>&1", False), (script.format("'notes.txt'") + f"{installed}/x/bin/judge info x", False), (script.format(f"'{installed}/x/run.py'"), True), (f"echo hi > {installed}/x/run.py", True), (f"rm -rf {installed}/x", True), (f"cat {installed}/x/run.py | tee {installed}/x/copy.py", True)):
         status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": line})
         assert (status == 409 and "plugin's files" in body.get("error", "")) == held, f"{line} held {status == 409}, should be {held}: running a plugin's program is no write to it"
     (folder / "run.py").write_text((folder / "run.py").read_text() + "\n# changed\n")
@@ -4136,7 +4137,7 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
             return error.code, json.loads(error.read())
     folder = str(Path(__file__).parent / "plugins" / "echo")
     status, preview = api("POST", "plugins/preview", {"source": folder})
-    assert status == 200 and preview["name"] == "echo" and {"kind": "holds", "label": "before the agent goes on", "command": "tool_starting, prompt_submitted"} in preview["rows"]
+    assert status == 200 and preview["name"] == "echo" and {"kind": "holds", "label": "before the agent continues", "command": "tool_starting, prompt_submitted"} in preview["rows"]
     status, made = api("POST", "plugin/install", {"source": folder, "yes": True})
     assert status == 200 and made["name"] == "echo"
     row = api("GET", "plugin")[1]["rows"][0]

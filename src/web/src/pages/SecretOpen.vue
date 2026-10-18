@@ -9,6 +9,7 @@ import Icon from "../kit/Icon.vue";
 import {rows} from "../sync/rows.js";
 import SecretFieldRow from "./SecretFieldRow.vue";
 import SecretForm from "./SecretForm.vue";
+import SecretLogin from "./SecretLogin.vue";
 
 const props = defineProps({n: {type: Number, required: true}});
 const emit = defineEmits(["back"]);
@@ -72,32 +73,14 @@ async function remove() {
                     <Btn @click="emit('back')">Cancel</Btn>
                 </div>
             </SecretForm>
-            <template v-if="one.data.kind === 'browser login'">
-                <div class="secrets-delete">
-                    <b>Log in to {{ one.data.url }}</b>
-                    <p>
-                        A browser opens on the computer the journal runs on. Log in, then close its window: the login is saved beside
-                        the values and the agent's browser starts with it.
-                        <template v-if="one.data.logging_in">The window is open now.</template>
-                        <template v-else-if="one.data.session">Logged in.</template>
-                    </p>
-                    <p>The agent's browser can read this login's cookies, and a page it opens can act on the site as you.</p>
-                    <Btn small :busy="busy" :disabled="Boolean(one.data.logging_in)" @click="logIn">Log in</Btn>
-                    <template v-if="!one.data.auto_login">
-                        <Btn small :busy="busy" :disabled="Boolean(one.data.logging_in)" @click="letLogIn">Let the agent log in on its own</Btn>
-                    </template>
-                    <template v-if="one.data.session">
-                        <Btn kind="danger" small :busy="busy" @click="forget">Forget this login</Btn>
-                    </template>
-                </div>
-            </template>
-            <template v-if="one.data.auto_login">
-                <div class="secrets-delete">
-                    <b>The agent logs in to this site on its own</b>
-                    <p>You let the agent log in to this site without asking you. Take that back, and the agent asks with a Log in button again.</p>
-                    <Btn small :busy="busy" @click="askEachTime">Make the agent ask each time</Btn>
-                </div>
-            </template>
+            <SecretLogin
+                :login="one.data"
+                :busy="busy"
+                @log-in="logIn"
+                @let-log-in="letLogIn"
+                @forget="forget"
+                @ask-each-time="askEachTime"
+            />
             <div class="secrets-delete">
                 <b>Delete this secret</b>
                 <p>The agent can no longer use it. The secret is kept for 30 days, then its values are removed from the file.</p>

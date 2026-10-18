@@ -3,6 +3,7 @@ import {computed} from "vue";
 import {useToggledSet} from "../composables/toggledSet.js";
 import Chip from "./Chip.vue";
 import PromiseList from "./PromiseList.vue";
+import SettingExplains from "./SettingExplains.vue";
 import SettingControl from "./SettingControl.vue";
 import SettingHowButton from "./SettingHowButton.vue";
 import Switch from "./Switch.vue";
@@ -70,8 +71,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
                             </template>
                         </SettingControl>
                         <template v-if="opened.has(item.key)">
-                            <TextDisplay class="setting-help inside" :text="item.explains" />
-                            <PromiseList :lines="item.promises" />
+                            <SettingExplains :item="item" />
                         </template>
                         <template v-for="row in item.rows" :key="row.key">
                             <SettingControl
@@ -99,8 +99,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
                             </template>
                         </SettingControl>
                         <template v-if="opened.has(item.key) && item.explains">
-                            <TextDisplay class="setting-help inside" :text="item.explains" />
-                            <PromiseList :lines="item.promises" />
+                            <SettingExplains :item="item" />
                         </template>
                     </template>
                 </template>
@@ -117,8 +116,7 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
                     </div>
                     <template v-for="item in group.always" :key="`${item.key}:explains`">
                         <template v-if="opened.has(item.key)">
-                            <TextDisplay class="setting-help inside" :text="item.explains" />
-                            <PromiseList :lines="item.promises" />
+                            <SettingExplains :item="item" />
                         </template>
                     </template>
                 </template>
@@ -181,10 +179,6 @@ const off = computed(() => Boolean(props.group.head && props.group.head.off));
     font-size: 12.5px;
     line-height: 1.55;
     white-space: pre-line;
-}
-
-.setting-help.inside {
-    margin: 0 14px 10px 34px;
 }
 
 .setting-card {

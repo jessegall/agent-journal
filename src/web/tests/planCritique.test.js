@@ -12,7 +12,7 @@ test("the critique dialog says when its templates did not load, and a retry show
     const {default: PlanCritique} = await import("../src/resource/PlanCritique.vue");
     const host = document.createElement("div");
     document.body.append(host);
-    createApp({render: () => h(PlanCritique, {plan: {n: 35, title: "Rows move into SQLite", ref: "plan:35"}})}).mount(host);
+    createApp({render: () => h(PlanCritique, {plan: {n: 35, title: "Tasks move into SQLite", ref: "plan:35"}})}).mount(host);
     await settle();
     const text = () => document.body.textContent;
     expect(text()).toContain("The templates did not load.");

@@ -43,7 +43,7 @@ const HELPER_STATES = {
     working: {key: "working", word: "Working", dot: "running"},
     needs: {key: "working", word: "Needs you", dot: "running"},
     reported: {key: "reported", word: "Report ready", dot: "done"},
-    idle: {key: "idle", word: "Waiting for work", dot: "idle"},
+    idle: {key: "idle", word: "Idle", dot: "idle"},
     stopped: {key: "idle", word: "Closed, can take more work", dot: "done"},
     ended: {key: "idle", word: "Closed, can take more work", dot: "done"},
     finished: {key: "idle", word: "Retired", dot: "done"},

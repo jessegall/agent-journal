@@ -64,7 +64,7 @@ function pick(event) {
 
         <template v-if="plugin.holds.length">
             <div class="pages">
-                <span class="label">Holds before the agent goes on</span>
+                <span class="label">Holds before the agent continues</span>
                 <template v-for="held in plugin.holds" :key="held">
                     <span class="held">{{ held }}</span>
                 </template>

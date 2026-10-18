@@ -1,21 +1,31 @@
 import {watch} from "vue";
 
-export function remembered(key, fallback) {
+// a value kept in the browser's storage, or the fallback when it holds none or cannot be read
+function readFrom(storage, key, fallback) {
     try {
-        const got = localStorage.getItem(key);
+        const got = storage().getItem(key);
         return got === null ? fallback : JSON.parse(got);
     } catch (e) {
         return fallback;
     }
 }
 
-export function remember(key, value) {
+export function remembered(key, fallback) {
+    return readFrom(() => localStorage, key, fallback);
+}
+
+// a value kept in the browser's storage; false when the storage cannot be written
+function writeTo(storage, key, value) {
     try {
-        localStorage.setItem(key, JSON.stringify(value));
+        storage().setItem(key, JSON.stringify(value));
         return true;
     } catch (e) {
         return false;
     }
+}
+
+export function remember(key, value) {
+    return writeTo(() => localStorage, key, value);
 }
 
 export function kept(key, source) {
@@ -23,19 +33,9 @@ export function kept(key, source) {
 }
 
 export function rememberedInTab(key, fallback) {
-    try {
-        const got = sessionStorage.getItem(key);
-        return got === null ? fallback : JSON.parse(got);
-    } catch (e) {
-        return fallback;
-    }
+    return readFrom(() => sessionStorage, key, fallback);
 }
 
 export function rememberInTab(key, value) {
-    try {
-        sessionStorage.setItem(key, JSON.stringify(value));
-        return true;
-    } catch (e) {
-        return false;
-    }
+    return writeTo(() => sessionStorage, key, value);
 }

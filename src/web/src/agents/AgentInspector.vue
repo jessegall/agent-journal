@@ -91,6 +91,8 @@ usePoll(
     }
 );
 const agent = computed(() => props.agent || found.value);
+const sequence = computed(() => (ownTranscript ? null : agent.value?.data?.sequence));
+const sequenceHistory = computed(() => agent.value?.data?.sequence_history || []);
 
 const works = ref([]);
 const worksLoaded = ref(false);
@@ -277,8 +279,8 @@ const openSkills = () => go("skills");
             :state-key="stateKey"
             :plan="plan"
             :resume="actionOf('resume')"
-            :sequence="ownTranscript ? null : agent?.data?.sequence"
-            :sequence-history="agent?.data?.sequence_history || []"
+            :sequence="sequence"
+            :sequence-history="sequenceHistory"
             :sequence-busy="sequenceBusy"
             @cancel="asking = ''"
             @confirmed="perform(question.key)"

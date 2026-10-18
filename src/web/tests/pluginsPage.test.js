@@ -52,7 +52,7 @@ describe("the Plugins page", () => {
             description: "",
             rows: [
                 {kind: "program", label: "for each event it hears", command: "/plugins/echo/run.py"},
-                {kind: "holds", label: "before the agent goes on", command: "tool_starting"},
+                {kind: "holds", label: "before the agent continues", command: "tool_starting"},
             ],
         };
         const page = await mounted(PluginInstallDialog, {previewed});

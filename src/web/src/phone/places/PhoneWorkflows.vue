@@ -1,4 +1,6 @@
 <script setup>
+import {useNamedAct} from "../../composables/namedAct.js";
+import {useDrawingHistory} from "../../composables/drawingHistory.js";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {LOCK_WHY, stayOn} from "../../domain/workflowLocks.js";
@@ -32,9 +34,9 @@ const title = ref("");
 const revision = ref(0);
 const nodes = ref([]);
 const lines = ref([]);
-const past = ref([]);
-const busy = ref("");
+const {past, dirty, remember, undo, discard, forget} = useDrawingHistory(nodes, lines);
 const failed = ref("");
+const {busy, act} = useNamedAct(failed);
 const loaded = ref(false);
 const sheet = ref("");
 const porting = ref(null);
@@ -45,7 +47,6 @@ const entries = computed(() => Object.fromEntries(catalogue.value.map((e) => [`$
 const entryOf = (node) => entries.value[`${node.kind}:${node.key}`] || {title: node.key, about: "", takes_text: false};
 const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.id), n])));
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
-const dirty = computed(() => past.value.length > 0);
 const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
 const stopsTheWalk = (node) => node.kind === "action" && ["stop_here", "block_stop"].includes(node.key);
 const numberOf = (node) => nodes.value.indexOf(node) + 1;
@@ -65,7 +66,7 @@ function take(got) {
     revision.value = got.revision;
     nodes.value = got.nodes.map((n) => ({...n}));
     lines.value = got.lines.map((l) => ({...l}));
-    past.value = [];
+    forget();
     trial.value = null;
 }
 
@@ -101,29 +102,14 @@ function empty() {
     title.value = "";
     nodes.value = [];
     lines.value = [];
-    past.value = [];
+    forget();
     trial.value = null;
 }
 
 // every change goes on the draft, kept apart from what the server holds until Save; Undo steps the draft back
 function change(work) {
-    past.value = [...past.value.slice(-39), {nodes: nodes.value.map((n) => ({...n})), lines: lines.value.map((l) => ({...l}))}];
+    remember();
     work();
-}
-
-function undo() {
-    const last = past.value.pop();
-    if (!last) return;
-    nodes.value = last.nodes;
-    lines.value = last.lines;
-}
-
-function discard() {
-    if (!past.value.length) return;
-    const first = past.value[0];
-    nodes.value = first.nodes;
-    lines.value = first.lines;
-    past.value = [];
 }
 
 function setText(node, text) {
@@ -166,17 +152,6 @@ function add(entry) {
     });
 }
 
-async function act(name, work) {
-    busy.value = name;
-    failed.value = "";
-    try {
-        await work();
-    } catch (error) {
-        failed.value = error.message;
-    } finally {
-        busy.value = "";
-    }
-}
 async function refreshList() {
     workflows.value = (await api.chart()).workflows;
 }
@@ -544,7 +519,7 @@ const steps = computed(() => {
         <ActionSheet
             title="Add an event"
             :about="eventTitle"
-            line="a row event to start a workflow at"
+            line="The change to the record that starts the workflow"
             :actions="addEventActions"
             @close="sheet = ''"
         />

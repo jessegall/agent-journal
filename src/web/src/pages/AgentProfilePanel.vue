@@ -14,7 +14,7 @@ const MODELS = [
     {key: "haiku", label: "haiku", note: "fast, for mechanical work"},
     {key: "sonnet", label: "sonnet", note: "careful work without invention"},
     {key: "opus", label: "opus", note: "judgement"},
-    {key: "", label: "the agent's model", note: "inherits whoever dispatches it"},
+    {key: "", label: "the agent's model", note: "the model of the agent that starts it"},
 ];
 
 const draft = ref({});
@@ -46,7 +46,7 @@ const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.mode
     >
         <div class="profile-panel">
             <template v-if="!profile.name">
-                <FormField label="Name" for="profile-name" help="Letters, digits, dashes; the agent dispatches it by this name.">
+                <FormField label="Name" for="profile-name" help="Letters, digits and dashes; the agent starts it by this name.">
                     <TextInput
                         id="profile-name"
                         :value="draft.name"
@@ -55,7 +55,7 @@ const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.mode
                     />
                 </FormField>
             </template>
-            <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to dispatch it.">
+            <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to start it.">
                 <TextArea id="profile-description" rows="3" :value="draft.description" @input="draft.description = $event.target.value" />
             </FormField>
             <FormField
@@ -80,7 +80,7 @@ const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.mode
                     @pick="draft.model = $event.key"
                 />
             </FormField>
-            <FormField label="Instructions" for="profile-body" help="What it is told at every dispatch, after the brief.">
+            <FormField label="Instructions" for="profile-body" help="What it is told each time it starts, after the brief.">
                 <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />
             </FormField>
             <template v-if="profile.shipped">

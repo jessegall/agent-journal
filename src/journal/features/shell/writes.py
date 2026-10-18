@@ -13,6 +13,10 @@ REDIRECT = re.compile(r"(?<![<>&\d])(?:\d?>>?)\s*(?!&|/dev/null)\S")
 """A redirection into a file, not into a descriptor or the void."""
 REDIRECTED = re.compile(r"(?<![<>&\d])\d?>>?\s*(?!&|/dev/null)([^\s;&|]+)")
 """The file a redirection writes to."""
+QUOTED_PATH = re.compile(r"['\"]([^'\"\s]*/[^'\"\s]*)['\"]")
+"""A path a script names in quotes."""
+HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?")
+"""A heredoc's start, with the word that ends it."""
 PREFIXES = {"sudo", "env", "nohup", "time", "nice", "command", "exec", "xargs"}
 
 
@@ -56,8 +60,19 @@ class Writes:
             return []
         name = words[0].rsplit("/", 1)[-1]
         named = [w for w in words[1:] if not w.startswith("-")] if name in COMMANDS and cls.part(text) else []
-        named += [w for w in text.split() if "/" in w] if name in INTERPRETERS and MARKERS.search(text) else []
+        script = cls.script_of(text)
+        named += QUOTED_PATH.findall(script) + [w for w in script.split() if "/" in w] if name in INTERPRETERS and MARKERS.search(script) else []
         return REDIRECTED.findall(plain) + named + [t for piped in plain.split("|")[1:] for t in cls.part_targets(piped)]
+
+    @staticmethod
+    def script_of(text: str) -> str:
+        """What an interpreter is handed to run: a heredoc's body up to its end line, else the whole line; commands after the heredoc are not the script."""
+        found = HEREDOC.search(text)
+        if not found:
+            return text
+        body = text.split("\n")[1:]
+        end = next((i for i, line in enumerate(body) if line.strip() == found.group(1)), len(body))
+        return "\n".join(body[:end])
 
     @staticmethod
     def unquoted(text: str) -> str:

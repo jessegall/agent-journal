@@ -67,7 +67,7 @@ async function save(profile, fields) {
         </div>
         <template v-if="!loaded || !rows.length">
             <EmptyState class="empty" :loading="!loaded" title="No profiles yet">
-                A profile is a subagent the agent can dispatch for one kind of job: its description says when, its tools what it may do, its
+                A profile is a subagent the agent can start for one kind of job: its description says when, its tools what it may do, its
                 model what it runs on. The journal writes a researcher, a planner and a debugger at setup.
             </EmptyState>
         </template>
