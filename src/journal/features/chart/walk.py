@@ -20,7 +20,11 @@ from journal.models.entry import Entry
 from journal.models.graph import Graph
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
-from journal.repositories.charts import NO, THEN, YES, Charts
+from journal.models.walk_failure import WalkFailure
+from journal.models.walk_record import WalkRecord
+from journal.models.walk_stop import WalkStop
+from journal.models.drawn_line import NO, THEN, YES
+from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 
 STEPS = 50
@@ -70,12 +74,15 @@ class Walk:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
                 queue = [c for c in self.in_part(self.workflows_for(ctx, key), ctx.event, part) if c not in walked and c.place > chart.place]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
-            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data={"session": ctx.session, "state": ctx.state.name if ctx.state else "", "started": started.name if started else "", "workflows": [c.id for c in walked], "trigger": key, "nodes": passed, "allowed": decision.allowed, "said": decision.context or decision.reason, "unanswered": list(ctx.unanswered), "moved_by": [n for n, _ in ctx.moves], "stopped_at": ctx.stopped[0] if ctx.stopped else 0, "moved_to": ctx.moves[-1][1].name if ctx.moves else "", "row": ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, "read": {str(k): v for k, v in ctx.read.items()}, "stops": self.stopped_with_counts(ctx)}), Actor.system())
+            record = WalkRecord(session=ctx.session, state=ctx.state.name if ctx.state else "", started=started.name if started else "", workflows=tuple(c.id for c in walked), trigger=key, nodes=tuple(passed), allowed=decision.allowed, said=decision.context or decision.reason,
+                                unanswered=tuple(ctx.unanswered), moved_by=tuple(n for n, _ in ctx.moves), stopped_at=ctx.stopped[0] if ctx.stopped else 0, moved_to=ctx.moves[-1][1].name if ctx.moves else "",
+                                row=ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, read={str(k): v for k, v in ctx.read.items()}, stops=self.stopped_with_counts(ctx))
+            self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data=record.to_data()), Actor.system())
         return decision
 
-    def stopped_with_counts(self, ctx: Context) -> list[dict]:
+    def stopped_with_counts(self, ctx: Context) -> tuple[WalkStop, ...]:
         """Each stop of this walk with its workflow's counts for the agent as the walk left them."""
-        return [{**stop, "counts": self.checks.counts_kept(ctx.session, stop["workflow"])} for stop in ctx.stops]
+        return tuple(replace(stop, counts=self.checks.counts_kept(ctx.session, stop.workflow)) for stop in ctx.stops)
 
     def in_part(self, charts: list[Chart], event: Event, part: str) -> list[Chart]:
         """The workflows of the part asked for: before the reply those that can change the answer, after it the quiet ones placed before any that ended the walk."""
@@ -124,7 +131,7 @@ class Walk:
                 port = NO if node.kind == NodeKind.CHECK else THEN
             following = after.get((node.id, port), [])
             if not following:
-                ctx.stops.append({"workflow": ctx.workflow, "node": node.id, "port": port})
+                ctx.stops.append(WalkStop(ctx.workflow, node.id, port))
             at += following
         if at and not ctx.stopped:
             self.failed(node, ctx, RuntimeError(f"the path ran past {STEPS} nodes and was cut off"))
@@ -196,7 +203,8 @@ class Walk:
 
     def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
         """A node that raised is recorded where the page can show it, and the path goes on past it, by no from a check and by then from an action, so one broken step never silences what follows. The ruling behind the catch is in NOTES, under the chart."""
-        self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data={"session": ctx.session, "workflow": self.charts.chart_of(node).id, "node": node.id, "key": node.key, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
+        failure = WalkFailure(session=ctx.session, workflow=self.charts.chart_of(node).id, node=node.id, key=node.key, fault=f"{type(fault).__name__}: {fault}")
+        self.entries.save(Entry(environment_id=ctx.environment_id, kind=FAILED, actor=Actor.system(), data=failure.to_data()), Actor.system())
 
     @staticmethod
     def trigger_key(event: Event) -> str:

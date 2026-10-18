@@ -13,7 +13,8 @@ from journal.models.node_kind import NodeKind
 from journal.models.title import LONGEST
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts
-from journal.repositories.charts import NO, THEN, YES, Charts
+from journal.models.drawn_line import NO, THEN, YES
+from journal.repositories.charts import Charts
 from journal.repositories.settings import Settings
 
 SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended")

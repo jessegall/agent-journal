@@ -2233,7 +2233,8 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
 def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
-    from journal.repositories.charts import NO, THEN, Charts
+    from journal.models.drawn_line import NO, THEN
+    from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
     from journal.repositories.environments import Environments
     hook(app, "SessionStart")
@@ -2562,7 +2563,8 @@ def test_a_workflow_naming_a_check_the_catalogue_no_longer_has_is_stopped_at_boo
     from journal.models.chart import Chart
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
-    from journal.repositories.charts import THEN, Charts
+    from journal.models.drawn_line import THEN
+    from journal.repositories.charts import Charts
     charts = app.container.get(Charts)
     own = charts.save(Chart(title="From before"), Actor.user(1))
     trigger = charts.add_node(own, Node(kind=NodeKind.TRIGGER, key="idle"), Actor.user(1))
@@ -4285,6 +4287,8 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
 def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at_boot_and_still_walks(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.features.chart.validation import Validation
+    from journal.models.drawn_line import DrawnLine
+    from journal.models.drawn_node import DrawnNode
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
@@ -4297,7 +4301,7 @@ def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at
     seed.run()
     node = charts.nodes.find(old.id)
     assert node.key == "wait_outside" and node.text == "the deploy" and "rewrote move_to" in charts.find(mine).title, "the older move is the outcome-named action now, its words kept"
-    assert app.container.get(Validation).faults(charts.find(mine), [{"id": n.id, "kind": n.kind, "key": n.key, "text": n.text} for n in charts.nodes_of(charts.find(mine))], [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in charts.lines_of(charts.find(mine))]) == [], "it still compiles"
+    assert app.container.get(Validation).faults(charts.find(mine), [DrawnNode.of(n) for n in charts.nodes_of(charts.find(mine))], [DrawnLine.of(l) for l in charts.lines_of(charts.find(mine))]) == [], "it still compiles"
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     state = app.container.get(Machine).current("s1")
     assert state.name == "expecting" and state.what == "the deploy", "and it still walks"

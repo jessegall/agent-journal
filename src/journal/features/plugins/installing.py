@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Iterator
 
 from journal.config import Config
+from journal.features.plugins.plugin_preview import PluginPreview
+from journal.features.plugins.preview_row import PreviewRow
 from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_changes import PluginChanges
@@ -38,11 +40,11 @@ class Installing:
         self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills, self.runner = config, reader, plugins, folders, hashes, settings, skills, runner
         self.services, self.dashboard = services, dashboard
 
-    def preview(self, source: str) -> dict:
+    def preview(self, source: str) -> PluginPreview:
         """What the plugin is and, row by row, everything it would run, hear and hold."""
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
-            return {"name": manifest.name, "title": manifest.title or manifest.name, "version": manifest.version, "description": manifest.description, "source": source, "commit": commit, "linked": Path(source).is_dir(), "rows": self.rows(manifest, folder)}
+            return PluginPreview(manifest.name, manifest.title or manifest.name, manifest.version, manifest.description, source, commit, self.rows(manifest, folder), linked=Path(source).is_dir())
 
     def install(self, source: str, environment: str, by: Actor) -> Plugin:
         """Its requirements checked, its setup steps run in order and its installed command asked, all before its row is made; a failure leaves nothing."""
@@ -102,15 +104,15 @@ class Installing:
         if not had_data:
             shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
-    def upgrade_preview(self, name: str, ref: str) -> dict:
+    def upgrade_preview(self, name: str, ref: str) -> PluginPreview:
         """The preview of the plugin at the commit asked for, with what changes in its manifest and its code."""
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.same(plugin, self.reader.read(folder))
             changes = PluginChanges.manifest(plugin.manifest, asdict(manifest))
             code = [] if plugin.linked else PluginChanges.code(self.folders.of(plugin), folder)
-            return {"name": name, "title": manifest.title or name, "version": manifest.version, "description": manifest.description, "source": plugin.source, "commit": commit, "was": plugin.commit_sha,
-                    "rows": self.rows(manifest, folder), "changes": changes, "code": code, "current": not changes and not code}
+            return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), was=plugin.commit_sha,
+                                 changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
     def upgrade(self, name: str, ref: str, environment: str, by: Actor) -> Plugin:
         """A fetched plugin's folder replaced and its setup run again, its old folder put back if the setup fails; a linked one read where it lies."""
@@ -224,15 +226,15 @@ class Installing:
             shutil.rmtree(temporary, ignore_errors=True)
 
     @staticmethod
-    def rows(manifest: PluginManifest, folder: Path) -> list[dict]:
-        """Each thing it runs, hears, holds, needs and brings, as a kind, a label and the command or names."""
-        rows = [{"kind": "needs", "label": program, "command": need.get("hint", "")} for program, need in manifest.requires.items()]
-        rows += [{"kind": "setup", "label": step.get("name", ""), "command": step["run"]} for step in manifest.setup]
-        rows += [{"kind": "installed", "label": "fills its settings", "command": manifest.installed}] if manifest.installed else []
-        rows.append({"kind": "program", "label": "for each event it hears, from its folder", "command": manifest.program})
-        rows += [{"kind": "service", "label": s.get("name", ""), "command": " ".join(s.get("command", ())) + (f"  (where {s['when']})" if s.get("when") else "")} for s in manifest.services]
-        rows.append({"kind": "hears", "label": "events", "command": ", ".join(manifest.hears) or "nothing"})
-        rows.append({"kind": "holds", "label": "before the agent goes on", "command": ", ".join(manifest.holds) or "nothing"})
-        rows += [{"kind": "skill", "label": name, "command": ""} for name in ManifestReader.skill_names(folder, manifest)]
-        return rows
+    def rows(manifest: PluginManifest, folder: Path) -> tuple[PreviewRow, ...]:
+        """Each thing it runs, hears, holds, needs and brings, as a kind, a label and the command or names; an installed command it has none of is no row."""
+        rows = (*(PreviewRow("needs", program, need.get("hint", "")) for program, need in manifest.requires.items()),
+                *(PreviewRow("setup", step.get("name", ""), step["run"]) for step in manifest.setup),
+                PreviewRow("installed", "fills its settings", manifest.installed),
+                PreviewRow("program", "for each event it hears, from its folder", manifest.program),
+                *(PreviewRow("service", s.get("name", ""), " ".join(s.get("command", ())) + (f"  (where {s['when']})" if s.get("when") else "")) for s in manifest.services),
+                PreviewRow("hears", "events", ", ".join(manifest.hears) or "nothing"),
+                PreviewRow("holds", "before the agent goes on", ", ".join(manifest.holds) or "nothing"),
+                *(PreviewRow("skill", name) for name in ManifestReader.skill_names(folder, manifest)))
+        return tuple(row for row in rows if row.kind != "installed" or row.command)
 

@@ -47,15 +47,6 @@ class Messages(Feature):
     WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_after=0)
     nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE)
 
-    @classmethod
-    def inbox(cls, unread: list) -> "Said":
-        """The shortest line that names what waits: one by its number, a few by theirs, more than three by their count and the command that prints them."""
-        if len(unread) == 1:
-            return cls.NEW.about(n=unread[0].id)
-        if len(unread) <= 3:
-            return cls.SOME.about(ns=", ".join(str(m.id) for m in unread))
-        return cls.MANY.about(count=len(unread))
-
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages
 
@@ -89,3 +80,12 @@ The user leaves messages; you answer them before anything else.
 - Everything you write for the user reaches the chat as a message; keep it about the work, never about the
   journal's own commands.
 """, keywords=('message', 'messages', 'inbox', 'reply'))
+
+    @classmethod
+    def inbox(cls, unread: list) -> "Said":
+        """The shortest line that names what waits: one by its number, a few by theirs, more than three by their count and the command that prints them."""
+        if len(unread) == 1:
+            return cls.NEW.about(n=unread[0].id)
+        if len(unread) <= 3:
+            return cls.SOME.about(ns=", ".join(str(m.id) for m in unread))
+        return cls.MANY.about(count=len(unread))

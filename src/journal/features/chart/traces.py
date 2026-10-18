@@ -1,8 +1,12 @@
+from dataclasses import replace
+
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.walk import FAILED, WALKED
 from journal.models.chart import Chart
-from journal.models.entry import Entry
 from journal.models.node_kind import NodeKind
+from journal.models.walk_failure import WalkFailure
+from journal.models.walk_record import WalkRecord
+from journal.models.walk_run import WalkRun
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 
@@ -16,36 +20,34 @@ class Traces:
     def __init__(self, entries: Entries, catalogue: Catalogue, charts: Charts) -> None:
         self.entries, self.catalogue, self.charts = entries, catalogue, charts
 
-    def last_walk(self, chart: Chart) -> dict:
+    def last_walk(self, chart: Chart) -> WalkRun | None:
         """The newest walk that passed through one of this workflow's own nodes, with those nodes alone: a walk that consulted it and found no trigger for the event is not its."""
         own = {node.id for node in self.charts.nodes_of(chart)}
-        walk = next((e for e in self.entries.of_kind(WALKED, LOOK_BACK) if own.intersection(e.data.get("nodes", []))), None)
+        walk = next((w for w in self.walks() if w.passed_any(own)), None)
         if walk is None:
-            return {}
-        return {"at": walk.created_at.timestamp(), "trigger": self.trigger_title(walk.data["trigger"]), "nodes": [n for n in walk.data["nodes"] if n in own], "said": walk.data.get("said", ""), "allowed": walk.data.get("allowed", True)}
+            return None
+        return WalkRun(replace(walk, nodes=tuple(n for n in walk.nodes if n in own)), self.trigger_title(walk.trigger), False)
 
-    def last_failure(self, chart: Chart) -> dict:
-        failed = next((e for e in self.entries.of_kind(FAILED, LOOK_BACK) if e.data.get("workflow") == chart.id), None)
-        if failed is None:
-            return {}
-        return {"at": failed.created_at.timestamp(), "node": failed.data["node"], "key": failed.data["key"], "fault": failed.data["fault"]}
+    def last_failure(self, chart: Chart) -> WalkFailure | None:
+        return next((f for f in self.failures() if f.workflow == chart.id), None)
 
-    def recent(self, limit: int) -> list[dict]:
-        """The newest walks across every workflow, newest first: when, which workflows, at which event, what was said, and whether a node failed in it."""
-        failures = self.entries.of_kind(FAILED, LOOK_BACK)
-        runs = []
-        for walk in self.entries.of_kind(WALKED, LOOK_BACK)[:limit]:
-            at = walk.created_at.timestamp()
-            runs.append({"at": at, "workflows": walk.data.get("workflows", []), "nodes": walk.data.get("nodes", []), "trigger": self.trigger_title(walk.data["trigger"]), "event": walk.data["trigger"], "state": walk.data.get("state", ""), "started": walk.data.get("started", walk.data.get("state", "")), "moved_to": walk.data.get("moved_to", ""), "moved_by": walk.data.get("moved_by", []), "row": walk.data.get("row", 0), "read": walk.data.get("read", {}), "stops": walk.data.get("stops", []), "allowed": walk.data.get("allowed", True), "said": walk.data.get("said", ""),
-                         "failed": any(abs(f.created_at.timestamp() - at) < 1 and f.data.get("workflow") in walk.data.get("workflows", []) for f in failures)})
-        return runs
+    def recent(self, limit: int) -> list[WalkRun]:
+        """The newest walks across every workflow, newest first, each with its event's title and whether a node failed in it."""
+        failures = self.failures()
+        return [WalkRun(walk, self.trigger_title(walk.trigger), any(abs(f.at - walk.at) < 1 and f.workflow in walk.workflows for f in failures)) for walk in self.walks()[:limit]]
+
+    def walks(self) -> list[WalkRecord]:
+        return [WalkRecord.from_entry(e) for e in self.entries.of_kind(WALKED, LOOK_BACK)]
+
+    def failures(self) -> list[WalkFailure]:
+        return [WalkFailure.from_entry(e) for e in self.entries.of_kind(FAILED, LOOK_BACK)]
 
     def node_runs(self, chart: Chart) -> dict[int, dict]:
         """How often each of the workflow's nodes ran and when last, from the walks on record."""
         own, runs = {node.id for node in self.charts.nodes_of(chart)}, {}
-        for walk in self.entries.of_kind(WALKED, LOOK_BACK):
-            for n in set(walk.data.get("nodes", [])) & own:
-                runs.setdefault(n, {"runs": 0, "last": walk.created_at.timestamp()})["runs"] += 1
+        for walk in self.walks():
+            for n in set(walk.nodes) & own:
+                runs.setdefault(n, {"runs": 0, "last": walk.at})["runs"] += 1
         return runs
 
     def trigger_title(self, key: str) -> str:

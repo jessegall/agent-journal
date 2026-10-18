@@ -4,8 +4,11 @@ from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.features.chart.fault import Fault
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
+from journal.models.drawn_line import NO, THEN, YES, DrawnLine
+from journal.models.drawn_node import DrawnNode
 from journal.models.node_kind import NodeKind
-from journal.repositories.charts import NO, THEN, YES, Charts
+from journal.models.workflow_at import WorkflowAt
+from journal.repositories.charts import Charts
 
 TEXT_LIMIT = 500
 """A node's text becomes a prompt or a typed line: this many characters at most."""
@@ -39,36 +42,36 @@ class Validation:
             return [Fault(f"no event is called {chart.event}: journal chart catalogue lists them")]
         return []
 
-    def order_faults(self, event: str, given: list[dict]) -> list[Fault]:
+    def order_faults(self, event: str, given: list[WorkflowAt]) -> list[Fault]:
         """An order names every workflow of the event once, each at the revision it was read, so a drag over a stale list is refused naming who saved first; the locked ones keep the head of the list."""
         standing = {c.id: c for c in self.charts.for_event(event)}
         if not standing:
             return [Fault(f"no workflow answers {event}")]
-        ids = [row["id"] for row in given]
+        ids = [row.id for row in given]
         if sorted(ids) != sorted(standing):
             return [Fault(f"the order names {', '.join(str(i) for i in ids) or 'nothing'}, but the workflows of {event} are {', '.join(str(i) for i in standing)}: name each once")]
         locked = [i for i, c in standing.items() if c.locked]
         if ids[:len(locked)] != locked:
             return [Fault(f"workflow {locked[0]} is locked, {LOCK_WHY}: the locked ones run first and keep the head of the list")]
-        stale = [standing[row["id"]] for row in given if row["revision"] != standing[row["id"]].revision]
+        stale = [standing[row.id] for row in given if row.revision != standing[row.id].revision]
         if stale:
             who = stale[0].updated_by.stamp if stale[0].updated_by else "someone"
             return [Fault(f"workflow {stale[0].id} changed since you read it: {who} saved it first, read the list again")]
         return []
 
-    def faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[Fault]:
-        by_id = {str(n.get("id", "")): n for n in nodes}
-        faults = [Fault(f"node {n.get('id')} names no catalogue entry: {n.get('kind')} {n.get('key')}", str(n.get("id", ""))) for n in nodes if not self.catalogue.has(n.get("kind", ""), n.get("key", ""))]
-        faults += [Fault(f"node {n.get('id')}'s text is longer than {TEXT_LIMIT} characters", str(n.get("id", ""))) for n in nodes if len(n.get("text", "")) > TEXT_LIMIT]
+    def faults(self, chart: Chart, nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
+        by_id = {n.id: n for n in nodes}
+        faults = [Fault(f"node {n.id} names no catalogue entry: {n.kind} {n.key}", n.id) for n in nodes if not self.catalogue.has(n.kind, n.key)]
+        faults += [Fault(f"node {n.id}'s text is longer than {TEXT_LIMIT} characters", n.id) for n in nodes if len(n.text) > TEXT_LIMIT]
         faults += self.trigger_faults(chart, nodes)
         faults += self.action_faults(nodes)
         faults += self.call_faults(chart, nodes)
         for line in lines:
-            source, target = by_id.get(str(line.get("from"))), by_id.get(str(line.get("to")))
+            source, target = by_id.get(line.source), by_id.get(line.target)
             if not source or not target:
-                faults.append(Fault(f"a line from {line.get('from')} to {line.get('to')} leads to or from no node"))
+                faults.append(Fault(f"a line from {line.source} to {line.target} leads to or from no node"))
                 continue
-            faults += self.port_fault(source, target, line.get("port", THEN))
+            faults += self.port_fault(source, target, line.port)
         faults += self.check_faults(nodes, lines)
         faults += self.port_twice_faults(lines)
         faults += self.hold_faults(nodes, lines)
@@ -76,29 +79,29 @@ class Validation:
         faults += self.lock_faults(chart, nodes, lines)
         return faults
 
-    def lock_faults(self, chart: Chart, nodes: list[dict], lines: list[dict]) -> list[Fault]:
+    def lock_faults(self, chart: Chart, nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
         """A locked node stays as it is: present, its law words unchanged, and reached from the trigger through shipped or locked nodes only, so nothing the user adds decides whether it runs."""
         standing = {n.id: n for n in self.charts.nodes_of(chart)}
         locked = {i: n for i, n in standing.items() if n.locked}
         if not locked:
             return []
-        given = {int(n["id"]): n for n in nodes if str(n.get("id", "")).isdigit()}
+        given = {n.number: n for n in nodes if n.number}
         faults = [Fault(f"step {i} is locked, {LOCK_WHY}: {LOCK_RULE}", str(i)) for i in locked if i not in given]
-        faults += [Fault(f"step {i} is locked, {LOCK_WHY}, and its words stay: {LOCK_RULE}", str(i)) for i, n in locked.items() if i in given and (given[i].get("key") != n.key or law_words(given[i].get("text", "")) != law_words(n.text))]
-        untouched = {str(i) for i, n in standing.items() if i in given and given[i].get("key") == n.key and given[i].get("text", "") == n.text and (n.shipped or n.locked)}
+        faults += [Fault(f"step {i} is locked, {LOCK_WHY}, and its words stay: {LOCK_RULE}", str(i)) for i, n in locked.items() if i in given and (given[i].key != n.key or law_words(given[i].text) != law_words(n.text))]
+        untouched = {str(i) for i, n in standing.items() if i in given and given[i].key == n.key and given[i].text == n.text and (n.shipped or n.locked)}
         before = self.before(lines, {str(i) for i in locked})
         for node in nodes:
-            own = str(node.get("id", ""))
-            if own in before and own not in untouched and (node.get("kind") == NodeKind.CHECK or node.get("key") == "stop_here"):
+            own = node.id
+            if own in before and own not in untouched and (node.kind == NodeKind.CHECK or node.key == "stop_here"):
                 faults.append(Fault(f"step {own} would come before a locked step, {LOCK_WHY}: {LOCK_RULE}", own))
         return faults
 
     @staticmethod
-    def before(lines: list[dict], targets: set) -> set:
+    def before(lines: list[DrawnLine], targets: set) -> set:
         """Every node a path runs through on its way to one of the targets."""
         leads_to = {}
         for line in lines:
-            leads_to.setdefault(str(line.get("to")), []).append(str(line.get("from")))
+            leads_to.setdefault(line.target, []).append(line.source)
         seen, queue = set(), list(targets)
         while queue:
             for source in leads_to.get(queue.pop(), []):
@@ -115,10 +118,10 @@ class Validation:
         """A Hold the tool at Pre tool use with neither Tool changes files? nor Journal command? on its path holds every tool, reads included; the engine still lets a journal command and the read of a skill's file through, the rest waits."""
         if chart.event != "tool_starting":
             return []
-        nodes = self.charts.nodes_of(chart)
-        lines = [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in self.charts.lines_of(chart)]
-        narrowing = {str(n.id) for n in nodes if n.kind == NodeKind.CHECK and n.key in ("tool_writes", "journal_command")}
-        return [f"Hold the tool at step {n.id} holds every tool, reads included: put Tool changes files? or Journal command? before it; a journal command and the read of a skill's file go through regardless" for n in nodes if n.kind == NodeKind.ACTION and n.key == "hold" and not narrowing & self.before(lines, {str(n.id)})]
+        nodes = [DrawnNode.of(n) for n in self.charts.nodes_of(chart)]
+        lines = [DrawnLine.of(l) for l in self.charts.lines_of(chart)]
+        narrowing = {n.id for n in nodes if n.kind == NodeKind.CHECK and n.key in ("tool_writes", "journal_command")}
+        return [f"Hold the tool at step {n.id} holds every tool, reads included: put Tool changes files? or Journal command? before it; a journal command and the read of a skill's file go through regardless" for n in nodes if n.kind == NodeKind.ACTION and n.key == "hold" and not narrowing & self.before(lines, {n.id})]
 
     def count_warnings(self, chart: Chart) -> list[str]:
         """A count check reading a count that nothing in this workflow starts or counts, which stays at nought."""
@@ -152,38 +155,38 @@ class Validation:
         return [f"nothing ends this wait: no workflow of {title} releases the agent or changes its state, so an agent {title.lower()} stays so until you release it by hand"]
 
     @staticmethod
-    def hold_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:
+    def hold_faults(nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
         """A hold that a trigger reaches through no check would hold the agent at every one of that event: the agent never gets past it."""
-        by_id = {str(n.get("id", "")): n for n in nodes}
+        by_id = {n.id: n for n in nodes}
         then = {}
         for line in lines:
-            if line.get("port", THEN) == THEN:
-                then.setdefault(str(line.get("from")), []).append(str(line.get("to")))
+            if line.port == THEN:
+                then.setdefault(line.source, []).append(line.target)
         faults = []
-        for trigger in (n for n in nodes if n.get("kind") == NodeKind.TRIGGER):
-            ahead, seen = list(then.get(str(trigger.get("id", "")), [])), set()
+        for trigger in (n for n in nodes if n.kind == NodeKind.TRIGGER):
+            ahead, seen = list(then.get(trigger.id, [])), set()
             while ahead:
                 node = by_id.get(ahead.pop())
-                if not node or str(node.get("id", "")) in seen or node.get("kind") != NodeKind.ACTION:
+                if not node or node.id in seen or node.kind != NodeKind.ACTION:
                     continue
-                seen.add(str(node.get("id", "")))
-                if node.get("key") in HOLDS:
-                    faults.append(Fault(f"action {node.get('id')} holds the agent at every {trigger.get('key')}: put a check before it, or the agent never gets past", str(node.get("id", ""))))
-                ahead += then.get(str(node.get("id", "")), [])
+                seen.add(node.id)
+                if node.key in HOLDS:
+                    faults.append(Fault(f"action {node.id} holds the agent at every {trigger.key}: put a check before it, or the agent never gets past", node.id))
+                ahead += then.get(node.id, [])
         return faults
 
-    def call_faults(self, chart: Chart, nodes: list[dict]) -> list[Fault]:
+    def call_faults(self, chart: Chart, nodes: list[DrawnNode]) -> list[Fault]:
         """A Run a workflow step names a workflow there is, and no workflow runs itself, directly or through another."""
         titles = {c.title: c for c in self.charts.all()}
         calls = {c.id: [n.text.strip() for n in self.charts.nodes_of(c) if n.key == "run_workflow"] for c in self.charts.all() if c.id != chart.id}
-        calls[chart.id] = [n.get("text", "").strip() for n in nodes if n.get("key") == "run_workflow"]
+        calls[chart.id] = [n.text.strip() for n in nodes if n.key == "run_workflow"]
         faults = []
-        for n in (n for n in nodes if n.get("key") == "run_workflow"):
-            title = n.get("text", "").strip()
+        for n in (n for n in nodes if n.key == "run_workflow"):
+            title = n.text.strip()
             if title not in titles:
-                faults.append(Fault(f"node {n.get('id')} runs no workflow: none is titled {title or 'nothing'}", str(n.get("id", ""))))
+                faults.append(Fault(f"node {n.id} runs no workflow: none is titled {title or 'nothing'}", n.id))
             elif self.reaches(titles[title].id, chart.id, calls, titles, set()):
-                faults.append(Fault(f"node {n.get('id')} runs {title}, which runs this workflow again: a workflow cannot run itself, directly or through another", str(n.get("id", ""))))
+                faults.append(Fault(f"node {n.id} runs {title}, which runs this workflow again: a workflow cannot run itself, directly or through another", n.id))
         return faults
 
     def reaches(self, start: int, target: int, calls: dict, titles: dict, seen: set) -> bool:
@@ -194,60 +197,60 @@ class Validation:
         seen.add(start)
         return any(self.reaches(titles[t].id, target, calls, titles, seen) for t in calls.get(start, []) if t in titles)
 
-    def action_faults(self, nodes: list[dict]) -> list[Fault]:
+    def action_faults(self, nodes: list[DrawnNode]) -> list[Fault]:
         """A wait names what for and being stuck why; a count node names its count, and a count check the number after it."""
         faults = []
-        for n in (n for n in nodes if n.get("key") in (*COUNT_ACTIONS, *COUNT_CHECKS)):
-            words = n.get("text", "").split()
+        for n in (n for n in nodes if n.key in (*COUNT_ACTIONS, *COUNT_CHECKS)):
+            words = n.text.split()
             if not words:
-                faults.append(Fault(f"node {n.get('id')} names no count: its text is the count's name", str(n.get("id", ""))))
-            elif n.get("key") in COUNT_ACTIONS and words[0] in READINGS:
-                faults.append(Fault(f"{words[0]} is a reading of the journal's record, not a count a workflow keeps: name the count something else", str(n.get("id", ""))))
-            elif n.get("kind") == NodeKind.CHECK and len(words) < 2:
-                faults.append(Fault(f"node {n.get('id')} names no number: its text is the count's name, then N or a setting's name", str(n.get("id", ""))))
-        for n in (n for n in nodes if n.get("kind") == NodeKind.ACTION and n.get("key") in ("wait_outside", "mark_stuck") and not n.get("text", "").strip()):
-            faults.append(Fault(f"node {n.get('id')} says nothing: {'what the agent waits for' if n.get('key') == 'wait_outside' else 'why the agent is stuck'} goes in its text", str(n.get("id", ""))))
+                faults.append(Fault(f"node {n.id} names no count: its text is the count's name", n.id))
+            elif n.key in COUNT_ACTIONS and words[0] in READINGS:
+                faults.append(Fault(f"{words[0]} is a reading of the journal's record, not a count a workflow keeps: name the count something else", n.id))
+            elif n.kind == NodeKind.CHECK and len(words) < 2:
+                faults.append(Fault(f"node {n.id} names no number: its text is the count's name, then N or a setting's name", n.id))
+        for n in (n for n in nodes if n.kind == NodeKind.ACTION and n.key in ("wait_outside", "mark_stuck") and not n.text.strip()):
+            faults.append(Fault(f"node {n.id} says nothing: {'what the agent waits for' if n.key == 'wait_outside' else 'why the agent is stuck'} goes in its text", n.id))
         return faults
 
     @staticmethod
-    def trigger_faults(chart: Chart, nodes: list[dict]) -> list[Fault]:
+    def trigger_faults(chart: Chart, nodes: list[DrawnNode]) -> list[Fault]:
         """A workflow holds one trigger per event it answers, its first event's among them."""
-        keys = [n.get("key", "") for n in nodes if n.get("kind") == NodeKind.TRIGGER]
+        keys = [n.key for n in nodes if n.kind == NodeKind.TRIGGER]
         twice = sorted({k for k in keys if keys.count(k) > 1})
         faults = [Fault(f"a workflow holds one trigger of each event; this one has {keys.count(k)} of {k}") for k in twice]
         return faults + ([Fault(f"this workflow is for {chart.event} but holds no trigger of it")] if keys and chart.event not in keys else [])
 
     @staticmethod
-    def port_fault(source: dict, target: dict, port: str) -> list[Fault]:
-        if target.get("kind") == NodeKind.TRIGGER:
-            return [Fault(f"a line leads into trigger {target.get('id')}: a trigger only starts a path", str(target.get("id", "")))]
-        if source.get("key") == "stop_here":
-            return [Fault(f"a line leads out of Run no later workflows {source.get('id')}: it ends the walk, nothing follows it", str(source.get("id", "")))]
-        if source.get("kind") == NodeKind.CHECK and port not in (YES, NO):
-            return [Fault(f"check {source.get('id')} leaves by yes or no, not {port}", str(source.get("id", "")))]
-        if source.get("kind") != NodeKind.CHECK and port != THEN:
-            return [Fault(f"{source.get('kind')} {source.get('id')} leaves by then, not {port}", str(source.get("id", "")))]
+    def port_fault(source: DrawnNode, target: DrawnNode, port: str) -> list[Fault]:
+        if target.kind == NodeKind.TRIGGER:
+            return [Fault(f"a line leads into trigger {target.id}: a trigger only starts a path", target.id)]
+        if source.key == "stop_here":
+            return [Fault(f"a line leads out of Run no later workflows {source.id}: it ends the walk, nothing follows it", source.id)]
+        if source.kind == NodeKind.CHECK and port not in (YES, NO):
+            return [Fault(f"check {source.id} leaves by yes or no, not {port}", source.id)]
+        if source.kind != NodeKind.CHECK and port != THEN:
+            return [Fault(f"{source.kind} {source.id} leaves by then, not {port}", source.id)]
         return []
 
     @staticmethod
-    def port_twice_faults(lines: list[dict]) -> list[Fault]:
+    def port_twice_faults(lines: list[DrawnLine]) -> list[Fault]:
         """A node leaves each port by one line, so a workflow runs in one order: a trigger and an action lead on to one step, a check to one on yes and one on no."""
         seen: dict[tuple[str, str], int] = {}
         for line in lines:
-            seen[(str(line.get("from")), line.get("port", THEN))] = seen.get((str(line.get("from")), line.get("port", THEN)), 0) + 1
+            seen[(line.source, line.port)] = seen.get((line.source, line.port), 0) + 1
         return [Fault(f"node {source} leaves by {port} {n} times: one line per port, the next step leads on", source) for (source, port), n in seen.items() if n > 1]
 
     @staticmethod
-    def check_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:
-        sources = {str(line.get("from")) for line in lines}
-        return [Fault(f"check {n.get('id')} has no line out: neither yes nor no", str(n.get("id", ""))) for n in nodes if n.get("kind") == NodeKind.CHECK and str(n.get("id", "")) not in sources]
+    def check_faults(nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
+        sources = {line.source for line in lines}
+        return [Fault(f"check {n.id} has no line out: neither yes nor no", n.id) for n in nodes if n.kind == NodeKind.CHECK and n.id not in sources]
 
     @staticmethod
-    def cycle_faults(nodes: list[dict], lines: list[dict]) -> list[Fault]:
+    def cycle_faults(nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
         """A path that comes back to a node it passed would walk for ever: an action's then may lead on, so the whole graph is walked."""
-        after: dict[str, list[str]] = {str(n.get("id", "")): [] for n in nodes}
+        after: dict[str, list[str]] = {n.id: [] for n in nodes}
         for line in lines:
-            after.setdefault(str(line.get("from")), []).append(str(line.get("to")))
+            after.setdefault(line.source, []).append(line.target)
         seen, on_path = set(), []
 
         def walk(node: str) -> bool:

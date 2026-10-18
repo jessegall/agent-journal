@@ -2,19 +2,25 @@ from dataclasses import asdict
 
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
-from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.standing import Standing
 from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
+from journal.features.chart.trial_asked import TrialAsked
 from journal.features.chart.validation import LOCK_WHY, Validation
 from journal.engine.states_catalogue import StatesCatalogue
+from journal.http.controllers.listed_workflow import ListedWorkflow
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.actor import Actor
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
+from journal.models.drawn_line import DrawnLine
+from journal.models.drawn_node import DrawnNode
 from journal.models.node import Node
+from journal.models.walk_record import WalkRecord
+from journal.models.walk_run import WalkRun
+from journal.models.workflow_at import WorkflowAt
 from journal.repositories.charts import Charts
 from journal.repositories.not_found import NotFound
 from journal.repositories.environments import Environments
@@ -42,39 +48,31 @@ class ChartController:
     def runs(self, request: Request) -> Response:
         """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
         titles = {c.id: c.title for c in self.charts.all()}
-        runs = [{**run, "titles": [titles.get(n, f"workflow {n}") for n in run["workflows"]], "change": self.change_words(run), "answer": self.answer_words(run), "counts": self.count_words(run)} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
+        runs = [{**self.shown(run), "event": run.record.trigger, "failed": run.failed, "titles": [titles.get(n, f"workflow {n}") for n in run.record.workflows],
+                 "change": self.change_words(run.record), "answer": run.record.answer_words(), "counts": run.record.count_words()} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
 
     @staticmethod
-    def count_words(run: dict) -> str:
-        """The counts the walk left its workflows with, in words: reminders 3, edits 2."""
-        counted = {name: value for stop in run.get("stops", ()) for name, value in stop.get("counts", {}).items()}
-        return ", ".join(f"{name} {value}" for name, value in counted.items())
+    def shown(run: WalkRun) -> dict:
+        return {**asdict(run.record), "trigger": run.trigger}
 
-    @staticmethod
-    def answer_words(run: dict) -> str:
-        """The answer the walk gave the agent, in words: held with the line, or the line said."""
-        if not run["allowed"]:
-            return f"Held: {run['said']}" if run["said"] else "Held"
-        return f"Said: {run['said']}" if run["said"] else ""
-
-    def change_words(self, run: dict) -> str:
+    def change_words(self, walk: WalkRecord) -> str:
         """A state change in words: by the step that moved the agent, or the engine's own move at a row event, before the list ran."""
-        state = self.states.title_of(run["started"]) if run["started"] else ""
-        if run["moved_to"]:
-            return f"{state} to {self.states.title_of(run['moved_to'])}, by step {run['moved_by'][-1]}" if run["moved_by"] else ""
-        if run["event"] in ENGINE_MOVES and run["row"]:
-            return f"{state}, after {run['trigger'].lower()} {run['row']}: the journal's own move came first"
+        state = self.states.title_of(walk.started) if walk.started else ""
+        if walk.moved_to:
+            return f"{state} to {self.states.title_of(walk.moved_to)}, by step {walk.moved_by[-1]}" if walk.moved_by else ""
+        if walk.trigger in ENGINE_MOVES and walk.row:
+            return f"{state}, after {self.traces.trigger_title(walk.trigger).lower()} {walk.row}: the journal's own move came first"
         return ""
 
     def order(self, request: Request) -> Response:
         """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since."""
         event = request.body.get("trigger", "")
-        given = [{"id": int(row.get("id", 0)), "revision": int(row.get("revision", -1))} for row in request.body.get("order", [])]
+        given = [WorkflowAt.from_payload(row) for row in request.body.get("order", [])]
         faults = self.validation.order_faults(event, given)
         if faults:
             return Response.json({"error": "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
-        placed = self.charts.reorder(event, [row["id"] for row in given], request.actor)
+        placed = self.charts.reorder(event, [row.id for row in given], request.actor)
         return Response.json({"trigger": event, "workflows": [self.named(c) for c in placed]})
 
     def off(self, request: Request) -> Response:
@@ -133,10 +131,11 @@ class ChartController:
         if int(request.body.get("revision", -1)) != chart.revision:
             return Response.json({"error": f"the workflow changed since you opened it: it is at revision {chart.revision}, read it again", "revision": chart.revision, "conflict": True,
                                   "revised_by": chart.updated_by.stamp if chart.updated_by else "", "revised_at": chart.updated_at.timestamp() if chart.updated_at else 0}, 409)
-        faults = self.validation.faults(chart, request.body.get("nodes", []), request.body.get("lines", []))
+        nodes, lines = [DrawnNode.from_payload(n) for n in request.body.get("nodes", [])], [DrawnLine.from_payload(l) for l in request.body.get("lines", [])]
+        faults = self.validation.faults(chart, nodes, lines)
         if faults:
             return Response.json({"error": "the workflow is not saved: " + "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
-        saved = self.charts.replace(chart, request.body.get("nodes", []), request.body.get("lines", []), request.actor)
+        saved = self.charts.replace(chart, nodes, lines, request.actor)
         return Response.json(self.drawn(self.titled_by_its_first_action(saved, request.actor)))
 
     def titled_by_its_first_action(self, chart: Chart, by: Actor) -> Chart:
@@ -148,10 +147,8 @@ class ChartController:
 
     def try_(self, request: Request) -> Response:
         """A dry run: the path the chart would take for an agent event in an environment, and what it would do, nothing done."""
-        environment = self.environments.named(request.body.get("environment", "main")).id
-        body = request.body
-        assumed = Assumptions(quiet=body.get("quiet"), edits=body.get("edits"), unread=body.get("unread"), state=body.get("state"), provider=body.get("provider"), counts={k: int(v) for k, v in (body.get("counts") or {}).items()})
-        ran = self.trial.run(body.get("trigger", "idle"), environment, int(body.get("row", 0) or 0), assumed)
+        asked = TrialAsked.from_payload(request.body)
+        ran = self.trial.run(asked.trigger, self.environments.named(asked.environment).id, asked.row, asked.assumed)
         titles = {c.id: c.title for c in self.charts.all()}
         return Response.json({**ran, "titles": [titles.get(n, f"workflow {n}") for n in ran["workflows"]]})
 
@@ -161,12 +158,12 @@ class ChartController:
             return Response.refused("only a shipped workflow has a shipped drawing to go back to")
         return Response.json(self.drawn(self.shipped.reset(chart, request.actor)))
 
-    def named(self, chart: Chart) -> dict:
-        last_walk, last_failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
-        return {"id": chart.id, "title": chart.title, "revision": chart.revision, "shipped": chart.shipped, "event": chart.event, "state": chart.state, "place": chart.place, "off": not self.charts.graph(chart).triggers,
-                "edited": not all(n.shipped for n in self.charts.nodes_of(chart)), "failed": bool(last_failure) and last_failure["at"] >= last_walk.get("at", 0),
-                "behind": self.shipped.behind(chart), "locked": chart.locked, "guarded": any(n.locked for n in self.charts.nodes_of(chart)),
-                "warnings": self.validation.warnings(chart), "revised_by": chart.updated_by.stamp if chart.updated_by else "", "last_walk": last_walk, "last_failure": last_failure}
+    def named(self, chart: Chart) -> ListedWorkflow:
+        walk, failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
+        return ListedWorkflow(id=chart.id, title=chart.title, revision=chart.revision, shipped=chart.shipped, event=chart.event, state=chart.state, place=chart.place, off=not self.charts.graph(chart).triggers,
+                edited=not all(n.shipped for n in self.charts.nodes_of(chart)), failed=failure is not None and (walk is None or failure.at >= walk.record.at),
+                behind=self.shipped.behind(chart), locked=chart.locked, guarded=any(n.locked for n in self.charts.nodes_of(chart)),
+                warnings=self.validation.warnings(chart), revised_by=chart.updated_by.stamp if chart.updated_by else "", last_walk=self.shown(walk) if walk else {}, last_failure=asdict(failure) if failure else {})
 
     def entries(self) -> list[dict]:
         return [{**asdict(e), "kind": e.kind.value, "tried": self.trial.stands_in_for(e.key)} for e in self.catalogue.all()]

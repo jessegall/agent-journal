@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from journal.engine.agent_state import AgentState
 from journal.events.event import Event
+from journal.models.walk_stop import WalkStop
 
 
 @dataclass(frozen=True)
@@ -27,7 +28,7 @@ class Context:
     read: dict = field(default_factory=dict)
     """What each count check read on this walk, by node: the value the check compared."""
     walked: list = field(default_factory=list)
-    stops: list = field(default_factory=list)
+    stops: list[WalkStop] = field(default_factory=list)
     """Where each path of this walk ended: the workflow, the node and the port it ended at, a check's No with no line after it being where the workflow waits."""
     calling: list = field(default_factory=list)
     """The workflows a Run a workflow step is running now, innermost last, so a call into one already running is refused."""

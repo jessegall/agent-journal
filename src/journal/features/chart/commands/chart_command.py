@@ -8,10 +8,13 @@ from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import LOCK_RULE, LOCK_WHY, TEXT_LIMIT, Validation
 from journal.refused import Refused
+from journal.models.drawn_line import PORTS, THEN, DrawnLine
+from journal.models.drawn_node import DrawnNode
+from journal.models.workflow_at import WorkflowAt
 from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
-from journal.repositories.charts import PORTS, THEN, Charts
+from journal.repositories.charts import Charts
 from journal.repositories.scope import Scope
 
 
@@ -126,16 +129,15 @@ class ChartCommand(Command):
         if len(args.text) > TEXT_LIMIT:
             raise Refused(f"a node's text is at most {TEXT_LIMIT} characters, this one is {len(args.text)}")
         chart = self.editable(self.named_workflow(args.chart, args.state, args.event), args)
-        wrong = self.validation.action_faults([{"kind": kind, "key": args.key, "text": args.text}])
+        wrong = self.validation.action_faults([DrawnNode("new", kind, args.key, args.text)])
         if wrong:
             raise Refused(wrong[0])
-        present = [{"id": n.id, "kind": n.kind, "key": n.key, "text": n.text} for n in self.charts.nodes_of(chart)]
-        calls = self.validation.call_faults(chart, present + [{"id": "new", "kind": kind, "key": args.key, "text": args.text}])
+        present = [DrawnNode.of(n) for n in self.charts.nodes_of(chart)]
+        calls = self.validation.call_faults(chart, present + [DrawnNode("new", kind, args.key, args.text)])
         if calls:
             raise Refused(str(calls[0]))
         if kind == NodeKind.TRIGGER:
-            present = [{"kind": n.kind, "key": n.key} for n in self.charts.nodes_of(chart)]
-            faults = self.validation.trigger_faults(chart, present + [{"kind": kind, "key": args.key}])
+            faults = self.validation.trigger_faults(chart, present + [DrawnNode("new", kind, args.key)])
             if faults:
                 raise Refused(str(faults[0]))
         node = self.charts.add_node(chart, Node(kind=kind, key=args.key, text=args.text).cleaned(), where.actor)
@@ -145,13 +147,13 @@ class ChartCommand(Command):
 
     def line(self, args: Namespace, where: Where) -> int:
         source, target = self.charts.nodes.find(args.source), self.charts.nodes.find(args.target)
-        fault = self.validation.port_fault({"id": source.id, "kind": source.kind, "key": source.key}, {"id": target.id, "kind": target.kind}, args.port)
+        fault = self.validation.port_fault(DrawnNode.of(source), DrawnNode.of(target), args.port)
         if fault:
             raise Refused(fault[0])
         chart = self.editable(self.charts.chart_of(source), args)
-        lines = [{"from": l.source.id, "to": l.target.id, "port": l.kind} for l in self.charts.lines_of(chart) if not (l.source.id == source.id and l.kind == args.port)]
-        nodes = [{"id": n.id, "kind": n.kind, "key": n.key, "text": n.text} for n in self.charts.nodes_of(chart)]
-        locked = self.validation.lock_faults(chart, nodes, lines + [{"from": source.id, "to": target.id, "port": args.port}])
+        lines = [DrawnLine.of(l) for l in self.charts.lines_of(chart) if not (l.source.id == source.id and l.kind == args.port)]
+        nodes = [DrawnNode.of(n) for n in self.charts.nodes_of(chart)]
+        locked = self.validation.lock_faults(chart, nodes, lines + [DrawnLine(str(source.id), str(target.id), args.port)])
         if locked:
             raise Refused(str(locked[0]))
         self.charts.connect(source, target, args.port, where.actor)
@@ -198,7 +200,7 @@ class ChartCommand(Command):
     def order(self, args: Namespace, where: Where) -> int:
         """The event's workflows reordered as given, at the revisions they stand at."""
         standing = {c.id: c for c in self.charts.for_event(args.event)}
-        faults = self.validation.order_faults(args.event, [{"id": n, "revision": standing[n].revision if n in standing else -1} for n in args.ids])
+        faults = self.validation.order_faults(args.event, [WorkflowAt(n, standing[n].revision if n in standing else -1) for n in args.ids])
         if faults:
             raise Refused(str(faults[0]))
         placed = self.charts.reorder(args.event, args.ids, where.actor)

@@ -2,6 +2,8 @@ from journal.db.connection import Connection
 from journal.features.bus import Bus
 from journal.models.actor import Actor
 from journal.models.chart import Chart
+from journal.models.drawn_line import PORTS, THEN, DrawnLine
+from journal.models.drawn_node import DrawnNode
 from journal.models.graph import Graph
 from journal.models.link import Link
 from journal.models.node import Node
@@ -12,9 +14,6 @@ from journal.repositories.nodes import Nodes
 from journal.repositories.repository import Repository
 
 NODE_OF = "node_of"
-THEN, YES, NO = "then", "yes", "no"
-PORTS = (THEN, YES, NO)
-"""A line leaves a trigger or an action by then, and a check by yes or no."""
 
 
 class Charts(Repository[Chart]):
@@ -101,19 +100,19 @@ class Charts(Repository[Chart]):
         self._graphs.clear()
         return self.save(self.find(chart.id).saved_again(), by)
 
-    def replace(self, chart: Chart, nodes: list[dict], lines: list[dict], by: Actor) -> Chart:
+    def replace(self, chart: Chart, nodes: list[DrawnNode], lines: list[DrawnLine], by: Actor) -> Chart:
         """The chart saved whole: nodes given with an id it has are kept and updated, others made, those left out removed; every line drawn anew."""
         present = {node.id: node for node in self.nodes_of(chart)}
         kept = {}
         for given in nodes:
-            own = present.pop(int(given["id"]) if str(given.get("id", "")).isdigit() else 0, None)
-            fields = {"kind": given["kind"], "key": given["key"], "text": given.get("text", ""), "x": int(given.get("x", 0)), "y": int(given.get("y", 0))}
-            touched = own is not None and (own.kind != fields["kind"] or own.key != fields["key"] or own.text != fields["text"])
-            kept[str(given.get("id", ""))] = self.nodes.save(own.with_(**fields, shipped=own.shipped and not touched).cleaned(), by) if own else self.add_node(chart, Node(**fields).cleaned(), by)
+            own = present.pop(given.number, None)
+            drawn = Node(kind=NodeKind(given.kind), key=given.key, text=given.text, x=given.x, y=given.y)
+            touched = own is not None and (own.kind != drawn.kind or own.key != drawn.key or own.text != drawn.text)
+            kept[given.id] = self.nodes.save(own.with_(kind=drawn.kind, key=drawn.key, text=drawn.text, x=drawn.x, y=drawn.y, shipped=own.shipped and not touched).cleaned(), by) if own else self.add_node(chart, drawn.cleaned(), by)
         for gone in present.values():
             self.remove_node(gone, by)
         for line in self.lines_of(chart):
             self.links.delete(line, by)
         for line in lines:
-            self.connect(kept[str(line["from"])], kept[str(line["to"])], line.get("port", THEN), by)
+            self.connect(kept[line.source], kept[line.target], line.port, by)
         return self.revised(chart, by)

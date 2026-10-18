@@ -3,6 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.cards import Cards
+from journal.features.plugins.plugin_preview import PluginPreview
 from journal.features.plugins.installing import Installing
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
@@ -57,13 +58,15 @@ class PluginCommand(Command):
 
     def propose(self, args: Namespace, where: Where) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview['name']}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", by=where.actor)
-        print(f"proposed {preview['name']}: the user installs it if they want it")
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", by=where.actor)
+        print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 
     def upgrade(self, args: Namespace, where: Where) -> int:
         preview = self.installing.upgrade_preview(args.name, args.ref)
-        print("\n".join([f"{args.name} from {preview['was'][:12] or preview['source']} to {preview['commit'][:12] or 'the folder as it is now'}", *(preview["changes"] or ["nothing it runs, hears or holds changes"]), *(["", "the code:", *preview["code"]] if preview["code"] else [])]))
+        print("\n".join([f"{args.name} from {preview.was[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
+        if preview.code:
+            print("\nthe code:\n" + "\n".join(preview.code))
         if not args.yes:
             print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref else ''} --yes")
             return 0
@@ -104,6 +107,6 @@ class PluginCommand(Command):
         return 0
 
     @staticmethod
-    def said(preview: dict) -> str:
-        head = [f"{preview['name']} {preview['version']}" + (f": {preview['title']}" if preview["title"] != preview["name"] else ""), f"from {preview['source']}" + (f" at {preview['commit'][:12]}" if preview["commit"] else " (linked: read where it lies)")]
-        return "\n".join(head + [f"{SAID[r['kind']]} {r['label']}: {r['command']}".rstrip(": ") for r in preview["rows"]])
+    def said(preview: PluginPreview) -> str:
+        head = [f"{preview.name} {preview.version}" + (f": {preview.title}" if preview.title != preview.name else ""), f"from {preview.source}" + (f" at {preview.commit[:12]}" if preview.commit else " (linked: read where it lies)")]
+        return "\n".join(head + [f"{SAID[r.kind]} {r.label}: {r.command}".rstrip(": ") for r in preview.rows])

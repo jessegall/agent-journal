@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.engine.machine import Machine
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.checks import COUNT_CHECKS, READINGS, Checks
@@ -6,6 +8,7 @@ from journal.features.chart.walk import WALKED
 from journal.features.registry import Registry
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
+from journal.models.walk_record import WalkRecord
 from journal.repositories.agents import Agents
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
@@ -22,19 +25,19 @@ class Standing:
 
     def of(self, chart: Chart) -> dict:
         nodes = {n.id: n for n in self.charts.nodes_of(chart)}
-        walks = self.entries.of_kind(WALKED, LOOKED_BACK)
+        walks = [WalkRecord.from_entry(e) for e in self.entries.of_kind(WALKED, LOOKED_BACK)]
         agents = [a for a in self.agents.in_() if a.state != "ended"]
         return {"agents": [self.agent(chart, nodes, walks, a) for a in agents], "readings": self.readings(nodes), "limits": self.limits(nodes)}
 
-    def agent(self, chart: Chart, nodes: dict, walks: list, agent) -> dict:
-        stop = next((s for w in walks if w.data.get("session") == agent.session for s in reversed(w.data.get("stops", ())) if s["workflow"] == chart.id), None)
-        node = nodes.get(stop["node"]) if stop else None
-        at = next((w.created_at.isoformat() for w in walks if stop and stop in w.data.get("stops", ())), "")
+    def agent(self, chart: Chart, nodes: dict, walks: list[WalkRecord], agent) -> dict:
+        walk, stop = next(((w, s) for w in walks if w.session == agent.session for s in reversed(w.stops) if s.waits_at(chart.id)), (None, None))
+        node = nodes.get(stop.node) if stop else None
+        at = datetime.fromtimestamp(walk.at, timezone.utc).isoformat() if walk else ""
         ctx = Context(event=Ticked(at=0.0, quiet_for=0.0).placed(agent.session, agent.environment_id, agent.provider, 0.0), session=agent.session, environment_id=agent.environment_id, state=self.machine.current(agent.session))
         return {
             "session": agent.session, "n": agent.id,
-            "node": stop["node"] if stop else 0, "port": stop["port"] if stop else "", "at": at,
-            "waits": bool(node and node.key in COUNT_CHECKS and stop["port"] == "no"),
+            "node": stop.node if stop else 0, "port": stop.port if stop else "", "at": at,
+            "waits": bool(node and node.key in COUNT_CHECKS and stop.port == "no"),
             "counts": self.checks.counts_kept(agent.session, chart.id),
             "readings": {name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)},
         }
