@@ -103,7 +103,7 @@ class Checks:
         task = self.tasks.find(state.task_id)
         logs = self.task_logs.of(task)
         since = max([t for t in (task.started_at, *(log.created_at for log in logs)) if t], default=None)
-        provider = self.providers.named(ctx.provider)
+        provider = ctx.provider_in(self.providers)
         before_this = self.tool_uses_since(ctx.session, since)[1:] if isinstance(ctx.event, ToolStarting) else self.tool_uses_since(ctx.session, since)
         return sum(1 for e in before_this if provider.wrote(e))
 
@@ -308,7 +308,7 @@ class Checks:
         context = getattr(ctx.event, "context", None)
         if context is None or not ctx.session:
             return []
-        taken = self.machine.agent(ctx.session, ctx.environment_id).context_mark
+        taken = ctx.agent_in(self.machine).context_mark
         return [mark for mark in Memory.MARKS if context * 100 >= mark > taken]
 
     def something_owed(self, ctx: Context) -> bool:
@@ -317,15 +317,15 @@ class Checks:
 
     def mark_owed(self, ctx: Context) -> bool:
         """The agent crossed a mark and has not decided what survives it."""
-        return bool(ctx.session) and bool(self.machine.agent(ctx.session, ctx.environment_id).mark_owed)
+        return bool(ctx.session) and bool(ctx.agent_in(self.machine).mark_owed)
 
     def not_oriented(self, ctx: Context) -> bool:
         """The agent has not looked at what is in flight here since its session started."""
-        return bool(ctx.session) and not self.machine.agent(ctx.session, ctx.environment_id).oriented
+        return bool(ctx.session) and not ctx.agent_in(self.machine).oriented
 
     def skill_owed(self, ctx: Context) -> bool:
         """The agent owes a read of a skill's file."""
-        return bool(ctx.session) and bool(self.requiring.owed_names(self.machine.agent(ctx.session, ctx.environment_id)))
+        return bool(ctx.session) and bool(self.requiring.owed_names(ctx.agent_in(self.machine)))
 
     def message_by_user(self, ctx: Context) -> bool:
         """The row event is a message the user wrote."""
@@ -336,7 +336,7 @@ class Checks:
         if not isinstance(ctx.event, ToolStarting):
             return False
         folders = [str(self.config.home / "files" / "message" / str(m.id)) + "/" for m in self.messages.unanswered()]
-        return any(path.startswith(folder) for path in self.providers.named(ctx.provider).read_paths(ctx.event.tool, ctx.event.input) for folder in folders)
+        return any(path.startswith(folder) for path in ctx.provider_in(self.providers).read_paths(ctx.event.tool, ctx.event.input) for folder in folders)
 
     def unread_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unread())
@@ -377,11 +377,11 @@ class Checks:
 
     def tool_writes(self, ctx: Context) -> bool:
         event = ctx.event
-        return isinstance(event, ToolStarting) and self.providers.named(ctx.provider).writes(event.tool, event.input)
+        return isinstance(event, ToolStarting) and ctx.provider_in(self.providers).writes(event.tool, event.input)
 
     def journal_command(self, ctx: Context) -> bool:
         event = ctx.event
-        if not isinstance(event, ToolStarting) or event.tool != self.providers.named(ctx.provider).shell_tool:
+        if not isinstance(event, ToolStarting) or event.tool != ctx.provider_in(self.providers).shell_tool:
             return False
         journal, parts = Chain.journal_parts(event.input.get("command", ""))
         return parts > 0 and journal == parts

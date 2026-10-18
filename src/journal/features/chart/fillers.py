@@ -64,7 +64,7 @@ class Fillers:
 
     def env(self, ctx: Context) -> str:
         """The environment's name."""
-        return self.environments.find(ctx.environment_id).name if ctx.environment_id else ""
+        return ctx.environment_name_in(self.environments)
 
     def taken_over_at(self, ctx: Context) -> str:
         """The time of day the other session that worked here last did anything."""

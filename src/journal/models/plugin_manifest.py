@@ -45,6 +45,11 @@ class PluginManifest:
                       "services": tuple(PluginService.from_json(s) for s in data.get("services", ())), "cards": tuple(CardKind.from_json(c) for c in data.get("cards", ())),
                       "setup": tuple(SetupStep.from_json(s) for s in data.get("setup", ())), "requires": {program: Requirement.from_json(r) for program, r in data.get("requires", {}).items()}})
 
+    @property
+    def programs(self) -> list[str]:
+        """The files it runs from its folder: its program and each service's that lies there."""
+        return [self.program, *(s.program for s in self.services if s.is_in_its_folder)]
+
     def card_kind(self, kind: str) -> CardKind:
         """The kind of card declared under that name; one not declared takes the plugin's name and the plug."""
         return next((k for k in self.cards if k.kind == kind), CardKind(kind, self.name))

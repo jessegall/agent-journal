@@ -3,11 +3,8 @@ from pathlib import Path
 from journal.config import Config
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.agent_listener import AgentListener
-from journal.features.shell.writes import Writes
 from journal.hooks.decision import Decision
 from journal.providers.providers import Providers
-
-PATH_KEYS = ("file_path", "path", "notebook_path")
 
 
 class HoldPluginFolders(AgentListener[ToolStarting]):
@@ -19,14 +16,9 @@ class HoldPluginFolders(AgentListener[ToolStarting]):
         self.config, self.providers = config, providers
 
     def handle(self, event: ToolStarting) -> Decision | None:
-        if not event.writes or not any(self.inside(path) for path in self.written(event)):
+        if not event.writes or not any(self.inside(path) for path in self.providers.named(event.provider or "claude").written_paths(event.tool, event.input)):
             return None
         return Decision.refuse("an installed plugin's files are the user's to change: propose the change to them, or work in the plugin's own folder and let them upgrade it")
-
-    def written(self, event: ToolStarting) -> list[str]:
-        if event.tool == self.providers.named(event.provider or "claude").shell_tool:
-            return Writes.targets(event.input.get("command", ""))
-        return [value for key, value in event.input.items() if key in PATH_KEYS and isinstance(value, str)]
 
     def inside(self, path: str) -> bool:
         folder = (self.config.home / "plugins").resolve()

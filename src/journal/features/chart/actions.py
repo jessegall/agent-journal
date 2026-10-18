@@ -52,7 +52,7 @@ class Actions:
         """Said to the agent once inside the nudge's window: on the hook's answer when one waits, else typed into its terminal."""
         if not ctx.session:
             return Decision()
-        line = self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), self.spoken(text))
+        line = self.nudger.say(ctx.agent_in(self.machine), self.spoken(text))
         if not ctx.answers_hook:
             self.typed(line, ctx)
             return Decision()
@@ -74,7 +74,7 @@ class Actions:
         from journal.features.skills.feature import Skills
         if not ctx.session or self.registry.silenced(Skills.REQUIRED):
             return Decision()
-        agent = self.machine.agent(ctx.session, ctx.environment_id)
+        agent = ctx.agent_in(self.machine)
         skills = self.requiring.named(text.strip()) if text.strip() else self.skills_asked(ctx)
         lines = self.requiring.require(agent, self.requiring.owed(agent, skills))
         if lines and not ctx.answers_hook:
@@ -105,7 +105,7 @@ class Actions:
         elif ctx.session:
             said = self.spoken(text)
             if said.rendered() not in ctx.spoken:
-                self.typed(self.nudger.say(self.machine.agent(ctx.session, ctx.environment_id), said), ctx)
+                self.typed(self.nudger.say(ctx.agent_in(self.machine), said), ctx)
         return Decision()
 
     def typed(self, line: str | None, ctx: Context) -> None:

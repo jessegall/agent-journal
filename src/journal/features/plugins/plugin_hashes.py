@@ -16,8 +16,7 @@ class PluginHashes:
         self.folders, self.plugins, self.cards = folders, plugins, cards
 
     def of(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
-        paths = [manifest.program, *(s.program for s in manifest.services if s.is_in_its_folder)]
-        return {path: self.hashed(folder / path) for path in paths}
+        return {path: self.hashed(folder / path) for path in manifest.programs}
 
     def intact(self, plugin: Plugin, environment_id: int) -> bool:
         changed = [path for path, was in plugin.hashes.items() if self.hashed(self.folders.of(plugin) / path) != was]

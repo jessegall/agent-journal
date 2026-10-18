@@ -17,6 +17,9 @@ from journal.providers.turn import Turn
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
 
+PATH_KEYS = ("file_path", "path", "notebook_path")
+"""The keys an editing tool names its file by."""
+
 class Provider:
     """One agent program, Claude or Codex: the few things the journal has to know about it and nothing else."""
 
@@ -113,6 +116,12 @@ class Provider:
         if tool == self.read_tool:
             return tuple(p for p in (ToolInput.from_json(input).file,) if p)
         return Reads.of(ToolInput.from_json(input).command) if tool == self.shell_tool else ()
+
+    def written_paths(self, tool: str, input: dict) -> list[str]:
+        """The files this tool use writes: the targets a shell line writes to, or the path an editing tool names."""
+        if tool == self.shell_tool:
+            return Writes.targets(ToolInput.from_json(input).command)
+        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)]
 
     def skill_loaded(self, tool: str, input: dict) -> str:
         """The skill folder a skill tool call loaded, or empty."""

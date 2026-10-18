@@ -1,8 +1,14 @@
 from dataclasses import dataclass, field
+from typing import Callable
 
 from journal.engine.agent_state import AgentState
+from journal.engine.machine import Machine
 from journal.events.event import Event
+from journal.models.agent import Agent
 from journal.models.walk_stop import WalkStop
+from journal.providers.provider import Provider
+from journal.providers.providers import Providers
+from journal.repositories.environments import Environments
 
 
 @dataclass(frozen=True)
@@ -25,15 +31,15 @@ class Context:
     stopped: list = field(default_factory=list)
     """The Run no later workflows node that ended this event's walk, when one did: nothing after it ran, in its workflow or a later one."""
     unanswered: list = field(default_factory=list)
+    """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""
     read: dict = field(default_factory=dict)
     """What each count check read on this walk, by node: the value the check compared."""
     walked: list = field(default_factory=list)
+    """The workflows walked, in order, by id."""
     stops: list[WalkStop] = field(default_factory=list)
     """Where each path of this walk ended: the workflow, the node and the port it ended at, a check's No with no line after it being where the workflow waits."""
     calling: list = field(default_factory=list)
     """The workflows a Run a workflow step is running now, innermost last, so a call into one already running is refused."""
-    """The workflows walked, in order, by id."""
-    """The holds that came after the first in this event: the first hold wins, the rest are recorded here and not answered."""
 
     @property
     def workflow(self) -> int:
@@ -41,6 +47,21 @@ class Context:
         if self.calling:
             return self.calling[-1]
         return self.walked[-1] if self.walked else 0
+
+    def agent_in(self, machine: Machine) -> Agent:
+        """The agent the walk is about, as the machine holds it now."""
+        return machine.agent(self.session, self.environment_id)
+
+    def provider_in(self, providers: Providers) -> Provider:
+        return providers.named(self.provider)
+
+    def environment_name_in(self, environments: Environments) -> str:
+        """The name of the environment the walk is in; empty for a walk in none."""
+        return environments.find(self.environment_id).name if self.environment_id else ""
+
+    def stops_counted(self, counts_kept: Callable[[str, int], dict[str, int]]) -> tuple[WalkStop, ...]:
+        """Each stop of this walk with its workflow's counts for the agent as the walk left them."""
+        return tuple(stop.with_counts(counts_kept(self.session, stop.workflow)) for stop in self.stops)
 
     def keeps_count(self, text: str) -> bool:
         """A count step's text names a count, and there is an agent to keep it for."""

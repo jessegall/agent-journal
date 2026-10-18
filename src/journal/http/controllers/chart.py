@@ -18,7 +18,6 @@ from journal.models.node_kind import NodeKind
 from journal.models.drawn_line import DrawnLine
 from journal.models.drawn_node import DrawnNode
 from journal.models.node import Node
-from journal.models.walk_record import WalkRecord
 from journal.models.walk_run import WalkRun
 from journal.models.workflow_at import WorkflowAt
 from journal.repositories.charts import Charts
@@ -26,8 +25,6 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.environments import Environments
 
 
-ENGINE_MOVES = ("tasks.updated", "task_logs.created", "plans.updated", "questions.created", "workers.updated", "sequences.updated", "prompt_submitted", "session_started", "session_ended", "ticked")
-"""The events at which the engine moves the agent itself before the workflows run, so a run there can say the journal's own move came first."""
 NEW_TITLE = "New workflow"
 """The title a workflow is born with until its first action or the user names it."""
 
@@ -49,21 +46,12 @@ class ChartController:
         """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
         titles = {c.id: c.title for c in self.charts.all()}
         runs = [{**self.shown(run), "event": run.record.trigger, "failed": run.failed, "titles": [titles.get(n, f"workflow {n}") for n in run.record.workflows],
-                 "change": self.change_words(run.record), "answer": run.record.answer_words(), "counts": run.record.count_words()} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
+                 "change": run.change_words(), "answer": run.record.answer_words(), "counts": run.record.count_words()} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
 
     @staticmethod
     def shown(run: WalkRun) -> dict:
         return {**asdict(run.record), "trigger": run.trigger}
-
-    def change_words(self, walk: WalkRecord) -> str:
-        """A state change in words: by the step that moved the agent, or the engine's own move at a row event, before the list ran."""
-        state = self.states.title_of(walk.started) if walk.started else ""
-        if walk.moved_to:
-            return f"{state} to {self.states.title_of(walk.moved_to)}, by step {walk.moved_by[-1]}" if walk.moved_by else ""
-        if walk.trigger in ENGINE_MOVES and walk.row:
-            return f"{state}, after {self.traces.trigger_title(walk.trigger).lower()} {walk.row}: the journal's own move came first"
-        return ""
 
     def order(self, request: Request) -> Response:
         """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since."""

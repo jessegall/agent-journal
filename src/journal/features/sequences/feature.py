@@ -8,6 +8,7 @@ from journal.features.sequences.commands.sequence_command import SequenceCommand
 from journal.features.sequences.listeners.carry_runs_to_the_next_session import CarryRunsToTheNextSession
 from journal.features.sequences.listeners.end_runs_of_a_cancelled_row import EndRunsOfACancelledRow
 from journal.features.sequences.listeners.end_runs_of_a_deleted_row import EndRunsOfADeletedRow
+from journal.features.sequences.listeners.end_runs_of_a_deleted_sequence import EndRunsOfADeletedSequence
 from journal.features.sequences.listeners.hold_writes_for_the_step import HoldWritesForTheStep
 from journal.features.sequences.listeners.record_run_changes import RecordRunChanges
 from journal.features.sequences.listeners.say_the_step_at_a_pace import SayTheStepAtAPace
@@ -23,7 +24,7 @@ class Sequences(Feature):
     title = "Sequences"
     help = "Steps the agent follows one at a time."
     commands = (SequenceCommand,)
-    listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtStart, SayTheStepAtAStop, HoldWritesForTheStep, SayTheStepWhenAWaitEnds, SayTheStepAtAPace, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
+    listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtStart, SayTheStepAtAStop, HoldWritesForTheStep, SayTheStepWhenAWaitEnds, SayTheStepAtAPace, EndRunsOfADeletedSequence, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
     actions = (
         Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
     )

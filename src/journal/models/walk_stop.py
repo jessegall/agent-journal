@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 
 @dataclass(frozen=True)
@@ -9,6 +9,9 @@ class WalkStop:
     node: int
     port: str
     counts: dict[str, int] = field(default_factory=dict)
+
+    def with_counts(self, counts: dict[str, int]) -> "WalkStop":
+        return replace(self, counts=counts)
 
     def waits_at(self, workflow: int) -> bool:
         return self.workflow == workflow

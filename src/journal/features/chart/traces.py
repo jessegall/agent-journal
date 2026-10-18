@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.walk import FAILED, WALKED
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
 from journal.models.walk_failure import WalkFailure
@@ -17,8 +18,8 @@ LOOK_BACK = 400
 class Traces:
     """What the page says about a workflow's last walk and its last failure, read from the entries the walk leaves."""
 
-    def __init__(self, entries: Entries, catalogue: Catalogue, charts: Charts) -> None:
-        self.entries, self.catalogue, self.charts = entries, catalogue, charts
+    def __init__(self, entries: Entries, catalogue: Catalogue, charts: Charts, states: StatesCatalogue) -> None:
+        self.entries, self.catalogue, self.charts, self.states = entries, catalogue, charts, states
 
     def last_walk(self, chart: Chart) -> WalkRun | None:
         """The newest walk that passed through one of this workflow's own nodes, with those nodes alone: a walk that consulted it and found no trigger for the event is not its."""
@@ -26,7 +27,7 @@ class Traces:
         walk = next((w for w in self.walks() if w.passed_any(own)), None)
         if walk is None:
             return None
-        return WalkRun(replace(walk, nodes=tuple(n for n in walk.nodes if n in own)), self.trigger_title(walk.trigger), False)
+        return self.run_of(replace(walk, nodes=tuple(n for n in walk.nodes if n in own)), False)
 
     def last_failure(self, chart: Chart) -> WalkFailure | None:
         return next((f for f in self.failures() if f.workflow == chart.id), None)
@@ -34,7 +35,13 @@ class Traces:
     def recent(self, limit: int) -> list[WalkRun]:
         """The newest walks across every workflow, newest first, each with its event's title and whether a node failed in it."""
         failures = self.failures()
-        return [WalkRun(walk, self.trigger_title(walk.trigger), any(abs(f.at - walk.at) < 1 and f.workflow in walk.workflows for f in failures)) for walk in self.walks()[:limit]]
+        return [self.run_of(walk, any(abs(f.at - walk.at) < 1 and f.workflow in walk.workflows for f in failures)) for walk in self.walks()[:limit]]
+
+    def run_of(self, walk: WalkRecord, failed: bool) -> WalkRun:
+        return WalkRun(walk, self.trigger_title(walk.trigger), failed, self.state_title(walk.started), self.state_title(walk.moved_to))
+
+    def state_title(self, name: str) -> str:
+        return self.states.title_of(name) if name else ""
 
     def walks(self) -> list[WalkRecord]:
         return [WalkRecord.from_entry(e) for e in self.entries.of_kind(WALKED, LOOK_BACK)]

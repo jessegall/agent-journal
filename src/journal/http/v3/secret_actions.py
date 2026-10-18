@@ -26,10 +26,9 @@ class SecretActions:
 
     def update(self, n: int, body: ActionBody, by: Actor) -> Secret:
         secret = self.secrets.find(n)
-        changed = body.changes(title="title", brief="brief", fields="secret_fields", helpers="helpers")
-        programs = self.allowed(body.programs) if body.has("programs") else secret.programs
-        proposed = tuple(p for p in body.proposed if p not in programs) if body.has("proposed") else secret.proposed
-        return self.secrets.save(secret.with_(**changed, programs=programs, proposed=proposed), by)
+        programs = self.allowed(body.programs) if body.has("programs") else None
+        proposed = body.proposed if body.has("proposed") else None
+        return self.secrets.save(secret.allowing(programs, proposed).with_(**body.changes(title="title", brief="brief", fields="secret_fields", helpers="helpers")), by)
 
     def fill(self, n: int, body: ActionBody, by: Actor) -> Secret:
         secret = self.secrets.find(n)

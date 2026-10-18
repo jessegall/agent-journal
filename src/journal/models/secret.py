@@ -43,6 +43,12 @@ class Secret(Model):
         """A field without a value: the secret waits for the user."""
         return any(raw["name"] not in self.filled for raw in self.fields)
 
+    def allowing(self, programs: tuple[str, ...] | None, proposed: tuple[str, ...] | None) -> "Secret":
+        """The programs it goes to and the ones proposed for it, each kept when not given; a program allowed is no longer proposed."""
+        allowed = self.programs if programs is None else programs
+        asked = self.proposed if proposed is None else proposed
+        return self.with_(programs=allowed, proposed=tuple(p for p in asked if p not in allowed))
+
     def login_ran_out_unasked(self, now: datetime) -> bool:
         """The saved login ran out, and the user was not yet asked to log in again since."""
         if self.session_expires is None or self.session_expires >= now:

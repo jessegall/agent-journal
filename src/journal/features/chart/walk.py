@@ -76,13 +76,9 @@ class Walk:
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
             record = WalkRecord(session=ctx.session, state=ctx.state.name if ctx.state else "", started=started.name if started else "", workflows=tuple(c.id for c in walked), trigger=key, nodes=tuple(passed), allowed=decision.allowed, said=decision.context or decision.reason,
                                 unanswered=tuple(ctx.unanswered), moved_by=tuple(n for n, _ in ctx.moves), stopped_at=ctx.stopped[0] if ctx.stopped else 0, moved_to=ctx.moves[-1][1].name if ctx.moves else "",
-                                row=ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, read={str(k): v for k, v in ctx.read.items()}, stops=self.stopped_with_counts(ctx))
+                                row=ctx.event.model.id if isinstance(ctx.event, ModelEvent) else 0, read={str(k): v for k, v in ctx.read.items()}, stops=ctx.stops_counted(self.checks.counts_kept))
             self.entries.save(Entry(environment_id=ctx.environment_id, kind=WALKED, actor=Actor.system(), data=record.to_data()), Actor.system())
         return decision
-
-    def stopped_with_counts(self, ctx: Context) -> tuple[WalkStop, ...]:
-        """Each stop of this walk with its workflow's counts for the agent as the walk left them."""
-        return tuple(replace(stop, counts=self.checks.counts_kept(ctx.session, stop.workflow)) for stop in ctx.stops)
 
     def in_part(self, charts: list[Chart], event: Event, part: str) -> list[Chart]:
         """The workflows of the part asked for: before the reply those that can change the answer, after it the quiet ones placed before any that ended the walk."""

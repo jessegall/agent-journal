@@ -13,6 +13,10 @@ class TurnWritten(AgentEvent):
     index: int = 0
     final: bool = True
 
+    @property
+    def words(self) -> str:
+        return self.text if self.final else ""
+
     def with_text(self, whole: str) -> "TurnWritten":
         return replace(self, text=whole)
 
