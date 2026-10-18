@@ -17,9 +17,10 @@ class Masks:
 
     def masked(self, text: str) -> str:
         for value, variable in self.current().items():
-            if value in text:
-                text = text.replace(value, f"[secret {variable}]")
-                self.leaks.append((variable, time.time()))
+            if value not in text:
+                continue
+            text = text.replace(value, f"[secret {variable}]")
+            self.leaks.append((variable, time.time()))
         return text
 
     def current(self) -> dict[str, str]:

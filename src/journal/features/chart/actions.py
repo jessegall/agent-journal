@@ -63,13 +63,19 @@ class Actions:
         self.supervisor.type(ctx.environment_id, line)
         return Decision()
 
+    def skills_asked(self, ctx: Context) -> list[Skill]:
+        """The skills a prompt names, or at any other event the ones the state asks for."""
+        if isinstance(ctx.event, PromptSubmitted):
+            return self.requiring.named_in(ctx.event.prompt)
+        return self.requiring.for_state(ctx.state)
+
     def require_skill(self, text: str, ctx: Context) -> Decision:
         """The agent owes a read of a skill: the one named, or the ones the prompt names at a prompt, else the skill of its state; each owed one is a link from the agent and a line that says where its file is. With the skills switched off here, nothing is owed."""
         from journal.features.skills.feature import Skills
         if not ctx.session or self.registry.silenced(Skills.REQUIRED):
             return Decision()
         agent = self.machine.agent(ctx.session, ctx.environment_id)
-        skills = self.requiring.named(text.strip()) if text.strip() else self.requiring.named_in(ctx.event.prompt) if isinstance(ctx.event, PromptSubmitted) else self.requiring.for_state(ctx.state)
+        skills = self.requiring.named(text.strip()) if text.strip() else self.skills_asked(ctx)
         lines = self.requiring.require(agent, self.requiring.owed(agent, skills))
         if lines and not ctx.answers_hook:
             for line in lines:

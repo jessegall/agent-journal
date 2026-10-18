@@ -46,8 +46,9 @@ class V3Row:
 
     @classmethod
     def of(cls, type: str, model: Model, **fields) -> "V3Row":
+        """The row of a model, with the fields given; one given as None is absent and keeps its default."""
         base = dict(type=type, n=model.id, created=seconds(model.created_at), updated=seconds(model.updated_at) or seconds(model.created_at), seen=[who(model.created_by)])
-        return cls(**{**base, **fields})
+        return cls(**{**base, **{name: value for name, value in fields.items() if value is not None}})
 
     @property
     def ref(self) -> str:

@@ -17,5 +17,5 @@ class QuestionsShaper(Shaper):
         answered = q.answer is not None
         options = [{"title": o, "description": ""} for o in q.options]
         chosen = next((i + 1 for i, o in enumerate(q.options) if answered and o == q.answer), 0)
-        return V3Row.of("question", q, title=q.text, seen=[AGENT, USER] if answered else [AGENT], outcome=q.answer or "", completed=seconds(q.updated_at) if answered else 0.0,
+        return V3Row.of("question", q, title=q.text, seen=[AGENT, USER] if answered else [AGENT], outcome=q.answer, completed=seconds(q.updated_at) if answered else 0.0,
                         data={"options": options, "pick": 1, "chosen": chosen, "kept": False, "answered_by": USER if answered else "", "reason": "", "final": False, "dismissed": False})

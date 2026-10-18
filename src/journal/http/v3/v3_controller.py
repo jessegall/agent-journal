@@ -274,9 +274,9 @@ class V3Controller:
         agent = next((a for a in self.agents.in_() if a.id == n), None)
         if agent is None:
             return Response.json({"cursor": time.time(), "edits": [], "older": False})
-        since = float(request.query.get("since", 0) or 0)
+        since = request.queried("since")
         edits = [{"id": f"{e.path}@{e.at}", "path": e.path, "kind": e.kind, "at": e.at, "added": e.added, "removed": e.removed, "first_line": e.first_line, "last_line": e.last_line,
-                  "rows": list(e.rows), "image": False, **({"command": e.command} if e.command else {})} for e in self.edits.of_agent(agent.session, since)]
+                  "rows": list(e.rows), "image": False, "command": e.command} for e in self.edits.of_agent(agent.session, since)]
         return Response.json({"cursor": time.time(), "edits": edits[-50:], "older": False})
 
     def get_agent_edited_file(self, request: Request) -> Response:
@@ -292,7 +292,7 @@ class V3Controller:
         agent = next((a for a in self.agents.in_() if a.id == n), None)
         if agent is None:
             return Response.json({"lines": []})
-        after = float(request.query.get("after", 0) or 0)
+        after = request.queried("after")
         ran = [e for e in reversed(self.entries.of_kind(RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["at"] > after]
         return Response.json({"lines": [self.terminal_line(n, e) for e in ran][-200:]})
 
@@ -313,8 +313,7 @@ class V3Controller:
 
     def get_events(self, request: Request) -> Response:
         environment = self.here()
-        since = int(request.query.get("since", 0) or 0)
-        return Response.json(self.events_since(environment, since, int(request.query.get("last", 0) or 0)))
+        return Response.json(self.events_since(environment, int(request.queried("since")), int(request.queried("last"))))
 
     def events_since(self, environment: Environment, since: int, last: int = 0) -> list[dict]:
         """The events after an id; a viewer asking from an id ahead of the record remembers a journal that was reset, and is given the recent page so it falls back in step."""

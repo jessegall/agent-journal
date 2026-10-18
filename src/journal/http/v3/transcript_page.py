@@ -6,6 +6,8 @@ from journal.repositories.not_found import NotFound
 
 SPOKEN = ("human", "agent")
 LARGEST = 1000
+PAGE = 300
+"""How many turns a page holds when the viewer names no number."""
 
 
 class TranscriptPage:
@@ -14,7 +16,7 @@ class TranscriptPage:
     def __init__(self, turns: list[Turn]) -> None:
         self.turns = turns
 
-    def page(self, since: int, before: int, size: int) -> TranscriptSlice:
+    def page(self, since: int = 0, before: int = 0, size: int = PAGE) -> TranscriptSlice:
         kept = [t for t in self.turns if t.line > since and (not before or t.line < before)]
         shown = kept[-max(1, min(size, LARGEST)):]
         return TranscriptSlice(total=len(self.turns), first=self.turns[0].line if self.turns else 0, turns=[self.heading(t) for t in shown])

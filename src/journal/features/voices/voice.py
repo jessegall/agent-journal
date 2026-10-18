@@ -16,11 +16,12 @@ class Voice:
     sample: str
     humour: str
     naming: str
-    address: str = ""
-    emoji: str = ""
+    address: str | None = None
+    """The words the user is called by, for a voice that calls them in its own words."""
+    emoji: str | None = None
 
     def instruction(self, title: str, first_name: str) -> str:
         called = self.calling.called(title, first_name, self.address)
         parts = (self.text, self.calling.instruction(called), self.humour, f"When you name a subagent or a worker: {self.naming}",
-                 f"Your own emoji are {self.emoji}: react with them, and now and then use one in what you write." if self.emoji else "", PLAIN_WORDS)
+                 f"Your own emoji are {self.emoji}: react with them, and now and then use one in what you write." if self.emoji is not None else "", PLAIN_WORDS)
         return " ".join(part for part in parts if part)

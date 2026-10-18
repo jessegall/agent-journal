@@ -9,12 +9,12 @@ class Entries(ScopedRepository[Entry]):
     def said_to(self, session: str) -> int:
         """How many lines the journal has said to this session, counted whole: the nudge entries carrying it."""
         row = self.connection.one(f"SELECT COUNT(*) AS n FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ?", (self.scope.id, session))
-        return int(row["n"]) if row else 0
+        return int(row["n"])
 
     def last_said(self, session: str, key: str, line: str) -> float:
         """When these words were last said to this session under this key, as the nudge entry recorded it; 0 when never."""
-        row = self.connection.one(f"SELECT MAX(json_extract(data, '$.at')) AS at FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (self.scope.id, session, key, line))
-        return float(row["at"] or 0.0) if row else 0.0
+        row = self.connection.one(f"SELECT COALESCE(MAX(json_extract(data, '$.at')), 0) AS at FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (self.scope.id, session, key, line))
+        return float(row["at"])
 
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
         """The newest tool uses of this session, newest first, as the hooks recorded them."""
@@ -22,10 +22,10 @@ class Entries(ScopedRepository[Entry]):
 
     def said_since(self, session: str, key: str) -> int:
         """How many lines the journal said to this session since it last said the one with this key, or ever when it never did."""
-        newest = self.connection.one(f"SELECT MAX(id) AS id FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (self.scope.id, session, key))
-        since = int(newest["id"] or 0) if newest else 0
+        newest = self.connection.one(f"SELECT COALESCE(MAX(id), 0) AS id FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (self.scope.id, session, key))
+        since = int(newest["id"])
         row = self.connection.one(f"SELECT COUNT(*) AS n FROM {self.table} WHERE environment_id = ? AND kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (self.scope.id, session, since))
-        return int(row["n"]) if row else 0
+        return int(row["n"])
 
     def of_kind(self, kind: str, last: int = 50) -> list[Entry]:
         return self.selected("environment_id = ? AND kind = ? ORDER BY id DESC LIMIT ?", (self.scope.id, kind, last))

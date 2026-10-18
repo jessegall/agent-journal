@@ -104,7 +104,7 @@ class Installing:
         if not had_data:
             shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
-    def upgrade_preview(self, name: str, ref: str) -> PluginPreview:
+    def upgrade_preview(self, name: str, ref: str | None) -> PluginPreview:
         """The preview of the plugin at the commit asked for, with what changes in its manifest and its code."""
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
@@ -114,7 +114,7 @@ class Installing:
             return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), was=plugin.commit_sha,
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
-    def upgrade(self, name: str, ref: str, environment: str, by: Actor) -> Plugin:
+    def upgrade(self, name: str, ref: str | None, environment: str, by: Actor) -> Plugin:
         """A fetched plugin's folder replaced and its setup run again, its old folder put back if the setup fails; a linked one read where it lies."""
         self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
@@ -204,7 +204,7 @@ class Installing:
         raise Refused(f"a plugin named {name} is installed already: journal plugin upgrade {name}")
 
     @contextmanager
-    def staged(self, source: str, ref: str = "") -> Iterator[tuple[Path, str]]:
+    def staged(self, source: str, ref: str | None = None) -> Iterator[tuple[Path, str]]:
         """A folder is read where it lies; a git address is fetched at the commit asked for, or its newest, into a folder of the system's outside the project, so the agent's program never sees a whole repository appear in the tree it watches, and gone once read."""
         if Path(source).is_dir():
             yield Path(source).resolve(), ""
@@ -214,12 +214,12 @@ class Installing:
         self.clear_stale_fetches(home)
         temporary = Path(tempfile.mkdtemp(prefix="journal-plugin-fetch-"))
         try:
-            shallow = [] if ref else ["--depth", "1"]
+            shallow = [] if ref is not None else ["--depth", "1"]
             fetched = subprocess.run(["git", "clone", "--quiet", *shallow, source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)
-            if fetched.returncode == 0 and ref:
+            if fetched.returncode == 0 and ref is not None:
                 fetched = subprocess.run(["git", "-C", str(temporary / "plugin"), "checkout", "--quiet", ref], capture_output=True, text=True, timeout=FETCH_SECONDS)
             if fetched.returncode != 0:
-                raise Refused(f"could not fetch {source}{' at ' + ref if ref else ''}: {fetched.stderr.strip()[-300:]}")
+                raise Refused(f"could not fetch {source}{' at ' + ref if ref is not None else ''}: {fetched.stderr.strip()[-300:]}")
             commit = subprocess.run(["git", "-C", str(temporary / "plugin"), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=FETCH_SECONDS).stdout.strip()
             yield temporary / "plugin", commit
         finally:

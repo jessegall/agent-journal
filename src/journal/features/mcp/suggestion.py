@@ -17,5 +17,12 @@ class Suggestion:
     key_var: str = ""
     auth: str = "none"
 
+    @property
+    def let_in(self) -> str:
+        """How the server is let in, as the catalogue lists it."""
+        if self.auth == "key":
+            return f" (key: {self.key_var})"
+        return " (signs in on its own)" if self.auth == "oauth" else ""
+
     def server(self) -> McpServer:
         return McpServer(name=self.name, title=self.title, transport=self.transport, command=self.command, args=self.args, url=self.url, key_var=self.key_var, auth=self.auth, state="needs_key" if self.auth == "key" else "installed")

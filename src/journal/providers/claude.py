@@ -99,7 +99,7 @@ class Claude(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 
-    def worker_command(self, brief: str, model: str, resume: str = "") -> list[str]:
+    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["--resume", resume] if resume else []
         return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "json", *resumed]
 

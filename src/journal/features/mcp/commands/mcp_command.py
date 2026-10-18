@@ -31,7 +31,7 @@ class McpCommand(Command):
 
     def suggested(self, args: Namespace, where: Where) -> int:
         for s in self.catalogue.all():
-            print(f"{s.name:<12} {s.title}: {s.about}" + (f" (key: {s.key_var})" if s.key_var else " (signs in on its own)" if s.auth == "oauth" else ""))
+            print(f"{s.name:<12} {s.title}: {s.about}" + s.let_in)
         return 0
 
     def install(self, args: Namespace, where: Where) -> int:

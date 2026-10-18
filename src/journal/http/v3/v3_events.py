@@ -23,7 +23,7 @@ class V3Events:
             if kind is None or kind in ("link", "user"):
                 return None
             action, by = self.action_of(entry, table)
-            return {"id": entry.id, "at": at, "type": kind, "n": entry.data.get("id", 0), "action": action, "actor": who(entry.actor), "data": {"by": by, **({"setting": True} if table == "settings" else {})}, "pid": 0, "handled": True, "env": environment}
+            return {"id": entry.id, "at": at, "type": kind, "n": entry.data.get("id", 0), "action": action, "actor": who(entry.actor), "data": {"by": by, "setting": table == "settings"}, "pid": 0, "handled": True, "env": environment}
         return None
 
     @staticmethod

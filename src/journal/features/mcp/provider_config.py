@@ -30,11 +30,11 @@ class ProviderConfig:
             if s.transport == "stdio":
                 lines.append(f'command = "{s.command}"')
                 lines.append("args = [" + ", ".join(f'"{a}"' for a in s.args) + "]")
-                if s.key_var:
+                if s.needs_key:
                     lines.append(f'env = {{ {s.key_var} = "${{{s.key_var}}}" }}')
             else:
                 lines.append(f'url = "{s.url}"')
-                if s.key_var:
+                if s.needs_key:
                     lines.append(f'bearer_token_env_var = "{s.key_var}"')
             lines.append("")
         return "\n".join(lines)

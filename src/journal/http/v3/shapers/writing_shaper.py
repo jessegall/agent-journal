@@ -15,7 +15,7 @@ class WritingShaper(Shaper):
         self.repository, self.links, self.type, self.data = repository, links, type, data
 
     def rows(self) -> list[V3Row]:
-        return [V3Row.of(self.type, r, title=r.title, brief=r.body, sections=self.sections(r.body), refs=[viewer_ref(ref) for ref in self.links.targets(r)], data=dict(self.data))
+        return [V3Row.of(self.type, r, title=r.title, brief=r.body, sections=self.sections(r.body), refs=[viewer_ref(ref) for ref in self.links.every_target(r)], data=dict(self.data))
                 for r in self.repository.in_()]
 
     @staticmethod

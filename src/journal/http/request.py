@@ -30,6 +30,11 @@ class Request:
             raise NotFound("rows", given or "nothing")
         return int(given)
 
+    def queried(self, name: str, default: float = 0.0) -> float:
+        """A number the query names, or the default when it names none or leaves it blank."""
+        given = self.query.get(name)
+        return float(given) if given else default
+
     @property
     def environment(self) -> str:
         """The environment the header names; an address the browser opens itself, a picture or a stream, names it as ?env= since it cannot carry a header."""

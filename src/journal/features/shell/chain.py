@@ -64,7 +64,8 @@ class Chain:
                 current, i = current + line[i:i + 2], i + 2
                 continue
             if inner in ("'", "`"):
-                stack.pop() if c == inner else None
+                if c == inner:
+                    stack.pop()
             elif inner == '"':
                 if c == '"':
                     stack.pop()
@@ -95,7 +96,7 @@ class Chain:
                 if line.startswith("<<", i) and not line.startswith("<<<", i):
                     parts.append((separator, (current + line[i:]).strip()))
                     return [(s, p) for s, p in parts if p]
-                found = "&&" if line.startswith("&&", i) else ";" if c == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";" else ""
+                found = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i)
                 if found:
                     parts.append((separator, current.strip()))
                     current, separator, i = "", found, i + len(found)
@@ -103,6 +104,12 @@ class Chain:
             current, i = current + c, i + 1
         parts.append((separator, current.strip()))
         return [(s, p) for s, p in parts if p]
+
+    @staticmethod
+    def semicolon_at(line: str, i: int) -> str:
+        """A lone ; at the position, which ends a command; ;; ;& and ;| belong to a case."""
+        alone = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
+        return ";" if alone else ""
 
     @staticmethod
     def command_words(part: str) -> list[str]:

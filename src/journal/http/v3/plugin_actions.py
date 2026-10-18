@@ -24,7 +24,7 @@ class PluginActions:
         return self.installing.disable(self.plugins.find(n).name, by)
 
     def upgrade(self, n: int, body: ActionBody, by: Actor) -> Plugin:
-        return self.installing.upgrade(self.plugins.find(n).name, body.ref, self.environments.find(self.scope.id).name, by)
+        return self.installing.upgrade(self.plugins.find(n).name, body.ref if body.has("ref") else None, self.environments.find(self.scope.id).name, by)
 
     def remove(self, n: int, body: ActionBody, by: Actor) -> dict:
         self.installing.remove(self.plugins.find(n).name, by)

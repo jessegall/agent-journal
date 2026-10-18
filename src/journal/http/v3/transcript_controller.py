@@ -12,7 +12,6 @@ from journal.repositories.agents import Agents
 from journal.repositories.not_found import NotFound
 from journal.repositories.workers import Workers
 
-PAGE = 300
 
 
 class TranscriptController:
@@ -44,4 +43,4 @@ class TranscriptController:
         page = TranscriptPage(provider.turns(path) if path else [])
         if "entry" in request.query:
             return Response.json(page.entry(int(request.query["entry"])))
-        return Response.json(page.page(int(request.query.get("since", 0) or 0), int(request.query.get("before", 0) or 0), int(request.query.get("last", PAGE) or PAGE)))
+        return Response.json(page.page(**{field: int(request.query[key]) for key, field in (("since", "since"), ("before", "before"), ("last", "size")) if request.query.get(key)}))

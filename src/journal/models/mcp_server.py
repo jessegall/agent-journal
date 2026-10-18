@@ -25,11 +25,25 @@ class McpServer(Model):
     def noun(cls) -> str:
         return "MCP server"
 
-    def checked(self, state: str, error: str) -> "McpServer":
-        return self.with_(state=state, last_error=error)
+    def checked(self, state: str, words: str) -> "McpServer":
+        """How it stood when checked; the words are its error only when it failed."""
+        return self.with_(state=state, last_error=words if state == "failed" else "")
 
     def shape(self) -> dict:
         """The server as the provider's configuration names it; a key is referred to by its variable, never written down."""
-        if self.transport == "stdio":
-            return {"command": self.command, "args": list(self.args), **({"env": {self.key_var: f"${{{self.key_var}}}"}} if self.key_var else {})}
-        return {"type": self.transport, "url": self.url, **({"headers": {"Authorization": f"Bearer ${{{self.key_var}}}"}} if self.key_var else {})}
+        return self.started_shape() if self.transport == "stdio" else self.reached_shape()
+
+    def started_shape(self) -> dict:
+        return self.present(command=self.command, args=list(self.args), env={self.key_var: f"${{{self.key_var}}}"} if self.needs_key else None)
+
+    def reached_shape(self) -> dict:
+        return self.present(type=self.transport, url=self.url, headers={"Authorization": f"Bearer ${{{self.key_var}}}"} if self.needs_key else None)
+
+    @staticmethod
+    def present(**fields) -> dict:
+        """The fields given, those given as None left out."""
+        return {name: value for name, value in fields.items() if value is not None}
+
+    @property
+    def needs_key(self) -> bool:
+        return self.auth == "key"

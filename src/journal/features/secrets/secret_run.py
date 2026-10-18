@@ -29,7 +29,7 @@ class SecretRun:
     def run(self, secret: Secret, command: list[str], template: str, as_variables: bool) -> tuple[int, bytes]:
         program = self.program(secret, command)
         fields = [SecretField.of(raw) for raw in secret.fields]
-        keys = {s.key_var for s in self.servers.all() if s.key_var}
+        keys = {s.key_var for s in self.servers.all() if s.needs_key}
         if any(f.variable in keys for f in fields):
             raise Refused(f"{secret.title} is the key of an MCP server, which only the journal itself uses: no program is given it")
         values = self.values.values()

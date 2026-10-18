@@ -63,7 +63,7 @@ class Provider:
 
     def resume(self, session: str) -> tuple[str, ...]: ...
 
-    def worker_command(self, brief: str, model: str, resume: str = "") -> list[str]:
+    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         """The program run headless on one job, printing its report; given a session, the same worker again with its memory."""
         ...
 

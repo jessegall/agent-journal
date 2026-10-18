@@ -9,7 +9,7 @@ class Calling(StrEnum):
     NONE = "none"
     OWN = "its own words"
 
-    def called(self, title: str, name: str, own: str = "") -> str:
+    def called(self, title: str, name: str, own: str | None = None) -> str:
         parts = {Calling.TITLE_AND_NAME: (title, name), Calling.NAME: (name,), Calling.NONE: (), Calling.OWN: (own,)}[self]
         return " ".join(part for part in parts if part)
 

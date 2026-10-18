@@ -43,13 +43,16 @@ class Installing:
         self.applied()
         return True
 
+    def unchecked_state(self, server: McpServer) -> str:
+        """How a server the program has not reported on stands: waiting for its key, or installed."""
+        return "needs_key" if server.needs_key and not self.keys.has(server.key_var) else "installed"
+
     def checked(self, by: Actor) -> list[McpServer]:
         found = self.health.fresh()
         checked = []
         for server in self.servers.all():
             known = found.get(server.name) or found.get("*")
-            state, words = (known.state, known.words) if known else ("needs_key" if server.key_var and not self.keys.has(server.key_var) else "installed", "")
-            checked.append(self.servers.save(server.checked(state, words if state == "failed" else ""), by))
+            checked.append(self.servers.save(server.checked(known.state, known.words) if known else server.checked(self.unchecked_state(server), ""), by))
         return checked
 
     def sign_in(self, server: McpServer) -> bool:

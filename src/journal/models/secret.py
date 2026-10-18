@@ -43,6 +43,12 @@ class Secret(Model):
         """A field without a value: the secret waits for the user."""
         return any(raw["name"] not in self.filled for raw in self.fields)
 
+    def login_ran_out_unasked(self, now: datetime) -> bool:
+        """The saved login ran out, and the user was not yet asked to log in again since."""
+        if self.session_expires is None or self.session_expires >= now:
+            return False
+        return self.asked_at is None or self.asked_at < self.session_expires
+
     def filled_in(self, name: str) -> "Secret":
         return self.with_(filled=tuple(dict.fromkeys((*self.filled, self.field(name).name))), asked_at=None)
 

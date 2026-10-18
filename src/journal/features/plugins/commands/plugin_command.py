@@ -29,7 +29,7 @@ class PluginCommand(Command):
         propose.add_argument("--why", default="", help="what it is for")
         upgrade = self.verb(verbs, "upgrade", "show what changes in what a plugin runs, hears and holds; with --yes, upgrade it")
         upgrade.add_argument("name")
-        upgrade.add_argument("--ref", default="", help="the commit or tag to upgrade to; its newest when left out")
+        upgrade.add_argument("--ref", help="the commit or tag to upgrade to; its newest when left out")
         upgrade.add_argument("--yes", action="store_true", help="upgrade it after the preview")
         self.verb(verbs, "enable", "switch a plugin on, for the whole project").add_argument("name")
         self.verb(verbs, "disable", "switch a plugin off: it hears nothing until switched on").add_argument("name")
@@ -68,7 +68,7 @@ class PluginCommand(Command):
         if preview.code:
             print("\nthe code:\n" + "\n".join(preview.code))
         if not args.yes:
-            print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref else ''} --yes")
+            print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref is not None else ''} --yes")
             return 0
         self.installing.upgrade(args.name, args.ref, where.environment, where.actor)
         print(f"upgraded {args.name}")

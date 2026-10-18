@@ -37,10 +37,9 @@ class AdvancePlan(Listener[Updated]):
         task = event.model
         if not isinstance(task, Task) or task.state != TaskState.DONE:
             return
-        for plan in self.plans.holding(task):
-            if self.plans.finished(plan):
-                self.plans.save(plan.done(), event.by)
-                print(PlansFeature.DONE.about(n=plan.id).rendered())
+        for plan in [p for p in self.plans.holding(task) if self.plans.finished(p)]:
+            self.plans.save(plan.done(), event.by)
+            print(PlansFeature.DONE.about(n=plan.id).rendered())
         state = self.following(event)
         if state is None or state.task_id != task.id:
             return

@@ -22,11 +22,17 @@ class MessagesShaper(Shaper):
         return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in self.links.targets(m, "about")]) for m in self.messages.in_()]
 
     @staticmethod
+    def closed_at(author: str, answered: bool, read: float) -> float:
+        """When a person's message counts as closed: the user's once answered, the agent's once read; open until then."""
+        settled = (author == USER and answered) or (author == AGENT and read)
+        return read if settled else 0.0
+
+    @staticmethod
     def row(m, answered: bool, filed: list[str]) -> V3Row:
         author = m.author.value
         other = AGENT if author == USER else USER
         read = seconds(m.read_at)
-        closed = seconds(m.created_at) if m.author == Author.SYSTEM else read if (author == USER and answered) or (author == AGENT and read) else 0.0
+        closed = seconds(m.created_at) if m.author == Author.SYSTEM else MessagesShaper.closed_at(author, answered, read)
         return V3Row.of("message", m, title=(m.text[:TITLE - 1] + "…") if len(m.text) > TITLE else m.text, brief=m.text,
-                        seen=[author, other] if read else [author], refs=[*([f"message:{m.reply_to}"] if m.reply_to else []), *filed, *[ref for ref in Mentions.in_(m.text) if ref not in filed]],
+                        seen=[author, other] if read else [author], refs=[*(f"message:{n}" for n in (m.reply_to,) if n is not None), *filed, *[ref for ref in Mentions.in_(m.text) if ref not in filed]],
                         data={"idempotency": m.idempotency or f"v4:{m.id}", "author": author, "actor": m.created_by.stamp if m.created_by else "", "reply_to": m.reply_to or 0, "acknowledgement": m.acknowledgement, "delivered": bool(read), "files": {name: "" for name in m.files}, "card": m.data}, completed=closed, outcome="answered" if closed and author == USER else "")

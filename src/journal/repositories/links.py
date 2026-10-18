@@ -12,11 +12,19 @@ class Links(Repository[Link]):
         ref = str(Ref.to(model))
         return self.selected("source = ? OR target = ? ORDER BY id", (ref, ref))
 
-    def targets(self, model: Model, kind: str = "") -> list[Ref]:
-        return [link.target for link in self.of(model) if link.source == Ref.to(model) and (not kind or link.kind == kind)]
+    def targets(self, model: Model, kind: str) -> list[Ref]:
+        return [link.target for link in self.of(model) if link.source == Ref.to(model) and link.kind == kind]
 
-    def sources(self, model: Model, kind: str = "") -> list[Ref]:
-        return [link.source for link in self.of(model) if link.target == Ref.to(model) and (not kind or link.kind == kind)]
+    def every_target(self, model: Model) -> list[Ref]:
+        """What the model links to, by a link of any kind."""
+        return [link.target for link in self.of(model) if link.source == Ref.to(model)]
+
+    def every_source(self, model: Model) -> list[Ref]:
+        """What links to the model, by a link of any kind."""
+        return [link.source for link in self.of(model) if link.target == Ref.to(model)]
+
+    def sources(self, model: Model, kind: str) -> list[Ref]:
+        return [link.source for link in self.of(model) if link.target == Ref.to(model) and link.kind == kind]
 
     def between(self, source: Model, target: Model) -> list[Link]:
         return self.where(source=Ref.to(source), target=Ref.to(target))

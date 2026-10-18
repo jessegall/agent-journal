@@ -51,7 +51,7 @@ class Hook:
 
     @property
     def index(self) -> int:
-        return int(self.body.get("index", 0) or 0)
+        return int(self.body.get("index", 0))
 
     @property
     def final(self) -> bool:

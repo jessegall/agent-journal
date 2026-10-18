@@ -82,7 +82,7 @@ def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, s
     b = tasks.save(Task(environment_id=1, title="b"), by=USER)
     links.save(Link(source=Ref.to(a), target=Ref.to(b), kind="blocks"), by=AGENT)
     assert links.targets(a, "blocks") == [Ref.to(b)]
-    assert links.sources(b) == [Ref.to(a)]
+    assert links.every_source(b) == [Ref.to(a)]
     assert len(links.between(a, b)) == 1
     tasks.delete(b, by=USER)
     assert links.of(a) == []

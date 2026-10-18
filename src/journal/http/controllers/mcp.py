@@ -36,7 +36,7 @@ class McpController:
 
     def row(self, server) -> ListedServer:
         return ListedServer(server.name, server.title, server.transport, " ".join([server.command, *server.args]).strip(), server.url,
-                            server.auth, server.key_var, bool(server.key_var) and self.keys.has(server.key_var), server.state, server.last_error, True)
+                            server.auth, server.key_var, server.needs_key and self.keys.has(server.key_var), server.state, server.last_error, True)
 
     @staticmethod
     def known_row(known) -> ListedServer:

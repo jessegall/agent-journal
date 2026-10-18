@@ -209,12 +209,16 @@ class Checks:
         context = getattr(ctx.event, "context", None)
         return context is not None and context * 100 > percent
 
+    @staticmethod
+    def minute_of_day(clock: str) -> int:
+        """HH or HH:MM as minutes since midnight."""
+        return sum(int(part) * unit for part, unit in zip(clock.split(":"), (60, 1)))
+
     def time_between(self, ctx: Context, hours: str) -> bool:
         """The local time of day falls within the span in the text, HH:MM-HH:MM, a span past midnight included; a tick's own time, else now."""
         start, _, end = hours.replace(" ", "").partition("-")
         try:
-            a = int(start[:2]) * 60 + int(start[3:5] or 0)
-            b = int(end[:2]) * 60 + int(end[3:5] or 0)
+            a, b = self.minute_of_day(start), self.minute_of_day(end)
         except ValueError:
             return False
         at = ctx.event.at if isinstance(ctx.event, Ticked) and ctx.event.at else time.time()

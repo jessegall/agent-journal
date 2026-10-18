@@ -38,7 +38,9 @@ class Context:
     @property
     def workflow(self) -> int:
         """The workflow being walked: the one a Run a workflow step called, else the event's."""
-        return self.calling[-1] if self.calling else self.walked[-1] if self.walked else 0
+        if self.calling:
+            return self.calling[-1]
+        return self.walked[-1] if self.walked else 0
 
     def counted(self, name: str) -> str:
         """A count's name as kept for the workflow being walked: each workflow keeps its own counts."""

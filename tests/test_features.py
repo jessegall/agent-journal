@@ -328,7 +328,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     assert Claude().worker_command("now the lexer", "fast", "sess-1")[-2:] == ["--resume", "sess-1"]
     assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == ("lexer done", "sess-2")
     assert Claude().worker_outcome("plain words", "") == ("plain words", "")
-    assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m")[:2] == ["codex", "exec"]
+    assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m", "")[:2] == ["codex", "exec"]
     assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done", "0192f3a4-aaaa-bbbb")
 
 

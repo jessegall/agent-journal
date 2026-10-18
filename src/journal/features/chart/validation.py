@@ -105,9 +105,10 @@ class Validation:
         seen, queue = set(), list(targets)
         while queue:
             for source in leads_to.get(queue.pop(), []):
-                if source not in seen:
-                    seen.add(source)
-                    queue.append(source)
+                if source in seen:
+                    continue
+                seen.add(source)
+                queue.append(source)
         return seen
 
     def warnings(self, chart: Chart) -> list[str]:

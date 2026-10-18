@@ -24,7 +24,7 @@ class PluginsController:
         return Response.json({"n": plugin.id, "name": plugin.name})
 
     def upgrade_preview(self, request: Request) -> Response:
-        return Response.json(self.installing.upgrade_preview(self.plugins.find(request.number("n")).name, request.body.get("ref", "")))
+        return Response.json(self.installing.upgrade_preview(self.plugins.find(request.number("n")).name, request.body.get("ref")))
 
     def log(self, request: Request) -> Response:
         """The last lines its services wrote, every log in its data folder."""

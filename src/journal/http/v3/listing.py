@@ -25,7 +25,8 @@ class Listing:
     def from_query(cls, query: dict) -> "Listing":
         flag = lambda key: str(query.get(key, "")).lower() in ("1", "true", "yes")
         only = tuple(int(n) for n in str(query.get("n", query.get("only", ""))).split(",") if n.strip().isdigit())
-        return cls(int(query.get("last", PAGE) or PAGE), flag("completed"), flag("closed"), int(query.get("before", 0) or 0), int(query.get("from", 0) or 0), float(query.get("since", 0) or 0), only)
+        numbers = {field: kind(query[key]) for key, field, kind in (("last", "last", int), ("before", "before", int), ("from", "after", int), ("since", "since", float)) if query.get(key)}
+        return cls(**numbers, completed=flag("completed"), closed=flag("closed"), only=only)
 
     def listed(self, rows: list[V3Row]) -> ListedPage:
         """{rows, more}, rows in order of their number. A catch-up page since a time keeps deleted rows, so the viewer can drop them."""

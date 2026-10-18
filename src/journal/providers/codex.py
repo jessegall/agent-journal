@@ -44,7 +44,7 @@ class Codex(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
 
-    def worker_command(self, brief: str, model: str, resume: str = "") -> list[str]:
+    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["resume", resume] if resume else []
         return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", "-m", model, brief]
 

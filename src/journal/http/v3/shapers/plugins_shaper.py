@@ -33,4 +33,6 @@ class PluginsShaper(Shaper):
 
     @staticmethod
     def state_of(p: Plugin) -> str:
-        return "off" if not p.enabled else "failing" if p.failing_since else "on"
+        if not p.enabled:
+            return "off"
+        return "failing" if p.failing_since else "on"

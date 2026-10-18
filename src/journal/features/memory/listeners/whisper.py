@@ -26,10 +26,12 @@ class Whisper(AgentListener[AgentEvent]):
             return None
         words = set(re.findall(r"[a-z][a-z0-9_-]*", text.lower()))
         agent = self.machine.agent(event.session, event.environment_id)
-        for noun, row in self.rows():
-            if words & set(row.keywords) and (line := self.nudger.say(agent, self.said(noun, row))):
-                self.supervisor.type(event.environment_id, line)
-                self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", f"{noun}:{row.id}", kind="whisper")
+        for noun, row in [(noun, row) for noun, row in self.rows() if words & set(row.keywords)]:
+            line = self.nudger.say(agent, self.said(noun, row))
+            if not line:
+                continue
+            self.supervisor.type(event.environment_id, line)
+            self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", f"{noun}:{row.id}", kind="whisper")
         return None
 
     @staticmethod

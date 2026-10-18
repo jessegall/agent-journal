@@ -42,12 +42,17 @@ class AgentsShaper(Shaper):
         return [{"key": f"commit:{e.data['sha']}", "label": f"Agent committed {e.data['sha'][:8]} on `{e.data.get('branch', '')}`", "icon": "branch", "tone": "commit", "title": e.data.get("subject", ""), "at": seconds(e.created_at), "state": "", "detail": ""}
                 for e in entries if e.kind == "commit"]
 
+    @staticmethod
+    def status_of(state: str, heard: str) -> str:
+        """A live agent's status: working when its state is one of work and its last hook says it is busy, else what the hook says."""
+        return "working" if state in WORKING and heard == "busy" else heard
+
     def row(self, a, entries) -> V3Row:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted", "commit")]
         moves = [e for e in hooks if e.kind in STATUS]
         last = moves[-1] if moves else None
         kind = last.kind if last else ""
-        status = "stopped" if a.state == "ended" else "working" if a.state in WORKING and STATUS.get(kind, "idle") == "busy" else STATUS.get(kind, "idle")
+        status = "stopped" if a.state == "ended" else self.status_of(a.state, STATUS.get(kind, "idle"))
         at = seconds(last.created_at) if last else seconds(a.updated_at)
         state = self.states.named(a.state, a.data)
         data = {
