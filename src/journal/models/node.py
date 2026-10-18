@@ -8,19 +8,19 @@ from journal.models.node_kind import NodeKind
 class Node(Model):
     """One box of the chart: a trigger, a check or an action, naming an entry of the catalogue, with the text the entry takes and its place on the canvas."""
 
-    @classmethod
-    def noun(cls) -> str:
-        return "workflow step"
-
     kind: NodeKind = NodeKind.TRIGGER
     key: str = ""
     text: str = ""
     x: int = 0
     y: int = 0
     shipped: bool = False
+    """True for a node the journal shipped and the user has not touched; an edit makes it the user's, so a later release knows which rules are still its own."""
     locked: bool = False
     """True for a step that is the journal's law: it cannot be taken out, reworded or turned off, and nothing the user adds may decide whether it runs."""
-    """True for a node the journal shipped and the user has not touched; an edit makes it the user's, so a later release knows which rules are still its own."""
+
+    @classmethod
+    def noun(cls) -> str:
+        return "workflow step"
 
     def cleaned(self) -> "Node":
         """The text as it may reach a prompt or a terminal: printable characters and spaces only, one line."""

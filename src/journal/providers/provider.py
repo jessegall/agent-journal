@@ -29,6 +29,8 @@ class Provider:
     settings_extras: ClassVar[dict] = {}
     """What else the program's settings file must say for the journal's sake, such as taking the project's MCP servers without asking."""
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
+    controls: ClassVar[dict] = {"groups": [], "note": ""}
+    """The model, effort and context choices the viewer's agent bar offers, each with the line typed into the agent to take it."""
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
@@ -59,9 +61,6 @@ class Provider:
         return [], read
 
     def resume(self, session: str) -> tuple[str, ...]: ...
-
-    controls: ClassVar[dict] = {"groups": [], "note": ""}
-    """The model, effort and context choices the viewer's agent bar offers, each with the line typed into the agent to take it."""
 
     def worker_command(self, brief: str, model: str, resume: str = "") -> list[str]:
         """The program run headless on one job, printing its report; given a session, the same worker again with its memory."""

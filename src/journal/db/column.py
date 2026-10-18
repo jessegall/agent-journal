@@ -13,6 +13,8 @@ from journal.models.ref import Ref
 class Column:
     """One model field as the database holds it: its SQL type, and the value both ways."""
 
+    PLAIN = (bool, int, float, str, datetime, Actor, Ref)
+
     name: str
     kind: type
 
@@ -27,8 +29,6 @@ class Column:
         if self.kind is float:
             return "REAL"
         return "TEXT"
-
-    PLAIN = (bool, int, float, str, datetime, Actor, Ref)
 
     @property
     def is_json(self) -> bool:

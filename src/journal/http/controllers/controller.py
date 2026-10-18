@@ -13,9 +13,9 @@ S = TypeVar("S", bound=Scoped)
 class Controller(Generic[S]):
     """One per model: index, show, store and update over its repository, within the request's environment."""
 
-    repository: ScopedRepository[S]
-
     PAGE = 50
+
+    repository: ScopedRepository[S]
 
     def index(self, request: Request) -> Response:
         """A page, newest first: ?limit= caps it and ?before=<id> asks for older rows."""

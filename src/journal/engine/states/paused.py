@@ -15,9 +15,9 @@ from journal.features.said import Said
 class Paused(AgentState):
     """A state the agent goes back from: it holds the state it left, serialised, and back() returns there. What two pauses share lives here."""
 
-    resume: dict = field(default_factory=dict)
     leaves_by_itself: ClassVar[bool] = False
     """True when the state goes back on its own, by what the agent does in it, so no workflow has to release it."""
+    resume: dict = field(default_factory=dict)
 
     def awaiting(self) -> tuple[str, str]:
         """What the agent waits for while paused here, in words, and the rows it waits on as refs; the viewer's status line reads both."""

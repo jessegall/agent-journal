@@ -7,6 +7,8 @@ from journal.models.scoped import Scoped
 
 @dataclass(frozen=True)
 class Message(Scoped):
+    FACE_WORDS = 6
+
     author: Author = Author.USER
     text: str = ""
     reply_to: int | None = None
@@ -21,8 +23,6 @@ class Message(Scoped):
     """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     data: dict = field(default_factory=dict)
     """A system message's card: its kind, icon, tone, detail, the row it opens and the session it belongs to."""
-
-    FACE_WORDS = 6
 
     @property
     def takes_a_face(self) -> bool:

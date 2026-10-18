@@ -960,3 +960,5 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 - Documents are project-wide, never per environment (message 3311).
 - The supervisor starts an agent that dies again, resuming its session, and keeps the journal and the services
   running; a clean exit still ends it (message 3331).
+- The supervisor stays a very thin process host; a change to it needs the whole process started again, so changes to
+  it are kept rare and every other behaviour lives in the journal (message 3423).

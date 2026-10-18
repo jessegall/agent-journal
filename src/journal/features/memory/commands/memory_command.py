@@ -12,8 +12,8 @@ from journal.repositories.scope import Scope
 class MemoryCommand(Command):
     """What fact, rule and reminder share: create, list, strike, and lifting a hold at a mark when the agent records one."""
 
-    repository: Repository
     scoped: ClassVar[bool] = True
+    repository: Repository
 
     def __init__(self, machine: Machine, scope: Scope, agents: Agents) -> None:
         self.machine, self.scope, self.agents = machine, scope, agents

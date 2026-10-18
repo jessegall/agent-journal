@@ -7,10 +7,6 @@ from journal.models.model import Model
 class McpServer(Model):
     """An MCP server the project's agents are given: how to start or reach it, the key it needs, and how it stood when last checked."""
 
-    @classmethod
-    def noun(cls) -> str:
-        return "MCP server"
-
     name: str = ""
     title: str = ""
     transport: str = "stdio"
@@ -24,6 +20,10 @@ class McpServer(Model):
     state: str = "installed"
     """installed, needs_key, connected, needs_auth or failed, as the last check found it."""
     last_error: str = ""
+
+    @classmethod
+    def noun(cls) -> str:
+        return "MCP server"
 
     def checked(self, state: str, error: str) -> "McpServer":
         return self.with_(state=state, last_error=error)

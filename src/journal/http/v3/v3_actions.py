@@ -50,6 +50,9 @@ from journal.supervisor_link import SupervisorLink
 class V3Actions:
     """What the viewer writes, in version 3's words, done to version 4's rows: create a row of a type, act on one by its number, mark rows read."""
 
+    WRITTEN = {"doc": "docs", "report": "reports", "todo": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders", "question": "questions"}
+    """The repository behind each type the viewer may rewrite."""
+
     def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering, secret_actions: SecretActions, agent_actions: AgentActions, plugin_actions: PluginActions) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
@@ -101,9 +104,6 @@ class V3Actions:
             return own(n, body, by)
         shared = getattr(self, f"any_{action}", None)
         return shared(type, n, body, by) if shared else None
-
-    WRITTEN = {"doc": "docs", "report": "reports", "todo": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders", "question": "questions"}
-    """The repository behind each type the viewer may rewrite."""
 
     def repository_of(self, type: str):
         return getattr(self, self.WRITTEN[type]) if type in self.WRITTEN else None

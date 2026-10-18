@@ -6,10 +6,6 @@ from journal.models.model import Model
 class Chart(Model):
     """One workflow: the journal's conduct toward the agent as a flowchart, with a title. A journal may hold several, and the engine walks them all. Saved whole, each save a revision."""
 
-    @classmethod
-    def noun(cls) -> str:
-        return "workflow"
-
     title: str = ""
     revision: int = 0
     shipped: bool = False
@@ -26,7 +22,10 @@ class Chart(Model):
     """The DRAWINGS_VERSION the shipped drawing was drawn at, so a newer release knows it is behind."""
     locked: bool = False
     """True for a workflow that is the journal's law: it runs first at its event and cannot be deleted or turned off."""
-    """The shipping a shipped workflow's drawing came from: one the user edited that the shipping has since moved past is told so."""
+
+    @classmethod
+    def noun(cls) -> str:
+        return "workflow"
 
     def saved_again(self) -> "Chart":
         return self.with_(revision=self.revision + 1)
