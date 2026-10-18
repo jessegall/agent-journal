@@ -21,5 +21,5 @@ class MessageController(Controller[Message]):
         try:
             message = self.repository.find(request.number("id"))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         return Response.json(self.repository.mark_read(message, request.actor))

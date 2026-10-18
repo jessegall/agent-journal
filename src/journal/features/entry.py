@@ -16,3 +16,6 @@ class Entry:
     """The row events of one table share their table's noun as a group; an agent event stands alone."""
     providers: tuple[str, ...] = ("claude", "codex")
     """The agents it works for: Codex delivers no MessageDisplay hook, so a turn written is Claude's alone."""
+
+    def is_(self, kind: str, key: str) -> bool:
+        return self.kind == kind and self.key == key

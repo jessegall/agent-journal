@@ -176,7 +176,7 @@ class V3Controller:
         try:
             done = self.actions.act(type_, n, action, request.body, request)
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         if done is None:
             return Response.refused(f"{action} is not something the viewer can do to a {type_} here")
         return Response.json(done if isinstance(done, V3Row) else self.row_of(type_, n) or {})
@@ -186,7 +186,7 @@ class V3Controller:
         try:
             done = self.actions.upload(type_, n, request)
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         if done is None:
             return Response.refused(f"a {type_} takes no files here")
         return Response.json(self.row_of(type_, n) or {})

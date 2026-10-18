@@ -24,7 +24,7 @@ class TaskController(Controller[Task]):
         try:
             task = self.repository.find(request.number("id"))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         line = self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=request.body.get("line", "")), request.actor)
         return Response.json(line, 201)
 
@@ -32,7 +32,7 @@ class TaskController(Controller[Task]):
         try:
             task = self.repository.find(request.number("id"))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         return Response.json(self.repository.save(change(task), request.actor))
 
     @staticmethod

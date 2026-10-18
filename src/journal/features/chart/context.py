@@ -42,6 +42,10 @@ class Context:
             return self.calling[-1]
         return self.walked[-1] if self.walked else 0
 
+    def keeps_count(self, text: str) -> bool:
+        """A count step's text names a count, and there is an agent to keep it for."""
+        return bool(self.session and text.strip())
+
     def counted(self, name: str) -> str:
         """A count's name as kept for the workflow being walked: each workflow keeps its own counts."""
         return f"charts:{self.workflow}:{name}"

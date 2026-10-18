@@ -19,13 +19,13 @@ class PlanController(Controller[Plan]):
         try:
             return Response.json(self.repository.tasks_of(self.repository.find(request.number("id"))))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
 
     def add_task(self, request: Request) -> Response:
         try:
             plan = self.repository.find(request.number("id"))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=request.body.get("title", ""), brief=request.body.get("brief", "")), request.actor)
         self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), request.actor)
         return Response.json(task, 201)

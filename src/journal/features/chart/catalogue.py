@@ -45,10 +45,10 @@ class Catalogue:
         return self.triggers() + self.checks() + self.actions()
 
     def has(self, kind: str, key: str) -> bool:
-        return any(entry.kind == kind and entry.key == key for entry in self.all())
+        return any(entry.is_(kind, key) for entry in self.all())
 
     def entry(self, kind: NodeKind, key: str) -> Entry:
         for entry in self.all():
-            if entry.kind == kind and entry.key == key:
+            if entry.is_(kind, key):
                 return entry
         raise Refused(f"the catalogue has no {kind} named {key}")

@@ -25,6 +25,10 @@ class Message(Scoped):
     """A system message's card: its kind, icon, tone, detail, the row it opens and the session it belongs to."""
 
     @property
+    def is_agents_reply(self) -> bool:
+        return self.reply_to is not None and self.author == Author.AGENT
+
+    @property
     def takes_a_face(self) -> bool:
         """A message of a few words, an ok or a thanks, is answered by a face; anything longer wants words."""
         return len(self.text.split()) <= self.FACE_WORDS

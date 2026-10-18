@@ -214,19 +214,22 @@ class ShippedChart(Seed):
     def strip_what_its_drawings_carry(self, chart: Chart, by: Actor) -> None:
         """The shipped nodes of a released workflow that a current shipped workflow of its state and event carries, taken out, so no line is said twice."""
         carried = {(n.kind, n.key, n.text) for c in self.charts.for_event(chart.event) if c.shipped and c.state == chart.state and c.id != chart.id for n in self.charts.nodes_of(c) if n.kind != NodeKind.TRIGGER}
-        for node in [n for n in self.charts.nodes_of(chart) if n.shipped and (n.kind, n.key, n.text) in carried]:
-            self.charts.remove_node(node, by)
+        self.remove_carried(chart, carried, by)
 
     def strip_the_shared_conduct(self, by: Actor) -> None:
         """An edited state's workflow drawn when it still carried the event's shared conduct loses those shipped nodes, now an Always workflow's, and keeps the user's own and the state's."""
         for chart in [c for c in self.charts.shipped() if c.state and c.drawn_version < DRAWINGS_VERSION]:
             self.strip(chart, by)
 
+    def remove_carried(self, chart: Chart, carried: set, by: Actor) -> None:
+        """The chart's shipped nodes another workflow carries, by kind, key and words, taken out with their lines."""
+        for node in [n for n in self.charts.nodes_of(chart) if n.shipped and (n.kind, n.key, n.text) in carried]:
+            self.charts.remove_node(node, by)
+
     def strip(self, chart: Chart, by: Actor) -> None:
         """The shipped nodes of the chart that the event's stateless workflows carry, by kind, key and words, taken out with their lines."""
         carried = {(n.kind, n.key, n.text) for c in self.charts.for_event(chart.event) if not c.state for n in self.charts.nodes_of(c) if n.kind != NodeKind.TRIGGER}
-        for node in [n for n in self.charts.nodes_of(chart) if n.shipped and (n.kind, n.key, n.text) in carried]:
-            self.charts.remove_node(node, by)
+        self.remove_carried(chart, carried, by)
 
     @staticmethod
     def key_of(state: str, event: str) -> str:

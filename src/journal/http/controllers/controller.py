@@ -32,7 +32,7 @@ class Controller(Generic[S]):
         try:
             return Response.json(self.repository.find(request.number("id")))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
 
     def store(self, request: Request) -> Response:
         row = self.repository.model(**self.fields_of(request.body))
@@ -42,7 +42,7 @@ class Controller(Generic[S]):
         try:
             row = self.repository.find(request.number("id"))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         return Response.json(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor))
 
     def fields_of(self, body: dict) -> dict:

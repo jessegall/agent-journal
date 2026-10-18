@@ -105,7 +105,7 @@ class Checks:
         since = max([t for t in (task.started_at, *(log.created_at for log in logs)) if t], default=None)
         provider = self.providers.named(ctx.provider)
         before_this = self.tool_uses_since(ctx.session, since)[1:] if isinstance(ctx.event, ToolStarting) else self.tool_uses_since(ctx.session, since)
-        return sum(1 for e in before_this if not e.data.get("refused") and provider.writes(e.data.get("tool_name", ""), e.data.get("tool_input", {}) or {}))
+        return sum(1 for e in before_this if provider.wrote(e))
 
     def derived_uses(self, ctx: Context) -> int:
         """Tool uses since the newest unread message came."""

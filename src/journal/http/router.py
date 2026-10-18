@@ -33,5 +33,5 @@ class Router:
                 except Refused as refused:
                     return Response.refused(str(refused))
                 except NotFound as missing:
-                    return Response.not_found(str(missing))
+                    return Response.missing(missing)
         return Response.not_found(f"{request.method} {request.path}")

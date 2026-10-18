@@ -41,10 +41,10 @@ class RecordTurn(AgentListener[TurnWritten]):
             self.supervisor.type(event.environment_id, MessagesFeature.ONLY_A_FACE.about(face=event.text.strip()).rendered())
             return
         with self.recording:
-            self._record(event, event.text)
+            self._record(event)
 
-    def _record(self, event: TurnWritten, whole: str) -> None:
-        by = Actor.agent(event.session)
+    def _record(self, event: TurnWritten) -> None:
+        by, whole = Actor.agent(event.session), event.text
         for answered, part in self.sections(whole):
             if self.already_recorded(part):
                 continue

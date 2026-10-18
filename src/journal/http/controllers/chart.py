@@ -96,14 +96,14 @@ class ChartController:
         try:
             return Response.json(self.drawn(self.charts.find(request.number("id"))))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
 
     def stands(self, request: Request) -> Response:
         """Where each live agent stands in the workflow: the node it last stopped at, its counts and the readings."""
         try:
             return Response.json(self.standing.of(self.charts.find(request.number("id"))))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
 
     def create(self, request: Request) -> Response:
         """A workflow of the user's own for a state at an event, or for every state when no state is named, born with its trigger, after the others of its event, with a title that names it unless given."""

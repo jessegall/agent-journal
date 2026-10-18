@@ -47,4 +47,4 @@ class HoldWritesForTheStep(AgentListener[ToolStarting]):
     def writes_since(self, event: ToolStarting, run: SequenceRun, provider) -> int:
         since = datetime.fromisoformat(run.taken_up_at)
         uses = [e for e in self.entries.tool_starts(event.session)[1:] if e.created_at and e.created_at > since and not (e.data.get("agent_id") or e.data.get("subagent_id"))]
-        return sum(1 for e in uses if not e.data.get("refused") and provider.writes(e.data.get("tool_name", ""), e.data.get("tool_input", {}) or {}))
+        return sum(1 for e in uses if provider.wrote(e))

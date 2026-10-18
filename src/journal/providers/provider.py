@@ -10,6 +10,7 @@ from journal.hooks.decision import Decision
 from journal.hooks.hook import Hook
 from journal.hooks.hook_kind import HookKind
 from journal.http.response import Response
+from journal.models.entry import Entry
 from journal.providers.tool_input import ToolInput
 from journal.providers.turn import Turn
 
@@ -116,6 +117,10 @@ class Provider:
     def skill_loaded(self, tool: str, input: dict) -> str:
         """The skill folder a skill tool call loaded, or empty."""
         return ToolInput.from_json(input).skill if tool == "Skill" else ""
+
+    def wrote(self, use: Entry) -> bool:
+        """A recorded tool use that changed files and was not held."""
+        return not use.data.get("refused") and self.writes(use.data.get("tool_name", ""), use.data.get("tool_input", {}) or {})
 
     def writes(self, tool: str, input: dict) -> bool:
         """Whether this tool use changes files: the editor's writing tools, or a shell line that writes."""

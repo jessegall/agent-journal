@@ -58,22 +58,23 @@ class SupervisorLink:
     def screen(self, environment_id: int) -> str:
         """The newest output of the agent's terminal, as the supervisor mirrors it, read as text; empty when there is none."""
         path = self.mirrored(environment_id, "out")
-        return path.read_bytes().decode(errors="replace") if path and path.exists() else ""
+        return path.read_bytes().decode(errors="replace") if path else ""
 
     def screen_changed_at(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "out")
-        return path.stat().st_mtime if path and path.exists() else 0.0
+        return path.stat().st_mtime if path else 0.0
 
     def keyed_at(self, environment_id: int) -> float:
         """When the user last pressed a key for the agent: at the keyboard, as the supervisor notes it, or in the viewer's terminal pane."""
         path = self.mirrored(environment_id, "keyed")
-        at_keyboard = path.stat().st_mtime if path and path.exists() else 0.0
+        at_keyboard = path.stat().st_mtime if path else 0.0
         return max(at_keyboard, self._viewer_keyed_at.get(environment_id, 0.0))
 
     def mirrored(self, environment_id: int, kind: str) -> Path | None:
-        """The mirror of the agent's screen, or the file noting keys beside it, where the supervisor announced it; none when no supervisor runs."""
+        """The mirror of the agent's screen, or the file noting keys beside it, where the supervisor announced it; none when no supervisor runs or the file is not there yet."""
         announced = self.announced(environment_id)
-        return Path(announced.screen).with_suffix(f".{kind}") if announced and announced.screen else None
+        path = Path(announced.screen).with_suffix(f".{kind}") if announced and announced.screen else None
+        return path if path and path.exists() else None
 
     def start(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path) -> SupervisorReply:
         """A service started under the environment's supervisor; one already running under the name is left as it is."""

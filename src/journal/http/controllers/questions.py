@@ -19,7 +19,7 @@ class QuestionController(Controller[Question]):
         try:
             question = self.repository.find(request.number("id"))
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         answered = self.repository.save(question.answered(request.body.get("answer", "")), request.actor)
         for agent in self.agents.in_state(Waiting.name):
             state = self.machine.states.named(agent.state, agent.data)

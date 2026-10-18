@@ -124,18 +124,18 @@ class Actions:
 
     def count_start(self, text: str, ctx: Context) -> Decision:
         """The agent's count by that name back at nought."""
-        if ctx.session and text.strip():
+        if ctx.keeps_count(text):
             self.counts.set(ctx.session, ctx.counted(text.strip()), 0, Actor.system())
         return Decision()
 
     def count_begin(self, text: str, ctx: Context) -> Decision:
         """The agent's count by that name at nought, unless this workflow has already started it."""
-        if ctx.session and text.strip():
+        if ctx.keeps_count(text):
             self.counts.begin(ctx.session, ctx.counted(text.strip()), Actor.system())
         return Decision()
 
     def count_one(self, text: str, ctx: Context) -> Decision:
-        if ctx.session and text.strip():
+        if ctx.keeps_count(text):
             self.counts.count_one(ctx.session, ctx.counted(text.strip()), Actor.system())
         return Decision()
 

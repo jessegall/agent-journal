@@ -31,9 +31,13 @@ class Column:
         return "TEXT"
 
     @property
+    def is_enum(self) -> bool:
+        return isinstance(self.kind, type) and issubclass(self.kind, Enum)
+
+    @property
     def is_json(self) -> bool:
         """A column whose kind is not one SQL holds as is, such as a dict, a tuple or an untyped value: it always holds JSON, whatever the value is."""
-        return self.kind not in self.PLAIN and not (isinstance(self.kind, type) and issubclass(self.kind, Enum))
+        return self.kind not in self.PLAIN and not self.is_enum
 
     def to_sql(self, value):
         if value is None:
@@ -63,7 +67,7 @@ class Column:
             return Ref.parse(value)
         if self.kind is datetime:
             return datetime.fromisoformat(value)
-        if isinstance(self.kind, type) and issubclass(self.kind, Enum):
+        if self.is_enum:
             return self.kind(value)
         if self.kind is bool:
             return bool(value)

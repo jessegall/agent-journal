@@ -55,7 +55,7 @@ class McpController:
         try:
             server = self.servers.named(request.params["name"])
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         if not server.key_var:
             return Response.refused(f"{server.title} takes no key")
         return Response.json(self.row(self.installing.keyed(server, request.body.get("value", ""), request.actor)))
@@ -75,7 +75,7 @@ class McpController:
         try:
             server = self.servers.named(request.params["name"])
         except NotFound as missing:
-            return Response.not_found(str(missing))
+            return Response.missing(missing)
         if not self.installing.sign_in(server):
             return Response.refused("no agent is running to sign in: start one first")
         return Response.json({"asked": server.name})
