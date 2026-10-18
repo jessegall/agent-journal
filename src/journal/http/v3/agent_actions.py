@@ -1,4 +1,5 @@
 from journal.features.sequences.running import Running
+from journal.http.v3.action_body import ActionBody
 from journal.models.actor import Actor
 from journal.models.agent import Agent
 from journal.refused import Refused
@@ -12,12 +13,12 @@ class AgentActions:
     def __init__(self, agents: Agents, running: Running, supervisor: SupervisorLink) -> None:
         self.agents, self.running, self.supervisor = agents, running, supervisor
 
-    def skip_step(self, n: int, body: dict, by: Actor) -> Agent:
+    def skip_step(self, n: int, body: ActionBody, by: Actor) -> Agent:
         agent = self.running_agent(n)
         self.told(agent, self.running.skip(agent.session, agent.environment_id))
         return self.agents.find(n)
 
-    def end_sequence(self, n: int, body: dict, by: Actor) -> Agent:
+    def end_sequence(self, n: int, body: ActionBody, by: Actor) -> Agent:
         agent = self.running_agent(n)
         self.told(agent, self.running.end(agent.session, agent.environment_id))
         return self.agents.find(n)

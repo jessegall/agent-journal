@@ -1,4 +1,5 @@
 from journal.features.plugins.installing import Installing
+from journal.http.v3.action_body import ActionBody
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.models.actor import Actor
 from journal.models.plugin import Plugin
@@ -13,22 +14,22 @@ class PluginActions:
     def __init__(self, plugins: Plugins, installing: Installing, settings: PluginSettings, scope: Scope, environments: Environments) -> None:
         self.plugins, self.installing, self.settings, self.scope, self.environments = plugins, installing, settings, scope, environments
 
-    def configure(self, n: int, body: dict, by: Actor) -> Plugin:
-        return self.settings.configure(self.plugins.find(n).name, body["key"], str(body["value"]), by)
+    def configure(self, n: int, body: ActionBody, by: Actor) -> Plugin:
+        return self.settings.configure(self.plugins.find(n).name, body.key, body.value, by)
 
-    def enable(self, n: int, body: dict, by: Actor) -> Plugin:
+    def enable(self, n: int, body: ActionBody, by: Actor) -> Plugin:
         return self.installing.enable(self.plugins.find(n).name, by)
 
-    def disable(self, n: int, body: dict, by: Actor) -> Plugin:
+    def disable(self, n: int, body: ActionBody, by: Actor) -> Plugin:
         return self.installing.disable(self.plugins.find(n).name, by)
 
-    def upgrade(self, n: int, body: dict, by: Actor) -> Plugin:
-        return self.installing.upgrade(self.plugins.find(n).name, body.get("ref", ""), self.environments.find(self.scope.id).name, by)
+    def upgrade(self, n: int, body: ActionBody, by: Actor) -> Plugin:
+        return self.installing.upgrade(self.plugins.find(n).name, body.ref, self.environments.find(self.scope.id).name, by)
 
-    def remove(self, n: int, body: dict, by: Actor) -> dict:
+    def remove(self, n: int, body: ActionBody, by: Actor) -> dict:
         self.installing.remove(self.plugins.find(n).name, by)
         return {"removed": n}
 
-    def purge(self, n: int, body: dict, by: Actor) -> dict:
+    def purge(self, n: int, body: ActionBody, by: Actor) -> dict:
         self.installing.purge(self.plugins.find(n).name, by)
         return {"purged": n}
