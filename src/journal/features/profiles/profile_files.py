@@ -2,6 +2,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.features.profiles.profile import Profile
+from journal.features.profiles.profile_shown import ProfileShown
 from journal.providers.providers import Providers
 from journal.repositories.settings import Settings
 
@@ -25,19 +26,19 @@ class ProfileFiles:
     def folder(self) -> Path:
         return self.config.root / self.providers.named("claude").home / "agents"
 
-    def read_all(self) -> list[dict]:
+    def read_all(self) -> list[ProfileShown]:
         """Every profile in Claude's agents folder, by name, each with its front matter and its instructions, and whether the journal ships it."""
         return sorted((self.read(path.stem) for path in self.folder().glob("*.md")), key=lambda p: p["name"])
 
-    def read(self, name: str) -> dict:
+    def read(self, name: str) -> ProfileShown:
         path = self.folder() / f"{name}.md"
         text = path.read_text()
         head, _, body = text.partition("\n---\n") if text.startswith("---\n") else ("", "", text)
         fields = dict(line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)
-        return {"name": name, "description": fields.get("description", "").strip(), "tools": fields.get("tools", "").strip(), "model": fields.get("model", "").strip(),
-                "body": body.strip("\n"), "shipped": name in {profile.name for profile in self.PROFILES}, "path": str(path.relative_to(self.config.root))}
+        return ProfileShown(name=name, description=fields.get("description", "").strip(), tools=fields.get("tools", "").strip(), model=fields.get("model", "").strip(),
+                            body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
 
-    def save(self, name: str, description: str, tools: str, model: str, body: str) -> dict:
+    def save(self, name: str, description: str, tools: str, model: str, body: str) -> ProfileShown:
         """A profile written as Claude reads it: the front matter, then the instructions."""
         path = self.folder() / f"{name}.md"
         path.parent.mkdir(parents=True, exist_ok=True)

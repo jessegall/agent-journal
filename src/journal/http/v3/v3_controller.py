@@ -14,6 +14,7 @@ from journal.http.request import Request
 from journal.http.file_response import FileResponse
 from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
+from journal.http.v3.terminal_line import TerminalLine
 from journal.http.v3.current_work import CurrentWork
 from journal.features.registry import Registry
 from journal.providers.providers import Providers
@@ -296,10 +297,10 @@ class V3Controller:
         return Response.json({"lines": [self.terminal_line(n, e) for e in ran][-200:]})
 
     @staticmethod
-    def terminal_line(n: int, entry: Entry) -> dict:
+    def terminal_line(n: int, entry: Entry) -> TerminalLine:
         part = entry.data["part"]
         tool = "Journal" if part.split(" ")[0].endswith("journal") else "Bash"
-        return {"agent": n, "at": entry.data["at"], "tool": tool, "command": part, "output": entry.data["output"], "seconds": entry.data["seconds"], "status": entry.data["status"], "stepped": False, "level": "everything"}
+        return TerminalLine(agent=n, at=entry.data["at"], tool=tool, command=part, output=entry.data["output"], seconds=entry.data["seconds"], status=entry.data["status"], stepped=False, level="everything")
 
     def post_agent_shell(self, request: Request) -> Response:
         """A command typed in the terminal pane goes to the agent's own terminal, as the user would type it."""

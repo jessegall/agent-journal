@@ -32,7 +32,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         request = self._request()
         if not request.path.startswith(("/api/", "/journal/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
-            return self._file(*found)
+            return self._file(found)
         self._answer(self._dispatched(request))
 
     def do_POST(self) -> None:
@@ -50,7 +50,7 @@ class Handler(BaseHTTPRequestHandler):
         if isinstance(answer, StreamResponse):
             return self._stream(answer)
         if isinstance(answer, FileResponse):
-            return self._file(answer.status, answer.kind, answer.body)
+            return self._file(answer)
         self._reply(answer)
 
     def log_message(self, format, *args) -> None:
@@ -67,13 +67,13 @@ class Handler(BaseHTTPRequestHandler):
             return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.of(headers), form.files())
         return Request(self.command, url.path, query, json.loads(raw) if raw else {}, {}, headers, self.identity.of(headers))
 
-    def _file(self, status: int, kind: str, body: bytes) -> None:
-        self.send_response(status)
-        self.send_header("Content-Type", kind)
-        self.send_header("Content-Length", str(len(body)))
+    def _file(self, file: FileResponse) -> None:
+        self.send_response(file.status)
+        self.send_header("Content-Type", file.kind)
+        self.send_header("Content-Length", str(len(file.body)))
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(file.body)
 
     def _stream(self, response: StreamResponse) -> None:
         self.send_response(response.status)

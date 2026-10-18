@@ -6,6 +6,8 @@ from pathlib import Path
 from journal.config import Config
 from journal.engine.typed_lines import TypedLines
 from journal.old_supervisor import OldSupervisor
+from journal.supervisor_announcement import SupervisorAnnouncement
+from journal.supervisor_reply import SupervisorReply
 from journal.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
@@ -26,25 +28,25 @@ class SupervisorLink:
         """A line of the journal's, marked, and noted until its prompt hook proves it arrived."""
         marked = f"{MARK} {line}"
         self.typed.typed(environment_id, marked)
-        self._send(environment_id, {"verb": "type", "name": AGENT, "line": marked, "after": after})
+        self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
 
     def type_again(self, environment_id: int, marked: str) -> None:
         """A marked line typed once more, as it was."""
-        self._send(environment_id, {"verb": "type", "name": AGENT, "line": marked, "after": 0.0})
+        self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": 0.0})
 
     def type_raw(self, environment_id: int, line: str) -> None:
         """What the user typed in the viewer's terminal pane, as the user, without the mark."""
         self._viewer_keyed_at[environment_id] = time.time()
-        self._send(environment_id, {"verb": "type", "name": AGENT, "line": line, "after": 0.0})
+        self._send(environment_id, "type", {"name": AGENT, "line": line, "after": 0.0})
 
     def keys(self, environment_id: int, keys: str) -> None:
         """Keys written to the agent's terminal as they are, with no Enter after them: an arrow, Enter, Escape."""
-        self._send(environment_id, {"verb": "keys", "name": AGENT, "keys": keys})
+        self._send(environment_id, "keys", {"name": AGENT, "keys": keys})
 
     def choose(self, environment_id: int, command: str) -> None:
         """A provider command typed for the user's pick in the agent bar, noted so a confirmation it brings up is the journal's to answer."""
         self._chosen_at[environment_id] = time.time()
-        self._send(environment_id, {"verb": "type", "name": AGENT, "line": command, "after": 0.0})
+        self._send(environment_id, "type", {"name": AGENT, "line": command, "after": 0.0})
 
     def chosen_at(self, environment_id: int) -> float:
         return self._chosen_at.get(environment_id, 0.0)
@@ -70,53 +72,57 @@ class SupervisorLink:
 
     def mirrored(self, environment_id: int, kind: str) -> Path | None:
         """The mirror of the agent's screen, or the file noting keys beside it, where the supervisor announced it; none when no supervisor runs."""
-        screen = self.announced(environment_id).get("screen", "")
-        return Path(screen).with_suffix(f".{kind}") if screen else None
+        announced = self.announced(environment_id)
+        return Path(announced.screen).with_suffix(f".{kind}") if announced and announced.screen else None
 
-    def start(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path) -> dict:
+    def start(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path) -> SupervisorReply:
         """A service started under the environment's supervisor; one already running under the name is left as it is."""
-        return self._send(environment_id, {"verb": "start", "name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log)})
+        return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log)})
 
-    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, keep: bool) -> dict:
+    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, keep: bool) -> SupervisorReply:
         """A service started with the environment it is given and nothing of the supervisor's own, such as a plugin's; keep says whether it is started again when it dies."""
-        return self._send(environment_id, {"verb": "start", "name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": keep})
+        return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": keep})
 
     def stop_service(self, environment_id: int, name: str) -> None:
-        self._send(environment_id, {"verb": "stop", "name": name})
+        self._send(environment_id, "stop", {"name": name})
 
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
-        self._send(environment_id, {"verb": "restart", "name": AGENT, "resume": list(resume)})
+        self._send(environment_id, "restart", {"name": AGENT, "resume": list(resume)})
 
     def restart_journal(self, environment_id: int) -> None:
-        self._send(environment_id, {"verb": "restart", "name": JOURNAL})
+        self._send(environment_id, "restart", {"name": JOURNAL})
 
     def stop(self, environment_id: int) -> None:
-        self._send(environment_id, {"verb": "stop", "name": AGENT})
+        self._send(environment_id, "stop", {"name": AGENT})
 
     def runs(self, environment_id: int) -> bool:
         """Whether a supervisor answers for the environment: one on the protocol says hello, one from before it has its socket open; an announce file a dead supervisor left answers nothing."""
         announced = self.announced(environment_id)
-        if "protocol" not in announced:
-            return bool(announced) and Path(announced["socket"]).is_socket()
+        if announced is None:
+            return False
+        if not announced.speaks_the_protocol:
+            return Path(announced.socket).is_socket()
         try:
-            return self._send(environment_id, {"verb": "hello"}).get("ok", False)
+            return self._send(environment_id, "hello", {}).ok
         except OSError:
             return False
 
-    def announced(self, environment_id: int) -> dict:
+    def announced(self, environment_id: int) -> SupervisorAnnouncement | None:
         """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a datagram supervisor; nothing when none runs."""
         path = self.config.home / "runtime" / "inboxes" / self.environments.find(environment_id).name
         text = path.read_text().strip() if path.is_file() else ""
-        return json.loads(text) if text.startswith("{") else {"socket": text, "screen": OldSupervisor.screen(self.config.home, path.name)} if text else {}
+        if not text:
+            return None
+        return SupervisorAnnouncement.from_json(json.loads(text)) if text.startswith("{") else SupervisorAnnouncement(text, OldSupervisor.screen(self.config.home, path.name))
 
-    def _send(self, environment_id: int, request: dict) -> dict:
+    def _send(self, environment_id: int, verb: str, fields: dict) -> SupervisorReply:
         announced = self.announced(environment_id)
-        if not announced:
-            return {"ok": False, "error": "no supervisor runs here"}
-        if "protocol" not in announced and not OldSupervisor.takes(request):
-            return {"ok": False, "error": f"the supervisor running predates the protocol and takes no {request.get('verb')}"}
-        if "protocol" not in announced:
-            with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
-                out.sendto(json.dumps(OldSupervisor.datagram(request)).encode(), announced["socket"])
-            return {"ok": True}
-        return SupervisorSocket.ask(announced["socket"], request)
+        if announced is None:
+            return SupervisorReply(False, "no supervisor runs here")
+        if announced.speaks_the_protocol:
+            return SupervisorSocket.ask(announced.socket, {"verb": verb, **fields})
+        if not OldSupervisor.takes(verb):
+            return SupervisorReply(False, f"the supervisor running predates the protocol and takes no {verb}")
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
+            out.sendto(json.dumps(OldSupervisor.datagram(verb, fields)).encode(), announced.socket)
+        return SupervisorReply(True)

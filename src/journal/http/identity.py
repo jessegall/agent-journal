@@ -1,3 +1,4 @@
+from journal.http.plugin_claim import PluginClaim
 from journal.features.plugins.plugin_tokens import PluginTokens
 from journal.models.actor import Actor
 from journal.repositories.users import Users
@@ -12,7 +13,7 @@ class Identity:
         self.users, self.tokens = users, tokens
 
     def of(self, headers: dict) -> Actor:
-        plugin = headers.get("x-journal-plugin", "")
-        if plugin and self.tokens.holds(plugin, headers.get("x-journal-plugin-token", "")):
-            return Actor.plugin(plugin)
+        claim = PluginClaim.from_headers(headers)
+        if claim.plugin and self.tokens.holds(claim.plugin, claim.token):
+            return Actor.plugin(claim.plugin)
         return Actor.user(LOCAL_USER)

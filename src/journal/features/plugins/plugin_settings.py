@@ -23,7 +23,7 @@ class PluginSettings:
         self.folders, self.plugins, self.secrets, self.values = folders, plugins, secrets, values
 
     def schema(self, plugin: Plugin) -> list[PluginSetting]:
-        path = plugin.manifest.get("settings", "")
+        path = plugin.manifest.settings
         return [PluginSetting.from_json(setting) for setting in json.loads((self.folders.of(plugin) / path).read_text())] if path else []
 
     def started(self, plugin: Plugin, by: Actor) -> dict:

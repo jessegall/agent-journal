@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from datetime import datetime
 from enum import Enum
 from types import UnionType
@@ -39,7 +39,7 @@ class Column:
         if value is None:
             return None
         if self.is_json:
-            return json.dumps(value)
+            return json.dumps(asdict(value) if is_dataclass(value) else value)
         if isinstance(value, Actor):
             return value.stamp
         if isinstance(value, Ref):
@@ -70,6 +70,8 @@ class Column:
         if self.kind in (int, float, str):
             return value
         loaded = json.loads(value)
+        if is_dataclass(self.kind):
+            return self.kind.from_json(loaded)
         return tuple(loaded) if self.kind is tuple else loaded
 
     @staticmethod

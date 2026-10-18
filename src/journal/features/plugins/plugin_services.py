@@ -1,5 +1,6 @@
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_runner import PluginRunner
+from journal.models.plugin_service import PluginService
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
@@ -19,22 +20,22 @@ class PluginServices:
         for environment in self.environments.all():
             if not self.supervisor.runs(environment.id):
                 continue
-            for service in plugin.manifest.get("services", ()):
-                if service.get("when") and self.runner.shell(plugin, environment.name, service["when"], WHEN_SECONDS).returncode != 0:
+            for service in plugin.manifest.services:
+                if service.when and self.runner.shell(plugin, environment.name, service.when, WHEN_SECONDS).returncode != 0:
                     continue
                 environ = self.runner.environment(plugin, environment.name) | {"JOURNAL_PLUGIN_SOCKET": str(self.folders.socket(plugin, environment.name))}
                 folder = self.folders.of(plugin)
-                command = [str(folder / service["command"][0]) if "/" in service["command"][0] else service["command"][0], *service["command"][1:]]
-                self.supervisor.start_clean(environment.id, self.named(plugin, service), command, folder, environ, self.folders.data(plugin) / f"{service['name']}.log", service.get("restart", "always") != "never")
+                command = [str(folder / service.program) if service.is_in_its_folder else service.program, *service.command[1:]]
+                self.supervisor.start_clean(environment.id, self.named(plugin, service), command, folder, environ, self.folders.data(plugin) / f"{service.name}.log", service.restart != "never")
                 started.append(self.named(plugin, service))
         return started
 
     def stop(self, plugin: Plugin) -> None:
         for environment in self.environments.all():
             if self.supervisor.runs(environment.id):
-                for service in plugin.manifest.get("services", ()):
+                for service in plugin.manifest.services:
                     self.supervisor.stop_service(environment.id, self.named(plugin, service))
 
     @staticmethod
-    def named(plugin: Plugin, service: dict) -> str:
-        return f"plugin.{plugin.name}.{service['name']}"
+    def named(plugin: Plugin, service: PluginService) -> str:
+        return f"plugin.{plugin.name}.{service.name}"

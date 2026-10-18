@@ -15,7 +15,9 @@ from journal.config import Config
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker_state import WorkerState
 from journal.models.actor import Actor
+from journal.models.plugin_manifest import PluginManifest
 from journal.models.setting import Setting
+from journal.supervisor_reply import SupervisorReply
 from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 from journal.console.where import Where
@@ -190,7 +192,7 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     from journal.repositories.messages import Messages
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     app.console().run(["message", "send", "first"], USER)
     app.console().run(["message", "send", "second"], USER)
     hook(app, "SessionStart")
@@ -285,7 +287,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     typed, stacks = [], []
     from journal.supervisor_link import SupervisorLink
 
-    def sent(self, environment_id, instruction):
+    def sent(self, environment_id, verb, instruction):
         typed.append(instruction["line"])
         stacks.append(f"--- {threading.current_thread().name}\n" + "".join(traceback.format_stack(limit=14)))
 
@@ -437,7 +439,7 @@ def test_a_check_run_reaches_the_page_though_a_check_is_the_projects(app):
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["check", "create", "it is fine", "--command", "true"], USER)
@@ -460,7 +462,7 @@ def test_a_due_check_runs_on_the_clock(app):
 def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="I ran journal task start 3 because the user wants it.")
     app.runtime().deferred.drain()
@@ -523,7 +525,7 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
 
         answering = threading.Thread(target=answer)
         answering.start()
-        assert link._send(environment, {"verb": "restart", "name": "journal"}) == {"ok": True}
+        assert link._send(environment, "restart", {"name": "journal"}) == SupervisorReply(True)
         answering.join(2)
     Path(path).unlink(missing_ok=True)
     assert heard == [{"verb": "restart", "name": "journal"}]
@@ -537,20 +539,20 @@ def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_a
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, request: sent.append(request) or {"ok": True, "started": True})
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}) or SupervisorReply(True))
     monkeypatch.setattr(Registry, "services", lambda self: [Service("watcher", "journal.watcher")])
     starter = app.container.get(ServiceStart)
     monkeypatch.delenv("JOURNAL_ENV", raising=False)
     assert starter.run() == [] and sent == [], "a journal no supervisor hosts starts nothing"
     monkeypatch.setenv("JOURNAL_ENV", "main")
-    assert starter.run() == [{"ok": True, "started": True}], "an upgrade that brings a new service starts it as the journal boots again, the supervisor still running"
+    assert starter.run() == [SupervisorReply(True)], "an upgrade that brings a new service starts it as the journal boots again, the supervisor still running"
     assert sent[0]["verb"] == "start" and sent[0]["name"] == "watcher" and sent[0]["command"][1:] == ["-m", "journal.watcher"] and sent[0]["log"].endswith("runtime/watcher.log")
 
 
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     console = app.console()
     console.run(["voice", "me", "--title", "Sir", "--name", "Example"], USER)
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
@@ -569,7 +571,7 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     app.console().run(["message", "send", "nobody is here yet"], USER)
     assert typed == [], "no live agent, nothing to type to"
     hook(app, "SessionStart")
@@ -619,7 +621,7 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
     from journal.repositories.reactions import Reactions
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     console = app.console()
     console.run(["message", "send", "thanks, carry on"], USER)
     hook(app, "SessionStart")
@@ -643,7 +645,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
     from journal.repositories.messages import Messages
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart", source="startup")
     hook(app, "UserPromptSubmit", prompt="[journal] the journal is ready on main")
     hook(app, "MessageDisplay", message="Noted.")
@@ -667,7 +669,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
 def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="The build — the one from last night — is green.")
     hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
@@ -682,7 +684,7 @@ def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, m
     from journal.repositories.tasks import Tasks
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message='[!todo="Fix the footer"]\nThe footer overlaps the form on narrow screens.')
     hook(app, "MessageDisplay", message="[!log:1] Halfway: the overlap is a margin.")
@@ -710,7 +712,7 @@ def test_notable_moments_are_cards_in_the_chat(app):
 def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_not(app, monkeypatch):
     sent = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart", source="startup")
     app.runtime().deferred.drain()
     assert sent[-1]["line"].startswith("[journal] introduce yourself to the user in the chat") and sent[-1]["after"] == 4.0
@@ -726,7 +728,7 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     from journal.repositories.tasks import Tasks
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     root = app.config.root
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 1 and 2 with the margin fixed"], cwd=root, check=True)
@@ -828,7 +830,7 @@ def test_a_quiet_tick_leaves_no_walk_entry_and_a_tick_that_acts_does(app):
 def test_a_word_from_the_user_frees_a_wait_whose_workflow_no_longer_releases_it(app, monkeypatch):
     from journal.repositories.charts import Charts
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     console = app.console()
     hook(app, "SessionStart")
     charts = app.container.get(Charts)
@@ -847,7 +849,7 @@ def test_a_word_from_the_user_frees_a_wait_whose_workflow_no_longer_releases_it(
 
 def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_beneath_it(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -871,7 +873,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     from journal.features.plans.states.following_plan import FollowingPlan
     from journal.repositories.plans import Plans
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -951,7 +953,7 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
 def test_a_workflow_moves_an_idle_agent_into_a_wait_with_its_words_and_a_release_brings_it_back(app, monkeypatch):
     from journal.repositories.charts import Charts
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -996,7 +998,7 @@ def test_a_session_silent_for_an_hour_is_ended(app):
 def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     app.console().run(["fact", "create", "the login uses the old session store", "--keywords", "login,session"], USER)
     hook(app, "MessageDisplay", message="I will look at the login next.")
@@ -1134,7 +1136,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     from journal.repositories.messages import Messages
     from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     console, port = app.console(), app.server().port
     folder = app.config.root / "parts"
@@ -1260,7 +1262,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
     from journal.features.mcp.known import Known
     monkeypatch.setattr(Health, "asked", lambda self: {"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")})
@@ -1338,7 +1340,7 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
     link.type(1, "hello there")
@@ -1421,7 +1423,7 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app, monkey
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     listed = app.console().run(["sequence", "list"], AGENT).out
@@ -1470,7 +1472,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console = app.console()
@@ -1696,7 +1698,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "SessionStart")
     console = app.console()
@@ -1855,7 +1857,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -1916,7 +1918,7 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     from journal.supervisor_link import SupervisorLink
     sent, removed = [], []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     monkeypatch.setattr(Health, "asked", lambda self: {"blender": Known("blender", "uvx blender-mcp", "connected", "")})
     monkeypatch.setattr(Health, "remove", lambda self, name: removed.append(name) or name == "blender")
     hook(app, "SessionStart")
@@ -1936,7 +1938,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -2015,7 +2017,7 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     console = app.console()
     hook(app, "MessageDisplay", message="The design is at https://design.example/p/1 and the docs at http://127.0.0.1:8420/#/x.")
@@ -2036,7 +2038,7 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
 def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read_is_never_piped(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -2052,7 +2054,7 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
 def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it_at_once(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     hook(app, "Stop")
@@ -2259,7 +2261,7 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     typed = []
     from journal.console.where import Where
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -2298,7 +2300,7 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
 def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(app, monkeypatch):
     typed = []
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -2705,7 +2707,7 @@ def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_envir
 def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     from journal.repositories.charts import Charts
     console, charts = app.console(), app.container.get(Charts)
     starting, start_trigger = own_workflow(console, charts, "idle", "subagent_started")
@@ -2933,7 +2935,7 @@ def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_star
     from journal.repositories.charts import Charts
     from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     console, charts = app.console(), app.container.get(Charts)
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -3195,7 +3197,7 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, m
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
@@ -3233,7 +3235,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3266,7 +3268,7 @@ def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3321,7 +3323,7 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
 
     def api(method: str, path: str):
         request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{path}", data=b"{}" if method == "POST" else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
@@ -3706,7 +3708,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
         (folder / "journal-plugin.json").write_text(json.dumps({**good, **changes}))
         return folder
     manifest = reader.read(made({}))
-    assert manifest.name == "echo" and manifest.holds == ("tool_starting",) and manifest.services[0]["name"] == "serve"
+    assert manifest.name == "echo" and manifest.holds == ("tool_starting",) and manifest.services[0].name == "serve"
     refusals = {
         "keys the journal does not know: hook": {"hook": "x"},
         "is not": {"name": "Echo!"},
@@ -3738,7 +3740,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
     from journal.models.plugin import Plugin
     from journal.repositories.plugins import Plugins
     lint = made({"name": "lint", "skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md"))
-    app.container.get(Plugins).save(Plugin(name="lint", source=str(lint), linked=True, manifest={**good, "name": "lint", "skills": "skills"}), Actor.user(1))
+    app.container.get(Plugins).save(Plugin(name="lint", source=str(lint), linked=True, manifest=PluginManifest.from_json({**good, "name": "lint", "skills": "skills"})), Actor.user(1))
     with pytest.raises(Refused, match="skill lint-rules has the name of a skill of plugin lint"):
         reader.read(made({"skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md")))
 
@@ -3749,7 +3751,7 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app):
     from journal.repositories.plugins import Plugins
     from journal.repositories.tasks import Tasks
     plugins = app.container.get(Plugins)
-    plugins.save(Plugin(name="lint", source="/tmp/lint", manifest={"name": "lint"}), Actor.user(1))
+    plugins.save(Plugin(name="lint", source="/tmp/lint", manifest=PluginManifest(name="lint")), Actor.user(1))
     assert plugins.named("lint").enabled and [p.name for p in plugins.enabled()] == ["lint"]
     task = app.container.get(Tasks).save(Task(environment_id=1, title="written by a plugin"), Actor.plugin("lint"))
     assert task.created_by == Actor(ActorKind.PLUGIN, "lint") and task.created_by.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.created_by
@@ -3803,7 +3805,7 @@ def echo(app, name="echo", **manifest):
     from journal.repositories.plugins import Plugins
     folder = Path(__file__).parent / "plugins" / "echo"
     shutil.copytree(folder, app.config.home / "plugins" / name, dirs_exist_ok=True)
-    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), manifest=json.loads((folder / "journal-plugin.json").read_text()) | manifest), Actor.user(1))
+    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), manifest=PluginManifest.from_json(json.loads((folder / "journal-plugin.json").read_text()) | manifest)), Actor.user(1))
 
 
 def echo_heard(app, name="echo") -> list[str]:
@@ -3910,7 +3912,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
     assert app.container.get(Plugins).all() == [], "a preview installs nothing"
     assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
     plugin = app.container.get(Plugins).named("echo")
-    assert plugin.linked and plugin.source == str(folder.resolve()) and plugin.manifest["holds"] == ["tool_starting", "prompt_submitted"] and (app.config.home / "plugin-data" / "echo").is_dir()
+    assert plugin.linked and plugin.source == str(folder.resolve()) and plugin.manifest.holds == ("tool_starting", "prompt_submitted") and (app.config.home / "plugin-data" / "echo").is_dir()
     assert "installed already" in console.run(["plugin", "install", str(folder), "--yes"], USER).err
     bad = tmp_path / "bad"
     bad.mkdir()
@@ -3932,9 +3934,9 @@ def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(ap
     (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "version": "1.1.0", "hears": [*manifest["hears"], "tool_finished"], "holds": ["tool_starting"]}))
     shown = console.run(["plugin", "upgrade", "echo"], USER).out
     assert "version: 1.0.0 -> 1.1.0" in shown and "hears: + tool_finished" in shown and "holds: - prompt_submitted" in shown and "nothing upgraded yet" in shown
-    assert "tool_finished" not in plugins.named("echo").manifest["hears"], "a preview upgrades nothing"
+    assert "tool_finished" not in plugins.named("echo").manifest.hears, "a preview upgrades nothing"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
-    assert "tool_finished" in plugins.named("echo").manifest["hears"]
+    assert "tool_finished" in plugins.named("echo").manifest.hears
     hook(app, "SessionStart")
     console.run(["plugin", "disable", "echo"], USER)
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response={})
@@ -4043,7 +4045,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     shutil.copytree(echo_folder, newer)
     (newer / "run.py").write_text((newer / "run.py").read_text().replace("echo heard your prompt", "echo heard you"))
     shutil.copytree(echo_folder, app.config.home / "plugins" / "echo")
-    fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=json.loads((echo_folder / "journal-plugin.json").read_text())), Actor.user(1))
+    fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=PluginManifest.from_json(json.loads((echo_folder / "journal-plugin.json").read_text()))), Actor.user(1))
     shown = console.run(["plugin", "upgrade", "echo"], USER).out
     assert "the code:" in shown and '-        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"})' in shown and '+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"})' in shown, "the program's changed body is in the diff"
     plugins.save(fetched.with_(name="copied"), Actor.user(1))
@@ -4058,9 +4060,9 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     for _ in range(2):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waiting = [m for m in messages.recent(10) if m.text.startswith("Plugin echo's manifest changed")]
-    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.named("echo").manifest["holds"], "shown once, and the plugin runs as installed"
+    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.named("echo").manifest.holds, "shown once, and the plugin runs as installed"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
-    assert "idle" in plugins.named("echo").manifest["holds"] and plugins.named("echo").waiting == "", "the user's upgrade applies it"
+    assert "idle" in plugins.named("echo").manifest.holds and plugins.named("echo").waiting == "", "the user's upgrade applies it"
 
 
 def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tmp_path):
@@ -4252,7 +4254,7 @@ def test_no_workflow_holds_a_journal_command_or_the_read_of_a_skills_file(skille
 def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     """A workflow of the user's with the one node sends the agent back from each pause: awaiting something outside, stuck, waiting on a question, awaiting a worker, running a sequence."""
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: None)
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     from journal.repositories.charts import Charts
     console, charts, machine = app.console(), app.container.get(Charts), app.container.get(Machine)
     hook(app, "SessionStart")
@@ -4525,7 +4527,7 @@ def test_a_quiet_workflow_walks_after_the_reply_and_a_walk_ended_before_it_ends_
     from journal.repositories.charts import Charts
     from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction.get("line", "")))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}.get("line", "")))
     console, charts = app.console(), app.container.get(Charts)
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -4671,7 +4673,7 @@ def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
     from journal.repositories.secrets import Secrets
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, request: sent.append(request))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     secret = app.container.get(Secrets).save(Secret(title="Github", proposed=("gh",)), Actor.agent("s1"))
     app.container.get(SecretActions).update(secret.id, ActionBody(programs=("gh",), sent=frozenset({"programs", "proposed"})), Actor.user("u"))

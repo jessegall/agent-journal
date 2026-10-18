@@ -16,6 +16,7 @@ from journal.features.chart.assumed_checks import AssumedChecks
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
+from journal.features.chart.trial_result import TrialResult
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.walk import Walk
 from journal.models.actor import Actor
@@ -62,7 +63,7 @@ class Trial:
         self.checks, self.machine, self.providers = checks, machine, providers
         self.walk, self.fillers, self.agents, self.scope = walk, fillers, agents, scope
 
-    def run(self, trigger: str, environment_id: int, row: int = 0, assumptions: Assumptions = Assumptions()) -> dict:
+    def run(self, trigger: str, environment_id: int, row: int = 0, assumptions: Assumptions = Assumptions()) -> TrialResult:
         """A dry run for an agent event, or for a row event given the row, against the live rows or the state assumed: the path and what it would do, nothing done."""
         with self.scope.of(environment_id):
             return self.dry_run(trigger, environment_id, row, assumptions)
@@ -85,9 +86,8 @@ class Trial:
         passed: list[int] = []
         ledger: dict = {}
         decision = self.walk.dry(self.fillers, AssumedChecks(self.checks, assumptions, ledger), ledger).on_with_trace(ctx, passed)
-        return {"trigger": trigger, "row": row, "state": state.name if state else "", "nodes": passed, "would": [line for line in decision.context.split("\n") if line], "assumed": assumptions.described(),
-                "workflows": list(ctx.walked), "read": {str(k): v for k, v in ctx.read.items()}, "stopped_at": ctx.stopped[0] if ctx.stopped else 0,
-                "plugins": NOT_ASKED}
+        return TrialResult(trigger=trigger, row=row, state=state.name if state else "", nodes=passed, would=[line for line in decision.context.split("\n") if line], assumed=assumptions.described(),
+                           workflows=list(ctx.walked), read={str(k): v for k, v in ctx.read.items()}, stopped_at=ctx.stopped[0] if ctx.stopped else 0, plugins=NOT_ASKED)
 
     def state_for(self, agent, assumptions: Assumptions):
         """The live agent's state, or the state assumed: with the live agent's data when it is in that state, else the state with nothing in hand."""

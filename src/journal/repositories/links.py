@@ -10,7 +10,7 @@ class Links(Repository[Link]):
     def of(self, model: Model) -> list[Link]:
         """Every link from or to this row."""
         ref = str(Ref.to(model))
-        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE source = ? OR target = ? ORDER BY id", (ref, ref))]
+        return self.selected("source = ? OR target = ? ORDER BY id", (ref, ref))
 
     def targets(self, model: Model, kind: str = "") -> list[Ref]:
         return [link.target for link in self.of(model) if link.source == Ref.to(model) and (not kind or link.kind == kind)]

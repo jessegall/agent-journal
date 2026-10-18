@@ -1,3 +1,4 @@
+from journal.http.v3.shapers.sequence_in_hand import SequenceInHand
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
@@ -60,14 +61,13 @@ class AgentsShaper(Shaper):
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)
 
     @staticmethod
-    def sequence_of(a) -> dict | None:
+    def sequence_of(a) -> SequenceInHand | None:
         """The run in hand, as the agent's panel shows it: the step, and what it holds."""
         runs = [SequenceRun.of(raw) for raw in a.sequence_runs or ()]
         if not runs:
             return None
         run = runs[-1]
-        holds = f"Parked: {run.parked_why}" if run.parked_why else "Taken up" if run.taken_up_at else "Not taken up yet: the agent's writes wait until it takes this step up"
-        return {"n": run.sequence_id, "title": run.title, "step": run.step + 1, "steps": len(run.steps), "text": run.text, "holds": holds, "about": run.about, "under": len(runs) - 1}
+        return SequenceInHand(n=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.holds, about=run.about, under=len(runs) - 1)
 
     @staticmethod
     def change_of(entry) -> dict:

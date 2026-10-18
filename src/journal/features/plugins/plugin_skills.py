@@ -18,7 +18,7 @@ class PluginSkills:
 
     def publish(self, plugin: Plugin) -> None:
         folder = self.folders.of(plugin)
-        manifest = PluginManifest(**plugin.manifest)
+        manifest = plugin.manifest
         for name in ManifestReader.skill_names(folder, manifest):
             text = self.stamped((folder / manifest.skills / name / "SKILL.md").read_text(), plugin.name)
             for home in HOMES:

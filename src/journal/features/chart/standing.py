@@ -2,9 +2,11 @@ from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
 from journal.events.agent.ticked import Ticked
+from journal.features.chart.agent_standing import AgentStanding
 from journal.features.chart.checks import COUNT_CHECKS, READINGS, Checks
 from journal.features.chart.context import Context
 from journal.features.chart.walk import WALKED
+from journal.features.chart.workflow_standing import WorkflowStanding
 from journal.features.registry import Registry
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
@@ -23,24 +25,20 @@ class Standing:
     def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine, registry: Registry) -> None:
         self.charts, self.agents, self.entries, self.checks, self.machine, self.registry = charts, agents, entries, checks, machine, registry
 
-    def of(self, chart: Chart) -> dict:
+    def of(self, chart: Chart) -> WorkflowStanding:
         nodes = {n.id: n for n in self.charts.nodes_of(chart)}
         walks = [WalkRecord.from_entry(e) for e in self.entries.of_kind(WALKED, LOOKED_BACK)]
         agents = [a for a in self.agents.in_() if a.state != "ended"]
-        return {"agents": [self.agent(chart, nodes, walks, a) for a in agents], "readings": self.readings(nodes), "limits": self.limits(nodes)}
+        return WorkflowStanding(agents=[self.agent(chart, nodes, walks, a) for a in agents], readings=self.readings(nodes), limits=self.limits(nodes))
 
-    def agent(self, chart: Chart, nodes: dict, walks: list[WalkRecord], agent) -> dict:
+    def agent(self, chart: Chart, nodes: dict, walks: list[WalkRecord], agent) -> AgentStanding:
         walk, stop = next(((w, s) for w in walks if w.session == agent.session for s in reversed(w.stops) if s.waits_at(chart.id)), (None, None))
         node = nodes.get(stop.node) if stop else None
         at = datetime.fromtimestamp(walk.at, timezone.utc).isoformat() if walk else ""
         ctx = Context(event=Ticked(at=0.0, quiet_for=0.0).placed(agent.session, agent.environment_id, agent.provider, 0.0), session=agent.session, environment_id=agent.environment_id, state=self.machine.current(agent.session))
-        return {
-            "session": agent.session, "n": agent.id,
-            "node": stop.node if stop else 0, "port": stop.port if stop else "", "at": at,
-            "waits": bool(node and node.key in COUNT_CHECKS and stop.port == "no"),
-            "counts": self.checks.counts_kept(agent.session, chart.id),
-            "readings": {name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)},
-        }
+        return AgentStanding(session=agent.session, n=agent.id, node=stop.node if stop else 0, port=stop.port if stop else "", at=at,
+                             waits=bool(node and node.key in COUNT_CHECKS and stop.port == "no"), counts=self.checks.counts_kept(agent.session, chart.id),
+                             readings={name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)})
 
     def limits(self, nodes: dict) -> dict:
         """Each count check's number, and when its text names a setting, that setting's title, so the card says the number and where it comes from."""

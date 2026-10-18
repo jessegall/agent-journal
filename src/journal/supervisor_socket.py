@@ -1,6 +1,8 @@
 import json
 import socket
 
+from journal.supervisor_reply import SupervisorReply
+
 WAIT = 5.0
 """How long a supervisor has to answer a request."""
 
@@ -9,9 +11,9 @@ class SupervisorSocket:
     """One request to a supervisor on the protocol: a line of JSON out, a line back."""
 
     @staticmethod
-    def ask(path: str, request: dict) -> dict:
+    def ask(path: str, request: dict) -> SupervisorReply:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
             link.settimeout(WAIT)
             link.connect(path)
             link.sendall((json.dumps(request) + "\n").encode())
-            return json.loads(link.makefile("rb").readline())
+            return SupervisorReply.from_json(json.loads(link.makefile("rb").readline()))

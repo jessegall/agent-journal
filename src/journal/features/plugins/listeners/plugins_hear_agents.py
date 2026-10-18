@@ -43,7 +43,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:
         """It holds what its manifest says; a subagent's event only at a tool."""
-        return event.key in plugin.manifest.get("holds", ()) and (not event.subagent or event.key == "tool_starting")
+        return event.key in plugin.manifest.holds and (not event.subagent or event.key == "tool_starting")
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:

@@ -19,7 +19,7 @@ class TellAPluginItsSettings(Listener[Updated]):
         plugin = event.model
         if not isinstance(plugin, Plugin) or "settings" not in event.changed() or event.by == Actor.plugin(plugin.name):
             return
-        if not plugin.enabled or "plugin.updated" not in plugin.manifest.get("hears", ()):
+        if not plugin.enabled or "plugin.updated" not in plugin.manifest.hears:
             return
         environment_id = self.scope.id_or(0)
         told = PluginUpdated(settings=plugin.settings)

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from journal.models.model import Model
+from journal.models.plugin_manifest import PluginManifest
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class Plugin(Model):
     linked: bool = False
     """Read where it lies rather than copied into the journal's plugins folder."""
     enabled: bool = True
-    manifest: dict = field(default_factory=dict)
+    manifest: PluginManifest = field(default_factory=PluginManifest)
     settings: dict = field(default_factory=dict)
     hashes: dict = field(default_factory=dict)
     """Each file it runs, by path, with its hash at install, checked before each run."""

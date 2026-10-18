@@ -1,5 +1,6 @@
 from dataclasses import replace
 
+from journal.http.v3.row_counts import RowCounts
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.v3.listing import Listing
@@ -27,6 +28,6 @@ class RowsController:
         return Response.json({**listing.listed(rows), "counts": self.counts(rows)})
 
     @staticmethod
-    def counts(rows: list[V3Row]) -> dict:
+    def counts(rows: list[V3Row]) -> RowCounts:
         open_ = [r for r in rows if r.is_open]
-        return {"all": len(rows), "open": len(open_), "unread": len([r for r in open_ if USER not in r.seen])}
+        return RowCounts(all=len(rows), open=len(open_), unread=len([r for r in open_ if USER not in r.seen]))

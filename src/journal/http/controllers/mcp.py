@@ -3,6 +3,7 @@ from journal.features.mcp.health import Health
 from journal.features.mcp.installing import Installing
 from journal.features.mcp.keys import Keys
 from journal.features.mcp.pending_restarts import PendingRestarts
+from journal.http.controllers.listed_server import ListedServer
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.repositories.mcp_servers import McpServers
@@ -18,7 +19,7 @@ class McpController:
     def index(self, request: Request) -> Response:
         """The journal's own servers and, after them, the ones the program has from elsewhere: shown with their state, not managed from here."""
         own = [self.row(s) for s in self.servers.all()]
-        elsewhere = [self.known_row(k) for name, k in self.health.of_all().items() if name != "*" and name not in {s["name"] for s in own}]
+        elsewhere = [self.known_row(k) for name, k in self.health.of_all().items() if name != "*" and name not in {s.name for s in own}]
         present = [*own, *elsewhere]
         return Response.json({
             "servers": present,
@@ -28,20 +29,20 @@ class McpController:
         })
 
     @staticmethod
-    def present(suggestion, servers: list[dict]) -> bool:
+    def present(suggestion, servers: list[ListedServer]) -> bool:
         """A suggestion is already there by its name, or by the url or package the program runs it from."""
         marks = {suggestion.url} | {a for a in suggestion.args if a.startswith("@")}
-        return any(s["name"] == suggestion.name or any(m and m in f"{s['command']} {s['url']}" for m in marks) for s in servers)
+        return any(s.name == suggestion.name or any(s.runs_from(m) for m in marks) for s in servers)
 
-    def row(self, server) -> dict:
-        return {"name": server.name, "title": server.title, "transport": server.transport, "command": " ".join([server.command, *server.args]).strip(), "url": server.url,
-                "auth": server.auth, "key_var": server.key_var, "has_key": bool(server.key_var) and self.keys.has(server.key_var), "state": server.state, "last_error": server.last_error, "managed": True}
+    def row(self, server) -> ListedServer:
+        return ListedServer(server.name, server.title, server.transport, " ".join([server.command, *server.args]).strip(), server.url,
+                            server.auth, server.key_var, bool(server.key_var) and self.keys.has(server.key_var), server.state, server.last_error, True)
 
     @staticmethod
-    def known_row(known) -> dict:
+    def known_row(known) -> ListedServer:
         http = known.how.startswith("http")
-        return {"name": known.name, "title": known.name, "transport": "http" if http else "stdio", "command": "" if http else known.how, "url": known.how if http else "",
-                "auth": "none", "key_var": "", "has_key": False, "state": known.state, "last_error": known.words if known.state == "failed" else "", "managed": False}
+        return ListedServer(known.name, known.name, "http" if http else "stdio", "" if http else known.how, known.how if http else "",
+                            "none", "", False, known.state, known.words if known.state == "failed" else "", False)
 
     def install(self, request: Request) -> Response:
         try:

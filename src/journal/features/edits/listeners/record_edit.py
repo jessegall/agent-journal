@@ -1,4 +1,5 @@
 import time
+from dataclasses import asdict
 from pathlib import Path
 
 from journal.config import Config
@@ -24,11 +25,9 @@ class RecordEdit(AgentListener[ToolFinished]):
         path = event.input.get("file_path", "")
         if event.tool not in EDITING or not path:
             return
-        rows = PatchRows.of(event.response, event.input, event.tool)
-        numbered = [r["line"] for r in rows if r["line"]]
+        patch = PatchRows.of(event.response, event.input, event.tool)
         edit = Edit(session=event.session, path=self.inside(path), kind="create" if event.tool == "Write" else "edit", at=time.time(),
-                    added=len([r for r in rows if r["kind"] == "add"]), removed=len([r for r in rows if r["kind"] == "del"]),
-                    first_line=min(numbered) if numbered else 1, last_line=max(numbered) if numbered else len(rows), rows=tuple(rows[:200]))
+                    added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:200]))
         self.edits.record(edit, Actor.agent(event.session))
 
     def inside(self, path: str) -> str:

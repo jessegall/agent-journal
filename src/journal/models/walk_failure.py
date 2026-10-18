@@ -1,10 +1,11 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 from journal.models.entry import Entry
+from journal.models.entry_data import EntryData
 
 
 @dataclass(frozen=True)
-class WalkFailure:
+class WalkFailure(EntryData):
     """What a walk entry of a node that raised holds: the node, its key and the fault's words."""
 
     session: str
@@ -18,6 +19,3 @@ class WalkFailure:
     @classmethod
     def from_entry(cls, entry: Entry) -> "WalkFailure":
         return cls(**entry.data, at=entry.created_at.timestamp())
-
-    def to_data(self) -> dict:
-        return {name: value for name, value in asdict(self).items() if name != "at"}

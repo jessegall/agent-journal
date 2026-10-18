@@ -6,6 +6,7 @@ from journal.config import Config
 from journal.features.registry import Registry
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
+from journal.supervisor_reply import SupervisorReply
 
 
 class ServiceStart:
@@ -14,7 +15,7 @@ class ServiceStart:
     def __init__(self, registry: Registry, link: SupervisorLink, environments: Environments, config: Config) -> None:
         self.registry, self.link, self.environments, self.config = registry, link, environments, config
 
-    def run(self) -> list[dict]:
+    def run(self) -> list[SupervisorReply]:
         """The supervisor's answer for each service; none when the journal runs with no supervisor hosting it, as under plain claude or a worker's journal."""
         hosts = self.environments.where(name=os.environ.get("JOURNAL_ENV", ""))
         if not hosts or not self.link.runs(hosts[0].id):

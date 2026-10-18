@@ -6,6 +6,7 @@ from journal.console.console import Console
 from journal.console.where import Where
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
+from journal.features.git.head_commit import HeadCommit
 from journal.features.agent_listener import AgentListener
 from journal.models.actor import Actor
 from journal.models.entry import Entry
@@ -30,14 +31,11 @@ class SpotCommit(AgentListener[ToolFinished]):
         if "git commit" not in command:
             return
         head = self.head()
-        if not head:
-            return
-        sha, subject, branch, body = head
-        if any(e.data.get("sha") == sha for e in self.entries.of_kind(COMMIT, 20)):
+        if not head or any(e.data.get("sha") == head.sha for e in self.entries.of_kind(COMMIT, 20)):
             return
         by = Actor.agent(event.session)
-        self.entries.save(Entry(environment_id=event.environment_id, kind=COMMIT, actor=by, data={"sha": sha, "subject": subject, "branch": branch, "session": event.session}), by)
-        self.close_named(event, sha, body)
+        self.entries.save(Entry(environment_id=event.environment_id, kind=COMMIT, actor=by, data={"sha": head.sha, "subject": head.subject, "branch": head.branch, "session": event.session}), by)
+        self.close_named(event, head.sha, head.body)
 
     def close_named(self, event: ToolFinished, sha: str, body: str) -> None:
         from journal.features.tasks.feature import Tasks
@@ -51,7 +49,7 @@ class SpotCommit(AgentListener[ToolFinished]):
             if line:
                 self.supervisor.type(event.environment_id, line)
 
-    def head(self) -> tuple[str, str, str, str] | None:
+    def head(self) -> HeadCommit | None:
         try:
             out = subprocess.run(["git", "log", "-1", "--format=%H%n%s%n%B"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
             branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5).stdout.strip()
@@ -61,4 +59,4 @@ class SpotCommit(AgentListener[ToolFinished]):
             return None
         sha, _, rest = out.stdout.strip().partition("\n")
         subject, _, body = rest.partition("\n")
-        return sha, subject, branch, body
+        return HeadCommit(sha, subject, branch, body)

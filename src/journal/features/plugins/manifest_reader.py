@@ -37,7 +37,7 @@ class ManifestReader:
         unknown = sorted(set(raw) - KEYS)
         if unknown:
             raise Refused(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
-        manifest = PluginManifest(**{**raw, **{key: tuple(raw[key]) for key in ("hears", "holds", "services", "cards", "setup") if key in raw}})
+        manifest = PluginManifest.from_json(raw)
         self.named(manifest)
         self.spoken(manifest)
         self.heard(manifest)
@@ -55,7 +55,7 @@ class ManifestReader:
         taken = {skill.folder: "the journal" for skill in self.registry.skills()}
         for plugin in self.plugins.all():
             if plugin.name != manifest.name:
-                taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.of(plugin), PluginManifest(**plugin.manifest))}
+                taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.of(plugin), plugin.manifest)}
         for name in self.skill_names(folder, manifest):
             if name in taken:
                 raise Refused(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
@@ -89,8 +89,8 @@ class ManifestReader:
     def inside(folder: Path, manifest: PluginManifest) -> None:
         root = folder.resolve()
         named = [(key, getattr(manifest, key)) for key in PATHS if getattr(manifest, key)]
-        named += [(f"service {s.get('name', '')}", s["command"][0]) for s in manifest.services if s.get("command") and "/" in s["command"][0]]
-        named += [(f"setup step {step.get('name', '')}", word) for step in manifest.setup for word in step.get("run", "").split()[:2] if "/" in word]
+        named += [(f"service {s.name}", s.program) for s in manifest.services if s.is_in_its_folder]
+        named += [(f"setup step {step.name}", word) for step in manifest.setup for word in step.run.split()[:2] if "/" in word]
         named += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
         for key, path in named:
             if Path(path).is_absolute() or not (root / path).resolve().is_relative_to(root):

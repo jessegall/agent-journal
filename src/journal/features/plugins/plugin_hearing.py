@@ -41,7 +41,7 @@ class PluginHearing:
 
     def heard_by(self, event: Event, environment_id: int) -> list[Plugin]:
         """The enabled plugins that hear it, in the order they were installed; never the plugin that wrote the row, and none past a step of plugin commands, the cut recorded."""
-        heard = [p for p in self.plugins.enabled() if event.key in p.manifest.get("hears", ()) and getattr(event, "by", None) != Actor.plugin(p.name)]
+        heard = [p for p in self.plugins.enabled() if event.key in p.manifest.hears and getattr(event, "by", None) != Actor.plugin(p.name)]
         if heard and self.steps.too_deep():
             self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": event.key, "by": getattr(event, "by", Actor.system()).stamp, "plugins": [p.name for p in heard]}), Actor.system())
             return []

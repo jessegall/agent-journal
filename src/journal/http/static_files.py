@@ -1,6 +1,8 @@
 import mimetypes
 from pathlib import Path
 
+from journal.http.file_response import FileResponse
+
 
 class StaticFiles:
     """The built viewer, served at the root; any path that is not a file is the app's own page, so its routes work on a reload."""
@@ -8,7 +10,7 @@ class StaticFiles:
     def __init__(self, folder: Path) -> None:
         self.folder = folder
 
-    def serve(self, path: str) -> tuple[int, str, bytes] | None:
+    def serve(self, path: str) -> FileResponse | None:
         if not self.folder.is_dir():
             return None
         wanted = (self.folder / path.lstrip("/")).resolve()
@@ -17,4 +19,4 @@ class StaticFiles:
         if not wanted.is_file():
             return None
         kind = mimetypes.guess_type(str(wanted))[0] or "application/octet-stream"
-        return 200, kind, wanted.read_bytes()
+        return FileResponse(kind, wanted.read_bytes())

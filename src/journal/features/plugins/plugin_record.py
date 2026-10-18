@@ -1,3 +1,4 @@
+from journal.features.plugins.record_line import RecordLine
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 
@@ -12,14 +13,14 @@ class PluginRecord:
     def __init__(self, entries: Entries) -> None:
         self.entries = entries
 
-    def of(self, name: str) -> list[dict]:
+    def of(self, name: str) -> list[RecordLine]:
         return [line for line in map(self.line, self.entries.of_actor(f"plugin:{name}")) if line]
 
-    def line(self, entry: Entry) -> dict | None:
+    def line(self, entry: Entry) -> RecordLine | None:
         data, at = entry.data or {}, entry.created_at.timestamp()
         if entry.kind in CHANGES:
             kind = ROWS.get(data.get("table", ""))
-            return {"at": at, "kind": "row", "text": f"{CHANGES[entry.kind]} {data.get('table', '')[:-1].replace('_', ' ')} {data.get('id', '')}" + (f": {data['title']}" if data.get("title") else ""), "ref": f"{kind}:{data.get('id')}" if kind and entry.kind != "deleted" else ""}
+            return RecordLine(at=at, kind="row", text=f"{CHANGES[entry.kind]} {data.get('table', '')[:-1].replace('_', ' ')} {data.get('id', '')}" + (f": {data['title']}" if data.get("title") else ""), ref=f"{kind}:{data.get('id')}" if kind and entry.kind != "deleted" else "")
         said = {
             "plugin_said": lambda: f"{data.get('how', '')} at {data.get('event', '')}: {data.get('words', '')}",
             "plugin_line_waiting": lambda: f"said after the reply to {data.get('event', '')}, for the agent's next hook: {data.get('line', '')}" if data.get("session") else f"said after the reply to {data.get('event', '')}, with no agent to hear it: {data.get('line', '')}",
@@ -27,4 +28,4 @@ class PluginRecord:
             "plugin_fault": lambda: f"faulted at {data.get('event', '')}: {data.get('fault', '')}",
             "plugin_unanswered": lambda: f"refused {data.get('event', '')} after the reply, too late to hold it: {data.get('reason', '')}",
         }.get(entry.kind)
-        return {"at": at, "kind": entry.kind.removeprefix("plugin_"), "text": said(), "ref": ""} if said else None
+        return RecordLine(at=at, kind=entry.kind.removeprefix("plugin_"), text=said(), ref="") if said else None

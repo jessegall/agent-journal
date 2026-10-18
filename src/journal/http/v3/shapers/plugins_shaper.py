@@ -23,10 +23,10 @@ class PluginsShaper(Shaper):
         manifest = p.manifest
         schema = {s.key: {"title": s.title, "help": s.help, "type": TYPES.get(s.kind, "text"), "options": list(s.choices), "default": "" if s.default is None else s.default} for s in self.settings.schema(p)}
         chosen = {key: (f"secret {value['secret']}" if isinstance(value, dict) else value) for key, value in p.settings.items()}
-        return V3Row.of("plugin", p, title=manifest.get("title") or p.name, abstract=manifest.get("description", ""), state=self.state_of(p), data={
-            "manifest": {"name": p.name, "settings": schema, "dashboards": [manifest["dashboard"]] if manifest.get("dashboard") else []},
-            "version": manifest.get("version", ""), "source": p.source, "commit": p.commit_sha, "linked": p.linked, "enabled": p.enabled,
-            "hears": list(manifest.get("hears", ())), "holds": list(manifest.get("holds", ())), "services": [s.get("name", "") for s in manifest.get("services", ())],
+        return V3Row.of("plugin", p, title=manifest.title or p.name, abstract=manifest.description, state=self.state_of(p), data={
+            "manifest": {"name": p.name, "settings": schema, "dashboards": [manifest.dashboard] if manifest.dashboard else []},
+            "version": manifest.version, "source": p.source, "commit": p.commit_sha, "linked": p.linked, "enabled": p.enabled,
+            "hears": list(manifest.hears), "holds": list(manifest.holds), "services": [s.name for s in manifest.services],
             "last_fault": p.last_fault, "faults_in_a_row": p.faults_in_a_row, "failing_since": seconds(p.failing_since) if p.failing_since else 0.0,
             "settings": {"chosen": chosen},
         })

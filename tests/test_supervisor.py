@@ -7,6 +7,7 @@ from pathlib import Path
 
 from supervisor.inbox import Inbox
 from journal.launcher.environment_row import EnvironmentRow
+from journal.launcher.program_settings import ProgramSettings
 from journal.launcher.launch import Launch
 from journal.launcher.choice import Choice
 from journal.launcher.menu import Menu
@@ -52,8 +53,8 @@ def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
     from journal.launcher.other_hooks import OtherHooks
-    assert not OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
-    assert OtherHooks.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
+    assert not ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
+    assert ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
 
 def test_the_status_line_names_the_project_the_environment_and_the_url_in_a_file_claude_reads(tmp_path):

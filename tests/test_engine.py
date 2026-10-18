@@ -187,7 +187,7 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     from journal.repositories.messages import Messages
     from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: sent.append(instruction))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     watcher, link = app.container.get(MenuWatcher), app.container.get(SupervisorLink)
     agent = app.container.get(Machine).agent("s1", 1)

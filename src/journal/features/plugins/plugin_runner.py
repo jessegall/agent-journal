@@ -28,7 +28,7 @@ class PluginRunner:
         if within <= 0:
             raise PluginFault("not asked: the plugins before it used the event's whole deadline")
         listening = self.folders.socket(plugin, environment)
-        if any(s.get("answers") for s in plugin.manifest.get("services", ())) and listening.is_socket():
+        if any(s.answers for s in plugin.manifest.services) and listening.is_socket():
             try:
                 return self.asked_service(listening, line, within)
             except (ConnectionRefusedError, FileNotFoundError):
@@ -48,7 +48,7 @@ class PluginRunner:
 
     def asked_program(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
         folder = self.folders.of(plugin)
-        process = subprocess.Popen([str(folder / plugin.manifest["program"])], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
+        process = subprocess.Popen([str(folder / plugin.manifest.program)], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:
             out, err = process.communicate(line + "\n", timeout=within)
         except subprocess.TimeoutExpired:

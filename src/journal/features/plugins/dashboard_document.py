@@ -13,7 +13,7 @@ class DashboardDocument:
         self.rows, self.folders = rows, folders
 
     def of(self, plugin: Plugin) -> DashboardView:
-        board = plugin.manifest.get("dashboard") or {}
+        board = plugin.manifest.dashboard
         written = self.folders.data(plugin) / "dashboards" / f"{board.get('name', '')}.json"
         if board.get("name") and written.is_file():
             return DashboardView.from_json(json.loads(written.read_text()))

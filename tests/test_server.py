@@ -284,7 +284,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
     from journal.repositories.settings import Settings
     from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     app = App(Config(tmp_path, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
@@ -380,7 +380,7 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
     from journal.repositories.settings import Settings
     from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, instruction: typed.append(instruction["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     app = App(Config(tmp_path, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()

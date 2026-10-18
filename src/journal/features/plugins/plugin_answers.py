@@ -6,7 +6,6 @@ from journal.engine.cards import Cards
 from journal.features.plugins.plugin_steps import PluginSteps
 from journal.features.plugins.plugin_words import PluginWords
 from journal.models.actor import Actor
-from journal.models.card_kind import CardKind
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
 from journal.models.plugin_answer import PluginAnswer
@@ -31,7 +30,7 @@ class PluginAnswers:
                 self.run(plugin, line, environment, environment_id)
 
     def show(self, plugin: Plugin, card: PluginCard, environment_id: int) -> None:
-        kind = CardKind.named(plugin.manifest, card.kind, plugin.name)
+        kind = plugin.manifest.card_kind(card.kind)
         label = self.words.plain(card.label or kind.label)
         data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.words.plain(card.detail), "collapsed": kind.collapsed}
         self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name))

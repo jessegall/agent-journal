@@ -1,3 +1,6 @@
+from journal.http.v3.transcript_entry import TranscriptEntry
+from journal.http.v3.transcript_heading import TranscriptHeading
+from journal.http.v3.transcript_slice import TranscriptSlice
 from journal.providers.turn import Turn
 from journal.repositories.not_found import NotFound
 
@@ -11,17 +14,17 @@ class TranscriptPage:
     def __init__(self, turns: list[Turn]) -> None:
         self.turns = turns
 
-    def page(self, since: int, before: int, size: int) -> dict:
+    def page(self, since: int, before: int, size: int) -> TranscriptSlice:
         kept = [t for t in self.turns if t.line > since and (not before or t.line < before)]
         shown = kept[-max(1, min(size, LARGEST)):]
-        return {"total": len(self.turns), "first": self.turns[0].line if self.turns else 0, "turns": [self.heading(t) for t in shown]}
+        return TranscriptSlice(total=len(self.turns), first=self.turns[0].line if self.turns else 0, turns=[self.heading(t) for t in shown])
 
     @staticmethod
-    def heading(turn: Turn) -> dict:
-        return {"line": turn.line, "who": turn.who, "kind": turn.kind, "at": turn.at, "tools": turn.tools, "text": turn.text if turn.kind in SPOKEN else "", "has_text": bool(turn.text)}
+    def heading(turn: Turn) -> TranscriptHeading:
+        return TranscriptHeading(line=turn.line, who=turn.who, kind=turn.kind, at=turn.at, tools=turn.tools, text=turn.text if turn.kind in SPOKEN else "", has_text=bool(turn.text))
 
-    def entry(self, line: int) -> dict:
+    def entry(self, line: int) -> TranscriptEntry:
         turn = next((t for t in self.turns if t.line == line), None)
         if turn is None:
             raise NotFound("transcript entries", line)
-        return {"line": turn.line, "text": turn.text, "formatted": ""}
+        return TranscriptEntry(line=turn.line, text=turn.text, formatted="")

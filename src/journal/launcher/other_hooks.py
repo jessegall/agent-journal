@@ -2,6 +2,8 @@ import json
 import shutil
 from pathlib import Path
 
+from journal.launcher.program_settings import ProgramSettings
+
 FILES = {"claude": (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json"), "codex": (".codex/hooks.json", "~/.codex/hooks.json")}
 
 
@@ -18,7 +20,7 @@ class OtherHooks:
 
     def others(self) -> list[Path]:
         """The files holding a hook that is not the journal's."""
-        return [path for path in self.files() if path.is_file() and self.kept(self.read(path)) != self.read(path)]
+        return [path for path in self.files() if path.is_file() and ProgramSettings.read(path).kept() != ProgramSettings.read(path)]
 
     def set_aside(self) -> list[Path]:
         self.put_back()
@@ -27,7 +29,7 @@ class OtherHooks:
         for i, path in enumerate(self.others()):
             copy = self.folder / f"hooks-{i}-{path.name}"
             shutil.copy2(path, copy)
-            path.write_text(json.dumps(self.kept(self.read(path)), indent=2) + "\n")
+            path.write_text(json.dumps(ProgramSettings.read(path).kept().to_json(), indent=2) + "\n")
             moved.append({"from": str(path), "to": str(copy)})
         self.listing.write_text(json.dumps(moved))
         return [Path(m["from"]) for m in moved]
@@ -38,24 +40,7 @@ class OtherHooks:
         for m in moved:
             copy, home = Path(m["to"]), Path(m["from"])
             if copy.is_file():
-                home.write_text(json.dumps({**self.read(home), "hooks": self.read(copy).get("hooks", {})}, indent=2) + "\n")
+                home.write_text(json.dumps(ProgramSettings.read(home).with_hooks_of(ProgramSettings.read(copy)).to_json(), indent=2) + "\n")
                 copy.unlink()
         self.listing.unlink(missing_ok=True)
         return [Path(m["from"]) for m in moved]
-
-    @staticmethod
-    def read(path: Path) -> dict:
-        return json.loads(path.read_text() or "{}") if path.is_file() else {}
-
-    @classmethod
-    def kept(cls, settings: dict) -> dict:
-        """The same settings with only the journal's own hooks."""
-        if not isinstance(settings.get("hooks"), dict):
-            return settings
-        ours = {event: [block for block in blocks if cls.is_ours(block)] for event, blocks in settings["hooks"].items()}
-        return {**settings, "hooks": {event: blocks for event, blocks in ours.items() if blocks}}
-
-    @staticmethod
-    def is_ours(block: dict) -> bool:
-        """The journal's own hook, by the one path only this package's script has; a hook.sh of another package is somebody else's."""
-        return "journal/hooks/hook.sh" in json.dumps(block)

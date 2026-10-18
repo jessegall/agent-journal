@@ -154,8 +154,7 @@ class V3Actions:
     def plan_finish(self, n: int, body: ActionBody, by):
         return self.plans.save(self.plans.find(n).done(), by)
 
-    def plan_abandon(self, n: int, body: ActionBody, by):
-        return self.plans.save(self.plans.find(n).done(), by)
+    plan_abandon = plan_finish
 
     def plan_approve(self, n: int, body: ActionBody, by):
         return self.plans.approve(self.plans.find(n), by)
@@ -308,12 +307,6 @@ class V3Actions:
 
     def reminder_complete(self, n: int, body: ActionBody, by):
         return self.reminder_retire(n, body, by)
-
-    def plan_park(self, n: int, body: ActionBody, by):
-        return self.plans.save(self.plans.find(n).parked(), by)
-
-    def plan_start(self, n: int, body: ActionBody, by):
-        return self.plans.save(self.plans.find(n).started(), by)
 
     def read_all(self, type: str, numbers: list[int], by) -> None:
         if type != "message":

@@ -51,7 +51,7 @@ class Replay:
     def __init__(self, app, monkeypatch) -> None:
         """On a started journal, the lines typed to its agent caught."""
         self.app, self.typed, self.steps, self.seen, self.last_walk = app, [], [], 0, 0
-        monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, instruction: self.typed.append(instruction["line"]))
+        monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: self.typed.append({"verb": verb, **fields}["line"]))
 
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the agent's counts as they stand, and what the count checks of the walks since read."""

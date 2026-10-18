@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from journal.http.v3.listed_page import ListedPage
 from journal.http.v3.v3_row import V3Row
 
 PAGE = 50
@@ -26,18 +27,18 @@ class Listing:
         only = tuple(int(n) for n in str(query.get("n", query.get("only", ""))).split(",") if n.strip().isdigit())
         return cls(int(query.get("last", PAGE) or PAGE), flag("completed"), flag("closed"), int(query.get("before", 0) or 0), int(query.get("from", 0) or 0), float(query.get("since", 0) or 0), only)
 
-    def listed(self, rows: list[V3Row]) -> dict:
+    def listed(self, rows: list[V3Row]) -> ListedPage:
         """{rows, more}, rows in order of their number. A catch-up page since a time keeps deleted rows, so the viewer can drop them."""
         rows = sorted(rows, key=lambda r: r.n)
         if self.only:
-            return {"rows": [r.to_json() for r in rows if r.n in self.only and not r.deleted], "more": False}
+            return ListedPage(rows=[r.to_json() for r in rows if r.n in self.only and not r.deleted], more=False)
         if self.since:
-            return {"rows": [r.to_json() for r in rows if r.updated > self.since], "more": False}
+            return ListedPage(rows=[r.to_json() for r in rows if r.updated > self.since], more=False)
         rows = [r for r in rows if not r.deleted]
         if self.closed:
             closed = [r for r in rows if r.completed and (not self.before or r.n < self.before)]
-            return {"rows": [r.to_json() for r in closed[-self.last:]], "more": len(closed) > self.last}
+            return ListedPage(rows=[r.to_json() for r in closed[-self.last:]], more=len(closed) > self.last)
         wanted = [r for r in rows if (self.completed or not r.completed) and (not self.before or r.n < self.before) and r.n > self.after]
         page = wanted[-self.last:]
         open_ = [r for r in rows if not r.completed and r.n > self.after and r not in page] if not self.before and not self.timeline else []
-        return {"rows": [r.to_json() for r in sorted([*open_, *page], key=lambda r: r.n)], "more": len(wanted) > self.last}
+        return ListedPage(rows=[r.to_json() for r in sorted([*open_, *page], key=lambda r: r.n)], more=len(wanted) > self.last)

@@ -38,12 +38,16 @@ class Repository(Generic[M]):
         return self._load(row)
 
     def all(self) -> list[M]:
-        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} ORDER BY id")]
+        return self.selected("1 ORDER BY id")
+
+    def selected(self, clause: str, params: tuple = ()) -> list[M]:
+        """The rows a WHERE clause picks, in the order and number it names."""
+        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause}", params)]
 
     def where(self, **fields) -> list[M]:
         clause = " AND ".join(f"{name} = ?" for name in fields)
         params = tuple(self._column(name).to_sql(value) for name, value in fields.items())
-        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause} ORDER BY id", params)]
+        return self.selected(f"{clause} ORDER BY id", params)
 
     def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
         """The newest rows first, at most limit of them, older than the id before when given; so a list never loads more than a screen."""
@@ -52,9 +56,7 @@ class Repository(Generic[M]):
         if before is not None:
             where.append("id < ?")
             params.append(before)
-        clause = f" WHERE {' AND '.join(where)}" if where else ""
-        rows = self.connection.all(f"SELECT * FROM {self.table}{clause} ORDER BY id DESC LIMIT ?", (*params, limit))
-        return [self._load(row) for row in rows]
+        return self.selected(f"{' AND '.join(where) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
 
     def save(self, row: M, by: Actor) -> M:
         with self.connection.transaction():

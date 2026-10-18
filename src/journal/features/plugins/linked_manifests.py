@@ -27,7 +27,7 @@ class LinkedManifests:
         if seen == plugin.waiting:
             return
         try:
-            changes = PluginChanges.manifest(plugin.manifest, asdict(self.reader.read(self.folders.of(plugin))))
+            changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(self.reader.read(self.folders.of(plugin))))
         except (Refused, json.JSONDecodeError) as refused:
             changes = [f"the manifest is refused: {refused}"]
         if not changes:

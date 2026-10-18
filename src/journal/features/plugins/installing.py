@@ -53,7 +53,7 @@ class Installing:
             manifest = self.reader.read(folder)
             self.free(manifest.name)
             linked = Path(source).is_dir()
-            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=asdict(manifest))
+            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=manifest)
             had_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
             if not linked:
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
@@ -73,20 +73,20 @@ class Installing:
             return saved
 
     def required(self, plugin: Plugin, environment: str) -> None:
-        for program, need in plugin.manifest.get("requires", {}).items():
-            check = need.get("check") or f"command -v {program}"
+        for program, need in plugin.manifest.requires.items():
+            check = need.check or f"command -v {program}"
             if self.runner.shell(plugin, environment, check, STEP_SECONDS).returncode != 0:
-                raise Refused(f"{plugin.name} needs {program}, which is not here" + (f": {need['hint']}" if need.get("hint") else ""))
+                raise Refused(f"{plugin.name} needs {program}, which is not here" + (f": {need.hint}" if need.hint else ""))
 
     def set_up(self, plugin: Plugin, environment: str) -> None:
-        for step in plugin.manifest.get("setup", ()):
-            ran = self.runner.shell(plugin, environment, step["run"], STEP_SECONDS)
+        for step in plugin.manifest.setup:
+            ran = self.runner.shell(plugin, environment, step.run, STEP_SECONDS)
             if ran.returncode != 0:
-                raise Refused(f"{plugin.name}'s setup step {step.get('name', step['run'])!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+                raise Refused(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
 
     def asked(self, plugin: Plugin, environment: str) -> dict:
         """The settings its installed command answers with, as a JSON object."""
-        command = plugin.manifest.get("installed", "")
+        command = plugin.manifest.installed
         if not command:
             return {}
         ran = self.runner.shell(plugin, environment, command, STEP_SECONDS)
@@ -109,7 +109,7 @@ class Installing:
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.same(plugin, self.reader.read(folder))
-            changes = PluginChanges.manifest(plugin.manifest, asdict(manifest))
+            changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(manifest))
             code = [] if plugin.linked else PluginChanges.code(self.folders.of(plugin), folder)
             return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), was=plugin.commit_sha,
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
@@ -119,7 +119,7 @@ class Installing:
         self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
-            upgraded = plugin.with_(manifest=asdict(self.same(plugin, self.reader.read(folder))), commit_sha=commit, waiting="")
+            upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, waiting="")
             self.services.stop(plugin)
             if not plugin.linked:
                 self.replaced(plugin, upgraded, folder, environment)
@@ -228,11 +228,11 @@ class Installing:
     @staticmethod
     def rows(manifest: PluginManifest, folder: Path) -> tuple[PreviewRow, ...]:
         """Each thing it runs, hears, holds, needs and brings, as a kind, a label and the command or names; an installed command it has none of is no row."""
-        rows = (*(PreviewRow("needs", program, need.get("hint", "")) for program, need in manifest.requires.items()),
-                *(PreviewRow("setup", step.get("name", ""), step["run"]) for step in manifest.setup),
+        rows = (*(PreviewRow("needs", program, need.hint) for program, need in manifest.requires.items()),
+                *(PreviewRow("setup", step.name, step.run) for step in manifest.setup),
                 PreviewRow("installed", "fills its settings", manifest.installed),
                 PreviewRow("program", "for each event it hears, from its folder", manifest.program),
-                *(PreviewRow("service", s.get("name", ""), " ".join(s.get("command", ())) + (f"  (where {s['when']})" if s.get("when") else "")) for s in manifest.services),
+                *(PreviewRow("service", s.name, " ".join(s.command) + (f"  (where {s.when})" if s.when else "")) for s in manifest.services),
                 PreviewRow("hears", "events", ", ".join(manifest.hears) or "nothing"),
                 PreviewRow("holds", "before the agent goes on", ", ".join(manifest.holds) or "nothing"),
                 *(PreviewRow("skill", name) for name in ManifestReader.skill_names(folder, manifest)))

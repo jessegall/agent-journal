@@ -63,9 +63,7 @@ class TaskCommand(Command):
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:
-        task = self.in_hand.start(self.tasks.find(args.n), where)
-        print(f"task {task.id} started: {task.title}")
-        return 0
+        return self.taken(args.n, where, "started")
 
     def log(self, args: Namespace, where: Where) -> int:
         task = self.tasks.find(args.n)
@@ -83,8 +81,11 @@ class TaskCommand(Command):
         return 0
 
     def resume(self, args: Namespace, where: Where) -> int:
-        task = self.in_hand.start(self.tasks.find(args.n), where)
-        print(f"task {task.id} resumed: {task.title}")
+        return self.taken(args.n, where, "resumed")
+
+    def taken(self, n: int, where: Where, said: str) -> int:
+        task = self.in_hand.start(self.tasks.find(n), where)
+        print(f"task {task.id} {said}: {task.title}")
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:

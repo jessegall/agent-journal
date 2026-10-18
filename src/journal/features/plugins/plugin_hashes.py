@@ -3,6 +3,7 @@ from pathlib import Path
 
 from journal.engine.cards import Cards
 from journal.features.plugins.plugin_folders import PluginFolders
+from journal.models.plugin_manifest import PluginManifest
 from journal.models.actor import Actor
 from journal.models.plugin import Plugin
 from journal.repositories.plugins import Plugins
@@ -14,8 +15,8 @@ class PluginHashes:
     def __init__(self, folders: PluginFolders, plugins: Plugins, cards: Cards) -> None:
         self.folders, self.plugins, self.cards = folders, plugins, cards
 
-    def of(self, folder: Path, manifest: dict) -> dict[str, str]:
-        paths = [manifest["program"], *(s["command"][0] for s in manifest.get("services", ()) if s.get("command") and "/" in s["command"][0])]
+    def of(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
+        paths = [manifest.program, *(s.program for s in manifest.services if s.is_in_its_folder)]
         return {path: self.hashed(folder / path) for path in paths}
 
     def intact(self, plugin: Plugin, environment_id: int) -> bool:

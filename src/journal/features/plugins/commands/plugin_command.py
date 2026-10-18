@@ -44,7 +44,7 @@ class PluginCommand(Command):
 
     def list(self, args: Namespace, where: Where) -> int:
         for p in self.plugins.all():
-            print(f"{p.name:<20} {'on' if p.enabled else 'off':<4} {p.manifest.get('version', '')}" + (f"  last fault: {p.last_fault}" if p.last_fault else ""))
+            print(f"{p.name:<20} {'on' if p.enabled else 'off':<4} {p.manifest.version}" + (f"  last fault: {p.last_fault}" if p.last_fault else ""))
         return 0
 
     def install(self, args: Namespace, where: Where) -> int:

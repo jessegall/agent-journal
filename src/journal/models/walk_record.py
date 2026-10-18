@@ -1,11 +1,12 @@
-from dataclasses import asdict, dataclass, field, fields
+from dataclasses import dataclass, field, fields
 
 from journal.models.entry import Entry
+from journal.models.entry_data import EntryData
 from journal.models.walk_stop import WalkStop
 
 
 @dataclass(frozen=True)
-class WalkRecord:
+class WalkRecord(EntryData):
     """What a walk entry holds: the nodes the walk passed, what it said and whether it held, the moves it made and where each path stopped."""
 
     trigger: str
@@ -33,9 +34,6 @@ class WalkRecord:
         known = {f.name for f in fields(cls)} - {"stops", "at"}
         data = {name: tuple(value) if isinstance(value, list) else value for name, value in entry.data.items() if name in known}
         return cls(**data, stops=tuple(WalkStop(**stop) for stop in entry.data.get("stops", ())), at=entry.created_at.timestamp())
-
-    def to_data(self) -> dict:
-        return {name: value for name, value in asdict(self).items() if name != "at"}
 
     def passed_any(self, nodes: set[int]) -> bool:
         return bool(nodes.intersection(self.nodes))

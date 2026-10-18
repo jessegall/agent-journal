@@ -31,9 +31,10 @@ class Codex(Provider):
         if row.type != "response_item":
             return None
         at = self.seconds(row.timestamp)
-        if row.item == "message" and row.role in ("user", "assistant"):
-            kind = "agent" if row.role == "assistant" else "human"
-            return Turn(number, "user" if kind == "human" else kind, kind, row.text, at) if row.text.strip() else None
+        if row.item == "message" and row.role == "assistant" and row.text.strip():
+            return Turn(number, "agent", "agent", row.text, at)
+        if row.item == "message" and row.role == "user" and row.text.strip():
+            return Turn(number, "user", "human", row.text, at)
         if row.item in ("function_call", "custom_tool_call"):
             return Turn(number, "agent", "agent", "", at, [row.name])
         if row.item in ("function_call_output", "custom_tool_call_output"):

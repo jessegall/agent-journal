@@ -210,8 +210,7 @@ class Fillers:
 
     def worker_n(self, ctx: Context) -> str:
         """The number of the worker a worker event is about."""
-        model = getattr(ctx.event, "model", None)
-        return str(model.id) if isinstance(model, Worker) else ""
+        return self._number_of(ctx, Worker)
 
     def worker_name(self, ctx: Context) -> str:
         """The name of the worker a worker event is about."""
@@ -220,8 +219,13 @@ class Fillers:
 
     def question_n(self, ctx: Context) -> str:
         """The number of the question a question event is about."""
+        return self._number_of(ctx, Question)
+
+    @staticmethod
+    def _number_of(ctx: Context, kind: type) -> str:
+        """The number of the row of that kind the event is about; empty for an event about none."""
         model = getattr(ctx.event, "model", None)
-        return str(model.id) if isinstance(model, Question) else ""
+        return str(model.id) if isinstance(model, kind) else ""
 
     def parked_n(self, ctx: Context) -> str:
         """The number of the first parked task."""
