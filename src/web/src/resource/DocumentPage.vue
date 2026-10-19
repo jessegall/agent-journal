@@ -10,6 +10,7 @@ import SequenceRuns from "./SequenceRuns.vue";
 import {useBeingWritten} from "../composables/sequenceRuns.js";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
+import {meta} from "../domain/spec.js";
 
 const props = defineProps({
     resource: Object,
@@ -53,6 +54,7 @@ function panelLeft() {
 const aside = ref("comments");
 const running = useBeingWritten(() => props.resource);
 const page = ref(null);
+const quick = computed(() => !props.readOnly && !shifted.value && !running.value && !!meta(props.resource.type)?.takes_comments);
 const SIDE_BY_SIDE = 720;
 
 watch(
@@ -111,7 +113,7 @@ watch(
 </script>
 
 <template>
-    <div ref="page" :class="['document', {shifted}]">
+    <div ref="page" :class="['document', {shifted, quick}]">
         <div ref="body" class="document-body">
             <Highlight :off="!!resource.data?.system || readOnly" @quote="quote = $event">
                 <slot>
@@ -125,6 +127,11 @@ watch(
                 <slot name="foot" />
             </Highlight>
         </div>
+        <template v-if="quick">
+            <div class="document-quick">
+                <Comments :resource="resource" :show-thread="false" />
+            </div>
+        </template>
         <Transition name="aside" @after-leave="panelLeft">
             <aside v-if="panel && !readOnly" class="document-aside">
                 <SwitchCase :value="aside">
@@ -177,6 +184,17 @@ watch(
         opacity: 1;
         transform: none;
     }
+}
+
+.document-quick {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.document.quick .document-body {
+    padding-bottom: 72px;
 }
 
 .document-links {

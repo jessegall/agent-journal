@@ -16,6 +16,7 @@ import {pendingRow} from "../domain/placeholders.js";
 import {optimistic} from "../sync/rows.js";
 import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
+import QuickCommentBar from "../kit/QuickCommentBar.vue";
 
 const props = defineProps({
     resource: Object,
@@ -140,6 +141,10 @@ function answer() {
     if (!text) return;
     comment({type: "comment", n: replying.n, action: "reply"}, [`comment:${replying.n}`], text);
     Object.assign(replying, {n: 0, text: ""});
+}
+
+async function quick(text) {
+    comment({type: props.resource.type, n: props.resource.n, action: "comment"}, [props.resource.ref], text);
 }
 
 async function send(text) {
@@ -276,7 +281,10 @@ async function send(text) {
         <template v-if="notSaved">
             <p class="unsaved">Couldn't save the comment: {{ notSaved }}</p>
         </template>
-        <div class="comment-write">
+        <template v-if="!props.showThread">
+            <QuickCommentBar :send="quick" :count="talk ? thread.length : 0" @show="talk.toggle()" />
+        </template>
+        <div v-else class="comment-write">
             <Compose
                 :placeholder="quote ? 'Say something about this passage…' : 'Write a comment…'"
                 submit="Comment"
