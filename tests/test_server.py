@@ -973,3 +973,41 @@ def test_a_dump_is_dropped_with_files_and_acted_on_through_the_viewer(server):
     assert 400 <= upload(n, "b.txt", "more")[0] < 500, "a closed dump takes no more files"
     assert [r["id"] for r in call(server, "GET", "/journal/dumps?limit=5")[1]["rows"]] == [n]
     assert call(server, "POST", f"/journal/dumps/{n}/dismiss")[1]["dismissed"] is True
+
+
+WEB = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
+OWN = re.compile(r"this\.(get|post)\(\s*(?:this\.here\(\s*)?[`\"](/[^`\"]*)[`\"]|this\.address\(\s*[`\"](/[^`\"]*)[`\"]")
+NAMED = re.compile(r"\.(act|list|show|create|change|upload|fileUrl)\(\s*\"([\w-]+)\"(?:\s*,\s*[\w.]+(?:\([^()]*\))?)?(?:\s*,\s*\"([\w-]+)\")?")
+SHAPES = {"act": ("POST", "/{table}/1/{act}"), "list": ("GET", "/{table}"), "show": ("GET", "/{table}/1"), "create": ("POST", "/{table}"),
+          "change": ("POST", "/{table}/1"), "upload": ("POST", "/{table}/1/files"), "fileUrl": ("GET", "/{table}/1/files/a.txt")}
+
+
+def viewer_paths() -> set[tuple[str, str]]:
+    """Every path the viewer asks for: the client's own, and each act, list, show, create, change and file a component names by its table."""
+    named = set()
+    client = (WEB / "api" / "client.js").read_text()
+    for method, path, address in OWN.findall(client):
+        literal = re.sub(r"\$\{query\(.*?\)\}", "", path or address)
+        if not literal.startswith("/${") and "${session" not in literal:
+            named.add(("POST" if method == "post" else "GET", re.sub(r"\$\{[^}]*\}", "1", literal)))
+    for source in [*WEB.rglob("*.js"), *WEB.rglob("*.vue")]:
+        for call_name, table, act in NAMED.findall(source.read_text()):
+            if call_name != "act" or act:
+                method, shape = SHAPES[call_name]
+                named.add((method, shape.format(table=table, act=act)))
+    return named
+
+
+def test_every_route_the_viewer_names_is_served_and_version_threes_api_is_gone(server):
+    named = viewer_paths()
+    assert len(named) > 100, "the walk reads the viewer's paths, not an empty list"
+    unserved = sorted(f"{method} /journal{path}" for method, path in named if not any(route.params(method, f"/journal{path}") is not None for route in server.router.routes))
+    assert unserved == [], f"the viewer names routes no controller serves, each of which would answer 404: {unserved}"
+    assert not (Path(__file__).resolve().parents[1] / "src" / "journal" / "http" / "v3").exists()
+    assert "/api" not in (WEB / "api" / "client.js").read_text()
+
+
+def test_the_search_page_finds_a_task_by_its_words(server):
+    call(server, "POST", "/journal/tasks", {"title": "rebuild the viewer", "brief": "every page"})
+    status, found = call(server, "GET", "/journal/search?words=viewer%20page")
+    assert status == 200 and found["found"][0]["ref"] == "task 1"
