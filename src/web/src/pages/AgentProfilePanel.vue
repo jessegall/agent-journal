@@ -1,8 +1,9 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
-import DropList from "../kit/DropList.vue";
 import FormField from "../kit/FormField.vue";
+import ModelPicker from "../kit/ModelPicker.vue";
+import Segmented from "../kit/Segmented.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import TextArea from "../kit/TextArea.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -10,11 +11,9 @@ import TextInput from "../kit/TextInput.vue";
 const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}});
 const emit = defineEmits(["close", "save"]);
 
-const MODELS = [
-    {key: "haiku", label: "haiku", note: "fast, for mechanical work"},
-    {key: "sonnet", label: "sonnet", note: "careful work without invention"},
-    {key: "opus", label: "opus", note: "judgement"},
-    {key: "", label: "the agent's model", note: "the model of the agent that starts it"},
+const KINDS = [
+    {key: "subagent", label: "Subagent"},
+    {key: "worker", label: "Worker"},
 ];
 
 const draft = ref({});
@@ -25,6 +24,7 @@ watch(
             name: props.profile.name,
             description: props.profile.description,
             tools: props.profile.tools,
+            kind: props.profile.kind,
             model: props.profile.model,
             body: props.profile.body,
         };
@@ -32,16 +32,15 @@ watch(
     {immediate: true}
 );
 const dirty = computed(
-    () => ["description", "tools", "model", "body"].some((key) => draft.value[key] !== props.profile[key]) || !props.profile.name
+    () => ["description", "tools", "kind", "model", "body"].some((key) => draft.value[key] !== props.profile[key]) || !props.profile.name
 );
 const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.name || "") && draft.value.description.trim());
-const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.model) || {label: draft.value.model}).label);
 </script>
 
 <template>
     <SidePanel
         :title="profile.name || 'New profile'"
-        :abstract="profile.name ? used : 'A subagent the agent can dispatch for one kind of job'"
+        :abstract="profile.name ? used : 'A worker or a subagent the agent can dispatch for one kind of job'"
         @close="$emit('close')"
     >
         <div class="profile-panel">
@@ -70,15 +69,15 @@ const modelLabel = computed(() => (MODELS.find((m) => m.key === draft.value.mode
                     @input="draft.tools = $event.target.value"
                 />
             </FormField>
+            <FormField
+                label="Kind"
+                for="profile-kind"
+                help="A subagent only reads and is started with the Agent tool; a worker writes and is started with journal worker dispatch."
+            >
+                <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
+            </FormField>
             <FormField label="Model" for="profile-model" help="The least expensive model that reliably fits the work.">
-                <DropList
-                    :label="modelLabel"
-                    icon="model"
-                    :items="MODELS"
-                    :picked="draft.model"
-                    :menu-width="280"
-                    @pick="draft.model = $event.key"
-                />
+                <ModelPicker inherits :value="draft.model" @pick="draft.model = $event" />
             </FormField>
             <FormField label="Instructions" for="profile-body" help="What it is told each time it starts, after the brief.">
                 <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />

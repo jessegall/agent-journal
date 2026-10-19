@@ -398,6 +398,22 @@ def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
     assert hook(app, "PreToolUse", tool_name="Task", tool_input={"model": "fast", "description": "x", "prompt": "y"})[0] == 200
 
 
+def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app):
+    from journal.features.profiles.profile_files import ProfileFiles
+    files = app.container.get(ProfileFiles)
+    files.write_all()
+    assert files.kind_of("researcher") == "subagent" and files.kind_of("nobody") == ""
+    assert files.save("builder", "writes code", "Read, Edit", "worker", "sonnet", "You write.")["kind"] == "worker"
+    assert files.read("builder")["kind"] == "worker" and files.read("planner")["kind"] == "subagent"
+    hook(app, "SessionStart")
+    refused = app.console().run(["worker", "dispatch", "researcher", "look it up", "--model", "fast"], AGENT)
+    assert refused.code != 0 and "subagent profile" in refused.err and "Agent tool" in refused.err
+    assert app.console().run(["worker", "dispatch", "builder", "write it", "--model", "fast"], AGENT).code == 0
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "builder", "model": "fast", "description": "x", "prompt": "y"})
+    assert status == 409 and "worker profile" in body["error"] and "journal worker dispatch builder" in body["error"]
+    assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "researcher", "model": "fast", "description": "x", "prompt": "y"})[0] == 200
+
+
 def test_a_large_result_is_named(app):
     hook(app, "SessionStart")
     body = hook(app, "PostToolUse", tool_name="Bash", tool_input={}, tool_response="\n" * 500)[1]

@@ -38,7 +38,7 @@ class V3Manifest:
         readers = self.read_by()
         return {f.name: {"name": f.name, "label": f.title, "hint": f.help, "explains": f.help, "group": f.name, "default": f.default, "fixed": False,
                          "behaviours": {}, "nudges": {}, "trigger": {},
-                         "settings": [{"name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices), "read_by": readers.get(o.key, [])} for o in f.options]}
+                         "settings": [{"name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices), "provider": o.provider, "read_by": readers.get(o.key, [])} for o in f.options]}
                 for f in self.registry.features}
 
     def read_by(self) -> dict[str, list[dict]]:
