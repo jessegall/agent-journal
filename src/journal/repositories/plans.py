@@ -53,6 +53,10 @@ class Plans(ScopedRepository[Plan]):
         """The approved, started or parked plans this task belongs to: any of them whose last task closes is done."""
         return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED)]
 
+    def is_moving(self, task: Task) -> bool:
+        """Whether a started plan holds this task, so the plan says what comes after it."""
+        return any(plan.state == PlanState.STARTED for plan in self.holding(task))
+
     def tasks_of(self, plan: Plan) -> list[Task]:
         """In the order they were added."""
         return [self.tasks.find(ref.id) for ref in self.links.sources(plan, IN_PLAN)]

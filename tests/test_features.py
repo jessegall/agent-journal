@@ -160,6 +160,24 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
+def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
+    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    console = app.console()
+    console.run(["task", "create", "side work", "--start"], AGENT)
+    console.run(["task", "park", "1", "the plan first"], AGENT)
+    console.run(["plan", "create", "release", "--brief", "ship 4.0"], USER)
+    console.run(["plan", "phase", "1", "notes", "--when", "written", "--checkpoint"], USER)
+    console.run(["plan", "add", "1", "write the notes"], USER)
+    console.run(["plan", "phase", "1", "tag", "--when", "tagged"], USER)
+    console.run(["plan", "add", "1", "tag it"], USER)
+    console.run(["plan", "todos", "1", "1", "2"], USER)
+    console.run(["plan", "todos", "1", "2", "3"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    out = console.run(["task", "done", "2"], AGENT).out
+    assert "side work" not in out and "parked" not in out, "a plan's task leaves the next to the plan"
+
+
 def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app, monkeypatch):
     from journal.models.plan_state import PlanState
     from journal.repositories.plans import Plans
