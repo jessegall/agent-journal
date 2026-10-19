@@ -53,7 +53,7 @@ class Installing:
             manifest = self.reader.read(folder)
             self.free(manifest.name)
             linked = Path(source).is_dir()
-            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, linked=linked, manifest=manifest)
+            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, release="" if linked else self.tag_at(folder), linked=linked, manifest=manifest)
             had_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
             if not linked:
                 shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
@@ -119,7 +119,7 @@ class Installing:
         self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
-            upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, waiting="")
+            upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, release="" if plugin.linked else self.tag_at(folder), waiting="")
             self.services.stop(plugin)
             if not plugin.linked:
                 self.replaced(plugin, upgraded, folder, environment)
@@ -184,6 +184,12 @@ class Installing:
         for stale in home.glob(".fetching-*"):
             if time.time() - stale.stat().st_mtime > 2 * FETCH_SECONDS:
                 shutil.rmtree(stale, ignore_errors=True)
+
+    @staticmethod
+    def tag_at(folder: Path) -> str:
+        """The release tag the fetched commit carries, or none."""
+        described = subprocess.run(["git", "-C", str(folder), "describe", "--tags", "--exact-match", "HEAD"], capture_output=True, text=True, timeout=FETCH_SECONDS)
+        return described.stdout.strip() if described.returncode == 0 else ""
 
     @staticmethod
     def same(plugin: Plugin, manifest: PluginManifest) -> PluginManifest:

@@ -102,7 +102,7 @@ class Updating:
         self.problem, self.under_way = " ".join(problems), ""
 
     def pull_plugin(self, by: Actor) -> None:
-        """A fetched plugin is only ever moved to a released version: its latest tag, when newer than the version its own manifest names."""
+        """A fetched plugin is only ever moved to a release: its newest tag, when newer than the release tag recorded on its row, or when none is recorded yet."""
         found = [plugin for plugin in self.plugins.where(name=PLUGIN) if not plugin.linked]
         if not found:
             return
@@ -110,5 +110,5 @@ class Updating:
             released = Release.named(self.source.tags_of(found[0].source))
         except (OSError, subprocess.TimeoutExpired) as error:
             raise Refused(str(error)) from error
-        if released and released[-1].is_newer_than(Release(found[0].manifest.version)):
+        if released and (not found[0].release or released[-1].is_newer_than(Release(found[0].release))):
             self.installing.upgrade(PLUGIN, released[-1].tag, Where().environment, by)

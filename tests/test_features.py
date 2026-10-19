@@ -5762,15 +5762,19 @@ def test_nothing_is_installed_on_its_own_when_no_release_is_newer(app):
     assert installer.ran == []
 
 
-def test_the_plugin_is_moved_only_to_its_latest_release_when_newer_than_the_installed_one(app):
+def test_the_plugin_is_moved_only_to_its_latest_release_when_newer_than_the_recorded_release(app):
     source, plugins = Source(), Plugins()
     updating = updating_with(app, source, Installer(), auto=False)
     updating.installing = plugins
+    rows = app.container.get(PluginRows)
     manifest = PluginManifest(name="code-commandments", version="1.64.22")
-    app.container.get(PluginRows).save(PluginRow(name="code-commandments", source="https://example.test/plugin.git", manifest=manifest), Actor.system())
-    source.plugin_found = ["v1.64.21", "v1.64.22", "v1.65.0-rc1", "nightly"]
+    row = rows.save(PluginRow(name="code-commandments", source="https://example.test/plugin.git", manifest=manifest, release="v5.19.3"), Actor.system())
+    source.plugin_found = ["v5.19.2", "v5.19.3", "v5.20.0-rc1", "nightly"]
     updating.pull_plugin(Actor.user(1))
     assert plugins.upgraded == []
-    source.plugin_found = ["v1.64.22", "v1.64.23", "v1.64.9", "v1.65.0-rc1"]
+    source.plugin_found = ["v5.19.2", "v5.19.3", "v5.19.4", "v5.19.10-rc1"]
     updating.pull_plugin(Actor.user(1))
-    assert plugins.upgraded == [("code-commandments", "v1.64.23")]
+    assert plugins.upgraded == [("code-commandments", "v5.19.4")]
+    rows.save(row.with_(release=""), Actor.system())
+    updating.pull_plugin(Actor.user(1))
+    assert plugins.upgraded[-1] == ("code-commandments", "v5.19.4")
