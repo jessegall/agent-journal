@@ -267,19 +267,18 @@ class ShippedChart(Seed):
         """A shipped drawing drawn anew as its own workflow, named after it; a locked one at the head of its event's list, the rest in the states' order."""
         state, event = key.split(":")[:2]
         drawing = self.drawings[key]
-        place = self.stateless_place(event, drawing.locked) if not state else self.shipped_place(key)
+        place = self.shipped_place(key)
         chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=place), by)
         drawing.draw(chart)
         return chart
 
-    def stateless_place(self, event: str, locked: bool) -> int:
-        """A locked workflow at the head, an Always one after the locked ones: each before the states' and the user's, in the order drawn."""
-        standing = [c for c in self.charts.for_event(event) if not c.state and c.locked == locked]
-        return (HEAD if locked else ALWAYS_PLACE) + len(standing)
-
     def shipped_place(self, key: str) -> int:
-        """A state's shipped workflow takes its state's place, times ten, plus its own place among the state's drawings at the event in the table's order, so draw and reset agree."""
+        """A shipped workflow's place at its event, from the table's order alone, so draw and reset agree: a locked one at the head, an Always one after the locked ones, each before the states'; a state's takes its state's place, times ten, plus its own among the state's drawings."""
         state, event = key.split(":")[:2]
+        if not state:
+            locked = self.drawings[key].locked
+            siblings = [k for k, d in self.drawings.items() if k.startswith(f":{event}:") and d.locked == locked]
+            return (HEAD if locked else ALWAYS_PLACE) + siblings.index(key)
         siblings = [k for k in self.drawings if k.startswith(f"{state}:{event}:")]
         return self.state_place(state) * 10 + (siblings.index(key) if key in siblings else 0)
 
@@ -381,12 +380,12 @@ class ShippedChart(Seed):
             self.charts.save(chart.with_(title=chart.title[:LONGEST - len(why)].rstrip() + why), by)
 
     def reset(self, chart: Chart, by: Actor) -> Chart:
-        """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew at the place its state ships at, one more revision."""
+        """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew at the place it ships at, one more revision."""
         drawing = self.drawings[chart.drawing or self.key_of(chart.state, chart.event)]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
         drawing.draw(chart)
-        place = self.shipped_place(chart.drawing) if chart.state and chart.drawing in self.drawings else chart.place
+        place = self.shipped_place(chart.drawing) if chart.drawing in self.drawings else chart.place
         return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION, place=place), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0, locked: bool | None = None) -> Node:

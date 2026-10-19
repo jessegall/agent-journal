@@ -2860,7 +2860,10 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     from journal.repositories.charts import Charts
     assert not [c for c in app.container.get(Charts).for_event("messages.created") if c.shipped], "delivery is not a workflow: nothing is shipped at a message's creation"
     always = next(c for c in app.container.get(Charts).for_event("idle") if not c.state)
+    charts = app.container.get(Charts)
+    charts.save(charts.find(always.id).with_(place=7), Actor.user(1))
     assert "reset to the shipped one" in console.run(["chart", "reset", str(always.id)], USER).out
+    assert charts.find(always.id).place == always.place, "a reset puts an Always workflow back at its shipped place too"
     assert "[always at idle, place" in console.run(["chart", "show"], USER).out
 
 

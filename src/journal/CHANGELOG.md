@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.8
+
+- Resetting a shipped workflow puts it back at its shipped place in the run order too, an Always one included; a shipped workflow's place comes from the shipped table alone, so drawing it and resetting it agree.
+
 ## 4.1.7
 
 - Every shipped workflow checks what it acts on itself: the checkpoint wait checks auto mode is off, the carry-on and the log ask check a task is in hand, and none counts on an earlier one stopping the walk.
