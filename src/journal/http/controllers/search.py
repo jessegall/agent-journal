@@ -1,4 +1,4 @@
-from journal.features.search.search import Search
+from journal.features.search.support.search import Search
 from journal.http.support.request import Request
 from journal.support.response import Response
 

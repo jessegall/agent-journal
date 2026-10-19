@@ -1,5 +1,5 @@
 from journal.config import Config
-from journal.features.search.found import Found
+from journal.features.search.support.found import Found
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.docs import Docs
