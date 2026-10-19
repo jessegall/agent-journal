@@ -121,7 +121,7 @@ class ShellCommand(Command):
         from journal.features.shell.feature import Shell
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
         output = self.outputs.save(self.outputs.of_chain(args.chain).moved_out(), where.actor)
-        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part, key=f"background:{args.chain}")
+        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", key=f"background:{args.chain}", command=args.part)
         print(Shell.MOVED.about(n=output.id, file=args.file).rendered())
         return 0
 
@@ -131,7 +131,7 @@ class ShellCommand(Command):
         part = self.moved_part(args.chain)
         outcome = OutputFiles.ended(args.status)
         said = self.said_last(args.last)
-        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", "\n".join(line for line in (part, said) if line), key=f"background:{args.chain}")
+        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", said, key=f"background:{args.chain}", command=part)
         live = self.agents.live()
         if live:
             output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)

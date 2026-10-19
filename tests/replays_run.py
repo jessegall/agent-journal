@@ -292,7 +292,7 @@ def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journals, monk
     right = Replay(with_workflow, monkeypatch)
     tool_uses_with_changed_settings(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
-    assert by_name["read 1 while owed"]["answer"] == {} and "answer message 1 before you do anything else" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
+    assert by_name["read 1 while owed"]["answer"] == {} and "answer or react to message 1 before you do anything else" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
     assert "error" in by_name["read 4 while owed"]["answer"] and "error" in by_name["read 5 while owed"]["answer"], "and holds after four"
     assert "in hand, 2 edits" in str(by_name["write 3"]["answer"]) and "3 edits since you logged task 1: say where it stands" in str(by_name["write 4"]["answer"]) and "in hand, 4 edits" in str(by_name["write 5"]["answer"]) and by_name["write 6"]["answer"] == {} and "error" in by_name["write 7"]["answer"], "the task is named every two edits, the log asked at three and held at six"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
@@ -307,7 +307,7 @@ def test_tool_about_to_run_as_the_shipped_workflow_equals_the_three_listeners_on
     by_name = {s["name"]: s for s in left.record()}
     assert "new message 1" in str(by_name["read 3"]["answer"]) and by_name["read 4"]["answer"] == {}, "the listener names the inbox every third use"
     assert "you have 1 unread messages" in str(by_name["a write at 17"]["answer"]), "and holds the write after five namings"
-    assert "answer message 1 first" in str(by_name["a read while owed"]["answer"]) and by_name["a journal command while owed"]["answer"] == {} and by_name["a look at its files"]["answer"] == {} and by_name["a read after the reply"]["answer"] == {}
+    assert "answer or react to message 1 first" in str(by_name["a read while owed"]["answer"]) and by_name["a journal command while owed"]["answer"] == {} and by_name["a look at its files"]["answer"] == {} and by_name["a read after the reply"]["answer"] == {}
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 
 
@@ -738,7 +738,7 @@ def test_two_lines_on_one_write_the_first_hold_wins(journals, monkeypatch):
     right = Replay(with_workflow, monkeypatch)
     two_lines_on_one_write(with_workflow, right, provider)
     held = right.record()[-1]["answer"]["error"]
-    assert "answer message 1 first" in held, "the hold over the unanswered message runs first in the order and wins the write"
+    assert "answer or react to message 1 first" in held, "the hold over the unanswered message runs first in the order and wins the write"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, in the same order"
 
 

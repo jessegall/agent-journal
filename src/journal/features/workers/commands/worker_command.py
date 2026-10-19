@@ -1,5 +1,6 @@
 from argparse import Namespace
 
+from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.engine.machine import Machine
@@ -57,6 +58,11 @@ class WorkerCommand(Command):
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         worker = Worker(name=args.name, brief=args.brief, provider=args.provider or self.own_provider(where), model=args.model, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
+        try:
+            self.runner.workplace(worker)
+        except WorktreeNotMade as failed:
+            self.workers.delete(worker, where.actor)
+            raise Refused(f"worker {worker.name} was not dispatched: {failed}") from failed
         if args.task:
             self.workers.put_on(worker, args.task, where.actor)
         self.runner.start(worker, where.actor)

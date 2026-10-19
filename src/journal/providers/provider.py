@@ -22,6 +22,9 @@ TAIL = 400_000
 PATH_KEYS = ("file_path", "path", "notebook_path")
 """The keys an editing tool names its file by."""
 
+VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
+"""Where version 3 wired its hook; an upgrade takes them out, or they fail on every tool call."""
+
 class Provider:
     """One agent program, Claude or Codex: the few things the journal has to know about it and nothing else."""
 
@@ -34,6 +37,8 @@ class Provider:
     read_tool: ClassVar[str]
     shell_tool: ClassVar[str] = "Bash"
     settings_extras: ClassVar[dict] = {}
+    other_settings: ClassVar[tuple[str, ...]] = ()
+    """Settings files beside the main one that may still hold an older hook of ours."""
     """What else the program's settings file must say for the journal's sake, such as taking the project's MCP servers without asking."""
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
@@ -140,6 +145,8 @@ class Provider:
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         """Writes the journal's hook into the program's settings file, replacing any older block of ours and keeping everything else."""
+        for other in self.other_settings:
+            self.unwired(project / self.home / other)
         path = project / self.home / self.settings_file
         settings = json.loads(path.read_text()) if path.is_file() else {}
         hooks = {kind: [b for b in blocks if not self.ours(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
@@ -149,10 +156,21 @@ class Provider:
         path.write_text(json.dumps({**settings, **self.settings_extras, "hooks": {k: v for k, v in hooks.items() if v}}, indent=2) + "\n")
         return path
 
+    def unwired(self, path: Path) -> None:
+        if not path.is_file():
+            return
+        settings = json.loads(path.read_text())
+        hooks = {kind: [b for b in blocks if not self.ours(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
+        if hooks == settings.get("hooks", {}):
+            return
+        settings["hooks"] = {k: v for k, v in hooks.items() if v}
+        path.write_text(json.dumps({k: v for k, v in settings.items() if v or k != "hooks"}, indent=2) + "\n")
+
     @staticmethod
     def ours(block: dict) -> bool:
-        """The journal's own hook, by the one path only this package's script has; a hook.sh of another package is somebody else's."""
-        return "journal/hooks/hook.sh" in json.dumps(block)
+        """The journal's own hook, by the one path only this package's script has, or version 3's; a hook.sh of another package is somebody else's."""
+        text = json.dumps(block)
+        return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
     def hooks_trusted(self, project: Path) -> bool:
         """Whether the program runs the journal's hooks in this project without asking the user first."""

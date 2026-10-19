@@ -474,7 +474,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast"], AGENT)
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
     machine = app.container.get(Machine)
@@ -517,6 +517,9 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     monkeypatch.setattr(Claude, "transcript", lambda self, project, session: conversation)
     console = app.console()
     hook(app, "SessionStart")
+    import subprocess
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
     assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
@@ -1146,7 +1149,7 @@ def test_a_message_read_gets_an_answer_before_the_next_tool_call(app):
     app.console().run(["message", "send", "can you look at the footer, the header and the menu before lunch?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
-    assert status == 409 and "your tool calls are held: answer message 1 first" in body["error"], "the very next tool call waits for the reply"
+    assert status == 409 and "answer or react to message 1 first" in body["error"], "the very next tool call waits for the reply"
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 1"})[0] == 200, "a journal command goes through"
     own = str(app.config.home / "files" / "message" / "1" / "shot.png")
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": own})[0] == 200, "a look at the message's own file is part of reading it"
@@ -1399,7 +1402,7 @@ def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_th
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "read", "2"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    assert status == 409 and "answer message 2 first" in body["error"], "the message is read and unanswered: the write is held"
+    assert status == 409 and "answer or react to message 2 first" in body["error"], "the message is read and unanswered: the write is held"
     row = {"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:2]\nHere, Sir Jesse, and writing."}, {"type": "tool_use", "name": "Write"}]}}
     with transcript.open("a") as file:
         file.write(j.dumps(row) + "\n")
@@ -1655,13 +1658,13 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
     assert "output 1 failed with code 1" in typed[-1] and "pytest" not in typed[-1] and "2 failed" not in typed[-1], "its end names the number and how it ended, never the command or its lines"
     cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
-    assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["detail"] == "pytest -q\n2 failed", "the one mark of the moved command is settled in place: it names the command and how it ended"
+    assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "pytest -q" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names the command, on a line of its own, and how it ended"
     (app.config.root / "c2").mkdir()
     console.run(["shell", "split", "pytest -q", "--into", str(app.config.root / "c2")], AGENT)
     console.run(["shell", "moved", "c2", "pytest -q", "--file", "/tmp/out/c2"], AGENT)
     console.run(["shell", "ended", "c2", "--status", "0", "--file", "/tmp/out/c2", "--last", "........ [ 76%]\n....... [100%]"], AGENT)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
-    assert card.text == "Finished in the background: testing" and card.data["detail"] == "pytest -q", "a last line of progress dots says nothing and is left out"
+    assert card.text == "Finished in the background: testing" and card.data["command"] == "pytest -q" and card.data["detail"] == "", "a last line of progress dots says nothing and is left out"
 
 
 def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
@@ -2704,7 +2707,7 @@ def test_the_card_and_release_actions(app):
     actions.perform("show_card", "The journal did a thing", ctx())
     card = app.container.get(Messages).in_()[-1]
     assert card.author == "system" and card.created_by == Actor.system() and card.text == "The journal did a thing"
-    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": "", "key": ""}
+    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": "", "command": "", "key": ""}
 
 
 def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_rows(app):
@@ -3199,7 +3202,7 @@ def test_a_refused_dispatch_leaves_no_running_subagent_behind(app):
     console.run(["message", "send", "a word first"], USER)
     console.run(["message", "read", "1"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "opus", "prompt": "read the plan", "subagent_type": "researcher"})
-    assert status == 409 and "answer message 1 first" in body["error"], "the dispatch is held until the message is answered"
+    assert status == 409 and "answer or react to message 1 first" in body["error"], "the dispatch is held until the message is answered"
     rows = [asdict(row) for row in app.container.get(Subagents).rows("s1")]
     assert rows == [], "a dispatch the journal refused never ran and is no subagent"
 
@@ -5623,16 +5626,17 @@ def test_only_the_version_3_environments_still_in_use_are_brought_across_and_nev
     from journal.repositories.environments import Environments
     from journal.repositories.reports import Reports
     kept = app.config.home / "version-3"
-    for n, name, kind in ((1, "main", "main"), (2, "ticket-8", "ticket"), (3, "ticket-9", "ticket")):
+    for n, name, kind in ((1, "main", "main"), (2, "ticket-8", "ticket"), (3, "ticket-9", "ticket"), (4, "1012-inventory-page", "worktree")):
         version_3_row(kept / "project" / "environment", "environment", n, title=name, data={"kind": kind})
     version_3_row(kept / "environments" / "ticket-8" / "todo", "todo", 1, "still open")
     version_3_row(kept / "environments" / "ticket-9" / "todo", "todo", 1, "long done", completed=2.0)
+    (kept.parents[1] / ".claude" / "worktrees" / "1012-inventory-page").mkdir(parents=True)
     migrator = app.container.get(Migrator)
     for _ in range(2):
         with app.container.get(Scope).of(MAIN):
             migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
     names = {e.name for e in app.container.get(Environments).every()}
-    assert {"main", "ticket-8"} <= names and "ticket-9" not in names, "main and the one with open work, not the finished one"
+    assert {"main", "ticket-8", "1012-inventory-page"} <= names and "ticket-9" not in names, "main, the one with open work and the one whose worktree is still on disk, not the finished one"
     with app.container.get(Scope).of(MAIN):
         body = app.container.get(Reports).all()[-1].body
     assert "| environments | 0 | 1 |" in body and "environment ticket-9: not in use" in body, "the second run brings nothing twice and says what stayed"
@@ -6218,3 +6222,88 @@ def test_a_second_reply_with_the_same_words_to_the_same_message_is_not_sent_and_
     assert first.code == 0 and again.code == 0 and "already has this reply in the chat: not sent again" in again.out
     assert [m.text for m in app.container.get(Messages).recent(10) if m.reply_to == 1] == ["Looking now."], "the chat shows the reply once"
     assert "sent" in console.run(["message", "send", "Found it.", "--reply-to", "1"], AGENT).out, "other words to the same message are sent"
+
+
+def test_a_subagent_in_a_worktree_of_its_own_never_moves_the_main_conversation(app, tmp_path):
+    from journal.repositories.agents import Agents
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    before = app.container.get(Machine).current("s1").name
+    isolated = str(app.config.root / ".claude" / "worktrees" / "agent-a1b2")
+    hook(app, "SubagentStart", agent_id="a1b2", agent_type="Explore")
+    status, answer = hook(app, "PreToolUse", agent_id="a1b2", cwd=isolated, tool_name="Write", tool_input={"file_path": f"{isolated}/a.py", "content": "x"})
+    assert status == 200 and "error" not in answer, "the subagent's write in its own worktree is not refused for the checkout it is in"
+    hook(app, "SubagentStop", agent_id="a1b2")
+    assert app.container.get(Machine).current("s1").name == before, "the main agent's state stands"
+    assert [a.session for a in app.container.get(Agents).everywhere()] == ["s1"] and app.container.get(Agents).everywhere()[0].environment_id == 1, "no second agent and no other environment: the main conversation stays where it was"
+
+
+def test_a_workers_worktree_is_cut_from_the_working_tip_and_a_failed_cut_refuses_the_dispatch(app):
+    import subprocess
+    from journal.repositories.workers import Workers
+    from journal.support.scope import Scope
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n")
+    git("add", ".gitignore")
+    git("commit", "-qm", "start")
+    git("checkout", "-qb", "feature")
+    (root / "feature.txt").write_text("on the working branch\n")
+    git("add", "feature.txt")
+    git("commit", "-qm", "the feature")
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    assert (app.config.home / "worktrees" / "1-Lady-Lovelace" / "feature.txt").is_file(), "cut from the tip of the branch being worked, not from main"
+    git("branch", "worker/2-Ada-Byron")
+    refused = app.console().run(["worker", "dispatch", "Ada Byron", "write the lexer", "--model", "sonnet", "--worktree"], AGENT)
+    assert refused.code == 1 and "worker Ada Byron was not dispatched" in refused.err and "already exists" in refused.err, "git's refusal is said in plain words"
+    with app.container.get(Scope).of(1):
+        assert [w.name for w in app.container.get(Workers).in_()] == ["Lady Lovelace"], "nothing half made is left behind"
+    assert not (app.config.home / "worktrees" / "2-Ada-Byron").exists()
+
+
+def test_a_workers_merge_never_touches_the_users_work_and_says_what_stood_in_its_way(app):
+    import subprocess
+    from journal.features.workers.support.worker_branch import WorkerBranch
+    from journal.repositories.workers import Workers
+    from journal.support.scope import Scope
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    commit = lambda name, text, cwd=root: ((cwd / name).write_text(text), git("add", name, cwd=cwd), git("commit", "-qm", name, cwd=cwd))
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n")
+    commit(".gitignore", ".journal/\n")
+    commit("shared.py", "A = 1\n")
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    branch = app.container.get(WorkerBranch)
+    with app.container.get(Scope).of(1):
+        worker = app.container.get(Workers).find(1)
+    tree = branch.folder(worker)
+    commit("parser.py", "PARSE = 1\n", cwd=tree)
+    (root / "parser.py").write_text("my own draft\n")
+    assert "you have uncommitted changes to files they change: parser.py" in branch.take_in(worker) and (root / "parser.py").read_text() == "my own draft\n", "the user's uncommitted work in a file it touches stops it, untouched"
+    (root / "parser.py").unlink()
+    (root / "notes.txt").write_text("unrelated\n")
+    commit("later.py", "L = 1\n")
+    said = branch.take_in(worker)
+    assert "were taken into this branch" in said and (root / "parser.py").is_file() and (root / "notes.txt").read_text() == "unrelated\n", "a branch behind the tip lands once rebased, and unrelated uncommitted work stays"
+    commit("shared.py", "A = 2\n", cwd=tree)
+    commit("shared.py", "A = 3\n")
+    said = branch.take_in(worker)
+    assert "conflict in shared.py" in said and (root / "shared.py").read_text() == "A = 3\n", "a conflict is named and nothing is left half merged"
+    git("checkout", "-q", "--detach")
+    assert "the project is on no branch, a detached head" in branch.take_in(worker)
+
+
+def test_a_worktree_for_a_worker_in_a_project_with_no_commit_is_refused_in_plain_words(app):
+    import subprocess
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=app.config.root, capture_output=True, timeout=30)
+    hook(app, "SessionStart")
+    refused = app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    assert refused.code == 1 and "the project has no commit yet" in refused.err

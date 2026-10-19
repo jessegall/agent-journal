@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from journal.launcher.support.worktree import Worktree
 from journal.launcher.support.answers import Answers
 from journal.launcher.support.choice import Choice
 from journal.support.environment_row import EnvironmentRow
@@ -55,7 +56,7 @@ class Menu:
 
     def _environment(self, agent: str, rows: list[EnvironmentRow]) -> str:
         """Enter picks the environment under the cursor; x deletes it after a confirmation, and the list is asked again."""
-        options = [Option(row.name, row.badges()) for row in rows] + [Option("A new environment", apart=True)]
+        options = [Option(row.name, (*row.badges(), *Worktree(self.root, row.name).badges())) for row in rows] + [Option("A new environment", apart=True)]
         picked, key = self.screen.pick_or("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
         if key == "x" and picked < len(rows):
             self._delete(rows[picked])

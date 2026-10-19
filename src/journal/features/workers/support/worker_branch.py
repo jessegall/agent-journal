@@ -36,16 +36,47 @@ class WorkerBranch:
         return [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
 
     def take_in(self, worker: Worker) -> str:
-        """The worker's commits merged into the branch the project is on, in words; a merge git refuses or that conflicts is undone and named instead."""
+        """The worker's commits rebased onto the branch the project is on and taken in, in words; what stands in the way, the user's own uncommitted work above all, is named instead and nothing is touched."""
         commits = self.ahead(worker)
         if not commits:
             return ""
-        listed = "; ".join(commits)
+        listed, later = "; ".join(commits), f"take them in with git merge {self.name(worker)}"
+        blocked = self.blocked(worker)
+        if blocked:
+            return f"its {len(commits)} commits were not taken in, since {blocked}: {listed}; {later}"
+        clashing = self.rebased(worker)
+        if clashing:
+            return f"its {len(commits)} commits were not taken in: rebased onto this branch they conflict in {clashing}: {listed}; {later}"
         merged = self.git("merge", "--no-edit", self.name(worker))
         if merged.returncode == 0:
             return f"its {len(commits)} commits were taken into this branch: {listed}"
+        clashing = self.conflicts(self.config.root) or (merged.stderr.strip().splitlines() or ["git refused"])[-1]
         self.git("merge", "--abort")
-        return f"its {len(commits)} commits could not be taken in on their own ({merged.stderr.strip().splitlines()[-1] if merged.stderr.strip() else 'git refused'}): {listed}; take them in with git merge {self.name(worker)}"
+        return f"its {len(commits)} commits were not taken in: they conflict in {clashing}: {listed}; {later}"
+
+    def blocked(self, worker: Worker) -> str:
+        if self.git("symbolic-ref", "-q", "HEAD").returncode != 0:
+            return "the project is on no branch, a detached head"
+        if not self.git("config", "user.name").stdout.strip() or not self.git("config", "user.email").stdout.strip():
+            return "git has no user.name and user.email here, which a merge needs"
+        touched = set(self.git("diff", "--name-only", f"HEAD...{self.name(worker)}").stdout.split())
+        dirty = {line[3:] for line in self.git("status", "--porcelain").stdout.splitlines() if line.strip()}
+        overlap = sorted(touched & dirty)
+        return f"you have uncommitted changes to files they change: {', '.join(overlap)}" if overlap else ""
+
+    def rebased(self, worker: Worker) -> str:
+        tip = self.git("rev-parse", "HEAD").stdout.strip()
+        if self.git("merge-base", "--is-ancestor", tip, self.name(worker)).returncode == 0:
+            return ""
+        folder = self.folder(worker)
+        if self.git("rebase", "--autostash", tip, cwd=folder).returncode == 0:
+            return ""
+        clashing = self.conflicts(folder) or "its files"
+        self.git("rebase", "--abort", cwd=folder)
+        return clashing
+
+    def conflicts(self, folder: Path) -> str:
+        return ", ".join(self.git("diff", "--name-only", "--diff-filter=U", cwd=folder).stdout.split())
 
     def summary(self, worker: Worker) -> str:
         """What the worker's branch and worktree hold once it ended, for its report; empty for a worker with no worktree."""

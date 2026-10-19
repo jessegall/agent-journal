@@ -8,6 +8,9 @@ root=${JOURNAL_ROOT:-$PWD}
 case "$1" in
     claude|codex|serve|setup) cd "$root" && exec python3 "$here/journal.py" "$@" ;;
 esac
+. "$here/journal/hooks/environment.sh"
+JOURNAL_ENV=$(journal_environment)
+export JOURNAL_ENV
 port=$(cat "$root/.journal/port" 2>/dev/null)
 if [ -n "$port" ]; then
     agent=false; [ -n "$CLAUDECODE$CODEX_SANDBOX$JOURNAL_AGENT_SHELL" ] && agent=true

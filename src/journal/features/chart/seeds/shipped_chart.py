@@ -81,7 +81,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 23
+DRAWINGS_VERSION = 24
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -115,8 +115,8 @@ VERSION_3 = "[migration.version_3] a version 3 journal is kept whole in .journal
 STALE = "[memory.stale] these are {{stale_after}} days old or more, check they still hold: {{stale}}. strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest"
 WHERE = "[briefing.where] after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}}. pick up from there, and log what the summary does not say"
 UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages. `journal message unread` before any other write"
-ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N], or a face on it"
-ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts, or a face on it; only a journal command and a look at the message's own files go through"
+ANSWER = "[messages.answer] answer or react to message {{owed}} before you do anything else"
+ANSWER_HELD = "[messages.answer_held] answer or react to message {{owed}} first. your tool calls wait until you do"
 PARKED = "[tasks.parked] parked tasks, still open: {{parked_tasks}}. `journal task resume <n>` picks one up; leave them parked only on purpose"
 BROKEN_WAIT = "[tasks.broken_wait] {{broken_waits}}. so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`"
 BLOCKED_STILL = "[tasks.blocked_still] blocked on something outside: {{blocked_outside}}. has it come? `journal task unblock <n>` when it has"

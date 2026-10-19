@@ -39,7 +39,9 @@ class Version3Rows:
         return rows
 
     def is_in_use(self, environment: Version3Row) -> bool:
-        """Main, or holding open to-dos or questions: work still waits there. Unread agent messages and recent events do not count, since nearly every old environment has them."""
+        """Main, a worktree's still on disk, or holding open to-dos or questions: work still waits there. Unread agent messages and recent events do not count, since nearly every old environment has them."""
         if environment.title == "main" or environment.data.get("kind") == "main":
+            return True
+        if (self.folder.parents[1] / ".claude" / "worktrees" / environment.title).is_dir():
             return True
         return any(row.is_open() for kind in ("todo", "question") for row in self.of(environment.title, kind))

@@ -13,6 +13,7 @@ class Claude(Provider):
     name = "claude"
     home = ".claude"
     settings_file = "settings.json"
+    other_settings = ("settings.local.json",)
     write_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
     read_tool = "Read"
     settings_extras = {"enableAllProjectMcpServers": True}

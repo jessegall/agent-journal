@@ -237,3 +237,115 @@ def test_a_worktree_launch_makes_its_worktree_and_never_hands_the_flag_to_the_ag
     assert "worktree-1012-inventory-page" in git("branch").stdout
     subprocess.run(["rm", "-rf", str(made)], timeout=30)
     assert Worktree(tmp_path, "1012-inventory-page").made().is_dir(), "a worktree whose folder went is made again on its branch, and nothing is lost from the branch"
+
+
+def test_a_bare_worktree_flag_takes_the_chosen_environments_name(tmp_path: Path):
+    import subprocess
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    for argv in (["claude", "-w"], ["claude", "--worktree", "--resume", "abc"]):
+        launch = Launch.parse(argv, tmp_path)
+        assert launch.in_worktree and launch.worktree == "" and "--worktree" not in launch.args and "-w" not in launch.args
+    launch = Launch.parse(["claude", "-w"], tmp_path)
+    made = launch.launch_file(Choice("calm-river", "", False, False), StatusLine(tmp_path.name, "calm-river", tmp_path))
+    assert made["front"]["folder"] == str(tmp_path / ".claude" / "worktrees" / "calm-river"), "the worktree is named after the environment the menu chose"
+    assert "worktree-calm-river" in git("branch").stdout
+
+
+def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_seeing_them(tmp_path: Path):
+    import subprocess
+    import threading
+    from journal.launcher.support.worktree import Worktree
+    git = lambda *args, at=tmp_path: subprocess.run(["git", "-C", str(at), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    (tmp_path / ".gitignore").write_text("/.journal\n/.claude/settings.json\n")
+    (tmp_path / "AGENTS.md").write_text("the law\n")
+    git("add", ".gitignore", "AGENTS.md")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "start")
+    (tmp_path / ".journal").mkdir()
+    (tmp_path / ".journal" / "port").write_text("8421")
+    (tmp_path / ".claude" / "skills" / "journal").mkdir(parents=True)
+    (tmp_path / ".claude" / "skills" / "journal" / "SKILL.md").write_text("# The journal\n")
+    (tmp_path / ".claude" / "settings.json").write_text("{}")
+    threads = [threading.Thread(target=Worktree(tmp_path, "calm-river").made) for _ in range(4)]
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    tree = tmp_path / ".claude" / "worktrees" / "calm-river"
+    assert (tree / ".journal" / "port").read_text() == "8421" and (tree / ".journal").is_symlink(), "the worktree reads the project's journal, made four times at once"
+    assert (tree / ".claude" / "skills" / "journal" / "SKILL.md").is_file() and (tree / ".claude" / "settings.json").is_symlink(), "an untracked skill and an ignored hook file are shared"
+    assert not (tree / "AGENTS.md").is_symlink(), "a tracked file comes with the checkout, never a link"
+    assert git("status", "--porcelain", at=tree).stdout == "" and git("status", "--porcelain").stdout == "", "git sees none of it, in the worktree or the project"
+
+
+def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_files(tmp_path: Path):
+    import subprocess
+    from journal.launcher.support.worktree import Worktree
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    (tmp_path / ".journal").mkdir()
+    (tmp_path / ".journal" / "old.txt").write_text("from long ago")
+    git("add", ".journal/old.txt")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "start")
+    (tmp_path / ".journal" / "port").write_text("8421")
+    tree = Worktree(tmp_path, "x").made()
+    assert (tree / ".journal").is_symlink() and (tree / ".journal" / "port").read_text() == "8421", "the checked-out old journal files make way for the link"
+
+
+def test_a_command_or_hook_inside_a_worktree_works_the_worktrees_environment(tmp_path: Path):
+    import subprocess
+    from journal.launcher.support.worktree import Worktree
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    tree = Worktree(tmp_path, "calm-river").made()
+    (tree / "deep").mkdir()
+    rule = Path(__file__).parents[1] / "src" / "journal" / "hooks" / "environment.sh"
+    named = lambda at, env="": subprocess.run(["sh", "-c", f'. "{rule}"; journal_environment'], cwd=at, capture_output=True, text=True, timeout=30, env={"PATH": os.environ["PATH"], **({"JOURNAL_ENV": env} if env else {})}).stdout
+    assert named(tree / "deep") == "calm-river", "a command run anywhere inside the worktree works its environment"
+    assert named(tmp_path) == "main" and named(tmp_path.parent) == "main", "the project's own checkout, and a folder outside git, work main"
+    assert named(tree, "spike") == "spike", "an environment named outright wins"
+
+
+def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_worktree(tmp_path: Path, monkeypatch):
+    import subprocess
+    from journal.launcher.support.worktree import Worktree
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    tree = Worktree(tmp_path, "calm-river").made()
+    menu = menu_answering(tmp_path, monkeypatch, [])
+    menu.environments = lambda: [EnvironmentRow("main", last_sessions={"claude": "abc"}), EnvironmentRow("calm-river", last_sessions={"claude": "def"})]
+    assert Launch.parse(["claude", "--resume", "def"], tmp_path).resumed_in(menu) == "calm-river", "a conversation is resumed in the environment it last ran in"
+    assert Launch.parse(["claude", "--resume", "zzz"], tmp_path).resumed_in(menu) == "" and Launch.parse(["claude"], tmp_path).resumed_in(menu) == ""
+    status = StatusLine(tmp_path.name, "calm-river", tmp_path)
+    plain = Launch.parse(["claude", "--resume", "def"], tmp_path)
+    assert plain.launch_file(Choice("calm-river", "", False, False), status)["front"]["folder"] == str(tree), "an environment with a worktree runs its agent there, where its conversations are"
+    assert plain.launch_file(Choice("main", "", False, False), status)["front"]["folder"] == str(tmp_path)
+
+
+def test_the_menu_marks_an_environment_with_a_worktree_and_its_branch(tmp_path: Path):
+    import subprocess
+    from journal.launcher.support.worktree import Worktree
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    Worktree(tmp_path, "calm-river").made()
+    assert Worktree(tmp_path, "calm-river").badges() == ("worktree on worktree-calm-river",) and Worktree(tmp_path, "main").badges() == ()
+
+
+def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip(tmp_path: Path):
+    import subprocess
+    from journal.launcher.support.worktree import Worktree
+    git = lambda *args, at=tmp_path: subprocess.run(["git", "-C", str(at), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    tree = Worktree(tmp_path, "1012-inventory-page").made()
+    (tree / "page.py").write_text("PAGE = 1\n")
+    git("add", "page.py", at=tree)
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "the page", at=tree)
+    Worktree(tmp_path, "1012-inventory-page").made()
+    git("worktree", "remove", "--force", str(tree))
+    git("branch", "-D", "worktree-1012-inventory-page")
+    again = Worktree(tmp_path, "1012-inventory-page").made()
+    assert (again / "page.py").read_text() == "PAGE = 1\n", "the committed work comes back from the kept tip though the folder and the branch were removed"

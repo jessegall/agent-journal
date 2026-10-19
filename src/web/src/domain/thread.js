@@ -31,7 +31,7 @@ const SYSTEM_TURNS = {
     }),
     card: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row, shows: card.shows, visitor: card.visitor},
+        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, shows: card.shows, visitor: card.visitor},
     }),
     plugin: (card, label) => ({
         kind: "card",

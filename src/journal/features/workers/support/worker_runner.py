@@ -15,6 +15,8 @@ from journal.providers.providers import Providers
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.repositories.workers import Workers
+from journal.repositories.environments import Environments
+from journal.support.worktree_not_made import WorktreeNotMade
 
 TAIL = 4000
 WATCH_EVERY = 2.0
@@ -28,8 +30,9 @@ ENDINGS = {TIMED_OUT: "stopped after {minutes:g} minutes without ending: {report
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: Settings, workers: Workers) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: Settings, workers: Workers, environments: Environments) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
+        self.environments = environments
         self._running: dict[int, subprocess.Popen] = {}
 
     def start(self, worker: Worker, by: Actor) -> None:
@@ -42,7 +45,7 @@ class WorkerRunner:
             self.run(worker, command, by)
 
     def run(self, worker: Worker, command: list[str], by: Actor) -> None:
-        environ = {**{k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}, AGENT_SHELL: "1"}
+        environ = {**{k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION")}, AGENT_SHELL: "1", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
         out, err = self.outputs(worker)
         out.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -119,8 +122,16 @@ class WorkerRunner:
         return self.branch.folder(worker) if worker.worktree else self.config.root
 
     def workplace(self, worker: Worker) -> Path:
-        """Where the worker works, its worktree made on a branch named for it the first time."""
+        """Where the worker works, its worktree cut from the working tip on a branch named for it the first time."""
         folder = self.place(worker)
         if worker.worktree and not folder.is_dir():
-            subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder)], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+            self.cut(worker, folder)
         return folder
+
+    def cut(self, worker: Worker, folder: Path) -> None:
+        if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=self.config.root, capture_output=True, timeout=60).returncode != 0:
+            raise WorktreeNotMade(worker.name, "the project has no commit yet, so there is no tip to cut a worktree from; make a first commit")
+        made = subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder), "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+        if made.returncode != 0:
+            subprocess.run(["git", "worktree", "prune"], cwd=self.config.root, capture_output=True, timeout=60)
+            raise WorktreeNotMade(worker.name, made.stderr.strip())

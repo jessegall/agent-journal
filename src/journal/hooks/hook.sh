@@ -8,10 +8,11 @@
 agent=$1
 root=$2
 port=$(cat "$root/.journal/port" 2>/dev/null) || exit 0
+. "$(dirname "$0")/environment.sh"
 body=$(mktemp)
 status=$(curl -sS --max-time 10 -o "$body" -w '%{http_code}' -X POST "http://127.0.0.1:$port/hooks/$agent" \
     -H "Content-Type: application/json" \
-    -H "X-Journal-Env: ${JOURNAL_ENV:-main}" \
+    -H "X-Journal-Env: $(journal_environment)" \
     --data-binary @-) || status=0
 case "$status" in
     200) cat "$body" ;;

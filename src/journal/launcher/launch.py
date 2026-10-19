@@ -23,8 +23,11 @@ SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-b
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
 """What a sandboxed agent needs to reach its journal's server on this machine."""
-FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0, "--worktree": 1, "-w": 1}
-NAMES = {"-w": "worktree"}
+FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
+WORKTREE = ("--worktree", "-w")
+RESUMING = ("--resume", "-r")
+"""A conversation named on the command line, run where it last ran: its environment, and that environment's worktree."""
+"""The worktree flag, its name optional: bare, the worktree takes the chosen environment's name."""
 """A flag's field when it is not the flag's own name."""
 
 
@@ -45,18 +48,27 @@ class Launch:
     """Started by a journal already running: no server of its own."""
     worktree: str = ""
     """The worktree the agent works in, the journal's to make and keep; Claude Code never sees the flag, since it removes a worktree it made when it exits."""
+    in_worktree: bool = False
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
-        agent, rest, flags = argv[0], [], {}
-        it = iter(argv[1:])
-        for arg in it:
+        agent, rest, flags, args, i = argv[0], [], {}, argv[1:], 0
+        while i < len(args):
+            arg, given = args[i], args[i + 1] if i + 1 < len(args) else ""
             if arg == "--":
-                rest.extend(it)
-            elif arg in FLAGS:
-                flags[NAMES.get(arg, arg.lstrip("-").replace("-", "_"))] = next(it) if FLAGS[arg] else True
-            else:
-                rest.append(arg)
+                rest.extend(args[i + 1:])
+                break
+            if arg in WORKTREE:
+                named = bool(given) and not given.startswith("-")
+                flags.update(in_worktree=True, worktree=given if named else "")
+                i += 2 if named else 1
+                continue
+            if arg in FLAGS:
+                flags[arg.lstrip("-").replace("-", "_")] = given if FLAGS[arg] else True
+                i += 2 if FLAGS[arg] else 1
+                continue
+            rest.append(arg)
+            i += 1
         return cls(agent, root, tuple(rest), **flags)
 
     @property
@@ -64,10 +76,18 @@ class Launch:
         return Path(__file__).resolve().parents[2]
 
     def choice(self) -> Choice:
+        menu = Menu(self.root, self.package / "journal.py")
+        named = self.env or self.worktree or self.resumed_in(menu)
         if not sys.stdin.isatty():
-            return Choice(self.env or self.worktree or "main", "", self.aside, self.skip)
+            return Choice(named or "main", "", self.aside, self.skip)
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
-        return Menu(self.root, self.package / "journal.py").choose(self.agent, self.env or self.worktree, self.new, self.aside, self.skip, self.yes)
+        return menu.choose(self.agent, named, self.new, self.aside, self.skip, self.yes)
+
+    def resumed_in(self, menu: Menu) -> str:
+        resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")
+        if not resumed:
+            return ""
+        return next((row.name for row in menu.environments() if resumed in row.last_sessions.values()), "")
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
         """The agent's command without the arguments that resume a conversation, which the launch file carries apart so a restart can replace them."""
@@ -134,7 +154,8 @@ class Launch:
     def launch_file(self, choice: Choice, status: StatusLine) -> dict:
         """What the supervisor starts: the agent in front, the journal beside it unless one runs already, its socket, announce file and mirror, and the band's words."""
         environ = self.environ(choice)
-        folder = Worktree(self.root, self.worktree).made() if self.worktree else self.root
+        worktree = Worktree(self.root, self.worktree or choice.environment)
+        folder = worktree.made() if self.in_worktree or worktree.path.is_dir() else self.root
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
             "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(folder), "env": environ},

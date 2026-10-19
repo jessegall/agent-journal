@@ -52,7 +52,7 @@
     {
       "name": "a write held twice over",
       "answer": {
-        "error": "your tool calls are held: answer message 1 first. a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts, or a face on it; only a journal command and a look at the message's own files go through"
+        "error": "answer or react to message 1 first. your tool calls wait until you do"
       },
       "typed": [],
       "nudges": [

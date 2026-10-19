@@ -99,3 +99,17 @@ def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(
         assert stat.S_IMODE(made.stat().st_mode) == 0o700 and (made / ".gitignore").read_text() == "*\n"
     monkeypatch.setenv(SECRETS_VARIABLE, str(tmp_path / "moved"))
     assert folder.secrets() == tmp_path / "moved"
+
+
+def test_setup_takes_out_version_3s_hooks_wherever_they_were_wired(app):
+    root = app.config.root
+    (root / ".claude").mkdir()
+    (root / ".codex").mkdir()
+    old = {"hooks": [{"type": "command", "command": f"sh {root}/.journal/src/hook.sh claude {root}/.journal"}]}
+    mine = {"hooks": [{"type": "command", "command": "echo mine"}]}
+    (root / ".claude/settings.local.json").write_text(json.dumps({"hooks": {"PreToolUse": [old, mine]}, "model": "opus"}))
+    (root / ".codex/hooks.json").write_text(json.dumps({"hooks": {"Stop": [old]}}))
+    app.console().run(["setup"], Where("main"))
+    local = json.loads((root / ".claude/settings.local.json").read_text())
+    assert local == {"hooks": {"PreToolUse": [mine]}, "model": "opus"}, "version 3's hook goes from the local settings, the user's own stays"
+    assert "/.journal/src/hook.sh" not in (root / ".codex/hooks.json").read_text(), "and from Codex's hooks, where version 4's takes its place"
