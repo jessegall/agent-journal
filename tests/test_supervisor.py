@@ -208,3 +208,16 @@ def test_a_service_that_cannot_start_dies_in_its_log_and_never_takes_the_supervi
     services.start_all()
     services.keep_alive()
     assert not services.runs("mypy") and "mypy could not start" in (tmp_path / "mypy.log").read_text(), "its folder gone, as mid-upgrade, the start dies at once and says why"
+
+
+def test_a_fault_in_a_verb_or_a_turn_is_written_down_and_the_supervisor_carries_on(tmp_path: Path):
+    from supervisor.request import Request
+    from supervisor.services import Services
+    from supervisor.supervisor import Supervisor
+    from supervisor.terminal import Terminal
+    faults = tmp_path / "supervisor.log"
+    supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, faults=faults)
+    reply = supervisor.verbs.handle(Request.from_json({"verb": "start", "name": "mypy", "command": ["true"], "folder": str(tmp_path), "env": {"COUNT": 3}}))
+    assert not reply.ok and "start failed in the supervisor, which carries on" in reply.error, "a verb that raises is answered with why"
+    supervisor.turn()
+    assert faults.read_text().count("supervisor fault, carried on") == 2, "the verb's fault and the turn's are both written down, and neither ended the supervisor"

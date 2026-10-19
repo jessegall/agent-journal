@@ -116,7 +116,6 @@ class PluginInstalling:
 
     def upgrade(self, name: str, ref: str | None, environment: str, by: Actor) -> Plugin:
         """A fetched plugin's folder replaced and its setup run again, its old folder put back if the setup fails; a linked one read where it lies."""
-        self.only_the_user(by, "upgrades")
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, release="" if plugin.linked else self.tag_at(folder), waiting="")

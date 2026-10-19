@@ -3,7 +3,10 @@ import select
 import signal
 import termios
 import time
+import traceback
 import tty
+from datetime import datetime
+from pathlib import Path
 
 from supervisor.band import Band
 from supervisor.band_words import BandWords
@@ -19,13 +22,14 @@ FRONT = "agent"
 REVIVE_WINDOW = 120.0
 REVIVE_LIMIT = 3
 """Deaths of the agent within the window after which the supervisor ends with it instead of starting it again."""
+FAULT_PAUSE = 0.5
 
 
 class Supervisor:
-    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the services kept running."""
+    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the services kept running; a fault in a turn is written to the faults log and never ends it."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, services: Services, stdin: int | None = 0, stdout: int = 1, band: Band | None = None, mirror: Mirror | None = None) -> None:
-        self.terminal, self.inbox, self.services, self.stdin, self.stdout = terminal, inbox, services, stdin, stdout
+    def __init__(self, terminal: Terminal, inbox: Inbox, services: Services, stdin: int | None = 0, stdout: int = 1, band: Band | None = None, mirror: Mirror | None = None, faults: Path = Path(os.devnull)) -> None:
+        self.terminal, self.inbox, self.services, self.stdin, self.stdout, self.faults = terminal, inbox, services, stdin, stdout, faults
         self.mirror = mirror
         """The agent's newest output written where the journal reads it; none in a supervisor with nobody to read it."""
         """stdin is None for a supervisor started by the journal, with nobody at a keyboard."""
@@ -51,8 +55,7 @@ class Supervisor:
         signal.signal(signal.SIGHUP, lambda *_: self.stop())
         try:
             while self._code is None:
-                self.relay_once(0.5)
-                self.services.keep_alive()
+                self.turn()
         finally:
             self.services.stop_all()
             self.inbox.close()
@@ -61,6 +64,18 @@ class Supervisor:
             if saved is not None and self.stdin is not None:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
         return self._code
+
+    def turn(self) -> None:
+        try:
+            self.relay_once(0.5)
+            self.services.keep_alive()
+        except Exception:
+            self.noted(traceback.format_exc())
+            time.sleep(FAULT_PAUSE)
+
+    def noted(self, fault: str) -> None:
+        with self.faults.open("a") as out:
+            out.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} supervisor fault, carried on: {fault}\n")
 
     def fit(self) -> None:
         """Gives the agent the terminal's size, less the band's row when there is one."""

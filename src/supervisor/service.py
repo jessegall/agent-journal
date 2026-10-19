@@ -8,6 +8,7 @@ BACKOFF = 2.0
 """The wait before the second start after a death in the window; the first is at once, and it doubles with each death after, up to LONGEST_WAIT."""
 LONGEST_WAIT = 30.0
 WINDOW = 120.0
+STOP_GRACE = 5.0
 
 
 class Service:
@@ -63,20 +64,18 @@ class Service:
 
     def stop(self) -> None:
         """The process and every process it started, its whole group, ended: asked first, then made to."""
-        if self._process and self._process.poll() is None:
+        if self.alive():
             self.signal_group(signal.SIGTERM)
-            try:
-                self._process.wait(5)
-            except subprocess.TimeoutExpired:
-                self.signal_group(signal.SIGKILL)
-                self._process.wait()
-        if self._process:
+            until = time.time() + STOP_GRACE
+            while self.alive() and time.time() < until:
+                time.sleep(0.05)
             self.signal_group(signal.SIGKILL)
+            self._process.wait()
         self._process = None
 
     def signal_group(self, sent: signal.Signals) -> None:
         """A signal to the process's group, which it leads since it started in a session of its own; a group already gone is left."""
         try:
             os.killpg(self._process.pid, sent)
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             return

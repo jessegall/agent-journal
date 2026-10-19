@@ -898,6 +898,7 @@ Who owns what, decided at the start of the plan (task 443) on the rulings of mes
 - The supervisor starts what its launch file lists, the agent and, on the host, the journal. Once up, the journal asks its host to start the services it declares. Starting a name that is already running does nothing, so a journal restart starts nothing twice. The journal never asks to start itself.
 - Every process lives as long as its supervisor: when the host ends, its journal and services end with it, as the journal does today when its parent is gone, and the next launch hosts them again.
 - Workers stay outside the protocol: the journal runs them itself.
+- Nothing but the agent's own end, or a stop asked for, ends a supervisor (message 6316): a fault in a verb is answered with why, a fault in a turn of the loop is skipped, and each is written to runtime/supervisor.log. A service's group is signalled only while its leader runs, never the group of a process reaped long before.
 - send stays in the protocol: it is the message bus of message 1613; its first user comes with a later service.
 - "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself reaches a user at their next launch: the supervisor imports every module at start, so an upgrade that overwrites its files leaves a running one untouched (task 438, a test), and it stays small so such a fix is rare.
 - The menu watcher stays a thread in the journal server (question 6, the user's answer): it reads every environment's mirror and shares what it chose with SupervisorLink in memory. Phase 3 proves services through the protocol with the next real one, or a fake one in its test.
@@ -959,7 +960,8 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
   a `plugin_cut` entry records it.
 - `plugin.updated` is delivered to a plugin alone when someone else changes its settings. Install writes the settings
   once, so a plugin hears it only on a later change.
-- Only the user installs, upgrades, switches on or configures. The agent proposes with `journal plugin propose`. The
+- Only the user installs, switches on or configures. The agent upgrades a plugin already installed (message 6307), and
+  proposes a new one with `journal plugin propose`. The
   agent's writes into `.journal/plugins` are held. A linked folder is not held, since it is the user's own working copy
   (code-commandments is one); the hash check switches the plugin off when its program changes.
 - Services run per environment, one copy under each running supervisor, each on a short socket path in /tmp. The

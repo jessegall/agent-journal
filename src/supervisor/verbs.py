@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 import os
+import traceback
 from pathlib import Path
 
 from supervisor.inbox import PROTOCOL
@@ -28,6 +29,9 @@ class Verbs:
             return getattr(self, request.verb)(request)
         except LookupError as unknown:
             return Reply.refused(str(unknown))
+        except Exception as fault:
+            self.supervisor.noted(traceback.format_exc())
+            return Reply.refused(f"{request.verb} failed in the supervisor, which carries on: {fault}")
 
     def hello(self, request: Request) -> Reply:
         return Reply.done(protocol=PROTOCOL, verbs=list(VERBS))

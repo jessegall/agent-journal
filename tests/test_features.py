@@ -4611,6 +4611,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     assert "the code:" in shown and '-        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"})' in shown and '+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"})' in shown, "the program's changed body is in the diff"
     told = console.run(["plugin", "upgrade", "echo"], AGENT).out
     assert "run.py +1 -1" in told and "echo heard your prompt" not in told, "the agent is told which files change, never the whole diff"
+    assert console.run(["plugin", "upgrade", "echo", "--yes"], AGENT).code == 0, "the agent upgrades a plugin the user installed"
     plugins.save(fetched.with_(name="copied"), Actor.user(1))
     assert "now holds the plugin echo, not copied" in console.run(["plugin", "upgrade", "copied"], USER).err, "an upgrade never turns one plugin into another"
     plugins.delete(plugins.named("copied"), Actor.user(1))
