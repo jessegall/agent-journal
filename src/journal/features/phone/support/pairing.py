@@ -43,7 +43,7 @@ class Pairing:
             self.codes.save(older.closed(now), by)
         code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
         made = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, until=now + timedelta(minutes=CODE_MINUTES)), by)
-        return PairingOffer(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", until=made.until)
+        return PairingOffer(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, until=made.until)
 
     def pair(self, given: str, device: str, now: datetime) -> PairedPhone:
         """The phone that hands back an open code is paired and given its key; a code no open one matches counts a wrong try against every open code."""

@@ -369,6 +369,19 @@ export class ApiClient {
         return this.get("/tunnel/answering");
     }
 
+    // the phone paired with the journal, a code to pair one and its disconnection
+    phones() {
+        return this.get("/phones");
+    }
+
+    connectPhone(days) {
+        return this.post("/phones/connect", {days});
+    }
+
+    disconnectPhone(id) {
+        return this.post(`/phones/${id}/disconnect`, {});
+    }
+
     tunlerVersion() {
         return this.get("/tunnel/version");
     }

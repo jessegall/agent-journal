@@ -6576,6 +6576,10 @@ def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
         pairing.offer(7, Actor.user(1), now)
     with pytest.raises(Refused, match="pairs no phone"):
         pairing.pair(newer.short, "Android", now)
+    listed = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/phones", headers={"X-Journal-Env": "main"}), timeout=5))["phones"]
+    assert [p["name"] for p in listed] == ["iPhone of Jesse"] and "key" not in listed[0], "the desk sees the phone, never its key's hash"
+    assert viewer(app, f"phones/{paired.phone.id}/disconnect")["disconnected"] == paired.phone.id
+    assert pairing.offer(7, Actor.user(1), now).short, "once it is disconnected, another phone may pair"
 
 
 def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):

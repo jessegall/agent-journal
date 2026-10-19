@@ -196,6 +196,7 @@ class Routes:
         phones = get(PhoneController)
         router.get(f"{API}/phones", phones.index)
         router.post(f"{API}/phones/connect", phones.connect)
+        router.post(f"{API}/phones/{{id}}/disconnect", phones.disconnect)
         self.listed(router, "shares", shares)
         router.post(f"{API}/shares", shares.store)
         self.acts(router, "shares", shares, "approve", "stop")

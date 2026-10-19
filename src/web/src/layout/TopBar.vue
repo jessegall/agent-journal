@@ -7,6 +7,9 @@ import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import RailWaiting from "../rail/RailWaiting.vue";
 import ShareTunnel from "./ShareTunnel.vue";
+import PhoneDialog from "./PhoneDialog.vue";
+import {connectedPhones, loadPhones} from "../composables/phones.js";
+import {usePoll} from "../composables/poll.js";
 import {href, route} from "../route.js";
 import {waitingCount} from "../domain/records.js";
 import {useOutside} from "../composables/outside.js";
@@ -20,6 +23,9 @@ const drop = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const {floatingChat, toggleChat} = useFloatingChat();
+const phoneOpen = ref(false);
+const PHONES_EVERY = 30000;
+usePoll("phones", () => (sharingOn.value ? loadPhones() : null), PHONES_EVERY);
 </script>
 
 <template>
@@ -53,6 +59,20 @@ const {floatingChat, toggleChat} = useFloatingChat();
             </button>
             <template v-if="sharingOn">
                 <ShareTunnel />
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: phoneOpen}]"
+                    v-tip="connectedPhones.length ? `${connectedPhones[0].name} is connected` : 'Connect your phone'"
+                    @click="phoneOpen = true"
+                >
+                    <Icon name="phone" />
+                    <template v-if="connectedPhones.length">
+                        <span class="phone-dot" />
+                    </template>
+                </button>
+                <template v-if="phoneOpen">
+                    <PhoneDialog @close="phoneOpen = false" />
+                </template>
             </template>
             <a class="icon-btn" :href="href.page('search')" v-tip="'Search'"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
@@ -205,4 +225,15 @@ const {floatingChat, toggleChat} = useFloatingChat();
     color: var(--text-2);
 }
 
+
+.phone-dot {
+    position: absolute;
+    right: 4px;
+    bottom: 5px;
+    width: 6px;
+    height: 6px;
+    border: 1.5px solid var(--bg);
+    border-radius: 50%;
+    background: var(--tone-good);
+}
 </style>
