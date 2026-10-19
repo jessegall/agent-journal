@@ -3,7 +3,7 @@ from journal.support.health import Health
 from journal.support.mcp_installing import McpInstalling
 from journal.support.keys import Keys
 from journal.support.pending_restarts import PendingRestarts
-from journal.http.controllers.listed_server import ListedServer
+from journal.http.controllers.support.listed_server import ListedServer
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.repositories.mcp_servers import McpServers

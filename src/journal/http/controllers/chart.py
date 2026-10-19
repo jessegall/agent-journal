@@ -9,7 +9,7 @@ from journal.support.trial import Trial
 from journal.support.trial_asked import TrialAsked
 from journal.support.validation import LOCK_WHY, Validation
 from journal.support.states_catalogue import StatesCatalogue
-from journal.http.controllers.listed_workflow import ListedWorkflow
+from journal.http.controllers.support.listed_workflow import ListedWorkflow
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.actor import Actor
