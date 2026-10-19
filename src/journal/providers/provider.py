@@ -7,12 +7,12 @@ from typing import ClassVar, Iterator
 from journal.features.shell.reads import Reads
 from journal.features.shell.writes import Writes
 from journal.support.decision import Decision
-from journal.providers.hook import Hook
-from journal.providers.hook_kind import HookKind
+from journal.support.hook import Hook
+from journal.support.hook_kind import HookKind
 from journal.http.response import Response
 from journal.models.entry import Entry
-from journal.providers.tool_input import ToolInput
-from journal.providers.turn import Turn
+from journal.support.tool_input import ToolInput
+from journal.providers.support.turn import Turn
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 

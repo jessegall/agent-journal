@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from journal.providers.support.option import Option
+
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 OPTION = re.compile(r"^[ \t]*(?P<cursor>[❯›>])?[ \t]*(?P<number>\d{1,2})[.)][ \t]+(?P<label>\S.*?)[ \t]*$", re.M)
 FOOTER = re.compile(r"Enter to (?:select|confirm|continue)|Esc to (?:cancel|exit|go back)|↑/↓|to navigate|press enter", re.I)
@@ -12,13 +14,6 @@ ACCEPT = re.compile(r"^(?:yes|trust|i am using|continue|ok)\b", re.I)
 DECLINE = re.compile(r"^(?:no\b|don't|do not|decline|deny|skip|not now|later|cancel|never|reject|disable)", re.I)
 QUESTION_LINES = 6
 UP, DOWN, ENTER, ESCAPE = "\x1b[A", "\x1b[B", "\r", "\x1b"
-
-
-@dataclass(frozen=True)
-class Option:
-    number: int
-    label: str
-    cursor: bool
 
 
 @dataclass(frozen=True)

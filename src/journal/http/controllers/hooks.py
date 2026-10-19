@@ -1,4 +1,4 @@
-from journal.providers.hook import Hook
+from journal.support.hook import Hook
 from journal.hooks.receiver import Receiver
 from journal.http.request import Request
 from journal.http.response import Response

@@ -3,8 +3,8 @@ import threading
 from journal.config import Config
 from journal.events.agent.turn_written import TurnWritten
 from journal.support.context_file import ContextFile
-from journal.providers.hook import Hook
-from journal.providers.hook_kind import HookKind
+from journal.support.hook import Hook
+from journal.support.hook_kind import HookKind
 from journal.models.environment import Environment
 from journal.providers.providers import Providers
 

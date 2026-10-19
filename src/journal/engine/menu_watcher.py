@@ -5,7 +5,7 @@ from journal.support.cards import Cards
 from journal.engine.states.ended import Ended
 from journal.support.states_catalogue import StatesCatalogue
 from journal.models.agent import Agent
-from journal.providers.menu import ESCAPE, Menu
+from journal.providers.support.menu import ESCAPE, Menu
 from journal.repositories.agents import Agents
 from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink

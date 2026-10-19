@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.providers.claude_block import ClaudeBlock
+from journal.providers.support.claude_block import ClaudeBlock
 
 
 @dataclass(frozen=True)

@@ -2,9 +2,9 @@ import json
 import shlex
 from pathlib import Path
 
-from journal.providers.claude_row import ClaudeRow
+from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL, Provider
-from journal.providers.turn import Turn
+from journal.providers.support.turn import Turn
 
 
 

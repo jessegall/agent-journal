@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.events.agent.agent_event import AgentEvent
-from journal.providers.tool_input import ToolInput
+from journal.support.tool_input import ToolInput
 
 
 @dataclass(frozen=True)

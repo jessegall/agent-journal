@@ -1,7 +1,7 @@
 from journal.http.transcripts.transcript_entry import TranscriptEntry
 from journal.http.transcripts.transcript_heading import TranscriptHeading
 from journal.http.transcripts.transcript_slice import TranscriptSlice
-from journal.providers.turn import Turn
+from journal.providers.support.turn import Turn
 from journal.support.not_found import NotFound
 
 SPOKEN = ("human", "agent")

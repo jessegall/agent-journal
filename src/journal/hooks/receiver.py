@@ -8,7 +8,7 @@ from journal.events.bus import Bus
 from journal.events.listener import Listener
 from journal.support.decision import Decision
 from journal.support.deferred import Deferred
-from journal.providers.hook import Hook
+from journal.support.hook import Hook
 from journal.hooks.support.transcript_turns import TranscriptTurns
 from journal.hooks.translation import Translation
 from journal.support.actor import Actor
