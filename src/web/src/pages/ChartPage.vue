@@ -9,30 +9,33 @@ import {nodeRunWords, readWords} from "../domain/workflowRuns.js";
 import {countWords, limitOf, readingLines, standingLines, waitingWords} from "../domain/workflowStanding.js";
 import {usePoll} from "../composables/poll.js";
 import {cardTitle, limitNote, messageShown} from "../domain/cardTitle.js";
+import {CARD, KIND, PORT_AT, placeholderOf, STOPS_WHY, stopsTheWalk, WORD} from "../domain/chartCard.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import DropList from "../kit/DropList.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import Icon from "../kit/Icon.vue";
-import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
-import Skeleton from "../kit/Skeleton.vue";
 import SidePanel from "../kit/SidePanel.vue";
+import ChartAddList from "./ChartAddList.vue";
+import ChartEventsColumn from "./ChartEventsColumn.vue";
+import ChartEmptyCanvas from "./ChartEmptyCanvas.vue";
+import ChartEditControls from "./ChartEditControls.vue";
+import ChartFaults from "./ChartFaults.vue";
 import ChartGuideDialog from "./ChartGuideDialog.vue";
+import ChartWorkflowActions from "./ChartWorkflowActions.vue";
+import ChartRunOrder from "./ChartRunOrder.vue";
+import ChartMessagePanel from "./ChartMessagePanel.vue";
+import ChartNodeCard from "./ChartNodeCard.vue";
 import ChartRunsPanel from "./ChartRunsPanel.vue";
+import ChartStepDetails from "./ChartStepDetails.vue";
 import ChartList from "./ChartList.vue";
 
-const CARD = {width: 240, plain: 48, text: 84};
 const PER_LINE = {title: 30, message: 32};
-const PORT_AT = {then: 50, yes: 30, no: 70};
-const WORD = {then: "Next", yes: "Yes", no: "No"};
-const KIND = {trigger: "Trigger", check: "Check", action: "Action"};
-const portWord = (node, port) => (node.key === "count_wait" && port === "no" ? "Waits here" : WORD[port]);
 const fillers = ref([]);
 const VIEWS = [
     {key: "canvas", label: "Chart"},
@@ -116,7 +119,6 @@ const MAIN_LINES = ["Message", "Count now"];
 const detailMain = computed(() => detailLines.value.find((l) => MAIN_LINES.includes(l.label)) || detailLines.value[0] || null);
 const detailRest = computed(() => detailLines.value.filter((l) => l !== detailMain.value));
 const messageText = ref("");
-const messageBox = ref(null);
 let fresh = 0;
 
 const entries = computed(() => Object.fromEntries(catalogue.value.map((e) => [`${e.kind}:${e.key}`, e])));
@@ -285,8 +287,6 @@ function setText(node, text) {
 
 // the flow reads down the page: a line leaves a card by its bottom edge and enters the next by its top; a check's Yes and No sit side by side
 const ports = (node) => (node.key === "stop_here" ? [] : node.kind === "check" ? ["yes", "no"] : ["then"]);
-const STOPS_WHY = "When this step runs, no later workflow of the event runs; the agent is not stopped by it";
-const stopsTheWalk = (node) => node.kind === "action" && ["stop_here", "block_stop"].includes(node.key);
 const linesOf = (words, perLine) => Math.max(1, Math.ceil((words || "").length / perLine));
 const heightOf = (node) => {
     const title = 30 + 18 * linesOf(cardTitle(entryOf(node), node, limitOf(standing.value, node)), PER_LINE.title);
@@ -320,6 +320,9 @@ const wires = computed(() =>
         .filter((l) => byId.value[String(l.from)] && byId.value[String(l.to)])
         .map((l) => ({line: l, d: path(portAt(byId.value[String(l.from)], l.port), inAt(byId.value[String(l.to)]))}))
 );
+// each port of a card with whether a line leaves it, the pointer is on it, or a line is being drawn from it
+const portStates = (node) =>
+    ports(node).map((port) => ({port, on: hooked(node, port), hover: isHover(node, port), dragging: isDrawingFrom(node, port)}));
 const isHover = (node, port) => hovered.value && hovered.value.node === node.id && hovered.value.port === port;
 const isDrawingFrom = (node, port) => drawing.value && String(drawing.value.from) === String(node.id) && drawing.value.port === port;
 
@@ -528,7 +531,6 @@ const litRead = ref({});
 const trial = ref(null);
 const leaving = ref(null);
 const listsHidden = ref(false);
-const dragging = ref(0);
 const pairing = computed(() => pairs(workflows.value, states.value, catalogue.value));
 const titleOf = (key) => pairing.value.titleOf(key);
 const eventRows = computed(() =>
@@ -586,6 +588,35 @@ const parentWords = computed(() => {
     return parent ? `${titleOf(parent)}'s runs here again.` : "";
 });
 
+// what the canvas shows when it has no workflow to draw: none here, one whose steps are gone, one turned off, or a trigger alone
+const canvasState = computed(() => {
+    if (!loaded.value) return "";
+    if (!currentWorkflow.value) return "none";
+    if (!nodes.value.length) return "gone";
+    if (!trigger.value) return "off";
+    return nodes.value.length === 1 ? "lonely" : "";
+});
+
+// what the page says under its header: what went wrong first, then what the workflow and its last walk tell
+const pageNotes = computed(() => {
+    const workflow = currentWorkflow.value;
+    const traces = [
+        workflow && workflow.behind
+            ? "The shipped version of this workflow changed since you edited it. Reset to default takes the new one and drops your changes."
+            : "",
+        trialWords.value,
+        workflow && !unlocked.value && !entries.value[`trigger:${pickedEvent.value}`]?.tried
+            ? `Test run cannot stand in for ${eventTitle.value.toLowerCase()}: no test run of this event is possible from what is on record.`
+            : "",
+        stayOn(workflow),
+        selectedLocked.value ? `${LOCK_WHY} ${LOCK_RULE}` : walkWords.value,
+    ];
+    return [
+        ...[notice.value, failureWords.value].filter(Boolean).map((text) => ({kind: "chart-notice", text})),
+        ...traces.filter(Boolean).map((text) => ({kind: "chart-trace", text})),
+    ];
+});
+
 // what each change asked from the workflow's menu says before it is done
 const confirmation = computed(
     () =>
@@ -610,6 +641,44 @@ const confirmation = computed(
             },
         })[confirming.value]
 );
+
+// the one question the page asks at a time: leave unsaved changes, confirm a change from the menu, or hear that someone saved first
+const pageDialog = computed(() => {
+    if (leaving.value) {
+        const changes = `${past.value.length} unsaved ${past.value.length === 1 ? "change" : "changes"}`;
+        return {
+            title: "Save your changes first?",
+            text: `You have ${changes} here.`,
+            close: () => (leaving.value = null),
+            buttons: [
+                {label: "Keep editing", run: () => (leaving.value = null)},
+                {label: "Leave without saving", kind: "danger", run: leaveAnyway},
+                {label: "Save", kind: "primary", busy: busy.value === "save", run: () => save().then(() => !dirty.value && leaveAnyway())},
+            ],
+        };
+    }
+    if (confirmation.value) {
+        const asked = confirmation.value;
+        return {
+            title: asked.title,
+            text: asked.text,
+            close: () => (confirming.value = ""),
+            buttons: [
+                {label: "Cancel", run: () => (confirming.value = "")},
+                {label: asked.label, kind: "danger", busy: busy.value === confirming.value, run: asked.run},
+            ],
+        };
+    }
+    if (conflict.value && !unlocked.value) {
+        return {
+            title: "Someone saved this workflow first",
+            text: `${conflict.value.revised_by} saved it ${ago(conflict.value.revised_at)}, so your changes were not saved.`,
+            close: () => (conflict.value = null),
+            buttons: [{label: "Close", run: () => (conflict.value = null)}],
+        };
+    }
+    return null;
+});
 
 // picking an event opens the first workflow of its list; picking a row opens that workflow
 async function pick(event, id = 0) {
@@ -660,10 +729,7 @@ function stopEditing() {
 }
 
 // a row dragged over another takes its place: the whole list goes to the server in its new order, at the revisions read
-async function dropOn(target) {
-    const from = dragging.value;
-    dragging.value = 0;
-    if (!from || from === target.id) return;
+async function dropOn(from, target) {
     const ids = pairing.value.answering(pickedEvent.value).map((w) => w.id);
     const moved = ids.splice(ids.indexOf(from), 1)[0];
     ids.splice(ids.indexOf(target.id), 0, moved);
@@ -711,16 +777,6 @@ function closeMessage() {
     if (editing.value && messageText.value !== editing.value.text) setText(editing.value, messageText.value);
     editing.value = null;
 }
-
-function insertFiller(filler) {
-    const box = messageBox.value;
-    const at = box ? box.selectionStart : messageText.value.length;
-    const text = messageText.value;
-    messageText.value = `${text.slice(0, at)}${filler.key}${text.slice(at)}`;
-    if (box) nextTick(() => box.focus());
-}
-
-const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name of a setting" : "Message to the agent");
 </script>
 
 <template>
@@ -732,41 +788,24 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
             <Btn kind="ghost" small @click="showLead = true">How it works</Btn>
             <span class="chart-grow" />
             <template v-if="unlocked">
-                <span class="chart-warning">Saving changes this for every agent, from the next {{ eventTitle }}. {{ alsoWords }}</span>
-                <template v-if="conflict">
-                    <span class="chart-unsaved">Save replaces {{ conflict.revised_by }}'s version</span>
-                </template>
-                <template v-else-if="dirty">
-                    <span class="chart-unsaved">{{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }}</span>
-                </template>
-                <Btn kind="ghost" small :disabled="!dirty" title="Undo last change" @click="undo">Undo</Btn>
-                <Btn kind="ghost" small :disabled="!dirty" @click="discard">Discard changes</Btn>
-                <Btn
-                    kind="primary"
-                    small
-                    :busy="busy === 'save'"
-                    :disabled="!dirty && !conflict"
-                    title="Takes effect at the agent's next event"
-                    @click="save"
-                >
-                    Save
-                </Btn>
-                <Btn kind="ghost" small @click="stopEditing">Done</Btn>
+                <ChartEditControls
+                    :event-title="eventTitle"
+                    :also-words="alsoWords"
+                    :unsaved="past.length"
+                    :replaces="conflict ? conflict.revised_by : ''"
+                    :saving="busy === 'save'"
+                    @undo="undo"
+                    @discard="discard"
+                    @save="save"
+                    @done="stopEditing"
+                />
             </template>
             <template v-else>
                 <Btn kind="ghost" small :disabled="!current" title="Change what the journal does here" @click="unlock">Edit</Btn>
             </template>
         </PageBar>
         <template v-if="faults.length">
-            <ul class="chart-faults" role="alert">
-                <template v-for="fault in faults" :key="`${fault.node}:${faultWords(fault)}`">
-                    <li>
-                        <button type="button" class="chart-fault" :disabled="!fault.node" @click="selected = fault.node">
-                            {{ faultWords(fault) }}
-                        </button>
-                    </li>
-                </template>
-            </ul>
+            <ChartFaults :faults="faults" :words-of="faultWords" @select="selected = $event" />
         </template>
 
         <div :class="['chart-page', {folded: unlocked}]">
@@ -778,105 +817,21 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 </div>
             </template>
             <template v-else-if="!listsHidden">
-                <aside class="chart-col chart-events" aria-label="Event">
-                    <h2 class="chart-col-head">Event</h2>
-                    <template v-if="!loaded">
-                        <Skeleton :count="8" label="Loading the events" />
-                    </template>
-                    <template v-for="row in loaded ? eventRows : []" :key="row.key">
-                        <button
-                            type="button"
-                            :class="['chart-row', 'chart-event', {on: row.key === pickedEvent, none: !row.count}]"
-                            :aria-current="row.key === pickedEvent ? 'true' : null"
-                            @click="pick(row.key)"
-                        >
-                            <span
-                                :class="['chart-mark', row.failed ? 'failed' : row.off ? 'off' : row.count ? 'default' : 'none']"
-                                aria-hidden="true"
-                            />
-                            <span class="chart-row-name">{{ row.title }}</span>
-                            <template v-if="row.count">
-                                <span class="chart-row-words">{{ row.count }}</span>
-                            </template>
-                            <template v-else-if="row.claudeOnly">
-                                <span class="chart-row-words">Claude only</span>
-                            </template>
-                        </button>
-                    </template>
-                    <DropList
-                        class="chart-add-event"
-                        label="Add an event"
-                        icon="plus"
-                        :items="addableEvents"
-                        :menu-width="300"
-                        searchable
-                        @pick="pick($event.key)"
-                    />
-                </aside>
-                <aside class="chart-col chart-list" aria-label="Workflows, in the order they run">
-                    <div class="chart-col-top">
-                        <h2 class="chart-col-head">Run order</h2>
-                        <DropList
-                            :label="filterLabel"
-                            :items="filterItems"
-                            :picked="stateFilter"
-                            :menu-width="220"
-                            @pick="stateFilter = $event.key"
-                        />
-                    </div>
-                    <template v-if="!loaded">
-                        <Skeleton :count="5" label="Loading the workflows" />
-                    </template>
-                    <template v-else-if="!listRows.length">
-                        <p class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
-                    </template>
-                    <template v-for="row in loaded ? listRows : []" :key="row.id">
-                        <button
-                            type="button"
-                            :class="[
-                                'chart-row',
-                                'chart-item',
-                                row.mark,
-                                {on: row.id === current, dragging: dragging === row.id, locked: row.locked},
-                            ]"
-                            :aria-current="row.id === current ? 'true' : null"
-                            :draggable="!row.locked && !stateFilter"
-                            :title="
-                                row.locked
-                                    ? 'Locked: this one always runs here'
-                                    : stateFilter
-                                      ? 'Pick Every state to drag the order'
-                                      : 'Drag to change the order'
-                            "
-                            @dragstart="dragging = row.id"
-                            @dragend="dragging = 0"
-                            @dragover.prevent
-                            @drop.prevent="dropOn(row)"
-                            @click="pick(pickedEvent, row.id)"
-                        >
-                            <span class="chart-item-place">{{ row.place }}</span>
-                            <template v-if="row.locked">
-                                <Icon name="lock" :size="11" class="chart-item-lock" :title="LOCK_WHY" />
-                            </template>
-                            <span class="chart-item-words">
-                                <span class="chart-row-name">{{ row.title }}</span>
-                                <span class="chart-row-sub">
-                                    {{ row.who }}
-                                    <template v-if="row.words">· {{ row.words }}</template>
-                                </span>
-                            </span>
-                            <span :class="['chart-mark', row.mark]" aria-hidden="true" />
-                        </button>
-                    </template>
-                    <DropList
-                        class="chart-add-event"
-                        label="New workflow"
-                        icon="plus"
-                        :items="newItems"
-                        :menu-width="260"
-                        @pick="start($event.key)"
-                    />
-                </aside>
+                <ChartEventsColumn :loaded="loaded" :rows="eventRows" :picked="pickedEvent" :addable="addableEvents" @pick="pick" />
+                <ChartRunOrder
+                    :loaded="loaded"
+                    :rows="listRows"
+                    :current="current"
+                    :event-title="eventTitle"
+                    :filter-label="filterLabel"
+                    :filter-items="filterItems"
+                    :state-filter="stateFilter"
+                    :new-items="newItems"
+                    @filter="stateFilter = $event"
+                    @pick="(id) => pick(pickedEvent, id)"
+                    @move="dropOn"
+                    @start="start"
+                />
             </template>
 
             <div class="chart-main">
@@ -904,37 +859,15 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                         </template>
                         <template v-else>
                             <template v-if="currentWorkflow">
-                                <template v-if="canTry">
-                                    <Btn
-                                        kind="ghost"
-                                        small
-                                        :busy="busy === 'try'"
-                                        title="Runs the saved workflow against what is on record now; nothing is sent to the agent"
-                                        @click="test"
-                                    >
-                                        Test run
-                                    </Btn>
-                                </template>
-                                <template v-if="currentWorkflow.off">
-                                    <Btn kind="ghost" small :busy="busy === 'on'" @click="turnOn">Turn on</Btn>
-                                </template>
-                                <template v-else>
-                                    <Btn
-                                        kind="ghost"
-                                        small
-                                        :disabled="Boolean(stayOn(currentWorkflow))"
-                                        :title="stayOn(currentWorkflow) || null"
-                                        @click="confirming = 'off'"
-                                    >
-                                        Turn off
-                                    </Btn>
-                                </template>
-                                <template v-if="shipped && (currentWorkflow.edited || currentWorkflow.off)">
-                                    <Btn kind="ghost" small @click="confirming = 'reset'">Reset to default</Btn>
-                                </template>
-                                <template v-if="!shipped && !currentWorkflow.locked">
-                                    <Btn kind="ghost" small @click="confirming = 'remove'">Delete</Btn>
-                                </template>
+                                <ChartWorkflowActions
+                                    :workflow="currentWorkflow"
+                                    :can-try="canTry"
+                                    :shipped="shipped"
+                                    :busy="busy"
+                                    @test="test"
+                                    @turn-on="turnOn"
+                                    @confirm="confirming = $event"
+                                />
                             </template>
                         </template>
                         <template v-if="!unlocked">
@@ -945,35 +878,8 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                         <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
                     </div>
                 </header>
-                <template v-if="notice">
-                    <p class="chart-notice">{{ notice }}</p>
-                </template>
-                <template v-if="failureWords">
-                    <p class="chart-notice">{{ failureWords }}</p>
-                </template>
-                <template v-if="currentWorkflow && currentWorkflow.behind">
-                    <p class="chart-trace">
-                        The shipped version of this workflow changed since you edited it. Reset to default takes the new one and drops your
-                        changes.
-                    </p>
-                </template>
-                <template v-if="trialWords">
-                    <p class="chart-trace">{{ trialWords }}</p>
-                </template>
-                <template v-if="currentWorkflow && !unlocked && !entries[`trigger:${pickedEvent}`]?.tried">
-                    <p class="chart-trace">
-                        Test run cannot stand in for {{ eventTitle.toLowerCase() }}: no test run of this event is possible from what is on
-                        record.
-                    </p>
-                </template>
-                <template v-if="stayOn(currentWorkflow)">
-                    <p class="chart-trace">{{ stayOn(currentWorkflow) }}</p>
-                </template>
-                <template v-if="selectedLocked">
-                    <p class="chart-trace">{{ LOCK_WHY }} {{ LOCK_RULE }}</p>
-                </template>
-                <template v-else-if="walkWords">
-                    <p class="chart-trace">{{ walkWords }}</p>
+                <template v-for="note in pageNotes" :key="note.text">
+                    <p :class="note.kind">{{ note.text }}</p>
                 </template>
 
                 <template v-if="view === 'list'">
@@ -1005,131 +911,29 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                                 </template>
                             </svg>
                             <template v-for="node in nodes" :key="node.id">
-                                <div
-                                    :data-node="node.id"
-                                    :class="[
-                                        'chart-node',
-                                        node.kind,
-                                        {
-                                            selected: selected === node.id,
-                                            target: drawing && drawing.target && drawing.target.id === node.id,
-                                            lit: isLit(node.id),
-                                            end: node.key === 'stop_here',
-                                            locked: node.locked,
-                                        },
-                                    ]"
-                                    :style="{
-                                        left: `${node.x}px`,
-                                        top: `${node.y}px`,
-                                        width: `${CARD.width}px`,
-                                        height: `${heightOf(node)}px`,
-                                    }"
-                                    @pointerdown="dragNode(node, $event)"
-                                >
-                                    <div class="chart-node-kind">
-                                        <span :class="['chart-glyph', node.kind]" />
-                                        <span>{{ KIND[node.kind] }}</span>
-                                        <template v-if="node.locked">
-                                            <Icon name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
-                                        </template>
-                                        <template v-if="stopsTheWalk(node)">
-                                            <span class="chart-node-stops" :title="STOPS_WHY">no later workflows</span>
-                                        </template>
-                                        <template v-if="waitingWords(standing, node.id)">
-                                            <span class="chart-node-waiting" title="An agent's last walk of this workflow stopped here">
-                                                {{ waitingWords(standing, node.id) }}
-                                            </span>
-                                        </template>
-                                        <template v-if="node.kind === 'check' && countWords(standing, node)">
-                                            <span class="chart-node-count">
-                                                {{ countWords(standing, node) }}
-                                            </span>
-                                        </template>
-                                        <template v-if="isLit(node.id) && readWords(litRead, node.id)">
-                                            <span class="chart-node-read">
-                                                {{ readWords(litRead, node.id) }}
-                                            </span>
-                                        </template>
-                                        <template v-if="selected === node.id && !node.locked">
-                                            <button
-                                                type="button"
-                                                class="chart-node-x"
-                                                title="Delete node"
-                                                @pointerdown.stop
-                                                @click.stop="remove(node)"
-                                            >
-                                                <Icon name="close" :size="12" />
-                                            </button>
-                                        </template>
-                                    </div>
-                                    <div class="chart-node-title" :title="entryOf(node).about">
-                                        {{ cardTitle(entryOf(node), node, limitOf(standing, node)) }}
-                                    </div>
-                                    <template v-if="limitNote(limitOf(standing, node))">
-                                        <div class="chart-node-note">
-                                            {{ limitNote(limitOf(standing, node)) }}
-                                        </div>
-                                    </template>
-                                    <template v-if="entryOf(node).takes_text">
-                                        <template v-if="node.kind === 'action'">
-                                            <button
-                                                type="button"
-                                                :class="['chart-node-text', {empty: !node.text}]"
-                                                :disabled="node.locked"
-                                                :title="node.locked ? LOCK_WHY : 'Click to write the message'"
-                                                @pointerdown.stop
-                                                @click.stop="openMessage(node)"
-                                            >
-                                                {{ node.text ? messageShown(node.text) : placeholderOf(node) }}
-                                            </button>
-                                        </template>
-                                        <template v-else>
-                                            <input
-                                                class="chart-node-text"
-                                                :value="node.text"
-                                                :placeholder="placeholderOf(node)"
-                                                :disabled="node.locked"
-                                                :title="node.locked ? LOCK_WHY : null"
-                                                @pointerdown.stop
-                                                @focus="selected = node.id"
-                                                @input="setText(node, $event.target.value)"
-                                            />
-                                        </template>
-                                    </template>
-                                    <template v-if="node.kind !== 'trigger'">
-                                        <span :class="['chart-in', {ready: drawing && drawing.target && drawing.target.id === node.id}]" />
-                                    </template>
-                                    <template v-for="port in ports(node)" :key="port">
-                                        <span
-                                            :class="[
-                                                'chart-port',
-                                                port,
-                                                {
-                                                    on: hooked(node, port),
-                                                    hover: isHover(node, port) && !drawing,
-                                                    dragging: isDrawingFrom(node, port),
-                                                },
-                                            ]"
-                                            :style="{left: `${PORT_AT[port]}%`}"
-                                            :title="`Drag to connect the ${WORD[port]} output${hooked(node, port) ? '' : '. Not connected: the workflow ends here'}`"
-                                            @pointerdown="dragLine(node, port, $event)"
-                                            @pointerenter="hovered = {node: node.id, port}"
-                                            @pointerleave="hovered = null"
-                                        >
-                                            <template v-if="isHover(node, port) && !drawing && !hooked(node, port)">
-                                                <Icon name="plus" :size="11" />
-                                            </template>
-                                        </span>
-                                        <template v-if="port !== 'then'">
-                                            <span
-                                                :class="['chart-port-word', port, {on: hooked(node, port) || isDrawingFrom(node, port)}]"
-                                                :style="{left: `${PORT_AT[port]}%`}"
-                                            >
-                                                {{ portWord(node, port) }}
-                                            </span>
-                                        </template>
-                                    </template>
-                                </div>
+                                <ChartNodeCard
+                                    :node="node"
+                                    :entry="entryOf(node)"
+                                    :title="cardTitle(entryOf(node), node, limitOf(standing, node))"
+                                    :height="heightOf(node)"
+                                    :ports="portStates(node)"
+                                    :selected="selected === node.id"
+                                    :target="Boolean(drawing && drawing.target && drawing.target.id === node.id)"
+                                    :lit="isLit(node.id)"
+                                    :drawing="Boolean(drawing)"
+                                    :note="limitNote(limitOf(standing, node))"
+                                    :waiting="waitingWords(standing, node.id)"
+                                    :counted="countWords(standing, node)"
+                                    :read="readWords(litRead, node.id)"
+                                    @drag="dragNode(node, $event)"
+                                    @remove="remove(node)"
+                                    @open-message="openMessage(node)"
+                                    @select="selected = node.id"
+                                    @text="setText(node, $event)"
+                                    @port-down="(port, event) => dragLine(node, port, event)"
+                                    @port-enter="(port) => (hovered = {node: node.id, port})"
+                                    @port-leave="hovered = null"
+                                />
                             </template>
                             <template v-if="drawing && drawing.target">
                                 <span
@@ -1146,47 +950,20 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                             <span ref="dropMark" class="chart-drop-mark" :style="markStyle" />
                         </template>
 
-                        <template v-if="loaded && !currentWorkflow">
-                            <EmptyState class="chart-empty" title="Nothing is set up here">
-                                No workflow answers {{ eventTitle.toLowerCase() }} yet.
-                                <br />
-                                <DropList
-                                    class="chart-empty-add"
-                                    label="New workflow"
-                                    icon="plus"
-                                    :items="newItems"
-                                    :menu-width="260"
-                                    @pick="start($event.key)"
-                                />
-                            </EmptyState>
-                        </template>
-                        <template v-else-if="loaded && !nodes.length">
-                            <EmptyState class="chart-empty" title="This workflow is turned off">
-                                Its steps are gone, so the journal does nothing here. {{ parentWords }}
-                                <br />
-                                <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
-                            </EmptyState>
-                        </template>
-                        <template v-else-if="loaded && !trigger">
-                            <EmptyState class="chart-empty" title="This workflow is turned off">
-                                Its {{ nodes.length }} {{ nodes.length === 1 ? "step is" : "steps are" }} kept. Turn on brings
-                                {{ nodes.length === 1 ? "it" : "them" }} back.
-                                {{ parentWords }}
-                                <br />
-                                <Btn class="chart-empty-add" :busy="busy === 'on'" @click.stop="turnOn">Turn on</Btn>
-                            </EmptyState>
-                        </template>
-                        <template v-else-if="loaded && nodes.length === 1 && trigger">
-                            <div class="chart-hint">
-                                <p class="chart-hint-title">Nothing follows the trigger yet</p>
-                                <p class="chart-hint-text">Add step puts a check or an action below the selected step and connects it.</p>
-                                <template v-if="unlocked">
-                                    <Btn @click.stop="((selected = trigger.id), openAdd(null))">Add step</Btn>
-                                </template>
-                                <template v-else>
-                                    <Btn @click.stop="unlock">Edit</Btn>
-                                </template>
-                            </div>
+                        <template v-if="canvasState">
+                            <ChartEmptyCanvas
+                                :state="canvasState"
+                                :event-title="eventTitle"
+                                :new-items="newItems"
+                                :parent-words="parentWords"
+                                :steps="nodes.length"
+                                :busy="busy === 'on'"
+                                :unlocked="unlocked"
+                                @start="start"
+                                @turn-on="turnOn"
+                                @add="((selected = trigger.id), openAdd(null))"
+                                @edit="unlock"
+                            />
                         </template>
                     </div>
                 </template>
@@ -1207,129 +984,48 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
                 @click.stop
                 @close="adding = null"
             >
-                <TextInput
-                    class="chart-search"
-                    icon="search"
-                    :value="search"
-                    placeholder="Search nodes"
-                    autofocus
-                    @input="search = $event.target.value"
+                <ChartAddList
+                    :search="search"
+                    :landing="landingWords"
+                    :triggers="offeredTriggers"
+                    :checks="offeredChecks"
+                    :actions="offeredActions"
+                    :has-trigger="Boolean(trigger)"
+                    :described="described"
+                    @search="search = $event"
+                    @add="add"
                 />
-                <p class="chart-landing">{{ landingWords }}</p>
-                <MenuLabel>Triggers</MenuLabel>
-                <template v-if="trigger">
-                    <p class="chart-menu-about">
-                        A trigger for another event makes this workflow answer that event too, sharing its counts.
-                    </p>
-                </template>
-                <template v-for="entry in offeredTriggers" :key="`trigger:${entry.key}`">
-                    <MenuItem :description="described(entry)" @click="add(entry)">
-                        <span class="chart-glyph trigger" />
-                        {{ entry.title }}
-                    </MenuItem>
-                </template>
-                <MenuLabel>
-                    Checks
-                    <span class="chart-label-note">— a yes or no question</span>
-                </MenuLabel>
-                <template v-for="entry in offeredChecks" :key="`check:${entry.key}`">
-                    <MenuItem :description="described(entry)" @click="add(entry)">
-                        <span class="chart-glyph check" />
-                        {{ entry.title }}
-                    </MenuItem>
-                </template>
-                <MenuLabel>
-                    Actions
-                    <span class="chart-label-note">— something the workflow does</span>
-                </MenuLabel>
-                <template v-for="entry in offeredActions" :key="`action:${entry.key}`">
-                    <MenuItem :description="described(entry)" @click="add(entry)">
-                        <span class="chart-glyph action" />
-                        {{ entry.title }}
-                    </MenuItem>
-                </template>
             </MenuPanel>
         </template>
 
         <template v-if="details">
-            <SidePanel :title="cardTitle(entryOf(details), details)" :abstract="KIND[details.kind]" @close="selected = null">
-                <template v-if="detailMain">
-                    <dl class="chart-details">
-                        <dt>{{ detailMain.label }}</dt>
-                        <dd>{{ detailMain.words }}</dd>
-                    </dl>
-                </template>
-                <template v-if="detailRest.length">
-                    <details class="chart-details-more">
-                        <summary>More about this step</summary>
-                        <dl class="chart-details">
-                            <template v-for="line in detailRest" :key="line.label">
-                                <dt>{{ line.label }}</dt>
-                                <dd>{{ line.words }}</dd>
-                            </template>
-                        </dl>
-                    </details>
-                </template>
-            </SidePanel>
+            <ChartStepDetails
+                :title="cardTitle(entryOf(details), details)"
+                :kind="KIND[details.kind]"
+                :main="detailMain"
+                :rest="detailRest"
+                @close="selected = null"
+            />
         </template>
         <template v-if="editing">
-            <SidePanel
-                title="Message to the agent"
-                :abstract="`${entryOf(editing).title}: what the journal says to the agent at this step`"
+            <ChartMessagePanel
+                :about="`${entryOf(editing).title}: what the journal says to the agent at this step`"
+                :text="messageText"
+                :fillers="fillers"
+                @update="messageText = $event"
                 @close="closeMessage"
-            >
-                <textarea
-                    ref="messageBox"
-                    class="chart-message"
-                    :value="messageText"
-                    rows="10"
-                    placeholder="Message to the agent"
-                    @input="messageText = $event.target.value"
-                />
-                <MenuLabel>Values you can insert</MenuLabel>
-                <div class="chart-fillers">
-                    <template v-for="filler in fillers" :key="filler.key">
-                        <button type="button" class="chart-filler" @click="insertFiller(filler)">
-                            <code>{{ filler.key }}</code>
-                            <span>{{ filler.about }}</span>
-                        </button>
-                    </template>
-                </div>
-                <template #foot>
-                    <span class="chart-grow" />
-                    <Btn kind="primary" small @click="closeMessage">Done</Btn>
-                </template>
-            </SidePanel>
+            />
         </template>
         <template v-if="showLead">
             <ChartGuideDialog @close="showLead = false" />
         </template>
-        <template v-if="confirmation">
-            <Dialog :title="confirmation.title" fits @close="confirming = ''">
-                <p class="chart-dialog-text">{{ confirmation.text }}</p>
+        <template v-if="pageDialog">
+            <Dialog :title="pageDialog.title" fits @close="pageDialog.close">
+                <p class="chart-dialog-text">{{ pageDialog.text }}</p>
                 <template #foot>
-                    <Btn @click="confirming = ''">Cancel</Btn>
-                    <Btn kind="danger" :busy="busy === confirming" @click="confirmation.run">{{ confirmation.label }}</Btn>
-                </template>
-            </Dialog>
-        </template>
-        <template v-if="leaving">
-            <Dialog title="Save your changes first?" fits @close="leaving = null">
-                <p class="chart-dialog-text">You have {{ past.length }} unsaved {{ past.length === 1 ? "change" : "changes" }} here.</p>
-                <template #foot>
-                    <Btn @click="leaving = null">Keep editing</Btn>
-                    <Btn kind="danger" @click="leaveAnyway">Leave without saving</Btn>
-                    <Btn kind="primary" :busy="busy === 'save'" @click="save().then(() => !dirty && leaveAnyway())">Save</Btn>
-                </template>
-            </Dialog>
-        </template>
-        <template v-if="conflict && !unlocked">
-            <Dialog title="Someone saved this workflow first" fits @close="conflict = null">
-                <p class="chart-dialog-text">
-                    {{ conflict.revised_by }} saved it {{ ago(conflict.revised_at) }}, so your changes were not saved.
-                </p>
-                <template #foot>
-                    <Btn @click="conflict = null">Close</Btn>
+                    <template v-for="button in pageDialog.buttons" :key="button.label">
+                        <Btn :kind="button.kind" :busy="Boolean(button.busy)" @click="button.run">{{ button.label }}</Btn>
+                    </template>
                 </template>
             </Dialog>
         </template>
@@ -1353,11 +1049,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
     flex: 1;
 }
 
-.chart-unsaved {
-    color: var(--text-3);
-    font-size: 12px;
-}
-
 .chart-page {
     display: flex;
     flex: 1;
@@ -1375,217 +1066,31 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
     min-height: 0;
     padding: 12px 16px 16px;
 }
-.chart-col {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    gap: 1px;
-    padding: 12px 8px;
-    overflow: auto;
-    border-right: 1px solid var(--line);
-}
-.chart-list {
-    width: 272px;
-}
-.chart-col-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding-right: 4px;
-}
-.chart-col-top .chart-col-head {
-    margin: 0;
-}
-.chart-list-empty {
-    margin: 8px 10px;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-.chart-item {
-    align-items: center;
-    gap: 10px;
-    cursor: grab;
-}
-.chart-item[draggable="false"] {
-    cursor: pointer;
-}
 .chart-item.dragging {
     opacity: 0.5;
 }
-.chart-item-lock,
-.chart-node-waiting {
-    position: absolute;
-    top: -10px;
-    right: 10px;
-    padding: 1px 8px;
-    border: 1px solid color-mix(in oklab, var(--accent) 50%, transparent);
-    border-radius: 999px;
-    color: var(--accent);
-    background: var(--bg, #111215);
-    font-size: 10.5px;
-    font-weight: 500;
-    letter-spacing: 0;
-    text-transform: none;
-    white-space: nowrap;
-}
 
-.chart-node-count {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: 10.5px;
-    letter-spacing: 0;
-    text-transform: none;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.chart-node-lock {
-    flex: none;
-    color: var(--text-3);
-}
-.chart-node-stops {
-    margin-left: 6px;
-    padding: 0 5px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--tone-warn) 16%, transparent);
-    color: var(--tone-warn);
-    font-size: 10px;
-    line-height: 15px;
-    text-transform: none;
-    white-space: nowrap;
-}
-.chart-node-read {
-    margin-left: auto;
-    color: var(--accent);
-    font-size: 10.5px;
-    white-space: nowrap;
-}
-.chart-details {
-    display: grid;
-    grid-template-columns: 1fr;
-    margin: 0;
-    font-size: 13px;
-}
-.chart-details dt {
-    color: var(--text-3);
-    font-size: 12px;
-    margin-bottom: 2px;
-}
-.chart-details dd {
-    margin: 0 0 12px;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
 .chart-node.locked .chart-node-text:disabled {
     opacity: 0.8;
     cursor: not-allowed;
-}
-.chart-item-place {
-    flex: none;
-    width: 18px;
-    color: var(--text-3);
-    font-size: 11.5px;
-    text-align: right;
-}
-.chart-item-words {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-.chart-events {
-    width: 268px;
-    background: color-mix(in oklab, var(--bg-2) 60%, var(--bg));
-}
-.chart-col-head {
-    margin: 0 0 8px;
-    padding: 0 10px;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-}
-.chart-row {
-    display: flex;
-    gap: 6px;
-    width: 100%;
-    padding: 8px 10px;
-    border: 0;
-    border-left: 2px solid transparent;
-    border-radius: 7px;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-.chart-row:hover {
-    background: var(--hover);
 }
 .chart-row.on {
     border-left-color: var(--accent-text);
     background: var(--sel);
 }
-.chart-event {
-    align-items: center;
-    min-height: 32px;
-    padding-top: 0;
-    padding-bottom: 0;
-}
 .chart-event.none .chart-row-name {
     color: var(--text-3);
-}
-.chart-row-name {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    overflow: hidden;
-    font-size: 13px;
-    font-weight: 500;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.chart-row-sub,
-.chart-row-words {
-    flex: none;
-    color: var(--text-3);
-    font-size: 11.5px;
 }
 .chart-row-warn {
     color: var(--warn);
     font-size: 11.5px;
     font-weight: 400;
 }
-.chart-mark {
-    position: relative;
-    display: inline-block;
-    flex: none;
-    width: 10px;
-    height: 10px;
-}
-.chart-mark::before,
-.chart-mark::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    margin: auto;
-}
 .chart-mark.default::before {
     width: 7px;
     height: 7px;
     border-radius: 50%;
     background: var(--text-2);
-}
-.chart-mark.yours::before {
-    width: 6px;
-    height: 6px;
-    border-radius: 1px;
-    background: var(--accent-text);
-    transform: rotate(45deg);
 }
 .chart-mark.off::before {
     width: 8px;
@@ -1610,9 +1115,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
     height: 2px;
     border-radius: 1px;
     background: var(--text-3);
-}
-.chart-add-event {
-    margin-top: 8px;
 }
 .chart-crumbs {
     display: flex;
@@ -1645,34 +1147,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 }
 .chart-status.failed {
     color: var(--danger-soft);
-}
-.chart-warning {
-    color: var(--warn);
-    font-size: 12px;
-}
-.chart-faults {
-    margin: 0;
-    padding: 6px 16px;
-    border-bottom: 1px solid var(--line);
-    background: color-mix(in oklab, var(--danger) 8%, var(--bg));
-    list-style: none;
-}
-.chart-fault {
-    padding: 2px 0;
-    border: 0;
-    background: none;
-    color: var(--danger-soft);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-}
-.chart-fault:disabled {
-    cursor: default;
-}
-.chart-node.end {
-    border-bottom-width: 3px;
-    border-bottom-color: var(--text-3);
 }
 .chart-node.lit {
     border-color: var(--tone-good);
@@ -1713,59 +1187,6 @@ const placeholderOf = (node) => (node.kind === "check" ? "A number, or the name 
 .chart-head h1 {
     margin: 0;
     font-size: 18px;
-}
-
-.chart-message {
-    width: 100%;
-    margin: 0 0 16px;
-    padding: 10px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg-2);
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-    line-height: 1.5;
-    resize: vertical;
-}
-
-.chart-message:focus {
-    border-color: var(--accent);
-    outline: none;
-}
-
-.chart-fillers {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.chart-filler {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 8px;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.chart-filler:hover {
-    border-color: var(--border-2);
-    background: var(--hover);
-    color: var(--text);
-}
-
-.chart-filler code {
-    flex: none;
-    color: var(--accent-text);
-    font-family: var(--mono);
-    font-size: 12px;
 }
 
 .chart-acts {
@@ -1848,118 +1269,14 @@ g:hover .chart-wire {
     stroke-width: 2.5;
 }
 
-.chart-node {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 7px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: var(--raised);
-    cursor: grab;
-}
-
 .chart-node.selected,
 .chart-node.target {
     border-color: var(--border-3);
     background: var(--hover);
 }
 
-.chart-node-kind {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    height: 14px;
-    color: var(--text-3);
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.chart-node-x {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    margin: -3px -6px 0 auto;
-    border: 0;
-    border-radius: 5px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.chart-node-x:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.chart-node-title {
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 18px;
-    overflow-wrap: anywhere;
-}
-
-.chart-details-more {
-    margin-top: 12px;
-}
-
-.chart-details-more > summary {
-    color: var(--text-2);
-    font-size: 12.5px;
-    cursor: pointer;
-}
-
-.chart-node-note {
-    color: var(--text-3);
-    font-size: 11px;
-    line-height: 16px;
-}
-
-.chart-node-text {
-    width: 100%;
-    margin-top: 5px;
-    padding: 5px 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg-2);
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
-    line-height: 16px;
-    outline: none;
-    text-align: left;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    cursor: text;
-}
-
-button.chart-node-text {
-    white-space: normal;
-}
-
 .chart-node-text.empty {
     color: var(--text-4);
-}
-
-button.chart-node-text:hover {
-    border-color: var(--border-3);
-    color: var(--text);
-}
-
-.chart-node-text::placeholder {
-    color: var(--text-4);
-}
-
-.chart-node-text:focus {
-    border-color: var(--accent);
-    color: var(--text);
 }
 
 .chart-glyph {
@@ -1986,37 +1303,6 @@ button.chart-node-text:hover {
     border-radius: 1.5px;
 }
 
-.chart-in,
-.chart-port {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    margin-left: -6px;
-    border: 1.5px solid var(--border-3);
-    border-radius: 50%;
-    background: var(--bg-2);
-}
-
-.chart-in {
-    top: -6.5px;
-    left: 50%;
-}
-
-.chart-in.ready {
-    top: -8.5px;
-    width: 16px;
-    height: 16px;
-    margin-left: -8px;
-    border-color: var(--accent-text);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
-}
-
-.chart-port {
-    bottom: -6.5px;
-    cursor: crosshair;
-    --c: var(--text-3);
-}
-
 .chart-port.yes {
     --c: var(--tone-good);
 }
@@ -2030,19 +1316,6 @@ button.chart-node-text:hover {
     background: var(--c);
 }
 
-.chart-port.hover {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    bottom: -9.5px;
-    width: 18px;
-    height: 18px;
-    margin-left: -9px;
-    border-color: var(--accent-text);
-    background: var(--raised);
-    color: var(--accent-text);
-}
-
 .chart-port.hover.on {
     background: var(--c);
     border-color: var(--c);
@@ -2052,15 +1325,6 @@ button.chart-node-text:hover {
     border-color: var(--accent-text);
     background: var(--accent-text);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
-}
-
-.chart-port-word {
-    position: absolute;
-    top: calc(100% + 6px);
-    color: var(--text-4);
-    font-size: 10.5px;
-    line-height: 1;
-    pointer-events: none;
 }
 
 .chart-port-word.yes {
@@ -2101,84 +1365,6 @@ button.chart-node-text:hover {
     position: absolute;
     width: 1px;
     height: 1px;
-}
-
-.chart-empty {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.chart-empty-add {
-    margin-top: 10px;
-}
-
-.chart-hint {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    top: 150px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 24px;
-    text-align: center;
-    pointer-events: none;
-}
-
-.chart-hint :deep(.btn) {
-    pointer-events: auto;
-}
-
-.chart-hint-title {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.chart-hint-text {
-    max-width: 300px;
-    margin: 0 0 6px;
-    color: var(--text-4);
-    font-size: 12.5px;
-    line-height: 1.5;
-}
-
-.chart-search {
-    margin: 2px 2px 6px;
-}
-
-.chart-landing {
-    margin: 0 2px 4px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    background: var(--bg-2);
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.chart-menu-about {
-    margin: 0;
-    padding: 0 8px 4px;
-    color: var(--text-4);
-    font-size: 11.5px;
-}
-
-.chart :deep(.menu-item) .chart-glyph {
-    margin-right: 8px;
-}
-
-.chart-label-note {
-    font-weight: 400;
-    letter-spacing: 0;
-    text-transform: none;
 }
 
 .chart-dialog-text {

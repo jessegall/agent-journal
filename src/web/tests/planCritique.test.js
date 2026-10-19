@@ -1,13 +1,17 @@
 import {expect, test, vi} from "vitest";
-import {createApp, h, nextTick} from "vue";
-
-const settle = async () => {
-    for (let i = 0; i < 4; i++) await nextTick();
-};
+import {createApp, h} from "vue";
+import {settle} from "./settle.js";
 
 test("the critique dialog says when its templates did not load, and a retry shows them", async () => {
     const {api} = await import("../src/api/client.js");
-    const missing = {n: 8, title: "Find what is missing", brief: "Read the plan against its goal.", data: {purpose: "critique"}, completed: 0, deleted: 0};
+    const missing = {
+        n: 8,
+        title: "Find what is missing",
+        brief: "Read the plan against its goal.",
+        data: {purpose: "critique"},
+        completed: 0,
+        deleted: 0,
+    };
     api.all = vi.fn().mockRejectedValueOnce(new Error("the journal did not answer")).mockResolvedValue([missing]);
     const {default: PlanCritique} = await import("../src/resource/PlanCritique.vue");
     const host = document.createElement("div");

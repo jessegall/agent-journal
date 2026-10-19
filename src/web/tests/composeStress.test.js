@@ -1,9 +1,6 @@
 import {expect, test} from "vitest";
-import {createApp, h, nextTick, reactive, ref} from "vue";
-
-const settle = async () => {
-    for (let i = 0; i < 4; i++) await nextTick();
-};
+import {createApp, h, reactive, ref} from "vue";
+import {settle} from "./settle.js";
 
 async function mounted(props) {
     const {default: Compose} = await import("../src/chat/Compose.vue");

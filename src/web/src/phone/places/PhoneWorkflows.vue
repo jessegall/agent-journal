@@ -371,6 +371,40 @@ const steps = computed(() => {
         };
     });
 });
+
+// the sheet of choices open now, by what it chooses
+const actionSheet = computed(() => {
+    const event = eventTitle.value;
+    const sheets = {
+        events: {title: "Event", about: event, line: "the event whose workflows to see", actions: eventActions.value},
+        list: {
+            title: "Run order",
+            about: event,
+            line: "first to last; Run earlier and Run later move the open one",
+            actions: listActions.value,
+        },
+        new: {title: "New workflow", about: event, line: "always, or only in one state", actions: newActions.value},
+        "add-event": {
+            title: "Add an event",
+            about: event,
+            line: "The change to the record that starts the workflow",
+            actions: addEventActions.value,
+        },
+        nodes: {
+            title: "Add step",
+            about: "Checks and actions",
+            line: "added at the end and connected to the last step",
+            actions: nodeActions.value,
+        },
+    };
+    if (sheets[sheet.value]) return sheets[sheet.value];
+    if (sheet.value === "port" && porting.value) {
+        const {node, port} = porting.value;
+        return {title: PORT[port], about: named(node), line: `where the ${WORD[port]} answer goes`, actions: portActions.value};
+    }
+    const asked = CONFIRMS[sheet.value];
+    return asked ? {title: asked.title, about: title.value, line: asked.line, actions: confirmActions.value} : null;
+});
 </script>
 
 <template>
@@ -488,66 +522,12 @@ const steps = computed(() => {
         </template>
     </PlaceScreen>
 
-    <template v-if="sheet === 'events'">
+    <template v-if="actionSheet">
         <ActionSheet
-            title="Event"
-            :about="eventTitle"
-            line="the event whose workflows to see"
-            :actions="eventActions"
-            @close="sheet = ''"
-        />
-    </template>
-    <template v-if="sheet === 'list'">
-        <ActionSheet
-            title="Run order"
-            :about="eventTitle"
-            line="first to last; Run earlier and Run later move the open one"
-            :actions="listActions"
-            @close="sheet = ''"
-        />
-    </template>
-    <template v-if="sheet === 'new'">
-        <ActionSheet
-            title="New workflow"
-            :about="eventTitle"
-            line="always, or only in one state"
-            :actions="newActions"
-            @close="sheet = ''"
-        />
-    </template>
-    <template v-if="sheet === 'add-event'">
-        <ActionSheet
-            title="Add an event"
-            :about="eventTitle"
-            line="The change to the record that starts the workflow"
-            :actions="addEventActions"
-            @close="sheet = ''"
-        />
-    </template>
-    <template v-if="sheet === 'nodes'">
-        <ActionSheet
-            title="Add step"
-            about="Checks and actions"
-            line="added at the end and connected to the last step"
-            :actions="nodeActions"
-            @close="sheet = ''"
-        />
-    </template>
-    <template v-if="sheet === 'port' && porting">
-        <ActionSheet
-            :title="PORT[porting.port]"
-            :about="named(porting.node)"
-            :line="`where the ${WORD[porting.port]} answer goes`"
-            :actions="portActions"
-            @close="sheet = ''"
-        />
-    </template>
-    <template v-if="CONFIRMS[sheet]">
-        <ActionSheet
-            :title="CONFIRMS[sheet].title"
-            :about="title"
-            :line="CONFIRMS[sheet].line"
-            :actions="confirmActions"
+            :title="actionSheet.title"
+            :about="actionSheet.about"
+            :line="actionSheet.line"
+            :actions="actionSheet.actions"
             @close="sheet = ''"
         />
     </template>
