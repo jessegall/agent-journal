@@ -1137,6 +1137,9 @@ def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app):
     plans.save(plans.find(1).started(), Actor.user(1))
     app.container.get(ClosedPlans).run()
     assert plans.find(1).state == "done", "a plan left started with every task done is closed at boot"
+    console.run(["plan", "add", "1", "more"], USER)
+    app.runtime().deferred.drain()
+    assert plans.find(1).state == "started", "a task added to a done plan starts it again"
 
 
 def test_a_session_silent_for_an_hour_is_ended(app):
