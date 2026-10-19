@@ -71,7 +71,7 @@ class V3Actions:
             reply_to = int(body.about.split(":")[1]) if body.about.startswith("message:") else None
             text = f"{title}\n\n{brief}".strip() if title and brief and not brief.startswith(title) else (brief or title)
             key = body.idempotency
-            already = [m for m in self.messages.in_() if key and m.idempotency == key]
+            already = self.messages.sent_with(key) if key else []
             if already:
                 return already[0]
             return self.messages.save(Message(author=Author.USER, text=text, reply_to=reply_to, idempotency=key), by)

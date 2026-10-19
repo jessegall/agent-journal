@@ -34,7 +34,7 @@ class Router:
                     with self.scope.requested(lambda: request.environment):
                         began = time.perf_counter()
                         answer = route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
-                        self.slow.measured(request.method, route.pattern, (time.perf_counter() - began) * 1000)
+                        self.slow.measured(request.method, request.path, (time.perf_counter() - began) * 1000)
                         return answer
                 except Refused as refused:
                     return Response.refused(str(refused))

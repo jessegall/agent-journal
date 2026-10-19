@@ -1,5 +1,8 @@
+from journal.db.connection import Connection
+from journal.events.bus import Bus
 from journal.models.option import Option
 from journal.models.setting import Setting
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 PROJECT = 0
@@ -9,6 +12,10 @@ class Settings(ScopedRepository[Setting]):
     """Reads a key with the project's value over the environment's; writes to whichever scope is asked."""
 
     model = Setting
+
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope) -> None:
+        super().__init__(connection, bus, scope)
+        self._kept: dict[int, list[Setting]] = {}
 
     def get(self, key: str, default: object = None) -> object:
         """The value the scope's environment sees."""
@@ -48,13 +55,24 @@ class Settings(ScopedRepository[Setting]):
         return tree
 
     def merged(self) -> dict:
-        return {**{s.key: s.value for s in self.in_()}, **self.of_project()}
+        return {**{s.key: s.value for s in self.rows_of(self.scope.id)}, **self.of_project()}
 
     def of_project(self) -> dict:
         return {s.key: s.value for s in self.project_rows()}
 
     def project_rows(self) -> list[Setting]:
-        return self.where(environment_id=PROJECT)
+        return self.rows_of(PROJECT)
+
+    def rows_of(self, environment_id: int) -> list[Setting]:
+        """A scope's settings, read once and kept until a setting is written: every listener asks whether its feature is on, many times a hook."""
+        if environment_id not in self._kept:
+            self._kept[environment_id] = self.every_where(environment_id=environment_id)
+        return self._kept[environment_id]
+
+    def written(self) -> None:
+        """Kept rows go when a setting is written, and again when the write commits: a reader on another thread may have kept what it saw before."""
+        self._kept.clear()
+        self.connection.after_commit(self._kept.clear)
 
     def _placed(self, row: Setting) -> Setting:
         """A setting names its own scope: 0 is the project's, laid over every environment."""

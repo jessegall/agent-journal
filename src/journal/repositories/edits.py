@@ -24,4 +24,4 @@ class Edits(ScopedRepository[Edit]):
 
     def of_agent(self, session: str, since: float) -> list[Edit]:
         """An agent's edits after the moment given, oldest first."""
-        return [e for e in self.in_() if e.session == session and e.at > since]
+        return self.selected("environment_id = ? AND session = ? AND at > ? ORDER BY id", (self.scope.id, session, since))

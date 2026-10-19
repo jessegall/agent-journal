@@ -18,7 +18,12 @@ class ScopedRepository(Repository[S]):
         self.scope = scope
 
     def in_(self) -> list[S]:
+        """The newest page of the scope's rows, oldest first."""
         return self.where(environment_id=self.scope.id)
+
+    def every_in(self) -> list[S]:
+        """Every row of the scope, for the rare read that must see them all."""
+        return self.every_where(environment_id=self.scope.id)
 
     def page_in(self, limit: int, before: int | None = None) -> list[S]:
         return self.page(limit, before, environment_id=self.scope.id)

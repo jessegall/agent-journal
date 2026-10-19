@@ -15,7 +15,7 @@ class TodosShaper(Shaper):
         self.tasks = tasks
 
     def rows(self) -> list[V3Row]:
-        return [self.row(t) for t in self.tasks.in_()]
+        return [self.row(t) for t in self.tasks.shown()]
 
     @staticmethod
     def row(t) -> V3Row:

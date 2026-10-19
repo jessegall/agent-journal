@@ -51,6 +51,10 @@ class Messages(ScopedRepository[Message]):
     def reacted_by_agent(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.on(message))
 
+    def sent_with(self, key: str) -> list[Message]:
+        """The message the sender already sent with this key, so one sent twice lands once."""
+        return self.selected("environment_id = ? AND idempotency = ? ORDER BY id LIMIT 1", (self.scope.id, key))
+
     def window(self, last: int, before: int = 0, after: int = 0) -> list[Message]:
         """At most last of the newest messages numbered above after and below before, oldest first."""
         clause, params = ["environment_id = ?", "id > ?"], [self.scope.id, after]
@@ -76,7 +80,7 @@ class Messages(ScopedRepository[Message]):
         return self.selected("environment_id = ? AND json_extract(data, '$.key') = ? AND created_by = ?", (self.scope.id, key, by.stamp))
 
     def recent(self, last: int) -> list[Message]:
-        return self.in_()[-last:]
+        return self.window(last)
 
     def thoughts_of(self, session: str, last: int = 60) -> list[Message]:
         """The session's latest thoughts, oldest first."""

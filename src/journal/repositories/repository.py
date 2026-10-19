@@ -22,6 +22,10 @@ from journal.repositories.not_found import NotFound
 M = TypeVar("M", bound=Model)
 
 
+PAGE = 500
+"""The most rows a read returns unless it asks for every one by name."""
+
+
 class Repository(Generic[M]):
     """Reads and writes one model's table. Every write names its actor, stamps the row with it, and tells the bus at each step: saving, creating or updating, created or updated, saved; deleting, deleted."""
 
@@ -39,6 +43,11 @@ class Repository(Generic[M]):
         return self._load(row)
 
     def all(self) -> list[M]:
+        """The newest page of rows, oldest first: a read never loads a whole table unless it asks for every row by name."""
+        return self.newest("1", ())
+
+    def every(self) -> list[M]:
+        """Every row, for the rare read that must see them all; it says so by its name."""
         return self.selected("1 ORDER BY id")
 
     def selected(self, clause: str, params: tuple = ()) -> list[M]:
@@ -53,9 +62,20 @@ class Repository(Generic[M]):
         return found
 
     def where(self, **fields) -> list[M]:
-        clause = " AND ".join(f"{name} = ?" for name in fields)
-        params = tuple(self._column(name).to_sql(value) for name, value in fields.items())
+        """The newest page of the rows with these fields, oldest first."""
+        return self.newest(*self.matching(fields))
+
+    def every_where(self, **fields) -> list[M]:
+        """Every row with these fields, for the rare read that must see them all."""
+        clause, params = self.matching(fields)
         return self.selected(f"{clause} ORDER BY id", params)
+
+    def newest(self, clause: str, params: tuple) -> list[M]:
+        """At most a page of the newest rows the clause picks, oldest first."""
+        return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
+
+    def matching(self, fields: dict) -> tuple[str, tuple]:
+        return " AND ".join(f"{name} = ?" for name in fields), tuple(self._column(name).to_sql(value) for name, value in fields.items())
 
     def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
         """The newest rows first, at most limit of them, older than the id before when given; so a list never loads more than a screen."""
@@ -85,6 +105,7 @@ class Repository(Generic[M]):
             names = [*fields, "updated_at", "updated_by"]
             values = tuple(self._column(name).to_sql(getattr(stamped, name)) for name in names)
             self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
+            self.written()
             self.bus.dispatch(Updated(model=stamped, by=by, was=was))
             return stamped
 
@@ -92,6 +113,7 @@ class Repository(Generic[M]):
         with self.connection.transaction():
             self.bus.dispatch(Deleting(model=row, by=by))
             self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
+            self.written()
             self.bus.dispatch(Deleted(model=row, by=by))
 
     def _insert(self, row: M, by: Actor) -> M:
@@ -103,6 +125,7 @@ class Repository(Generic[M]):
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         cursor = self.connection.execute(f"INSERT INTO {self.table} ({', '.join(names)}) VALUES ({', '.join('?' for _ in names)})", values)
         created = stamped.with_(id=cursor.lastrowid)
+        self.written()
         self.bus.dispatch(Created(model=created, by=by))
         return created
 
@@ -114,8 +137,12 @@ class Repository(Generic[M]):
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
+        self.written()
         self.bus.dispatch(Updated(model=stamped, by=by, was=was))
         return stamped
+
+    def written(self) -> None:
+        """A write of this table landed, before anyone hears of it: a repository that keeps rows in memory drops them here."""
 
     def _load(self, row) -> M:
         """A NULL is a value the row never had, such as a column added after it was written: the model's own default stands in."""

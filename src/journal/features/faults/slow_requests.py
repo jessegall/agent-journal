@@ -1,4 +1,5 @@
 import os
+import re
 import time
 
 from journal.config import Config
@@ -23,12 +24,14 @@ class SlowRequests:
         self.config, self.settings, self.cards, self.messages, self.agents, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, nudger, supervisor, deferred
         self.started = time.monotonic()
 
-    def measured(self, method: str, route: str, ms: float) -> None:
+    def measured(self, method: str, path: str, ms: float) -> None:
+        """A request's time, by the path it asked for with its numbers folded, so /api/plan and /api/message are each their own and every message's page is one."""
         if not self.judging():
             return
         budget = self.budget(method)
         if not budget or ms <= budget:
             return
+        route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
         self.deferred.add(lambda: self.reported(method, route, round(ms), budget))
 
     def budget(self, method: str) -> int:

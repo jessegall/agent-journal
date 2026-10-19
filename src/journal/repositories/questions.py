@@ -6,4 +6,4 @@ class Questions(ScopedRepository[Question]):
     model = Question
 
     def open(self) -> list[Question]:
-        return [q for q in self.in_() if q.answer is None]
+        return self.selected("environment_id = ? AND answer IS NULL ORDER BY id", (self.scope.id,))

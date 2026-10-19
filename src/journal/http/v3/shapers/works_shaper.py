@@ -18,7 +18,7 @@ class WorksShaper(Shaper):
     def rows(self) -> list[V3Row]:
         live = self.agents.live()
         held = self.current.of(live) if live else None
-        return [self.row(t, held if held and held.task.id == t.id else None) for t in self.tasks.in_() if t.state not in (TaskState.OPEN, TaskState.BLOCKED)]
+        return [self.row(t, held if held and held.task.id == t.id else None) for t in self.tasks.shown() if t.state not in (TaskState.OPEN, TaskState.BLOCKED)]
 
     def row(self, t, held) -> V3Row:
         logged = self.logs.of(t)

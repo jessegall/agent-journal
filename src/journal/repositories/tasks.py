@@ -8,3 +8,13 @@ class Tasks(ScopedRepository[Task]):
 
     def in_state(self, state: TaskState) -> list[Task]:
         return self.where(environment_id=self.scope.id, state=state)
+
+    def unfinished_count(self) -> int:
+        """How many tasks are not yet done or cancelled, counted by the database."""
+        return self.connection.one("SELECT count(*) AS n FROM tasks WHERE environment_id = ? AND state NOT IN (?, ?)", (self.scope.id, TaskState.DONE.value, TaskState.CANCELLED.value))["n"]
+
+    def shown(self) -> list[Task]:
+        """What a list of tasks shows: every one not yet finished, however old, and the newest page of the finished ones, by number."""
+        finished = (TaskState.DONE.value, TaskState.CANCELLED.value)
+        unfinished = self.selected("environment_id = ? AND state NOT IN (?, ?) ORDER BY id", (self.scope.id, *finished))
+        return sorted([*unfinished, *self.newest("environment_id = ? AND state IN (?, ?)", (self.scope.id, *finished))], key=lambda t: t.id)

@@ -596,16 +596,17 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
     slow = app.container.get(SlowRequests)
     monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
     with app.container.get(Scope).of(MAIN):
-        slow.measured("GET", "/api/:type", 80)
+        slow.measured("GET", "/api/plan", 80)
         assert [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")] == [], "nothing is judged in the first minute after a start"
         slow.started -= 120
-        slow.measured("GET", "/api/:type", 30)
-        slow.measured("GET", "/api/:type", 80)
-        slow.measured("GET", "/api/:type", 95)
+        slow.measured("GET", "/api/plan", 30)
+        slow.measured("GET", "/api/plan", 80)
+        slow.measured("GET", "/api/plan", 95)
+        slow.measured("GET", "/api/message/12/read", 70)
         app.runtime().deferred.drain()
         marks = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
-    assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /api/:type", 2, 95)], "one mark per route, its worst time and how often, a request inside its budget not counted"
-    assert sum("over its budget of 50 ms" in t for t in typed) == 1, "the agent is told the first time only"
+    assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /api/plan", 2, 95), ("Slow request: GET /api/message/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
+    assert sum("over its budget of 50 ms" in t for t in typed) == 2, "the agent is told the first time of each"
 
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
@@ -4653,9 +4654,8 @@ def test_a_cancelled_task_is_finished_and_never_counted_open(app):
         connection.execute("UPDATE tasks SET finished_at = NULL WHERE id = 1")
         FinishCancelledTasks().up(connection)
         assert app.container.get(Tasks).find(1).finished_at is not None, "and one cancelled before that is finished by the migration"
-    from journal.http.v3.v3_controller import V3Controller
     with app.container.get(Scope).of(1):
-        assert app.container.get(V3Controller).open_count("todo") == 1, "only the task still open is counted"
+        assert app.container.get(Tasks).unfinished_count() == 1, "only the task still open is counted"
 
 
 def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app):

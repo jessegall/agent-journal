@@ -34,6 +34,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.repositories.questions import Questions
 from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 from journal.repositories.environments import Environments
@@ -52,10 +53,10 @@ SILENT_AFTER = 900.0
 class V3Controller:
     """The API the viewer speaks, answered from the journal's rows."""
 
-    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events, scope: Scope, edits: Edits) -> None:
+    def __init__(self, config: Config, shapers: Shapers, manifest: V3Manifest, settings: V3Settings, actions: V3Actions, environments: Environments, entries: Entries, agents: Agents, tasks: Tasks, machine: Machine, chosen: ChosenVoice, messages: Messages, files: ProjectFiles, current: CurrentWork, supervisor: SupervisorLink, registry: Registry, skill_files: SkillFiles, providers: Providers, events: V3Events, scope: Scope, edits: Edits, questions: Questions) -> None:
         self.config, self.shapers, self.manifest, self.settings, self.actions = config, shapers, manifest, settings, actions
         self.messages, self.files, self.current, self.supervisor, self.registry, self.skill_files, self.providers = messages, files, current, supervisor, registry, skill_files, providers
-        self.events = events
+        self.events, self.questions = events, questions
         self.edits = edits
         self.environments, self.entries, self.agents, self.tasks, self.machine, self.chosen, self.scope = environments, entries, agents, tasks, machine, chosen, scope
 
@@ -90,12 +91,9 @@ class V3Controller:
             agent = {"status": d["status"], "provider": live.provider or "claude", "model": d["model"], "context": live.context_mark, "uses": 0, "started": d["started"], "at": d["at"], "tool": d["tool"], "file": "", "asking": bool(d["asking"]), "background_run": "", "says": d["last_message"], "doing": d["doing"]}
             held = self.current.of(live)
             work = {"n": held.task.id, "title": held.task.title, "todo": held.task.id, "parked": False, "awaiting": held.awaiting} if held else None
-        counts = {"questions": self.open_count("question"), "messages": len(self.messages.unread()), "suggestions": 0, "todos": self.open_count("todo"), "prompts": 0, "routed": 0}
+        counts = {"questions": len(self.questions.open()), "messages": len(self.messages.unread()), "suggestions": 0, "todos": self.tasks.unfinished_count(), "prompts": 0, "routed": 0}
         silent = agent["status"] in ("busy", "working") and time.time() - agent["at"] > SILENT_AFTER
         return {"name": environment.name, "agent": agent, "work": work, "kind": "main", "helpers": [], "tickets": [], "plans": [], "last": None, "counts": counts, "silent": silent}
-
-    def open_count(self, type_: str) -> int:
-        return len([r for r in self.shapers.named(type_).rows() if r.is_open])
 
     def get_agents(self, request: Request) -> Response:
         online = []
