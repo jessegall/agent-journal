@@ -6199,6 +6199,11 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     tick()
     tick()
     named = [line for line in typed if "still in the background" in line]
-    assert len(named) == 1 and f"output {running.id}, python3 -m pytest -q, running 6 min" in named[0], "past five minutes the agent is told to look at it, once until five more pass"
+    assert len(named) == 1 and f"output {running.id}, python3 -m pytest -q, still in the background" in named[0], "past five minutes the agent is told to look at it, once until five more pass"
+    (folder / "pid").write_text(str(os.getpid()))
+    assert [o.id for o in outputs.in_background("s1")] == [running.id], "a chain whose runner lives is still in the background"
+    (folder / "pid").write_text("99999999")
+    assert outputs.in_background("s1") == [], "a chain whose runner was killed is no longer in the background, though it wrote no end"
+    (folder / "pid").unlink()
     (folder / "done").write_text("0")
     assert outputs.in_background("s1") == [], "a command that ended is no longer in the background"

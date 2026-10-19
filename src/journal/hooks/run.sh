@@ -72,6 +72,7 @@ if [ "$1" = "--chain" ]; then
     __journal_part=""
     __journal_lastr=0
     __journal_began=$SECONDS
+    echo $$ > "$__journal_folder/pid"
     trap '__journal_finish $?' EXIT
     while read -r __journal_kind; do
         __journal_part=$(cat "$__journal_folder/$__journal_i.part")
