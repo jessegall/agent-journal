@@ -1,7 +1,5 @@
-import {ago} from "../format/time.js";
 import {providerName} from "./agents.js";
 
-export const DIAGNOSTICS_LINE = "Slow pages and errors, saved on your computer for the developer";
 
 export const COUNTED = ["percent", "uses", "minutes"];
 export const EVENTS = ["idle", "worked", "start"];
@@ -248,14 +246,10 @@ function block(f, settings, extras) {
     };
 }
 
+// A feature of the manifest as the catalogue reads one: its options as settings, a model's choice drawn as any choice, in the group it leads.
 function normalised(f) {
-    const settings = (f.settings || []).filter((s) => s.kind !== "map" && !s.hidden);
-    return {
-        ...f,
-        settings: f.settings || [],
-        behaviours: f.behaviours || {},
-        parts: Object.keys(f.behaviours || {}).length + settings.length,
-    };
+    const settings = f.options.map((o) => ({...o, kind: o.kind === "model" ? "choice" : o.kind}));
+    return {...f, label: f.title, hint: f.help, settings, behaviours: {}, nudges: {}, group: f.name, parts: settings.length};
 }
 
 function group(g, members, settings, loose) {
@@ -289,122 +283,11 @@ function group(g, members, settings, loose) {
     };
 }
 
-const times = (count) => `${count} ${count === 1 ? "time" : "times"}`;
-
-// How often a journal nudge has spoken, from the nudges the record still keeps.
-function spokenWords(spoken) {
-    return spoken ? `Said ${times(spoken.day)} in the last day, last ${ago(spoken.last)}` : "Not said yet";
-}
-
-// How often a trigger of yours has matched, from the count the trigger itself keeps.
-function matchedWords(data) {
-    return data.matched ? `Matched ${times(data.matched)}, last ${ago(data.matched_at)}` : "Never matched";
-}
-
-// The switch that governs a trigger of yours: the one for words, or the one for facts about the journal.
-const governing = (trigger) => `triggers.${trigger.data.when === "state" ? "reminding" : "watching"}`;
-
-function reminderRow(f, line, nudge, settings, spoken) {
-    const switchName = `${f.name}.${nudge.behaviour}`;
-    const behaviour = f.behaviours[nudge.behaviour];
-    return row({
-        key: `reminder:${f.name}.${line}`,
-        kind: "switch",
-        label: nudge.guarantee,
-        hint: `Comes with the journal, in ${f.label} \u00b7 ${spokenWords(spoken[`${f.name}.${line}`])}`,
-        value: switchValue(settings, switchName, behaviour.default),
-        shipped: behaviour.default,
-        target: {path: ["features", switchName]},
-    });
-}
-
-function triggerRow(trigger, behaviours, sharing, settings) {
-    const name = governing(trigger);
-    const behaviour = behaviours[name];
-    const value = switchValue(settings, name, behaviour.default);
-    const others = sharing[name] - 1;
-    const shared = others ? ` \u00b7 The same switch governs ${others} other ${others === 1 ? "trigger" : "triggers"} of yours` : "";
-    return row({
-        key: `reminder:trigger:${trigger.n}`,
-        kind: "switch",
-        label: trigger.title,
-        hint: `Yours, written in Triggers \u00b7 ${matchedWords(trigger.data)}${value ? "" : ` \u00b7 Off because "${behaviour.title}" is off`}${shared}`,
-        value,
-        shipped: behaviour.default,
-        target: {path: ["features", name]},
-    });
-}
-
-// Every line the agent hears in one list: the journal's own nudges, then the triggers you wrote. Each shows the switch that governs it, so it is the same switch as the one in its own group.
-function reminderRows(features, settings, context) {
-    const spoken = context.spoken || {};
-    const ours = features.flatMap((f) =>
-        Object.entries(f.nudges || {})
-            .filter(([, nudge]) => nudge.guarantee && f.behaviours[nudge.behaviour])
-            .map(([line, nudge]) => reminderRow(f, line, nudge, settings, spoken))
-    );
-    const behaviours = Object.fromEntries(
-        features.filter((f) => f.name === "triggers").flatMap((f) => Object.entries(f.behaviours).map(([key, b]) => [`triggers.${key}`, b]))
-    );
-    const yours = (context.triggers || []).filter((t) => !t.completed && !t.deleted && !t.data.system && behaviours[governing(t)]);
-    const sharing = yours.reduce((found, t) => ({...found, [governing(t)]: (found[governing(t)] || 0) + 1}), {});
-    return [...ours, ...yours.map((t) => triggerRow(t, behaviours, sharing, settings))];
-}
-
-function looseRows(settings, context) {
+function looseRows(settings) {
     const viewer = settings.viewer || {};
-    const permissions = settings.permission_prompts || {};
-    const identity = context.identity || {};
-    const extension = context.extension || {};
-    const keep = settings.keep || {};
-    const keepRow = (type, label, hint, shipped) =>
-        row({
-            key: `keep:${type}`,
-            kind: "number",
-            label,
-            hint,
-            unit: "days",
-            value: keep[type] ?? shipped,
-            shipped,
-            target: {path: ["keep", type], sparse: true, shipped},
-        });
     return {
         rows: {
-            reminders: reminderRows(context.features || [], settings, context),
-            models: (context.models || []).map((m) =>
-                row({
-                    key: `models:${m.provider}`,
-                    kind: "fixed",
-                    label: providerName(m.provider),
-                    hint: "The model it starts agents on unless one is named",
-                    value: m.label,
-                })
-            ),
             project: [
-                row({
-                    key: "color",
-                    kind: "color",
-                    label: "Project color",
-                    hint: "The color band that tells this project apart from other open journals",
-                    words: "colour identity",
-                    value: identity.color,
-                    shipped: null,
-                    changed: Boolean(identity.custom_color),
-                    target: {action: "color"},
-                }),
-                row({
-                    key: "extension",
-                    kind: "buttons",
-                    label: "Chrome extension",
-                    hint: "Puts the chat on any web page and lets the agent see and use that tab",
-                    words: "browser download",
-                    buttons: extension.available
-                        ? [
-                              ...(extension.store ? [{key: "store", label: "Add to Chrome", href: extension.store}] : []),
-                              {key: "zip", label: "Download", href: context.extensionZip},
-                          ]
-                        : [],
-                }),
                 row({
                     key: "away",
                     kind: "switch",
@@ -423,66 +306,17 @@ function looseRows(settings, context) {
                     shipped: true,
                     target: {path: ["viewer", "flash"]},
                 }),
-                row({
-                    key: "tour",
-                    kind: "switch",
-                    label: "Show the Home tour",
-                    hint: "A few short steps that show you around Home",
-                    value: !viewer.tour_seen,
-                    changed: false,
-                    target: {path: ["viewer", "tour_seen"], invert: true},
-                }),
             ],
         },
-        extras: {
-            permission_prompts: permissions.possible
-                ? [
-                      row({
-                          key: "permission_prompts:skip",
-                          kind: "switch",
-                          label: "Allow all actions without asking",
-                          hint: "Turning it on restarts the agent in the same conversation",
-                          value: Boolean(permissions.skip),
-                          shipped: false,
-                          target: {action: "relaunch"},
-                      }),
-                  ]
-                : [],
-            auto_archive: [
-                keepRow("report", "Keep reports for", "0 never archives them", 14),
-                keepRow("todo", "Keep closed to-dos for", "", 7),
-            ],
-            dev_faults: [
-                row({
-                    key: "diagnostics",
-                    kind: "buttons",
-                    label: "Developer error log",
-                    hint: DIAGNOSTICS_LINE,
-                    words: "diagnostics log errors slow",
-                    buttons: [{key: "diagnostics", label: "Show the log"}],
-                }),
-            ],
-        },
-        danger: {
-            stop: !context.stoppable
-                ? []
-                : [
-                      row({
-                          key: "stop",
-                          kind: "danger",
-                          label: "Stop the journal",
-                          hint: "Closes the viewer and every plugin. Nothing is deleted.",
-                          words: "shut down quit viewer",
-                          buttons: [{key: "stop", label: context.stopping ? "Stopping" : "Stop"}],
-                      }),
-                  ],
-        },
+        extras: {},
+        danger: {},
     };
 }
 
-export function catalog(spec, settings, context) {
-    const features = Object.values(spec.features || {}).map(normalised);
-    const loose = looseRows(settings || {}, {...context, models: spec.models, features, spoken: spec.spoken});
+// The settings page's sections from the manifest's features and groups and the saved settings.
+export function catalog(spec, settings) {
+    const features = (spec.features || []).map(normalised);
+    const loose = looseRows(settings || {});
     const groups = (spec.groups || []).map((g) =>
         group(
             g,

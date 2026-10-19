@@ -2,7 +2,6 @@
 import Icon from "../kit/Icon.vue";
 import PageJump from "./PageJump.vue";
 import {drawnWide, switching} from "../platform/fullscreen.js";
-import JournalTabs from "./JournalTabs.vue";
 import {canGoBack, canGoForward} from "../platform/history.js";
 
 const back = () => history.back();
@@ -25,9 +24,6 @@ const forward = () => history.forward();
             <Icon name="arrow" :size="13" />
         </button>
         <PageJump />
-        <template v-if="drawnWide">
-            <JournalTabs />
-        </template>
     </nav>
 </template>
 

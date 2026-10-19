@@ -32,7 +32,7 @@ const thread = computed(() =>
         .rows("comments")
         .filter((c) => (c.on || []).includes(on.value))
         .sort((a, b) => createdAt(a) - createdAt(b))
-        .map((c) => ({...c, ...quoted(c.text)}))
+        .map((c) => ({...c, ...quoted(c.data?.visitor ? c.data.detail : c.text)}))
 );
 const WHO = {user: "You", agent: "Agent"};
 const who = (c) => c.data?.visitor || WHO[c.author] || "Someone";

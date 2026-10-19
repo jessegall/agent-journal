@@ -1,109 +1,48 @@
 <script setup>
 import SwitchCase from "../kit/SwitchCase.vue";
-import {sharedData, sharedFileUrl, sharedRevision} from "../api/shared.js";
-import {computed, provide, reactive, ref, watch} from "vue";
+import {sharedData} from "../api/shared.js";
+import {computed, reactive, ref, watch} from "vue";
 import {refParts} from "../domain/records.js";
+import {bodyOf, createdAt, sectionsOf, titleOf} from "../domain/row.js";
 import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {counted} from "../format/number.js";
-import {narrow} from "../platform/view.js";
-import CollectionPage from "../resource/CollectionPage.vue";
 import DocumentPage from "../resource/DocumentPage.vue";
 import PlanPage from "../resource/PlanPage.vue";
 import CommentBar from "./CommentBar.vue";
 import ShareComments from "./ShareComments.vue";
 import ShareStrip from "./ShareStrip.vue";
-import ShareView from "./ShareView.vue";
-import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
-import Revisions from "../resource/Revisions.vue";
 import Lightbox from "../kit/Lightbox.vue";
 import Notice from "../kit/Notice.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import {peek, peekThere, route} from "../route.js";
+import {route} from "../route.js";
 import {store} from "../state/store.js";
 import Skeleton from "../kit/Skeleton.vue";
 
-const KINDS = {
-    doc: {title: "Document", icon: "file", view: "document", labels: {}},
-    collection: {title: "Collection", icon: "folder", view: "small", labels: {abstract: "What belongs in it"}},
-    report: {title: "Report", icon: "report", view: "document", labels: {}},
-    plan: {title: "Plan", icon: "flag", view: "document", labels: {}},
-    todo: {title: "To-do", icon: "ring", view: "small", labels: {}},
-    dump: {title: "Dump", icon: "inbox", view: "document", labels: {}},
-};
-const kindOf = (type, given = {}) => ({
-    title: type.charAt(0).toUpperCase() + type.slice(1),
-    icon: "docs",
-    view: "document",
-    labels: {},
-    ...KINDS[type],
-    ...given,
-    fields: {},
-    shown_fields: [],
-    command_names: {},
-    takes_comments: false,
-    choices: {},
-});
 const LOOKS = {
-    doc: {noun: "document", icon: "docs"},
-    report: {noun: "report", icon: "reports"},
-    collection: {noun: "collection", icon: "folder"},
-    plan: {noun: "plan", icon: "plan"},
+    docs: {noun: "document", icon: "docs"},
+    reports: {noun: "report", icon: "reports"},
+    plans: {noun: "plan", icon: "plan"},
 };
+const SHOWN = ["docs", "reports", "plans", "tasks"];
 const WORDS_PER_MINUTE = 220;
 const reading = (r) => {
-    const words = [r.abstract, r.brief, ...(r.sections || []).map((section) => section.body)].join(" ").split(/\s+/).filter(Boolean).length;
-    const sections = (r.sections || []).length;
+    const words = [r.abstract, bodyOf(r)].join(" ").split(/\s+/).filter(Boolean).length;
+    const sections = sectionsOf(r.body).length;
     return [`${Math.max(1, Math.round(words / WORDS_PER_MINUTE))} min read`, ...(sections ? [counted(sections, "section")] : [])];
 };
-const FACTS = {
-    plan: (r) => [counted((r.data.phases || []).length, "phase"), counted(r.refs.length, "to-do")],
-    collection: (r) => [counted(r.refs.length, "item")],
-};
+const FACTS = {plans: (r) => [counted((r.phases || []).length, "phase"), counted((r.task_ids || []).length, "task")]};
 const REFRESH_MS = 20000;
-const VIEW_REFRESH_MS = 5000;
-const SETTLED_AFTER = 2;
 const data = ref(null);
-const loads = ref(0);
 const failed = ref(false);
 const reconnecting = ref(false);
 const drafts = reactive({});
 const errors = reactive({});
 
-provide("fileUrl", sharedFileUrl);
-provide("revision", sharedRevision);
-
-function shareRow(reference, given) {
-    const {env, type, n} = refParts(reference);
-    const files = Object.fromEntries((given.files || []).map((name) => [name, ""]));
-    return {
-        ...given,
-        type,
-        n,
-        env,
-        ref: reference,
-        refs: given.members || [],
-        seen: [],
-        data: {...given.data, files, pictures: given.pictures || {}},
-        completed: given.completed || 0,
-        deleted: 0,
-        outcome: "",
-    };
-}
-
-function stock(rows, types = {}) {
-    const names = [...new Set([...Object.keys(KINDS), ...Object.keys(rows).map((ref) => refParts(ref).type)])];
-    store.spec = {priority: names, types: Object.fromEntries(names.map((name) => [name, kindOf(name, types[name])]))};
-    const grouped = {};
-    for (const [ref, given] of Object.entries(rows)) (grouped[refParts(ref).type] ||= []).push(shareRow(ref, given));
-    store.rows = grouped;
-}
-
 function take(got) {
-    stock(got.rows || {}, got.types || {});
+    store.rows = Object.fromEntries(SHOWN.map((table) => [table, got[table] || []]));
     data.value = got;
-    loads.value += 1;
     failed.value = false;
     reconnecting.value = false;
 }
@@ -118,44 +57,31 @@ function ask() {
     });
 }
 
-usePoll(
-    "shared",
-    ask,
-    () => (data.value?.view ? VIEW_REFRESH_MS : REFRESH_MS),
-    take,
-    () => !failed.value
-);
+usePoll("shared", ask, REFRESH_MS, take, () => !failed.value);
 
+const rowOf = (ref) => {
+    const {table, id} = refParts(ref || ":");
+    return (store.rows[table] || []).find((r) => r.id === id) || null;
+};
 const currentRef = computed(() => {
     const open = route.value.open;
-    const asked = open ? `${open.env ? `${open.env}/` : ""}${open.type}:${open.n}` : "";
-    return data.value?.rows[asked] ? asked : data.value?.share.target;
+    const asked = open ? `${open.table}:${open.id}` : "";
+    return rowOf(asked) ? asked : data.value?.share.target;
 });
-const rowOf = (ref) => {
-    const {env, type, n} = refParts(ref || ":");
-    return (store.rows[type] || []).find((r) => r.n === n && r.env === env) || null;
-};
 const currentRow = computed(() => rowOf(currentRef.value));
 const target = computed(() => rowOf(data.value?.share.target));
-const kind = computed(() => target.value?.type || "");
+const kind = computed(() => target.value?.table || "");
 const look = computed(() => LOOKS[kind.value] || {noun: kind.value, icon: "docs"});
 const facts = computed(() => (target.value ? (FACTS[kind.value] || reading)(target.value) : []));
-const missing = computed(() => {
-    const row = currentRow.value;
-    if (row?.type !== "plan" || loads.value >= SETTLED_AFTER) return false;
-    const held = new Set((store.rows.todo || []).filter((r) => r.env === row.env).map((r) => r.n));
-    return row.data.phases.some((phase) => phase.todos.some((n) => !held.has(n)));
-});
-const sideline = computed(() => (timeline.value.length > 0 || missing.value) && !narrow.value);
 const sent = ref([]);
+const said = (m) => ({id: m.id, on: m.data.row, name: m.data.visitor, text: m.data.detail, created: createdAt(m)});
 const thread = computed(() => {
-    const known = data.value?.comments || [];
-    return [...known, ...sent.value.filter((c) => !known.some((k) => k.n === c.n))]
-        .filter((c) => c.about === currentRef.value)
+    const known = (data.value?.comments || []).map(said);
+    return [...known, ...sent.value.filter((c) => !known.some((k) => k.text === c.text && k.name === c.name))]
+        .filter((c) => c.on === currentRef.value)
         .sort((a, b) => a.created - b.created);
 });
 const read = ref(0);
-const timelineOpen = ref(false);
 
 function follow(e) {
     const box = e.target;
@@ -166,14 +92,13 @@ function follow(e) {
 function showThread() {
     document.getElementById("share-comments")?.scrollIntoView({behavior: "smooth", block: "start"});
 }
-const timeline = computed(() => data.value?.timelines?.[currentRef.value] || []);
 const away = computed(() => currentRef.value !== data.value?.share.target);
 const ends = computed(() => {
-    const at = data.value?.share.expires;
-    return at ? new Date(at * 1000).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : "";
+    const at = data.value?.share.expires_at;
+    return at ? new Date(at).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : "";
 });
 
-watch(currentRow, (item) => item && (document.title = item.title));
+watch(currentRow, (item) => item && (document.title = titleOf(item)));
 watch(currentRef, () => (read.value = 0));
 </script>
 
@@ -186,9 +111,6 @@ watch(currentRef, () => (read.value = 0));
                 <p>It may have ended, or the address is not complete.</p>
             </main>
         </template>
-        <template v-else-if="data?.view">
-            <ShareView :view="data.view" :ends="ends" />
-        </template>
         <template v-else-if="currentRow">
             <template v-if="reconnecting">
                 <Notice role="status">Reconnecting…</Notice>
@@ -197,47 +119,22 @@ watch(currentRef, () => (read.value = 0));
                 :icon="look.icon"
                 :noun="look.noun"
                 :facts="facts"
-                :back="away ? target.title : ''"
+                :back="away ? titleOf(target) : ''"
                 :comments="data.share.comments"
                 :ends="ends"
-                :read="['doc', 'report'].includes(kind) ? read : -1"
+                :read="['docs', 'reports'].includes(kind) ? read : -1"
             />
-            <div :class="['view', {aside: sideline}]">
+            <div class="view">
                 <div class="reading" @scroll.capture="follow">
                     <DocumentPage :key="currentRef" :resource="currentRow" read-only>
-                        <SwitchCase :value="currentRow.type">
-                            <template #collection>
-                                <CollectionPage :resource="currentRow" read-only />
-                            </template>
-                            <template #plan>
-                                <PlanPage :resource="currentRow" read-only pin-progress :holding="missing" />
-                            </template>
-                            <template #doc>
-                                <Revisions :resource="currentRow" read-only />
+                        <SwitchCase :value="currentRow.table">
+                            <template #plans>
+                                <PlanPage :resource="currentRow" read-only pin-progress />
                             </template>
                             <template #default>
                                 <ResourceBody :resource="currentRow" :comments="false" :links="false" read-only />
                             </template>
                         </SwitchCase>
-                        <template v-if="timeline.length && narrow">
-                            <div class="body">
-                                <section class="inline-timeline">
-                                    <button
-                                        type="button"
-                                        class="timeline-fold"
-                                        :aria-expanded="timelineOpen"
-                                        @click="timelineOpen = !timelineOpen"
-                                    >
-                                        <span class="timeline-heading">Timeline</span>
-                                        <span class="timeline-count">{{ counted(timeline.length, "event") }}</span>
-                                        <span class="timeline-toggle">{{ timelineOpen ? "Hide" : "Show" }}</span>
-                                    </button>
-                                    <template v-if="timelineOpen">
-                                        <PlanTimeline :items="timeline" @open="(n) => peekThere(currentRow?.env || '', 'todo', n)" />
-                                    </template>
-                                </section>
-                            </div>
-                        </template>
                         <template v-if="data.share.comments">
                             <ShareComments :comments="thread" />
                         </template>
@@ -254,23 +151,12 @@ watch(currentRef, () => (read.value = 0));
                             v-model:sent="sent"
                             v-model:draft="drafts[currentRef]"
                             v-model:error="errors[currentRef]"
-                            :about="currentRef"
+                            :on="currentRef"
                             :count="thread.length"
                             @show="showThread"
                         />
                     </template>
                 </div>
-                <template v-if="sideline">
-                    <aside class="share-timeline">
-                        <h2 class="timeline-heading">Timeline</h2>
-                        <template v-if="missing">
-                            <Skeleton shape="text" :count="3" label="Loading the timeline" />
-                        </template>
-                        <template v-else>
-                            <PlanTimeline :items="timeline" @open="(n) => peekThere(currentRow?.env || '', 'todo', n)" />
-                        </template>
-                    </aside>
-                </template>
             </div>
         </template>
         <template v-else>
