@@ -477,7 +477,7 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         tasks = manifest["features"]["tasks"]
         assert [s["name"] for s in tasks["settings"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
         assert all(f in manifest["features"] for f in ("messages", "shell", "voices")) and "kanban" not in manifest["features"], "version 3's leftovers are gone"
-        assert {g["key"] for g in manifest["groups"]} == set(manifest["features"]), "one group per feature"
+        assert {g["key"] for g in manifest["groups"]} == {*manifest["features"], "project"}, "one group per feature, and the System tab's own"
         status, tree = call(server, "POST", "/api/settings", {"tasks": {"log_after": 60}})
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
         tree = call(server, "POST", "/api/settings", {"tasks": {}})[1]
@@ -790,3 +790,87 @@ def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_r
             assert [r.title for r in app.container.get(Reports).all()] == ["The version 3 journal brought across"], "what came across is said in a report"
     finally:
         server.stop()
+@pytest.fixture
+def sharing(journal_root: Path):
+    """The server and the share server beside it, as a running journal has them."""
+    app = App(Config(journal_root, port=0))
+    runtime = app.runtime()
+    runtime.boot()
+    server = app.server()
+    server.start()
+    runtime.share_server.start()
+    yield server, runtime.share_server
+    runtime.share_server.stop()
+    server.stop()
+
+
+def visit(share_server, path: str, password: str = ""):
+    """What a visitor's browser gets from the share server: the status, the body and the headers, a redirect not followed."""
+    import base64
+    from http.client import HTTPConnection
+    connection = HTTPConnection("127.0.0.1", share_server.port, timeout=5)
+    connection.request("GET", path, headers={"Authorization": "Basic " + base64.b64encode(f"visitor:{password}".encode()).decode()} if password else {})
+    reply = connection.getresponse()
+    answer = reply.status, reply.read(), dict(reply.getheaders())
+    connection.close()
+    return answer
+
+
+def test_the_settings_page_has_its_system_and_sharing_tabs(server):
+    manifest = call(server, "GET", "/api/manifest")[1]
+    tabs = {group["key"]: group["tab"] for group in manifest["groups"]}
+    assert tabs["project"] == "system" and tabs["sharing"] == "sharing", "the System tab has the project's group again, and sharing has a tab of its own"
+    assert [s["name"] for s in manifest["features"]["sharing"]["settings"]] == ["host"], "the tunler server is the sharing feature's own option"
+    assert call(server, "GET", "/api/settings")[1]["features"]["sharing"] is True
+    saved = call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})[1]
+    assert saved["sharing"]["host"] == "tunler.example"
+
+
+def test_a_share_link_opens_its_document_through_the_share_server_and_nothing_else(sharing):
+    server, share_server = sharing
+    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/api/doc", {"title": "Launch notes", "brief": "## Why\nBecause."})
+    assert call(server, "POST", "/api/share/opens", {"ref": "doc:1"})[1] == ["Launch notes (doc 1)"]
+    assert call(server, "POST", "/api/share", {"title": "todo:1"})[0] == 409, "only a document, a report or a plan is shared"
+    status, made = call(server, "POST", "/api/share", {"title": "doc:1", "expires": "7d", "comments": False})
+    assert status == 201 and made["data"]["approved"] and made["data"]["target"] == "doc:1"
+    token = made["data"]["token"]
+    assert re.fullmatch(rf"https://[a-z0-9-]+-[0-9a-f]{{24}}\.tunler\.example/s/{token}", made["abstract"]), "the link is the journal's own address on the tunler server"
+    assert made["brief"].splitlines()[0] == "Launch notes (doc 1)"
+    assert [s["data"]["target"] for s in call(server, "GET", "/api/share")[1]["rows"]] == ["doc:1"]
+    assert visit(share_server, "/health")[1] == b"journal-share-server"
+    assert visit(share_server, f"/s/{token}")[2]["Location"] == f"/s/{token}/"
+    status, page, headers = visit(share_server, f"/s/{token}/")
+    assert status == 200 and b'id="app"' in page and "script-src 'self'" in headers["Content-Security-Policy"]
+    status, data, _ = visit(share_server, f"/s/{token}/data.json")
+    shown = json.loads(data)
+    assert status == 200 and shown["share"]["target"] == "doc:1" and shown["rows"]["doc:1"]["title"] == "Launch notes"
+    assert call(server, "GET", "/api/share")[1]["rows"][0]["data"]["views"] == 1, "opening the page counts a view; its data does not"
+    assert visit(share_server, "/api/manifest")[0] == 404 and visit(share_server, "/s/not-a-token/")[0] == 404, "the share server answers links and nothing else of the journal"
+    assert len(call(server, "GET", "/api/services")[1]) == 1, "the tunnel is listed while a link is open"
+    call(server, "POST", "/api/share/1/stop")
+    assert visit(share_server, f"/s/{token}/data.json")[0] == 410, "a stopped link opens nothing"
+    assert call(server, "GET", "/api/services")[1] == [], "with no link open, nothing is shared"
+
+
+def test_a_locked_link_opens_only_with_its_password(sharing):
+    server, share_server = sharing
+    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/api/doc", {"title": "Private", "brief": "text"})
+    token = call(server, "POST", "/api/share", {"title": "doc:1", "password": "open sesame"})[1]["data"]["token"]
+    assert call(server, "GET", "/api/share")[1]["rows"][0]["data"]["password"] == "set", "the viewer is told a link is locked, never its password"
+    status, _, headers = visit(share_server, f"/s/{token}/data.json")
+    assert status == 401 and headers["WWW-Authenticate"].startswith("Basic")
+    assert visit(share_server, f"/s/{token}/data.json", "wrong")[0] == 401
+    assert visit(share_server, f"/s/{token}/data.json", "open sesame")[0] == 200
+
+
+def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("PATH", str(tmp_path))
+    standing = call(server, "POST", "/api/share/tunnel")[1]
+    assert standing["installed"] is False and standing["problems"] == ["tunler is not installed on this machine, so share links cannot reach this journal."]
+    assert standing["server"] == "tunler.jessegall.nl", "with no server set, the one the journal installs from is offered"
+    assert call(server, "POST", "/api/share/domains")[1] == []
+    assert call(server, "POST", "/api/share/share_view", {"view": "agents"})[0] == 409
+    assert call(server, "POST", "/api/share/_tunnel")[0] == 409, "only the commands are reachable, nothing the commands keep"

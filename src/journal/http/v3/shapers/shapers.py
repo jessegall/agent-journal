@@ -11,6 +11,7 @@ from journal.http.v3.shapers.questions_shaper import QuestionsShaper
 from journal.http.v3.shapers.reactions_shaper import ReactionsShaper
 from journal.http.v3.shapers.rules_shaper import RulesShaper
 from journal.http.v3.shapers.secrets_shaper import SecretsShaper
+from journal.http.v3.shapers.shares_shaper import SharesShaper
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import seconds
 from journal.http.v3.shapers.simple_shaper import SimpleShaper
@@ -30,7 +31,7 @@ from journal.repositories.sequences import Sequences
 from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 
-EMPTY = ("notification", "suggestion", "tool", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "share", "phone")
+EMPTY = ("notification", "suggestion", "tool", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "phone")
 
 
 class Shapers:
@@ -40,7 +41,7 @@ class Shapers:
         get = container.get
         own = [
             get(MessagesShaper), get(CommentsShaper), get(NoticesShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
-            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper), get(SecretsShaper), get(PluginsShaper),
+            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper), get(SecretsShaper), get(SharesShaper), get(PluginsShaper),
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports).in_, get(Reports).every_linked, "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
             WritingShaper(get(Docs).all, get(Docs).every_linked, "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),

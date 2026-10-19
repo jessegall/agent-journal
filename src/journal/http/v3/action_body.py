@@ -27,12 +27,20 @@ class ActionBody:
     programs: tuple[str, ...] = ()
     proposed: tuple[str, ...] = ()
     helpers: bool = False
+    expires: str = "7d"
+    password: str = ""
+    endpoint: str = ""
+    username: str = ""
+    master_password: str = ""
+    host: str = ""
+    domain: str = ""
+    comments: bool = False
     sent: frozenset[str] = frozenset()
     """The names the viewer sent, so an update changes only those and keeps the rest."""
 
     @classmethod
     def from_payload(cls, payload: dict) -> "ActionBody":
-        texts = {name: str(payload[name]) for name in ("title", "brief", "text", "body", "about", "idempotency", "key", "value", "does", "how", "face", "ref", "kind", "field", "agent") if payload.get(name) is not None}
+        texts = {name: str(payload[name]) for name in ("title", "brief", "text", "body", "about", "idempotency", "key", "value", "does", "how", "face", "ref", "kind", "field", "agent", "expires", "password", "endpoint", "username", "master_password", "host", "domain") if payload.get(name) is not None}
         lists = {name: tuple(payload[name]) for name in ("secret_fields", "programs", "proposed") if payload.get(name) is not None}
         words = payload.get("words") or ()
         return cls(**texts, **lists,
@@ -40,6 +48,7 @@ class ActionBody:
                    steps=tuple(title for title in (cls.titled(step) for step in payload.get("steps") or ()) if title),
                    words=tuple(w.strip() for w in (words.split(",") if isinstance(words, str) else words) if w.strip()),
                    helpers=bool(payload.get("helpers")),
+                   comments=bool(payload.get("comments")),
                    sent=frozenset(payload))
 
     @staticmethod
