@@ -9,9 +9,9 @@ from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.support.refused import Refused
 from journal.features.tasks.states.idle import Idle
-from journal.features.tasks.in_hand import InHand
-from journal.features.tasks.task_briefing import TaskBriefing
-from journal.features.tasks.waits import Waits
+from journal.features.tasks.support.in_hand import InHand
+from journal.support.task_briefing import TaskBriefing
+from journal.support.waits import Waits
 from journal.features.tasks.states.working import Working
 from journal.models.link import Link
 from journal.support.ref import Ref

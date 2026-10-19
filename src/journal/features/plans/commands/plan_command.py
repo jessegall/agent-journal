@@ -7,7 +7,7 @@ from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.features.plans.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
-from journal.features.tasks.waits import Waits
+from journal.support.waits import Waits
 from journal.features.workers.subagents import Subagents
 from journal.support.actor_kind import ActorKind
 from journal.models.link import Link
