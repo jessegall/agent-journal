@@ -5,9 +5,9 @@ test("a pin goes the moment it is closed, and the server is told behind it; one 
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {api} = await import("../src/api/client.js");
     let answer;
-    api.closeNotice = vi.fn(() => new Promise((resolve, reject) => (answer = {resolve, reject})));
+    api.act = vi.fn(() => new Promise((resolve, reject) => (answer = {resolve, reject})));
     const {default: PinnedNotices} = await import("../src/chat/PinnedNotices.vue");
-    const notices = [{n: 4, title: "A pin", completed: 0, deleted: 0, seen: [], data: {tone: "note"}, created: 1}];
+    const notices = [{table: "notices", id: 4, title: "A pin", link: "", label: "", tone: "note", closed_at: null, created_at: new Date(1000).toISOString()}];
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(PinnedNotices, {notices, withoutToggle: true})});
@@ -19,7 +19,7 @@ test("a pin goes the moment it is closed, and the server is told behind it; one 
     host.querySelector(".chat-notice button").click();
     await nextTick();
     const leaving = [...host.querySelectorAll(".chat-notice")].every((el) => el.className.includes("act-leave"));
-    expect([leaving, api.closeNotice.mock.calls[0][0]]).toEqual([true, 4]);
+    expect([leaving, api.act.mock.calls[0]]).toEqual([true, ["notices", 4, "close"]]);
     answer.reject(new Error("refused"));
     await new Promise((done) => setTimeout(done, 50));
     await nextTick();
