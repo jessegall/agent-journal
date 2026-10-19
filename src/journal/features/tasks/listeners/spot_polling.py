@@ -4,7 +4,7 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 
 SAME = 3
 

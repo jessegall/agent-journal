@@ -7,7 +7,7 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.events.state_entered import StateEntered
 from journal.events.bus import Bus
 from journal.events.agent_listener import AgentListener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.support.refused import Refused

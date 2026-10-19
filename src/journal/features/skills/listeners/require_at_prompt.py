@@ -3,7 +3,7 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.skills.requiring import Requiring
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 
 
 class RequireAtPrompt(AgentListener[PromptSubmitted]):

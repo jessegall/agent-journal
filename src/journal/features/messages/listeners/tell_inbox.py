@@ -4,7 +4,7 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.repositories.messages import Messages
 
 A = TypeVar("A", bound=AgentEvent)

@@ -2,7 +2,7 @@ from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 
 
 class SayTheStepAtStart(AgentListener[SessionStarted]):

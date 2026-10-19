@@ -2,7 +2,7 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 

@@ -6,7 +6,7 @@ from typing import ClassVar, Iterator
 
 from journal.features.shell.reads import Reads
 from journal.features.shell.writes import Writes
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.providers.hook import Hook
 from journal.providers.hook_kind import HookKind
 from journal.http.response import Response

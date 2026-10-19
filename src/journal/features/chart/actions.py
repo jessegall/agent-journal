@@ -19,7 +19,7 @@ from journal.repositories.counts import Counts
 from journal.features.registry import Registry
 from journal.support.said import Said
 from journal.features.sequences.running import Running
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.refused import Refused
 from journal.repositories.sequences import Sequences
 from journal.supervisor_link import SupervisorLink

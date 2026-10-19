@@ -5,7 +5,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
 from journal.features.plugins.plugin_hearing import PluginHearing
 from journal.features.plugins.plugin_words import PluginWords
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.deferred import Deferred
 from journal.features.floor import Floor
 from journal.models.plugin import Plugin

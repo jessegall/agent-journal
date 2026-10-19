@@ -1,6 +1,6 @@
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.features.workers.named_paths import NamedPaths
 from journal.features.workers.subagents import Subagents
 

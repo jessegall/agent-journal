@@ -1,7 +1,7 @@
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.shell.chain import Chain
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 
 
 class RefuseMixedJournal(AgentListener[ToolStarting]):

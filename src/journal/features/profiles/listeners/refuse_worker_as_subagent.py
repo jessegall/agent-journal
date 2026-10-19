@@ -1,6 +1,6 @@
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.features.laws.listeners.judge_dispatch import DISPATCH_TOOLS
 from journal.features.profiles.profile_files import ProfileFiles
 

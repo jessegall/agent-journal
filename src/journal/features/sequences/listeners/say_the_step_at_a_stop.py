@@ -7,7 +7,7 @@ from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
 from journal.features.skills.requiring import Requiring
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.questions import Questions

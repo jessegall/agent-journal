@@ -4,7 +4,7 @@ from journal.events.agent_listener import AgentListener
 from journal.features.chart.context import Context
 from journal.engine.machine import Machine
 from journal.features.chart.walk import ALL, BEFORE, Walk
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 
 
 class WalkAgentEvents(AgentListener[AgentEvent]):

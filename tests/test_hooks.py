@@ -13,7 +13,7 @@ from journal.config import Config
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.deferred import Deferred
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope

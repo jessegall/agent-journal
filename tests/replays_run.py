@@ -346,7 +346,7 @@ def tick(app, quiet: float) -> None:
     """A tick as the clock gives it: dispatched to every listener, and what a state says on it typed into the terminal."""
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
-    from journal.events.decision import Decision
+    from journal.support.decision import Decision
     from journal.supervisor_link import SupervisorLink
     env = app.container.get(Environments).named("main").id
     for answer in app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=0.0, quiet_for=quiet)):

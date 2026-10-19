@@ -6,7 +6,7 @@ from journal.events.agent.session_ended import SessionEnded
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.events.listener import Listener
-from journal.events.decision import Decision
+from journal.support.decision import Decision
 from journal.support.deferred import Deferred
 from journal.providers.hook import Hook
 from journal.hooks.transcript_turns import TranscriptTurns
