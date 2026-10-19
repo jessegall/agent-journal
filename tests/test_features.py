@@ -1276,6 +1276,14 @@ def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_me
     assert messages.unanswered() == [], "a face on a message answers it, whatever its length"
 
 
+def test_a_question_whose_options_say_i_or_you_is_refused(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself, You run the upgrade"], AGENT)
+    assert refused.code == 1 and "never I, we or you" in refused.err and "I'll upgrade it myself; You run the upgrade" in refused.err
+    assert app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT).code == 0
+
+
 def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
@@ -4544,6 +4552,8 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=PluginManifest.from_json(json.loads((echo_folder / "journal-plugin.json").read_text()))), Actor.user(1))
     shown = console.run(["plugin", "upgrade", "echo"], USER).out
     assert "the code:" in shown and '-        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"})' in shown and '+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"})' in shown, "the program's changed body is in the diff"
+    told = console.run(["plugin", "upgrade", "echo"], AGENT).out
+    assert "run.py +1 -1" in told and "echo heard your prompt" not in told, "the agent is told which files change, never the whole diff"
     plugins.save(fetched.with_(name="copied"), Actor.user(1))
     assert "now holds the plugin echo, not copied" in console.run(["plugin", "upgrade", "copied"], USER).err, "an upgrade never turns one plugin into another"
     plugins.delete(plugins.named("copied"), Actor.user(1))

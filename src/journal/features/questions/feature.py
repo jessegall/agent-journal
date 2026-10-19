@@ -31,6 +31,7 @@ class Questions(Feature):
 A choice only the user can make is asked as a question, not written into a reply.
 
 - `journal question ask "<the question>" --options "a, b, c"`; you are then waiting, and stopping is fine.
+- Each option names who acts, the agent or the user, never I, we or you, which the reader cannot place.
 - The answer arrives as a line naming `journal question show <n>`: read it there, whole, with the messages linked to it,
   and act on it. A reply from the user in the chat answers it too.
 - `journal question list` shows what is open. Never offer choices in prose and carry on; ask.

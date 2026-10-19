@@ -36,7 +36,10 @@ class QuestionCommand(Command):
             raise Refused("nobody can answer a question asked from here: put it in the worker's report instead")
         environment = self.scope.id
         options = tuple(o.strip() for o in args.options.split(",") if o.strip())
-        question = self.questions.save(Question(text=args.text, options=options), where.actor)
+        asked = Question(text=args.text, options=options)
+        if asked.unclear_options():
+            raise Refused(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
+        question = self.questions.save(asked, where.actor)
         if where.session:
             agent = self.machine.agent(where.session, environment)
             self.machine.move(where.session, environment, Waiting.leaving(self.machine.states.named(agent.state, agent.data), question_id=question.id))
