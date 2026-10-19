@@ -64,6 +64,11 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
             changed = [e.data["changed"] for e in reversed(entries.of_kind("ran", 20))][-2:]
             assert changed == [[{"added": 2, "removed": 0, "path": "made.txt"}], []], changed
         assert cwd.read_text().strip() == str(tmp_path.resolve())
+        run = subprocess.run([runner, wrapped("sleep 0.7 && sleep 0.7 && sleep 0.7", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        assert "moved to the background" in run.stdout, "parts each under the limit move when the chain as a whole passes it"
+        heredoc = wrapped("cat <<EOF\nheld\nEOF\nsleep 3", cwd).replace(" < /dev/null", "")
+        run = subprocess.run([runner, heredoc], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        assert "moved to the background" in run.stdout, "a command with a heredoc, which Claude Code wraps without < /dev/null, goes through the runner too"
     finally:
         app.runtime().stop()
 

@@ -2,8 +2,8 @@ import re
 
 from journal.features.shell.part import Part
 
-WRAPPED = re.compile(r"^eval '(.*)' < /dev/null$", re.S)
-"""Claude Code runs the agent's command as eval '<command>' < /dev/null between its own set-up and a pwd: the command inside is what the agent wrote."""
+WRAPPED = re.compile(r"^eval '(.*)'(?: < /dev/null)?$", re.S)
+"""Claude Code runs the agent's command as eval '<command>' < /dev/null between its own set-up and a pwd, without the < /dev/null when the command has a heredoc: the command inside is what the agent wrote."""
 QUOTE = "'\"'\"'"
 OPENS = {"for": "done", "while": "done", "until": "done", "select": "done", "repeat": "done", "if": "fi", "case": "esac", "foreach": "end"}
 """A compound command runs from its opening word to its closing one, whatever separators lie between."""

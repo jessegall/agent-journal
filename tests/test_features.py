@@ -1276,6 +1276,8 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     parts = Chain.parts(wrapped)
     assert [p.text for p in parts if p.recorded] == ["cd src", "git commit -m 'a; b'"]
     assert parts[0].text.startswith("source") and parts[-1].text.startswith("pwd -P") and not parts[0].recorded and not parts[-1].recorded
+    heredoc = "source /s 2>/dev/null || true && eval 'cd src && python3 - <<'\"'\"'EOF'\"'\"'\nprint(1)\nEOF' && pwd -P >| /tmp/cwd"
+    assert [p.text for p in Chain.parts(heredoc) if p.recorded] == ["cd src", "python3 - <<'EOF'\nprint(1)\nEOF"], "a command with a heredoc comes without < /dev/null and is still the agent's own"
     assert [Doing.of(c) for c in ("git commit -m x", "python3 -m pytest -q | tail -2", "cd src", "npm run build", "foo --bar")] == ["committing", "testing", "moving", "running a script", "running foo"]
 
 

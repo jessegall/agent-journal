@@ -92,7 +92,7 @@ if [ "$1" = "--chain" ]; then
 fi
 
 [ $# -eq 1 ] || exec "$@"
-case "$1" in *"&& eval '"*"' < /dev/null && pwd -P"*) ;; *) exec "${SHELL:-bash}" -c "$1" ;; esac
+case "$1" in *"&& eval '"*"' < /dev/null && pwd -P"* | *"&& eval '"*"' && pwd -P"*) ;; *) exec "${SHELL:-bash}" -c "$1" ;; esac
 [ -f "$root/port" ] || exec "${SHELL:-bash}" -c "$1"
 id=$(date +%s)-$$
 folder="$root/runtime/outputs/$id"
@@ -114,7 +114,7 @@ while :; do
         shown=$((shown + 1))
     done
     [ -f "$folder/done" ] && exit "$(cat "$folder/done")"
-    if [ $((SECONDS - __journal_began)) -ge "$limit" ]; then
+    if [ $((SECONDS - began)) -ge "$limit" ]; then
         touch "$folder/moved"
         running=$(cat "$folder/$shown.part")
         sh "$__journal_cli" shell moved "$id" "$running" --file "$folder"
