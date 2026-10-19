@@ -15,11 +15,13 @@ class SharesShaper(Shaper):
         self.shares, self.targets, self.tunnel = shares, targets, tunnel
 
     def rows(self) -> list[V3Row]:
-        return [self.row(share) for share in self.shares.in_()]
+        """Every link, its address worked out once for them all."""
+        address = self.tunnel.address()
+        return [self.row(share, address) for share in self.shares.in_()]
 
-    def row(self, share: Share) -> V3Row:
+    def row(self, share: Share, address: str) -> V3Row:
         target = self.targets.viewer_ref(share)
-        return V3Row.of("share", share, title=f"Share of {target.replace(':', ' ')}", abstract=self.tunnel.link_of(share.token), brief=self.opened(target),
+        return V3Row.of("share", share, title=f"Share of {target.replace(':', ' ')}", abstract=f"https://{address}/s/{share.token}", brief=self.opened(target),
                         completed=seconds(share.stopped_at),
                         data={"target": target, "token": share.token, "expires": seconds(share.expires_at), "views": share.views, "approved": share.approved,
                               "password": "set" if share.password else "", "comments": share.comments, "agent_replies": True, "layout": {}, "once": False, "view": ""})

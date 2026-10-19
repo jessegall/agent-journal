@@ -1,12 +1,11 @@
 import os
 import socket
-import threading
-import time
 from dataclasses import asdict
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from journal.config import Config
+from journal.engine.kept_answer import KeptAnswer
 from journal.features.sharing.share_place import SharePlace
 from journal.features.sharing.tunler import Tunler
 from journal.features.sharing.tunler_status import TunlerStatus
@@ -41,8 +40,7 @@ class Tunnel:
     def __init__(self, tunler: Tunler, place: SharePlace, settings: Settings, link: SupervisorLink, shares: Shares, config: Config) -> None:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
         self.log = config.home / "runtime" / f"{SERVICE}.log"
-        self._answered = (0.0, False)
-        self._asking = threading.Lock()
+        self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_KEPT, False)
 
     def saved_host(self) -> str:
         from journal.features.sharing.feature import Sharing
@@ -133,29 +131,21 @@ class Tunnel:
 
     def answering(self) -> bool:
         """Whether the journal's address answers as its share server, asked now."""
+        return self._answer.fresh()
+
+    def answered(self) -> bool:
+        """The last answer, at once: asking the tunnel's address takes a round trip, so the viewer's poll never waits on it."""
+        return self._answer.now()
+
+    def reaches_address(self) -> bool:
         address = self.address()
         if not address:
             return False
         try:
             with urlopen(f"https://{address}/{HEALTH}", timeout=REACH_SECONDS) as answer:
-                answered = MARKER in answer.read(200).decode(errors="ignore")
+                return MARKER in answer.read(200).decode(errors="ignore")
         except (OSError, ValueError):
-            answered = False
-        self._answered = (time.monotonic(), answered)
-        return answered
-
-    def answered(self) -> bool:
-        """The last answer, at once: asking the tunnel's address takes a round trip, so the viewer's poll never waits on it; one older than a few seconds is asked again on a thread of its own, and the next poll has it."""
-        at, answered = self._answered
-        if time.monotonic() - at >= ANSWER_KEPT and self._asking.acquire(blocking=False):
-            threading.Thread(target=self.asked_again, name="tunnel-answer", daemon=True).start()
-        return answered
-
-    def asked_again(self) -> None:
-        try:
-            self.answering()
-        finally:
-            self._asking.release()
+            return False
 
     def service(self) -> TunnelService:
         """The tunnel as the viewer lists a service: ready while its address answers, starting while it should and does not yet."""

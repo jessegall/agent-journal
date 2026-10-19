@@ -6,6 +6,7 @@ from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.states.awaiting import Awaiting
+from journal.features.workers.listeners.offer_known_subagent import OfferKnownSubagent
 from journal.features.workers.listeners.mark_subagents import MarkSubagents
 
 
@@ -19,7 +20,7 @@ class Workers(Feature):
     options = (TIMEOUT,)
     states = (Awaiting,)
     commands = (WorkerCommand,)
-    listeners = (MarkSubagents,)
+    listeners = (MarkSubagents, OfferKnownSubagent)
     checks = (
         Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),
         Entry(NodeKind.CHECK, 'worker_stopped', 'Worker stopped?', 'the row is a worker that just stopped before reporting'),

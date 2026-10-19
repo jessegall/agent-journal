@@ -14,6 +14,7 @@ from journal.events.bus import Bus
 from journal.features.registry import Registry
 from journal.features.switched import Switched
 from journal.engine.deferred import Deferred
+from journal.config import Config
 from journal.container import Container
 from journal.repositories.scope import Scope
 from journal.http.server import Server
@@ -43,6 +44,17 @@ class Runtime:
             self.container.get(Environments).named("main")
 
     def start(self) -> None:
+        """Everything up, with the starting mark kept until it is, so the slow-request reports measure nothing meanwhile."""
+        from journal.features.faults.slow_requests import STARTING
+        starting = self.container.get(Config).home / "runtime" / STARTING
+        starting.parent.mkdir(parents=True, exist_ok=True)
+        starting.touch()
+        try:
+            self.started_up()
+        finally:
+            starting.unlink(missing_ok=True)
+
+    def started_up(self) -> None:
         self.share_server.start()
         self.boot()
         from journal.features.skills.skill_files import SkillFiles

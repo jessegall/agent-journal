@@ -1,5 +1,7 @@
 import os
+from pathlib import Path
 import signal
+import time
 import subprocess
 import threading
 
@@ -34,6 +36,7 @@ class WorkerRunner:
     def run(self, worker: Worker, command: list[str], by: Actor) -> None:
         """Blocks until the worker ends: for the thread above, and for a test that wants the outcome."""
         environ = {k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}
+        began = time.time()
         try:
             process = subprocess.Popen(command, cwd=self.workplace(worker), env=environ, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         except OSError as error:
@@ -50,7 +53,9 @@ class WorkerRunner:
             os.killpg(process.pid, signal.SIGKILL)
             out, err = process.communicate()
         self._running.pop(worker.id, None)
-        printed, resume = self.providers.named(worker.provider).worker_outcome(out or "", err or "")
+        provider = self.providers.named(worker.provider)
+        printed, resume = provider.worker_outcome(out, err)
+        resume = resume or provider.latest_session(self.place(worker), began)
         report = printed[-TAIL:] or "(nothing printed)"
         said = report if process.returncode == 0 else f"failed with code {process.returncode}: {report}"
         if timed_out:
@@ -63,11 +68,13 @@ class WorkerRunner:
         if process:
             process.terminate()
 
-    def workplace(self, worker: Worker) -> str:
-        """The project root, or a worktree of its own on a branch named for the worker."""
-        if not worker.worktree:
-            return str(self.config.root)
-        folder = self.branch.folder(worker)
-        if not folder.is_dir():
+    def place(self, worker: Worker) -> Path:
+        """Where the worker works: the project root, or its own worktree."""
+        return self.branch.folder(worker) if worker.worktree else self.config.root
+
+    def workplace(self, worker: Worker) -> Path:
+        """Where the worker works, its worktree made on a branch named for it the first time."""
+        folder = self.place(worker)
+        if worker.worktree and not folder.is_dir():
             subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder)], cwd=self.config.root, capture_output=True, text=True, timeout=60)
-        return str(folder)
+        return folder

@@ -4,10 +4,10 @@ import platform
 import shutil
 import ssl
 import subprocess
-import time
 from pathlib import Path
 from urllib.request import urlopen
 
+from journal.engine.kept_answer import KeptAnswer
 from journal.features.sharing.tunler_login import TunlerLogin
 from journal.features.sharing.tunler_status import TunlerStatus
 from journal.features.sharing.tunler_version import TunlerVersion
@@ -30,8 +30,7 @@ class Tunler:
     """The tunler program on this machine, which gives the journal its web address: its status, asked at most once a minute, its login, its version and the domains its account holds."""
 
     def __init__(self) -> None:
-        self._status: TunlerStatus | None = None
-        self._asked_at = 0.0
+        self._status = KeptAnswer(lambda: self.asked(), STATUS_KEPT, TunlerStatus(installed=False))
 
     def command(self) -> str:
         return shutil.which("tunler") or next((str(path) for path in (self.local(), Path.home() / "go" / "bin" / "tunler", *ELSEWHERE) if path.is_file()), "")
@@ -42,13 +41,12 @@ class Tunler:
         return Path.home() / ".local" / "bin" / "tunler"
 
     def status(self) -> TunlerStatus:
-        if self._status is None or time.monotonic() - self._asked_at >= STATUS_KEPT:
-            self._status, self._asked_at = self.asked(), time.monotonic()
-        return self._status
+        """Tunler's status, asked once while the journal waits and kept after: a later one past its time is asked again on a thread of its own."""
+        return self._status.now() if self._status.asked_on else self._status.fresh()
 
     def forget(self) -> None:
-        """The next status is asked of tunler again."""
-        self._status = None
+        """Tunler is asked again now, after a change such as a login."""
+        self._status.fresh()
 
     def asked(self) -> TunlerStatus:
         command = self.command()

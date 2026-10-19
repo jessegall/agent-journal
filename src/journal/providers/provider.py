@@ -39,6 +39,10 @@ class Provider:
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
+    def latest_session(self, project: Path, since: float) -> str:
+        """The session of the newest conversation the provider wrote for the project since a time, for a run whose answer named none; none for a provider that keeps no such file."""
+        return ""
+
     def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
         """The file a subagent of the parent session wrote its conversation in; none for a provider that keeps no such file."""
         return None

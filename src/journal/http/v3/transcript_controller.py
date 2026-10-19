@@ -2,7 +2,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.features.workers.subagents import Subagents
-from journal.features.workers.worker_branch import WorkerBranch
+from journal.features.workers.worker_runner import WorkerRunner
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.v3.transcript_page import TranscriptPage
@@ -17,8 +17,8 @@ from journal.repositories.workers import Workers
 class TranscriptController:
     """The conversation of an agent, of one of its subagents and of a worker, read from the provider's own files."""
 
-    def __init__(self, config: Config, providers: Providers, agents: Agents, workers: Workers, subagents: Subagents, branch: WorkerBranch) -> None:
-        self.config, self.providers, self.agents, self.workers, self.subagents, self.branch = config, providers, agents, workers, subagents, branch
+    def __init__(self, config: Config, providers: Providers, agents: Agents, workers: Workers, subagents: Subagents, runner: WorkerRunner) -> None:
+        self.config, self.providers, self.agents, self.workers, self.subagents, self.runner = config, providers, agents, workers, subagents, runner
 
     def agent(self, request: Request) -> Response:
         agent = self.agents.find(request.number("n"))
@@ -35,8 +35,7 @@ class TranscriptController:
     def worker(self, request: Request) -> Response:
         worker = self.workers.find(request.number("n"))
         provider = self.providers.named(worker.provider)
-        project = self.branch.folder(worker) if worker.worktree else self.config.root
-        return self.answer(request, provider, provider.transcript(project, worker.resume) if worker.resume else None)
+        return self.answer(request, provider, provider.transcript(self.runner.place(worker), worker.resume) if worker.resume else None)
 
     @staticmethod
     def answer(request: Request, provider: Provider, path: Path | None) -> Response:

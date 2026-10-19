@@ -16,6 +16,8 @@ from journal.supervisor_link import SupervisorLink
 
 SETTLING_SECONDS = 60.0
 """After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
+STARTING = "journal.starting"
+"""The mark the journal keeps in its runtime folder while it starts, so nothing is measured until it has."""
 TESTS_RUNNING = "tests.running"
 """The start of the name of the mark each test run keeps in the journal's runtime folder while it runs, ended by its own process number: runs side by side each keep their own, and their servers crowd the machine."""
 
@@ -42,7 +44,11 @@ class SlowRequests:
         return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
 
     def judging(self) -> bool:
-        """Only in the journal's own checkout, once it has settled after a start or an update, while the test suite is not running, and on a machine not busier than it has cores."""
+        """Only in the journal's own checkout, never while it starts and only once it has settled after, while no test run is on, and on a machine not busier than it has cores."""
+        starting = self.config.home / "runtime" / STARTING
+        if starting.is_file():
+            self.started = time.monotonic()
+            return False
         settled = time.monotonic() - self.started > SETTLING_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
         return (self.config.root / "src" / "journal").is_dir() and settled and not busy and not self.is_testing()

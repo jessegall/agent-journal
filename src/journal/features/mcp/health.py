@@ -1,9 +1,8 @@
 import re
 import subprocess
-import threading
-import time
 
 from journal.config import Config
+from journal.engine.kept_answer import KeptAnswer
 from journal.features.mcp.health_report import HealthReport
 from journal.features.mcp.known import Known
 
@@ -18,39 +17,27 @@ class Health:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self._found = HealthReport()
-        self._at = 0.0
-        self._asking = threading.Lock()
+        self._report = KeptAnswer(lambda: self.asked(), FRESH_FOR, HealthReport())
 
     def of_all(self) -> HealthReport:
-        """The last answer, at once: the program's check takes seconds, so a request never waits on it; an answer past its minute is asked anew on a thread of its own, and the next request has it."""
-        if time.time() - self._at >= FRESH_FOR and self._asking.acquire(blocking=False):
-            threading.Thread(target=self.refreshed, name="mcp-health", daemon=True).start()
-        return self._found
-
-    def refreshed(self) -> None:
-        """Asked anew in the background, one ask at a time."""
-        try:
-            self.fresh()
-        finally:
-            self._asking.release()
+        """The last answer, at once: the program's check takes seconds, so a request never waits on it."""
+        return self._report.now()
 
     def fresh(self) -> HealthReport:
         """Asked anew, whatever the last answer: what a check from the page wants."""
-        self._found, self._at = self.asked(), time.time()
-        return self._found
+        return self._report.fresh()
 
     @property
     def checked_at(self) -> float:
         """When the program was last asked, as a timestamp; nought before the first time."""
-        return self._at
+        return self._report.asked_on
 
     def remove(self, name: str) -> bool:
         """A server the program has from elsewhere taken out through the program's own command, whichever scope holds it; the next check is fresh."""
         for scope in ("local", "project", "user"):
             run = subprocess.run(["claude", "mcp", "remove", name, "-s", scope], cwd=self.config.root, capture_output=True, text=True, timeout=60)
             if run.returncode == 0:
-                self._at = 0.0
+                self._report.forget()
                 return True
         return False
 

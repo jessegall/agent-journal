@@ -2,6 +2,7 @@
 name: researcher
 description: Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. Read-only.
 tools: Read, Grep, Glob, WebFetch, WebSearch
+kind: subagent
 model: sonnet
 ---
 

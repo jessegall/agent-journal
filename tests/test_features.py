@@ -371,6 +371,9 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     from journal.repositories.workers import Workers
     started = []
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: started.append(worker))
+    conversation = app.config.root / "conversation.jsonl"
+    conversation.write_text("{}\n")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: conversation)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "fast", "--worktree"], AGENT)
@@ -5717,3 +5720,44 @@ def test_the_tasks_list_and_its_open_count_leave_out_a_plans_tasks(app):
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=50", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         rows = {row["title"]: row["data"]["hidden"] for row in json.loads(reply.read())["rows"]}
     assert rows == {"loose": False, "planned": True}, "hidden from the Tasks list, still there for its plan"
+
+
+def test_an_update_never_overwrites_a_setting_the_user_set(app):
+    from journal.app import App
+    from journal.config import Config
+    settings = app.container.get(Settings)
+    settings.save(Setting(environment_id=0, key="shell.command_characters", value=500), Actor.user(1))
+    settings.save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.user(1))
+    updated = App(Config(app.config.root, port=0))
+    updated.runtime().boot()
+    kept = updated.container.get(Settings)
+    assert kept.project("shell.command_characters") == 500 and kept.project("tasks.auto") is False, "booting the new code, as an update does, keeps what the user set"
+
+
+def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app):
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "fix src/journal/features/shell/chain.py", "--model", "sonnet"], AGENT)
+    workers = app.container.get(Workers)
+    with app.container.get(Scope).of(MAIN):
+        workers.save(workers.find(1).with_(resume="abc").reported(), Actor.system())
+    refused = console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--model", "sonnet"], AGENT)
+    assert refused.code == 1 and "journal worker say 1" in refused.err, "related work goes back to the worker that knows it"
+    assert console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--model", "sonnet", "--fresh"], AGENT).code == 0, "unless a fresh one is asked for"
+    assert console.run(["worker", "dispatch", "Mr. Bell", "write docs/other.md", "--model", "sonnet"], AGENT).code == 0, "other files, another worker"
+
+
+def test_a_subagent_job_on_files_one_already_worked_on_goes_back_to_it_and_a_review_is_fresh(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    mapped = {"description": "map the chain", "prompt": "Read src/journal/features/shell/chain.py and map it.", "subagent_type": "researcher", "model": "sonnet"}
+    hook(app, "PreToolUse", tool_name="Agent", tool_input=mapped, tool_use_id="u1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input=mapped, tool_use_id="u1", tool_response={"isAsync": True, "agentId": "r1"})
+    hook(app, "SubagentStop", agent_id="r1")
+    again = {"description": "find its edge cases", "prompt": "Find the edge cases of src/journal/features/shell/chain.py.", "subagent_type": "researcher", "model": "sonnet"}
+    refused = json.dumps(hook(app, "PreToolUse", tool_name="Agent", tool_input=again, tool_use_id="u2")[1])
+    assert "SendMessage" in refused and "r1" in refused, "related work goes back to the subagent that knows it"
+    review = {**again, "subagent_type": "auditor"}
+    assert "SendMessage" not in json.dumps(hook(app, "PreToolUse", tool_name="Agent", tool_input=review, tool_use_id="u3")[1]), "a review is always fresh"

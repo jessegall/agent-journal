@@ -31,6 +31,11 @@ class Claude(Provider):
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"
         return path if path.is_file() else None
 
+    def latest_session(self, project: Path, since: float) -> str:
+        folder = Path.home() / ".claude" / "projects" / self.folder_name(project)
+        written = [path for path in folder.glob("*.jsonl") if path.stat().st_mtime >= since] if folder.is_dir() else []
+        return max(written, key=lambda path: path.stat().st_mtime).stem if written else ""
+
     def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
         return path if path.is_file() else None

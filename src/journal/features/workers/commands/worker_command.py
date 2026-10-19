@@ -6,8 +6,10 @@ from journal.engine.machine import Machine
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.worker_reports import WorkerReports
+from journal.features.workers.named_paths import NamedPaths
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker import Worker
+from journal.providers.providers import Providers
 from journal.refused import Refused
 from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
@@ -18,8 +20,8 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles) -> None:
-        self.workers, self.messages, self.machine = workers, messages, machine
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers) -> None:
+        self.workers, self.messages, self.machine, self.providers = workers, messages, machine, providers
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -29,6 +31,7 @@ class WorkerCommand(Command):
         dispatch.add_argument("--provider", default="claude")
         dispatch.add_argument("--model", required=True)
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
+        dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
@@ -43,6 +46,9 @@ class WorkerCommand(Command):
     def dispatch(self, args: Namespace, where: Where) -> int:
         if self.profiles.kind_of(args.name) == "subagent":
             raise Refused(f"{args.name} is a subagent profile: it only reads, so send it with the Agent tool, naming it as subagent_type; a worker is for work that writes")
+        knowing = [] if args.fresh else self.knowing(args.brief)
+        if knowing:
+            raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         worker = Worker(name=args.name, brief=args.brief, provider=args.provider, model=args.model, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
         self.runner.start(worker, where.actor)
@@ -55,6 +61,11 @@ class WorkerCommand(Command):
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
+    def knowing(self, brief: str) -> list[Worker]:
+        """The workers back from a job that named the same files as this one, the latest first."""
+        named = NamedPaths.of(brief)
+        return [w for w in reversed(self.workers.in_()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & NamedPaths.of(w.brief)]
+
     def say(self, args: Namespace, where: Where) -> int:
         """The same worker sent on its next job: related work goes back to the one that knows it, never to a fresh dispatch."""
         worker = self.workers.find(args.n)
@@ -62,6 +73,8 @@ class WorkerCommand(Command):
             raise Refused(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
         if not worker.resume:
             raise Refused(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
+        if self.providers.named(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
+            raise Refused(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
         worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=where.session), where.actor)
         self.runner.start(worker, where.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
