@@ -15,7 +15,11 @@ class Shaper:
     def answer(self, listing: Listing) -> ListedRows:
         """The page the listing asks for and the type's counts, from every row; a type with many rows answers from queries of its own."""
         rows = self.rows()
-        return ListedRows(**listing.listed(rows), counts=self.counted(rows))
+        return ListedRows(**listing.listed(rows), counts=self.counts(rows))
+
+    def counts(self, rows: list[V3Row]) -> RowCounts:
+        """The type's counts; a type whose table can pass a page counts in queries."""
+        return self.counted(rows)
 
     @staticmethod
     def counted(rows: list[V3Row]) -> RowCounts:

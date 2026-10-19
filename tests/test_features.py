@@ -3488,8 +3488,30 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     console.run(["sequence", "park", "--why", "docs first"], AGENT)
     sent.clear()
     tick()
-    assert any("is parked at step 1: docs first" in line for line in sent), "a parked run is recalled at the same pace"
+    assert sent == [], "a parked run is not said at a pace"
     assert "is parked at step 1" in json.dumps(hook(app, "SessionStart", source="resume")[1]), "and at a start"
+    console.run(["sequence", "follow"], AGENT)
+    sent.clear()
+    console.run(["question", "ask", "Which name?"], AGENT)
+    tick()
+    assert sent == [], "no step is said at a pace while a question to the user is open"
+    console.run(["question", "answer", "1", "alpha"], USER)
+    tick()
+    assert any("step 1: bump" in line for line in sent), "and it is said again once the question is answered"
+
+
+def test_a_list_counts_a_type_in_sql_past_the_page(app):
+    import json as j
+    from urllib.request import urlopen
+    from journal.models.task import Task
+    from journal.models.task_state import TaskState
+    from journal.repositories.tasks import Tasks
+    tasks = app.container.get(Tasks)
+    for n in range(520):
+        tasks.save(Task(environment_id=1, title=f"t{n}", state=TaskState.DONE if n < 400 else TaskState.OPEN), Actor.user(1) if n % 2 else Actor.agent("s1"))
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=10&env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        counts = j.loads(reply.read())["counts"]
+    assert counts == {"all": 520, "open": 120, "unread": 60}, "a count is of every row, not of the newest page"
 
 def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_gone(app, monkeypatch):
     from journal.repositories.messages import Messages

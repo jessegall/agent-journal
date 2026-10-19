@@ -23,6 +23,9 @@ class Reactions(ScopedRepository[Reaction]):
     def on(self, message: Message) -> list[Reaction]:
         return [self.find(ref.id) for ref in self.links.sources(message, REACTS)]
 
+    def by_author(self, author: Author) -> int:
+        return self.counted_in("author = ?", (author.value,))
+
     def toggle(self, message: Message, face: str, author: Author, by: Actor) -> Reaction | None:
         """The same face by the same side again takes it off; otherwise it goes on."""
         for made in self.on(message):

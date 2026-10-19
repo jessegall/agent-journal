@@ -43,6 +43,10 @@ class Tasks(ScopedRepository[Task]):
         """How many tasks are not yet done or cancelled, counted by the database."""
         return self.connection.one("SELECT count(*) AS n FROM tasks WHERE environment_id = ? AND state NOT IN (?, ?)", (self.scope.id, TaskState.DONE.value, TaskState.CANCELLED.value))["n"]
 
+    def unseen_by_user(self) -> int:
+        """How many unfinished tasks the user did not make, so has not yet seen."""
+        return self.counted_in("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.DONE.value, TaskState.CANCELLED.value))
+
     def shown(self) -> list[Task]:
         """What a list of tasks shows: every one not yet finished, however old, and the newest page of the finished ones, by number."""
         finished = (TaskState.DONE.value, TaskState.CANCELLED.value)

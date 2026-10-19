@@ -6,6 +6,7 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
+from journal.repositories.questions import Questions
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 
@@ -16,14 +17,14 @@ WAITING_SLOWER = 3
 
 
 class SayTheStepAtAPace(AgentListener[Ticked]):
-    """A step, or a parked run, unheard for the set minutes is typed again to a quiet agent; three times as slow while the agent waits."""
+    """A step unheard for the set minutes is typed again to a quiet agent, three times as slow while the agent waits; nothing is said for a parked run or while a question to the user is open."""
 
-    def __init__(self, machine: Machine, running: Running, settings: Settings, registry: Registry, supervisor: SupervisorLink) -> None:
-        self.machine, self.running, self.settings, self.registry, self.supervisor = machine, running, settings, registry, supervisor
+    def __init__(self, machine: Machine, running: Running, settings: Settings, questions: Questions, registry: Registry, supervisor: SupervisorLink) -> None:
+        self.machine, self.running, self.settings, self.questions, self.registry, self.supervisor = machine, running, settings, questions, registry, supervisor
 
     def handle(self, event: Ticked) -> None:
         run = self.running.in_hand(event.session, event.environment_id)
-        if run is None or event.quiet_for < QUIET_FOR or not self.running.typed_to(event.session, event.environment_id):
+        if run is None or run.parked_why or self.questions.open() or event.quiet_for < QUIET_FOR or not self.running.typed_to(event.session, event.environment_id):
             return
         if datetime.now(timezone.utc) - datetime.fromisoformat(run.said_at) < self.pace(event):
             return

@@ -21,6 +21,10 @@ class ScopedRepository(Repository[S]):
         """The newest page of the scope's rows, oldest first."""
         return self.where(environment_id=self.scope.id)
 
+    def counted_in(self, clause: str = "1", params: tuple = ()) -> int:
+        """How many of the scope's rows a WHERE clause picks, counted by the database."""
+        return self.connection.one(f"SELECT count(*) AS n FROM {self.table} WHERE environment_id = ? AND {clause}", (self.scope.id, *params))["n"]
+
     def every_in(self) -> list[S]:
         """Every row of the scope, for the rare read that must see them all."""
         return self.every_where(environment_id=self.scope.id)
