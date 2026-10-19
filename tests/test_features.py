@@ -210,6 +210,10 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     assert messages[-1].reply_to is None and "[!reply:2]" in messages[-1].text, "a tag inside a line is text"
     assert typed[-1].endswith("the [!reply:2] tag must open a line of your turn; message 2 is still unanswered")
     assert "new message 2" in hook(app, "Stop")[1]["reason"]
+    told = len(typed)
+    hook(app, "MessageDisplay", message="His screenshot shows a reply opening with `[!reply:8544]` that never arrived.")
+    app.runtime().deferred.drain()
+    assert len(typed) == told, "a tag quoted about a message that is not owed is only text"
 
 
 def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):

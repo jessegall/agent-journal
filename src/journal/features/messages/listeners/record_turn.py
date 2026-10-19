@@ -57,9 +57,16 @@ class RecordTurn(AgentListener[TurnWritten]):
                     self._also_answers(reply, n, by)
             for n in answered:
                 self._mark_read(n, by)
-        stray = STRAY_TAG.search(Tags.visible(whole))
-        if stray:
-            self.supervisor.type(event.environment_id, f"the [!reply:{stray.group(1)}] tag must open a line of your turn; message {stray.group(1)} is still unanswered")
+        for n in self.stray_owed(whole)[:1]:
+            self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
+
+    def stray_owed(self, whole: str) -> list[int]:
+        """The messages a tag inside a line names that are still owed an answer; a tag quoted about another message, or one already answered, is only text."""
+        strays = [int(n) for n in STRAY_TAG.findall(Tags.visible(whole))]
+        if not strays:
+            return []
+        owed = {m.id for m in self.messages.unread() + self.messages.unanswered()}
+        return [n for n in strays if n in owed]
 
     def already_recorded(self, part: str) -> bool:
         """A block reaches the journal twice when it is the turn's last, once from the transcript and once from the display hook: the second is the same words and is not a second message."""
