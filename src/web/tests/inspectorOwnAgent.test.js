@@ -1,19 +1,17 @@
 import {expect, test} from "vitest";
-import {agentOf, sessionRow} from "../src/domain/agents.js";
+import {agentOf} from "../src/domain/agents.js";
 
-const rows = [
-    {n: 1, title: "main-session", updated: 9, data: {}},
-    {n: 2, title: "helper-session", updated: 1, data: {}},
-];
+const at = (seconds) => new Date(seconds * 1000).toISOString();
+const agent = (id, session, updated, status = "idle") => ({table: "agents", id, session, status, updated_at: at(updated)});
+const rows = [agent(1, "main-session", 9), agent(2, "worker-session", 1)];
 
 test("an inspector finds the agent of its own session and never falls back to the newest main agent", () => {
-    expect(sessionRow(rows, "helper-session").n).toBe(2);
-    expect(sessionRow(rows, "unknown-session")).toBe(null);
+    expect(agentOf(rows, "worker-session", false).id).toBe(2);
+    expect(agentOf(rows, "unknown-session", false)).toBe(null);
 });
 
-test("a helper's or a ticket's inspector finds the one agent of its own environment when no row carries its session", () => {
-    const own = [{n: 5, title: "other", updated: 3, data: {}}, {n: 6, title: "sub", updated: 9, data: {parent: 5}}];
-    expect(agentOf(own, "helper-session", true).n).toBe(5);
-    expect(agentOf(own, "helper-session", false)).toBe(null);
-    expect(agentOf(rows, "helper-session", true).n).toBe(2);
+test("an inspector lent to an environment finds its live agent when no row carries its session", () => {
+    const own = [agent(5, "other", 3), agent(6, "gone", 9, "stopped")];
+    expect(agentOf(own, "worker-session", true).id).toBe(5);
+    expect(agentOf(own, "worker-session", false)).toBe(null);
 });

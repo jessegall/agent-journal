@@ -180,9 +180,9 @@ describe("a fetch while the update cover is up", () => {
         const sent = vi.fn().mockResolvedValue(new Response("{}", {status: 200}));
         vi.stubGlobal("fetch", sent);
         startUpdate("2.0.0");
-        await expect(transport.request("GET", "/api/todo")).rejects.toMatchObject({updating: true});
-        await transport.request("GET", "/api/summary");
-        expect(sent.mock.calls.map((call) => call[0])).toEqual(["/api/summary"]);
+        await expect(transport.request("GET", "/journal/tasks")).rejects.toMatchObject({updating: true});
+        await transport.request("GET", "/journal/summary");
+        expect(sent.mock.calls.map((call) => call[0])).toEqual(["/journal/summary"]);
         clear();
         vi.unstubAllGlobals();
     });
