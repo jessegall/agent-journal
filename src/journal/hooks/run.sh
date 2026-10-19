@@ -27,17 +27,23 @@ __journal_changed() {
     done
 }
 
-# The foreground shows a part's output cut to its first and last so many lines, the journal's cap; the middle stays in
-# the part's file, and a line names the output by its number and how to read the rest.
+# The foreground shows a part's output as the journal's cap says: whole for a line of journal commands, half of the
+# characters from each end for a command that reads, and for any other whole up to the cap and past it not at all; a line
+# names the output by its number.
 __journal_show() {
-    __journal_lines=$(wc -l < "$1" | tr -d ' ')
-    if [ "$__journal_lines" -le $((cap * 2)) ]; then
+    __journal_size=$(wc -c < "$1" | tr -d ' ')
+    if [ "$show" = whole ] || [ "$__journal_size" -le "$cap" ]; then
         cat "$1"
-    else
-        head -n "$cap" "$1"
-        echo "[journal] output $(cat "$folder/number" 2>/dev/null): $__journal_lines lines, $((__journal_lines - cap * 2)) cut from the middle. journal output read $(cat "$folder/number" 2>/dev/null) --lines or --grep reads them"
-        tail -n "$cap" "$1"
+        return
     fi
+    __journal_n=$(cat "$folder/number" 2>/dev/null)
+    if [ "$show" = ends ]; then
+        head -c $((cap / 2)) "$1"
+        printf '\n[journal] output %s: %s characters, %s cut from the middle. journal output read %s --lines or --grep reads them\n' "$__journal_n" "$__journal_size" "$((__journal_size - cap))" "$__journal_n"
+        tail -c $((cap / 2)) "$1"
+        return
+    fi
+    printf '[journal] output %s: %s characters. journal output read %s reads it\n' "$__journal_n" "$__journal_size" "$__journal_n"
 }
 
 # The worker. Its own variables carry a prefix, since the parts run in the same shell and may set i or code.
@@ -102,7 +108,9 @@ sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/n
 [ -f "$folder/dropped" ] && cat "$folder/dropped"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
-cap=$(sh "$__journal_cli" shell cap 2>/dev/null); cap=${cap:-200}
+cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 200}
+show=${cap%% *}
+cap=${cap##* }
 trap 'touch "$folder/moved"; exit 143' TERM INT HUP
 shown=0
 tick=0
@@ -113,7 +121,11 @@ while :; do
         __journal_show "$folder/$shown.err" >&2 2>/dev/null
         shown=$((shown + 1))
     done
-    [ -f "$folder/done" ] && exit "$(cat "$folder/done")"
+    if [ -f "$folder/done" ]; then
+        code=$(cat "$folder/done")
+        [ "$show" = whole ] && rm -rf "$folder"
+        exit "$code"
+    fi
     if [ "$limit" -gt 0 ] && [ $((SECONDS - began)) -ge "$limit" ]; then
         touch "$folder/moved"
         running=$(cat "$folder/$shown.part")

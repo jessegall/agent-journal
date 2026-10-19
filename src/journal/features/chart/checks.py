@@ -389,8 +389,7 @@ class Checks:
         event = ctx.event
         if not isinstance(event, ToolStarting) or event.tool != ctx.provider_in(self.providers).shell_tool:
             return False
-        journal, parts = Chain.journal_parts(event.input.get("command", ""))
-        return parts > 0 and journal == parts
+        return Chain.is_journal_line(event.input.get("command", ""))
 
     def state(self, ctx: Context):
         """The agent's state as the walk read it once."""

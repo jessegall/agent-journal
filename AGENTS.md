@@ -16,7 +16,7 @@ Inheriting the orchestrator's model is not a model choice.
 **L2 - Every subagent is bound to a concrete job; never dispatch a generic or default agent.**
 Give the dispatch a description and a bounded prompt. If no suitable specialization exists, keep the work yourself.
 
-**L3 - Read narrowly: grep for the line, sed a range, head the file; never print a whole file or long output you do not need.**
+**L3 - Read narrowly: grep for the line or read the range of a file you need, and read a command's output by its number with `journal output read`, never by running the command again or cutting it with a pipe.**
 Everything a tool returns stays in the context for good and is paid for on every turn after it.
 
 **L4 - Related work goes back to the worker or subagent that already worked on it; never start a fresh one on work another already knows.**

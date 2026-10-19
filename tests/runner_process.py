@@ -1,5 +1,6 @@
 # Runs the runner script as a real process against a real server, so it is not in the default run: python3 -m pytest tests/runner_process.py
 import json
+import re
 import os
 import subprocess
 import time
@@ -48,7 +49,10 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         settings.save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
         run = subprocess.run([runner, wrapped("seq 1 1000", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=60)
         shown = run.stdout.splitlines()
-        assert shown[0] == "1" and shown[-1] == "1000" and len(shown) == 401 and "1000 lines, 600 cut from the middle" in shown[200], "a long output is cut to its first and last two hundred lines"
+        assert len(shown) == 1 and re.fullmatch(r"\[journal\] output (\d+): 3893 characters\. journal output read \1 reads it", shown[0]), "past the cap a command's output is not shown, only named"
+        (cwd.parent / "numbers").write_text("\n".join(str(i) for i in range(1, 3001)) + "\n")
+        run = subprocess.run([runner, wrapped(f"cat {cwd.parent / 'numbers'}", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=60)
+        assert run.stdout.startswith("1\n2\n") and run.stdout.rstrip().endswith("3000") and "cut from the middle" in run.stdout, "a read is cut to its two ends"
         run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "fast" in run.stdout and "moved to the background as output" in run.stdout and "sleep 3" not in run.stdout and run.returncode == 0, run.stderr
         with app.container.get(Scope).of(1):
@@ -144,6 +148,8 @@ def test_the_runner_agrees_with_the_shell_on_every_line_of_the_corpus(tmp_path: 
     (tmp_path / ".journal" / "src").symlink_to(SRC)
     app = App(Config(tmp_path, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    for key in ("shell.command_characters", "shell.read_characters"):
+        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=10 ** 9), Actor.system())
     app.runtime().start()
     try:
         port = app.server().port

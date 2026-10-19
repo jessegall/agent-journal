@@ -18,8 +18,10 @@ class Shell(Feature):
     FOREGROUND = Option("shell.foreground", "Run a command in the foreground for", "Seconds a part of a command may run before the rest of the chain moves to the background", 30, unit="seconds")
     WHILE_WAITING = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
+    READ_SHOWN = Option("shell.read_characters", "Show of a command that reads", "The characters of a reading command's output shown, half from each end, such as cat, grep or git diff; past it the agent reads the rest by the output's number", 8000, unit="characters")
+    COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 200, unit="characters")
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
-    options = (FOREGROUND, WHILE_WAITING, SHOWN, KEPT)
+    options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, KEPT)
     listeners = (RefuseMixedJournal, ReadNarrowly)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
@@ -43,8 +45,10 @@ Every shell command you run goes through the journal's runner.
 - Every command's output is kept as a numbered output, the newest 250 of them: `journal output read N` shows how it
   ended and its first and last lines; `--lines 100-160`, `--grep <pattern>`, `--head N` and `--tail N` read part of it.
   `journal output list` names the newest. Read an output this way rather than running the command again.
-- A trailing `| tail` is dropped before the command runs, since the output is kept whole; a long output is still cut to
-  its ends on screen, with its number to read the rest.
+- A test run, a build or any other command's output is shown whole up to 200 characters; past that you see only
+  `output N: X characters`, and read it with `journal output read N`. A command that reads (cat, grep, sed, git diff)
+  is shown up to 8,000 characters, past that by its two ends. A line of
+  journal commands is shown whole and kept as no output. A trailing `| tail` is dropped before the command runs.
 - A test suite is a long runner: run it on its own and chain the commit behind its result in a second call.
 - A journal command runs on its own, or chained only with other journal commands; chained with anything else it is
   refused, since it would move to the background with the rest and its answer lost.

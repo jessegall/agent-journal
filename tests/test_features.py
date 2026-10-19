@@ -1334,7 +1334,7 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     assert parts[0].text.startswith("source") and parts[-1].text.startswith("pwd -P") and not parts[0].recorded and not parts[-1].recorded
     heredoc = "source /s 2>/dev/null || true && eval 'cd src && python3 - <<'\"'\"'EOF'\"'\"'\nprint(1)\nEOF' && pwd -P >| /tmp/cwd"
     assert [p.text for p in Chain.parts(heredoc) if p.recorded] == ["cd src", "python3 - <<'EOF'\nprint(1)\nEOF"], "a command with a heredoc comes without < /dev/null and is still the agent's own"
-    assert [Doing.of(c) for c in ("git commit -m x", "python3 -m pytest -q | tail -2", "cd src", "npm run build", "foo --bar")] == ["committing", "testing", "moving", "running a script", "running foo"]
+    assert [Doing.of(c) for c in ("git commit -m x", "python3 -m pytest -q | tail -2", "cd src", "npm run build", "foo --bar", "python3 - <<'EOF'\nprint(1)\nEOF")] == ["committing", "testing", "moving", "running a script", "running foo", "running python3"]
 
 
 def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app):
@@ -1609,7 +1609,7 @@ def test_commands_run_at_the_same_moment_keep_their_own_output(app):
         t.start()
     for t in threads:
         t.join()
-    assert all(outs[n] == ("200\n" if n % 2 else "30\n") for n in range(20)), "each run's output is its own, though they run side by side"
+    assert all(outs[n] == ("hint 200\n" if n % 2 else "30\n") for n in range(20)), "each run's output is its own, though they run side by side"
 
 
 def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
@@ -5199,6 +5199,19 @@ def test_a_trailing_tail_is_dropped_before_the_command_runs_and_a_head_is_left(a
     assert "| tail -4 dropped" in (app.config.root / "cut" / "dropped").read_text()
     assert (app.config.root / "head" / "0.part").read_text() == "yes | head -3", "a head may be what stops an endless command"
     assert not (app.config.root / "quoted" / "dropped").exists(), "a pipe inside quotes is text"
+
+
+def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_its_last_characters_otherwise(app):
+    from journal.repositories.command_outputs import CommandOutputs
+    hook(app, "SessionStart")
+    console = app.console()
+    cap = lambda line: console.run(["shell", "cap", "--line", line], AGENT).out.strip()
+    assert cap("journal task list") == "whole 0" and cap("cat a.py && git diff") == "ends 8000" and cap("python3 -m pytest -q") == "hint 200"
+    folder = app.config.root / "journal-line"
+    folder.mkdir()
+    console.run(["shell", "split", "journal task list", "--into", str(folder)], AGENT)
+    with app.container.get(Scope).of(MAIN):
+        assert app.container.get(CommandOutputs).every() == [] and not (folder / "number").exists(), "a line of journal commands is no output"
 
 
 def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app):

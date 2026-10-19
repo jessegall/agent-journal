@@ -35,6 +35,18 @@ class Chain:
         own = [p for p in cls.parts(line) if p.recorded]
         return len([p for p in own if cls.is_journal(p.text)]), len(own)
 
+    @classmethod
+    def is_journal_line(cls, line: str) -> bool:
+        """A line of journal commands alone: its answer reaches the agent whole, at once, and is no output of its own."""
+        journal, parts = cls.journal_parts(line)
+        return parts > 0 and journal == parts
+
+    @classmethod
+    def is_read_line(cls, line: str) -> bool:
+        """A line whose own commands all read on purpose."""
+        own = [p for p in cls.parts(line) if p.recorded]
+        return bool(own) and all(p.is_read() for p in own)
+
     @staticmethod
     def is_journal(part: str) -> bool:
         words = part.split()

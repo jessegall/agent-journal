@@ -46,7 +46,8 @@ class ShellCommand(Command):
         split.add_argument("--into", required=True)
         limit = self.verb(verbs, "limit", "the seconds a command may run in the foreground now; none, 0, for a line of journal commands alone, whose answer must reach the agent")
         limit.add_argument("--line", default="")
-        self.verb(verbs, "cap", "the lines of a part's output shown at each end; the middle is cut and left in the part's file")
+        cap = self.verb(verbs, "cap", "how a part's output is shown, and how many characters of it: whole for a line of journal commands, its ends for a command that reads, and for any other whole up to the number or else only a line naming the output to read")
+        cap.add_argument("--line", default="")
         started = self.verb(verbs, "started", "a part of a chain has started")
         started.add_argument("part")
         started.add_argument("--chain", required=True)
@@ -77,6 +78,8 @@ class ShellCommand(Command):
         for i, part in enumerate(parts):
             (folder / f"{i}.part").write_text(part.text)
             print(part.kind() + ("w" if part.recorded and Writes.part(part.text) else "-"))
+        if Chain.is_journal_line(args.line):
+            return 0
         output = self.log.began(folder.name, "\n".join(part.text for part in parts if part.recorded), folder, where.session, where.actor)
         (folder / "number").write_text(str(output.id))
         return 0
@@ -84,8 +87,7 @@ class ShellCommand(Command):
     def limit(self, args: Namespace, where: Where) -> int:
         """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say; a line of journal commands alone is never moved."""
         from journal.features.shell.feature import Shell
-        journal, parts = Chain.journal_parts(args.line)
-        if parts and journal == parts:
+        if Chain.is_journal_line(args.line):
             print(0)
             return 0
         waiting = bool(self.messages.unread())
@@ -94,7 +96,13 @@ class ShellCommand(Command):
 
     def cap(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
-        print(int(self.settings.option(Shell.SHOWN)))
+        if Chain.is_journal_line(args.line):
+            print("whole 0")
+            return 0
+        if Chain.is_read_line(args.line):
+            print(f"ends {int(self.settings.option(Shell.READ_SHOWN))}")
+            return 0
+        print(f"hint {int(self.settings.option(Shell.COMMAND_SHOWN))}")
         return 0
 
     def started(self, args: Namespace, where: Where) -> int:

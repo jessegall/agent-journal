@@ -12,7 +12,7 @@ class Doing:
 
     @classmethod
     def of(cls, part: str) -> str:
-        words = [w for w in WORDS.findall(part) if not w.startswith("-") and "=" not in w]
+        words = [w for w in WORDS.findall(part.split("<<", 1)[0]) if not w.startswith("-") and "=" not in w]
         words = words[1:] if words and words[0] in RUNNERS and len(words) > 1 else words
         if not words:
             return "running"

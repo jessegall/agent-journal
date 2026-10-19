@@ -23,5 +23,4 @@ class Floor:
     def journal_command(event: ToolStarting, provider) -> bool:
         if event.tool != provider.shell_tool:
             return False
-        journal, parts = Chain.journal_parts(event.input.get("command", ""))
-        return parts > 0 and journal == parts
+        return Chain.is_journal_line(event.input.get("command", ""))
