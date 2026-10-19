@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Generic, TypeVar
+from typing import Callable, Generic, TypeVar
 
 from journal.db.column import Column
 from journal.db.connection import Connection
@@ -115,6 +115,12 @@ class Repository(Generic[M]):
             self.written()
             self.bus.dispatch(Updated(model=stamped, by=by, was=was))
             return stamped
+
+    def touched(self, row: M, by: Actor, fields_of: Callable[[M], dict]) -> M:
+        """The named columns written from the row as it stands under the write lock, worked out from it there, so a change another thread made in between is built on and never written over."""
+        with self.connection.transaction():
+            now = self.find(row.id)
+            return self.touch(now, by, **fields_of(now))
 
     def delete(self, row: M, by: Actor) -> None:
         with self.connection.transaction():

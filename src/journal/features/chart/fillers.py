@@ -276,6 +276,11 @@ class Fillers:
         free = self.plans.free()
         return str(free[0].id) if free else ""
 
+    def related_task(self, ctx: Context) -> str:
+        """The number of the task to take up while waiting: the started plan's next, else the next free one."""
+        related = self.plans.related()
+        return str(related[0].id) if related else ""
+
     def next_task_title(self, ctx: Context) -> str:
         """The title of the next open task of the plans."""
         free = self.plans.free()

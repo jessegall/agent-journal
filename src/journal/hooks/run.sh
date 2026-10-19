@@ -101,7 +101,7 @@ find "$root/runtime/outputs" -mindepth 1 -maxdepth 1 -mmin +1440 -exec rm -r {} 
 printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
-limit=$(sh "$__journal_cli" shell limit 2>/dev/null); limit=${limit:-30}
+limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
 cap=$(sh "$__journal_cli" shell cap 2>/dev/null); cap=${cap:-200}
 trap 'touch "$folder/moved"; exit 143' TERM INT HUP
 shown=0
@@ -114,7 +114,7 @@ while :; do
         shown=$((shown + 1))
     done
     [ -f "$folder/done" ] && exit "$(cat "$folder/done")"
-    if [ $((SECONDS - began)) -ge "$limit" ]; then
+    if [ "$limit" -gt 0 ] && [ $((SECONDS - began)) -ge "$limit" ]; then
         touch "$folder/moved"
         running=$(cat "$folder/$shown.part")
         sh "$__journal_cli" shell moved "$id" "$running" --file "$folder"
@@ -123,7 +123,7 @@ while :; do
     sleep 0.2
     tick=$((tick + 1))
     if [ $((tick % 10)) -eq 0 ]; then
-        fresh=$(sh "$__journal_cli" shell limit 2>/dev/null)
+        fresh=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null)
         limit=${fresh:-$limit}
     fi
 done

@@ -1303,6 +1303,9 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
 def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app):
     console = app.console()
     assert console.run(["shell", "limit"], AGENT).out.strip() == "30"
+    wrapped = "source /s 2>/dev/null || true && eval 'journal task list && journal message unread' < /dev/null && pwd -P >| /tmp/cwd"
+    assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "0", "a line of journal commands alone is never moved to the background"
+    assert console.run(["shell", "limit", "--line", wrapped.replace("journal message unread", "sleep 60")], AGENT).out.strip() == "30"
     console.run(["message", "send", "are you there?"], USER)
     assert console.run(["shell", "limit"], AGENT).out.strip() == "10"
     console.run(["message", "read", "1"], AGENT)
@@ -3584,6 +3587,7 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app):
     console.run(["question", "answer", "1", "red"], USER)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
     assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
+    assert card.data["detail"] == "", "the mark says only that it was answered, never the answer"
 
 def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
     from journal.repositories.charts import Charts
@@ -4993,3 +4997,36 @@ def test_an_agents_wait_is_on_its_own_row_with_or_without_a_task(app):
     with app.container.get(Scope).of(MAIN):
         row = app.container.get(AgentsShaper).rows()[0]
     assert row.data["awaiting"] == "the suite" and row.data["awaiting_since"], "the bar reads a wait from the agent's row, which changes when its state does"
+
+
+def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app):
+    from journal.engine.machine import Machine
+    from journal.features.sequences.running import Running
+    console = app.console()
+    release = console.run(["sequence", "create", "release", "--steps", "one | two | three"], USER).out.split()[1].rstrip(":")
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["sequence", "run", release], AGENT)
+    console.run(["sequence", "follow"], AGENT)
+    running, machine = app.container.get(Running), app.container.get(Machine)
+    with app.container.get(Scope).of(MAIN):
+        stale = machine.agent("s1", 1)
+        console.run(["sequence", "next"], AGENT)
+        running.rewritten(stale, lambda now: [*now[:-1], now[-1].said(running.now())])
+        assert running.in_hand("s1", 1).step == 1, "the pace's own write, read before the step moved on, keeps the step it moved to"
+
+
+def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet_minute(app, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "create", "the header"], AGENT)
+    console.run(["await", "the suite"], AGENT)
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=70.0))
+    app.runtime().deferred.drain()
+    assert any("while you wait for the suite, task 2 is next" in line and "waiting is fine" in line for line in typed), typed

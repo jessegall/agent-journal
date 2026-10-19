@@ -69,6 +69,14 @@ class Plans(ScopedRepository[Plan]):
         ids = {t.id for t in phased}
         return phased + [t for t in self.tasks_of(plan) if t.id not in ids]
 
+    def related(self) -> list[Task]:
+        """What an agent waiting on something may take up meanwhile: a started plan's next task while a plan is followed, else the free ones."""
+        started = [plan for plan in self.in_() if plan.state == PlanState.STARTED]
+        if not started:
+            return self.free()
+        task = self.next_task(started[0])
+        return [task] if task else []
+
     def free(self) -> list[Task]:
         """The open tasks an agent may take up on its own: a plan hands out its own in its order, so those are never offered."""
         return [t for t in self.tasks.in_state(TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]

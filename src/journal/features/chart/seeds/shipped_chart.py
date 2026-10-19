@@ -58,6 +58,7 @@ OWN = (
     ("awaiting", "workers.updated", "back", "Send the agent back to its work when the last worker is back", "back_when_the_last_worker_is_back"),
     ("waiting", "questions.updated", "question", "Send the agent back to its work when the question is answered", "waiting_at_question"),
     ("expecting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
+    ("expecting", "ticked", "meanwhile", "Point to the next task after a minute of waiting in auto mode", "next_while_waiting"),
     ("expecting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("stuck", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("ended", "session_started", "nothing", "No workflow for this state yet", "nothing_own"),
@@ -117,6 +118,7 @@ REPORTED = "[workers.reported] worker {{worker_n}}, {{worker_name}}, reported in
 STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
 RETURNED = "[workers.returned] what you waited on came back: carry on"
 ANSWERED = "question {{question_n}} is answered. `journal question show {{question_n}}` reads it whole, with the messages linked to it; act on the answer"
+MEANWHILE = "[tasks.meanwhile] while you wait for {{awaited}}, task {{related_task}} is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
 CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
@@ -569,6 +571,10 @@ class ShippedChart(Seed):
     def expecting_at_tick(self, chart: Chart, ends: list) -> list:
         """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long."""
         return self.guarded(chart, ends, 400, 92, (Guard("quiet_for_over", "5 minutes"),), "say", CHECK_AWAITED)
+
+    def next_while_waiting(self, chart: Chart, ends: list) -> list:
+        """An agent waiting on something in auto mode, after a quiet minute: the next task is named, to take up if it can go on meanwhile."""
+        return self.guarded(chart, ends, 400, 92, (Guard("auto_mode"), Guard("related_tasks"), Guard("quiet_for_over", "1 minute")), "say", MEANWHILE)
 
     def working_again(self, chart: Chart, ends: list) -> list:
         """The agent's own tool use ends a wait on something outside: the wait is released, with no line."""

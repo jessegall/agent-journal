@@ -41,7 +41,8 @@ class ShellCommand(Command):
         split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder; one line per part: R or S for the agent's own or the shell's wrapping, ; or & for how it follows, & or ; for what follows, w or - for whether it writes")
         split.add_argument("line")
         split.add_argument("--into", required=True)
-        self.verb(verbs, "limit", "the seconds a command may run in the foreground now")
+        limit = self.verb(verbs, "limit", "the seconds a command may run in the foreground now; none, 0, for a line of journal commands alone, whose answer must reach the agent")
+        limit.add_argument("--line", default="")
         self.verb(verbs, "cap", "the lines of a part's output shown at each end; the middle is cut and left in the part's file")
         started = self.verb(verbs, "started", "a part of a chain has started")
         started.add_argument("part")
@@ -72,9 +73,13 @@ class ShellCommand(Command):
         return 0
 
     def limit(self, args: Namespace, where: Where) -> int:
-        """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say."""
-        waiting = bool(self.messages.unread())
+        """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say; a line of journal commands alone is never moved."""
         from journal.features.shell.feature import Shell
+        journal, parts = Chain.journal_parts(args.line)
+        if parts and journal == parts:
+            print(0)
+            return 0
+        waiting = bool(self.messages.unread())
         print(int(self.settings.option(Shell.WHILE_WAITING if waiting else Shell.FOREGROUND)))
         return 0
 
