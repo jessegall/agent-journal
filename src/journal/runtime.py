@@ -45,7 +45,7 @@ class Runtime:
 
     def start(self) -> None:
         """Everything up, with the starting mark kept until it is, so the slow-request reports measure nothing meanwhile."""
-        from journal.features.faults.slow_requests import STARTING
+        from journal.support.slow_requests import STARTING
         starting = self.container.get(Config).home / "runtime" / STARTING
         starting.parent.mkdir(parents=True, exist_ok=True)
         starting.touch()

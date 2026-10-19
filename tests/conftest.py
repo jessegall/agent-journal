@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.support.masks import Masks
-from journal.features.faults.slow_requests import TESTS_RUNNING
+from journal.support.slow_requests import TESTS_RUNNING
 from journal.support.secret_values import SecretValues
 
 from journal.db.connection import Connection

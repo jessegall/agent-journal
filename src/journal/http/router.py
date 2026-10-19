@@ -1,7 +1,7 @@
 import time
 from urllib.parse import unquote
 
-from journal.features.faults.slow_requests import SlowRequests
+from journal.support.slow_requests import SlowRequests
 
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound

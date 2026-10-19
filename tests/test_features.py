@@ -795,7 +795,7 @@ def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(
 
 
 def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monkeypatch):
-    from journal.features.faults.slow_requests import SlowRequests
+    from journal.support.slow_requests import SlowRequests
     from journal.repositories.messages import Messages
     typed = []
     catch_typed(app, monkeypatch, typed)
