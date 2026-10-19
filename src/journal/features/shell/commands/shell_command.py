@@ -9,9 +9,11 @@ from journal.engine.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain
 from journal.features.shell.doing import Doing
+from journal.features.shell.output_log import OutputLog
 from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
+from journal.repositories.command_outputs import CommandOutputs
 from journal.models.edit import Edit
 from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
@@ -32,9 +34,9 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope, edits: Edits) -> None:
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs) -> None:
         self.entries, self.messages, self.settings, self.agents = entries, messages, settings, agents
-        self.edits = edits
+        self.edits, self.log, self.outputs = edits, log, outputs
         self.cards, self.nudger, self.supervisor, self.scope = cards, nudger, supervisor, scope
 
     def arguments(self, verbs) -> None:
@@ -67,9 +69,11 @@ class ShellCommand(Command):
     def split(self, args: Namespace, where: Where) -> int:
         """A part may span lines, so each goes to a file of its own; the printed index says which are the agent's."""
         folder = Path(args.into)
-        for i, part in enumerate(Chain.parts(args.line)):
+        parts = Chain.parts(args.line)
+        for i, part in enumerate(parts):
             (folder / f"{i}.part").write_text(part.text)
             print(part.kind() + ("w" if part.recorded and Writes.part(part.text) else "-"))
+        self.log.began(folder.name, "\n".join(part.text for part in parts if part.recorded), folder, where.session, where.actor)
         return 0
 
     def limit(self, args: Namespace, where: Where) -> int:
@@ -103,8 +107,9 @@ class ShellCommand(Command):
     def moved(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
+        output = self.outputs.save(self.outputs.of_chain(args.chain).moved_out(), where.actor)
         self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part, key=f"background:{args.chain}")
-        print(Shell.MOVED.about(part=args.part, file=args.file).rendered())
+        print(Shell.MOVED.about(n=output.id, file=args.file).rendered())
         return 0
 
     def ended(self, args: Namespace, where: Where) -> int:
@@ -116,7 +121,8 @@ class ShellCommand(Command):
         self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", "\n".join(line for line in (part, said) if line), key=f"background:{args.chain}")
         live = self.agents.live()
         if live:
-            line = self.nudger.say(live, Shell.ENDED.about(part=part, outcome=outcome, last=args.last[-300:], file=args.file))
+            output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)
+            line = self.nudger.say(live, Shell.ENDED.about(n=output.id, outcome=outcome, file=args.file))
             if line:
                 self.supervisor.type(self.scope.id, line)
         return 0

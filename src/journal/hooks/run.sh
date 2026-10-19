@@ -97,7 +97,6 @@ case "$1" in *"&& eval '"*"' < /dev/null && pwd -P"* | *"&& eval '"*"' && pwd -P
 id=$(date +%s)-$$
 folder="$root/runtime/outputs/$id"
 mkdir -p "$folder"
-find "$root/runtime/outputs" -mindepth 1 -maxdepth 1 -mmin +1440 -exec rm -r {} + 2>/dev/null
 printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)

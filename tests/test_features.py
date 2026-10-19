@@ -1357,7 +1357,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     console, port = app.console(), app.server().port
-    folder = app.config.root / "parts"
+    folder = app.config.root / "c1"
     folder.mkdir()
     assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
@@ -1369,11 +1369,13 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/agent/1/terminal?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["lines"][-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
     moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
-    assert "moved to the background: pytest -q" in moved and "/tmp/out/c1" in moved
+    assert "moved to the background as output 1" in moved and "pytest" not in moved, "a background command is named by its number"
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
-    assert "failed with code 1: pytest -q" in typed[-1] and "2 failed" in typed[-1]
+    assert "output 1 failed with code 1" in typed[-1] and "pytest" not in typed[-1] and "2 failed" not in typed[-1], "its end names the number and how it ended, never the command or its lines"
     cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
     assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["detail"] == "pytest -q\n2 failed", "the one mark of the moved command is settled in place: it names the command and how it ended"
+    (app.config.root / "c2").mkdir()
+    console.run(["shell", "split", "pytest -q", "--into", str(app.config.root / "c2")], AGENT)
     console.run(["shell", "moved", "c2", "pytest -q", "--file", "/tmp/out/c2"], AGENT)
     console.run(["shell", "ended", "c2", "--status", "0", "--file", "/tmp/out/c2", "--last", "........ [ 76%]\n....... [100%]"], AGENT)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
@@ -5150,3 +5152,17 @@ def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app, mo
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "New\n\nJournal: tasks done 1 and 2 now"], cwd=root, check=True)
     hook(app, "PostToolUse", **command)
     assert app.container.get(Tasks).find(1).state == "done" and app.container.get(Tasks).find(2).state == "parked"
+
+
+def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder(app):
+    from journal.repositories.command_outputs import CommandOutputs
+    app.container.get(Settings).save(Setting(environment_id=0, key="shell.outputs_kept", value=2), Actor.system())
+    hook(app, "SessionStart")
+    console = app.console()
+    folders = [app.config.root / f"run{i}" for i in range(3)]
+    for folder in folders:
+        folder.mkdir()
+        console.run(["shell", "split", "ls", "--into", str(folder)], AGENT)
+    with app.container.get(Scope).of(MAIN):
+        kept = app.container.get(CommandOutputs).every()
+    assert [o.chain for o in kept] == ["run1", "run2"] and not folders[0].exists() and folders[2].exists(), "the newest kept, the oldest gone with its files"

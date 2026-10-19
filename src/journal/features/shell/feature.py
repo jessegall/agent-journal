@@ -17,14 +17,15 @@ class Shell(Feature):
     FOREGROUND = Option("shell.foreground", "Run a command in the foreground for", "Seconds a part of a command may run before the rest of the chain moves to the background", 30, unit="seconds")
     WHILE_WAITING = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
-    options = (FOREGROUND, WHILE_WAITING, SHOWN)
+    KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
+    options = (FOREGROUND, WHILE_WAITING, SHOWN, KEPT)
     listeners = (RefuseMixedJournal, ReadNarrowly)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
     )
 
-    MOVED = Nudge(name, "moved", "moved to the background: {{part}}", "its output goes to {{file}}; you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
-    ENDED = Nudge(name, "ended", "the command in the background {{outcome}}: {{part}}", "last lines: {{last}}; the whole output is at {{file}}", repeat_after=0)
+    MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends; its output is in {{file}}. Carry on with what does not wait on it", repeat_after=0)
+    ENDED = Nudge(name, "ended", "output {{n}} {{outcome}}", "its output is in {{file}}", repeat_after=0)
     NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
     ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
     nudges = (MOVED, ENDED, ALONE)

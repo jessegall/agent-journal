@@ -25,6 +25,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.not_found import NotFound
+from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
 
 USER = Actor.user(1)
@@ -39,13 +40,17 @@ class Heard(Listener[ModelEvent]):
         self.events.append(event)
 
 
+def tasks_of(connection, bus, scope) -> Tasks:
+    return Tasks(connection, bus, scope, Links(connection, bus), Questions(connection, bus, scope))
+
+
 class SayNo(Listener[Creating]):
     def handle(self, event):
         raise Refused("not today")
 
 
 def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus, scope):
-    tasks = Tasks(connection, bus, scope)
+    tasks = tasks_of(connection, bus, scope)
     task = tasks.save(Task(environment_id=1, title="write the release notes"), by=USER)
     assert task.id == 1
     assert task.created_by == USER and task.updated_by == USER
@@ -56,7 +61,7 @@ def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus, scope):
 def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus, scope):
     heard = Heard()
     bus.listen(ModelEvent, heard)
-    tasks = Tasks(connection, bus, scope)
+    tasks = tasks_of(connection, bus, scope)
     task = tasks.save(Task(environment_id=1, title="t"), by=USER)
     tasks.save(task.with_(state=TaskState.STARTED), by=AGENT)
     tasks.delete(task, by=USER)
@@ -69,14 +74,14 @@ def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus, sco
 
 def test_a_refusing_listener_stops_the_write(connection, bus, scope):
     bus.listen(Creating, SayNo())
-    tasks = Tasks(connection, bus, scope)
+    tasks = tasks_of(connection, bus, scope)
     with pytest.raises(Refused):
         tasks.save(Task(environment_id=1, title="t"), by=USER)
     assert tasks.all() == []
 
 
 def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, scope):
-    tasks, links = Tasks(connection, bus, scope), Links(connection, bus)
+    tasks, links = tasks_of(connection, bus, scope), Links(connection, bus)
     bus.listen(Deleted, UnlinkDeleted(links))
     a = tasks.save(Task(environment_id=1, title="a"), by=USER)
     b = tasks.save(Task(environment_id=1, title="b"), by=USER)
@@ -89,7 +94,7 @@ def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, s
 
 
 def test_where_reads_typed_values_back(connection, bus, scope):
-    tasks = Tasks(connection, bus, scope)
+    tasks = tasks_of(connection, bus, scope)
     tasks.save(Task(environment_id=1, title="open"), by=USER)
     started = tasks.save(Task(environment_id=1, title="started", state=TaskState.STARTED), by=USER)
     with scope.of(1):
@@ -99,7 +104,7 @@ def test_where_reads_typed_values_back(connection, bus, scope):
 
 
 def test_writes_from_many_threads_all_land(connection, bus, scope):
-    tasks = Tasks(connection, bus, scope)
+    tasks = tasks_of(connection, bus, scope)
 
     def write(n):
         tasks.save(Task(environment_id=1, title=f"t{n}"), by=USER)
@@ -162,7 +167,7 @@ def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one
     from journal.models.task import Task
     from journal.refused import Refused
     from journal.repositories.tasks import Tasks
-    tasks = Tasks(connection, bus, scope)
+    tasks = tasks_of(connection, bus, scope)
     with pytest.raises(Refused, match="at most 80 characters"):
         tasks.save(Task(environment_id=1, title="x" * 81), Actor.system())
     with pytest.raises(Refused, match="no colon"):
