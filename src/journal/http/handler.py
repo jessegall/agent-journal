@@ -1,12 +1,11 @@
 import json
 import traceback
-from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
-from journal.db.connection import Connection
 from journal.http.file_response import FileResponse
 from journal.http.identity import Identity
 from journal.http.multipart import Multipart
+from journal.http.pooled_handler import PooledHandler
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.router import Router
@@ -14,20 +13,12 @@ from journal.http.static_files import StaticFiles
 from journal.http.stream_response import StreamResponse
 
 
-class Handler(BaseHTTPRequestHandler):
+class Handler(PooledHandler):
     """Turns one HTTP exchange into a Request for the router and writes its Response back; nothing else lives here."""
 
     router: Router
     identity: Identity
     static: StaticFiles
-    database: Connection
-
-    def finish(self) -> None:
-        """The response is written: the thread's database connection goes back to the pool before the thread ends."""
-        try:
-            super().finish()
-        finally:
-            self.database.release()
 
     def do_GET(self) -> None:
         request = self._request()

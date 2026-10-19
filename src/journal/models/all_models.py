@@ -25,6 +25,7 @@ from journal.models.scoped import Scoped
 from journal.models.secret import Secret
 from journal.models.sequence import Sequence
 from journal.models.setting import Setting
+from journal.models.share import Share
 from journal.models.task import Task
 from journal.models.template import Template
 from journal.models.task_log import TaskLog
@@ -37,5 +38,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Share)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

@@ -596,8 +596,14 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 - **Options**: a feature declares the settings it reads as `Option`s (`Feature.options`), key `feature.name`, with the words
   the settings page shows; `Settings.option(PROJECT, option)` reads one. The settings page is built from them: the manifest's
   features and groups come from the registry, the tree nests the stored keys on the first dot, a save writes the keys and
-  drops the ones left out. Version 3's settings fixture, its eighty features, the services, share-links and developer tabs,
-  the tunnel panes and the status bar's work modes are gone. The avatar is a feature with its `shown` option.
+  drops the ones left out. Version 3's settings fixture, its eighty features, the services and developer tabs and the
+  status bar's work modes are gone. The avatar is a feature with its `shown` option. The System tab has the Project group
+  (`V3Manifest.SYSTEM_GROUPS`); the Share links tab is the `sharing` feature's, with the tunler account pane under it.
+- **Share links** (the `sharing` feature): a `Share` row per link, linked to the doc, report or plan it opens as `shares`;
+  the share server is a second loopback listener (`ShareServer`) that answers `/s/<token>/`, its `data.json`, its assets and
+  `/health`, nothing else; the tunnel is `tunler <port> --domain=<name>` run by the supervisor that hosts the journal while a
+  link is open, its name and ports kept in `.journal/sharing.json`. Not ported yet: the agent's `journal share` command and
+  its Accept in the chat, visitor comments, shared views and layouts, the phone, the watchdog that restarts the tunnel.
 - **A read never makes an environment**: `Environments.existing(name)` is the one lookup for every route and answers not
   found; the runtime makes `main` at boot. The browser's stray `#/settings` had made four environments named settings.
 - **The supervisor's Enter**: typed half a second after the line has reached the terminal, each piece in a write of its own;

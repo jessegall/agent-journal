@@ -1,4 +1,5 @@
 import json
+import os
 import socket
 import time
 from pathlib import Path
@@ -108,6 +109,11 @@ class SupervisorLink:
 
     def stop(self, environment_id: int) -> None:
         self._send(environment_id, "stop", {"name": AGENT})
+
+    def hosting(self) -> int | None:
+        """The environment whose supervisor hosts this journal, by the name it was started under; none when no supervisor runs it, as under plain claude or a worker's journal."""
+        hosts = self.environments.where(name=os.environ.get("JOURNAL_ENV", ""))
+        return hosts[0].id if hosts and self.runs(hosts[0].id) else None
 
     def runs(self, environment_id: int) -> bool:
         """Whether a supervisor answers for the environment: one on the protocol says hello, one from before it has its socket open; an announce file a dead supervisor left answers nothing."""

@@ -3,6 +3,7 @@ from journal.http.router import Router
 from journal.http.v3.documents_controller import DocumentsController
 from journal.http.v3.plugins_controller import PluginsController
 from journal.http.v3.rows_controller import RowsController
+from journal.http.v3.share_controller import ShareController
 from journal.http.v3.transcript_controller import TranscriptController
 from journal.http.v3.v3_controller import V3Controller
 
@@ -18,7 +19,7 @@ class V3Routes:
     def mount(self, router: Router) -> Router:
         c = self.container.get(V3Controller)
         for path, handler in (("manifest", c.get_manifest), ("identity", c.get_identity), ("summary", c.get_summary), ("agents", c.get_agents), ("pages", c.get_pages), ("journals", c.get_journals),
-                              ("new-feature", c.get_new_feature), ("upstream", c.get_empty), ("releases", c.get_empty_list), ("services", c.get_empty_list), ("extension", c.get_empty), ("hosting", c.get_empty)):
+                              ("new-feature", c.get_new_feature), ("upstream", c.get_empty), ("releases", c.get_empty_list), ("extension", c.get_empty), ("hosting", c.get_empty)):
             router.get(f"{API}/{path}", handler)
         router.post(f"{API}/identity", c.post_identity)
         router.get(f"{API}/agent-controls/{{provider}}", c.get_agent_controls)
@@ -52,6 +53,9 @@ class V3Routes:
         router.get(f"{API}/helper/{{n}}/transcript", transcripts.worker)
         router.post(f"{API}/agent/{{session}}/shell", c.post_agent_shell)
         router.post(f"{API}/agent/{{session}}/control", c.post_agent_control)
+        sharing = self.container.get(ShareController)
+        router.get(f"{API}/services", sharing.services)
+        router.post(f"{API}/share/{{action}}", sharing.command)
         plugins = self.container.get(PluginsController)
         router.post(f"{API}/plugins/preview", plugins.preview)
         router.post(f"{API}/plugin/install", plugins.install)

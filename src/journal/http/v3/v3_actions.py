@@ -11,6 +11,7 @@ from journal.http.v3.attachments import Attachments
 from journal.http.v3.agent_actions import AgentActions
 from journal.http.v3.plugin_actions import PluginActions
 from journal.http.v3.secret_actions import SecretActions
+from journal.http.v3.share_actions import ShareActions
 from journal.models.author import Author
 from journal.models.fact import Fact
 from journal.models.doc import Doc
@@ -54,13 +55,13 @@ class V3Actions:
     WRITTEN = {"doc": "docs", "report": "reports", "todo": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders", "question": "questions"}
     """The repository behind each type the viewer may rewrite."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering, secret_actions: SecretActions, agent_actions: AgentActions, plugin_actions: PluginActions) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering, secret_actions: SecretActions, share_actions: ShareActions, agent_actions: AgentActions, plugin_actions: PluginActions) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
         self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
         self.notices, self.answering = notices, answering
         self.launcher = launcher
-        self.own_types = {"secret": secret_actions, "agent": agent_actions, "plugin": plugin_actions}
+        self.own_types = {"secret": secret_actions, "share": share_actions, "agent": agent_actions, "plugin": plugin_actions}
         """Types whose acts live in a class of their own, by the act's name."""
 
     def create(self, type: str, payload: dict, request: Request):

@@ -11,6 +11,10 @@ FIXTURE = Path(__file__).with_name("manifest.json")
 DIST = Path(__file__).resolve().parents[3] / "web" / "dist" / "index.html"
 RENAMED = {"todo": ("Task", "One unit of work with a life: open, started, done"), "helper": ("Worker", "An agent sent to write one bounded job"), "work": ("Work", "A task in hand and its log")}
 VERSION = "4.0.0"
+PLACED = {"sharing": ("Sharing", "sharing")}
+"""Features the settings page shows in a tab of their own, by name: the section and the tab."""
+SYSTEM_GROUPS = [{"key": "project", "title": "Project", "line": "Settings for the whole project, in every environment", "section": "Project", "tab": "system", "lead": ""}]
+"""The System tab's groups, filled by the viewer's own rows: the project's colour, the Chrome extension and what the viewer shows."""
 
 
 class V3Manifest:
@@ -48,9 +52,14 @@ class V3Manifest:
         return readers
 
     def groups(self) -> list[dict]:
-        """One group per feature, led by it: those that speak to the agent in the Agent tab, the rest under Features."""
-        return [{"key": f.name, "title": f.title, "line": f.help, "section": "Agent" if f.states or f.nudges else "Features", "tab": "agent" if f.states or f.nudges else "features", "lead": f.name}
-                for f in self.registry.features]
+        """One group per feature, led by it: those that speak to the agent in the Agent tab, sharing in its own, the rest under Features; then the System tab's."""
+        return [{"key": f.name, "title": f.title, "line": f.help, "section": self.placed(f)[0], "tab": self.placed(f)[1], "lead": f.name} for f in self.registry.features] + SYSTEM_GROUPS
+
+    @staticmethod
+    def placed(feature) -> tuple[str, str]:
+        if feature.name in PLACED:
+            return PLACED[feature.name]
+        return ("Agent", "agent") if feature.states or feature.nudges else ("Features", "features")
 
     @staticmethod
     def build() -> str:

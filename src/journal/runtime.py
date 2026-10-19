@@ -17,14 +17,15 @@ from journal.engine.deferred import Deferred
 from journal.container import Container
 from journal.repositories.scope import Scope
 from journal.http.server import Server
+from journal.http.share_server import ShareServer
 
 
 class Runtime:
-    """What the server process keeps alive: the HTTP server, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
+    """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher) -> None:
+    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
-        self.watcher = watcher
+        self.watcher, self.share_server = watcher, share_server
 
     def boot(self) -> None:
         """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
@@ -42,6 +43,7 @@ class Runtime:
             self.container.get(Environments).named("main")
 
     def start(self) -> None:
+        self.share_server.start()
         self.boot()
         from journal.features.skills.skill_files import SkillFiles
         self.container.get(SkillFiles).write_all()
@@ -61,6 +63,7 @@ class Runtime:
 
     def stop(self) -> None:
         self.server.stop()
+        self.share_server.stop()
         self.clock.stop()
         self.watcher.stop()
         self.deferred.stop()

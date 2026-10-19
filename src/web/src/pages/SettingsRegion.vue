@@ -1,6 +1,7 @@
 <script setup>
 import SettingGroup from "../kit/SettingGroup.vue";
 import AgentVoice from "./AgentVoice.vue";
+import SettingsTunnel from "./SettingsTunnel.vue";
 
 defineProps({region: {type: Object, required: true}, across: Boolean, sheet: Boolean});
 defineEmits(["change", "timing", "act"]);
@@ -26,6 +27,13 @@ defineEmits(["change", "timing", "act"]);
                     <AgentVoice />
                 </template>
             </SettingGroup>
+        </template>
+        <template v-if="region.key === 'sharing' && !across">
+            <div class="settings-region-head">
+                <h3 class="settings-subhead">Tunler account</h3>
+                <p class="settings-line">Tunler is the service that gives share links their web address. Connect an account here.</p>
+            </div>
+            <SettingsTunnel />
         </template>
     </div>
 </template>
