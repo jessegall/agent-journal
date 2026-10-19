@@ -2,6 +2,7 @@ from journal.container import Container
 from journal.http.router import Router
 from journal.http.v3.documents_controller import DocumentsController
 from journal.http.v3.migration_controller import MigrationController
+from journal.http.v3.outputs_controller import OutputsController
 from journal.http.v3.plugins_controller import PluginsController
 from journal.http.v3.rows_controller import RowsController
 from journal.http.v3.share_controller import ShareController
@@ -32,6 +33,8 @@ class V3Routes:
         router.get(f"{API}/bar", c.get_bar)
         router.get(f"{API}/settings", c.get_settings)
         router.post(f"{API}/settings", c.post_settings)
+        router.post(f"{API}/mode", c.post_mode)
+        router.get(f"{API}/output/{{n}}/read", self.container.get(OutputsController).read)
         router.get(f"{API}/events", c.get_events)
         router.get(f"{API}/stream", c.get_stream)
         router.get(f"{API}/files", c.get_empty)

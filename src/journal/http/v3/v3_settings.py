@@ -1,6 +1,9 @@
 from journal.features.registry import Registry
 from journal.models.actor import Actor
+from journal.refused import Refused
 from journal.repositories.settings import Settings
+
+MODES = ("builder", "orchestrator", "solo")
 
 
 class V3Settings:
@@ -25,6 +28,11 @@ class V3Settings:
             for name, value in inner.items():
                 if top != "features" or name in self.known:
                     self.settings.set(f"{top}.{name}", value, by)
+
+    def keep_mode(self, mode: object, by: Actor) -> None:
+        if mode not in MODES:
+            raise Refused(f"no such mode: {mode}; the modes are {', '.join(MODES)}")
+        self.settings.set("work_modes.mode", mode, by)
 
     @property
     def known(self) -> set[str]:

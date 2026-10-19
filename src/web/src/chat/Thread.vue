@@ -28,6 +28,7 @@ import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import UpdateOverlay from "./UpdateOverlay.vue";
+import OutputDialog from "./OutputDialog.vue";
 import ReportDock from "./ReportDock.vue";
 import DumpDock from "./DumpDock.vue";
 import {dockedDump, dockedReport} from "../domain/docks.js";
@@ -59,10 +60,13 @@ function showSuggestion(n) {
     card.querySelector(".sg-title")?.focus({preventScroll: true});
     return true;
 }
+const outputOpen = ref(0);
+const showOutput = (n) => !!threadRoot.value?.offsetParent && ((outputOpen.value = n), true);
 let unask = () => {};
 let unsuggest = () => {};
-onMounted(() => here && ((unask = openInChat("question", askHere)), (unsuggest = openInChat("suggestion", showSuggestion))));
-onUnmounted(() => (unask(), unsuggest()));
+let unoutput = () => {};
+onMounted(() => here && ((unask = openInChat("question", askHere)), (unsuggest = openInChat("suggestion", showSuggestion)), (unoutput = openInChat("output", showOutput))));
+onUnmounted(() => (unask(), unsuggest(), unoutput()));
 const dumpHere = computed(() => store.dumping && !props.view);
 const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
 const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
@@ -408,6 +412,9 @@ watch(
         </template>
         <template v-if="updateView.n && threadRoot?.contains(updateView.owner)">
             <UpdateOverlay :key="updateView.n" />
+        </template>
+        <template v-if="outputOpen">
+            <OutputDialog :key="outputOpen" :n="outputOpen" @close="outputOpen = 0" />
         </template>
         <template v-if="chatOpen">
             <div :class="['thread-write', {hidden: feeding}]">
