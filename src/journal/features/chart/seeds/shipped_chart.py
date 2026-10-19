@@ -1,10 +1,10 @@
 import re
 from journal.support.states_catalogue import StatesCatalogue
-from journal.features.chart.seeds.guard import Guard
+from journal.features.chart.seeds.support.guard import Guard
 from journal.support.chart_catalogue import FORMER_TITLES, ChartCatalogue
 from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.support.title import LONGEST
-from journal.features.chart.seeds.drawing import Drawing
+from journal.features.chart.seeds.support.drawing import Drawing
 from journal.features.registry import Registry
 from journal.features.seed import Seed
 from journal.support.actor import Actor
