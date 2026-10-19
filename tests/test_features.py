@@ -564,6 +564,11 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
         assert link.runs(environment), "an old supervisor runs while its socket is open"
         link.restart_agent(environment, ("--resume", "s1"))
         assert json.loads(old.recv(4096)) == {"type": "RestartAgent", "resume": ["--resume", "s1"]}, "a bare path is a supervisor from before the protocol"
+        link.stop_service(environment, "plugin.code-commandments.mypy")
+        old.settimeout(0.2)
+        with pytest.raises(TimeoutError):
+            old.recv(4096)
+        old.settimeout(None)
     Path(path).unlink(missing_ok=True)
     heard = []
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as new:

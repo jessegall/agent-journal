@@ -26,15 +26,20 @@ def test_an_upgrade_leaves_the_agent_running(app, tmp_path: Path):
     inbox.open()
     terminal.start()
     journal.start()
-    stopping = threading.Event()
+    stopping, faults = threading.Event(), []
 
     def turn() -> None:
-        while not stopping.is_set():
-            supervisor.relay_once(0.05)
-            supervisor.services.keep_alive()
+        """The supervisor's loop, as run() turns it; a fault that would end the supervisor is kept for the test."""
+        try:
+            while not stopping.is_set():
+                supervisor.relay_once(0.05)
+                supervisor.services.keep_alive()
+        except Exception as fault:
+            faults.append(fault)
     loop = threading.Thread(target=turn, daemon=True)
     loop.start()
     ProjectCommand(app.config.root, Path(__file__).parents[1] / "src" / "journal.sh").write()
+    (app.config.root / "shop.py").write_text("PRICE = 3\n")
     try:
         installed = app.console().run(["plugin", "install", SOURCE, "--yes"], USER)
         assert installed.code == 0, installed.err
@@ -47,6 +52,7 @@ def test_an_upgrade_leaves_the_agent_running(app, tmp_path: Path):
         print("upgrade:", upgraded.code, upgraded.out[-300:], upgraded.err[-300:])
         time.sleep(1)
         print("after upgrade:", [(p["name"], p["running"]) for p in supervisor.described()])
+        assert faults == [], "the supervisor's loop survives the upgrade, or the supervisor would end and the agent with it"
         assert terminal.exited() is None, "the agent runs after the upgrade"
     finally:
         stopping.set()
