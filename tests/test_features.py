@@ -1304,7 +1304,7 @@ def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app, tmp_pa
 
 
 def test_wispr_flow_is_among_the_suggested_mcp_services():
-    from journal.features.mcp.catalogue import SUGGESTED
+    from journal.support.mcp_catalogue import SUGGESTED
     suggested = {s.name: s for s in SUGGESTED}
     assert suggested["wispr-flow"].url == "https://api.wisprflow.ai/connect/mcp" and suggested["wispr-flow"].auth == "oauth"
 
@@ -1764,15 +1764,15 @@ def test_a_journal_command_chained_with_anything_else_is_refused(app):
 def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the_agents_restarted_and_keyed_without(app, monkeypatch, tmp_path):
     import json as j
     from urllib.request import Request as R, urlopen
-    from journal.features.mcp.health import Health
-    from journal.features.mcp.keys import Keys
+    from journal.support.health import Health
+    from journal.support.keys import Keys
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
-    from journal.features.mcp.health_report import HealthReport
-    from journal.features.mcp.known import Known
+    from journal.features.mcp.support.health_report import HealthReport
+    from journal.features.mcp.support.known import Known
     monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"github": Known("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": Known("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": Known("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")}))
     hook(app, "SessionStart")
     port = app.server().port
@@ -2430,9 +2430,9 @@ def test_a_messages_mentions_reach_the_viewer_as_refs(app):
 def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claudes_own_command(app, monkeypatch):
     import json as j
     from urllib.request import Request as R, urlopen
-    from journal.features.mcp.health import Health
-    from journal.features.mcp.health_report import HealthReport
-    from journal.features.mcp.known import Known
+    from journal.support.health import Health
+    from journal.features.mcp.support.health_report import HealthReport
+    from journal.features.mcp.support.known import Known
     from journal.supervisor_link import SupervisorLink
     sent, removed = [], []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -4227,9 +4227,9 @@ def test_a_report_about_several_rows_links_each_and_refuses_one_it_cannot_read(a
 def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_it_anew(app, monkeypatch):
     import json as j
     from urllib.request import Request as R, urlopen as open_url
-    from journal.features.mcp.health import Health
-    from journal.features.mcp.health_report import HealthReport
-    from journal.features.mcp.known import Known
+    from journal.support.health import Health
+    from journal.features.mcp.support.health_report import HealthReport
+    from journal.features.mcp.support.known import Known
     answers = [HealthReport({"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "failed", "rejected your login")}),
                HealthReport({"claude_design": Known("claude_design", "https://api.anthropic.com/v1/design/mcp", "connected", "")})]
     monkeypatch.setattr(Health, "asked", lambda self: answers.pop(0) if len(answers) > 1 else answers[0])
@@ -4791,8 +4791,8 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
     assert "`journal environment here`" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
-    from journal.features.chart.catalogue import Catalogue
-    by_key = {e.key: e for e in app.container.get(Catalogue).triggers()}
+    from journal.features.chart.catalogue import McpCatalogue
+    by_key = {e.key: e for e in app.container.get(McpCatalogue).triggers()}
     assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
 
 
@@ -4906,10 +4906,10 @@ def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_s
 
 def test_each_feature_declares_its_own_checks_and_actions_and_the_catalogue_only_gathers_them(app):
     from journal.features.chart.actions import Actions
-    from journal.features.chart.catalogue import Catalogue
+    from journal.features.chart.catalogue import McpCatalogue
     from journal.features.chart.checks import Checks
     from journal.features.registry import Registry
-    catalogue, registry = app.container.get(Catalogue), app.container.get(Registry)
+    catalogue, registry = app.container.get(McpCatalogue), app.container.get(Registry)
     declared = [(f.name, e.key) for f in registry.features for e in f.checks + f.actions]
     assert len(declared) == len({k for _, k in declared}), "a key is declared by one feature only"
     assert {e.key for e in catalogue.checks()} == {e.key for f in registry.features for e in f.checks} and {e.key for e in catalogue.actions()} == {e.key for f in registry.features for e in f.actions}
@@ -5247,7 +5247,7 @@ def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
 def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_taken_back(app, tmp_path, monkeypatch):
     import json as j
     import time
-    from journal.features.mcp.installing import Installing
+    from journal.support.mcp_installing import McpInstalling
     from journal.features.secrets.browser_logins import BrowserLogins
     from journal.models.mcp_server import McpServer
     from journal.models.secret import Secret
@@ -5256,7 +5256,7 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     from journal.repositories.secrets import Secrets
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     applied = []
-    monkeypatch.setattr(Installing, "applied", lambda self: applied.append(True))
+    monkeypatch.setattr(McpInstalling, "applied", lambda self: applied.append(True))
 
     def recorded(self, title, url):
         self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -5669,9 +5669,9 @@ def test_every_version_3_message_comes_across_with_its_author_time_reply_and_att
 
 def test_the_mcp_list_answers_at_once_and_asks_the_program_on_a_thread_of_its_own(app, monkeypatch):
     import time
-    from journal.features.mcp.health import Health
-    from journal.features.mcp.health_report import HealthReport
-    from journal.features.mcp.known import Known
+    from journal.support.health import Health
+    from journal.features.mcp.support.health_report import HealthReport
+    from journal.features.mcp.support.known import Known
     asked = []
     def slow(self):
         asked.append(1)

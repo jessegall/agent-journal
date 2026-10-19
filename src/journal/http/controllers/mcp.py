@@ -1,8 +1,8 @@
-from journal.features.mcp.catalogue import Catalogue
-from journal.features.mcp.health import Health
-from journal.features.mcp.installing import Installing
-from journal.features.mcp.keys import Keys
-from journal.features.mcp.pending_restarts import PendingRestarts
+from journal.support.mcp_catalogue import McpCatalogue
+from journal.support.health import Health
+from journal.support.mcp_installing import McpInstalling
+from journal.support.keys import Keys
+from journal.support.pending_restarts import PendingRestarts
 from journal.http.controllers.listed_server import ListedServer
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -13,7 +13,7 @@ from journal.support.not_found import NotFound
 class McpController:
     """The MCP page: the project's MCP servers and how they stand, the suggestions, and the acts on them."""
 
-    def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing, health: Health, pending: PendingRestarts) -> None:
+    def __init__(self, servers: McpServers, catalogue: McpCatalogue, keys: Keys, installing: McpInstalling, health: Health, pending: PendingRestarts) -> None:
         self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending
 
     def index(self, request: Request) -> Response:

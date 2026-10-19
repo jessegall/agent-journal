@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from journal.features.mcp.known import Known
+from journal.features.mcp.support.known import Known
 
 
 @dataclass(frozen=True)

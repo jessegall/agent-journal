@@ -1,8 +1,8 @@
-from journal.features.mcp.health_report import HealthReport
-from journal.features.mcp.health import Health
-from journal.features.mcp.pending_restarts import PendingRestarts
-from journal.features.mcp.keys import Keys
-from journal.features.mcp.provider_config import ProviderConfig
+from journal.features.mcp.support.health_report import HealthReport
+from journal.support.health import Health
+from journal.support.pending_restarts import PendingRestarts
+from journal.support.keys import Keys
+from journal.features.mcp.support.provider_config import ProviderConfig
 from journal.engine.nudger import Nudger
 from journal.support.actor import Actor
 from journal.models.mcp_server import McpServer
@@ -14,7 +14,7 @@ from journal.repositories.mcp_servers import McpServers
 from journal.supervisor_link import SupervisorLink
 
 
-class Installing:
+class McpInstalling:
     """The one way a server is added, keyed, removed or checked: the row, the configuration the agents read, and, for an added or removed server, a restart of the agents running, so it applies at once."""
 
     def __init__(self, servers: McpServers, config_files: ProviderConfig, keys: Keys, health: Health, agents: Agents, providers: Providers, supervisor: SupervisorLink, turn: Turn, pending: PendingRestarts, nudger: Nudger) -> None:

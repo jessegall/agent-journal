@@ -1,6 +1,6 @@
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
-from journal.features.mcp.pending_restarts import PendingRestarts
+from journal.support.pending_restarts import PendingRestarts
 from journal.supervisor_link import SupervisorLink
 
 

@@ -3,8 +3,8 @@ import subprocess
 
 from journal.config import Config
 from journal.support.kept_answer import KeptAnswer
-from journal.features.mcp.health_report import HealthReport
-from journal.features.mcp.known import Known
+from journal.features.mcp.support.health_report import HealthReport
+from journal.features.mcp.support.known import Known
 
 LINE = re.compile(r"^(?P<name>.+?): (?P<how>.+?) - (?P<mark>[✔✘!]) (?P<words>.*)$")
 STATES = {"✔": "connected", "✘": "failed", "!": "needs_auth"}

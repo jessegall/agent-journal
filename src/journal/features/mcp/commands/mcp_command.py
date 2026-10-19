@@ -2,16 +2,16 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.mcp.catalogue import Catalogue
-from journal.features.mcp.installing import Installing
-from journal.features.mcp.keys import Keys
+from journal.support.mcp_catalogue import McpCatalogue
+from journal.support.mcp_installing import McpInstalling
+from journal.support.keys import Keys
 from journal.repositories.mcp_servers import McpServers
 
 
 class McpCommand(Command):
     noun = "mcp"
 
-    def __init__(self, servers: McpServers, catalogue: Catalogue, keys: Keys, installing: Installing) -> None:
+    def __init__(self, servers: McpServers, catalogue: McpCatalogue, keys: Keys, installing: McpInstalling) -> None:
         self.servers, self.catalogue, self.keys, self.installing = servers, catalogue, keys, installing
 
     def arguments(self, verbs) -> None:

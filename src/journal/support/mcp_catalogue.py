@@ -1,4 +1,4 @@
-from journal.features.mcp.suggestion import Suggestion
+from journal.features.mcp.support.suggestion import Suggestion
 
 SUGGESTED = (
     Suggestion("linear", "Linear", "Issues, projects and cycles in Linear.", transport="http", url="https://mcp.linear.app/mcp", auth="oauth"),
@@ -13,7 +13,7 @@ SUGGESTED = (
 )
 
 
-class Catalogue:
+class McpCatalogue:
     """The servers suggested on the MCP page, by name."""
 
     def all(self) -> tuple[Suggestion, ...]:
