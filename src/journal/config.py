@@ -24,6 +24,11 @@ class Config:
         return Path.home() / ".journal" / "status"
 
     @property
+    def files(self) -> Path:
+        """Where the files attached to rows are kept, a folder per table and row."""
+        return self.home / "files"
+
+    @property
     def readers(self) -> Path:
         """The project's output readers, kept in its journal so they travel with it."""
         return self.home / "readers"

@@ -8,7 +8,7 @@ class Attachments:
     """The files attached to rows, kept under .journal/files/<type>/<n>/, named as they came."""
 
     def __init__(self, config: Config) -> None:
-        self.home = config.home / "files"
+        self.home = config.files
 
     def store(self, type: str, n: int, name: str, data: bytes) -> str:
         safe = Path(name).name or "file"

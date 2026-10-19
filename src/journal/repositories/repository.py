@@ -100,7 +100,15 @@ class Repository(Generic[M]):
     def save(self, row: M, by: Actor) -> M:
         with self.connection.transaction():
             self.bus.dispatch(Saving(model=row, by=by))
-            saved = self._insert(row, by) if row.is_new else self._update(row, by)
+            saved = self._insert(row, by, self._now()) if row.is_new else self._update(row, by)
+            self.bus.dispatch(Saved(model=saved, by=by))
+            return saved
+
+    def imported(self, row: M, at: datetime, by: Actor) -> M:
+        """A new row brought from elsewhere, such as a version 3 journal, stamped with when it was made there rather than now."""
+        with self.connection.transaction():
+            self.bus.dispatch(Saving(model=row, by=by))
+            saved = self._insert(row, by, at)
             self.bus.dispatch(Saved(model=saved, by=by))
             return saved
 
@@ -129,9 +137,8 @@ class Repository(Generic[M]):
             self.written()
             self.bus.dispatch(Deleted(model=row, by=by))
 
-    def _insert(self, row: M, by: Actor) -> M:
+    def _insert(self, row: M, by: Actor, now: datetime) -> M:
         Title.check_on(row)
-        now = self._now()
         stamped = row.with_(created_at=now, created_by=by, updated_at=now, updated_by=by)
         self.bus.dispatch(Creating(model=stamped, by=by))
         names = [column.name for column in self.columns if column.name != "id"]

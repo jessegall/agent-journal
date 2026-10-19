@@ -24,7 +24,7 @@ class PlansShaper(Shaper):
         loose = [t.id for t in tasks if t.id not in phased]
         if loose:
             drawn.append({"title": "Under no phase yet", "todos": loose, "when": "", "checkpoint": False})
-        return V3Row.of("plan", p, title=p.title, brief=p.brief, refs=[f"todo:{t.id}" for t in tasks], completed=seconds(p.updated_at) if p.state == PlanState.DONE else 0.0,
+        return V3Row.of("plan", p, title=p.title, brief=p.brief, refs=[f"todo:{t.id}" for t in tasks], completed=seconds(p.updated_at) if p.state.is_closed() else 0.0,
                         data={"status": STATUS[p.state], "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False, "reviewers": self.reviewers(p)})
 
     def reviewers(self, p) -> int:

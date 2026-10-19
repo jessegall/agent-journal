@@ -346,7 +346,7 @@ class Checks:
         """The tool about to run reads a file attached to a message read and left unanswered: part of reading it, not work."""
         if not isinstance(ctx.event, ToolStarting):
             return False
-        folders = [str(self.config.home / "files" / "message" / str(m.id)) + "/" for m in self.messages.unanswered()]
+        folders = [str(self.config.files / "message" / str(m.id)) + "/" for m in self.messages.unanswered()]
         return any(path.startswith(folder) for path in ctx.provider_in(self.providers).read_paths(ctx.event.tool, ctx.event.input) for folder in folders)
 
     def unread_messages(self, ctx: Context) -> bool:

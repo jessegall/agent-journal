@@ -496,8 +496,11 @@ async function use(tool) {
     gap: 6px;
     padding: 4px 8px 8px 10px;
     border-radius: 0 0 12px 12px;
-    background: color-mix(in srgb, #141518 70%, transparent);
-    backdrop-filter: blur(6px);
+    pointer-events: none;
+}
+
+.compose-foot > * {
+    pointer-events: auto;
 }
 
 .compose-attach {
@@ -511,7 +514,7 @@ async function use(tool) {
     border: 0;
     border-radius: 6px;
     color: var(--text-2);
-    background: transparent;
+    background: #141518;
     cursor: pointer;
 }
 

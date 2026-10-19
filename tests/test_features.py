@@ -2638,7 +2638,9 @@ def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     for kind in ("plan", "todo"):
         with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main&completed=1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
             assert reply.status == 200, f"a cancelled {kind} is shaped for the page"
-            assert "abandoned" in j.dumps(j.loads(reply.read()))
+            shaped = j.loads(reply.read())
+            assert "abandoned" in j.dumps(shaped)
+            assert kind != "plan" or all(row["completed"] > 0 for row in shaped["rows"]), "an abandoned plan is closed, shown with the closed ones"
 
 
 def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
@@ -5299,3 +5301,243 @@ def test_a_sequence_ported_from_version_3_is_written_at_boot(app):
     from journal.repositories.sequences import Sequences
     filing = next(s for s in app.container.get(Sequences).all() if s.title == "Filing a document that is already written")
     assert filing.starts_on == "doc.created" and len(filing.steps) == 2
+
+
+def version_3_row(folder, kind: str, n: int, brief: str = "", **header) -> None:
+    """A version 3 row file: its JSON header between --- lines, then its brief."""
+    folder.mkdir(parents=True, exist_ok=True)
+    head = {"n": n, "type": kind, "title": "", "refs": [], "seen": ["user"], "created": 1.0, "updated": 1.0, "deleted": 0.0, "completed": 0.0, "outcome": "", "data": {}, **header}
+    (folder / f"{n:03d}.md").write_text(f"---\n{json.dumps(head, indent=2)}\n---\n{brief}\n")
+
+
+def test_only_the_version_3_environments_still_in_use_are_brought_across_and_never_twice(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.environments import Environments
+    from journal.repositories.reports import Reports
+    kept = app.config.home / "version-3"
+    for n, name, kind in ((1, "main", "main"), (2, "ticket-8", "ticket"), (3, "ticket-9", "ticket")):
+        version_3_row(kept / "project" / "environment", "environment", n, title=name, data={"kind": kind})
+    version_3_row(kept / "environments" / "ticket-8" / "todo", "todo", 1, "still open")
+    version_3_row(kept / "environments" / "ticket-9" / "todo", "todo", 1, "long done", completed=2.0)
+    migrator = app.container.get(Migrator)
+    for _ in range(2):
+        with app.container.get(Scope).of(MAIN):
+            migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+    names = {e.name for e in app.container.get(Environments).every()}
+    assert {"main", "ticket-8"} <= names and "ticket-9" not in names, "main and the one with open work, not the finished one"
+    with app.container.get(Scope).of(MAIN):
+        body = app.container.get(Reports).all()[-1].body
+    assert "| environments | 0 | 1 |" in body and "environment ticket-9: not in use" in body, "the second run brings nothing twice and says what stayed"
+
+
+def test_every_version_3_message_comes_across_with_its_author_time_reply_and_attachment(app):
+    import zipfile
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.messages import Messages
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    messages = kept / "environments" / "main" / "message"
+    version_3_row(messages, "message", 1, "an old one", created=1700000000.0, completed=1700000100.0)
+    (messages / "001.md").rename(messages / "old.md")
+    (messages / "packed").mkdir()
+    with zipfile.ZipFile(messages / "packed" / "2023-11-14.zip", "w") as packed:
+        packed.write(messages / "old.md", "001.md")
+    (messages / "old.md").unlink()
+    version_3_row(messages, "message", 2, "the answer", seen=["agent"], refs=["message:1"], created=1700000200.0)
+    version_3_row(messages, "message", 3, "a picture", created=1700000300.0)
+    (messages / "3").mkdir()
+    (messages / "3" / "shot.png").write_bytes(b"png")
+    version_3_row(messages, "message", 4, "gone", deleted=5.0)
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+        brought = [m for m in app.container.get(Messages).every() if m.text in ("an old one", "the answer", "a picture", "gone")]
+    assert [m.text for m in brought] == ["an old one", "the answer", "a picture"], "the packed one too, in order, the deleted one left behind"
+    old, answer, picture = brought
+    assert old.created_at.timestamp() == 1700000000.0 and old.read_at is not None, "its own time, and read"
+    assert answer.author == "agent" and answer.reply_to == old.id, "the reply still points at what it answers"
+    assert picture.files == ("shot.png",) and (app.config.files / "message" / str(picture.id) / "shot.png").read_bytes() == b"png"
+
+
+def test_the_mcp_list_answers_at_once_and_asks_the_program_on_a_thread_of_its_own(app, monkeypatch):
+    import time
+    from journal.features.mcp.health import Health
+    from journal.features.mcp.health_report import HealthReport
+    from journal.features.mcp.known import Known
+    asked = []
+    def slow(self):
+        asked.append(1)
+        time.sleep(0.5)
+        return HealthReport({"github": Known("github", "npx", "connected", "")})
+    monkeypatch.setattr(Health, "asked", slow)
+    health = app.container.get(Health)
+    began = time.time()
+    assert health.of_all().servers == {} and health.of_all().servers == {} and time.time() - began < 0.2, "no request waits on the program"
+    for _ in range(20):
+        if health.of_all().servers:
+            break
+        time.sleep(0.1)
+    assert list(health.of_all().servers) == ["github"] and asked == [1], "asked once, in the background, and the next request has it"
+
+
+def test_version_3_comments_and_reactions_come_across_on_their_rows(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.models.ref import Ref
+    from journal.repositories.links import Links
+    from journal.repositories.messages import Messages
+    from journal.repositories.reactions import Reactions
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    main = kept / "environments" / "main"
+    version_3_row(main / "message", "message", 1, "ship it")
+    version_3_row(main / "comment", "comment", 1, "> ship it\n\nnot yet", refs=["message:1"])
+    version_3_row(main / "comment", "comment", 2, "on a task that stayed", refs=["todo:5"])
+    version_3_row(main / "reaction", "reaction", 1, "", refs=["message:1"], data={"face": "🎉"})
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+        messages = app.container.get(Messages)
+        shipped = next(m for m in messages.every() if m.text == "ship it")
+        comment = next(m for m in messages.every() if m.text.endswith("not yet"))
+        links = app.container.get(Links)
+        assert links.targets(comment, Messages.COMMENTS_ON) == [Ref.to(shipped)], "the comment sits under its message"
+        reaction = app.container.get(Reactions).every()[-1]
+        assert reaction.face == "🎉" and links.targets(reaction, "reacts") == [Ref.to(shipped)]
+        assert not any(m.text == "on a task that stayed" for m in messages.every()), "a comment whose row stayed behind stays too"
+
+
+def test_version_3_todos_become_tasks_in_their_states_with_their_work_logs(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.task_logs import TaskLogs
+    from journal.repositories.tasks import Tasks
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    todo = kept / "environments" / "main" / "todo"
+    version_3_row(todo, "todo", 1, "the brief", title="done one", completed=2.0, outcome="it shipped")
+    version_3_row(todo, "todo", 2, "", title="in progress", data={"status": "started"})
+    version_3_row(todo, "todo", 3, "", title="waiting", data={"blocked": "the vendor's answer"})
+    version_3_row(todo, "todo", 4, "", title="still open")
+    version_3_row(todo, "todo", 5, "", title="struck", data={"struck": True})
+    work = kept / "environments" / "main" / "work" / "001.md"
+    version_3_row(work.parent, "work", 1, "", refs=["todo:1"], data={"todo": 1})
+    work.write_text(work.read_text() + "## 1 · 2026-10-11 18:10 UTC\nbuilt it\n## 2 · 2026-10-11 19:00 UTC\ntested it\n")
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+        tasks = {t.title: t for t in app.container.get(Tasks).every()}
+        assert tasks["done one"].state == "done" and tasks["done one"].outcome == "it shipped" and tasks["done one"].brief == "the brief"
+        assert tasks["in progress"].state == "parked" and tasks["waiting"].state == "blocked" and tasks["waiting"].blocked_why == "the vendor's answer"
+        assert tasks["still open"].state == "open" and "struck" not in tasks, "a struck to-do stays behind"
+        assert [log.line for log in app.container.get(TaskLogs).every() if log.task_id == tasks["done one"].id] == ["built it", "tested it"]
+
+
+def test_version_3_plans_keep_their_state_phases_and_tasks_and_questions_their_answers(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.plans import Plans
+    from journal.repositories.questions import Questions
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    main = kept / "environments" / "main"
+    version_3_row(main / "todo", "todo", 7, "", title="first step")
+    version_3_row(main / "plan", "plan", 1, "the goal", title="the plan", data={"status": "approved", "phases": [{"title": "one", "when": "it works", "checkpoint": True, "todos": [7]}]})
+    version_3_row(main / "question", "question", 1, "", title="which one?", data={"options": [{"title": "a"}, {"title": "b"}]}, completed=3.0, outcome="b")
+    version_3_row(main / "question", "question", 2, "", title="still open?")
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+        plans = app.container.get(Plans)
+        plan = next(p for p in plans.every() if p.title == "the plan")
+        phases = plans.phases_of(plan)
+        assert plan.state == "approved" and plan.brief == "the goal", "an approval stays an approval"
+        assert [(p.title, p.complete_when, p.checkpoint) for p in phases] == [("one", "it works", True)]
+        assert [t.title for t in plans.tasks_of(plan)] == ["first step"] and [t.title for t in plans.tasks_in(phases[0])] == ["first step"]
+        questions = {q.text: q for q in app.container.get(Questions).every()}
+        assert questions["which one?"].options == ("a", "b") and questions["which one?"].answer == "b" and questions["still open?"].answer is None
+
+
+def test_version_3_facts_rules_reminders_documents_and_reports_come_across_and_struck_ones_stay(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.docs import Docs
+    from journal.repositories.facts import Facts
+    from journal.repositories.reminders import Reminders
+    from journal.repositories.reports import Reports
+    from journal.repositories.rules import Rules
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    main = kept / "environments" / "main"
+    version_3_row(main / "fact", "fact", 1, "the port is 8420", data={"keywords": ["port"]})
+    version_3_row(main / "fact", "fact", 2, "an old truth", completed=2.0)
+    version_3_row(main / "reminder", "reminder", 1, "say you")
+    version_3_row(main / "report", "report", 1, "what we found", title="the audit", abstract="one line")
+    version_3_row(kept / "project" / "rule", "rule", 1, "Always plain English")
+    doc = kept / "project" / "doc" / "001"
+    version_3_row(doc, "doc", 1, "the intro", title="the guide", abstract="how it works")
+    (doc / "001.md").rename(doc / "doc.md")
+    (doc / "doc.md").write_text((doc / "doc.md").read_text() + "## Setup\nrun it\n")
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+        facts = [(f.text, f.keywords) for f in app.container.get(Facts).every()]
+        assert ("the port is 8420", ("port",)) in facts and not any(text == "an old truth" for text, _ in facts), "a struck fact stays behind"
+        assert any(r.text == "say you" for r in app.container.get(Reminders).every())
+        assert any(r.title == "the audit" and r.body == "what we found" for r in app.container.get(Reports).every())
+    assert any(r.text == "Always plain English" for r in app.container.get(Rules).every())
+    guide = next(d for d in app.container.get(Docs).every() if d.title == "the guide")
+    assert guide.abstract == "how it works" and guide.body == "the intro\n\n## Setup\n\nrun it"
+
+
+def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_where_they_fit(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.checks import Checks
+    from journal.repositories.sequences import Sequences
+    from journal.repositories.settings import Settings
+    from journal.repositories.templates import Templates
+    from journal.repositories.triggers import Triggers
+    kept = app.config.home / "version-3"
+    project = kept / "project"
+    version_3_row(project / "check", "check", 1, "the suite passes", title="tests", data={"command": "pytest -q", "every": 30})
+    version_3_row(project / "trigger", "trigger", 1, "", data={"words": ["deploy"], "does": "instruct", "text": "read the deploy notes"})
+    version_3_row(project / "trigger", "trigger", 2, "", data={"words": ["hold"], "does": "hold", "text": "x"})
+    sequence = project / "sequence" / "001.md"
+    version_3_row(sequence.parent, "sequence", 1, "", title="Releasing", data={"starts_on": ""})
+    sequence.write_text(sequence.read_text() + "## Tag it\n\n## Push it\nwith the tags\n")
+    version_3_row(project / "sequence", "sequence", 2, "", title="Shipped one", data={"system": True})
+    version_3_row(project / "template", "template", 1, "write it plainly", title="Report", data={"applies_to": ["report"], "purpose": "critique"})
+    (kept / "settings.json").write_text(json.dumps({"features": {"checks": False, "boards": True}}))
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+    check = next(c for c in app.container.get(Checks).every() if c.title == "tests")
+    assert check.command == "pytest -q" and check.every == 30
+    assert [(t.words, t.action, t.text) for t in app.container.get(Triggers).every() if "deploy" in t.words] == [(("deploy",), "instruct", "read the deploy notes")]
+    assert not any("hold" in t.words for t in app.container.get(Triggers).every()), "a trigger version 4 cannot do stays behind"
+    titles = {s.title: s for s in app.container.get(Sequences).every()}
+    assert titles["Releasing"].steps == ("Tag it", "Push it: with the tags") and "Shipped one" not in titles, "version 3's shipped sequences stay behind"
+    assert any(t.title == "Report" and t.purpose == "critique" for t in app.container.get(Templates).every())
+    assert app.container.get(Settings).project("features.checks") is False and app.container.get(Settings).project("features.boards") is None, "only a feature version 4 has"
+
+
+def test_a_small_version_3_journal_comes_across_counted_kind_by_kind_and_a_second_run_brings_nothing(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.reports import Reports
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    main = kept / "environments" / "main"
+    for n in (1, 2):
+        version_3_row(main / "message", "message", n, f"message {n}")
+        version_3_row(main / "todo", "todo", n, "", title=f"task {n}")
+    version_3_row(main / "comment", "comment", 1, "a comment", refs=["message:1"])
+    version_3_row(main / "reaction", "reaction", 1, "", refs=["message:2"], data={"face": "👍"})
+    version_3_row(main / "fact", "fact", 1, "a fact")
+    version_3_row(kept / "project" / "rule", "rule", 1, "Always a rule")
+    version_3_row(kept / "project" / "secret", "secret", 1, "how it is used", title="github", data={"kind": "api key", "secret_fields": [{"name": "key", "hidden": True, "variable": "GITHUB_TOKEN"}]})
+    version_3_row(main / "agent", "agent", 1, "", data={"provider": "claude", "transcript": "/x/abc.jsonl"})
+    migrator = app.container.get(Migrator)
+    for _ in range(2):
+        with app.container.get(Scope).of(MAIN):
+            migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+    with app.container.get(Scope).of(MAIN):
+        first, second = [r.body for r in app.container.get(Reports).all() if r.title == "The version 3 journal brought across"]
+    for line in ("| environments | 1 |", "| messages | 2 |", "| tasks | 2 |", "| comments | 1 |", "| reactions | 1 |", "| facts | 1 |", "| rules | 1 |", "| secrets | 1 |", "| agents | 1 |"):
+        assert line in first, line
+    assert "| messages | 0 |" in second and "| tasks | 0 |" in second and "| secrets | 0 |" in second, "a second run brings nothing twice"

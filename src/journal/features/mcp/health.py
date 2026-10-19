@@ -1,5 +1,6 @@
 import re
 import subprocess
+import threading
 import time
 
 from journal.config import Config
@@ -19,12 +20,20 @@ class Health:
         self.config = config
         self._found = HealthReport()
         self._at = 0.0
+        self._asking = threading.Lock()
 
     def of_all(self) -> HealthReport:
-        """The answer of the last minute, else a fresh one."""
-        if time.time() - self._at < FRESH_FOR:
-            return self._found
-        return self.fresh()
+        """The last answer, at once: the program's check takes seconds, so a request never waits on it; an answer past its minute is asked anew on a thread of its own, and the next request has it."""
+        if time.time() - self._at >= FRESH_FOR and self._asking.acquire(blocking=False):
+            threading.Thread(target=self.refreshed, name="mcp-health", daemon=True).start()
+        return self._found
+
+    def refreshed(self) -> None:
+        """Asked anew in the background, one ask at a time."""
+        try:
+            self.fresh()
+        finally:
+            self._asking.release()
 
     def fresh(self) -> HealthReport:
         """Asked anew, whatever the last answer: what a check from the page wants."""

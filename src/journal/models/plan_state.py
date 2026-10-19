@@ -11,6 +11,10 @@ class PlanState(StrEnum):
     DONE = "done"
     CANCELLED = "cancelled"
 
+    def is_closed(self) -> bool:
+        """Done or abandoned: nothing is left to do on it."""
+        return self in (PlanState.DONE, PlanState.CANCELLED)
+
     def can_become(self, state: "PlanState") -> bool:
         """Only forward, or back to work: the user's approval is never undone by the agent, and a cancelled plan stays cancelled."""
         return state == self or state in MOVES[self]

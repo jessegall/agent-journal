@@ -102,7 +102,7 @@ class MessageCommand(Command):
         """The message, its files with where to open them and what they show, and the rows it is linked to."""
         print(f"message {message.id} from the {message.author}{self.answering(message)}: {message.own_words}")
         for name in message.files:
-            path = self.config.home / "files" / "message" / str(message.id) / name
+            path = self.config.files / "message" / str(message.id) / name
             seen = message.captions.get(name)
             print(f"  file {path}" + (f": {seen}" if seen else f" (open it, then `journal message tag {message.id} \"{name}\" \"<what it shows>\"`)"))
         for link in self.links.of(message):
