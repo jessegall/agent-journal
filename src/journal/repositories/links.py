@@ -26,6 +26,10 @@ class Links(Repository[Link]):
     def sources(self, model: Model, kind: str) -> list[Ref]:
         return [link.source for link in self.of(model) if link.target == Ref.to(model) and link.kind == kind]
 
+    def is_row(self, ref: Ref) -> bool:
+        """Whether the row a ref names is there, so a link never points at nothing."""
+        return self.connection.one(f"SELECT 1 AS found FROM {ref.type} WHERE id = ?", (ref.id,)) is not None
+
     def between(self, source: Model, target: Model) -> list[Link]:
         return self.where(source=Ref.to(source), target=Ref.to(target))
 

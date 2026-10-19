@@ -8,3 +8,6 @@ class Reminder(Scoped):
     text: str = ""
     keywords: tuple[str, ...] = ()
     """Words that, when the agent writes one, bring the row back to it as a whisper."""
+
+    def mentioning_text(self) -> str | None:
+        return self.text

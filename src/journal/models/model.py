@@ -32,5 +32,9 @@ class Model:
     def is_new(self) -> bool:
         return self.id is None
 
+    def mentioning_text(self) -> str | None:
+        """The row's own text, in which it may name other rows, such as task 12 or plan 3; none for a row with no text of its own."""
+        return None
+
     def with_(self, **changes) -> "Model":
         return replace(self, **changes)

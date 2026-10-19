@@ -5659,3 +5659,17 @@ def test_no_wait_closes_a_loop_and_the_migration_drops_only_the_link_that_would(
         body = app.container.get(Reports).all()[-1].body
     assert {"x", "y"} <= titles, "every task comes across"
     assert "| waits | 2 |" in body and "would close a loop" in body, "the one link that would close the loop is dropped and named"
+
+
+def test_a_row_whose_text_names_another_is_linked_to_it_off_the_writes_thread(app):
+    from journal.engine.deferred import Deferred
+    from journal.models.ref import Ref
+    from journal.repositories.links import Links
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "the parser"], AGENT)
+    console.run(["message", "send", "see task 1, and task 99 which is not there"], AGENT)
+    app.container.get(Deferred).drain()
+    with app.container.get(Scope).of(MAIN):
+        mentions = [(link.source.type, link.target) for link in app.container.get(Links).every() if link.kind == "mentions"]
+    assert ("messages", Ref("tasks", 1)) in mentions and Ref("tasks", 99) not in [t for _, t in mentions], "linked to what exists, not to what does not"

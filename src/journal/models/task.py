@@ -50,3 +50,6 @@ class Task(Scoped):
 
     def finished(self, at: datetime, outcome: str) -> "Task":
         return self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome)
+
+    def mentioning_text(self) -> str | None:
+        return f"{self.title}\n{self.brief}"

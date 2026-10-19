@@ -53,3 +53,6 @@ class Message(Scoped):
     def takes_a_face(self) -> bool:
         """A message of a few words, an ok or a thanks, is answered by a face; anything longer wants words."""
         return len(self.text.split()) <= self.FACE_WORDS
+
+    def mentioning_text(self) -> str | None:
+        return self.text

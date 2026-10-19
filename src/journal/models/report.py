@@ -9,3 +9,6 @@ class Report(Scoped):
     abstract: str = ""
     """A line that says what the report is."""
     body: str = ""
+
+    def mentioning_text(self) -> str | None:
+        return self.body

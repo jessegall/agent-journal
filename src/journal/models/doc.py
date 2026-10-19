@@ -10,3 +10,6 @@ class Doc(Model):
     title: str = ""
     abstract: str = ""
     body: str = ""
+
+    def mentioning_text(self) -> str | None:
+        return self.body

@@ -1,5 +1,6 @@
 import os
 import socket
+import threading
 import time
 from dataclasses import asdict
 from urllib.error import HTTPError
@@ -41,6 +42,7 @@ class Tunnel:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
         self.log = config.home / "runtime" / f"{SERVICE}.log"
         self._answered = (0.0, False)
+        self._asking = threading.Lock()
 
     def saved_host(self) -> str:
         from journal.features.sharing.feature import Sharing
@@ -143,9 +145,17 @@ class Tunnel:
         return answered
 
     def answered(self) -> bool:
-        """The last answer, asked again once it is older than a few seconds, for the viewer's poll."""
+        """The last answer, at once: asking the tunnel's address takes a round trip, so the viewer's poll never waits on it; one older than a few seconds is asked again on a thread of its own, and the next poll has it."""
         at, answered = self._answered
-        return answered if time.monotonic() - at < ANSWER_KEPT else self.answering()
+        if time.monotonic() - at >= ANSWER_KEPT and self._asking.acquire(blocking=False):
+            threading.Thread(target=self.asked_again, name="tunnel-answer", daemon=True).start()
+        return answered
+
+    def asked_again(self) -> None:
+        try:
+            self.answering()
+        finally:
+            self._asking.release()
 
     def service(self) -> TunnelService:
         """The tunnel as the viewer lists a service: ready while its address answers, starting while it should and does not yet."""

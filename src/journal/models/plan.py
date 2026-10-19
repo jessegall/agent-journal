@@ -38,3 +38,6 @@ class Plan(Scoped):
         if not self.state.can_become(state):
             raise Refused(f"plan {self.id} is {self.state} and cannot become {state}")
         return self.with_(state=state)
+
+    def mentioning_text(self) -> str | None:
+        return f"{self.title}\n{self.brief}"

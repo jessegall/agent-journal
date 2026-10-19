@@ -7,3 +7,6 @@ from journal.models.scoped import Scoped
 class TaskLog(Scoped):
     task_id: int = 0
     line: str = ""
+
+    def mentioning_text(self) -> str | None:
+        return self.line

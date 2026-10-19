@@ -39,6 +39,22 @@ restore() {
 }
 trap 'code=$?; [ "$code" -eq 0 ] || restore' EXIT
 if [ -f .journal/src/VERSION ] && [ "$(cut -c1 .journal/src/VERSION)" = 3 ]; then
+  echo "This project has a version 3 journal. It will be stopped and kept whole in .journal/version-3, then version 4 is"
+  echo "installed, and the viewer offers to bring everything across. Nothing is lost."
+  if [ "${AGENT_JOURNAL_YES:-}" != 1 ]; then
+    printf 'Go ahead? [y/N] '
+    answer=""
+    read -r answer < /dev/tty 2>/dev/null || true
+    case "$answer" in y|Y|yes|Yes) ;; *) echo "Nothing changed."; exit 0 ;; esac
+  fi
+  port=$(cat .journal/port 2>/dev/null || true)
+  if [ -n "$port" ]; then
+    curl -fsS -m 5 -X POST -H 'Content-Type: application/json' -d '{}' "http://127.0.0.1:$port/api/stop" >/dev/null 2>&1 || true
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      curl -fs -m 1 "http://127.0.0.1:$port/" >/dev/null 2>&1 || break
+      sleep 1
+    done
+  fi
   mv .journal .journal-version-3
   mkdir .journal
   mv .journal-version-3 .journal/version-3

@@ -18,3 +18,6 @@ class Question(Scoped):
 
     def answered(self, answer: str) -> "Question":
         return self.with_(answer=answer)
+
+    def mentioning_text(self) -> str | None:
+        return self.text
