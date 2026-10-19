@@ -989,7 +989,7 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
 
 
 
-def test_a_newer_major_is_offered_but_installs_at_start_only_when_majors_are_chosen(monkeypatch):
+def test_a_newer_major_is_offered_but_never_installed_by_itself(monkeypatch):
     import commands.launch_update as launching
     import engine.upgrades as upgrades
     from engine import runtime
@@ -1008,10 +1008,7 @@ def test_a_newer_major_is_offered_but_installs_at_start_only_when_majors_are_cho
     monkeypatch.setattr("install.upgrade", lambda project, root: upgrading.append(root) or [])
     launching.latest_first(record)
     assert upgrading == [], "a start on patches does not install the newer major it was offered"
-
-
-def test_a_new_major_line_is_never_installed_by_itself():
-    """3.x stays on 3.x whatever the setting says: 4.0.0 is offered on Home and installed only when named."""
     from framework.updating.check import within
     assert within("3.3.2", "3.3.3", "patches") and within("3.3.2", "3.4.0", "minor versions") and within("3.3.2", "3.9.0", "always")
-    assert not within("3.3.2", "4.0.0", "major versions") and not within("3.3.2", "4.0.0", "always")
+    assert not within("3.3.2", "4.0.0", "major versions") and not within("3.3.2", "4.0.0", "always"), "a new major line is never installed by itself, whatever the choice"
+

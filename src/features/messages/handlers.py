@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from events import Fact
-from events.agents import ChunkDisplayed
+from events.agents import ChunkDisplayed, ToolFinished
 from events.messages import (FallbackHeld, FaultWindowOver, MessageDisplayed, PromptBegan, TurnCutOff, TurnEnded, AnswerHeld, AnswerOwed, AnswerRearmed, AnswersSettled, AnswerWaitBegan, BareNumbersNamed, FaceSent, InboxRearmed, InboxSettled, InboxUnread, MessageSettled, MessagesReadByUser,
                              RunTogether, TurnToPost)
 from features.messages.listeners import ANSWER_HOLD, UNREAD_EVERY
@@ -166,6 +166,17 @@ class SendCutOffWords(Handler[TurnEnded]):
 class CatchUpAfterTurn(Handler[TurnEnded]):
     def handle(self, event: TurnEnded, agents: ReadRows[AgentRow], elsewhere: Elsewhere, providers: Providers, chat: Chat, faults: Faults, clock: Clock) -> list[Fact]:
         row = agents.peek(event.agent)
+        return catch_up(row, ledger_of(elsewhere, row), providers, chat, faults, clock.now())
+
+
+class CatchUpAfterTool(Handler[ToolFinished]):
+    """A provider with no display hook has its words read after every tool call, so a reply written before one reaches the chat while it is fresh."""
+
+    def handle(self, event: ToolFinished, agents: ReadRows[AgentRow], elsewhere: Elsewhere, providers: Providers, chat: Chat, faults: Faults, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        provider = providers.offers(row.provider)
+        if provider is None or provider.shows_what_is_said():
+            return []
         return catch_up(row, ledger_of(elsewhere, row), providers, chat, faults, clock.now())
 
 

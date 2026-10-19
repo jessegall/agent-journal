@@ -1,6 +1,6 @@
 from controllers.types import Messages
 from expects.staged import in_a_transcript
-from events.agents import AgentReported, ChunkDisplayed, TurnInterrupted, TurnStopped
+from events.agents import AgentReported, ChunkDisplayed, ToolFinished, TurnInterrupted, TurnStopped
 from events.agents import AgentMessageSent
 from events.resources import ResourceCreated
 from events.answers import Rewritten
@@ -17,7 +17,7 @@ from framework.displayed import FELL_BACK, HELD_FOR, SETTLE, fingerprint
 from framework.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
-from features.messages.handlers import (BeginTurn, CatchUpAfterTurn, HoldFallbackFault, KeepChunk, PostCutOffTurn, PostDisplayed, RaiseHeldFaults, SendCutOffWords, BeginAnswerWait, CloseReadMessages, CloseTheMessage, HoldUntilAnswered, NameBareNumbers, NameFace, NameInbox, NameRunTogether, NameUnanswered, PostTurn,
+from features.messages.handlers import (BeginTurn, CatchUpAfterTool, CatchUpAfterTurn, HoldFallbackFault, KeepChunk, PostCutOffTurn, PostDisplayed, RaiseHeldFaults, SendCutOffWords, BeginAnswerWait, CloseReadMessages, CloseTheMessage, HoldUntilAnswered, NameBareNumbers, NameFace, NameInbox, NameRunTogether, NameUnanswered, PostTurn,
                                         RearmAnswering, RearmInbox, ReleaseAnswering, ReleaseInbox)
 from features.messages.listeners import (SpotCutOff, SpotPrompt, SpotTurnEnd, SpotArrival, SpotBareNumbers, SpotMessagesAnswered, SpotMessagesHandled, SpotMessagesProcessed, SpotMessagesSeenByUser, SpotRunTogether,
                                          SpotTurnToPost, SpotUnanswered, SpotUnread)
@@ -308,6 +308,10 @@ class MessagesFeature(Feature):
                 >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("never shown"),))),
             Given(TurnEnded(agent=1, words="what the Codex agent said"), rows=[CODEX], transcript=in_a_codex_transcript("what the Codex agent said")) >> Wrote(File(LEDGER.replace("claude-1", "codex-1"), "_sent")),
         ], after=("SendCutOffWords",))
+        journal.events.handle(ToolFinished, CatchUpAfterTool(), expects=[
+            Given(ToolFinished(agent=1, tool="exec_command"), rows=[CODEX], transcript=in_a_codex_transcript("[!reply:3] On it.")) >> Wrote(File(LEDGER.replace("claude-1", "codex-1"), "_sent")),
+            Given(ToolFinished(agent=1, tool="Bash"), rows=[TURN], transcript=in_a_transcript("Never delivered.")) >> Unchanged(),
+        ])
         journal.events.handle(PromptBegan, BeginTurn(), expects=[
             Given(PromptBegan(agent=1), rows=[TURN], transcript=in_a_transcript("Never delivered.")) >> Dispatches(FallbackHeld(agent=1, prints=(fingerprint("Never delivered."),)))
                 & Wrote(File(LEDGER, fingerprint("Never delivered."))),

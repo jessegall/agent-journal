@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.3.5 — A Codex agent's reply arrives during the turn
+
+- What a Codex agent writes is now read after every tool call it makes, so a reply it writes before running commands reaches the chat at once and answers its message. Before, it was read only when the turn ended, and a reply followed by more than ten minutes of work never arrived.
+
 ## 3.3.4 — A paste lands in the field, and stays there
 
 - A paste into a text field is inserted by the page from the words the paste carries, so a dictation tool that empties the clipboard right after pasting no longer leaves the field blank; a field you are in keeps what you typed or pasted when the page refreshes around it, and the viewer's own reloads wait until you leave a field with words in it.
