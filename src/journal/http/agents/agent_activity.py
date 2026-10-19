@@ -3,7 +3,7 @@ from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.tasks.states.working import Working
-from journal.hooks.context_file import ContextFile
+from journal.support.context_file import ContextFile
 from journal.http.agents.current_work import CurrentWork
 from journal.http.agents.sequence_in_hand import SequenceInHand
 from journal.http.files.project_files import ProjectFiles

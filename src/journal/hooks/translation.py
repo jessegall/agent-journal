@@ -9,9 +9,9 @@ from journal.events.agent.subagent_started import SubagentStarted
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
-from journal.hooks.context_file import ContextFile
+from journal.support.context_file import ContextFile
 from journal.providers.hook import Hook
-from journal.hooks.turn_gatherer import TurnGatherer
+from journal.hooks.support.turn_gatherer import TurnGatherer
 from journal.providers.hook_kind import HookKind
 from journal.models.environment import Environment
 from journal.providers.providers import Providers

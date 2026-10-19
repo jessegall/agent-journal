@@ -2,7 +2,7 @@ from journal.events.agent.turn_written import TurnWritten
 from journal.events.bus import Bus
 from journal.events.clock_ticked import ClockTicked
 from journal.events.listener import Listener
-from journal.hooks.transcript_turns import TranscriptTurns
+from journal.hooks.support.transcript_turns import TranscriptTurns
 from journal.repositories.agents import Agents
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings

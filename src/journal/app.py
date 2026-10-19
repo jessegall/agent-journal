@@ -12,7 +12,7 @@ from journal.events.bus import Bus
 from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
-from journal.hooks.context_file import ContextFile
+from journal.support.context_file import ContextFile
 from journal.repositories.settings import Settings
 from journal.http.router import Router
 from journal.http.routes.routes import Routes
