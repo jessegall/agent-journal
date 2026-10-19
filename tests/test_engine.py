@@ -204,14 +204,29 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     shown(switch)
     assert watcher.look(agent) == "\r" and sent[-1] == {"verb": "keys", "name": "agent", "keys": "\r"}, "a confirmation the journal's pick caused is taken with Enter"
     assert watcher.look(agent) == "", "and answered once"
-    shown("Something new?\r\n❯ 1. Turn it on\r\n  2. Leave it\r\n")
-    assert watcher.look(agent) == "\x1b", "a menu it cannot place is closed with Escape"
+    from journal.engine.support.menu_answers import MenuAnswers
+    picks = {"Turn it on": 2, "Pick one": 0}
+    monkeypatch.setattr(MenuAnswers, "ask", lambda self, menu, provider: self._asked.__setitem__(self.key(menu), next((o for o in menu.options if o.number == picks.get(menu.options[0].label)), None)))
+    asked = app.container.get(MenuAnswers)
+    settled = lambda: [time.sleep(0.05) for _ in range(40) if asked._running - set(asked._asked)]
+    shown("Something new?\r\n❯ 1. Turn it on\r\n  2. Leave it alone for now\r\n")
+    said = watcher.look(agent)
+    settled()
+    assert (said or watcher.look(agent)) == "\x1b[B\r", "a menu the word rules cannot settle is answered by an independent agent asked off the watcher's thread"
+    shown("Something else?\r\n❯ 1. Turn it on\r\n  2. Leave it alone for now\r\n")
+    assert watcher.look(agent) == "\x1b[B\r", "and its pick is remembered for the same options"
+    shown("Odd one?\r\n❯ 1. Pick one\r\n  2. Pick two\r\n")
+    said = watcher.look(agent)
+    settled()
+    assert (said or watcher.look(agent)) == "\x1b", "a menu even the asked agent cannot place is closed with Escape"
     from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
         assert any("closed it with Escape" in m.text for m in app.container.get(Messages).in_()), "and a card says so"
     (screens / "main.keyed").touch()
     shown("Pick a theme\r\n❯ 1. Dark\r\n  2. Light\r\n")
-    assert watcher.look(agent) == "", "a menu that came up right after keys at the keyboard is the user's own"
+    assert watcher.look(agent) == "", "a picker that came up right after keys at the keyboard is the user's own"
+    shown(switch.replace("Opus 5.5", "Sonnet 5.5") + "\r\n──────\r\n❯ \r\n──────\r\n  agent-journal · main\r\n")
+    assert watcher.look(agent) == "\r", "a yes-or-no confirmation of what the user just asked at the keyboard is confirmed, seen by its cursor though the prompt box is drawn below it"
     shown("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\n", still_for=0.0)
     assert watcher.look(agent) == "", "a screen still changing is not answered yet"
 

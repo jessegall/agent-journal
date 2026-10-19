@@ -50,7 +50,8 @@ class Codex(Provider):
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["resume", resume] if resume else []
-        return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", "-m", model, brief]
+        chosen = ["-m", model] if model else []
+        return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", *chosen, brief]
 
     def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
         found = re.search(r"session id: ([0-9a-f-]{8,})", f"{out}\n{err}", re.IGNORECASE)

@@ -18,7 +18,7 @@ UP, DOWN, ENTER, ESCAPE = "\x1b[A", "\x1b[B", "\r", "\x1b"
 
 @dataclass(frozen=True)
 class Menu:
-    """A menu in an agent's terminal, recognised by its shape: option lines numbered in a row from one, ending the screen or followed by the selection footer."""
+    """A menu in an agent's terminal, recognised by its shape: option lines numbered in a row from one, ending the screen, followed by the selection footer, or with the cursor on one of them though more is drawn below."""
 
     question: str
     options: tuple[Option, ...]
@@ -35,7 +35,7 @@ class Menu:
         footers = list(FOOTER.finditer(text))
         above = text[:footers[-1].start()] if footers else text
         found = list(OPTION.finditer(above))
-        if not found or (not footers and above[found[-1].end():].strip()):
+        if not found:
             return None
         block = []
         for match in reversed(found):
@@ -43,6 +43,8 @@ class Menu:
                 break
             block.insert(0, match)
         if len(block) < 2 or int(block[0]["number"]) != 1:
+            return None
+        if not footers and above[found[-1].end():].strip() and not any(m["cursor"] for m in block):
             return None
         asked = " ".join([line.strip() for line in above[:block[0].start()].splitlines() if line.strip()][-QUESTION_LINES:])
         return cls(asked, tuple(Option(int(m["number"]), m["label"], bool(m["cursor"])) for m in block))
@@ -57,6 +59,9 @@ class Menu:
     def accepting(self) -> Option | None:
         """The option that says yes, or the one under the cursor."""
         return next((o for o in self.options if ACCEPT.search(o.label)), None) or next((o for o in self.options if o.cursor), self.options[0])
+
+    def confirming(self) -> bool:
+        return any(ACCEPT.search(o.label) for o in self.options) and self.declining() is not None
 
     def declining(self) -> Option | None:
         return next((o for o in self.options if DECLINE.search(o.label)), None)

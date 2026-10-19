@@ -9,6 +9,7 @@ from journal.providers.support.menu import ESCAPE, Menu
 from journal.repositories.agents import Agents
 from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
+from journal.engine.support.menu_answers import MenuAnswers
 
 EVERY = 1.0
 """How often the watcher looks at each agent's screen."""
@@ -23,8 +24,9 @@ YOURS_WITHIN = 3.0
 class MenuWatcher:
     """A thread that reads each live agent's screen through the supervisor's mirror and keeps the agent from sitting at a menu: one the journal caused is confirmed, the trust question for the launched folder accepted, anything else declined or closed with Escape, and a card in the chat says what was done; a menu the user opened at the keyboard is left alone."""
 
-    def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, states: StatesCatalogue) -> None:
+    def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, states: StatesCatalogue, answers: MenuAnswers) -> None:
         self.agents, self.supervisor, self.cards, self.scope, self.states = agents, supervisor, cards, scope, states
+        self.answers = answers
         self._stopping = threading.Event()
         self._seen: dict[int, tuple] = {}
         self._seen_at: dict[int, float] = {}
@@ -55,10 +57,14 @@ class MenuWatcher:
             self._seen[env], self._seen_at[env] = menu.signature(), now
         if self._answered.get(env) == menu.signature() or now - self.supervisor.screen_changed_at(env) < QUIET:
             return ""
-        if self.supervisor.keyed_at(env) > self._seen_at[env] - YOURS_WITHIN:
+        yours = self.supervisor.keyed_at(env) > self._seen_at[env] - YOURS_WITHIN
+        if yours and not menu.confirming():
             return ""
-        caused = self.supervisor.chosen_at(env) > self._seen_at[env] - CAUSED_WITHIN
-        keys, said = self.decided(menu, caused)
+        caused = yours or self.supervisor.chosen_at(env) > self._seen_at[env] - CAUSED_WITHIN
+        decided = self.decided(menu, caused, agent)
+        if decided is None:
+            return ""
+        keys, said = decided
         self.supervisor.keys(env, keys)
         if caused:
             self.supervisor.confirmed(env)
@@ -66,13 +72,15 @@ class MenuWatcher:
         self.cards.show(env, agent.session, f'A menu in the agent\'s terminal was answered: "{menu.question[-160:]}" The journal {said}.', "bolt")
         return keys
 
-    @staticmethod
-    def decided(menu: Menu, caused: bool) -> tuple[str, str]:
-        """What to press and the words for it: confirm what the journal caused or the trust question, else decline, else close."""
+    def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:
+        """What to press and the words for it: confirm what you or the journal asked for, or the trust question; else the answer remembered, a decline, or an asked agent's pick; none while that agent works it out; else close."""
         if caused or menu.trusting():
             taken = menu.accepting()
-            return menu.keys_for(taken), f'chose "{taken.label}", since the journal caused it' if caused else f'chose "{taken.label}"'
-        declined = menu.declining()
-        if declined:
-            return menu.keys_for(declined), f'chose "{declined.label}"'
-        return ESCAPE, "closed it with Escape, not knowing what it was for"
+            return menu.keys_for(taken), f'chose "{taken.label}", since it confirms what was asked for' if caused else f'chose "{taken.label}"'
+        taken = self.answers.remembered(menu) or menu.declining() or self.answers.asked(menu, agent)
+        if taken is None and self.answers.is_asking(menu):
+            return None
+        taken = taken or self.answers.asked(menu, agent)
+        if taken:
+            return menu.keys_for(taken), f'chose "{taken.label}"'
+        return ESCAPE, "closed it with Escape, since even an asked agent could not say what it was for"
