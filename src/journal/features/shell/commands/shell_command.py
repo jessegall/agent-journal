@@ -9,6 +9,7 @@ from journal.engine.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain
 from journal.features.shell.doing import Doing
+from journal.features.shell.output_files import OutputFiles
 from journal.features.shell.output_log import OutputLog
 from journal.features.shell.writes import Writes
 from journal.models.entry import Entry
@@ -73,7 +74,8 @@ class ShellCommand(Command):
         for i, part in enumerate(parts):
             (folder / f"{i}.part").write_text(part.text)
             print(part.kind() + ("w" if part.recorded and Writes.part(part.text) else "-"))
-        self.log.began(folder.name, "\n".join(part.text for part in parts if part.recorded), folder, where.session, where.actor)
+        output = self.log.began(folder.name, "\n".join(part.text for part in parts if part.recorded), folder, where.session, where.actor)
+        (folder / "number").write_text(str(output.id))
         return 0
 
     def limit(self, args: Namespace, where: Where) -> int:
@@ -116,7 +118,7 @@ class ShellCommand(Command):
         from journal.features.shell.feature import Shell
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         part = self.moved_part(args.chain)
-        outcome = "finished" if args.status == 0 else f"failed with code {args.status}"
+        outcome = OutputFiles.ended(args.status)
         said = self.said_last(args.last)
         self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", "\n".join(line for line in (part, said) if line), key=f"background:{args.chain}")
         live = self.agents.live()

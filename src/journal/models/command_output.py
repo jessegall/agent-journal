@@ -15,6 +15,11 @@ class CommandOutput(Scoped):
     ended: bool = False
     status: int = 0
 
+    def headline(self) -> str:
+        """The command's first line, and how many more it has: a heredoc is never printed whole."""
+        first, *rest = self.command.splitlines() or [""]
+        return f"{first} (and {len(rest)} more lines)" if rest else first
+
     def moved_out(self) -> "CommandOutput":
         return self.with_(moved=True)
 

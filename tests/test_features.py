@@ -5169,6 +5169,25 @@ def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder
     assert [o.chain for o in kept] == ["run1", "run2"] and not folders[0].exists() and folders[2].exists(), "the newest kept, the oldest gone with its files"
 
 
+def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    folder = app.config.root / "run"
+    folder.mkdir()
+    (folder / "parts").write_text(console.run(["shell", "split", "make test", "--into", str(folder)], AGENT).out)
+    (folder / "0.out").write_text("\n".join(f"line {i}" for i in range(1, 51)) + "\n")
+    (folder / "0.status").write_text("1\n")
+    (folder / "done").write_text("1")
+    assert (folder / "number").read_text() == "1", "the runner names a cut output by the number the split leaves"
+    whole = console.run(["output", "read", "1"], AGENT).out
+    assert "output 1: failed with code 1, 50 lines" in whole and "command: make test" in whole, whole
+    assert "line 10\n... 30 lines" in whole and whole.rstrip().endswith("line 50"), "the first and last ten, the middle named"
+    assert console.run(["output", "read", "1", "--lines", "20-22"], AGENT).out == "line 20\nline 21\nline 22\n"
+    assert console.run(["output", "read", "1", "--grep", "line 4[29]"], AGENT).out == "42: line 42\n49: line 49\n"
+    assert console.run(["output", "read", "1", "--tail", "1"], AGENT).out == "line 50\n"
+    assert "failed with code 1" in console.run(["output", "list"], AGENT).out
+
+
 def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app):
     from journal.repositories.plans import Plans
     from journal.repositories.tasks import Tasks

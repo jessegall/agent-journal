@@ -28,14 +28,14 @@ __journal_changed() {
 }
 
 # The foreground shows a part's output cut to its first and last so many lines, the journal's cap; the middle stays in
-# the part's file, and a line says how much was cut and where the whole is.
+# the part's file, and a line names the output by its number and how to read the rest.
 __journal_show() {
     __journal_lines=$(wc -l < "$1" | tr -d ' ')
     if [ "$__journal_lines" -le $((cap * 2)) ]; then
         cat "$1"
     else
         head -n "$cap" "$1"
-        echo "[journal] $((__journal_lines - cap * 2)) of $__journal_lines lines cut from the middle: the whole output is at $1; read it in parts"
+        echo "[journal] output $(cat "$folder/number" 2>/dev/null): $__journal_lines lines, $((__journal_lines - cap * 2)) cut from the middle. journal output read $(cat "$folder/number" 2>/dev/null) --lines or --grep reads them"
         tail -n "$cap" "$1"
     fi
 }
