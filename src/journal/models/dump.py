@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from journal.models.dump_item import DumpItem
 from journal.models.scoped import Scoped
@@ -10,6 +11,8 @@ TEXT = "text"
 @dataclass(frozen=True)
 class Dump(Scoped):
     """A pile the user drops in one place, which the agent sorts by subject and files as rows of their own."""
+
+    handed_to_agent: ClassVar[bool] = True
 
     title: str = ""
     brief: str = ""

@@ -160,6 +160,33 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
+def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the parser", "--brief", "read src/parse.py first"], AGENT)
+    out = console.run(["task", "start", "1"], AGENT).out
+    assert "task 1 started" in out and "brief: read src/parse.py first" in out, "the brief comes with the start"
+    for line in ("one", "two", "three", "four"):
+        console.run(["task", "log", "1", line], AGENT)
+    console.run(["task", "park", "1", "later"], AGENT)
+    resumed = console.run(["task", "resume", "1"], AGENT).out
+    assert "logged: two" in resumed and "logged: four" in resumed and "logged: one" not in resumed, "the latest three log lines"
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["plan", "create", "release", "--brief", "ship"], USER)
+    console.run(["plan", "add", "1", "write the notes", "--brief", "in NOTES.md"], USER)
+    console.run(["plan", "add", "1", "tag it", "--brief", "git tag v4"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "done", "2"], AGENT)
+    app.runtime().deferred.drain()
+    assert any("task 3, tag it is next. brief: git tag v4" in line for line in typed), "the plan's next task comes with its brief"
+
+
 def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console = app.console()
@@ -5977,6 +6004,7 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
     notes = tmp_path / "notes.md"
     notes.write_text("The ideas, sorted.\n")
     assert made(console.run(["dump", "create", "a list of ideas"], USER)) == 1
+    assert any("Sort dumped files" in line or "sequence" in line for line in typed), "the user's dump starts the sorting sequence for the agent here"
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
     filing.attach(1, "a.png", Where("main").actor)
     assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).out and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).out

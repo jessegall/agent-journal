@@ -10,6 +10,7 @@ from journal.engine.states.paused import Paused
 from journal.refused import Refused
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.in_hand import InHand
+from journal.features.tasks.task_briefing import TaskBriefing
 from journal.features.tasks.states.working import Working
 from journal.models.check import Check
 from journal.models.link import Link
@@ -30,8 +31,8 @@ from journal.repositories.tasks import Tasks, WAITS_ON
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, checks: Checks) -> None:
-        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.checks = tasks, logs, machine, messages, links, plans, in_hand, questions, checks
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, checks: Checks, briefing: TaskBriefing) -> None:
+        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.checks, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, checks, briefing
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -99,7 +100,7 @@ class TaskCommand(Command):
 
     def taken(self, n: int, where: Where, said: str) -> int:
         task = self.in_hand.start(self.tasks.find(n), where)
-        print(f"task {task.id} {said}")
+        print("\n".join([f"task {task.id} {said}", *self.briefing.lines(task)]))
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:

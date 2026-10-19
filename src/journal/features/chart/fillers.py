@@ -8,6 +8,7 @@ from journal.features.plans.states.following_plan import FollowingPlan
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
+from journal.features.tasks.task_briefing import TaskBriefing
 from journal.features.sequences.running import Running
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.stop_words import ago
@@ -43,7 +44,8 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing) -> None:
+        self.briefing = briefing
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.workers, self.states = workers, states
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
@@ -151,6 +153,13 @@ class Fillers:
             return ""
         task = self.tasks.find(state.task_id)
         return f"{task.id}, {task.title}"
+
+    def plan_next_briefing(self, ctx: Context) -> str:
+        """The brief and latest log lines of the plan's task the agent now has in hand."""
+        state = self.followed(ctx)
+        if not state or not state.task_id:
+            return ""
+        return self.briefing.said(self.tasks.find(state.task_id)) or "it has no brief and nothing logged yet"
 
     def plan_tasks_left(self, ctx: Context) -> str:
         """The plan's tasks still open, as a line says them: task 2 is, or tasks 2, 3 are."""

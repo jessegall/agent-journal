@@ -12,6 +12,8 @@ class Model:
 
     text_fields: ClassVar[tuple[str, ...]] = ()
     """The fields that hold the row's own words: what it is searched by and may name other rows in."""
+    handed_to_agent: ClassVar[bool] = False
+    """A row the user makes for the agent to work through, such as a dump: a sequence that starts on one starts for the live agent."""
 
     id: int | None = None
     created_at: datetime | None = None
