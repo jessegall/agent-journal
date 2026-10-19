@@ -1,6 +1,6 @@
 from journal.events.models.created import Created
 from journal.events.listener import Listener
-from journal.features.triggers.firing import Firing
+from journal.features.triggers.support.firing import Firing
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.agents import Agents

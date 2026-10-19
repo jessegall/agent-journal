@@ -2,7 +2,7 @@ from typing import TypeVar
 
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
-from journal.features.triggers.firing import Firing
+from journal.features.triggers.support.firing import Firing
 from journal.support.decision import Decision
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.triggers import Triggers
