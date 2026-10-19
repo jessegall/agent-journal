@@ -790,3 +790,9 @@ def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_r
             assert [r.title for r in app.container.get(Reports).all()] == ["The version 3 journal brought across"], "what came across is said in a report"
     finally:
         server.stop()
+
+
+def test_the_rails_open_marks_a_notification_kept_and_read_on_any_row(server):
+    call(server, "POST", "/api/todo", {"title": "the footer", "idempotency": "t1"})
+    assert call(server, "POST", "/api/todo/1/set", {"key": "kept", "value": "true"})[0] == 200
+    assert call(server, "POST", "/api/todo/1/read", {})[0] == 200

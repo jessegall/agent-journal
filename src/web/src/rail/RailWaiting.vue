@@ -44,8 +44,9 @@ async function open(r) {
         if (r.type === "question" || !focusTurn(r.ref, {instant: true})) peek(r.type, r.n);
         return;
     }
-    if (!r.data.kept) await api.act(r.type, r.n, "set", {key: "kept", value: "true"});
     if (r.type === "question" || !focusTurn(r.ref)) peek(r.type, r.n);
+    if (!r.data.kept) await api.act(r.type, r.n, "set", {key: "kept", value: "true"});
+    await api.act(r.type, r.n, "read");
 }
 
 async function dismiss(r) {
