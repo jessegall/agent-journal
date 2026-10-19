@@ -2,13 +2,13 @@ from typing import ClassVar
 
 from journal.console.command import Command
 from journal.engine.agent_state import AgentState
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.events.listener import Listener
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.features.seed import Seed
-from journal.features.service import Service
-from journal.features.skill import Skill
+from journal.features.support.service import Service
+from journal.support.skill import Skill
 
 
 class Feature:

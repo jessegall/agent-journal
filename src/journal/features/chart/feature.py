@@ -6,11 +6,11 @@ from journal.features.chart.listeners.walk_agent_events import WalkAgentEvents
 from journal.features.chart.listeners.walk_agent_events_after import WalkAgentEventsAfter
 from journal.features.chart.listeners.walk_row_events import WalkRowEvents
 from journal.features.chart.seeds.shipped_chart import ShippedChart
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 class ChartFeature(Feature):

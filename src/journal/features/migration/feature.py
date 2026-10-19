@@ -1,5 +1,5 @@
 from journal.engine.nudge import Nudge
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.models.node_kind import NodeKind
 

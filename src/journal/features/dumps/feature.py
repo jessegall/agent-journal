@@ -8,7 +8,7 @@ from journal.features.dumps.listeners.tell_arrival import TellArrival
 from journal.features.dumps.listeners.tell_choice import TellChoice
 from journal.features.dumps.listeners.tell_filed import TellFiled
 from journal.features.feature import Feature
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 class DumpsFeature(Feature):

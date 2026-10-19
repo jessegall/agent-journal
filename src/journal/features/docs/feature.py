@@ -1,7 +1,7 @@
 from journal.features.docs.commands.doc_command import DocCommand
 from journal.features.docs.listeners.mark_made import MarkMade
 from journal.features.feature import Feature
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 class DocsFeature(Feature):

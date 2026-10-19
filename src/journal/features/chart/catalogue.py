@@ -1,4 +1,4 @@
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.features.registry import Registry
 from journal.support.all_models import AllModels
 from journal.models.node_kind import NodeKind

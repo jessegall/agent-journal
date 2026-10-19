@@ -1,4 +1,4 @@
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
@@ -9,7 +9,7 @@ from journal.features.shell.commands.shell_command import ShellCommand
 from journal.features.shell.listeners.read_narrowly import ReadNarrowly
 from journal.features.shell.listeners.spot_hand_reads import SpotHandReads
 from journal.features.shell.listeners.refuse_mixed_journal import RefuseMixedJournal
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 class Shell(Feature):

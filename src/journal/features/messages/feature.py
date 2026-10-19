@@ -1,4 +1,4 @@
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.messages.listeners.hint_reply_by_tag import HintReplyByTag
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
@@ -16,7 +16,7 @@ from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.option import Option
 from journal.support.said import Said
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 class Messages(Feature):

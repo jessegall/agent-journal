@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 from journal.features.templates.commands.template_command import TemplateCommand
 from journal.features.templates.seeds.shipped_templates import ShippedTemplates
 

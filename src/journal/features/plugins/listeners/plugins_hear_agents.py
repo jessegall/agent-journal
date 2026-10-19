@@ -7,7 +7,7 @@ from journal.features.plugins.plugin_hearing import PluginHearing
 from journal.features.plugins.plugin_words import PluginWords
 from journal.support.decision import Decision
 from journal.support.deferred import Deferred
-from journal.features.floor import Floor
+from journal.support.floor import Floor
 from journal.models.plugin import Plugin
 from journal.models.plugin_answer import PluginAnswer
 from journal.repositories.settings import Settings

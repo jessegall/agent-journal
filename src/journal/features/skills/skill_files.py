@@ -3,7 +3,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.features.registry import Registry
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 HOMES = (".claude/skills", ".agents/skills")
 

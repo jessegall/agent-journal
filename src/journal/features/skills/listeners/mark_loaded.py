@@ -2,7 +2,7 @@ from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 from journal.features.skills.requiring import Requiring
 from journal.features.skills.skill_files import SkillFiles
 from journal.support.actor import Actor

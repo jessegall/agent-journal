@@ -1,8 +1,8 @@
 from journal.engine.agent_state import AgentState
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
-from journal.features.service import Service
-from journal.features.skill import Skill
+from journal.features.support.service import Service
+from journal.support.skill import Skill
 from journal.repositories.settings import Settings
 
 

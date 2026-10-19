@@ -893,7 +893,7 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
 def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_at_boot(app, monkeypatch):
     from journal.support.service_start import ServiceStart
     from journal.features.registry import Registry
-    from journal.features.service import Service
+    from journal.features.support.service import Service
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)

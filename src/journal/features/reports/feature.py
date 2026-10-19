@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.reports.commands.report_command import ReportCommand
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 class ReportsFeature(Feature):

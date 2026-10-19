@@ -1,4 +1,4 @@
-from journal.features.entry import Entry
+from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.nothing_command import NothingCommand
@@ -13,7 +13,7 @@ from journal.features.memory.listeners.whisper import Whisper
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.models.node_kind import NodeKind
-from journal.features.skill import Skill
+from journal.support.skill import Skill
 
 
 ONCE = 365 * 86400.0
