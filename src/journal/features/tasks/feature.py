@@ -4,6 +4,8 @@ from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.clear_waits import ClearWaits
+from journal.features.tasks.listeners.let_go_of_closed_task import LetGoOfClosedTask
+from journal.features.tasks.listeners.no_wait_cycles import NoWaitCycles
 from journal.features.tasks.listeners.one_task_in_hand import OneTaskInHand
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.engine.nudge import Nudge
@@ -27,7 +29,7 @@ class Tasks(Feature):
     NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between namings of the task in hand, so drift is noticed; read against the edits count", 25, unit="edits")
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits with nothing logged before the next write waits for a log line; read against the edits count, a held write not counted", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
-    listeners = (SpotPolling, ClearWaits, OneTaskInHand)
+    listeners = (SpotPolling, ClearWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     checks = (
         Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
         Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),

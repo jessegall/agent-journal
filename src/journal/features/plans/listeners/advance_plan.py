@@ -1,67 +1,71 @@
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
+from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
+from journal.features.plans.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
-from journal.models.actor_kind import ActorKind
-from journal.models.task import Task
 from journal.models.plan_state import PlanState
-from journal.models.task_state import TaskState
-from journal.repositories.not_found import NotFound
+from journal.models.task import Task
+from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 
 
 class AdvancePlan(Listener[Updated]):
-    """A plan is done when its last task closes, whoever closes it. When an agent following a plan finishes the task it was on, the next open task is started for it; at a checkpoint phase's end the plan waits and the agent keeps following it with no task in hand, the Idle workflow saying what the mode makes of it; when only blocked or parked tasks are left, the plan waits with the agent following it; when every task is closed, the plan is done and the agent idle."""
+    """A plan is done when its last task closes, whoever closes it. The agent following the plan with that task in hand, whoever closed it, goes on: to the next open task, which is started for it; at a checkpoint's end it keeps following the plan with no task in hand, the workflows saying what the mode makes of it; when no task can start, it is told which wait; a plan no longer started lets it go. A paused agent keeps its pause and goes on when it ends."""
 
-    def __init__(self, machine: Machine, plans: Plans, tasks: Tasks) -> None:
-        self.machine, self.plans, self.tasks = machine, plans, tasks
-
-    def following(self, event: Updated) -> FollowingPlan | None:
-        """The plan-following state of the agent that closed the task, when an agent did and it follows a plan, now or once its pause ends."""
-        if event.by.kind != ActorKind.AGENT:
-            return None
-        try:
-            state = self.machine.current(event.by.id)
-        except NotFound:
-            return None
-        if isinstance(state, Paused):
-            state = self.machine.states.resumed(state)
-        return state if isinstance(state, FollowingPlan) else None
+    def __init__(self, machine: Machine, plans: Plans, tasks: Tasks, agents: Agents, control: PlanControl) -> None:
+        self.machine, self.plans, self.tasks, self.agents, self.control = machine, plans, tasks, agents, control
 
     def handle(self, event: Updated) -> None:
         from journal.features.plans.feature import Plans as PlansFeature
         task = event.model
-        if not isinstance(task, Task) or task.state != TaskState.DONE:
+        if not isinstance(task, Task) or not task.has_just_closed(event.was):
             return
         for plan in [p for p in self.plans.holding(task) if self.plans.finished(p)]:
             self.plans.save(plan.done(), event.by)
             print(PlansFeature.DONE.about(n=plan.id).rendered())
-        state = self.following(event)
-        if state is None or state.task_id != task.id:
+        follower = self.follower(task)
+        if follower is None:
             return
+        session, state = follower
         plan = self.plans.find(state.plan_id)
-        if plan.state == PlanState.DONE:
-            self.machine.move(event.by.id, task.environment_id, self.machine.states.first())
+        if plan.state != PlanState.STARTED:
+            self.moved(session, task, self.machine.states.first())
             return
-        checkpoint = self.plans.at_checkpoint(plan)
-        if checkpoint is not None:
-            self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id))
-            print(PlansFeature.CHECKPOINT.about(n=plan.id, phase=checkpoint.title).rendered())
+        if self.plans.at_checkpoint(plan) is not None:
+            self.moved(session, task, FollowingPlan(plan_id=plan.id))
             return
         following = self.plans.next_task(plan)
         if following is None:
-            self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id))
-            blocked = [str(t.id) for t in self.plans.tasks_of(plan) if t.state in (TaskState.BLOCKED, TaskState.PARKED)]
-            print(PlansFeature.WAITING.about(n=plan.id, blocked=f"tasks {', '.join(blocked)} wait" if len(blocked) > 1 else f"task {blocked[0]} waits").rendered())
+            self.moved(session, task, FollowingPlan(plan_id=plan.id))
+            print(self.control.waiting(plan).rendered())
             return
         if self.tasks.in_hand() is not None:
-            self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id))
-            print(PlansFeature.NEXT.about(n=plan.id, task=following.id).rendered())
+            self.moved(session, task, FollowingPlan(plan_id=plan.id))
+            print(PlansFeature.NEXT.about(n=plan.id, task=following.id, title=following.title).rendered())
             return
         started = self.tasks.save(following.started(datetime.now(timezone.utc)), event.by)
-        self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id, task_id=started.id))
+        self.moved(session, task, FollowingPlan(plan_id=plan.id, task_id=started.id))
         print(PlansFeature.NEXT.about(n=plan.id, task=started.id, title=started.title).rendered())
+
+    def follower(self, task: Task) -> tuple[str, FollowingPlan] | None:
+        """The session following a plan with this task in hand, now or once its pause ends."""
+        for agent in self.agents.in_():
+            state = self.machine.current(agent.session)
+            resumed = self.machine.states.resumed(state) if isinstance(state, Paused) else state
+            if isinstance(resumed, FollowingPlan) and resumed.task_id == task.id:
+                return agent.session, resumed
+        return None
+
+    def moved(self, session: str, task: Task, to: AgentState) -> None:
+        """The agent moved on; one paused keeps its pause and goes on to this once it ends."""
+        current = self.machine.current(session)
+        if isinstance(current, Paused):
+            self.machine.move(session, task.environment_id, replace(current, resume={"state": to.name, "data": to.to_data()}))
+            return
+        self.machine.move(session, task.environment_id, to)

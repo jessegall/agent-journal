@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
+from journal.features.plans.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.workers.subagents import Subagents
 from journal.models.actor_kind import ActorKind
@@ -25,8 +26,8 @@ from journal.repositories.tasks import Tasks
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents) -> None:
-        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents = plans, phases, tasks, links, machine, subagents
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents, control: PlanControl) -> None:
+        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents, self.control = plans, phases, tasks, links, machine, subagents, control
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "draft a plan")
@@ -131,49 +132,19 @@ class PlanCommand(Command):
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:
-        from journal.features.plans.feature import Plans as PlansFeature
-        plan = self.plans.find(args.n)
-        if plan.state not in (PlanState.APPROVED, PlanState.PARKED, PlanState.STARTED):
-            raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
-        if self.plans.finished(plan):
-            self.plans.save(plan.done(), where.actor)
-            print(PlansFeature.DONE.about(n=plan.id).rendered())
-            return 0
-        task = self.plans.next_task(plan)
-        if task is not None:
-            self.tasks.refuse_second(task.started(datetime.now(timezone.utc)))
-        plan = self.plans.save(plan.started(), where.actor)
-        if task is None:
-            print(f"plan {plan.id} has no open task")
-            return 1
-        started = self.tasks.save(task.started(datetime.now(timezone.utc)), where.actor)
-        if where.session:
-            self.machine.move(where.session, plan.environment_id, FollowingPlan(plan_id=plan.id, task_id=started.id))
-        print(PlansFeature.NEXT.about(n=plan.id, task=started.id, title=started.title).rendered())
+        print(self.control.start(self.plans.find(args.n), where.session, where.actor).rendered())
         return 0
 
     def park(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(self.plans.find(args.n).parked(), where.actor)
-        for task in [t for t in self.plans.tasks_of(plan) if t.state == TaskState.STARTED]:
-            self.tasks.save(task.parked(f"plan {plan.id} was parked"), where.actor)
-        self.stop_following(plan, where)
+        plan = self.control.park(self.plans.find(args.n), where.session, where.actor)
         print(f"plan {plan.id} parked")
         return 0
 
     def cancel(self, args: Namespace, where: Where) -> int:
         plan = self.plans.find(args.n)
-        gone = self.plans.cancel(plan, where.actor)
-        self.stop_following(plan, where)
+        gone = self.control.abandon(plan, where.session, where.actor)
         print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in gone)}" if gone else ""))
         return 0
-
-    def stop_following(self, plan: Plan, where: Where) -> None:
-        """A plan parked or cancelled is over for the agent following it: it goes back to rest."""
-        if not where.session:
-            return
-        state = self.machine.current(where.session)
-        if isinstance(state, FollowingPlan) and state.plan_id == plan.id:
-            self.machine.move(where.session, plan.environment_id, self.machine.states.first())
 
     def brief(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(replace(self.plans.find(args.n), brief=args.text), where.actor)

@@ -8,6 +8,7 @@ from journal.features.plans.listeners.advance_plan import AdvancePlan
 from journal.features.plans.listeners.follow_plan_at_start import FollowPlanAtStart
 from journal.features.plans.listeners.follow_plan_on_resume import FollowPlanOnResume
 from journal.features.plans.listeners.reopen_finished_plan import ReopenFinishedPlan
+from journal.features.plans.listeners.reopen_plan_of_reopened_task import ReopenPlanOfReopenedTask
 from journal.features.plans.listeners.tell_approved import TellApproved
 from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
@@ -19,16 +20,16 @@ class Plans(Feature):
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
     states = (FollowingPlan,)
     commands = (PlanCommand,)
-    listeners = (AdvancePlan, TellApproved, FollowPlanAtStart, FollowPlanOnResume, ReopenFinishedPlan)
+    listeners = (AdvancePlan, TellApproved, FollowPlanAtStart, FollowPlanOnResume, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
     checks = (
         Entry(NodeKind.CHECK, 'approved_plan', 'Has an approved plan not started?', 'the user approved a plan here that is not started yet'),
         Entry(NodeKind.CHECK, 'plan_at_checkpoint', 'Plan at a checkpoint?', 'a started plan stands at a completed checkpoint phase, its next phase not begun'),
     )
     seeds = (ClosedPlans,)
 
-    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next", repeat_after=0)
+    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
     DONE = Nudge(name, "done", "plan {{n}} is done: its last task closed", repeat_after=0)
-    WAITING = Nudge(name, "waiting", "plan {{n}}: no open task is left, and {{blocked}} on something outside", "`journal task list` names what each waits on; the plan goes on when one is unblocked", repeat_after=0)
+    WAITING = Nudge(name, "waiting", "plan {{n}}: no task can start now; {{left}} parked, blocked or waiting", "`journal task list` says what each waits on; when one can go on, `journal plan start {{n}}` takes it up", repeat_after=0)
     PARKED = Nudge(name, "parked", "the user parked plan {{n}}")
     APPROVED = Nudge(name, "approved", "the user approved plan {{n}}", "`journal plan start {{n}}` begins its first task", repeat_after=0)
     CHECKPOINT = Nudge(name, "checkpoint", "plan {{n}}: phase {{phase}} is complete and a checkpoint", "the user looks before the next phase; wait for their word, then `journal plan start {{n}}`", repeat_after=0)

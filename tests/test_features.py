@@ -150,10 +150,10 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     console.run(["await", "the build"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
     assert "task 2 is next" in out, "a task finished while the agent waits on something still advances the plan"
-    assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=2)
+    assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
-    assert machine.current("s1").name == "idle"
+    assert machine.current("s1").resume["state"] == "idle", "done with the plan, the agent goes to rest when its wait ends"
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
@@ -169,7 +169,7 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app):
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "block", "2", "the user picks the moment"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
-    assert "plan 1: no open task is left, and task 2 waits on something outside" in out and "plan 1 is done" not in out
+    assert "plan 1: no task can start now; task 2 is parked, blocked or waiting" in out and "plan 1 is done" not in out
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a blocked task keeps the plan open"
     console.run(["task", "unblock", "2"], AGENT)
     assert "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
@@ -5578,3 +5578,84 @@ def test_resuming_a_plans_parked_task_follows_the_plan_again_so_finishing_it_sta
     assert app.container.get(Machine).current("s1").name == "following_plan", "a resumed plan task is followed again"
     console.run(["task", "done", "1", "--how", "h"], AGENT)
     assert app.container.get(Tasks).find(2).state == "started", "so finishing it starts the next"
+
+
+def test_a_plan_moves_on_whoever_closes_its_task_and_an_approved_plan_with_every_task_closed_is_done(app):
+    from journal.features.plans.states.following_plan import FollowingPlan
+    from journal.repositories.plans import Plans
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    for title in ("first", "second"):
+        console.run(["plan", "create", title, "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "one"], USER)
+    console.run(["plan", "add", "1", "two"], USER)
+    console.run(["plan", "add", "2", "only"], USER)
+    for n in (1, 2):
+        console.run(["plan", "approve", str(n)], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "done", "1", "--how", "the user closed it"], USER)
+    assert app.container.get(Tasks).find(2).state == "started" and app.container.get(Machine).current("s1") == FollowingPlan(plan_id=1, task_id=2), "the user's close moves the agent's plan on"
+    console.run(["task", "done", "2", "--how", "h"], AGENT)
+    console.run(["task", "start", "3"], USER)
+    console.run(["task", "done", "3", "--how", "h"], USER)
+    assert app.container.get(Plans).find(2).state == "done", "an approved plan whose last task closes is done without a start"
+
+
+def test_a_plan_parks_and_restarts_on_its_parked_task_only_once_approved_holds_its_checkpoint_and_reopens(app):
+    from journal.models.task_state import TaskState
+    from journal.repositories.plans import Plans
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    for title in ("one", "two", "three"):
+        console.run(["plan", "add", "1", title], USER)
+    console.run(["plan", "phase", "1", "first", "--when", "w", "--checkpoint"], USER)
+    console.run(["plan", "phase", "1", "second", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1", "2"], USER)
+    console.run(["plan", "todos", "1", "2", "3"], USER)
+    assert console.run(["plan", "park", "1"], USER).code == 1, "a plan not yet approved is not parked, so it cannot be started by a restart"
+    console.run(["plan", "approve", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["plan", "park", "1"], AGENT)
+    assert "task 1 is next" in console.run(["plan", "start", "1"], AGENT).out, "a restart resumes the parked task"
+    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    console.run(["task", "done", "2", "--how", "h"], AGENT)
+    console.run(["task", "block", "3", "a vendor"], AGENT)
+    plans = app.container.get(Plans)
+    assert plans.at_checkpoint(plans.find(1)) is not None, "a blocked task after a checkpoint does not pass it"
+    console.run(["task", "unblock", "3"], AGENT)
+    console.run(["task", "start", "3"], AGENT)
+    console.run(["task", "done", "3", "--how", "h"], AGENT)
+    assert plans.find(1).state == "done"
+    tasks = app.container.get(Tasks)
+    tasks.save(tasks.find(3).with_(state=TaskState.OPEN, finished_at=None, outcome=""), Actor.user(1))
+    assert plans.find(1).state == "started", "a reopened task reopens its plan"
+
+
+def test_no_wait_closes_a_loop_and_the_migration_drops_only_the_link_that_would(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.reports import Reports
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    hook(app, "SessionStart")
+    for title in ("a", "b"):
+        console.run(["task", "create", title], AGENT)
+    console.run(["task", "block", "1", "--on", "task:2"], AGENT)
+    refused = console.run(["task", "block", "2", "--on", "task:1"], AGENT)
+    assert refused.code == 1 and "loop" in refused.err, "B waiting on A while A waits on B is refused"
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    todo = kept / "environments" / "main" / "todo"
+    version_3_row(todo, "todo", 1, "", title="x", data={"after": [2]})
+    version_3_row(todo, "todo", 2, "", title="y", data={"after": [1]})
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
+        titles = {t.title for t in app.container.get(Tasks).every()}
+        body = app.container.get(Reports).all()[-1].body
+    assert {"x", "y"} <= titles, "every task comes across"
+    assert "| waits | 2 |" in body and "would close a loop" in body, "the one link that would close the loop is dropped and named"

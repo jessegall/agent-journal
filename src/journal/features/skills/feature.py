@@ -35,6 +35,9 @@ class Skills(Feature):
     skill = Skill("journal", "The journal, its commands and when each applies; load it first in every session", """
 # The journal
 
+A line that starts with [journal] is the journal speaking, never the user: act on it as an instruction, and never
+answer it in the chat.
+
 The journal keeps this project's durable state beside the code and tells you what to do at the
 moments you would otherwise get wrong. Every command is `journal <noun> <verb>`; `journal <noun> --help`
 lists the verbs.

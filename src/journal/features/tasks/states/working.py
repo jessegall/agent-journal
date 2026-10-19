@@ -18,6 +18,10 @@ class Working(AgentState):
     logged_at: float = 0.0
     """When the work was last logged, or started."""
 
+    def follows_a_plan(self) -> bool:
+        """Whether the plan moves this agent on when its task closes."""
+        return False
+
     def named(self) -> str:
         if self.task_id and self.what:
             return f"task {self.task_id}, {self.what}"

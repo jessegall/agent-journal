@@ -15,15 +15,19 @@ class PlanState(StrEnum):
         """Done or abandoned: nothing is left to do on it."""
         return self in (PlanState.DONE, PlanState.CANCELLED)
 
+    def can_be_started(self) -> bool:
+        """The user approved it: approved, or started and parked since."""
+        return self in (PlanState.APPROVED, PlanState.PARKED, PlanState.STARTED)
+
     def can_become(self, state: "PlanState") -> bool:
         """Only forward, or back to work: the user's approval is never undone by the agent, and a cancelled plan stays cancelled."""
         return state == self or state in MOVES[self]
 
 
 MOVES = {
-    PlanState.DRAFT: {PlanState.READY, PlanState.REVIEWING, PlanState.APPROVED, PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
-    PlanState.READY: {PlanState.DRAFT, PlanState.REVIEWING, PlanState.APPROVED, PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
-    PlanState.REVIEWING: {PlanState.READY, PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
+    PlanState.DRAFT: {PlanState.READY, PlanState.REVIEWING, PlanState.APPROVED, PlanState.DONE, PlanState.CANCELLED},
+    PlanState.READY: {PlanState.DRAFT, PlanState.REVIEWING, PlanState.APPROVED, PlanState.DONE, PlanState.CANCELLED},
+    PlanState.REVIEWING: {PlanState.READY, PlanState.DONE, PlanState.CANCELLED},
     PlanState.APPROVED: {PlanState.STARTED, PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
     PlanState.STARTED: {PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
     PlanState.PARKED: {PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED},

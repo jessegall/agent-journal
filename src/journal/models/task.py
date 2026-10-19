@@ -21,6 +21,10 @@ class Task(Scoped):
     def is_closed(self) -> bool:
         return self.state.is_closed()
 
+    def has_just_closed(self, was: "Task | None") -> bool:
+        """Closed now, and open before this change."""
+        return self.is_closed() and (was is None or not was.is_closed())
+
     def is_settled(self) -> bool:
         """Nothing waiting on it waits any longer."""
         return self.is_closed()

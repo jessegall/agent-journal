@@ -24,6 +24,19 @@ class Tasks(ScopedRepository[Task]):
         """What the task waits on by a link that is still not answered, done or cancelled."""
         return [ref for ref in self.links.targets(task, WAITS_ON) if not self.awaited(ref).is_settled()]
 
+    def waits_reach(self, start: Ref, goal: Ref) -> bool:
+        """Whether following the wait links from start ever comes to goal."""
+        seen, todo = set(), [start]
+        while todo:
+            ref = todo.pop()
+            if ref == goal:
+                return True
+            if ref in seen or ref.type != Task.table():
+                continue
+            seen.add(ref)
+            todo += self.links.targets(self.find(ref.id), WAITS_ON)
+        return False
+
     def awaited(self, ref: Ref) -> Task | Question:
         """The row a wait link names: a task or a question."""
         return self.find(ref.id) if ref.type == Task.table() else self.questions.find(ref.id)

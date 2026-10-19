@@ -3,6 +3,7 @@ from journal.models.chart import Chart
 from journal.models.check import Check
 from journal.models.doc import Doc
 from journal.models.migrated_row import MigratedRow
+from journal.models.statistic import Statistic
 from journal.models.version3_migration import Version3Migration
 from journal.models.entry import Entry
 from journal.models.environment import Environment
@@ -40,5 +41,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, Doc, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

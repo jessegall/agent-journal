@@ -19,19 +19,20 @@ from journal.launcher.project_command import ProjectCommand
 
 
 class SetupCommand(Command):
-    """journal setup here: everything a project needs to run under the journal, idempotently."""
+    """journal setup: everything a project needs to run under the journal, idempotently."""
 
     noun = "setup"
+    default_verb = "project"
 
     def __init__(self, config: Config, providers: Providers, files: SkillFiles, profiles: ProfileFiles, environments: Environments, supervisor: SupervisorLink) -> None:
         self.config, self.providers, self.files, self.profiles, self.environments, self.supervisor = config, providers, files, profiles, environments, supervisor
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "here", "wire the hooks, write the skills and the law, put journal on the path")
+        self.verb(verbs, "project", "wire the hooks, write the skills and the law, put journal on the path; what journal setup does alone")
         self.verb(verbs, "hooks", "wire the hooks only")
         self.verb(verbs, "restart", "restart the running journals on the installed code; the agents keep running")
 
-    def here(self, args: Namespace, where: Where) -> int:
+    def project(self, args: Namespace, where: Where) -> int:
         self.config.home.mkdir(parents=True, exist_ok=True)
         self.hooks(args, where)
         for path in self.files.write_all():

@@ -6,6 +6,7 @@ from journal.features.questions.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.features.tasks.states.working import Working
 from journal.http.request import Request
+from journal.features.plans.plan_control import PlanControl
 from journal.http.v3.action_body import ActionBody
 from journal.http.v3.attachments import Attachments
 from journal.http.v3.agent_actions import AgentActions
@@ -55,8 +56,9 @@ class V3Actions:
     WRITTEN = {"doc": "docs", "report": "reports", "todo": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders", "question": "questions"}
     """The repository behind each type the viewer may rewrite."""
 
-    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering, secret_actions: SecretActions, share_actions: ShareActions, agent_actions: AgentActions, plugin_actions: PluginActions) -> None:
+    def __init__(self, tasks: Tasks, messages: Messages, questions: Questions, facts: Facts, rules: Rules, reminders: Reminders, plans: Plans, agents: Agents, environments: Environments, machine: Machine, supervisor: SupervisorLink, reactions: Reactions, links: Links, docs: Docs, reports: Reports, checks: Checks, runner: CheckRunner, sequences: Sequences, triggers: Triggers, attachments: Attachments, launcher: AgentLauncher, notices: Notices, answering: Answering, secret_actions: SecretActions, share_actions: ShareActions, agent_actions: AgentActions, plugin_actions: PluginActions, plan_control: PlanControl) -> None:
         self.tasks, self.messages, self.questions, self.facts, self.rules, self.reminders, self.plans = tasks, messages, questions, facts, rules, reminders, plans
+        self.plan_control = plan_control
         self.agents, self.environments, self.machine, self.supervisor, self.reactions, self.links = agents, environments, machine, supervisor, reactions, links
         self.docs, self.reports, self.checks, self.runner, self.sequences, self.triggers, self.attachments = docs, reports, checks, runner, sequences, triggers, attachments
         self.notices, self.answering = notices, answering
@@ -156,22 +158,29 @@ class V3Actions:
         return self.plans.save(self.plans.find(n).done(), by)
 
     def plan_abandon(self, n: int, body: ActionBody, by):
-        self.plans.cancel(self.plans.find(n), by)
+        self.plan_control.abandon(self.plans.find(n), self.following(), by)
         return self.plans.find(n)
 
     def plan_approve(self, n: int, body: ActionBody, by):
         return self.plans.approve(self.plans.find(n), by)
 
     def plan_start(self, n: int, body: ActionBody, by):
-        return self.plans.save(self.plans.find(n).started(), by)
-
-    def plan_park(self, n: int, body: ActionBody, by):
-        return self.plans.save(self.plans.find(n).parked(), by)
-
-    def plan_continue(self, n: int, body: ActionBody, by):
+        """Started as journal plan start does, its task taken up for the agent here."""
+        self.plan_control.start(self.plans.find(n), self.following(), by)
         return self.plans.find(n)
 
-    plan_dismiss = plan_continue
+    def plan_park(self, n: int, body: ActionBody, by):
+        return self.plan_control.park(self.plans.find(n), self.following(), by)
+
+    plan_continue = plan_start
+
+    def plan_dismiss(self, n: int, body: ActionBody, by):
+        return self.plans.find(n)
+
+    def following(self) -> str:
+        """The session of the agent here that a plan's start or stop moves; empty when none runs."""
+        live = self.agents.live()
+        return live.session if live else ""
 
     def environment_launch(self, n: int, body: ActionBody, by):
         """An agent started from the viewer runs detached under its own supervisor; the viewer sees it once its start hook arrives."""

@@ -56,8 +56,8 @@ class Entries(ScopedRepository[Entry]):
         return self.selected(f"environment_id = ? AND json_extract(data, '$.session_id') = ? AND {DISPATCHES} ORDER BY id", (self.scope.id, session))
 
     def agent_calls(self, last: int = 500) -> list[Entry]:
-        """The newest dispatches of a subagent here, across every session: the Agent tool's starts, newest first."""
-        return self.selected("environment_id = ? AND kind = 'ToolStarting' AND json_extract(data, '$.tool_name') IN ('Agent', 'Task') ORDER BY id DESC LIMIT ?", (self.scope.id, last))
+        """The newest dispatches of a subagent here, across every session: the Agent tool's starts, newest first, read through the index of the dispatches."""
+        return self.selected(f"environment_id = ? AND {DISPATCHES} AND kind = 'ToolStarting' ORDER BY id DESC LIMIT ?", (self.scope.id, last))
 
     def shown_since(self, id: int) -> list[Entry]:
         """What the viewer is told of after an id: this environment's entries and the project's, such as a check run or a plugin changed."""

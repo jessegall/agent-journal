@@ -2,80 +2,60 @@
 
 A project journal, live viewer and avatar for Claude Code and Codex. Version 4.
 
-The journal keeps a project's durable state beside the code in one SQLite file, `.journal/journal.db`:
-tasks, plans, messages, questions, facts, rules, reminders, sequences, workers, checks and the
-timeline of everything the agent did. A server beside the agent hears its hooks, decides what the
-agent should hear back, and serves the viewer. The agent is a state machine: one flat state at a
-time, and the state says what is allowed and what is said.
-
-## Try it
-
-From the root of your project, with `python3`, `git` and `curl` on the path:
-
-    sh /path/to/agent-journal/src/journal.sh setup here
-    journal claude
-
 ## Install
 
-From the root of your project, with `python3` 3.11 or newer available:
+In a terminal, from the root of your project:
 
     curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
 
-From a checkout on this machine, the same from the project root:
-
-    sh /path/to/agent-journal/install.sh
-
-The installer copies the package into `.journal/src`, apart from the project's own record, then runs
-`journal setup here`: it wires Claude's hooks (and Codex's where `.codex/` exists), writes the journal's
-skills and the agent profiles, puts the journal's law into AGENTS.md, imports it from CLAUDE.md, writes
-the project's own command at `.journal/bin/journal`, keeps `.journal` out of git, and puts one dispatcher
-at `~/.local/bin/journal`. The dispatcher holds no journal: it finds the project by its `.journal` folder
-and hands over to the version that project holds, version 4 or version 3. Running the installer again
-upgrades.
-
-## Start Claude or Codex
+Then start your agent under the journal:
 
     journal claude
-    journal codex
 
-The boot menu asks, one question at a time with ↑ ↓ and Enter, which environment (x on one deletes it,
-after a confirmation, with all it recorded), whether to carry on its last conversation, whether to skip
-the permission prompts and whether to set aside the hooks that are not the journal's for the run (they
-are put back when it ends), then clears the screen and runs the agent under the supervisor with one line
-kept at the top showing the project and the viewer's URL, with the server beside it, and opens the viewer
-in your browser. `--env <name>`, `--new`, `--skip`, `--aside`, `--yes` and `--no-open` answer the menu
-from the command line. The viewer is at the port in `.journal/port`: the first free one from 8420, or
-`JOURNAL_PORT`.
+or `journal codex`. The viewer opens in your browser. That is all.
 
-The viewer is version 3's, unchanged: the server answers its API from the new database.
+It needs Python 3.11 or newer and git. Running the same line again upgrades the journal; with auto-update
+switched on in the viewer's settings, a new release installs itself.
 
-Without the supervisor, `journal serve` runs the server alone and `claude` with
-`AGENT_JOURNAL_ACTIVE=1` in its environment reports to it.
+## Coming from version 3
+
+Version 3 never moves itself to version 4. When you want to, run `journal upgrade --to 4` in the project,
+or say yes to the dialog version 3 shows once version 4 is out. The journal stops, version 4 is installed,
+and your whole version 3 journal is kept, untouched, in `.journal/version-3`. The viewer then offers to
+bring everything across: messages, tasks (your to-dos), plans, questions, documents, reports, facts,
+rules, reminders, comments and the rest. Nothing is lost, and the report it writes says what came across
+and what stayed in the backup.
+
+## What it is
+
+The journal keeps a project's durable state beside the code, in one SQLite file at `.journal/journal.db`:
+tasks, plans, messages, questions, facts, rules, reminders, sequences, workers, checks, documents and the
+timeline of everything the agent did. A server beside the agent hears its hooks, decides what the agent
+should hear back, and serves the viewer. You talk to the agent in the viewer's chat; it answers there.
+
+Every shell command the agent runs goes through the journal: it is timed, moved to the background when it
+runs long, and kept as a numbered output the agent reads by its number instead of running it again.
 
 ## Commands
 
-Every command is `journal <noun> <verb>`; `journal <noun> --help` lists the verbs.
+Every command is `journal <noun> <verb>`; `journal <noun> --help` lists the verbs. The agent uses them;
+you rarely need to.
 
     journal task create "write the notes" --brief "what and where" --start
-    journal task log 1 "half done"
-    journal task done 1 --how "published"
-    journal plan create "release" && journal plan add 1 "tag it" && journal plan start 1
-    journal message send "look at the login" / journal message list
+    journal plan create "release" && journal plan add 1 "tag it"
     journal question ask "Which name?" --options "alpha, beta"
-    journal fact create "the api is on port 9" / journal rule create "Never skip the gate"
-    journal sequence create "release" --steps "bump | tag | push" && journal sequence run 1
-    journal worker dispatch "Lady Lovelace" "write the parser" --model fast --worktree
+    journal fact create "the api is on port 9"
+    journal worker dispatch "Lady Lovelace" "write the parser" --model sonnet --worktree
     journal check create "the suite" --command "pytest -q" --every 30
-    journal trigger create "deploy,release" "check the changelog first" --do instruct
-    journal voice choose squire && journal voice me --title Sir --name Jesse
-    journal halt now "stuck on the login"
+    journal output read 12 --grep FAILED
 
-With the server up, `journal` posts the command to it and prints the outcome; no Python starts.
+`journal claude` and `journal codex` take `--env <name>`, `--new`, `--skip` and `--yes` to answer the
+start menu from the command line. The viewer is at the port in `.journal/port`, the first free one from 8420.
 
 ## Developing
 
-    pytest                       # the suite, about five seconds, core only
-    cd src/web && npm run build  # the viewer, into src/web/dist (node_modules is shared from v3.bak)
+    python3 -m pytest -q          # the suite
+    npm --prefix src/web run build  # the viewer, into src/web/dist
+    sh install.sh                 # install this checkout into its own .journal
 
 `CLAUDE.md` holds the design philosophy and `NOTES.md` what is decided and what is still open.
-`v3.bak/` is version 3, kept as the guide for the rewrite and never imported.

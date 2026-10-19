@@ -23,7 +23,7 @@ def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
     (root / "AGENTS.md").write_text("# my project\n\nMy own rules.\n")
-    out = app.console().run(["setup", "here"], Where("main")).out
+    out = app.console().run(["setup"], Where("main")).out
     settings = json.loads((root / ".claude/settings.json").read_text())
     assert "SessionStart" in settings["hooks"] and "MessageDisplay" in settings["hooks"]
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
@@ -36,7 +36,7 @@ def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
     assert "hooks   .claude/settings.json" in out
     assert not (root / ".codex").exists(), "Codex is wired only where its folder exists or its program is installed"
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/local/bin/{name}")
-    assert "hooks   .codex/hooks.json" in app.console().run(["setup", "here"], Where("main")).out, "a fresh project is wired for Codex when Codex is installed"
+    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Where("main")).out, "a fresh project is wired for Codex when Codex is installed"
     assert (root / ".journal/bin/journal").is_file() and "/.journal" in (root / ".gitignore").read_text().splitlines()
     dispatcher = (root / "home/.local/bin/journal").read_text()
     assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
@@ -46,9 +46,9 @@ def test_setup_is_idempotent_and_keeps_other_hooks(app):
     root = app.config.root
     (root / ".claude").mkdir()
     (root / ".claude/settings.json").write_text(json.dumps({"hooks": {"PreToolUse": [{"hooks": [{"type": "command", "command": "echo mine"}]}]}, "theme": "dark"}))
-    app.console().run(["setup", "here"], Where("main"))
+    app.console().run(["setup"], Where("main"))
     first = (root / ".claude/settings.json").read_text()
-    app.console().run(["setup", "here"], Where("main"))
+    app.console().run(["setup"], Where("main"))
     assert (root / ".claude/settings.json").read_text() == first
     settings = json.loads(first)
     assert settings["theme"] == "dark"

@@ -449,7 +449,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   waited in the queue for good, silently. Found 2026-10-15 behind a reply that never reached the chat.
 - **Install is one command, as version 3's (2026-10-15, later).** `install.sh` copies `src` into
   `<project>/.journal/src` (from the checkout it is run from, or a clone of `AGENT_JOURNAL_REPO` at
-  `AGENT_JOURNAL_REF`) and runs `journal setup here` from the copy. Setup also writes the dispatcher at
+  `AGENT_JOURNAL_REF`) and runs `journal setup` from the copy. Setup also writes the dispatcher at
   `~/.local/bin/journal` (`journal/launcher/dispatcher.py`): it finds the project's `.journal` walking up and
   hands over to `.journal/src/journal.sh` (version 4) or `.journal/journal` (version 3's launcher), so one
   command serves both versions and nothing of the journal lives outside a project. Setup adds `/.journal`

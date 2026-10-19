@@ -11,5 +11,8 @@ class FollowingPlan(Working):
     title = "Following a plan"
     plan_id: int = 0
 
+    def follows_a_plan(self) -> bool:
+        return True
+
     def named(self) -> str:
-        return super().named() if self.task_id else f"plan {self.plan_id}, standing at a checkpoint"
+        return super().named() if self.task_id else f"plan {self.plan_id}, with no task in hand"

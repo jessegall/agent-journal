@@ -23,9 +23,15 @@ class PlansShaper(Shaper):
         phased = {t for phase in drawn for t in phase["todos"]}
         loose = [t.id for t in tasks if t.id not in phased]
         if loose:
-            drawn.append({"title": "Under no phase yet", "todos": loose, "when": "", "checkpoint": False})
+            drawn.append({"title": "Under no phase yet", "todos": loose, "when": "", "checkpoint": False, "loose": True})
         return V3Row.of("plan", p, title=p.title, brief=p.brief, refs=[f"todo:{t.id}" for t in tasks], completed=seconds(p.updated_at) if p.state.is_closed() else 0.0,
-                        data={"status": STATUS[p.state], "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False, "reviewers": self.reviewers(p)})
+                        data={"status": self.status(p), "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False, "reviewers": self.reviewers(p)})
+
+    def status(self, p) -> str:
+        """Version 3's word for the plan's state; a started plan standing at a checkpoint waits for the user."""
+        if p.state == PlanState.STARTED and self.plans.at_checkpoint(p) is not None:
+            return "waiting"
+        return STATUS[p.state]
 
     def reviewers(self, p) -> int:
         """The plan's reviewers still out while it is in review: the subagents of the live agents whose brief names it."""

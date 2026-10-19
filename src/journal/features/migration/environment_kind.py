@@ -29,7 +29,7 @@ class EnvironmentKind:
         for environment in [e for e in rows.environments() if self.ledger.is_brought(f"project/environment/{e.n}")]:
             into = self.environments.existing(environment.title)
             for row in rows.of(environment.title, self.kind):
-                source = f"environments/{environment.title}/{self.kind}/{row.n}"
+                source = self.source(environment.title, row)
                 why = self.left_behind(row, into)
                 if why:
                     skipped.append(f"{self.kind} {row.n} in {environment.title}: {why}")
@@ -43,6 +43,10 @@ class EnvironmentKind:
                     continue
                 count += 1
         return Brought(self.title, count, tuple(skipped))
+
+    def source(self, environment: str, row: Version3Row) -> str:
+        """Where the row lay in the backup, as the ledger keeps it."""
+        return f"environments/{environment}/{self.kind}/{row.n}"
 
     def left_behind(self, row: Version3Row, into: Environment) -> str:
         """Why the row stays in the backup; empty when it comes across."""

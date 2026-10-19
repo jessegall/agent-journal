@@ -60,4 +60,4 @@ for name in journal supervisor journal.py journal.sh; do
 done
 mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist
 [ -z "$TMP" ] || rm -rf "$TMP"
-JOURNAL_ROOT="$PWD" "$PY" .journal/src/journal.py setup here
+JOURNAL_ROOT="$PWD" "$PY" .journal/src/journal.py setup

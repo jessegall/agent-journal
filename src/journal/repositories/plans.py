@@ -49,8 +49,8 @@ class Plans(ScopedRepository[Plan]):
         return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
 
     def holding(self, task: Task) -> list[Plan]:
-        """The started or parked plans this task belongs to: a parked plan whose last task closes is done too."""
-        return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.STARTED, PlanState.PARKED)]
+        """The approved, started or parked plans this task belongs to: any of them whose last task closes is done."""
+        return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED)]
 
     def tasks_of(self, plan: Plan) -> list[Task]:
         """In the order they were added."""
@@ -90,6 +90,10 @@ class Plans(ScopedRepository[Plan]):
         tasks = self.tasks_of(plan)
         return bool(tasks) and all(t.is_closed() for t in tasks)
 
+    def resumable(self, plan: Plan) -> Task | None:
+        """The task a start takes up: the plan's parked task first, put aside when the plan was, else its next open one."""
+        return next((t for t in self.in_order(plan) if t.state == TaskState.PARKED), None) or self.next_task(plan)
+
     def next_task(self, plan: Plan) -> Task | None:
         return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN and not self.tasks.open_waits(t)), None)
 
@@ -99,11 +103,11 @@ class Plans(ScopedRepository[Plan]):
         return next((i for i, phase in enumerate(phases, 1) if any(not t.is_closed() for t in self.tasks_in(phase))), len(phases) or 1)
 
     def at_checkpoint(self, plan: Plan) -> Phase | None:
-        """The checkpoint phase the plan stands at: complete, marked for the user's look, and the phase after it not yet begun; None when the plan stands at no checkpoint."""
+        """The checkpoint phase the plan stands at: every task of it closed, marked for the user's look, and no task of the phase after it started or done, whatever else they are; None when the plan stands at no checkpoint."""
         phases = self.phases_of(plan)
         for before, after in zip(phases, phases[1:]):
             done = self.tasks_in(before)
             coming = self.tasks_in(after)
-            if before.checkpoint and done and all(t.state == TaskState.DONE for t in done) and coming and all(t.state == TaskState.OPEN for t in coming):
+            if before.checkpoint and done and all(t.is_closed() for t in done) and coming and not any(t.state in (TaskState.STARTED, TaskState.DONE) for t in coming):
                 return before
         return None

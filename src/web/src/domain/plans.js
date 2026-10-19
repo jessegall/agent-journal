@@ -159,7 +159,9 @@ export function planButton(p) {
 
 export function planProgress(resource) {
     if (resource.type !== "plan") return null;
-    const {phases = [], status = "building", current = 1} = resource.data;
+    const {phases: drawn = [], status = "building", current = 1} = resource.data;
+    // the tasks under no phase yet are no phase of their own
+    const phases = drawn.filter((phase) => !phase.loose);
     return {total: phases.length, finished: status === "done" ? phases.length : Math.max(0, current - 1), phase: Math.min(current, phases.length) || 1, status};
 }
 
