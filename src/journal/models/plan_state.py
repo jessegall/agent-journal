@@ -8,6 +8,7 @@ class PlanState(StrEnum):
     APPROVED = "approved"
     STARTED = "started"
     PARKED = "parked"
+    BLOCKED = "blocked"
     DONE = "done"
     CANCELLED = "cancelled"
 
@@ -29,7 +30,8 @@ MOVES = {
     PlanState.READY: {PlanState.DRAFT, PlanState.REVIEWING, PlanState.APPROVED, PlanState.DONE, PlanState.CANCELLED},
     PlanState.REVIEWING: {PlanState.READY, PlanState.DONE, PlanState.CANCELLED},
     PlanState.APPROVED: {PlanState.STARTED, PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
-    PlanState.STARTED: {PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
+    PlanState.STARTED: {PlanState.PARKED, PlanState.BLOCKED, PlanState.DONE, PlanState.CANCELLED},
+    PlanState.BLOCKED: {PlanState.STARTED, PlanState.PARKED, PlanState.DONE, PlanState.CANCELLED},
     PlanState.PARKED: {PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED},
     PlanState.DONE: {PlanState.STARTED},
     PlanState.CANCELLED: set(),

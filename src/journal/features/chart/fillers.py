@@ -155,7 +155,6 @@ class Fillers:
         return f"{task.id}, {task.title}"
 
     def plan_next_briefing(self, ctx: Context) -> str:
-        """The brief and latest log lines of the plan's task the agent now has in hand."""
         state = self.followed(ctx)
         if not state or not state.task_id:
             return ""
@@ -316,11 +315,9 @@ class Fillers:
         return str(self.files.path(skill).relative_to(self.files.config.root)) if skill else ""
 
     def blocked_outside(self, ctx: Context) -> str:
-        """The tasks blocked on something outside, each with what it waits on."""
         return "; ".join(f"{t.id} {t.title} (waiting on: {t.blocked_why})" for t in self.tasks.blocked_outside())
 
     def broken_waits(self, ctx: Context) -> str:
-        """The blocked tasks whose check cannot run, each with its command and why."""
         return "; ".join(f"task {t.id} waits until `{c.command}`, which cannot run: {c.last_fault}" for t, c in self.tasks.broken_waits())
 
     def parked_tasks(self, ctx: Context) -> str:

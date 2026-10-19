@@ -26,9 +26,7 @@ class Check(Model):
     running: CheckProgress | None = None
     """The run under way; None while none runs."""
     last_fault: str = ""
-    """Why the last run could not run its command at all, such as a missing program or a time-out; empty when it ran."""
     waited_on: bool = False
-    """A check a blocked task waits on: off the lists and quiet in the chat; once it passes the task is open again and it runs no more."""
 
     def started(self, at: float) -> "Check":
         return self.with_(running=CheckProgress(at))
@@ -42,7 +40,6 @@ class Check(Model):
         return self.last_ran_at is None or (now - self.last_ran_at).total_seconds() >= self.every * 60
 
     def is_settled(self) -> bool:
-        """Passed: what a task waiting on it waited for has come."""
         return self.last_passed is True
 
     def cannot_run(self) -> bool:

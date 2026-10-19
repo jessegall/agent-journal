@@ -6,6 +6,7 @@ import subprocess
 import threading
 
 from journal.config import Config
+from journal.console.where import AGENT_SHELL
 from journal.features.workers.worker_branch import WorkerBranch
 from journal.features.workers.worker_reports import WorkerReports
 from journal.models.actor import Actor
@@ -41,8 +42,7 @@ class WorkerRunner:
             self.run(worker, command, by)
 
     def run(self, worker: Worker, command: list[str], by: Actor) -> None:
-        """Blocks until the worker ends: for the thread above, and for a test that wants the outcome. Its output goes to files, not to the journal, so the worker outlives a restart of the journal and is watched again at boot."""
-        environ = {k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}
+        environ = {**{k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}, AGENT_SHELL: "1"}
         out, err = self.outputs(worker)
         out.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -63,7 +63,6 @@ class WorkerRunner:
         self.finish(worker, code, by)
 
     def watch(self, worker: Worker, by: Actor) -> None:
-        """A worker found still running at boot, its process started by a journal before this one: waited on until its process ends, then its report filed from its files."""
         while self.alive(worker.pid):
             if self.limit_left(worker) == 0:
                 os.killpg(worker.pid, signal.SIGKILL)
@@ -73,7 +72,6 @@ class WorkerRunner:
         self.finish(worker, ENDED_UNSEEN, by)
 
     def finish(self, worker: Worker, code: int, by: Actor) -> None:
-        """The report filed from what the worker printed: its answer, how it ended, and its branch."""
         out, err = self.outputs(worker)
         provider = self.providers.named(worker.provider)
         printed, resume = provider.worker_outcome(self.read(out), self.read(err))
@@ -84,7 +82,6 @@ class WorkerRunner:
         self.reports.file(worker.with_(resume=resume or worker.resume), f"{said}\n\n{branch}" if branch else said, by)
 
     def limit_left(self, worker: Worker) -> float | None:
-        """Seconds the worker may still run under the time limit; none without one."""
         limit = self.minutes() * 60
         return max(0.0, limit - (time.time() - worker.began)) if limit else None
 
@@ -93,7 +90,6 @@ class WorkerRunner:
         return float(self.settings.option(Workers.TIMEOUT))
 
     def outputs(self, worker: Worker) -> tuple[Path, Path]:
-        """The files the worker's run prints to, what it answers and what it complains of."""
         folder = self.config.home / "runtime" / "workers"
         return folder / f"{worker.id}.out", folder / f"{worker.id}.err"
 

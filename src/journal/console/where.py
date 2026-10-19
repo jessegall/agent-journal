@@ -4,6 +4,9 @@ from journal.models.actor import Actor
 
 LOCAL_USER = 1
 
+AGENT_SHELL = "JOURNAL_AGENT_SHELL"
+"""Set by the journal in a worker's environment, so its journal commands are an agent's, never the user's."""
+
 
 @dataclass(frozen=True)
 class Where:
@@ -23,8 +26,7 @@ class Where:
 
     @classmethod
     def from_environ(cls, environ: dict) -> "Where":
-        """What the supervisor sets for the agent, JOURNAL_ENV and JOURNAL_SESSION, and what the agent's shell carries, CLAUDECODE or CODEX_SANDBOX."""
-        return cls(environ.get("JOURNAL_ENV", "main"), environ.get("JOURNAL_SESSION", ""), bool(environ.get("CLAUDECODE") or environ.get("CODEX_SANDBOX")))
+        return cls(environ.get("JOURNAL_ENV", "main"), environ.get("JOURNAL_SESSION", ""), bool(environ.get("CLAUDECODE") or environ.get("CODEX_SANDBOX") or environ.get(AGENT_SHELL)))
 
     def as_(self, session: str) -> "Where":
         return Where(self.environment, session)

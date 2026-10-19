@@ -15,6 +15,7 @@ class Plan(Scoped):
     title: str = ""
     brief: str = ""
     state: PlanState = PlanState.DRAFT
+    blocked_why: str = ""
 
     def ready(self) -> "Plan":
         return self.moved(PlanState.READY)
@@ -30,6 +31,15 @@ class Plan(Scoped):
 
     def parked(self) -> "Plan":
         return self.moved(PlanState.PARKED)
+
+    def blocked(self, why: str) -> "Plan":
+        return self.moved(PlanState.BLOCKED).with_(blocked_why=why)
+
+    def unblocked(self) -> "Plan":
+        return self.moved(PlanState.STARTED).with_(blocked_why="")
+
+    def is_blocked(self) -> bool:
+        return self.state == PlanState.BLOCKED
 
     def done(self) -> "Plan":
         return self.moved(PlanState.DONE)

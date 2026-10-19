@@ -113,8 +113,8 @@ VERSION_3 = "[migration.version_3] a version 3 journal is kept whole in .journal
 STALE = "[memory.stale] these are {{stale_after}} days old or more, check they still hold: {{stale}}. strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest"
 WHERE = "[briefing.where] after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}}. pick up from there, and log what the summary does not say"
 UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages. `journal message unread` before any other write"
-ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; an emoji reaction answers only a short message"
-ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
+ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N], or a face on it"
+ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts, or a face on it; only a journal command and a look at the message's own files go through"
 PARKED = "[tasks.parked] parked tasks, still open: {{parked_tasks}}. `journal task resume <n>` picks one up; leave them parked only on purpose"
 BROKEN_WAIT = "[tasks.broken_wait] {{broken_waits}}. so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`"
 BLOCKED_STILL = "[tasks.blocked_still] blocked on something outside: {{blocked_outside}}. has it come? `journal task unblock <n>` when it has"
@@ -534,7 +534,6 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 160, 92, (Guard("parked_tasks"),), "block_stop", PARKED)
 
     def broken_wait_holds_the_stop(self, chart: Chart, ends: list) -> list:
-        """A blocked task waiting until a check that cannot run holds the stop, naming the command and why, so no wait lasts forever."""
         return self.guarded(chart, ends, 160, 92, (Guard("broken_waits"),), "block_stop", BROKEN_WAIT)
 
     def approved_plan_holds_the_stop(self, chart: Chart, ends: list) -> list:
@@ -564,7 +563,6 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 240, 92, (Guard("parked_tasks"), Guard("quiet_for_over", "1 minute")), "type", PARKED_STILL)
 
     def ask_about_blocked(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest with a task blocked on something outside: after an hour of quiet, ask whether it has come."""
         return self.guarded(chart, ends, 240, 92, (Guard("blocked_outside"), Guard("quiet_for_over", "1 hour")), "type", BLOCKED_STILL)
 
     def check_in(self, chart: Chart, ends: list) -> list:

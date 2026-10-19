@@ -30,7 +30,6 @@ class StartOnCreated(Listener[Created]):
                 return
 
     def session_for(self, event: Created) -> str:
-        """The agent the run is kept on: the one that made the row, or the live one here for a row the user handed the agent; none otherwise."""
         if event.by.kind == ActorKind.AGENT:
             return event.by.id
         live = self.agents.live() if event.by.kind == ActorKind.USER and event.model.handed_to_agent else None

@@ -12,7 +12,7 @@ from journal.repositories.links import Links
 from journal.repositories.phases import Phases
 from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
-from journal.repositories.tasks import Tasks
+from journal.repositories.tasks import WAITS_ON, Tasks
 from journal.repositories.workers import Workers
 
 IN_PLAN = "in_plan"
@@ -50,12 +50,17 @@ class Plans(ScopedRepository[Plan]):
         return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
 
     def holding(self, task: Task) -> list[Plan]:
-        """The approved, started or parked plans this task belongs to: any of them whose last task closes is done."""
-        return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED)]
+        return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED, PlanState.BLOCKED)]
 
     def is_moving(self, task: Task) -> bool:
-        """Whether a started plan holds this task, so the plan says what comes after it."""
         return any(plan.state == PlanState.STARTED for plan in self.holding(task))
+
+    def waiting_on(self, model) -> list[Plan]:
+        return [plan for ref in self.links.sources(model, WAITS_ON) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
+
+    def all_left_blocked(self, plan: Plan) -> bool:
+        left = [task for task in self.tasks_of(plan) if not task.is_closed()]
+        return bool(left) and all(task.state == TaskState.BLOCKED for task in left)
 
     def tasks_of(self, plan: Plan) -> list[Task]:
         """In the order they were added."""

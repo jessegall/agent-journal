@@ -22,9 +22,7 @@ class Worker(Scoped):
     taken_up: bool = False
     """Whether the agent has acted on its last report: given it its next job, stopped it, or marked it done."""
     pid: int = 0
-    """The process running its job, which outlives a restart of the journal; nought while none runs."""
     began: float = 0.0
-    """When its job's run began, for its time limit and to find the session it wrote."""
 
     def reported(self) -> "Worker":
         return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0)
@@ -44,7 +42,6 @@ class Worker(Scoped):
         return self.with_(taken_up=True)
 
     def is_out(self) -> bool:
-        """Sent and not yet back."""
         return self.state == WorkerState.DISPATCHED
 
     def has_report_waiting(self) -> bool:

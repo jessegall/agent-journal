@@ -7,6 +7,7 @@ from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.plans.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
+from journal.features.tasks.waits import Waits
 from journal.features.workers.subagents import Subagents
 from journal.models.actor_kind import ActorKind
 from journal.models.link import Link
@@ -20,14 +21,14 @@ from journal.repositories.links import Links
 from journal.refused import Refused
 from journal.repositories.phases import Phases
 from journal.repositories.plans import IN_PHASE, IN_PLAN, PHASE_OF, Plans
-from journal.repositories.tasks import Tasks
+from journal.repositories.tasks import Tasks, WAITS_ON
 
 
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents, control: PlanControl) -> None:
-        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents, self.control = plans, phases, tasks, links, machine, subagents, control
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents, control: PlanControl, waits: Waits) -> None:
+        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents, self.control, self.waits = plans, phases, tasks, links, machine, subagents, control, waits
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "draft a plan")
@@ -55,6 +56,11 @@ class PlanCommand(Command):
         self.verb(verbs, "approve", "the user's word: the plan may start").add_argument("n", type=int)
         self.verb(verbs, "start", "follow an approved plan, or go on past a checkpoint: its next open task is started").add_argument("n", type=int)
         self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
+        block = self.verb(verbs, "block", "a started plan waits on one thing before any of its work can go on; a plan whose every task left is blocked blocks itself")
+        block.add_argument("n", type=int)
+        block.add_argument("why", nargs="?", default="")
+        Waits.arguments(block, "plan")
+        self.verb(verbs, "unblock", "what the plan waited on came: it is started again").add_argument("n", type=int)
         self.verb(verbs, "cancel", "a plan given up, with the tasks that are its alone; one another live plan holds stays").add_argument("n", type=int)
         self.verb(verbs, "show", "a plan and its tasks").add_argument("n", type=int)
         self.verb(verbs, "list", "every plan here")
@@ -133,6 +139,20 @@ class PlanCommand(Command):
 
     def start(self, args: Namespace, where: Where) -> int:
         print(self.control.start(self.plans.find(args.n), where.session, where.actor).rendered())
+        return 0
+
+    def block(self, args: Namespace, where: Where) -> int:
+        if not args.why and not args.on and not args.until:
+            raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
+        plan = self.plans.save(self.plans.find(args.n).blocked(args.why), where.actor)
+        for ref in self.waits.named(args.on, args.until, args.every, f"plan {plan.id}", where.actor):
+            self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAITS_ON), where.actor)
+        print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
+        return 0
+
+    def unblock(self, args: Namespace, where: Where) -> int:
+        plan = self.plans.save(self.plans.find(args.n).unblocked(), where.actor)
+        print(f"plan {plan.id} open again: `journal plan start {plan.id}` goes on with it")
         return 0
 
     def park(self, args: Namespace, where: Where) -> int:

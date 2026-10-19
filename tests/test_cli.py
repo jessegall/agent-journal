@@ -92,6 +92,7 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     app.console().run(["message", "send", "hi"], Where("main"))
     app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
+    assert Where.from_environ({"JOURNAL_AGENT_SHELL": "1"}).from_agent_shell, "a worker's shell is an agent's whatever its program marks"
     with app.container.get(Scope).of(1):
         assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
 

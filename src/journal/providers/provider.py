@@ -68,7 +68,6 @@ class Provider:
         return []
 
     def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
-        """The text blocks the agent wrote for the user since the byte of its transcript read last, whole lines only, and the byte to read from next; the first look starts at the transcript's last line, the turn in hand, so a session's past is not replayed but the block that brought the hook is."""
         path = self.transcript(project, session)
         if path is None:
             return [], read
@@ -85,12 +84,10 @@ class Provider:
         return [text for line in lines for text in self.texts_in(line)], read + whole
 
     def texts_in(self, line: dict) -> list[str]:
-        """The text blocks one transcript line holds for the user."""
         return []
 
     @staticmethod
     def last_line_start(path: Path, size: int) -> int:
-        """The byte the transcript's last line begins at."""
         with path.open("rb") as file:
             file.seek(max(0, size - TAIL))
             tail = file.read()

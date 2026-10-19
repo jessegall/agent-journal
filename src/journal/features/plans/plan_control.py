@@ -28,6 +28,8 @@ class PlanControl:
     def start(self, plan: Plan, session: str, by: Actor) -> Nudge:
         """The plan started: its parked task resumed first, else its next open task; with none to start the agent follows it and is told what waits. Only an approved, parked or started plan starts."""
         from journal.features.plans.feature import Plans as PlansFeature
+        if plan.is_blocked():
+            raise Refused(f"plan {plan.id} is blocked, waiting on: {self.tasks.reason(plan)}; `journal plan unblock {plan.id}` when it may go on")
         if not plan.state.can_be_started():
             raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
         if self.plans.finished(plan):

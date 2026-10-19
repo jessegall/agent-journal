@@ -16,23 +16,17 @@ class Dump(Scoped):
 
     title: str = ""
     brief: str = ""
-    """The pasted text."""
     files: tuple[str, ...] = ()
     parts: tuple[str, ...] = ()
-    """The names the pasted text was split into, one item each."""
     items: dict = field(default_factory=dict)
-    """Each item's standing by its name, as DumpItem.to_json."""
     log: tuple = ()
-    """What the agent said it was doing, newest last."""
     question: dict = field(default_factory=dict)
     answers: tuple = ()
     options: tuple = ()
-    """The next steps the agent offered when it was done."""
     chosen: dict = field(default_factory=dict)
     taken: dict = field(default_factory=dict)
     declined: tuple = ()
     said: tuple = ()
-    """What the user directed in their own words after the dump was filed."""
     summary: str = ""
     outcome: str = ""
     queued_at: float = 0.0
@@ -62,7 +56,6 @@ class Dump(Scoped):
         return bool(settled) and all(settled)
 
     def waiting(self) -> list[str]:
-        """The items the agent has not yet read."""
         return [name for name in self.item_names if not self.item(name).insight]
 
     def unsettled(self) -> list[str]:
@@ -76,6 +69,5 @@ class Dump(Scoped):
         return self.with_(log=(*self.log, entry)[-kept:])
 
     def made_refs(self) -> list[str]:
-        """Every row the agent filed or was working on, once each."""
         refs = [ref for name in self.item_names for ref in self.item(name).refs] + [e["on"] for e in self.log if e.get("on")]
         return list(dict.fromkeys(refs))

@@ -12,4 +12,4 @@ class PromptSubmitted(AgentEvent):
     @property
     def by_user(self) -> bool:
         """Typed by the user: neither a [journal] line nor a notice such as a subagent's <task-notification>."""
-        return not self.prompt.lstrip().startswith(("[journal]", "<"))
+        return not self.prompt.lstrip().startswith(("[journal]", "[plugin ", "<"))

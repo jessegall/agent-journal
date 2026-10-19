@@ -1,5 +1,7 @@
 from journal.features.entry import Entry
 from journal.features.feature import Feature
+from journal.features.messages.listeners.hint_reply_by_tag import HintReplyByTag
+from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.commands.message_command import MessageCommand
 from journal.features.messages.listeners.deliver_message import DeliverMessage
 from journal.features.messages.listeners.deliver_unread_at_start import DeliverUnreadAtStart
@@ -26,7 +28,7 @@ class Messages(Feature):
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read; the guards' workflow reads it against the count of uses since the message came", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read; read against the count of namings", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS)
-    listeners = (RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    listeners = (HintReplyByTag, RecordTypedPrompt, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
         Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),
@@ -43,10 +45,11 @@ class Messages(Feature):
     REACTED = Nudge(name, "reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_after=0)
     ONLY_A_FACE = Nudge(name, "only_a_face", "your reply was only {{face}}, so it was not posted", "an emoji on its own is a reaction: `journal message react <n> \"{{face}}\"` puts it on the message it answers; write words when there is something to say", repeat_after=0)
     UNREAD_HELD = Nudge(name, "unread_held", "you have {{count}} unread messages", "`journal message unread` before any other write", repeat_after=0)
-    ANSWER = Nudge(name, "answer", "answer message {{messages}} before you do anything else", "a reply with [!reply:N]; an emoji reaction answers only a short message", repeat_after=300, answered_in_chat=True)
-    ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through", repeat_after=0, answered_in_chat=True)
+    ANSWER = Nudge(name, "answer", "answer message {{messages}} before you do anything else", "a reply with [!reply:N], or a face on it", repeat_after=300, answered_in_chat=True)
+    ANSWER_HELD = Nudge(name, "answer_held", "your tool calls are held: answer message {{messages}} first", "a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts, or a face on it; only a journal command and a look at the message's own files go through", repeat_after=0, answered_in_chat=True)
     WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_after=0)
-    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE)
+    REPLY_BY_TAG = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_after=0)
+    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE, REPLY_BY_TAG)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages
@@ -68,7 +71,7 @@ The user leaves messages; you answer them before anything else.
   never mentioned. A turn of yours that is only a face is not posted.
 - An unread inbox is named again every third tool use; after five reminders the next write waits until you read it. A message
   you read and leave unanswered holds your very next tool call that is not a journal command or a look at its files: a word
-  first, then the work. A face answers only a message of a few words.
+  first, then the work. A face on a message answers it too.
 - After a compaction, a fresh start or a takeover, `journal environment here` shows what is in flight, the latest
   messages among it, and is owed before any other write; `journal message recent` shows the latest messages alone.
 - A picture in a message is named once you have looked: `journal message tag <n> <file> "<what it shows>"`.

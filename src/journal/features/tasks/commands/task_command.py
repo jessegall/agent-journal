@@ -11,14 +11,13 @@ from journal.refused import Refused
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.in_hand import InHand
 from journal.features.tasks.task_briefing import TaskBriefing
+from journal.features.tasks.waits import Waits
 from journal.features.tasks.states.working import Working
-from journal.models.check import Check
 from journal.models.link import Link
 from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
-from journal.repositories.checks import Checks
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
@@ -31,8 +30,8 @@ from journal.repositories.tasks import Tasks, WAITS_ON
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, checks: Checks, briefing: TaskBriefing) -> None:
-        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.checks, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, checks, briefing
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing) -> None:
+        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, waits, briefing
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -53,9 +52,7 @@ class TaskCommand(Command):
         block = self.verb(verbs, "block", "a task waits on something outside your hands: blocked, with why, it is neither offered nor nudged")
         block.add_argument("n", type=int)
         block.add_argument("why", nargs="?", default="")
-        block.add_argument("--on", action="append", default=[], metavar="question:N|task:N", help="a question or task it waits on; it is unblocked when that is answered or closed; to wait on the user, ask a question and name it here")
-        block.add_argument("--until", default="", metavar="COMMAND", help="a shell command that passes once the wait is over, such as a check that a pull request is merged; run every --every minutes, it unblocks the task when it passes")
-        block.add_argument("--every", type=int, default=2, help="minutes between two runs of the --until command")
+        Waits.arguments(block, "task")
         self.verb(verbs, "unblock", "what it waited on came: the task is open again").add_argument("n", type=int)
         park = self.verb(verbs, "park", "set a task aside for something else first, by choice; it stays open and stops being nudged")
         park.add_argument("n", type=int)
@@ -104,25 +101,14 @@ class TaskCommand(Command):
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:
-        waits = [self.awaited(text) for text in args.on]
-        if not args.why and not waits and not args.until:
+        if not args.why and not args.on and not args.until:
             raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why), where.actor)
-        if args.until:
-            waits.append(Ref.to(self.checks.save(Check(title=f"task {task.id} waits until this passes", command=args.until, every=args.every, waited_on=True), where.actor)))
-        for ref in waits:
+        for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", where.actor):
             self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), where.actor)
         self.in_hand.let_go(task, where)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
-
-    def awaited(self, text: str) -> Ref:
-        kind, _, number = text.partition(":")
-        if kind not in ("question", "task") or not number.isdigit():
-            raise Refused(f"--on takes question:N or task:N, not {text}")
-        ref = Ref(f"{kind}s", int(number))
-        (self.questions if kind == "question" else self.tasks).find(ref.id)
-        return ref
 
     def unblock(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).unblocked(), where.actor)
@@ -142,7 +128,6 @@ class TaskCommand(Command):
         return 0
 
     def _name_next(self, done: Task) -> None:
-        """With nothing in hand, a parked task is named before any open one: it was started and put aside for the work just done. A started plan's task leaves the naming to the plan."""
         from journal.features.tasks.feature import Tasks
         if self.tasks.in_hand() is not None or self.plans.is_moving(done):
             return

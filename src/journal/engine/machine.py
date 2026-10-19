@@ -10,6 +10,7 @@ from journal.events.agent_listener import AgentListener
 from journal.events.decision import Decision
 from journal.models.actor import Actor
 from journal.models.agent import Agent
+from journal.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.not_found import NotFound
 
@@ -40,6 +41,8 @@ class Machine(AgentListener[AgentEvent]):
         return self.states.named(agent.state, agent.data)
 
     def agent(self, session: str, environment_id: int, provider: str = "") -> Agent:
+        if not session:
+            raise Refused("no agent runs this, so there is no agent to move: only an agent's own session can")
         try:
             return self.agents.for_session(session)
         except NotFound:

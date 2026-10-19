@@ -53,9 +53,8 @@ class Codex(Provider):
         return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", "-m", model, brief]
 
     def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        """Codex prints its report on stdout and its trouble on stderr, both kept; its session id, named in the run's header, is what a next job resumes."""
         found = re.search(r"session id: ([0-9a-f-]{8,})", f"{out}\n{err}", re.IGNORECASE)
-        return "\n".join(part for part in (out.strip(), err.strip()) if part), found.group(1) if found else ""
+        return super().worker_outcome(out, err)[0], found.group(1) if found else ""
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}

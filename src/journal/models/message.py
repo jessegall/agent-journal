@@ -4,13 +4,13 @@ from typing import ClassVar
 
 from journal.models.author import Author
 from journal.models.scoped import Scoped
+TYPED = "typed"
 
 
 @dataclass(frozen=True)
 class Message(Scoped):
     text_fields: ClassVar[tuple[str, ...]] = ("text",)
 
-    FACE_WORDS = 6
     THOUGHT = "thought"
 
     author: Author = Author.USER
@@ -48,12 +48,11 @@ class Message(Scoped):
         return self.data.get("kind") == self.THOUGHT
 
     @property
+    def is_typed_in_terminal(self) -> bool:
+        return self.data.get("kind") == TYPED
+
+    @property
     def speaks_to_the_user(self) -> bool:
         """The agent's own words in the chat: not a thought, and not a turn that only acknowledged a journal line."""
         return self.author == Author.AGENT and not self.acknowledgement and not self.is_thought
-
-    @property
-    def takes_a_face(self) -> bool:
-        """A message of a few words, an ok or a thanks, is answered by a face; anything longer wants words."""
-        return len(self.text.split()) <= self.FACE_WORDS
 

@@ -46,7 +46,7 @@
       "name": "message 2 arrives",
       "answer": null,
       "typed": [
-        "[journal] new message 2"
+        "[journal] new message 3"
       ],
       "nudges": [
         "messages.new"
@@ -58,7 +58,7 @@
       "name": "message 3 arrives",
       "answer": null,
       "typed": [
-        "[journal] new message 3"
+        "[journal] new message 4"
       ],
       "nudges": [
         "messages.new"
@@ -71,7 +71,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
-          "additionalContext": "new messages 1, 2, 3"
+          "additionalContext": "new messages 1, 3, 4"
         }
       },
       "typed": [],
@@ -85,7 +85,7 @@
       "name": "message 4 arrives",
       "answer": null,
       "typed": [
-        "[journal] new message 4"
+        "[journal] new message 6"
       ],
       "nudges": [
         "messages.new"
