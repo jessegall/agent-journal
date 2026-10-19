@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from journal.config import Config
-from journal.features.profiles.profile import Profile
-from journal.features.profiles.profile_shown import ProfileShown
+from journal.features.profiles.support.profile import Profile
+from journal.features.profiles.support.profile_shown import ProfileShown
 from journal.providers.providers import Providers
 from journal.repositories.settings import Settings
 

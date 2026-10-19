@@ -547,7 +547,7 @@ def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
 
 
 def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app):
-    from journal.features.profiles.profile_files import ProfileFiles
+    from journal.support.profile_files import ProfileFiles
     files = app.container.get(ProfileFiles)
     files.write_all()
     assert files.kind_of("researcher") == "subagent" and files.kind_of("nobody") == ""

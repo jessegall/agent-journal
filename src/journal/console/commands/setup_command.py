@@ -8,7 +8,7 @@ from journal.config import Config
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.features.laws.law_text import LawText
-from journal.features.profiles.profile_files import ProfileFiles
+from journal.support.profile_files import ProfileFiles
 from journal.support.skill_files import SkillFiles
 from journal.providers.providers import Providers
 from journal.repositories.environments import Environments
