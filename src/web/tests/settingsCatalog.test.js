@@ -161,7 +161,7 @@ describe("the manifest's features", () => {
             ["workers", "switch", true],
             ["workers:timeout_minutes", "number", 60],
             ["workers:mode", "choice", "solo"],
-            ["workers:model", "choice", "sonnet"],
+            ["workers:model", "model", "sonnet"],
         ]);
     });
 
@@ -171,10 +171,11 @@ describe("the manifest's features", () => {
         expect(mode.value).toBe("builder");
     });
 
-    test("an option says which workflow reads it, or that none does", () => {
+    test("an option names the workflow that reads it, never a node's number, and claims nothing when none does", () => {
         const [, timeout, , model] = rows({});
-        expect(timeout.hint).toContain("No workflow reads this setting now");
-        expect(model.hint).toBe("About model. Read by Send work, node 4.");
+        expect(timeout.hint).toBe("About timeout_minutes.");
+        expect(model.hint).toBe("About model. Read by the workflow Send work.");
+        expect(model.provider).toBe("claude");
     });
 
     test("changing an option writes it under its feature and leaves the rest of the feature alone", () => {

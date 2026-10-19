@@ -24,11 +24,9 @@ export const same = (a, b) => JSON.stringify(sorted(a)) === JSON.stringify(sorte
 
 // an option's words, with the workflow node that reads it, or the plain fact that none does
 function readBy(setting) {
-    const readers = setting.read_by || [];
-    if (!readers.length)
-        return `${setting.abstract}. No workflow reads this setting now, so it changes nothing until a check node names it.`;
-    const where = readers.map((r) => `${r.workflow}, node ${r.node}`).join("; ");
-    return `${setting.abstract}. Read by ${where}.`;
+    const workflows = [...new Set((setting.read_by || []).map((r) => r.workflow))];
+    if (!workflows.length) return `${setting.abstract}.`;
+    return `${setting.abstract}. Read by the workflow ${workflows.join(", ")}.`;
 }
 
 const hasTiming = (when) => Boolean(when && (when.unit || when.on));
@@ -224,10 +222,9 @@ function block(f, settings, extras) {
     };
 }
 
-// A feature of the manifest as the catalogue reads one: its options as settings, a model's choice drawn as any choice, in the group it leads.
+// A feature of the manifest as the catalogue reads one: its options as settings, in the group it leads.
 function normalised(f) {
-    const settings = f.options.map((o) => ({...o, kind: o.kind === "model" ? "choice" : o.kind}));
-    return {...f, label: f.title, hint: f.help, settings, behaviours: {}, nudges: {}, group: f.name, parts: settings.length};
+    return {...f, label: f.title, hint: f.help, settings: f.options, behaviours: {}, nudges: {}, group: f.name, parts: f.options.length};
 }
 
 function group(g, members, settings, loose) {
