@@ -2,6 +2,8 @@ import time
 
 OPEN_WITHIN = 15.0
 """A tab that asked the journal something this recently is still open: an open viewer polls every few seconds."""
+VIEWER = "x-journal-viewer"
+"""The header the viewer sends on every call, so a plugin's program, the shim or the launcher's own question never counts as a tab."""
 
 
 class ViewerSeen:
@@ -10,8 +12,8 @@ class ViewerSeen:
     def __init__(self) -> None:
         self.at = 0.0
 
-    def saw(self, path: str) -> None:
-        if path.startswith("/api/"):
+    def saw(self, headers: dict) -> None:
+        if headers.get(VIEWER):
             self.at = time.time()
 
     def open(self) -> bool:

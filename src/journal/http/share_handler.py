@@ -3,8 +3,8 @@ from ipaddress import ip_address, ip_network
 
 from journal.http.pooled_handler import PooledHandler
 from journal.http.share_answer import ShareAnswer
-from journal.http.v3.share_pages import SharePages
-from journal.http.v3.visitor_comment import VisitorComment
+from journal.http.sharing.share_pages import SharePages
+from journal.http.sharing.visitor_comment import VisitorComment
 
 MOST_BYTES = 16 * 1024
 HEADERS = {

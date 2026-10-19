@@ -62,7 +62,7 @@ class CheckRunner:
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
         for agent in self.agents.everywhere():
             if agent.state != Ended.name:
-                self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"check:{ran.id}")
+                self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}")
         if not ended.passed:
             said = ChecksFeature.FAILING if was_failing else ChecksFeature.FAILED
             for agent in self.agents.everywhere():

@@ -4,7 +4,7 @@ from http.server import ThreadingHTTPServer
 from journal.db.connection import Connection
 from journal.features.sharing.share_place import SharePlace
 from journal.http.share_handler import ShareHandler
-from journal.http.v3.share_pages import SharePages
+from journal.http.sharing.share_pages import SharePages
 
 READ_SECONDS = 15
 

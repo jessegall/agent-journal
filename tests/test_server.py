@@ -43,15 +43,16 @@ def test_tasks_live_over_http(server):
     status, done = call(server, "POST", "/journal/tasks/1/finish", {"how": "merged"})
     assert done["state"] == "done" and done["outcome"] == "merged"
     status, listed = call(server, "GET", "/journal/tasks")
-    assert [t["title"] for t in listed] == ["ship it"]
+    assert [t["title"] for t in listed["rows"]] == ["ship it"]
     for n in range(3):
         call(server, "POST", "/journal/tasks", {"title": f"more {n}"})
     page = call(server, "GET", "/journal/tasks?limit=2")[1]
-    assert [t["title"] for t in page] == ["more 2", "more 1"], "newest first, capped"
-    assert [t["title"] for t in call(server, "GET", f"/journal/tasks?limit=2&before={page[-1]['id']}")[1]] == ["more 0", "ship it"]
+    assert [t["title"] for t in page["rows"]] == ["more 0", "more 1", "more 2"] and page["more"], "the newest page, and every open task besides"
+    closed = call(server, "GET", "/journal/tasks?closed=1")[1]
+    assert [t["title"] for t in closed["rows"]] == ["ship it"] and closed["counts"] == {"all": 4, "open": 3, "unread": closed["counts"]["unread"]}
     assert call(server, "GET", "/journal/tasks", env="other")[0] == 404, "an environment nobody made is not found, never made by a read"
     call(server, "POST", "/journal/environments", {"name": "other"})
-    assert call(server, "GET", "/journal/tasks", env="other")[1] == []
+    assert call(server, "GET", "/journal/tasks", env="other")[1]["rows"] == []
 
 
 def test_a_missing_row_and_a_missing_route_say_so(server):
@@ -64,7 +65,7 @@ def test_the_port_file_is_written_while_serving(server):
 
 
 def test_version_fours_own_api_lists_every_resource_and_answers_a_question(server):
-    assert call(server, "GET", "/journal/environments")[1][0]["name"] == "main"
+    assert call(server, "GET", "/journal/environments")[1]["rows"][0]["name"] == "main"
     for name in ("plans", "facts", "reminders", "reports", "docs", "workers", "messages", "questions", "agents", "rules", "entries"):
         assert call(server, "GET", f"/journal/{name}")[0] == 200, name
     status, message = call(server, "POST", "/journal/messages", {"text": "hello agent"})
@@ -73,12 +74,12 @@ def test_version_fours_own_api_lists_every_resource_and_answers_a_question(serve
     assert status == 201
     status, answered = call(server, "POST", "/journal/questions/1/answer", {"answer": "b"})
     assert answered["answer"] == "b"
-    status, since = call(server, "GET", "/journal/entries/since?since=0")
-    assert status == 200 and "latest" in since
+    status, entries = call(server, "GET", "/journal/entries?since=0")
+    assert status == 200 and any(e["kind"] == "created" and e["data"]["table"] == "questions" for e in entries)
     status, settings = call(server, "GET", "/journal/settings")
-    assert any(f["name"] == "tasks" and f["on"] for f in settings)
-    call(server, "POST", "/journal/settings", {"key": "features.tasks", "value": False})
-    assert not next(f for f in call(server, "GET", "/journal/settings")[1] if f["name"] == "tasks")["on"]
+    assert settings["features"]["tasks"] is True
+    call(server, "POST", "/journal/settings", {"features": {**settings["features"], "tasks": False}})
+    assert call(server, "GET", "/journal/settings")[1]["features"]["tasks"] is False
 
 
 def test_a_path_outside_the_api_is_the_viewer(server):
@@ -112,18 +113,17 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
     app.runtime().start()
     server = app.server()
     try:
-        status, message = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k1"})
-        assert status in (200, 201)
-        n = message.get("n") or message.get("row", {}).get("n") or 1
-        call(server, "POST", f"/api/message/{n}/react", {"face": "👍"})
-        listed = json.dumps(call(server, "GET", "/api/reaction")[1], ensure_ascii=False)
-        assert '"face": "👍"' in listed and f'"message:{n}"' in listed
-        call(server, "POST", f"/api/message/{n}/react", {"face": "👍"})
-        assert "\"face\"" not in json.dumps(call(server, "GET", "/api/reaction")[1], ensure_ascii=False), "the same face again takes it off"
+        status, message = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "k1"})
+        assert status == 201
+        n = message["id"]
+        call(server, "POST", f"/journal/messages/{n}/react", {"face": "👍"})
+        assert [(r["face"], r["message_id"]) for r in call(server, "GET", "/journal/reactions")[1]["rows"]] == [("👍", n)]
+        call(server, "POST", f"/journal/messages/{n}/react", {"face": "👍"})
+        assert call(server, "GET", "/journal/reactions")[1]["rows"] == [], "the same face again takes it off"
         hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
         for kind, extra in (("SessionStart", {}), ("PreToolUse", {"tool_name": "Agent", "tool_input": {"description": "review the login", "prompt": "read the login flow and report", "subagent_type": "reviewer", "model": "sonnet"}}), ("PostToolUse", {"tool_name": "Agent", "tool_input": {}, "tool_response": "fine"})):
             urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        marks = lambda: [m["data"]["card"] for m in call(server, "GET", "/api/message?completed=1&last=200")[1]["rows"] if m["data"]["card"].get("kind") == "subagent"]
+        marks = lambda: [m["data"] for m in call(server, "GET", "/journal/messages?limit=200")[1]["rows"] if m["data"].get("kind") == "subagent"]
         for _ in range(50):
             if marks() and marks()[0]["state"] == "done":
                 break
@@ -134,10 +134,9 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
 
 
 def test_request_threads_leave_no_connection_behind(server):
-    from journal.db.connection import Connection
     database = server.database
     for _ in range(40):
-        call(server, "GET", "/api/todo")
+        call(server, "GET", "/journal/tasks")
     assert len(database._open) <= 3, f"{len(database._open)} connections open after 40 requests: threads must return theirs to the pool"
 
 
@@ -148,30 +147,29 @@ def test_each_type_is_read_alone_above_the_last_number_seen(server):
         call(server, "POST", f"/journal/tasks/{n}/start")
         call(server, "POST", f"/journal/tasks/{n}/finish", {"how": "done"})
     for n in range(3):
-        call(server, "POST", "/api/message", {"brief": f"hello {n}", "idempotency": f"k{n}"})
-    todos = call(server, "GET", "/api/todo?from=1&last=2&completed=1")[1]
-    assert [r["n"] for r in todos["rows"]] == [3, 4] and todos["more"] is True
-    assert todos["counts"] == {"all": 4, "open": 0, "unread": 0}
-    messages = call(server, "GET", "/api/message?from=1&last=5")[1]
-    assert [r["n"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
-    assert call(server, "GET", "/api/message?from=3&last=5")[1]["rows"] == [], "a poll from the last number seen carries nothing when nothing is new"
+        call(server, "POST", "/journal/messages", {"text": f"hello {n}", "idempotency": f"k{n}"})
+    tasks = call(server, "GET", "/journal/tasks?after=1&limit=2")[1]
+    assert [r["id"] for r in tasks["rows"]] == [3, 4] and tasks["more"] is True
+    assert tasks["counts"] == {"all": 4, "open": 0, "unread": 0}
+    messages = call(server, "GET", "/journal/messages?after=1&limit=5")[1]
+    assert [r["id"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
+    assert call(server, "GET", "/journal/messages?after=3&limit=5")[1]["rows"] == [], "a poll from the last id seen carries nothing when nothing is new"
     call(server, "POST", "/journal/facts", {"text": "the sky is blue"})
     with server.database.transaction():
         server.database.execute("UPDATE facts SET keywords = '{broken' WHERE id = 1")
-    status, body = call(server, "GET", "/api/fact")
-    assert status == 500 and "error" in body, "a type whose rows will not load fails alone, with the fault named"
-    assert call(server, "GET", "/api/todo?from=3&completed=1")[1]["rows"][0]["n"] == 4, "a fact that will not load leaves the tasks answering"
-    assert call(server, "GET", "/api/dashboard")[0] == 404, "the one call for every type is gone"
+    status, body = call(server, "GET", "/journal/facts")
+    assert status == 500 and "error" in body, "a resource whose rows will not load fails alone, with the fault named"
+    assert call(server, "GET", "/journal/tasks?after=3")[1]["rows"][0]["id"] == 4, "a fact that will not load leaves the tasks answering"
 
 
 def test_the_environment_header_scopes_each_read_and_a_request_without_it_is_refused(server):
     call(server, "POST", "/journal/environments", {"name": "other"})
-    call(server, "POST", "/api/todo", {"title": "main's own"})
-    call(server, "POST", "/api/todo", {"title": "other's own"}, env="other")
-    assert [r["title"] for r in call(server, "GET", "/api/todo")[1]["rows"]] == ["main's own"]
-    assert [r["title"] for r in call(server, "GET", "/api/todo", env="other")[1]["rows"]] == ["other's own"]
+    call(server, "POST", "/journal/tasks", {"title": "main's own"})
+    call(server, "POST", "/journal/tasks", {"title": "other's own"}, env="other")
+    assert [r["title"] for r in call(server, "GET", "/journal/tasks")[1]["rows"]] == ["main's own"]
+    assert [r["title"] for r in call(server, "GET", "/journal/tasks", env="other")[1]["rows"]] == ["other's own"]
     with pytest.raises(HTTPError) as refused:
-        urlopen(f"http://127.0.0.1:{server.port}/api/todo", timeout=5)
+        urlopen(f"http://127.0.0.1:{server.port}/journal/tasks", timeout=5)
     assert refused.value.code == 409 and "X-Journal-Env" in json.loads(refused.value.read())["error"]
 
 
@@ -185,34 +183,33 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
     app.runtime().start()
     server = app.server()
     try:
-        status, tree = call(server, "POST", "/api/settings", {"features": {"thinking": False}})
+        status, tree = call(server, "POST", "/journal/settings", {"features": {"thinking": False}})
         assert status == 200 and tree["features"]["thinking"] is False and len(tree["features"]) > 10
-        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k1"})[1]["n"]
-        call(server, "POST", f"/api/message/{n}/read", {})
-        row = call(server, "GET", f"/api/message/{n}")[1]
-        assert row["seen"] == ["user", "agent"] and row["completed"] == 0 and row["data"]["delivered"] is True, "read, delivered, not closed"
-        call(server, "POST", f"/api/message/{n}/react", {"face": "👍"})
+        n = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "k1"})[1]["id"]
+        call(server, "POST", f"/journal/messages/{n}/read", {})
+        row = call(server, "GET", f"/journal/messages/{n}")[1]
+        assert row["read_at"] and row["answered"] is False, "read, and not answered"
+        call(server, "POST", f"/journal/messages/{n}/react", {"face": "👍"})
         app.console().run(["message", "react", str(n), "🎉"], Where("main", "s1"))
-        assert call(server, "GET", f"/api/message/{n}")[1]["completed"] > 0, "a face from the agent answers it"
+        assert call(server, "GET", f"/journal/messages/{n}")[1]["answered"] is True, "a face from the agent answers it"
         app.console().run(["plan", "create", "p"], Where("main"))
         app.console().run(["plan", "approve", "1"], Where("main"))
         app.console().run(["plan", "start", "1"], Where("main", "s1"))
-        assert call(server, "GET", "/api/plan/1")[1]["data"]["status"] == "active"
+        assert call(server, "GET", "/journal/plans/1")[1]["state"] == "started"
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
         app.console().run(["check", "run", "1"], Where("main"))
-        check = call(server, "GET", "/api/check/1")[1]
-        assert check["data"]["last"]["ok"] is True and "runs" in check["data"]
+        check = call(server, "GET", "/journal/checks/1")[1]
+        assert check["last_passed"] is True and "running" in check
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
-        assert [s["title"] for s in call(server, "GET", f"/api/sequence/{release}")[1]["sections"]] == ["tag", "push"]
-        counts = call(server, "GET", "/api/summary")[1]["environments"][0]["counts"]
-        assert {"messages", "suggestions", "todos", "questions"} <= set(counts)
+        assert call(server, "GET", f"/journal/sequences/{release}")[1]["steps"] == ["tag", "push"]
+        standing = call(server, "GET", "/journal/summary")[1]["environments"][0]
+        assert {"messages", "tasks", "questions"} <= set(standing)
         (tmp_path / "hello.py").write_text("print('hi')\n")
-        assert call(server, "GET", "/api/file?path=hello.py")[1]["lines"] == 1
-        assert "diff" in call(server, "GET", "/api/diff?path=hello.py")[1]
-        assert call(server, "GET", "/api/project-files/find?q=hello")[1][0]["name"] == "hello.py"
-        assert call(server, "POST", "/api/agent/s1/pause", {})[0] == 409, "an act by session is refused, not a server error"
-        listed = call(server, "GET", f"/api/message?n={n}")[1]["rows"]
-        assert [r["n"] for r in listed] == [n]
+        assert call(server, "GET", "/journal/project-files/file?path=hello.py")[1]["lines"] == 1
+        assert "diff" in call(server, "GET", "/journal/project-files/diff?path=hello.py")[1]
+        assert call(server, "GET", "/journal/project-files/find?q=hello")[1][0]["name"] == "hello.py"
+        listed = call(server, "GET", f"/journal/messages?ids={n}")[1]["rows"]
+        assert [r["id"] for r in listed] == [n]
     finally:
         app.runtime().stop()
 
@@ -233,13 +230,13 @@ def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_pa
         console.run(["plan", "ready", "1"], user)
         console.run(["plan", "approve", "1"], user)
         console.run(["plan", "start", "1"], agent)
-        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 1
+        assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 1
         console.run(["task", "done", "1"], agent)
-        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 1, "a phase with a task still open is the one shown"
+        assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 1, "a phase with a task still open is the one shown"
         console.run(["task", "done", "2"], agent)
-        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 2, "every task of phase one done: phase two is shown"
+        assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 2, "every task of phase one done: phase two is shown"
         console.run(["task", "done", "3"], agent)
-        assert call(server, "GET", "/api/plan/1")[1]["data"]["current"] == 2, "all done: the last phase"
+        assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 2, "all done: the last phase"
     finally:
         app.runtime().stop()
 
@@ -256,12 +253,12 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
         data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode()
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.console().run(["task", "create", "the footer", "--start"], Where("main", "s1"))
-        work = call(server, "GET", "/api/work")[1]["rows"][0]
-        assert work["title"] == "the footer" and work["data"]["awaiting"] == "" and work["data"]["todo"] == 1
+        held = call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]
+        assert held == {"id": 1, "title": "the footer", "awaiting": ""}
         app.console().run(["stuck", "stuck on the login"], Where("main", "s1"))
-        work = call(server, "GET", "/api/work")[1]["rows"][0]
-        assert work["data"]["awaiting"] == "stuck on the login" and work["data"]["awaiting_since"] > 0
-        assert call(server, "GET", "/api/summary")[1]["environments"][0]["work"]["awaiting"] == "stuck on the login"
+        agent = call(server, "GET", "/journal/agents")[1]["rows"][0]
+        assert agent["awaiting"] == "stuck on the login" and agent["awaiting_since"]
+        assert call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]["awaiting"] == "stuck on the login"
     finally:
         app.runtime().stop()
 
@@ -282,28 +279,27 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         return urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     try:
         hook("SessionStart")
-        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "k"})[1]["n"]
+        n = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "k"})[1]["id"]
         app.console().run(["message", "read", str(n)], Where("main", "s1"))
         app.console().run(["task", "create", "t", "--start"], Where("main", "s1"))
         app.console().run(["task", "done", "1", "--how", "shipped"], Where("main", "s1"))
-        events = call(server, "GET", "/api/events?last=50")[1]
-        assert any(e["type"] == "message" and e["action"] == "updated" and e["data"]["by"] == "read" for e in events)
-        assert any(e["type"] == "todo" and e["action"] == "completed" for e in events)
-        assert any(e["type"] == "agent" and e["data"]["hook"] == "SessionStart" for e in events)
+        entries = call(server, "GET", "/journal/entries?last=50")[1]
+        assert any(e["kind"] == "updated" and e["data"]["table"] == "messages" and "read_at" in e["data"]["changed"] for e in entries)
+        assert any(e["kind"] == "updated" and e["data"]["table"] == "tasks" and "finished_at" in e["data"]["changed"] for e in entries)
+        assert any(e["kind"] == "SessionStarted" for e in entries)
         hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(tmp_path / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
-        edit = call(server, "GET", "/api/agent/1/edits")[1]["edits"][0]
+        edit = call(server, "GET", "/journal/agents/1/edits")[1]["edits"][0]
         assert [r["kind"] for r in edit["rows"]] == ["ctx", "del", "add", "ctx"] and edit["first_line"] == 7 and edit["last_line"] == 9
         call(server, "POST", "/cli", {"argv": ["shell", "ran", "journal task list", "--chain", "c1", "--status", "0", "--output", "1 t"], "env": "main", "session": "s1", "agent": True})
-        assert call(server, "GET", "/api/agent/1/terminal")[1]["lines"][-1]["tool"] == "Journal"
-        assert call(server, "POST", "/api/agent/s1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
-        doc = call(server, "POST", "/api/doc", {"title": "Design", "brief": "Intro\n\n## Goals\n\nShip it"})[1]
-        assert [s["title"] for s in doc["sections"]] == ["Goals"]
-        doc = call(server, "POST", f"/api/doc/{doc['n']}/section", {"title": "Risks", "body": "None"})[1]
-        assert [s["title"] for s in doc["sections"]] == ["Goals", "Risks"]
-        assert call(server, "POST", f"/api/doc/{doc['n']}/update", {"title": "Design v2", "brief": doc["brief"]})[1]["title"] == "Design v2"
+        assert call(server, "GET", "/journal/agents/1/terminal")[1][-1]["tool"] == "Journal"
+        assert call(server, "POST", "/journal/agents/1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
+        doc = call(server, "POST", "/journal/docs", {"title": "Design", "body": "Intro\n\n## Goals\n\nShip it"})[1]
+        doc = call(server, "POST", f"/journal/docs/{doc['id']}/section", {"title": "Risks", "body": "None"})[1]
+        assert doc["body"].endswith("## Risks\n\nNone\n") and "## Goals" in doc["body"]
+        assert call(server, "POST", f"/journal/docs/{doc['id']}", {"title": "Design v2"})[1]["title"] == "Design v2"
         app.console().run(["task", "create", "later", "--start"], Where("main", "s1"))
         app.console().run(["task", "park", "2", "waiting"], Where("main", "s1"))
-        assert call(server, "GET", "/api/todo/2")[1]["data"]["status"] == "parked"
+        assert call(server, "GET", "/journal/tasks/2")[1]["state"] == "parked"
     finally:
         app.runtime().stop()
 
@@ -318,41 +314,41 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
     server = app.server()
     try:
         app.console().run(["plan", "create", "p"], Where("main"))
-        assert call(server, "POST", "/api/plan/1/finish", {})[1]["data"]["status"] == "done"
+        assert call(server, "POST", "/journal/plans/1/finish", {})[1]["state"] == "done"
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
-        assert call(server, "POST", "/api/check/1/run", {})[1]["data"]["running"]["at"], "the page's run answers at once, the check running"
-        ran = lambda: call(server, "GET", "/api/check?only=1")[1]["rows"][0]["data"]
+        assert call(server, "POST", "/journal/checks/1/run", {})[1]["running"]["at"], "the page's run answers at once, the check running"
+        ran = lambda: call(server, "GET", "/journal/checks?ids=1")[1]["rows"][0]
         for _ in range(50):
             if not ran()["running"]:
                 break
             time.sleep(0.1)
-        assert ran()["last"]["ok"] is True, "and its result lands on the row"
-        assert call(server, "POST", "/api/check/1/set", {"key": "every", "value": "5"})[1]["data"]["every"] == 5
+        assert ran()["last_passed"] is True, "and its result lands on the row"
+        assert call(server, "POST", "/journal/checks/1", {"every": 5})[1]["every"] == 5
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
-        assert [s["title"] for s in call(server, "POST", f"/api/sequence/{release}/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]
+        assert call(server, "POST", f"/journal/sequences/{release}/steps", {"steps": ["tag", "test", "push"]})[1]["steps"] == ["tag", "test", "push"]
         app.console().run(["trigger", "create", "deploy", "say so"], Where("main"))
-        updated = call(server, "POST", "/api/trigger/1/update", {"words": "deploy, release", "does": "deny", "text": "wait"})[1]
-        assert updated["data"]["words"] == ["deploy", "release"] and updated["data"]["action"] == "deny"
-        skills = call(server, "GET", "/api/skills?agent=1")[1]
-        assert any(s["name"] == "journal" for s in skills) and "text" in call(server, "GET", "/api/skills/journal")[1]
-        call(server, "POST", "/api/environment", {"title": "spike"})
-        n = next(r["n"] for r in call(server, "GET", "/api/environment")[1]["rows"] if r["title"] == "spike")
-        assert call(server, "POST", f"/api/environment/{n}/remove", {})[0] == 200
-        assert all(r["title"] != "spike" for r in call(server, "GET", "/api/environment")[1]["rows"])
-        assert call(server, "GET", "/api/summary")[1]["environments"][0]["silent"] is False
+        updated = call(server, "POST", "/journal/triggers/1", {"words": ["deploy", "release"], "action": "deny", "text": "wait"})[1]
+        assert updated["words"] == ["deploy", "release"] and updated["action"] == "deny"
+        skills = call(server, "GET", "/journal/skills?agent=1")[1]
+        assert any(s["name"] == "journal" for s in skills) and "text" in call(server, "GET", "/journal/skills/journal")[1]
+        call(server, "POST", "/journal/environments", {"name": "spike"})
+        n = next(r["id"] for r in call(server, "GET", "/journal/environments")[1]["rows"] if r["name"] == "spike")
+        assert call(server, "POST", f"/journal/environments/{n}/remove", {})[0] == 200
+        assert all(r["name"] != "spike" for r in call(server, "GET", "/journal/environments")[1]["rows"])
+        assert call(server, "GET", "/journal/summary")[1]["environments"][0]["silent"] is False
     finally:
         app.runtime().stop()
 
 
 def test_a_file_attached_to_a_message_is_stored_and_served(server):
-    n = call(server, "POST", "/api/message", {"brief": "see the picture", "idempotency": "f1"})[1]["n"]
+    n = call(server, "POST", "/journal/messages", {"text": "see the picture", "idempotency": "f1"})[1]["id"]
     boundary = "b0undary"
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"note.txt\"\r\nContent-Type: text/plain\r\n\r\nhello there\r\n--{boundary}--\r\n").encode()
-    request = HttpRequest(f"http://127.0.0.1:{server.port}/api/message/{n}/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"})
+    request = HttpRequest(f"http://127.0.0.1:{server.port}/journal/messages/{n}/files", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
         row = json.loads(reply.read())
-    assert row["data"]["files"] == {"note.txt": ""}
-    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/api/message/{n}/files/note.txt?env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+    assert row["files"] == ["note.txt"]
+    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/journal/messages/{n}/files/note.txt?env=main"), timeout=5) as reply:
         assert reply.read() == b"hello there" and reply.headers["Content-Type"].startswith("text/plain")
 
 
@@ -361,9 +357,9 @@ def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_
     app.runtime().start()
     server = app.server()
     try:
-        call(server, "POST", "/api/message", {"brief": "after the reset", "idempotency": "r1"})
-        events = call(server, "GET", "/api/events?since=999999")[1]
-        assert events and events[-1]["type"] == "message", "an id from a journal that was reset still gets the recent events"
+        call(server, "POST", "/journal/messages", {"text": "after the reset", "idempotency": "r1"})
+        entries = call(server, "GET", "/journal/entries?since=999999")[1]
+        assert entries and entries[-1]["data"]["table"] == "messages", "an id from a journal that was reset still gets the recent entries"
     finally:
         app.runtime().stop()
 
@@ -380,16 +376,16 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
     app.runtime().start()
     server = app.server()
     try:
-        controls = call(server, "GET", "/api/agent-controls/claude?model=opus&effort=high")[1]
+        controls = call(server, "GET", "/journal/agents/controls/claude?model=opus&effort=high")[1]
         assert [g["key"] for g in controls["groups"]] == ["model", "effort", "context"] and controls["groups"][0]["current"] == "opus"
-        assert call(server, "POST", "/api/agent/s1/control", {"action": "effort", "value": "max"})[1]["queued"] is True and typed[-1] == "/effort max"
-        assert call(server, "POST", "/api/agent/s1/control", {"action": "model", "value": "gpt"})[0] == 409
-        n = call(server, "POST", "/api/message", {"brief": "is the footer fixed?\nand the header?", "idempotency": "q"})[1]["n"]
+        n = call(server, "POST", "/journal/messages", {"text": "is the footer fixed?\nand the header?", "idempotency": "q"})[1]["id"]
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
+        assert call(server, "POST", "/journal/agents/1/control", {"action": "effort", "value": "max"})[1]["queued"] is True and typed[-1] == "/effort max"
+        assert call(server, "POST", "/journal/agents/1/control", {"action": "model", "value": "gpt"})[0] == 409
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        reply = call(server, "GET", "/api/message")[1]["rows"][-1]
-        assert reply["brief"] == "Both are." and reply["refs"] == [f"message:{n}"] and reply["data"]["reply_to"] == n
+        reply = call(server, "GET", "/journal/messages")[1]["rows"][-1]
+        assert reply["text"] == "Both are." and reply["reply_to"] == n
     finally:
         app.runtime().stop()
 
@@ -403,16 +399,14 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
     app.runtime().start()
     server = app.server()
     try:
-        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
+        n = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "c1"})[1]["id"]
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        rows = [r for r in call(server, "GET", "/api/message?completed=1")[1]["rows"] if n in (r["n"], r["data"]["reply_to"])]
-        assert [(r["type"], r["data"]["author"], r["data"]["reply_to"], r["brief"]) for r in rows] == [("message", "user", 0, "hello"), ("message", "agent", n, "Hello back.")]
-        assert rows[0]["data"]["actor"].startswith("user") and rows[1]["data"]["actor"] == "agent:s1" and rows[1]["data"]["acknowledgement"] is False
-        assert call(server, "GET", "/api/comment")[1]["rows"] == [], "a reply is no comment"
-        kinds = [(e["type"], e["action"]) for e in call(server, "GET", "/api/events?since=0")[1]]
-        assert ("message", "created") in kinds and "comment" not in {kind for kind, _ in kinds}
+        rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if n in (r["id"], r["reply_to"])]
+        assert [(r["author"], r["reply_to"], r["text"]) for r in rows] == [("user", None, "hello"), ("agent", n, "Hello back.")]
+        assert rows[0]["created_by"].startswith("user") and rows[1]["created_by"] == "agent:s1" and rows[1]["acknowledgement"] is False
+        assert call(server, "GET", "/journal/comments")[1]["rows"] == [], "a reply is no comment"
     finally:
         app.runtime().stop()
 
@@ -427,42 +421,43 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
     app.runtime().start()
     server = app.server()
     try:
-        n = call(server, "POST", "/api/message", {"brief": "hello", "idempotency": "c1"})[1]["n"]
+        n = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "c1"})[1]["id"]
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "check:3")
-        rows = [r for r in call(server, "GET", "/api/message?completed=1")[1]["rows"] if r["n"] >= n]
-        assert [r["n"] for r in rows] == sorted(r["n"] for r in rows)
-        assert [(r["data"]["author"], r["brief"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
+        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3")
+        rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if r["id"] >= n]
+        assert [r["id"] for r in rows] == sorted(r["id"] for r in rows)
+        assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
-        assert card["seen"] == ["system"] and card["completed"] and card["data"]["actor"] == "system"
-        assert card["data"]["card"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "check:3", "key": ""}
+        assert card["created_by"] == "system"
+        assert card["data"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "key": ""}
     finally:
         app.runtime().stop()
 
 
 def test_the_board_is_off_and_stays_off(server):
-    assert "kanban" not in call(server, "GET", "/api/settings")[1]["features"]
-    assert "kanban" not in call(server, "POST", "/api/settings", {"features": {"kanban": True}})[1]["features"], "a switch of a feature version 4 does not have is not kept"
+    assert "kanban" not in call(server, "GET", "/journal/settings")[1]["features"]
+    assert "kanban" not in call(server, "POST", "/journal/settings", {"features": {"kanban": True}})[1]["features"], "a switch of a feature version 4 does not have is not kept"
 
 
 def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linked_to_it(server):
     from journal.console.where import Where
-    call(server, "POST", "/api/todo", {"title": "the footer", "idempotency": "t1"})
-    status, made = call(server, "POST", "/api/todo/1/comment", {"text": "please also check the header"})
-    assert status == 200 and made["refs"] == ["todo:1"] and made["brief"] == "please also check the header"
-    rows = call(server, "GET", "/api/comment")[1]["rows"]
-    assert [(r["refs"], r["seen"]) for r in rows] == [(["todo:1"], ["user"])]
-    messages = call(server, "GET", "/api/message")[1]["rows"]
-    assert messages[-1]["brief"] == "please also check the header" and messages[-1]["seen"] == ["user"]
+    call(server, "POST", "/journal/tasks", {"title": "the footer"})
+    status, made = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "please also check the header"})
+    assert status == 201 and made["on"] == ["tasks:1"] and made["text"] == "please also check the header"
+    assert [(r["on"], r["author"]) for r in call(server, "GET", "/journal/comments")[1]["rows"]] == [(["tasks:1"], "user")]
+    messages = call(server, "GET", "/journal/messages")[1]["rows"]
+    assert messages[-1]["text"] == "please also check the header" and messages[-1]["comments_on"] == ["tasks:1"]
+    assert call(server, "POST", "/journal/comments", {"on": "nothing:1", "text": "x"})[0] == 409, "a comment is only written under a row that is there"
 
 
 def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_when_none_does(server):
-    manifest = call(server, "GET", "/api/manifest")[1]
-    hold_after = next(s for s in manifest["features"]["messages"]["settings"] if s["name"] == "hold_after")
+    manifest = call(server, "GET", "/journal/manifest")[1]
+    feature = lambda name: next(f for f in manifest["features"] if f["name"] == name)
+    hold_after = next(s for s in feature("messages")["options"] if s["name"] == "hold_after")
     assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold the tools while a read message stays unanswered"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
-    auto = next(s for s in manifest["features"]["tasks"]["settings"] if s["name"] == "auto")
+    auto = next(s for s in feature("tasks")["options"] if s["name"] == "auto")
     assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
 
 
@@ -473,14 +468,15 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
     app.runtime().start()
     server = app.server()
     try:
-        manifest = call(server, "GET", "/api/manifest")[1]
-        tasks = manifest["features"]["tasks"]
-        assert [s["name"] for s in tasks["settings"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
-        assert all(f in manifest["features"] for f in ("messages", "shell", "voices")) and "kanban" not in manifest["features"], "version 3's leftovers are gone"
-        assert {g["key"] for g in manifest["groups"]} == {*manifest["features"], "project"}, "one group per feature, and the System tab's own"
-        status, tree = call(server, "POST", "/api/settings", {"tasks": {"log_after": 60}})
+        manifest = call(server, "GET", "/journal/manifest")[1]
+        named = [f["name"] for f in manifest["features"]]
+        tasks = next(f for f in manifest["features"] if f["name"] == "tasks")
+        assert [s["name"] for s in tasks["options"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
+        assert all(f in named for f in ("messages", "shell", "voices")) and "kanban" not in named, "version 3's leftovers are gone"
+        assert {g["key"] for g in manifest["groups"]} == {*named, "project"}, "one group per feature, and the System tab's own"
+        status, tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": 60}})
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
-        tree = call(server, "POST", "/api/settings", {"tasks": {}})[1]
+        tree = call(server, "POST", "/journal/settings", {"tasks": {}})[1]
         assert "tasks" not in tree and app.container.get(Settings).option(Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
     finally:
         app.runtime().stop()
@@ -492,24 +488,22 @@ def test_a_read_of_an_unknown_environment_is_not_found_and_makes_none(tmp_path: 
     app.runtime().start()
     server = app.server()
     try:
-        assert call(server, "GET", "/api/settings/settings")[0] == 404
+        assert call(server, "GET", "/journal/tasks", env="settings")[0] == 404
         assert not app.container.get(Environments).where(name="settings"), "a stray address in the browser never makes an environment"
     finally:
         app.runtime().stop()
 
 
 def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
-    from journal.http.v3.listing import Listing
-    from journal.http.v3.v3_row import V3Row
-    rows = [V3Row(type="message", n=n, title=f"m{n}", brief=f"m{n}", seen=["user"], created=float(n), updated=float(n), completed=0.0) for n in range(1, 61)]
-    chat = Listing.from_query({"completed": "1"})
-    assert [r["n"] for r in chat.listed(rows)["rows"]] == list(range(1, 61)), "a work list shows every open row, however many"
-    from dataclasses import replace
-    timeline = replace(chat, timeline=True)
-    page = timeline.listed(rows)
-    assert [r["n"] for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
-    older = replace(Listing.from_query({"completed": "1", "before": "11"}), timeline=True).listed(rows)
-    assert [r["n"] for r in older["rows"]] == list(range(1, 11)) and not older["more"]
+    from journal.http.listing import Listing
+    from journal.models.message import Message
+    rows = [Message(id=n, text=f"m{n}") for n in range(1, 61)]
+    listing = Listing.from_query({})
+    assert [r.id for r in listing.listed(rows, lambda r: True)["rows"]] == list(range(1, 61)), "a work list shows every open row, however many"
+    page = listing.listed(rows, lambda r: True, timeline=True)
+    assert [r.id for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
+    older = Listing.from_query({"before": "11"}).listed(rows, lambda r: True, timeline=True)
+    assert [r.id for r in older["rows"]] == list(range(1, 11)) and not older["more"]
 
 
 def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no_release_is_flagged(server):
@@ -698,29 +692,31 @@ def test_a_new_workflow_is_titled_by_its_first_action_until_the_user_names_it(se
 
 def test_the_journal_knows_whether_a_viewer_tab_is_open(server):
     assert call(server, "GET", "/journal/viewer")[1] == {"open": False}, "no tab has asked anything yet"
-    call(server, "GET", "/api/environments")
-    assert call(server, "GET", "/journal/viewer")[1] == {"open": True}, "a tab that polls the viewer's API is open, and a launch opens no other"
+    call(server, "GET", "/journal/environments")
+    assert call(server, "GET", "/journal/viewer")[1] == {"open": False}, "a call that is not the viewer's, a plugin's program or the shim, opens no tab"
+    urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/journal/environments", headers={"X-Journal-Env": "main", "X-Journal-Viewer": "1"}), timeout=5).read()
+    assert call(server, "GET", "/journal/viewer")[1] == {"open": True}, "a tab that polls the API is open, and a launch opens no other"
 
 
 def test_the_secrets_page_makes_fills_allows_deletes_and_restores_a_secret(server, tmp_path, monkeypatch):
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
-    status, made = call(server, "POST", "/api/secret", {"title": "Github", "kind": "api key", "brief": "gh api user", "programs": ["gh"]})
-    assert status in (200, 201)
-    n = made.get("n") or made.get("row", {}).get("n") or 1
-    listed = json.dumps(call(server, "GET", "/api/secret")[1])
+    status, made = call(server, "POST", "/journal/secrets", {"title": "Github", "kind": "api key", "brief": "gh api user", "programs": ["gh"]})
+    assert status == 201
+    n = made["id"]
+    listed = json.dumps(call(server, "GET", "/journal/secrets")[1])
     assert '"title": "Github"' in listed and '"variable": "GITHUB_KEY"' in listed and '"programs": ["gh"]' in listed
-    call(server, "POST", f"/api/secret/{n}/fill", {"field": "key", "value": "ghp_secretvalue123"})
-    listed = json.dumps(call(server, "GET", "/api/secret")[1])
-    assert '"filled": {"key":' in listed and "ghp_secretvalue123" not in listed, "a filled field is marked, its value never shown"
-    status, refused = call(server, "POST", f"/api/secret/{n}/update", {"programs": ["gh", "bash"]})
+    call(server, "POST", f"/journal/secrets/{n}/fill", {"field": "key", "value": "ghp_secretvalue123"})
+    listed = json.dumps(call(server, "GET", "/journal/secrets")[1])
+    assert '"filled": ["key"]' in listed and "ghp_secretvalue123" not in listed, "a filled field is marked, its value never shown"
+    status, refused = call(server, "POST", f"/journal/secrets/{n}", {"programs": ["gh", "bash"]})
     assert status == 409 and "never given to bash" in json.dumps(refused)
-    assert call(server, "POST", f"/api/secret/{n}/update", {"programs": ["gh", "curl"], "proposed": []})[0] == 200
-    assert '"programs": ["gh", "curl"]' in json.dumps(call(server, "GET", "/api/secret")[1]), "the user allowed curl"
-    assert call(server, "POST", "/api/secret/where")[1].endswith(".env")
-    call(server, "POST", f"/api/secret/{n}/delete", {"why": "deleted from the viewer"})
-    assert '"Github"' not in json.dumps(call(server, "GET", "/api/secret")[1]), "a deleted secret leaves the list, kept for a restore"
-    call(server, "POST", f"/api/secret/{n}/restore")
-    assert '"Github"' in json.dumps(call(server, "GET", "/api/secret")[1])
+    assert call(server, "POST", f"/journal/secrets/{n}", {"programs": ["gh", "curl"], "proposed": []})[0] == 200
+    assert '"programs": ["gh", "curl"]' in json.dumps(call(server, "GET", "/journal/secrets")[1]), "the user allowed curl"
+    assert call(server, "GET", "/journal/secrets/where")[1]["path"].endswith(".env")
+    call(server, "POST", f"/journal/secrets/{n}/delete")
+    assert call(server, "GET", f"/journal/secrets/{n}")[1]["deleted_at"] and call(server, "GET", "/journal/secrets")[1]["counts"]["open"] == 0, "a deleted secret is closed, kept for a restore"
+    call(server, "POST", f"/journal/secrets/{n}/restore")
+    assert call(server, "GET", f"/journal/secrets/{n}")[1]["deleted_at"] is None
 
 
 def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_providers_files(server, tmp_path, monkeypatch):
@@ -736,15 +732,15 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
     send("SessionStart", source="startup")
     send("PreToolUse", tool_name="Agent", tool_input={"description": "read it", "prompt": "read", "model": "haiku"}, tool_use_id="t1")
     send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a5"}, tool_use_id="t1")
-    agent = next(a for a in call(server, "GET", "/api/agent")[1]["rows"] if a["title"] == "s5")
-    page = call(server, "GET", f"/api/agent/{agent['n']}/transcript")[1]
+    agent = next(a for a in call(server, "GET", "/journal/agents")[1]["rows"] if a["session"] == "s5")
+    page = call(server, "GET", f"/journal/agents/{agent['id']}/transcript")[1]
     assert [(t["kind"], t["text"], t["tools"]) for t in page["turns"]] == [("human", "fix the login", []), ("agent", "Looking.", ["Read"]), ("tool", "", [])], "a tool result is a heading, its text asked for"
-    assert call(server, "GET", f"/api/agent/{agent['n']}/transcript?entry=3")[1]["text"] == "file text"
-    assert call(server, "GET", f"/api/agent/{agent['n']}/transcript?since=1")[1]["turns"][0]["line"] == 2
-    sub = call(server, "GET", f"/api/agent/{agent['n']}/subagent/a5/transcript")[1]
+    assert call(server, "GET", f"/journal/agents/{agent['id']}/transcript?entry=3")[1]["text"] == "file text"
+    assert call(server, "GET", f"/journal/agents/{agent['id']}/transcript?since=1")[1]["turns"][0]["line"] == 2
+    sub = call(server, "GET", f"/journal/agents/{agent['id']}/subagents/a5/transcript")[1]
     assert [t["text"] for t in sub["turns"]] == ["Read the login."]
-    assert call(server, "GET", f"/api/agent/{agent['n']}/subagent/..%2Fx/transcript")[0] == 404
-    assert call(server, "GET", "/api/helper/99/transcript")[0] == 404
+    assert call(server, "GET", f"/journal/agents/{agent['id']}/subagents/..%2Fx/transcript")[0] == 404
+    assert call(server, "GET", "/journal/workers/99/transcript")[0] == 404
 
 
 def test_where_each_agent_stands_in_a_workflow_is_served(server):
@@ -775,17 +771,17 @@ def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_r
     server = app.server()
     server.start()
     try:
-        assert call(server, "GET", "/api/migration")[1] == {"kept": False, "state": "offered"}, "no backup, nothing to offer"
+        assert call(server, "GET", "/journal/migration")[1] == {"kept": False, "state": "offered"}, "no backup, nothing to offer"
         (app.config.home / "version-3").mkdir()
-        assert call(server, "GET", "/api/migration")[1] == {"kept": True, "state": "offered"}
-        later = call(server, "POST", "/api/migration/later", {})
+        assert call(server, "GET", "/journal/migration")[1] == {"kept": True, "state": "offered"}
+        later = call(server, "POST", "/journal/migration/later", {})
         assert later[1].get("state") == "later", later
-        assert call(server, "POST", "/api/migration/start", {})[1]["state"] == "running"
+        assert call(server, "POST", "/journal/migration/start", {})[1]["state"] == "running"
         for _ in range(50):
-            if call(server, "GET", "/api/migration")[1]["state"] == "done":
+            if call(server, "GET", "/journal/migration")[1]["state"] == "done":
                 break
             time.sleep(0.1)
-        assert call(server, "GET", "/api/migration")[1]["state"] == "done"
+        assert call(server, "GET", "/journal/migration")[1]["state"] == "done"
         with app.container.get(Scope).of(1):
             assert [r.title for r in app.container.get(Reports).all()] == ["The version 3 journal brought across"], "what came across is said in a report"
     finally:
@@ -817,48 +813,49 @@ def visit(share_server, path: str, password: str = ""):
 
 
 def test_the_settings_page_has_its_system_and_sharing_tabs(server):
-    manifest = call(server, "GET", "/api/manifest")[1]
+    manifest = call(server, "GET", "/journal/manifest")[1]
     tabs = {group["key"]: group["tab"] for group in manifest["groups"]}
     assert tabs["project"] == "system" and tabs["sharing"] == "sharing", "the System tab has the project's group again, and sharing has a tab of its own"
-    assert [s["name"] for s in manifest["features"]["sharing"]["settings"]] == ["host"], "the tunler server is the sharing feature's own option"
-    assert call(server, "GET", "/api/settings")[1]["features"]["sharing"] is True
-    saved = call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})[1]
+    assert [s["name"] for s in next(f for f in manifest["features"] if f["name"] == "sharing")["options"]] == ["host"], "the tunler server is the sharing feature's own option"
+    assert call(server, "GET", "/journal/settings")[1]["features"]["sharing"] is True
+    saved = call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})[1]
     assert saved["sharing"]["host"] == "tunler.example"
 
 
 def test_a_share_link_opens_its_document_through_the_share_server_and_nothing_else(sharing):
     server, share_server = sharing
-    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
-    call(server, "POST", "/api/doc", {"title": "Launch notes", "brief": "## Why\nBecause."})
-    assert call(server, "POST", "/api/share/opens", {"ref": "doc:1"})[1] == ["Launch notes (doc 1)"]
-    assert call(server, "POST", "/api/share", {"title": "todo:1"})[0] == 409, "only a document, a report or a plan is shared"
-    status, made = call(server, "POST", "/api/share", {"title": "doc:1", "expires": "7d", "comments": False})
-    assert status == 201 and made["data"]["approved"] and made["data"]["target"] == "doc:1"
-    token = made["data"]["token"]
-    assert re.fullmatch(rf"https://[a-z0-9-]+-[0-9a-f]{{24}}\.tunler\.example/s/{token}", made["abstract"]), "the link is the journal's own address on the tunler server"
-    assert made["brief"].splitlines()[0] == "Launch notes (doc 1)"
-    assert [s["data"]["target"] for s in call(server, "GET", "/api/share")[1]["rows"]] == ["doc:1"]
+    call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "## Why\nBecause."})
+    assert call(server, "GET", "/journal/shares/opens?target=docs:1")[1] == ["Launch notes (docs:1)"]
+    assert call(server, "POST", "/journal/shares", {"target": "tasks:1"})[0] == 409, "only a document, a report or a plan is shared"
+    status, made = call(server, "POST", "/journal/shares", {"target": "docs:1", "expires": "7d", "comments": False})
+    assert status == 201 and made["approved"] and made["target"] == "docs:1" and "password" not in made
+    token = made["token"]
+    assert re.fullmatch(rf"https://[a-z0-9-]+-[0-9a-f]{{24}}\.tunler\.example/s/{token}", made["link"]), "the link is the journal's own address on the tunler server"
+    assert made["opens"] == ["Launch notes (docs:1)"]
+    assert [s["target"] for s in call(server, "GET", "/journal/shares")[1]["rows"]] == ["docs:1"]
     assert visit(share_server, "/health")[1] == b"journal-share-server"
     assert visit(share_server, f"/s/{token}")[2]["Location"] == f"/s/{token}/"
     status, page, headers = visit(share_server, f"/s/{token}/")
     assert status == 200 and b'id="app"' in page and "script-src 'self'" in headers["Content-Security-Policy"]
     status, data, _ = visit(share_server, f"/s/{token}/data.json")
     shown = json.loads(data)
-    assert status == 200 and shown["share"]["target"] == "doc:1" and shown["rows"]["doc:1"]["title"] == "Launch notes"
-    assert call(server, "GET", "/api/share")[1]["rows"][0]["data"]["views"] == 1, "opening the page counts a view; its data does not"
-    assert visit(share_server, "/api/manifest")[0] == 404 and visit(share_server, "/s/not-a-token/")[0] == 404, "the share server answers links and nothing else of the journal"
-    assert len(call(server, "GET", "/api/services")[1]) == 1, "the tunnel is listed while a link is open"
-    call(server, "POST", "/api/share/1/stop")
+    assert status == 200 and shown["share"]["target"] == "docs:1" and [d["title"] for d in shown["docs"]] == ["Launch notes"]
+    assert call(server, "GET", "/journal/shares")[1]["rows"][0]["views"] == 1, "opening the page counts a view; its data does not"
+    assert visit(share_server, "/journal/manifest")[0] == 404 and visit(share_server, "/s/not-a-token/")[0] == 404, "the share server answers links and nothing else of the journal"
+    assert len(call(server, "GET", "/journal/tunnel/services")[1]) == 1, "the tunnel is listed while a link is open"
+    call(server, "POST", "/journal/shares/1/stop")
     assert visit(share_server, f"/s/{token}/data.json")[0] == 410, "a stopped link opens nothing"
-    assert call(server, "GET", "/api/services")[1] == [], "with no link open, nothing is shared"
+    assert call(server, "GET", "/journal/tunnel/services")[1] == [], "with no link open, nothing is shared"
 
 
 def test_a_locked_link_opens_only_with_its_password(sharing):
     server, share_server = sharing
-    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
-    call(server, "POST", "/api/doc", {"title": "Private", "brief": "text"})
-    token = call(server, "POST", "/api/share", {"title": "doc:1", "password": "open sesame"})[1]["data"]["token"]
-    assert call(server, "GET", "/api/share")[1]["rows"][0]["data"]["password"] == "set", "the viewer is told a link is locked, never its password"
+    call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/journal/docs", {"title": "Private", "body": "text"})
+    token = call(server, "POST", "/journal/shares", {"target": "docs:1", "password": "open sesame"})[1]["token"]
+    listed = call(server, "GET", "/journal/shares")[1]["rows"][0]
+    assert listed["locked"] is True and "password" not in listed, "the viewer is told a link is locked, never its password"
     status, _, headers = visit(share_server, f"/s/{token}/data.json")
     assert status == 401 and headers["WWW-Authenticate"].startswith("Basic")
     assert visit(share_server, f"/s/{token}/data.json", "wrong")[0] == 401
@@ -872,22 +869,22 @@ def share_command(server, *argv: str, session: str = "s1") -> dict:
 
 def test_a_link_the_agent_makes_waits_for_the_users_accept_in_the_chat(sharing):
     server, share_server = sharing
-    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
-    call(server, "POST", "/api/doc", {"title": "Launch notes", "brief": "## Why\nBecause."})
-    assert share_command(server, "opens", "doc:1")["out"].strip() == "Launch notes (doc 1)"
-    made = share_command(server, "create", "doc:1", "--comments")
+    call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "## Why\nBecause."})
+    assert share_command(server, "opens", "docs:1")["out"].strip() == "Launch notes (docs:1)"
+    made = share_command(server, "create", "docs:1", "--comments")
     assert made["code"] == 0 and "waiting for the user's Accept in the chat" in made["out"], made
-    token = call(server, "GET", "/api/share")[1]["rows"][0]["data"]["token"]
+    token = call(server, "GET", "/journal/shares")[1]["rows"][0]["token"]
     assert visit(share_server, f"/s/{token}/data.json")[0] == 404, "the agent's link opens nothing until the user accepts it"
-    card = next(m for m in call(server, "GET", "/api/message")[1]["rows"] if m["data"]["buttons"])
-    assert [b["label"] for b in card["data"]["buttons"]] == ["Accept", "Deny"] and "- Launch notes (doc 1)" in card["brief"] and "Visitors can leave comments" in card["brief"]
+    card = next(m for m in call(server, "GET", "/journal/messages")[1]["rows"] if m["data"].get("buttons"))
+    assert [b["label"] for b in card["data"]["buttons"]] == ["Accept", "Deny"] and "- Launch notes (docs:1)" in card["text"] and "Visitors can leave comments" in card["text"]
     accept = card["data"]["buttons"][0]
-    assert call(server, "POST", f"/api/{accept['type']}/{accept['n']}/{accept['action']}", {})[1]["data"]["approved"], "Accept opens the link through the viewer's own path"
-    assert call(server, "POST", f"/api/message/{card['n']}/set", {"key": "pressed", "value": ["Accept"]})[1]["data"]["pressed"] == ["Accept"], "the card shows Accept spent"
+    assert call(server, "POST", f"/journal{accept['path']}", {})[1]["approved"], "Accept opens the link through the viewer's own path"
+    assert call(server, "POST", f"/journal/messages/{card['id']}/press", {"pressed": ["Accept"]})[1]["data"]["pressed"] == ["Accept"], "the card shows Accept spent"
     assert visit(share_server, f"/s/{token}/data.json")[0] == 200
-    assert "doc:1  open" in share_command(server, "list")["out"]
+    assert "docs:1  open" in share_command(server, "list")["out"]
     assert share_command(server, "stop", "1")["code"] == 0 and visit(share_server, f"/s/{token}/data.json")[0] == 410
-    assert ", open" in share_command(server, "create", "doc:1", session="")["out"], "a link the user makes at their terminal opens at once"
+    assert ", open" in share_command(server, "create", "docs:1", session="")["out"], "a link the user makes at their terminal opens at once"
 
 
 def comment(share_server, token: str, given: dict, header: str = "1"):
@@ -903,39 +900,33 @@ def comment(share_server, token: str, given: dict, header: str = "1"):
 
 def test_a_visitor_comments_on_a_shared_document_and_it_comes_to_the_chat(sharing):
     server, share_server = sharing
-    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
-    call(server, "POST", "/api/doc", {"title": "Launch notes", "brief": "## Why\nBecause."})
-    token = call(server, "POST", "/api/share", {"title": "doc:1", "comments": True})[1]["data"]["token"]
-    closed = call(server, "POST", "/api/share", {"title": "doc:1"})[1]["data"]["token"]
-    status, made = comment(share_server, token, {"about": "doc:1", "name": "Ana", "text": "The second step is unclear."})
-    assert status == 201 and made["name"] == "Ana" and made["about"] == "doc:1", made
-    assert comment(share_server, token, {"about": "doc:1", "name": "Ana", "text": "x"}, header="")[0] == 400, "only the share page's own request is taken"
-    assert comment(share_server, token, {"about": "doc:2", "name": "Ana", "text": "x"})[0] == 409, "a comment is only on what the link opens"
-    assert comment(share_server, closed, {"about": "doc:1", "name": "Ana", "text": "x"})[1]["error"] == "this link does not take comments"
+    call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "## Why\nBecause."})
+    token = call(server, "POST", "/journal/shares", {"target": "docs:1", "comments": True})[1]["token"]
+    closed = call(server, "POST", "/journal/shares", {"target": "docs:1"})[1]["token"]
+    status, made = comment(share_server, token, {"on": "docs:1", "name": "Ana", "text": "The second step is unclear."})
+    assert status == 201 and made["data"]["visitor"] == "Ana" and made["data"]["row"] == "docs:1", made
+    assert comment(share_server, token, {"on": "docs:1", "name": "Ana", "text": "x"}, header="")[0] == 400, "only the share page's own request is taken"
+    assert comment(share_server, token, {"on": "docs:2", "name": "Ana", "text": "x"})[0] == 409, "a comment is only on what the link opens"
+    assert comment(share_server, closed, {"on": "docs:1", "name": "Ana", "text": "x"})[1]["error"] == "this link does not take comments"
     shown = json.loads(visit(share_server, f"/s/{token}/data.json")[1])
-    assert shown["share"]["comments"] and [c["text"] for c in shown["comments"]] == ["The second step is unclear."], "the page shows the comments left on it"
-    chat = [m for m in call(server, "GET", "/api/message?closed=1")[1]["rows"] if m["data"]["comments_on"] == ["doc:1"]]
+    assert shown["share"]["comments"] and [c["data"]["detail"] for c in shown["comments"]] == ["The second step is unclear."], "the page shows the comments left on it"
+    chat = [m for m in call(server, "GET", "/journal/messages")[1]["rows"] if m["comments_on"] == ["docs:1"]]
     assert len(chat) == 1
-    assert chat[0]["brief"] == "Ana commented on doc 1 through a shared link" and chat[0]["data"]["card"]["detail"] == "The second step is unclear."
-    assert chat[0]["data"]["author"] == "system", "a visitor's words are the journal's card in the chat, never a message of the user's the agent would take as theirs"
+    assert chat[0]["text"] == "Ana commented on docs:1 through a shared link" and chat[0]["data"]["detail"] == "The second step is unclear."
+    assert chat[0]["author"] == "system", "a visitor's words are the journal's card in the chat, never a message of the user's the agent would take as theirs"
 
 
 def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("PATH", str(tmp_path))
-    standing = call(server, "POST", "/api/share/tunnel")[1]
+    standing = call(server, "GET", "/journal/tunnel")[1]
     assert standing["installed"] is False and standing["problems"] == ["tunler is not installed on this machine, so share links cannot reach this journal."]
     assert standing["server"] == "tunler.jessegall.nl", "with no server set, the one the journal installs from is offered"
-    assert call(server, "POST", "/api/share/domains")[1] == []
-    assert call(server, "POST", "/api/share/share_view", {"view": "agents"})[0] == 409
-    assert call(server, "POST", "/api/share/_tunnel")[0] == 409, "only the commands are reachable, nothing the commands keep"
+    assert call(server, "GET", "/journal/tunnel/domains")[1] == []
 
 
-def test_the_rails_open_marks_a_notification_kept_and_read_on_any_row(server):
-    call(server, "POST", "/api/todo", {"title": "the footer", "idempotency": "t1"})
-    assert call(server, "POST", "/api/todo/1/set", {"key": "kept", "value": "true"})[0] == 200
-    assert call(server, "POST", "/api/todo/1/read", {})[0] == 200
-def test_the_mode_is_kept_and_an_output_is_read_by_its_number(tmp_path: Path):
+def test_an_output_is_read_by_its_id(tmp_path: Path):
     from journal.models.actor import Actor
     from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
@@ -944,9 +935,6 @@ def test_the_mode_is_kept_and_an_output_is_read_by_its_number(tmp_path: Path):
     app.runtime().start()
     server = app.server()
     try:
-        assert call(server, "POST", "/api/mode", {"mode": "solo"})[1]["work_modes"]["mode"] == "solo"
-        assert call(server, "GET", "/api/settings")[1]["work_modes"]["mode"] == "solo", "kept for the next read"
-        assert call(server, "POST", "/api/mode", {"mode": "remote"})[0] == 409, "only the three modes"
         folder = tmp_path / "run"
         folder.mkdir()
         (folder / "parts").write_text("R\n")
@@ -956,9 +944,9 @@ def test_the_mode_is_kept_and_an_output_is_read_by_its_number(tmp_path: Path):
         (folder / "done").write_text("1")
         with app.container.get(Scope).of(1):
             kept = app.container.get(CommandOutputs).save(CommandOutput(chain="run", command="make test", folder=str(folder)), Actor.system())
-        status, read = call(server, "GET", f"/api/output/{kept.id}/read")
-        assert status == 200 and read == {"n": kept.id, "command": "make test", "outcome": "failed with code 2", "lines": ["one", "two", "oops"]}
-        assert call(server, "GET", "/api/output/99/read")[0] == 404
+        status, read = call(server, "GET", f"/journal/outputs/{kept.id}")
+        assert status == 200 and (read["id"], read["command"], read["outcome"], read["lines"]) == (kept.id, "make test", "failed with code 2", ["one", "two", "oops"])
+        assert call(server, "GET", "/journal/outputs/99")[0] == 404
     finally:
         app.runtime().stop()
 
@@ -967,21 +955,21 @@ def test_a_dump_is_dropped_with_files_and_acted_on_through_the_viewer(server):
     def upload(n: int, name: str, text: str):
         boundary = "b0undary"
         body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: text/plain\r\n\r\n{text}\r\n--{boundary}--\r\n").encode()
-        request = HttpRequest(f"http://127.0.0.1:{server.port}/api/dump/{n}/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"})
+        request = HttpRequest(f"http://127.0.0.1:{server.port}/journal/dumps/{n}/files", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"})
         try:
             with urlopen(request, timeout=5) as reply:
                 return reply.status, json.loads(reply.read())
         except HTTPError as error:
             return error.code, json.loads(error.read())
 
-    n = call(server, "POST", "/api/dump", {"brief": "some ideas"})[1]["n"]
+    n = call(server, "POST", "/journal/dumps", {"brief": "some ideas"})[1]["id"]
     row = upload(n, "a.txt", "hello")[1]
-    assert row["title"] == f"Dump {n}" and row["brief"] == "some ideas" and row["data"]["files"] == {"a.txt": ""} and row["completed"] == 0
-    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/api/dump/{n}/files/a.txt?env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+    assert row["title"] == f"Dump {n}" and row["brief"] == "some ideas" and row["files"] == ["a.txt"] and row["completed_at"] == 0
+    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/journal/dumps/{n}/files/a.txt?env=main"), timeout=5) as reply:
         assert reply.read() == b"hello"
-    assert call(server, "POST", f"/api/dump/{n}/name", {"title": "Ideas"})[1]["title"] == "Ideas"
-    stopped = call(server, "POST", f"/api/dump/{n}/stop")[1]
-    assert stopped["completed"] > 0 and stopped["data"]["stopped"] and stopped["outcome"] == "stopped, 0 filed, 2 left out"
+    assert call(server, "POST", f"/journal/dumps/{n}/name", {"title": "Ideas"})[1]["title"] == "Ideas"
+    stopped = call(server, "POST", f"/journal/dumps/{n}/stop")[1]
+    assert stopped["completed_at"] > 0 and stopped["stopped"] and stopped["outcome"] == "stopped, 0 filed, 2 left out"
     assert 400 <= upload(n, "b.txt", "more")[0] < 500, "a closed dump takes no more files"
-    assert [r["n"] for r in call(server, "GET", "/api/dump?last=5&completed=true")[1]["rows"]] == [n]
-    assert call(server, "POST", f"/api/dump/{n}/dismiss")[1]["data"]["dismissed"] is True
+    assert [r["id"] for r in call(server, "GET", "/journal/dumps?limit=5")[1]["rows"]] == [n]
+    assert call(server, "POST", f"/journal/dumps/{n}/dismiss")[1]["dismissed"] is True

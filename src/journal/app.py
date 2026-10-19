@@ -15,7 +15,7 @@ from journal.features.standard import Standard
 from journal.hooks.context_file import ContextFile
 from journal.repositories.settings import Settings
 from journal.http.router import Router
-from journal.http.routes import Routes
+from journal.http.routes.routes import Routes
 from journal.http.server import Server
 from journal.http.static_files import StaticFiles
 from pathlib import Path

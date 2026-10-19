@@ -4,9 +4,8 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.sharing.tunnel import Tunnel
-from journal.http.v3.action_body import ActionBody
-from journal.http.v3.share_actions import ShareActions
-from journal.http.v3.share_targets import ShareTargets
+from journal.features.sharing.share_actions import ShareActions
+from journal.features.sharing.share_targets import ShareTargets
 from journal.models.share import Share
 from journal.repositories.shares import Shares
 
@@ -19,7 +18,7 @@ class ShareCommand(Command):
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "make a link that opens one document, report or plan, read-only, and nothing else; the agent's waits for the user's Accept in the chat, so share only when the user asks")
-        create.add_argument("ref", help="what it opens, as doc:12, report:4 or plan:2")
+        create.add_argument("ref", help="what it opens, as docs:12, reports:4 or plans:2")
         create.add_argument("--expires", default="7d", help="when it ends: 12h, 7d or never")
         create.add_argument("--password", default="", help="a password visitors must give")
         create.add_argument("--comments", action="store_true", help="let visitors comment under a name of their own; their comments come to the chat")
@@ -28,7 +27,7 @@ class ShareCommand(Command):
         self.verb(verbs, "list", "every link here")
 
     def create(self, args: Namespace, where: Where) -> int:
-        share = self.actions.create(ActionBody(title=args.ref, expires=args.expires, password=args.password, comments=args.comments), where.actor)
+        share = self.actions.create(args.ref, args.expires, args.password, args.comments, where.actor)
         waits = "open" if share.approved else "waiting for the user's Accept in the chat"
         print(f"share {share.id}: {self.tunnel.link_of(share.token)}, {waits}")
         return 0
@@ -38,13 +37,13 @@ class ShareCommand(Command):
         return 0
 
     def stop(self, args: Namespace, where: Where) -> int:
-        share = self.actions.stop(args.n, ActionBody(), where.actor)
+        share = self.actions.stop(self.shares.find(args.n), where.actor)
         print(f"share {share.id} stopped")
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
         for share in self.shares.in_():
-            print(f"{share.id:>4}  {self.targets.viewer_ref(share) or 'gone'}  {self.standing(share)}  {self.tunnel.link_of(share.token)}")
+            print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.standing(share)}  {self.tunnel.link_of(share.token)}")
         return 0
 
     @staticmethod
