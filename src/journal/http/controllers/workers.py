@@ -1,4 +1,4 @@
-from journal.features.workers.worker_reports import WorkerReports
+from journal.features.workers.support.worker_reports import WorkerReports
 from journal.http.controllers.controller import Controller
 from journal.http.support.model_fields import ModelFields
 from journal.models.worker import Worker

@@ -5,9 +5,9 @@ from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.workers.states.awaiting import Awaiting
-from journal.features.workers.worker_reports import WorkerReports
-from journal.features.workers.named_paths import NamedPaths
-from journal.features.workers.worker_runner import WorkerRunner
+from journal.features.workers.support.worker_reports import WorkerReports
+from journal.features.workers.support.named_paths import NamedPaths
+from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents

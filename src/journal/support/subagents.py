@@ -1,7 +1,7 @@
 import json
 import re
 
-from journal.features.workers.dispatch import Dispatch
+from journal.features.workers.support.dispatch import Dispatch
 from journal.repositories.entries import Entries
 
 ENDS = frozenset({"Idle", "SessionStarted", "SessionEnded"})

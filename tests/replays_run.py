@@ -10,7 +10,7 @@ from journal.app import App
 from journal.config import Config
 from journal.support.where import Where
 from journal.engine.machine import Machine
-from journal.features.workers.worker_runner import WorkerRunner
+from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.environments import Environments

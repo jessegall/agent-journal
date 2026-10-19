@@ -5,8 +5,8 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
-from journal.features.workers.dispatch import Dispatch
-from journal.features.workers.subagents import ENDS, Subagents
+from journal.features.workers.support.dispatch import Dispatch
+from journal.support.subagents import ENDS, Subagents
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from journal.config import Config
-from journal.features.workers.subagents import Subagents
-from journal.features.workers.worker_runner import WorkerRunner
+from journal.support.subagents import Subagents
+from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.http.transcripts.transcript_page import TranscriptPage

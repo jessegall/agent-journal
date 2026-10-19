@@ -1,8 +1,8 @@
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
-from journal.features.workers.named_paths import NamedPaths
-from journal.features.workers.subagents import Subagents
+from journal.features.workers.support.named_paths import NamedPaths
+from journal.support.subagents import Subagents
 
 FRESH = ("auditor", "reviewer", "plan-reviewer", "critic", "goal-verifier")
 """Kinds whose job is a fresh look, never handed to one that already formed a view."""

@@ -13,7 +13,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
-from journal.features.workers.worker_runner import WorkerRunner
+from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker_state import WorkerState
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin as PluginRow
@@ -29,7 +29,7 @@ from journal.support.running import Running
 from journal.features.updates.release import Release
 from journal.features.updates.updating import Updating
 from journal.features.tasks.states.working import Working
-from journal.features.workers.subagents import Subagents
+from journal.support.subagents import Subagents
 
 from tests.replay import catch_typed
 
@@ -492,7 +492,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
 
 
 def test_a_worker_runs_the_dispatching_agents_own_program(app, monkeypatch):
-    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     from journal.repositories.workers import Workers
@@ -1523,7 +1523,7 @@ def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_remi
 
 
 def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
-    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
@@ -5043,7 +5043,7 @@ def test_a_cancelled_task_is_finished_and_never_counted_open(app):
 
 def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app):
     import subprocess
-    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.support.scope import Scope
@@ -5405,7 +5405,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
     import subprocess
     import time
     from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
-    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.worker import Worker
     from journal.repositories.messages import Messages
     from journal.support.scope import Scope
@@ -5430,7 +5430,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
 
 def test_a_worker_past_its_time_limit_is_stopped_and_reported(app):
     from journal.features.workers.feature import Workers as WorkersFeature
-    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.repositories.settings import Settings
