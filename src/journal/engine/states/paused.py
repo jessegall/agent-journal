@@ -28,8 +28,8 @@ class Paused(AgentState):
         return self.stay()
 
     def prompt_submitted(self, event: PromptSubmitted) -> Transition:
-        """A word from the user frees any wait: the engine's way out of a wait whose workflow no longer releases it."""
-        return self.back()
+        """A word from the user frees any wait: the engine's way out of a wait whose workflow no longer releases it. A line the journal typed is no word from the user."""
+        return self.back() if event.by_user else self.stay()
 
     def back(self, *says: Said) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)
