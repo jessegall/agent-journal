@@ -1,6 +1,7 @@
 """Phase three: the server answers real HTTP on a free port; tasks are created, read, started and finished over it."""
 
 import json
+import time
 import re
 from pathlib import Path
 from urllib.error import HTTPError
@@ -332,7 +333,13 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
         app.console().run(["plan", "create", "p"], Where("main"))
         assert call(server, "POST", "/api/plan/1/finish", {})[1]["data"]["status"] == "done"
         app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
-        assert call(server, "POST", "/api/check/1/run", {})[1]["data"]["last"]["ok"] is True
+        assert call(server, "POST", "/api/check/1/run", {})[1]["data"]["running"]["at"], "the page's run answers at once, the check running"
+        ran = lambda: call(server, "GET", "/api/check?only=1")[1]["rows"][0]["data"]
+        for _ in range(50):
+            if not ran()["running"]:
+                break
+            time.sleep(0.1)
+        assert ran()["last"]["ok"] is True, "and its result lands on the row"
         assert call(server, "POST", "/api/check/1/set", {"key": "every", "value": "5"})[1]["data"]["every"] == 5
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
         assert [s["title"] for s in call(server, "POST", f"/api/sequence/{release}/steps", {"steps": [{"title": "tag"}, {"title": "test"}, {"title": "push"}]})[1]["sections"]] == ["tag", "test", "push"]

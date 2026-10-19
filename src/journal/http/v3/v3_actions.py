@@ -185,7 +185,7 @@ class V3Actions:
         return {}
 
     def check_run(self, n: int, body: ActionBody, by):
-        return self.runner.run(self.checks.find(n), by)
+        return self.runner.start(self.checks.find(n), by)
 
     def check_set(self, n: int, body: ActionBody, by):
         check = self.checks.find(n)

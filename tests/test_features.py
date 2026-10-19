@@ -425,6 +425,28 @@ def test_a_check_keeps_its_description_for_the_page(app):
     assert (row["title"], row["brief"], row["data"]["command"], row["data"]["last"]["at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", 0.0), "the description is the row's brief, and a check never run says so by its last run's time"
 
 
+def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
+    import time as clock
+    from journal.features.checks.check_runner import CheckRunner
+    from journal.repositories.checks import Checks
+    report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": 3, "group": "value objects"}]}'
+    app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; sleep 1.5; echo 2/3; sleep 1.5; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)
+    checks = app.container.get(Checks)
+    started = app.container.get(CheckRunner).start(checks.find(1), Actor.user(1))
+    assert started.running is not None, "a run started from the page answers at once, marked running"
+    seen = []
+    for _ in range(60):
+        row = checks.find(1)
+        if row.running is None:
+            break
+        seen.append((row.running.done, row.running.total))
+        clock.sleep(0.1)
+    row = checks.find(1)
+    assert (1, 3) in seen or (2, 3) in seen, f"the row says how far the run is while it runs: {seen[-5:]}"
+    assert row.running is None and row.last_passed is False and row.last_took > 2, "the run's end clears its progress and keeps how long it took"
+    assert row.last_report.summary == "1 sin" and row.last_report.findings[0].line == 3, "the report the check wrote is kept with its run"
+
+
 def test_a_check_run_reaches_the_page_though_a_check_is_the_projects(app):
     from journal.repositories.entries import Entries
     console = app.console()

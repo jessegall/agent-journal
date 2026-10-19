@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from journal.models.check_progress import CheckProgress
+from journal.models.check_report import CheckReport
 from journal.models.model import Model
 
 
@@ -17,9 +19,18 @@ class Check(Model):
     last_passed: bool | None = None
     last_output: str = ""
     last_ran_at: datetime | None = None
+    last_took: float = 0.0
+    """Seconds the last run took, so the next run's bar can estimate before the check says how far it is."""
+    last_report: CheckReport | None = None
+    """What the last run wrote to its report file; None when it wrote none."""
+    running: CheckProgress | None = None
+    """The run under way; None while none runs."""
 
-    def ran(self, passed: bool, output: str, at: datetime) -> "Check":
-        return self.with_(last_passed=passed, last_output=output, last_ran_at=at)
+    def started(self, at: float) -> "Check":
+        return self.with_(running=CheckProgress(at))
+
+    def ran(self, passed: bool, output: str, at: datetime, took: float, report: CheckReport | None) -> "Check":
+        return self.with_(last_passed=passed, last_output=output, last_ran_at=at, last_took=took, last_report=report, running=None)
 
     def due_at(self, now: datetime) -> bool:
         return self.every > 0 and (self.last_ran_at is None or (now - self.last_ran_at).total_seconds() >= self.every * 60)

@@ -26,4 +26,7 @@ the next pass clears it.
   `--every 0` runs by hand only.
 - `journal check run <n>` runs it now and prints the tail on failure. `journal check list` shows how each last went.
 - When a check fails, fix what it found before anything else, then run it again.
+- A check shows how far it is from what it prints: a count such as `120/983`, test dots, or a percent. It may write
+  a report to the file named by `$JOURNAL_REPORT`: `{"title", "summary", "findings": [{"name", "file", "line", "where",
+  "text", "group"}]}`; the page lists its findings under the check, grouped, each opening its file at its line.
 """, keywords=("check", "checks", "ci", "suite"))

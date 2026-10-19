@@ -49,7 +49,8 @@ class Shapers:
             SimpleShaper(get(Templates), "template", lambda r: r.title, lambda r: r.brief, lambda r: {"purpose": r.purpose, "applies_to": list(r.applies_to), "fields": []},
                          sections=lambda r: [{"title": part.split(":", 1)[0].strip(), "body": part.split(":", 1)[1].strip() if ":" in part else ""} for part in r.parts]),
             SimpleShaper(get(Triggers), "trigger", lambda r: ", ".join(r.words), lambda r: r.text, lambda r: {"words": list(r.words), "action": r.action.value}),
-            SimpleShaper(get(Checks), "check", lambda r: r.title, lambda r: r.brief, lambda r: {"command": r.command, "every": r.every, "runs": [], "last": {"at": seconds(r.last_ran_at), "ok": bool(r.last_passed), "took": 0, "output": r.last_output}}),
+            SimpleShaper(get(Checks), "check", lambda r: r.title, lambda r: r.brief, lambda r: {"command": r.command, "every": r.every, "runs": [], "running": r.running or {},
+                                                                                       "last": {"at": seconds(r.last_ran_at), "ok": bool(r.last_passed), "took": r.last_took, "output": r.last_output, "report": r.last_report}}),
         ]
         self._by_type: dict[str, Shaper] = {shaper.type: shaper for shaper in own}
         for name in EMPTY:
