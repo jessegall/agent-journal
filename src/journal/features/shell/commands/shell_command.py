@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain

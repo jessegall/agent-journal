@@ -7,7 +7,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.support.actor import Actor
 from journal.support.scope import Scope
 

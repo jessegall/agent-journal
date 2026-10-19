@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.models.template import Template
 from journal.repositories.templates import Templates
 

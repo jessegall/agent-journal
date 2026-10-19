@@ -4,7 +4,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.support.refused import Refused

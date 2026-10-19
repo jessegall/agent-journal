@@ -1,7 +1,7 @@
 import shlex
 
 from journal.console.console import Console
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.features.plugins.plugin_steps import PluginSteps
 from journal.features.plugins.plugin_words import PluginWords

@@ -3,7 +3,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.shell.reader import Reader
 from journal.features.shell.readers import Readers
 from journal.support.refused import Refused

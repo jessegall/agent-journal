@@ -9,7 +9,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle

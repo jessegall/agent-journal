@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.workers.states.awaiting import Awaiting

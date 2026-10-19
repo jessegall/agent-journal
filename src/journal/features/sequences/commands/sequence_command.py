@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.features.sequences.running import Running
 from journal.models.sequence import Sequence

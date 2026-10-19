@@ -4,7 +4,7 @@ import time
 
 from journal.config import Config
 from journal.console.console import Console
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished

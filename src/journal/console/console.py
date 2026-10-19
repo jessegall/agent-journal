@@ -1,13 +1,13 @@
 import argparse
 import io
 
-from journal.console.captured_stream import CapturedStream
+from journal.console.support.captured_stream import CapturedStream
 from journal.console.command import Command
 from journal.console.creations import Creations
-from journal.console.outcome import Outcome
+from journal.console.support.outcome import Outcome
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.support.scope import Scope

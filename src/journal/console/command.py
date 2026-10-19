@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
-from journal.console.where import Where
+from journal.support.where import Where
 
 
 class Command:

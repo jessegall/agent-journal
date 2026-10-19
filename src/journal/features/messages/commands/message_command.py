@@ -2,7 +2,7 @@ from argparse import Namespace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.support.ref import Ref

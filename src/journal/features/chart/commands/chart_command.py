@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.seeds.shipped_chart import EVENT_ORDER, ShippedChart
 from journal.features.chart.assumptions import Assumptions

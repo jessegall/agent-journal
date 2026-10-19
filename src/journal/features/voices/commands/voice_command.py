@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.voices.chosen_voice import ChosenVoice
 from journal.features.voices.shipped import Shipped
 from journal.repositories.settings import Settings

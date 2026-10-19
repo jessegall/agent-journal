@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from journal.app import App  # noqa: E402
 from journal.config import Config  # noqa: E402
-from journal.console.where import Where  # noqa: E402
+from journal.support.where import Where  # noqa: E402
 
 AGENTS = ("claude", "codex")
 

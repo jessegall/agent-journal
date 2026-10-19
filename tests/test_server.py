@@ -11,7 +11,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
-from journal.console.where import Where
+from journal.support.where import Where
 
 
 @pytest.fixture
@@ -443,7 +443,7 @@ def test_the_board_is_off_and_stays_off(server):
 
 
 def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linked_to_it(server):
-    from journal.console.where import Where
+    from journal.support.where import Where
     call(server, "POST", "/journal/tasks", {"title": "the footer"})
     status, made = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "please also check the header"})
     assert status == 201 and made["on"] == ["tasks:1"] and made["text"] == "please also check the header"

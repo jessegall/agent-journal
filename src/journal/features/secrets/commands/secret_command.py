@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.secrets.browser_logins import WINDOW
 from journal.features.secrets.login_window import LoginWindow
 from journal.features.secrets.programs import Programs

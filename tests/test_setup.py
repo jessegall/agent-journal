@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.console.commands.setup_command import SetupCommand
-from journal.console.where import Where
+from journal.support.where import Where
 
 
 @pytest.fixture

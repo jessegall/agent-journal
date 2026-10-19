@@ -6,7 +6,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.laws.law_text import LawText
 from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.skills.skill_files import SkillFiles

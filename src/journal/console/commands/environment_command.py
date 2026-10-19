@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.shell.commands.shell_command import ENDED, MOVED

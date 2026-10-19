@@ -4,7 +4,7 @@ import threading
 import time
 from typing import Callable
 
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.plugins.installing import Installing
 from journal.features.updates.release import Release
 from journal.features.updates.release_installer import ReleaseInstaller

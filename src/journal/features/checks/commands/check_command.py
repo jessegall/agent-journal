@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.features.checks.check_runner import CheckRunner
 from journal.models.check import Check
 from journal.repositories.checks import Checks

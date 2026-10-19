@@ -23,7 +23,7 @@ from journal.models.setting import Setting
 from journal.support.supervisor_reply import SupervisorReply
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
-from journal.console.where import Where
+from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.features.sequences.running import Running
 from journal.features.updates.release import Release
@@ -2773,7 +2773,7 @@ def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
 
 def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(app, monkeypatch):
     typed = []
-    from journal.console.where import Where
+    from journal.support.where import Where
     catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
