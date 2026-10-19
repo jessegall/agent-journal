@@ -1,5 +1,6 @@
 import {counted} from "../format/number.js";
 import {ago} from "../format/time.js";
+import {seconds} from "./row.js";
 
 export const KEPT_DAYS = 30;
 const DAY = 86400;
@@ -39,7 +40,7 @@ const BROWSER_LOGIN = {
     fields: [],
 };
 
-export const kindOf = (row) => [...KINDS, BROWSER_LOGIN].find((k) => k.key === row.data.kind) || KINDS[2];
+export const kindOf = (row) => [...KINDS, BROWSER_LOGIN].find((k) => k.key === row.kind) || KINDS[2];
 
 export const variableOf = (title, name) =>
     `${title}_${name}`
@@ -47,30 +48,28 @@ export const variableOf = (title, name) =>
         .replace(/[^A-Z0-9]+/g, "_")
         .replace(/^_+|_+$/g, "");
 
-export const fieldsOf = (row) => row.data.secret_fields || [];
+export const fieldsOf = (row) => row.fields || [];
 
-export const isSet = (row, field) => Boolean((row.data.filled || {})[field.name]);
+export const isSet = (row, field) => (row.filled || []).includes(field.name);
 
 export const isWaiting = (row) => fieldsOf(row).some((field) => !isSet(row, field));
 
-export const asking = (rows) => rows.filter((row) => row.data.asked && isWaiting(row));
+export const asking = (rows) => rows.filter((row) => row.asked_at && isWaiting(row));
 
 function browserLoginWords(row) {
-    if (row.data.logging_in) return "A browser is open for you to log in";
-    return row.data.session ? `Logged in ${ago(row.data.session)}` : "Not logged in yet";
+    if (row.logging_in_at) return "A browser is open for you to log in";
+    return row.session_at ? `Logged in ${ago(seconds(row.session_at))}` : "Not logged in yet";
 }
 
 export function whenWords(row) {
-    if (row.data.kind === BROWSER_LOGIN.key) return browserLoginWords(row);
-    const used = row.data.used;
-    if (used) return `Last used ${ago(used)}`;
-    const filled = Object.values(row.data.filled || {});
-    if (isWaiting(row)) return filled.length ? `${filled.length} of ${fieldsOf(row).length} values set` : "No value set yet";
-    return `Set ${ago(Math.max(...filled))}`;
+    if (row.kind === BROWSER_LOGIN.key) return browserLoginWords(row);
+    if (row.used_at) return `Last used ${ago(seconds(row.used_at))}`;
+    if (isWaiting(row)) return row.filled.length ? `${row.filled.length} of ${fieldsOf(row).length} values set` : "No value set yet";
+    return "Every value set";
 }
 
 export function daysLeft(row, now = Date.now() / 1000) {
-    return Math.max(0, Math.ceil(KEPT_DAYS - (now - row.deleted) / DAY));
+    return Math.max(0, Math.ceil(KEPT_DAYS - (now - seconds(row.deleted_at)) / DAY));
 }
 
 export const keptWords = (row, now) => `${counted(daysLeft(row, now), "day")} left before its values are removed`;
@@ -88,22 +87,20 @@ export function withFields(fields, title) {
 export function drafted(row) {
     return {
         title: row ? row.title : "",
-        abstract: row ? row.abstract : "",
         brief: row ? row.brief : "",
-        kind: row ? row.data.kind : "",
+        kind: row ? row.kind : "",
         fields: row ? fieldsOf(row).map((field) => ({...field})) : [],
-        programs: row ? [...(row.data.programs || [])] : [],
-        proposed: row ? [...(row.data.proposed || [])] : [],
-        helpers: row ? Boolean(row.data.helpers) : false,
+        programs: row ? [...row.programs] : [],
+        proposed: row ? [...row.proposed] : [],
+        helpers: row ? Boolean(row.helpers) : false,
     };
 }
 
 export function saved(draft) {
     return {
         title: draft.title.trim(),
-        abstract: draft.abstract.trim(),
         brief: draft.brief.trim(),
-        secret_fields: withFields(draft.fields, draft.title.trim()),
+        fields: withFields(draft.fields, draft.title.trim()),
         programs: draft.programs,
         proposed: draft.proposed,
         helpers: draft.helpers,
@@ -115,11 +112,11 @@ export function allowedProgram(draft, name) {
     if (!draft.programs.includes(name)) draft.programs.push(name);
 }
 
-export const programsKept = (draft, row) => draft.programs.every((name) => ((row && row.data && row.data.programs) || []).includes(name));
+export const programsKept = (draft, row) => draft.programs.every((name) => ((row && row.programs) || []).includes(name));
 
 export function creating(draft) {
-    const {secret_fields: fields, ...rest} = saved(draft);
-    return draft.kind === "custom" ? {...rest, kind: draft.kind, secret_fields: fields} : {...rest, kind: draft.kind};
+    const {fields, ...rest} = saved(draft);
+    return draft.kind === "custom" ? {...rest, kind: draft.kind, fields} : {...rest, kind: draft.kind};
 }
 
 export const complete = (draft) => Boolean(draft.title.trim() && draft.kind);

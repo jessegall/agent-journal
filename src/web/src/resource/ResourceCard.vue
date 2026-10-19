@@ -1,6 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
-import {refParts} from "../domain/records.js";
+import {meta} from "../domain/tables.js";
 import {startWords} from "../domain/triggerWords.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,69 +7,38 @@ import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
 import {computed} from "vue";
 import {planProgress, standingOf} from "../domain/plans.js";
+import {bodyOf, isClosed, sectionsOf, titleOf, updatedAt} from "../domain/row.js";
 import {usePlanRows} from "../composables/planRows.js";
 import {rows} from "../sync/rows.js";
-import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 
 const props = defineProps({resource: Object});
 const plan = computed(() => planProgress(props.resource));
-// a plan's progress is its to-dos, counted as its own page counts them, with the phase it is in beside it
+// a plan's progress is its tasks, counted as its own page counts them, with the phase it is in beside it
 usePlanRows(() => (plan.value ? [props.resource] : []));
-const standing = computed(() => (plan.value ? standingOf(props.resource, rows("todo")) : null));
-const update = computed(() =>
-    isUpdate(props.resource)
-        ? {
-              label: updateLabel(props.resource),
-              facts: updateCounts(props.resource)
-                  .map((c) => `${c.n} ${c.label}`)
-                  .join(" · "),
-          }
-        : null
-);
-const holds = computed(() => {
-    if (props.resource.type !== "collection") return [];
-    const counted = {};
-    for (const ref of props.resource.refs) {
-        const {type} = refParts(ref);
-        if (meta(type).title) counted[type] = (counted[type] || 0) + 1;
-    }
-    return Object.entries(counted).map(([type, n]) => ({type, n, icon: meta(type).icon, title: meta(type).title}));
-});
+const standing = computed(() => (plan.value ? standingOf(props.resource, rows("tasks")) : null));
+const parts = computed(() => (props.resource.table === "sequences" ? props.resource.steps.length : sectionsOf(props.resource.body).length));
+const partWord = computed(() => (props.resource.table === "sequences" ? "step" : "part"));
 </script>
 
 <template>
-    <button type="button" :class="['card', {completed: resource.completed}]">
+    <button type="button" :class="['card', {completed: isClosed(resource)}]">
         <span class="head">
-            <Icon :name="meta(resource.type).icon" :size="14" />
-            <span class="n">{{ update ? update.label : `${meta(resource.type).title} ${resource.n}` }}</span>
-            <span class="age">{{ age(resource.updated || resource.created) }}</span>
+            <Icon :name="meta(resource.table).icon" :size="14" />
+            <span class="n">{{ meta(resource.table).title }} {{ resource.id }}</span>
+            <span class="age">{{ age(updatedAt(resource)) }}</span>
         </span>
-        <span class="title">{{ resource.title }}</span>
+        <span class="title">{{ titleOf(resource) }}</span>
         <template v-if="plan">
             <span class="plan-steps">{{ standing.title }} · phase {{ plan.phase }} of {{ plan.total }} · {{ plan.status }}</span>
             <ProgressBar :value="standing.done" :max="Math.max(1, standing.rows)" :tone="plan.status === 'done' ? 'good' : ''" />
         </template>
         <template v-else>
-            <TextDisplay inline class="abstract" :text="resource.abstract || resource.brief" />
+            <TextDisplay inline class="abstract" :text="resource.abstract || bodyOf(resource).slice(0, 300)" />
         </template>
-        <template v-if="update && update.facts">
-            <span class="parts">{{ update.facts }}</span>
-        </template>
-        <template v-if="holds.length">
-            <span class="holds">
-                <template v-for="h in holds" :key="h.type">
-                    <span class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">
-                        <Icon :name="h.icon" :size="12" />
-                        {{ h.n }}
-                    </span>
-                </template>
-            </span>
-        </template>
-        <template v-if="resource.sections.length && !plan">
+        <template v-if="parts && !plan">
             <span class="parts">
-                {{ resource.sections.length }} {{ resource.type === "sequence" ? "step" : "part"
-                }}{{ resource.sections.length > 1 ? "s" : "" }}
-                <template v-if="resource.type === 'sequence'">
+                {{ parts }} {{ partWord }}{{ parts > 1 ? "s" : "" }}
+                <template v-if="resource.table === 'sequences'">
                     ·
                     {{ startWords(resource) }}
                 </template>

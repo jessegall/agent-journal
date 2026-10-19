@@ -3,9 +3,6 @@ import UsageMeter from "./UsageMeter.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";
-import {lastCompaction, pendingChoice} from "../domain/agents.js";
-import {store} from "../state/store.js";
-import {age} from "../format/time.js";
 import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({control: String, agent: Object});
@@ -14,17 +11,12 @@ const controls = ref({groups: [], note: ""});
 const loaded = ref(false);
 const controlling = ref("");
 const error = ref("");
-const data = computed(() => props.agent.data);
+const data = computed(() => props.agent);
 const filled = computed(() => Math.round(Number(data.value.context || 0)));
-const compacted = computed(() => {
-    const at = lastCompaction(store.agents);
-    return at ? `Conversation last compacted ${age(at)}` : "Not compacted yet";
-});
 const chosen = computed(() => controls.value.groups.filter((group) => group.key === props.control));
 const current = computed(() => (props.control === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));
 
-const pending = (key) => pendingChoice(data.value, key);
-const waiting = (key, value) => controlling.value === `${key}:${value}` || pending(key) === value;
+const waiting = (key, value) => controlling.value === `${key}:${value}`;
 
 onMounted(async () => {
     try {
@@ -40,7 +32,7 @@ async function applyChoice(action, value) {
     controlling.value = `${action}:${value}`;
     error.value = "";
     try {
-        await api.controlAgent(props.agent.title, action, value);
+        await api.controlAgent(props.agent.id, action, value);
         emit("done");
     } catch (e) {
         error.value = e.message;
@@ -56,15 +48,10 @@ async function applyChoice(action, value) {
     </template>
     <template v-if="control === 'context'">
         <p class="bar-current">Context window</p>
-        <UsageMeter label="Used" :percent="filled" :note="compacted" />
+        <UsageMeter label="Used" :percent="filled" />
     </template>
     <template v-else>
         <p class="bar-current">{{ current }}</p>
-    </template>
-    <template v-if="pending(control)">
-        <div class="bar-waiting">
-            <span>{{ pending(control) }} is waiting for the agent to finish its turn.</span>
-        </div>
     </template>
     <template v-if="!loaded">
         <Skeleton :count="2" label="Loading the controls" />

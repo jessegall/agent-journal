@@ -14,7 +14,7 @@ const emit = defineEmits(["rename"]);
     <header class="dump-head">
         <Icon name="inbox" :size="14" />
         <template v-if="dump">
-            <span class="dump-title">Dump {{ dump.n }}</span>
+            <span class="dump-title">Dump {{ dump.id }}</span>
             <template v-if="renaming">
                 <InlineName class="dump-rename" :value="collection" @done="(title) => emit('rename', title)" @cancel="renaming = false" />
             </template>

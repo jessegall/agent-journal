@@ -18,12 +18,12 @@ const emit = defineEmits(["approve", "stop"]);
 
 <template>
     <template v-if="!open.length && !waiting.length">
-        <EmptyState :loading="!hasLoaded('share')" title="No open links">
+        <EmptyState :loading="!hasLoaded('shares')" title="No open links">
             Links you make to this {{ kind }} show here until they end.
         </EmptyState>
     </template>
     <div class="open-shares">
-        <template v-for="share in waiting" :key="share.n">
+        <template v-for="share in waiting" :key="share.id">
             <div class="open-share waiting">
                 <div class="open-share-main">
                     <span class="waiting-line">
@@ -34,24 +34,24 @@ const emit = defineEmits(["approve", "stop"]);
                     </span>
                     <span class="meta">{{ endsOf(share) }} once accepted · no link works until then</span>
                 </div>
-                <Btn small kind="primary" :busy="stopping === share.n" @click="emit('approve', share)">Accept</Btn>
+                <Btn small kind="primary" :busy="stopping === share.id" @click="emit('approve', share)">Accept</Btn>
                 <Btn small @click="emit('stop', share)">Deny</Btn>
             </div>
         </template>
-        <template v-for="share in open" :key="share.n">
+        <template v-for="share in open" :key="share.id">
             <div class="open-share">
                 <div class="open-share-main">
-                    <span class="open-link" :title="share.abstract">
+                    <span class="open-link" :title="share.link">
                         <template v-if="locked(share)">
                             <Icon class="lock" name="lock" :size="11" title="Has a password" />
                         </template>
-                        {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
+                        {{ share.link.replace(/^https:\/\/[^/]+/, "") }}
                     </span>
                     <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
                 </div>
-                <CopyButton :text="share.abstract" hint="Copy the link" />
-                <CopyButton :text="linkMessage(title, share.abstract)" icon="chat" hint="Copy the link with a short description" />
-                <Btn small kind="danger" :busy="stopping === share.n" @click="emit('stop', share)">Stop sharing</Btn>
+                <CopyButton :text="share.link" hint="Copy the link" />
+                <CopyButton :text="linkMessage(title, share.link)" icon="chat" hint="Copy the link with a short description" />
+                <Btn small kind="danger" :busy="stopping === share.id" @click="emit('stop', share)">Stop sharing</Btn>
             </div>
         </template>
     </div>

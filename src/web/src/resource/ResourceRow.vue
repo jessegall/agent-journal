@@ -1,56 +1,46 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
-import PriorityIcon from "../kit/PriorityIcon.vue";
-import {parkedFor, state, waitsOn} from "../domain/records.js";
+import {state} from "../domain/records.js";
+import {bodyOf, closedAt, isClosed, titleOf, updatedAt} from "../domain/row.js";
 import {age, ago} from "../format/time.js";
 import {computed} from "vue";
-import {plain, sentence, startedBy} from "../domain/triggerWords.js";
+import {sentence} from "../domain/triggerWords.js";
 
 const props = defineProps({resource: Object, selected: Boolean});
-
 const held = computed(() => {
-    if (props.resource.completed) return "";
-    if (props.resource.data.blocked) return props.resource.data.blocked;
-    if (parkedFor(props.resource)) return `Paused: ${parkedFor(props.resource)}`;
-    const refs = waitsOn(props.resource);
-    return refs.length ? `Waits on: ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
+    if (isClosed(props.resource)) return "";
+    if (props.resource.blocked_why) return `Blocked: ${props.resource.blocked_why}`;
+    return props.resource.parked_why ? `Parked: ${props.resource.parked_why}` : "";
 });
-const summary = computed(() =>
-    props.resource.type === "trigger"
-        ? plain(sentence(props.resource.data, startedBy(props.resource.n)))
-        : props.resource.abstract || props.resource.brief
-);
+const summary = computed(() => (props.resource.table === "triggers" ? sentence(props.resource) : props.resource.abstract || bodyOf(props.resource)));
 </script>
 
 <template>
-    <button type="button" :class="['row', {selected, completed: resource.completed}]">
+    <button type="button" :class="['row', {selected, completed: isClosed(resource)}]">
         <span class="glyph">
-            <template v-if="meta(resource.type).start_as_count">
+            <template v-if="meta(resource.table).start_as_count">
                 <Dot :kind="state(resource)" />
             </template>
             <template v-else>
-                <Icon :name="meta(resource.type).icon" :size="14" />
+                <Icon :name="meta(resource.table).icon" :size="14" />
             </template>
         </span>
-        <template v-if="meta(resource.type).fields.priority">
-            <PriorityIcon :value="Number(resource.data.priority ?? 100)" />
-        </template>
-        <span class="n">#{{ resource.n }}</span>
+        <span class="n">#{{ resource.id }}</span>
         <span class="text">
-            <span class="title">{{ resource.title }}</span>
-            <template v-if="summary">
+            <span class="title">{{ titleOf(resource) }}</span>
+            <template v-if="summary && summary !== titleOf(resource)">
                 <span class="abstract">
-                    <TextDisplay inline :text="summary" />
+                    <TextDisplay inline :text="summary.slice(0, 300)" />
                 </span>
             </template>
         </span>
         <template v-if="held">
             <span class="held" :title="held">{{ held }}</span>
         </template>
-        <span class="age">{{ resource.completed ? `Closed ${ago(resource.completed)}` : age(resource.updated || resource.created) }}</span>
+        <span class="age">{{ isClosed(resource) ? `Closed ${ago(closedAt(resource))}` : age(updatedAt(resource)) }}</span>
     </button>
 </template>
 

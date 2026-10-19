@@ -3,26 +3,22 @@ import {inject} from "vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {state} from "../domain/records.js";
+import {isClosed} from "../domain/row.js";
 
-defineProps({todo: {type: Object, required: true}});
+defineProps({task: {type: Object, required: true}});
 const emit = defineEmits(["open"]);
 const talk = inject("talk", null);
 </script>
 
 <template>
     <div class="line">
-        <button type="button" :class="['row', {completed: todo.completed}]" @click="emit('open', todo)">
-            <template v-if="todo.type === 'ticket'">
-                <Icon class="ticket-mark" name="ticket" :size="12" />
-            </template>
-            <template v-else>
-                <Dot :kind="state(todo)" />
-            </template>
-            <span class="rn">#{{ todo.n }}</span>
-            <span class="rt">{{ todo.title }}</span>
+        <button type="button" :class="['row', {completed: isClosed(task)}]" @click="emit('open', task)">
+            <Dot :kind="state(task)" />
+            <span class="rn">#{{ task.id }}</span>
+            <span class="rt">{{ task.title }}</span>
         </button>
         <template v-if="talk">
-            <button type="button" class="say" title="Comment on this to-do" @click="talk.say(`#${todo.n} ${todo.title}`)">
+            <button type="button" class="say" title="Comment on this task" @click="talk.say(`#${task.id} ${task.title}`)">
                 <Icon name="bubble" :size="12" />
             </button>
         </template>

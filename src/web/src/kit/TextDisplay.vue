@@ -1,5 +1,4 @@
 <script setup>
-import {types} from "../domain/spec.js";
 import {computed} from "vue";
 import {render} from "../text/index.js";
 import {peekChip, route} from "../route.js";
@@ -12,7 +11,7 @@ const html = computed(() => {
               .split("\n")
               .find((line) => line.trim()) || ""
         : props.text;
-    const made = render(said, {types: types.value, env: route.value.env});
+    const made = render(said, {env: route.value.env});
     return props.inline ? made.replace(/^<p>|<\/p>\s*$/g, "") : made;
 });
 </script>

@@ -32,7 +32,7 @@ function show(next, n = 0) {
                 <SecretNew @open="show('one', $event)" @back="show('list')" />
             </template>
             <template #one>
-                <SecretOpen :n="opened" @back="show('list')" />
+                <SecretOpen :id="opened" @back="show('list')" />
             </template>
         </SwitchCase>
     </section>

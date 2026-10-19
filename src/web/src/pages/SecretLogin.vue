@@ -12,17 +12,17 @@ const emit = defineEmits(["log-in", "let-log-in", "forget", "ask-each-time"]);
             <p>
                 A browser opens on the computer the journal runs on. Log in, then close its window: the login is saved beside the values and
                 the agent's browser starts with it.
-                <template v-if="login.logging_in">The window is open now.</template>
-                <template v-else-if="login.session">Logged in.</template>
+                <template v-if="login.logging_in_at">The window is open now.</template>
+                <template v-else-if="login.session_at">Logged in.</template>
             </p>
             <p>The agent's browser can read this login's cookies, and a page it opens can act on the site as you.</p>
-            <Btn small :busy="busy" :disabled="Boolean(login.logging_in)" @click="emit('log-in')">Log in</Btn>
+            <Btn small :busy="busy" :disabled="Boolean(login.logging_in_at)" @click="emit('log-in')">Log in</Btn>
             <template v-if="!login.auto_login">
-                <Btn small :busy="busy" :disabled="Boolean(login.logging_in)" @click="emit('let-log-in')">
+                <Btn small :busy="busy" :disabled="Boolean(login.logging_in_at)" @click="emit('let-log-in')">
                     Let the agent log in on its own
                 </Btn>
             </template>
-            <template v-if="login.session">
+            <template v-if="login.session_at">
                 <Btn kind="danger" small :busy="busy" @click="emit('forget')">Forget this login</Btn>
             </template>
         </div>

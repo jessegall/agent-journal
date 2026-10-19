@@ -2,26 +2,25 @@
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Notice from "../kit/Notice.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
-import {computed, onMounted, ref} from "vue";
-import {api} from "../api/client.js";
+import {onMounted, ref} from "vue";
 import {useScope} from "../composables/scope.js";
-import {isRef, peekRef, route} from "../route.js";
+import {isRef, peekRef} from "../route.js";
 import {startMigration} from "../composables/migration.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
 const emit = defineEmits(["closing"]);
+const MIGRATION = "migration";
 
 const scope = useScope();
 const working = ref(false);
 const failure = ref("");
 
-async function run(action) {
+async function bringAcross() {
     if (working.value) return;
     working.value = true;
     failure.value = "";
     try {
-        await action();
+        await startMigration();
     } catch (e) {
         failure.value = e.message;
     } finally {
@@ -29,60 +28,31 @@ async function run(action) {
     }
 }
 
-const force = () => run(() => api.forceAgent(props.notice.data.session));
-const permit = (allow) => run(() => api.permitAgent(props.notice.data.session, allow));
-const allowPasskey = () => run(() => api.allowPhonePasskey(props.notice.data.phone));
-const refusePasskey = () => run(() => api.refusePhonePasskey(props.notice.data.phone));
-const bringAcross = () => run(startMigration);
-const ANSWERS = new Set(["permission", "passkey"]);
-const controls = computed(() => props.notice.data.action || "none");
-const awaitsAnswer = computed(() => ANSWERS.has(controls.value));
-
 const ARMED_AFTER = 1500;
 const armed = ref(false);
 onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
 
 function close() {
     if (!armed.value) return;
-    const request = scope.api.closeNotice(props.notice.n);
+    const request = scope.api.act("notices", props.notice.id, "close");
     request.catch(() => {});
-    emit("closing", props.notice.n, request);
+    emit("closing", props.notice.id, request);
 }
 </script>
 
 <template>
-    <div :class="['chat-notice', `tone-${notice.data.tone || 'note'}`]" :data-awaits-answer="awaitsAnswer || undefined">
+    <div :class="['chat-notice', `tone-${notice.tone || 'note'}`]">
         <span class="chat-notice-dot" />
         <span class="chat-notice-text">{{ notice.title }}</span>
-        <template v-if="notice.data.link">
-            <template v-if="isRef(notice.data.link)">
-                <button type="button" class="chat-notice-go" @click="peekRef(notice.data.link)">{{ notice.data.label || "open" }}</button>
-            </template>
-            <template v-else>
-                <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
-            </template>
+        <template v-if="notice.link === MIGRATION">
+            <Btn small :busy="working" @click="bringAcross">Bring it across</Btn>
         </template>
-        <SwitchCase :value="controls">
-            <template #none />
-            <template #permission>
-                <template v-if="notice.data.session">
-                    <Btn small :disabled="working" @click="permit(true)">Allow</Btn>
-                    <Btn small :disabled="working" @click="permit(false)">Deny</Btn>
-                </template>
-            </template>
-            <template #migration>
-                <Btn small :busy="working" @click="bringAcross">Bring it across</Btn>
-            </template>
-            <template #passkey>
-                <Btn small :disabled="working" @click="allowPasskey">Allow</Btn>
-                <Btn small :disabled="working" @click="refusePasskey">Refuse</Btn>
-            </template>
-            <template #default>
-                <template v-if="notice.data.session">
-                    <Btn small :busy="working" @click="force">Send now</Btn>
-                </template>
-            </template>
-        </SwitchCase>
+        <template v-else-if="notice.link && isRef(notice.link)">
+            <button type="button" class="chat-notice-go" @click="peekRef(notice.link)">{{ notice.label || "open" }}</button>
+        </template>
+        <template v-else-if="notice.link">
+            <a class="chat-notice-go" :href="notice.link" target="_blank" rel="noopener">{{ notice.label || "open" }}</a>
+        </template>
         <template v-if="!fixed">
             <CloseButton :class="{unarmed: !armed}" title="Close this" @click="close" />
         </template>

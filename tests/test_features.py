@@ -39,6 +39,13 @@ MAIN = 1
 """The id of main, the environment a fresh journal makes at boot: what a test reads directly, it reads there."""
 
 
+def viewer(app, path: str, body: dict | None = None) -> dict:
+    """A POST to the journal's API as the viewer sends it, the user's."""
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/{path}", data=json.dumps(body or {}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+    with urlopen(request, timeout=10) as reply:
+        return json.loads(reply.read())
+
+
 @pytest.fixture
 def app(journal_root: Path, monkeypatch):
     """A fresh journal on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
@@ -638,13 +645,13 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app):
 
 def test_a_check_keeps_its_description_for_the_page(app):
     app.console().run(["check", "create", "Check for sins", "--command", "true", "--brief", "Judges the project; a failure lists the sins found"], USER)
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/check", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/checks", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         row = json.loads(reply.read())["rows"][0]
-    assert (row["title"], row["brief"], row["data"]["command"], row["data"]["last"]["at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", 0.0), "the description is the row's brief, and a check never run says so by its last run's time"
+    assert (row["title"], row["brief"], row["command"], row["last_ran_at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", None), "the description is the row's brief, and a check never run says so by its last run's time"
 
 
 def test_the_documents_page_lists_the_projects_documents_their_search_and_the_attached_files(app, tmp_path):
-    from journal.http.v3.attachments import Attachments
+    from journal.http.attachments.attachments import Attachments
     from journal.models.message import Message
     from journal.repositories.messages import Messages
     old = tmp_path / "doc"
@@ -659,15 +666,15 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
     port = app.server().port
     read = lambda path, env="main": json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}{path}", headers={"X-Journal-Env": env}), timeout=5))
     console.run(["environment", "create", "other"], USER)
-    assert [r["title"] for r in read("/api/doc", "other")["rows"]] == ["Audit of the package"], "a document is the project's, seen from every environment"
-    hits = read("/api/doc/locate?words=pluralises+noun")
-    assert hits and hits[0]["n"] == 1 and "pluralises the wrong noun" in hits[0]["text"], "a search finds the document holding every word, with the passage"
+    assert [r["title"] for r in read("/journal/docs", "other")["rows"]] == ["Audit of the package"], "a document is the project's, seen from every environment"
+    hits = read("/journal/docs/search?words=pluralises+noun")
+    assert hits and hits[0]["id"] == 1 and "pluralises the wrong noun" in hits[0]["text"], "a search finds the document holding every word, with the passage"
     message = app.container.get(Messages).save(Message(text="the screenshot of the bar"), Actor.user(1))
-    stored = app.container.get(Attachments).store("message", message.id, "bar.png", b"png")
+    stored = app.container.get(Attachments).store("messages", message.id, "bar.png", b"png")
     app.container.get(Messages).save(message.with_(files=(stored,)), Actor.user(1))
-    page = read("/api/files/page?kind=images")
+    page = read("/journal/attachments?kind=images")
     assert page["found"] == 1 and page["files"][0]["name"] == "bar.png" and page["files"][0]["image"] and page["counts"]["images"] == 1, "a file attached to a message is listed"
-    assert read("/api/files/page?kind=other")["found"] == 0 and read("/api/files/page?search=screenshot")["found"] == 1
+    assert read("/journal/attachments?kind=other")["found"] == 0 and read("/journal/attachments?search=screenshot")["found"] == 1
 
 
 def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
@@ -698,9 +705,9 @@ def test_a_check_run_reaches_the_page_though_a_check_is_the_projects(app):
     console.run(["check", "create", "Fails", "--command", "false"], USER)
     before = app.container.get(Entries).last_id()
     console.run(["check", "run", "1"], USER)
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/events?since={before}", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
-        events = json.loads(reply.read())
-    assert ("check", 1) in [(e["type"], e["n"]) for e in events], "the run's change is told to the page, so it shows the check failed"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/entries?since={before}", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        entries = json.loads(reply.read())
+    assert ("checks", 1) in [(e["data"].get("table"), e["data"].get("id")) for e in entries], "the run's change is told to the page, so it shows the check failed"
 
 
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
@@ -797,16 +804,16 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
     slow = app.container.get(SlowRequests)
     monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
     with app.container.get(Scope).of(MAIN):
-        slow.measured("GET", "/api/plan", 80)
+        slow.measured("GET", "/journal/plans", 80)
         assert [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")] == [], "nothing is judged in the first minute after a start"
         slow.started -= 120
-        slow.measured("GET", "/api/plan", 30)
-        slow.measured("GET", "/api/plan", 80)
-        slow.measured("GET", "/api/plan", 95)
-        slow.measured("GET", "/api/message/12/read", 70)
+        slow.measured("GET", "/journal/plans", 30)
+        slow.measured("GET", "/journal/plans", 80)
+        slow.measured("GET", "/journal/plans", 95)
+        slow.measured("GET", "/journal/messages/12/read", 70)
         app.runtime().deferred.drain()
         marks = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
-    assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /api/plan", 2, 95), ("Slow request: GET /api/message/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
+    assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
     assert sum("over its budget of 50 ms" in t for t in typed) == 2, "the agent is told the first time of each"
     runtime = app.config.home / "runtime"
     runtime.mkdir(parents=True, exist_ok=True)
@@ -1505,8 +1512,8 @@ def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
     app.console().run(["task", "create", "Fix the footer"], AGENT)
     hook(app, "MessageDisplay", message="[!reply:1]\nFiled task 1 for it.")
     app.runtime().deferred.drain()
-    rows = app.container.get(__import__("journal.http.v3.shapers.messages_shaper", fromlist=["MessagesShaper"]).MessagesShaper).rows()
-    assert "todo:1" in rows[0].refs
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/messages/1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        assert json.loads(reply.read())["filed"] == [1]
 
 
 def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_reminds(app, monkeypatch):
@@ -1558,8 +1565,8 @@ def test_reading_a_message_names_its_files_links_and_captions(app):
     console.run(["message", "send", "see the picture"], USER)
     boundary = "b1"
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"shot one.png\"\r\nContent-Type: image/png\r\n\r\nPNG\r\n--{boundary}--\r\n").encode()
-    u(R(f"http://127.0.0.1:{app.server().port}/api/message/1/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"}), timeout=5).read()
-    with u(f"http://127.0.0.1:{app.server().port}/api/message/1/files/shot%20one.png?env=main", timeout=5) as reply:
+    u(R(f"http://127.0.0.1:{app.server().port}/journal/messages/1/files", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"}), timeout=5).read()
+    with u(f"http://127.0.0.1:{app.server().port}/journal/messages/1/files/shot%20one.png?env=main", timeout=5) as reply:
         assert reply.read() == b"PNG", "a file name with a space is found"
     shown = console.run(["message", "read", "1"], AGENT).out
     assert "file " in shown and "shot one.png" in shown and "`journal message tag 1 \"shot one.png\"" in shown
@@ -1637,11 +1644,11 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
-    bar = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/bar?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["queue"]
+    bar = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
     console.run(["shell", "ran", "git commit -m done", "--chain", "c1", "--status", "0", "--seconds", "2", "--output", "[main 1a2b3c4] done"], AGENT)
-    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/bar?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["queue"][-1]["done"] is True
-    line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/agent/1/terminal?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["lines"][-1]
+    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))[-1]["done"] is True
+    line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/agents/1/terminal?env=main"), timeout=5))[-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
     moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
     assert "moved to the background as output 1" in moved and "pytest" not in moved, "a background command is named by its number"
@@ -1675,7 +1682,7 @@ def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a
     console.run(["message", "read", "1"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.runtime().deferred.drain()
-    agent = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]
+    agent = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents?env=main"), timeout=5))["rows"][-1]
     assert agent["thinking"] == "Now the next step."
     reply = app.container.get(Messages).all()[-1]
     assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered() == []
@@ -1686,7 +1693,7 @@ def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a
     assert all(m.created_by.id == "s1" for m in thoughts)
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
-    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]["thinking"] == ""
+    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents?env=main"), timeout=5))["rows"][-1]["thinking"] == ""
     assert "no journal is running" in console.run(["setup", "restart"], USER).out
 
 
@@ -1724,7 +1731,7 @@ def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
     from urllib.request import urlopen
     hook(app, "SessionStart")
     app.console().run(["shell", "ran", "sed -i '' s/a/b/ notes.md", "--chain", "c2", "--status", "0", "--changed", "3\t1\tnotes.md\n0\t0\tsame.md"], AGENT)
-    edits = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent/1/edits?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["edits"]
+    edits = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents/1/edits?env=main"), timeout=5))["edits"]
     assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 1), ("same.md", 0, 0)] and edits[0]["command"].startswith("sed")
 
 
@@ -1903,30 +1910,30 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app):
     port = app.server().port
 
     def api(method, path, body=None):
-        request = HttpRequest(f"http://127.0.0.1:{port}/api/{path}", data=json.dumps(body).encode() if body is not None else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        request = HttpRequest(f"http://127.0.0.1:{port}/journal/{path}", data=json.dumps(body).encode() if body is not None else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
         try:
             with urlopen(request, timeout=5) as reply:
                 return reply.status, json.loads(reply.read())
         except HTTPError as error:
             return error.code, json.loads(error.read())
     building = next(s for s in app.container.get(Sequences).all() if s.title == "Building a plan")
-    shown = next(r for r in api("GET", "sequence")[1]["rows"] if r["n"] == building.id)
-    assert shown["data"]["starts_on"] == "plan.created", "the page is told a new plan starts it, as the engine does"
-    assert api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": ""})[0] == 200 and app.container.get(Sequences).find(building.id).starts_on == ""
-    status, refused = api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": "plan.approved"})
+    shown = next(r for r in api("GET", "sequences")[1]["rows"] if r["id"] == building.id)
+    assert shown["starts_on"] == "plan.created", "the page is told a new plan starts it, as the engine does"
+    assert api("POST", f"sequences/{building.id}/starts", {"starts_on": ""})[0] == 200 and app.container.get(Sequences).find(building.id).starts_on == ""
+    status, refused = api("POST", f"sequences/{building.id}/starts", {"starts_on": "plan.approved"})
     assert status != 200 and "none of them" in json.dumps(refused), "only a created row or a trigger starts a sequence"
     from journal.repositories.triggers import Triggers
     triggers = app.container.get(Triggers)
     update = next(s for s in app.container.get(Sequences).all() if s.title == "Writing an update")
     started_by = triggers.starting("Writing an update")[0]
-    assert next(r for r in api("GET", "sequence")[1]["rows"] if r["n"] == update.id)["data"]["starts_on"] == f"trigger:{started_by.id}", "the page is told the update starts on its words"
+    assert next(r for r in api("GET", "sequences")[1]["rows"] if r["id"] == update.id)["trigger_ids"] == [started_by.id], "the page is told the update starts on its words"
     assert "tldr" in started_by.words and "check agents.md" in triggers.starting("Checking the instruction files")[0].words, "version 3's worded sequences start on their words"
-    api("POST", f"sequence/{update.id}/set", {"key": "starts_on", "value": ""})
+    api("POST", f"sequences/{update.id}/starts", {"starts_on": ""})
     assert triggers.starting("Writing an update") == [], "by hand, the trigger no longer starts it"
     from journal.models.trigger import Trigger
     from journal.models.trigger_action import TriggerAction
     plan_words = triggers.save(Trigger(words=("plan it",), action=TriggerAction.NUDGE, text="say something"), Actor.user(1))
-    api("POST", f"sequence/{building.id}/set", {"key": "starts_on", "value": f"trigger:{plan_words.id}"})
+    api("POST", f"sequences/{building.id}/starts", {"starts_on": f"trigger:{plan_words.id}"})
     assert [t.id for t in triggers.starting("Building a plan")] == [plan_words.id] and app.container.get(Sequences).find(building.id).starts_on == "", "a trigger picked on the page starts the sequence"
 
 
@@ -2049,18 +2056,17 @@ def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app):
 
 
 def test_the_shipped_templates_are_seeded_and_the_critique_ones_are_offered_to_the_viewer(app):
-    from journal.http.v3.shapers.shapers import Shapers
     hook(app, "SessionStart")
     listed = app.console().run(["template", "list"], AGENT).out
     assert "Find what is missing (for plan, critique)" in listed and "Functional design (for doc)" in listed
     shown = app.console().run(["template", "show", "3"], AGENT).out
     assert shown.startswith("template 3: Find what is missing") and "the step nobody wrote down" in shown
-    rows = app.container.get(Shapers).named("template").rows()
-    assert [r.data["purpose"] for r in rows].count("critique") == 3 and rows[0].sections[0]["title"] == "What it is for"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/templates", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        rows = json.loads(reply.read())["rows"]
+    assert [r["purpose"] for r in rows].count("critique") == 3 and rows[0]["parts"][0].startswith("What it is for")
 
 
 def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp_path):
-    from journal.http.v3.shapers.shapers import Shapers
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["plan", "create", "p", "--brief", "g"], USER)
@@ -2068,8 +2074,9 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app, tmp
     body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
     out = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).out
     assert out.startswith("report 1: Critique of plan 1, about plans:1")
-    rows = app.container.get(Shapers).named("report").rows()
-    assert [s["title"] for s in rows[0].sections] == ["Phase 1", "Phase 2"] and rows[0].refs == ["plan:1"], "the viewer names a plan plan:1"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/reports/1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        report = json.loads(reply.read())
+    assert "## Phase 1" in report["body"] and "## Phase 2" in report["body"] and report["links"] == ["plans:1"], "a report names the rows it is about as the journal does"
 
 
 def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(app):
@@ -2408,16 +2415,16 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
 
 def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():
     from journal.features.messages.mentions import Mentions
-    assert Mentions.in_("Please have 2 agents give plan 1 a normal read, following template 3 (Find what is missing), then task 12 and Task 12 again, doc #4") == ["plan:1", "template:3", "todo:12", "doc:4"]
+    assert [str(r) for r in Mentions.in_("Please have 2 agents give plan 1 a normal read, following template 3 (Find what is missing), then task 12 and Task 12 again, doc #4")] == ["plans:1", "templates:3", "tasks:12", "docs:4"]
     assert Mentions.in_("the plan is ready; 3 agents; version 4") == []
 
 
 def test_a_messages_mentions_reach_the_viewer_as_refs(app):
-    from journal.http.v3.shapers.shapers import Shapers
     hook(app, "SessionStart")
     app.console().run(["message", "send", "look at plan 1 and task 2"], USER)
-    rows = app.container.get(Shapers).named("message").rows()
-    assert rows[-1].refs == ["plan:1", "todo:2"]
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/messages", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        rows = json.loads(reply.read())["rows"]
+    assert rows[-1]["mentions"] == ["plans:1", "tasks:2"]
 
 
 def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claudes_own_command(app, monkeypatch):
@@ -2523,7 +2530,6 @@ def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app
 
 
 def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, monkeypatch):
-    from journal.http.v3.shapers.shapers import Shapers
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -2539,10 +2545,10 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     assert len([line for line in sent if "is not pinned" in line]) == 1, "told once"
     out = console.run(["notice", "create", "The Workflows design", "--link", "https://design.example/p/1", "--label", "Open the design"], AGENT).out
     assert out.startswith("notice 1 pinned")
-    rows = app.container.get(Shapers).named("notice").rows()
-    assert rows[0].title == "The Workflows design" and rows[0].data["link"] == "https://design.example/p/1" and rows[0].data["label"] == "Open the design" and not rows[0].completed
+    notice = lambda: json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/notices/1", headers={"X-Journal-Env": "main"}), timeout=5))
+    assert (notice()["title"], notice()["link"], notice()["label"], notice()["closed_at"]) == ("The Workflows design", "https://design.example/p/1", "Open the design", None)
     console.run(["notice", "close", "1"], AGENT)
-    assert app.container.get(Shapers).named("notice").rows()[0].completed, "closed, it leaves the strip"
+    assert notice()["closed_at"], "closed, it leaves the strip"
 
 
 def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read_is_never_piped(app, monkeypatch):
@@ -2566,10 +2572,10 @@ def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     hook(app, "Stop")
-    data = json.dumps({"brief": "are you there?", "idempotency": "v1"}).encode()
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/message", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+    data = json.dumps({"text": "are you there?", "idempotency": "v1"}).encode()
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/messages", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
-        n = json.loads(reply.read())["n"]
+        n = json.loads(reply.read())["id"]
     assert any(line == f"[journal] new message {n}" for line in typed), "named by number the moment it arrives, so it is not left for the next hook"
 
 
@@ -2910,12 +2916,11 @@ def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     console.run(["plan", "create", "old", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "its own"], USER)
     console.run(["plan", "cancel", "1"], USER)
-    for kind in ("plan", "todo"):
-        with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{kind}?last=50&env=main&completed=1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
-            assert reply.status == 200, f"a cancelled {kind} is shaped for the page"
-            shaped = j.loads(reply.read())
-            assert "abandoned" in j.dumps(shaped)
-            assert kind != "plan" or all(row["completed"] > 0 for row in shaped["rows"]), "an abandoned plan is closed, shown with the closed ones"
+    for table in ("plans", "tasks"):
+        with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/{table}?closed=1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+            assert reply.status == 200, f"cancelled {table} are read by the page"
+            rows = j.loads(reply.read())["rows"]
+            assert rows and all(row["state"] == "cancelled" for row in rows), "a cancelled plan and its task are closed, shown with the closed ones"
 
 
 def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
@@ -3788,7 +3793,7 @@ def test_a_list_counts_a_type_in_sql_past_the_page(app):
     tasks = app.container.get(Tasks)
     for n in range(520):
         tasks.save(Task(environment_id=1, title=f"t{n}", state=TaskState.DONE if n < 400 else TaskState.OPEN), Actor.user(1) if n % 2 else Actor.agent("s1"))
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=10&env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/tasks?limit=10&env=main"), timeout=5) as reply:
         counts = j.loads(reply.read())["counts"]
     assert counts == {"all": 520, "open": 120, "unread": 60}, "a count is of every row, not of the newest page"
 
@@ -3856,7 +3861,7 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     catch_typed(app, monkeypatch, sent)
 
     def api(method: str, path: str):
-        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{path}", data=b"{}" if method == "POST" else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/{path}", data=b"{}" if method == "POST" else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
         try:
             with urlopen(request, timeout=5) as reply:
                 return reply.status, json.loads(reply.read())
@@ -3868,17 +3873,17 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     made = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
     app.runtime().deferred.drain()
-    shown = json.dumps(api("GET", "agent/1")[1])
+    shown = json.dumps(api("GET", "agents/1")[1])
     assert '"title": "release"' in shown and '"step": 1' in shown and "Not taken up yet" in shown, "the panel shows the run, its step and why it holds"
-    assert api("POST", "agent/1/skip_step")[0] == 200 and any("the user skipped step 1" in line and "step 2: tag" in line for line in sent), "Skip step moves the run on and tells the agent"
-    assert api("POST", "agent/1/end_sequence")[0] == 200 and any(f"the user ended sequence {made}" in line for line in sent) and app.container.get(Running).in_hand("s1", 1) is None, "End ends the run"
+    assert api("POST", "agents/1/skip-step")[0] == 200 and any("the user skipped step 1" in line and "step 2: tag" in line for line in sent), "Skip step moves the run on and tells the agent"
+    assert api("POST", "agents/1/end-sequence")[0] == 200 and any(f"the user ended sequence {made}" in line for line in sent) and app.container.get(Running).in_hand("s1", 1) is None, "End ends the run"
     app.runtime().deferred.drain()
-    history = json.dumps(api("GET", "agent/1")[1])
+    history = json.dumps(api("GET", "agents/1")[1])
     assert "release: started" in history and "release: moved on to step 2" in history and "release: ended at step 2" in history, "the panel lists what the run did"
     from journal.repositories.messages import Messages
     cards = [m.text for m in app.container.get(Messages).in_() if m.author == "system"]
     assert f"Sequence {made}, release: started" in cards and f"Sequence {made}, release: moved on to step 2" in cards and f"Sequence {made}, release: ended at step 2" in cards, "each change is a card in the chat"
-    assert api("POST", "agent/1/end_sequence")[0] != 200, "with no run there is nothing to end"
+    assert api("POST", "agents/1/end-sequence")[0] != 200, "with no run there is nothing to end"
 
 def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
     from journal.models.author import Author
@@ -3892,10 +3897,10 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
     messages = app.container.get(Messages)
     for i in range(250):
         messages.save(Message(author=Author.USER, text=f"word {i}"), USER.actor)
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/helper", method="GET", headers={"X-Journal-Env": "main"})
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/workers", method="GET", headers={"X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
-        helper = json.loads(reply.read())["rows"][0]
-    assert helper["data"]["report"] == "the parser is written", "the report is linked from the worker, not found among the recent messages"
+        worker = json.loads(reply.read())["rows"][0]
+    assert worker["report"] == "the parser is written", "the report is linked from the worker, not found among the recent messages"
 
 def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     import contextvars
@@ -4660,7 +4665,7 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
     port = app.server().port
 
     def api(method, path, body=None):
-        request = HttpRequest(f"http://127.0.0.1:{port}/api/{path}", data=json.dumps(body).encode() if body is not None else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        request = HttpRequest(f"http://127.0.0.1:{port}/journal/{path}", data=json.dumps(body).encode() if body is not None else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
         try:
             with urlopen(request, timeout=10) as reply:
                 return reply.status, json.loads(reply.read())
@@ -4669,13 +4674,14 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
     folder = str(Path(__file__).parent / "plugins" / "echo")
     status, preview = api("POST", "plugins/preview", {"source": folder})
     assert status == 200 and preview["name"] == "echo" and {"kind": "holds", "label": "before the agent continues", "command": "tool_starting, prompt_submitted"} in preview["rows"]
-    status, made = api("POST", "plugin/install", {"source": folder, "yes": True})
-    assert status == 200 and made["name"] == "echo"
-    row = api("GET", "plugin")[1]["rows"][0]
-    assert (row["title"], row["state"], row["data"]["holds"], row["data"]["manifest"]["settings"]["mode"]["type"], row["data"]["settings"]["chosen"]["token"].startswith("secret ")) == ("echo", "on", ["tool_starting", "prompt_submitted"], "options", True)
-    assert api("POST", f"plugin/{made['n']}/configure", {"key": "repeat", "value": "4"})[0] == 200 and app.container.get(Plugins).named("echo").settings["repeat"] == 4
-    assert api("POST", f"plugin/{made['n']}/disable", {})[0] == 200 and api("GET", "plugin")[1]["rows"][0]["state"] == "off"
-    assert api("POST", f"plugin/{made['n']}/remove", {})[0] == 200 and app.container.get(Plugins).all() == []
+    status, made = api("POST", "plugins", {"source": folder})
+    assert status == 201 and made["name"] == "echo"
+    row = api("GET", "plugins")[1]["rows"][0]
+    mode = next(s for s in row["schema"] if s["key"] == "mode")
+    assert (row["name"], row["status"], row["manifest"]["holds"], mode["kind"], "secret" in row["settings"]["token"]) == ("echo", "on", ["tool_starting", "prompt_submitted"], "choice", True)
+    assert api("POST", f"plugins/{made['id']}/configure", {"key": "repeat", "value": "4"})[0] == 200 and app.container.get(Plugins).named("echo").settings["repeat"] == 4
+    assert api("POST", f"plugins/{made['id']}/disable", {})[0] == 200 and api("GET", "plugins")[1]["rows"][0]["status"] == "off"
+    assert api("POST", f"plugins/{made['id']}/remove", {})[0] == 200 and app.container.get(Plugins).all() == []
 
 
 def test_a_plugins_record_lists_what_it_did(app):
@@ -4688,14 +4694,16 @@ def test_a_plugins_record_lists_what_it_did(app):
     task = app.container.get(Tasks).save(Task(environment_id=1, title="echo me"), Actor.user(1))
     app.container.get(Deferred).drain()
     app.container.get(Deferred).drain()
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/plugins/echo/record", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
-        record = json.loads(reply.read())["record"]
+    from journal.repositories.plugins import Plugins
+    plugin = app.container.get(Plugins).named("echo")
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/plugins/{plugin.id}/record", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        record = json.loads(reply.read())
     texts = [line["text"] for line in record]
     assert "held at tool_starting: echo refuses a forbidden tool" in texts, "a hold is in its record"
     assert f'ran journal task log {task.id} "echoed"' in texts, "a command it ran"
     logged = [line for line in record if line["kind"] == "row" and line["text"].startswith("made task log")]
-    assert logged and logged[0]["ref"].startswith("todo:"), "a row it wrote, opening"
-    assert record == sorted(record, key=lambda line: -line["at"]), "newest first"
+    assert logged and logged[0]["ref"] == "", "a row it wrote; a task log opens nothing of its own"
+    assert record == sorted(record, key=lambda line: line["at"], reverse=True), "newest first"
 
 
 def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
@@ -4708,14 +4716,14 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
     console.run(["dashboard", "set", "a.py", "a.py", "--badge", "2 sins", "--tone", "warn", "--heading", "Files"], as_echo)
     console.run(["dashboard", "set", "b.py", "b.py", "--badge", "clean", "--tone", "good", "--heading", "Files"], as_echo)
     console.run(["dashboard", "set", "a.py", "a.py", "--badge", "1 sin", "--tone", "warn", "--heading", "Files"], as_echo)
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/plugin/{plugin.id}/dashboard/echoes", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/plugins/{plugin.id}/dashboard", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         document = json.loads(reply.read())
     view = document["pages"]["start"]
     assert view["title"] == "Echoes" and view["view"]["children"] == [{"type": "heading", "text": "Files", "level": 3}, {"type": "list", "items": [{"label": "a.py", "badge": "1 sin", "tone": "warn", "note": ""}, {"label": "b.py", "badge": "clean", "tone": "good", "note": ""}]}], "one line per key, rewritten in place"
     written = app.config.home / "plugin-data" / "echo" / "dashboards" / "echoes.json"
     written.parent.mkdir(parents=True, exist_ok=True)
     written.write_text(json.dumps({"title": "Echoes", "start": "overview", "pages": {"overview": {"title": "Echoes", "view": {"type": "text", "body": "written by echo"}}}}))
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/plugin/{plugin.id}/dashboard/echoes", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/plugins/{plugin.id}/dashboard", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         assert json.loads(reply.read())["start"] == "overview", "a document the plugin wrote in its data folder is its dashboard"
     console.run(["plugin", "remove", "echo", "--purge"], USER)
     from journal.repositories.dashboard_rows import DashboardRows
@@ -5224,8 +5232,6 @@ def test_secrets_kept_as_files_in_the_project_folder_become_rows_once(app):
 
 
 def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
-    from journal.http.v3.action_body import ActionBody
-    from journal.http.v3.secret_actions import SecretActions
     from journal.models.secret import Secret
     from journal.repositories.secrets import Secrets
     from journal.supervisor_link import SupervisorLink
@@ -5233,7 +5239,7 @@ def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     secret = app.container.get(Secrets).save(Secret(title="Github", proposed=("gh",)), Actor.agent("s1"))
-    app.container.get(SecretActions).update(secret.id, ActionBody(programs=("gh",), sent=frozenset({"programs", "proposed"})), Actor.user("u"))
+    viewer(app, f"secrets/{secret.id}", {"programs": ["gh"], "proposed": []})
     app.runtime().deferred.drain()
     assert any("the user let secret 1, Github, go to gh" in r.get("line", "") for r in sent)
 
@@ -5243,8 +5249,6 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     import time
     from journal.features.mcp.installing import Installing
     from journal.features.secrets.browser_logins import BrowserLogins
-    from journal.http.v3.action_body import ActionBody
-    from journal.http.v3.secret_actions import SecretActions
     from journal.models.mcp_server import McpServer
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
@@ -5265,7 +5269,7 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     servers.save(McpServer(name="playwright", title="Playwright", command="npx", args=("-y", "@playwright/mcp@latest", "--headless")), Actor.system())
     secret = secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://app.example.com/login"), Actor.user("u"))
     assert "the user logs in to Example with the Log in button" in app.console().run(["secret", "login", str(secret.id)], AGENT).err, "the agent logs in on its own only where the user allows it"
-    app.container.get(SecretActions).allow_login(secret.id, ActionBody(), Actor.user("u"))
+    viewer(app, f"secrets/{secret.id}/allow-login")
     began = time.time()
     while secrets.find(secret.id).logging_in_at and time.time() - began < 5:
         time.sleep(0.05)
@@ -5275,9 +5279,9 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     args = servers.named("playwright").args
     assert args[-3:] == ("--storage-state", str(merged), "--isolated") and merged.is_file() and applied, "the agent's browser starts with the login, and the agents restart to use it"
     assert "logged in to Example" in app.console().run(["secret", "login", str(secret.id), "--wait"], AGENT).out
-    app.container.get(SecretActions).revoke_login(secret.id, ActionBody(), Actor.user("u"))
+    viewer(app, f"secrets/{secret.id}/revoke-login")
     assert not secrets.find(secret.id).auto_login and merged.exists(), "asking each time keeps the saved login"
-    app.container.get(SecretActions).forget_login(secret.id, ActionBody(), Actor.user("u"))
+    viewer(app, f"secrets/{secret.id}/forget-login")
     assert "--storage-state" not in servers.named("playwright").args and not merged.exists() and secrets.find(secret.id).session_at is None
 
 
@@ -5330,13 +5334,12 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp
 
 
 def test_an_agents_wait_is_on_its_own_row_with_or_without_a_task(app):
-    from journal.http.v3.shapers.agents_shaper import AgentsShaper
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["await", "the suite"], AGENT)
-    with app.container.get(Scope).of(MAIN):
-        row = app.container.get(AgentsShaper).rows()[0]
-    assert row.data["awaiting"] == "the suite" and row.data["awaiting_since"], "the bar reads a wait from the agent's row, which changes when its state does"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        row = json.loads(reply.read())["rows"][0]
+    assert row["awaiting"] == "the suite" and row["awaiting_since"], "the bar reads a wait from the agent's row, which changes when its state does"
 
 
 def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app):
@@ -5999,9 +6002,9 @@ def test_the_tasks_list_and_its_open_count_leave_out_a_plans_tasks(app):
     console.run(["plan", "create", "p", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "planned"], USER)
     assert app.container.get(Tasks).unfinished_count() == 1, "the plan's task is counted on its plan"
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=50", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
-        rows = {row["title"]: row["data"]["hidden"] for row in json.loads(reply.read())["rows"]}
-    assert rows == {"loose": False, "planned": True}, "hidden from the Tasks list, still there for its plan"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/tasks", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        rows = {row["title"]: row["plan_id"] for row in json.loads(reply.read())["rows"]}
+    assert rows == {"loose": None, "planned": 1}, "each task names the plan it is in, so the Tasks list leaves it to its plan"
 
 
 def test_an_update_never_overwrites_a_setting_the_user_set(app):
@@ -6139,9 +6142,9 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app):
     console.run(["worker", "dispatch", "Lady Lovelace", "do the delegated one", "--model", "sonnet", "--task", "1"], AGENT)
     plans = app.container.get(Plans)
     assert plans.next_task(plans.find(1)).title == "mine", "the plan leaves a task a worker is out on to it"
-    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=50", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
-        assigned = {row["title"]: row["data"]["assigned"] for row in json.loads(reply.read())["rows"]}
-    assert assigned == {"delegated": "helper:1", "mine": ""}, "the viewer sees which worker holds which task"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/tasks", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        assigned = {row["title"]: row["worker_id"] for row in json.loads(reply.read())["rows"]}
+    assert assigned == {"delegated": 1, "mine": None}, "the viewer sees which worker holds which task"
 
 
 def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, tmp_path, monkeypatch):

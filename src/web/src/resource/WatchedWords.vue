@@ -9,7 +9,7 @@ import {matching} from "../domain/words.js";
 const props = defineProps({
     words: {type: Array, default: () => []},
     wordsIn: {type: String, default: "both"},
-    scopes: {type: Array, required: true},
+    scopes: {type: Array, default: () => []},
     unavailable: {type: Object, default: () => ({})},
     readonly: Boolean,
     label: {type: String, default: "Words"},
@@ -41,10 +41,12 @@ const choices = computed(() =>
             />
         </FormField>
         <WordTest :words="words" :yes="yes" :no="no" @text="tried = $event" />
-        <FormField :label="scopeLabel">
-            <ChoiceList stacked :choices="choices" :disabled="readonly" @pick="emit('where', $event)" />
-            <slot />
-        </FormField>
+        <template v-if="scopes.length">
+            <FormField :label="scopeLabel">
+                <ChoiceList stacked :choices="choices" :disabled="readonly" @pick="emit('where', $event)" />
+                <slot />
+            </FormField>
+        </template>
     </div>
 </template>
 

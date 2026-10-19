@@ -4,60 +4,36 @@ import {computed} from "vue";
 import PageThumb from "../kit/PageThumb.vue";
 import {age} from "../format/time.js";
 import MarkedText from "../kit/MarkedText.vue";
-import {standing} from "../domain/documents.js";
 import {linkedTo} from "../domain/records.js";
+import {refOf, sectionsOf, titleOf, updatedAt} from "../domain/row.js";
 
 const props = defineProps({
     doc: Object,
     hit: {type: Object, default: null},
     words: {type: Array, default: () => []},
-    shelf: {type: String, default: ""},
     selected: Boolean,
 });
 const emit = defineEmits(["open"]);
 const DAY = 86400;
-const state = computed(() => standing(props.doc));
-const files = computed(() => Object.keys(props.doc.data.files || {}).length);
-const links = computed(() => new Set([...props.doc.refs, ...linkedTo(props.doc.ref).map((r) => r.ref)]).size);
-const changed = computed(() => props.doc.updated || props.doc.created);
+const sections = computed(() => sectionsOf(props.doc.body).length);
+const links = computed(() => new Set([...(props.doc.links || []), ...linkedTo(refOf(props.doc)).map(refOf)]).size);
+const changed = computed(() => updatedAt(props.doc));
 const fresh = computed(() => Date.now() / 1000 - changed.value < DAY);
 const facts = computed(() =>
-    [
-        `Document ${props.doc.n}`,
-        props.doc.sections.length ? counted(props.doc.sections.length, "section") : "",
-        files.value ? counted(files.value, "file") : "",
-        links.value ? counted(links.value, "link") : "",
-        props.shelf ? `in ${props.shelf}` : "",
-    ].filter(Boolean)
+    [`Document ${props.doc.id}`, sections.value ? counted(sections.value, "section") : "", links.value ? counted(links.value, "link") : ""].filter(Boolean)
 );
-const summary = computed(
-    () => props.hit?.text || props.doc.abstract || props.doc.brief || (props.doc.sections.length ? "" : "No text yet")
-);
+const summary = computed(() => props.hit?.text || props.doc.abstract || "");
 </script>
 
 <template>
-    <button
-        type="button"
-        :data-doc="doc.n"
-        :aria-current="selected ? 'true' : undefined"
-        :class="['doc-row', state.key, {selected}]"
-        @click="emit('open', doc)"
-    >
-        <PageThumb
-            :lines="doc.sections.length"
-            :draft="['answer', 'approve', 'writing'].includes(state.key)"
-            :clipped="files > 0"
-            :fresh="fresh"
-        />
+    <button type="button" :data-doc="doc.id" :aria-current="selected ? 'true' : undefined" :class="['doc-row', {selected}]" @click="emit('open', doc)">
+        <PageThumb :lines="sections" :draft="false" :clipped="false" :fresh="fresh" />
         <span class="doc-row-main">
             <span class="doc-row-title">
-                <MarkedText :text="doc.title" :words="words" />
-                <template v-if="state.key !== 'final'">
-                    <span class="doc-row-state" :title="state.hint">{{ state.label }}</span>
-                </template>
+                <MarkedText :text="titleOf(doc)" :words="words" />
             </span>
             <template v-if="summary">
-                <span :class="['doc-row-summary', {nothing: summary === 'No text yet'}]">
+                <span class="doc-row-summary">
                     <template v-if="hit?.where">
                         <span class="doc-row-where">In “{{ hit.where }}”</span>
                     </template>

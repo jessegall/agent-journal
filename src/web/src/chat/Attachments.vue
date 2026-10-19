@@ -6,17 +6,16 @@ import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {openPictures} from "../platform/view.js";
 
-const props = defineProps({resource: Object});
+const props = defineProps({message: Object});
 const emit = defineEmits(["grew"]);
 const video = (name) => /\.(mp4|m4v|mov|webm|ogv)$/i.test(name);
-const url = (name) => (props.resource.data.previews || {})[name] || api.fileUrl(props.resource.type, props.resource.n, name);
-const files = computed(() => props.resource.data.files || {});
+const url = (name) => (props.message.previews || {})[name] || api.fileUrl("messages", props.message.id, name);
 const sized = (name) => {
-    const [w, h] = (props.resource.data.pictures || {})[name] || [];
+    const [w, h] = (props.message.pictures || {})[name] || [];
     return w && h ? {width: w, height: h, style: {aspectRatio: `${w} / ${h}`, width: `${Math.min(w, Math.round((320 * w) / h))}px`}} : {};
 };
-const names = computed(() => Object.keys(files.value));
-const derived = (name) => String(files.value[name] || "").startsWith("video frame from ");
+const names = computed(() => props.message.files || []);
+const derived = (name) => String((props.message.captions || {})[name] || "").startsWith("video frame from ");
 const pictures = computed(() => names.value.filter((name) => isPicture(name) && !derived(name)).map((name) => ({name, url: url(name)})));
 const videos = computed(() => names.value.filter(video));
 const others = computed(() => names.value.filter((name) => !isPicture(name) && !video(name)));
@@ -24,7 +23,7 @@ const grid = computed(() => pictures.value.length > 1);
 </script>
 
 <template>
-    <div :class="['thread-files', {alone: !resource.brief}]">
+    <div :class="['thread-files', {alone: !message.text}]">
         <template v-if="grid">
             <div :class="['thread-grid', {pair: pictures.length === 2, three: pictures.length === 3}]">
                 <template v-for="(p, i) in pictures.slice(0, 4)" :key="p.name">

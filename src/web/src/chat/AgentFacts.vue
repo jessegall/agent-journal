@@ -2,10 +2,9 @@
 import {subagentsOf} from "../domain/subagents.js";
 import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
-import {demo, unlessDemo} from "../platform/demo.js";
-import Spinner from "../kit/Spinner.vue";
 import AgentFact from "./AgentFact.vue";
-import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../domain/agents.js";
+import {loadedSkills, modelFamily, providerName, usageWindows} from "../domain/agents.js";
+import {createdAt} from "../domain/row.js";
 import {span} from "../format/time.js";
 
 const props = defineProps({data: {type: Object, default: null}, open: {type: String, default: ""}});
@@ -26,48 +25,22 @@ const skillCount = computed(() => ({
 }));
 const activityCounts = computed(() => [
     {
-        key: "shells",
-        icon: "play",
-        n: live(props.data && props.data.shell_rows),
-        title: "Background commands the agent left running",
-    },
-    {
         key: "subagents",
         icon: "agents",
-        n: live(agent.value ? subagentsOf(agent.value.n) : []),
+        n: live(agent.value ? subagentsOf(agent.value.id) : []),
         title: "Subagents: helpers the agent started",
     },
-    {
-        key: "monitors",
-        icon: "crosshair",
-        n: live(props.data && props.data.monitor_rows),
-        title: "Watchers the agent started in the background",
-    },
 ]);
-const loops = computed(() => Object.keys((props.data && props.data.loops) || {}).length);
-const pending = (key) => pendingChoice(props.data, key);
 const toggle = (key, e) => emit("toggle", key, e);
 </script>
 
 <template>
     <div class="agent-facts">
-        <template v-if="!data">
+        <template v-if="data">
             <AgentFact
                 class="agent-fact-lead"
                 icon="agents"
-                :disabled="demo"
-                :title="unlessDemo('')"
-                :aria-expanded="open === 'appoint'"
-                @click="toggle('appoint', $event)"
-            >
-                Assign agent
-            </AgentFact>
-        </template>
-        <template v-else>
-            <AgentFact
-                class="agent-fact-lead"
-                icon="agents"
-                :title="`Session ${agent.title}: open its page or stop it`"
+                :title="`Session ${data.session}: open its page or stop it`"
                 :aria-expanded="open === 'agent'"
                 @click="toggle('agent', $event)"
             >
@@ -88,48 +61,33 @@ const toggle = (key, e) => emit("toggle", key, e);
                 </AgentFact>
             </template>
             <AgentFact
-                :class="['agent-fact', 'agent-count', 'agent-context', {open: open === 'context', waiting: pending('context')}]"
+                :class="['agent-fact', 'agent-count', 'agent-context', {open: open === 'context'}]"
                 icon="gauge"
-                :title="
-                    pending('context') ? `${pending('context')} — waiting for the agent` : `context ${filled}% full — clear or compact it`
-                "
+                :title="`context ${filled}% full — clear or compact it`"
                 :aria-expanded="open === 'context'"
                 @click="toggle('context', $event)"
             >
                 <span class="agent-context-bar"><span :style="{width: `${filled}%`}" /></span>
                 {{ filled }}%
-                <template v-if="pending('context')">
-                    <Spinner />
-                </template>
             </AgentFact>
             <template v-if="family">
                 <AgentFact
-                    :class="['agent-fact', 'agent-count', {open: open === 'model', waiting: pending('model')}]"
+                    :class="['agent-fact', 'agent-count', {open: open === 'model'}]"
                     icon="model"
-                    :title="pending('model') ? `${pending('model')} — waiting for the agent` : `${data.model} — change model`"
+                    :title="`${data.model} — change model`"
                     :aria-expanded="open === 'model'"
                     @click="toggle('model', $event)"
                 >
-                    {{ pending("model") || family }}
-                    <template v-if="pending('model')">
-                        <Spinner />
-                    </template>
+                    {{ family }}
                 </AgentFact>
                 <AgentFact
-                    :class="['agent-fact', 'agent-count', {open: open === 'effort', waiting: pending('effort')}]"
+                    :class="['agent-fact', 'agent-count', {open: open === 'effort'}]"
                     icon="bolt"
-                    :title="
-                        pending('effort')
-                            ? `effort ${pending('effort')} — waiting for the agent`
-                            : `reasoning effort${data.effort ? ` ${data.effort}` : ''} — change it`
-                    "
+                    :title="`reasoning effort${data.effort ? ` ${data.effort}` : ''} — change it`"
                     :aria-expanded="open === 'effort'"
                     @click="toggle('effort', $event)"
                 >
-                    {{ pending("effort") || data.effort || "effort" }}
-                    <template v-if="pending('effort')">
-                        <Spinner />
-                    </template>
+                    {{ data.effort || "effort" }}
                 </AgentFact>
             </template>
             <AgentFact
@@ -142,7 +100,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                 {{ skillCount.n }}
             </AgentFact>
             <AgentFact class="agent-fact" tag="span" icon="reminders" title="how long this session has run">
-                {{ data.started ? span(Date.now() / 1000 - data.started) : "just started" }}
+                {{ span(Date.now() / 1000 - createdAt(data)) }}
             </AgentFact>
             <template v-for="c in activityCounts" :key="c.key">
                 <AgentFact
@@ -155,30 +113,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                     {{ c.n }}
                 </AgentFact>
             </template>
-            <template v-if="loops">
-                <AgentFact
-                    :class="['agent-fact', 'agent-count', 'agent-loops', {open: open === 'loops'}]"
-                    icon="loop"
-                    :title="`${loops} repeating prompt${loops === 1 ? '' : 's'}: prompts the agent set to run again on a schedule`"
-                    :aria-expanded="open === 'loops'"
-                    @click="toggle('loops', $event)"
-                >
-                    {{ loops }}
-                </AgentFact>
-            </template>
-            <template v-if="data.branch && data.branch_url">
-                <AgentFact
-                    class="agent-fact agent-count"
-                    tag="a"
-                    icon="branch"
-                    :href="data.branch_url"
-                    target="_blank"
-                    title="Open the branch it works on in the repository"
-                >
-                    {{ data.branch }}
-                </AgentFact>
-            </template>
-            <template v-else-if="data.branch">
+            <template v-if="data.branch">
                 <AgentFact class="agent-fact" tag="span" icon="branch" title="Current branch">
                     {{ data.branch }}
                 </AgentFact>

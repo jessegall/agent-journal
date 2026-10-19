@@ -1,10 +1,7 @@
 <script setup>
 import {saveSetting} from "../actions/settings.js";
-import {stopJournal} from "../actions/stopJournal.js";
-import {demo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
-import {computed, nextTick, onMounted, ref, watch} from "vue";
-import {api} from "../api/client.js";
+import {computed, nextTick, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
@@ -15,14 +12,11 @@ import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
 import Toast from "../kit/Toast.vue";
 import SettingsPanes from "./SettingsPanes.vue";
-import SettingsPhoneGroup from "./SettingsPhoneGroup.vue";
-import DiagnosticsLog from "./DiagnosticsLog.vue";
 import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../platform/storage.js";
 import {useScrollSpy} from "../composables/scrollSpy.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 import {route} from "../route.js";
-import {rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
@@ -35,22 +29,10 @@ const filter = ref("all");
 const field = ref(null);
 const current = ref("");
 const chosen = ref("");
-const diagnostics = ref(false);
-const stopping = ref(false);
-const extension = ref(null);
 const saved = ref(null);
 
 const sections = computed(() =>
-    store.settings
-        ? catalog(store.spec || {}, store.settings, {
-              identity: store.identity,
-              extension: extension.value,
-              extensionZip: api.extensionZip(),
-              triggers: rows("trigger"),
-              stoppable: !demo,
-              stopping: stopping.value,
-          })
-        : []
+store.settings ? catalog(store.spec || {}, store.settings) : []
 );
 const matched = computed(() => narrowed(sections.value, query.value, filter.value));
 const searching = computed(() => Boolean(query.value.trim()) || filter.value !== "all");
@@ -81,11 +63,9 @@ const tabGroups = computed(() => navSections.value.flatMap((s) => s.groups));
 const onlyGroup = computed(() => (tabGroups.value.length === 1 ? tabGroups.value[0].key : ""));
 const activeGroup = computed(() => chosen.value || onlyGroup.value);
 const screen = computed(() => {
-    if (!narrow.value || searching.value || !listed.value) return "page";
-    return activeGroup.value ? "group" : "list";
+    return !narrow.value || searching.value || !listed.value || activeGroup.value ? "page" : "list";
 });
-const back = computed(() => narrow.value && screen.value === "group" && Boolean(chosen.value));
-const phoneGroup = computed(() => groups.value.find((g) => g.key === activeGroup.value) || null);
+const back = computed(() => narrow.value && Boolean(chosen.value));
 const spied = computed(() => (screen.value === "page" && listed.value ? groups.value.map((g) => g.key) : []));
 
 useScrollSpy(spied, current);
@@ -116,17 +96,6 @@ function showAll() {
     filter.value = "all";
 }
 
-async function stop() {
-    stopping.value = true;
-    try {
-        await stopJournal();
-    } catch (e) {
-        stopping.value = false;
-    }
-}
-
-const BUTTON_ACTIONS = {diagnostics: () => (diagnostics.value = true), stop};
-
 async function change(target, label, value) {
     await saveSetting(target, value);
     saved.value = {text: `Saved: ${label}`};
@@ -134,11 +103,6 @@ async function change(target, label, value) {
 
 const save = (row, value) => change(row.target, row.label, value);
 const saveTiming = (row, next) => change(row.timing.target, row.label, next);
-const act = (row, key) => BUTTON_ACTIONS[key]();
-
-onMounted(async () => {
-    extension.value = await api.extension();
-});
 </script>
 
 <template>
@@ -178,9 +142,6 @@ onMounted(async () => {
                 <p class="settings-line phone">{{ tabLine(tab) }}</p>
                 <SettingNav class="settings-phone-list" sheet :sections="navSections" @pick="pick" />
             </template>
-            <template #group>
-                <SettingsPhoneGroup :group="phoneGroup" :tab="tab" @change="save" @timing="saveTiming" @act="act" />
-            </template>
             <template #page>
                 <SettingsPanes
                     :tab="tab"
@@ -197,15 +158,11 @@ onMounted(async () => {
                     @saved="(label) => (saved = {text: `Saved: ${label}`})"
                     @change="save"
                     @timing="saveTiming"
-                    @act="act"
                     @show-all="showAll"
                 />
             </template>
         </SwitchCase>
 
-        <template v-if="diagnostics">
-            <DiagnosticsLog @close="diagnostics = false" />
-        </template>
         <Toast :toast="saved" :lasts="2500" @done="saved = null" />
     </section>
 </template>

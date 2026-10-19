@@ -39,19 +39,19 @@ watch(drop, (open) => open && checkTunnel());
 
 const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL_SERVICE));
 const state = computed(() => tunnelState(tunnelStatus.value, openShares.value, waitingShares.value, tunnel.value));
-const address = computed(() => tunnelStatus.value?.address || openShares.value[0]?.abstract.replace(/^https:\/\/([^/]+).*$/, "$1") || "");
+const address = computed(() => tunnelStatus.value?.address || openShares.value[0]?.link.replace(/^https:\/\/([^/]+).*$/, "$1") || "");
 
 const inspect = () => window.open(tunnel.value.url, "_blank", "noopener");
 
 function open(share) {
-    const [type, n] = itemOf(share).ref.split(":");
+    const [table, id] = itemOf(share).ref.split(":");
     drop.value = false;
-    peek(type, Number(n));
+    peek(table, Number(id));
 }
 
 async function approve(share) {
     error.value = "";
-    stopping.value = share.n;
+    stopping.value = share.id;
     try {
         await approveShare(share);
     } catch (e) {
@@ -63,7 +63,7 @@ async function approve(share) {
 
 async function stop(shares) {
     error.value = "";
-    stopping.value = shares.length > 1 ? -1 : shares[0].n;
+    stopping.value = shares.length > 1 ? -1 : shares[0].id;
     try {
         for (const share of shares) await stopShare(share);
     } catch (e) {
@@ -110,7 +110,7 @@ async function stop(shares) {
                 <template v-if="waitingShares.length">
                     <div class="tunnel-shares">
                         <span class="tunnel-group">Needs you</span>
-                        <template v-for="share in waitingShares" :key="share.n">
+                        <template v-for="share in waitingShares" :key="share.id">
                             <div class="tunnel-share waiting">
                                 <div class="tunnel-share-head">
                                     <button type="button" class="tunnel-item" @click="open(share)">{{ itemOf(share).title }}</button>
@@ -120,7 +120,7 @@ async function stop(shares) {
                                 </div>
                                 <div class="tunnel-share-row">
                                     <span class="tunnel-link">The agent wants to share this; no link works until you accept.</span>
-                                    <Btn small kind="primary" :busy="stopping === share.n" @click="approve(share)">Accept</Btn>
+                                    <Btn small kind="primary" :busy="stopping === share.id" @click="approve(share)">Accept</Btn>
                                     <Btn small @click="stop([share])">Deny</Btn>
                                 </div>
                             </div>
@@ -128,31 +128,31 @@ async function stop(shares) {
                     </div>
                 </template>
                 <div class="tunnel-shares">
-                    <template v-for="share in openShares" :key="share.n">
+                    <template v-for="share in openShares" :key="share.id">
                         <div class="tunnel-share">
                             <div class="tunnel-share-head">
                                 <button
                                     type="button"
                                     class="tunnel-item"
-                                    :title="`Open ${itemOf(share).ref.replace(':', ' ')}`"
+                                    :title="`Open ${itemOf(share).ref}`"
                                     @click="open(share)"
                                 >
                                     {{ itemOf(share).title }}
                                 </button>
-                                <CopyButton :text="share.abstract" hint="Copy the link" />
+                                <CopyButton :text="share.link" hint="Copy the link" />
                                 <CopyButton
-                                    :text="`Here's the link to ${itemOf(share).title}: ${share.abstract}`"
+                                    :text="`Here's the link to ${itemOf(share).title}: ${share.link}`"
                                     icon="chat"
                                     hint="Copy the link with a short description"
                                 />
-                                <Btn small kind="danger" :busy="stopping === share.n" @click="stop([share])">Stop sharing</Btn>
+                                <Btn small kind="danger" :busy="stopping === share.id" @click="stop([share])">Stop sharing</Btn>
                             </div>
                             <div class="tunnel-share-row">
-                                <span class="tunnel-link" :title="share.abstract">
+                                <span class="tunnel-link" :title="share.link">
                                     <template v-if="locked(share)">
                                         <Icon class="lock" name="lock" :size="11" title="Has a password" />
                                     </template>
-                                    {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
+                                    {{ share.link.replace(/^https:\/\/[^/]+/, "") }}
                                 </span>
                                 <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
                             </div>
@@ -163,7 +163,7 @@ async function stop(shares) {
                     <p class="tunnel-error">{{ error }}</p>
                 </template>
                 <template v-if="!openShares.length && !waitingShares.length">
-                    <p class="tunnel-empty">Nothing is shared right now. Share a document, report, collection or plan from its page.</p>
+                    <p class="tunnel-empty">Nothing is shared right now. Share a document, report or plan from its page.</p>
                 </template>
                 <div class="tunnel-foot">
                     <span class="meta">The connection closes by itself when the last link ends.</span>

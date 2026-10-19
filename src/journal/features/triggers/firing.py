@@ -17,7 +17,7 @@ class Firing:
         agent = self.machine.agent(session, environment_id)
         lines = []
         for trigger in met:
-            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"trigger:{trigger.id}")
+            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"triggers:{trigger.id}")
             line = self.started(trigger, session, environment_id) if trigger.action == TriggerAction.SEQUENCE else self.nudger.say(agent, self.said(trigger))
             if line:
                 lines.append(line)

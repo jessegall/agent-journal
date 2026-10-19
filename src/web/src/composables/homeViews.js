@@ -1,45 +1,36 @@
 import {feedOn} from "./settings.js";
-import {meta, types} from "../domain/spec.js";
+import {meta, tables} from "../domain/tables.js";
 import {computed} from "vue";
 import {open, unreadByUser} from "../domain/records.js";
 import {VIEWS} from "../domain/panes.js";
 
-const OWN_TABS = ["question", "suggestion"];
+const OWN_TABS = ["questions"];
 
 export function useHomeViews() {
     const views = computed(() => ({
-        chat: {title: "Chat", icon: "chat", all: {page: "message", label: "View all messages"}},
+        chat: {title: "Chat", icon: "chat", all: {page: "messages", label: "View all messages"}},
         feed: {title: "File edits", icon: "edits", canFlush: true},
         terminal: {title: "Terminal", icon: "terminal"},
-        family: {title: "Agent family tree", icon: "family"},
         agents: {title: "Agents", icon: "agents"},
         waiting: {
             title: "Notifications",
             icon: "bell",
-            count: types.value.filter((t) => t.needs_attention && !OWN_TABS.includes(t.name)).flatMap((t) => unreadByUser(t.name)).length,
+            count: tables.value.filter((t) => t.needs_attention && !OWN_TABS.includes(t.name)).flatMap((t) => unreadByUser(t.name)).length,
             warm: true,
-            all: {page: "notification", label: "View all notifications"},
         },
-        question: {
+        questions: {
             title: "Questions",
-            icon: meta("question").icon,
-            count: open("question").length,
+            icon: meta("questions").icon,
+            count: open("questions").length,
             warm: true,
-            all: {page: "question", label: "View all questions"},
+            all: {page: "questions", label: "View all questions"},
         },
-        suggestion: {
-            title: "Suggestions",
-            icon: meta("suggestion").icon,
-            count: open("suggestion").length,
-            warm: true,
-            all: {page: "suggestion", label: "View all suggestions"},
-        },
-        todos: {
-            title: "To-dos",
-            icon: meta("todo").icon,
-            count: open("todo").length,
+        tasks: {
+            title: "Tasks",
+            icon: meta("tasks").icon,
+            count: open("tasks").length,
             warm: false,
-            all: {page: "todo", label: "View all to-dos"},
+            all: {page: "tasks", label: "View all tasks"},
         },
     }));
     const usable = computed(() => VIEWS.filter((v) => v !== "feed" || feedOn.value));

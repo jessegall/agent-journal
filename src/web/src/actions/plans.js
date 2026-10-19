@@ -1,9 +1,8 @@
-import {word} from "../domain/spec.js";
 import {api} from "../api/client.js";
 import {patched, rows} from "../sync/rows.js";
 
-const act = (plan, method) => api.act("plan", plan.n, word("plan", method));
-const becomes = (status) => (plan) => (plan.data.status = status);
+const act = (plan, method) => api.act("plans", plan.id, method);
+const becomes = (state) => (plan) => (plan.state = state);
 
 export const approvePlan = (plan) => patched(plan, becomes("approved"), () => act(plan, "approve"));
 
@@ -11,10 +10,10 @@ export const parkPlan = (plan) => patched(plan, becomes("parked"), () => act(pla
 
 export function startPlan(plan) {
     const takeOver = (row) => {
-        rows("plan")
-            .filter((p) => p !== row && ["active", "waiting"].includes(p.data.status))
+        rows("plans")
+            .filter((p) => p !== row && p.state === "started")
             .forEach(becomes("parked"));
-        becomes("active")(row);
+        becomes("started")(row);
     };
     return patched(plan, takeOver, () => act(plan, "start"));
 }

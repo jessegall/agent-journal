@@ -6,7 +6,7 @@ import TextInput from "../kit/TextInput.vue";
 import {visitorName, rememberName} from "./visitor.js";
 
 const props = defineProps({
-    about: {type: String, required: true},
+    on: {type: String, required: true},
     sent: {type: Array, required: true},
     count: {type: Number, default: 0},
     draft: {type: String, default: ""},
@@ -19,29 +19,16 @@ const draft = computed({get: () => props.draft, set: (value) => emit("update:dra
 const error = computed({get: () => props.error, set: (value) => emit("update:error", value)});
 
 async function send(text) {
-    const about = props.about;
-    const waiting = {
-        n: -Date.now(),
-        about,
-        name: name.value.trim(),
-        text,
-        created: Date.now() / 1000,
-        waiting: true,
-        replies: [],
-        options: [],
-        answer: "",
-    };
+    const waiting = {id: -Date.now(), on: props.on, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true};
     emit("update:sent", [...props.sent, waiting]);
     try {
-        const made = await sendComment(about, name.value.trim(), text);
-        rememberName(made.name);
-        name.value = made.name;
+        await sendComment(props.on, name.value.trim(), text);
+        rememberName(name.value.trim());
         naming.value = false;
-        emit("update:sent", [...props.sent.filter((c) => c.n !== waiting.n), made]);
     } catch (e) {
         emit(
             "update:sent",
-            props.sent.filter((c) => c.n !== waiting.n)
+            props.sent.filter((c) => c.id !== waiting.id)
         );
         throw e;
     }

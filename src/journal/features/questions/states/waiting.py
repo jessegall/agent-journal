@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from journal.engine.states.paused import Paused
-from journal.engine.transition import Transition
 
 
 @dataclass(frozen=True)
@@ -13,5 +12,5 @@ class Waiting(Paused):
     question_id: int = 0
 
     def awaiting(self) -> tuple[str, str]:
-        return f"your answer to question {self.question_id}", f"question:{self.question_id}"
+        return f"your answer to question {self.question_id}", f"questions:{self.question_id}"
 

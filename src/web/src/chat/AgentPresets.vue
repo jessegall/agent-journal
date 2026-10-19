@@ -22,8 +22,6 @@ const views = inject("views", null);
                 @rename="views.renamePreset"
                 @update="views.updatePreset"
                 @remove="views.removePreset"
-                :link-for="views.linkPreset"
-                :read-link="views.readLayoutLink"
                 @share="views.sharePreset"
                 @import="views.importPreset"
             />

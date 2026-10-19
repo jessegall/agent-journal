@@ -1,17 +1,16 @@
 <script setup>
-import {meta, word} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {store} from "../state/store.js";
-import {useWanted} from "../sync/wanted.js";
 import EmptyState from "../kit/EmptyState.vue";
 import TabBar from "../kit/TabBar.vue";
 import PagedList from "../kit/PagedList.vue";
 import {computed, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, peek, route} from "../route.js";
 import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
+import {closedAt, createdAt, isClosed} from "../domain/row.js";
 import {closedEarlier, closedFirst, closedHasMore, earlier, hasLoaded, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
@@ -22,34 +21,29 @@ import TextInput from "../kit/TextInput.vue";
 import Segmented from "../kit/Segmented.vue";
 import DocumentLibrary from "./DocumentLibrary.vue";
 import {useSlashFocus} from "../composables/slashFocus.js";
-import {isUpdate} from "../domain/updates.js";
 
-const props = defineProps({type: String});
-const kind = computed(() => meta(props.type));
+const props = defineProps({table: String});
+const kind = computed(() => meta(props.table));
 const filter = ref("open");
 const adding = ref(false);
-const all = computed(() => rows(props.type).filter((r) => !r.deleted));
-const splits = computed(() => (kind.value.filters || []).some((f) => f.shows === "updates"));
-const updates = computed(() => all.value.filter(isUpdate));
+const all = computed(() => rows(props.table));
 const SHOWS = {
-    open: () => (splits.value ? open(props.type).filter((r) => !isUpdate(r)) : open(props.type)),
-    updates: () => updates.value,
-    closed: () => all.value.filter((r) => r.completed),
+    open: () => open(props.table),
+    closed: () => all.value.filter(isClosed),
     every: () => all.value,
 };
 const COUNTS = {
-    open: () => recordCount(props.type, "open") - (splits.value ? updates.value.filter((r) => !r.completed).length : 0),
-    updates: () => updates.value.length,
-    closed: () => recordCount(props.type, "all") - recordCount(props.type, "open"),
-    every: () => recordCount(props.type, "all"),
+    open: () => recordCount(props.table, "open"),
+    closed: () => recordCount(props.table, "all") - recordCount(props.table, "open"),
+    every: () => recordCount(props.table, "all"),
 };
-const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
+const filters = computed(() => kind.value.filters.map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
 watch(
-    () => [route.value.sub, props.type],
+    () => [route.value.sub, props.table],
     ([sub]) => (filter.value = filters.value.some((f) => f.key === sub) ? sub : "open"),
     {immediate: true}
 );
-const library = computed(() => props.type === "doc");
+const library = computed(() => props.table === "docs");
 const query = ref("");
 const order = ref("recent");
 const ORDERS = [
@@ -61,59 +55,40 @@ const libraryPane = ref(null);
 watch(
     library,
     async (on) => {
-        while (on && store.paging.more[props.type] && (await earlier(props.type)));
+        while (on && store.paging.more[props.table] && (await earlier(props.table)));
     },
     {immediate: true}
 );
 useSlashFocus(search, () => library.value);
 const closedTab = computed(() => filter.value === "closed");
-const loadMore = () => (closedTab.value ? closedEarlier(props.type) : earlier(props.type));
-const moreToLoad = computed(() => (closedTab.value ? closedHasMore(props.type) : Boolean(store.paging.more[props.type])) && listed.value.length < total.value);
+const loadMore = () => (closedTab.value ? closedEarlier(props.table) : earlier(props.table));
+const moreToLoad = computed(() => (closedTab.value ? closedHasMore(props.table) : Boolean(store.paging.more[props.table])) && listed.value.length < total.value);
 watch(
-    [closedTab, () => props.type],
-    ([on]) => on && closedFirst(props.type),
+    [closedTab, () => props.table],
+    ([on]) => on && closedFirst(props.table),
     {immediate: true}
 );
 const listed = computed(() =>
-    [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
-        .filter((r) => !r.data?.hidden)
-        .sort((a, b) => Boolean(a.data.system) - Boolean(b.data.system) || (closedTab.value ? b.completed - a.completed : 0) || b.created - a.created || b.n - a.n)
+    [...(kind.value.filters.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()].sort(
+        (a, b) => (closedTab.value ? closedAt(b) - closedAt(a) : 0) || createdAt(b) - createdAt(a) || b.id - a.id
+    )
 );
 
-const total = computed(() => (COUNTS[filter.value] || COUNTS.every)());
+const total = computed(() => (kind.value.filters.length ? COUNTS[filter.value] || COUNTS.every : COUNTS.every)());
 
 const groups = computed(() => {
+    if (props.table !== "tasks" || closedTab.value) return [{key: "all", title: closedTab.value ? "Closed" : kind.value.title + "s", count: total.value, list: listed.value}];
     const buckets = {};
     for (const r of listed.value) (buckets[groupOf(r)] ||= []).push(r);
     return Object.keys(GROUPS)
         .filter((k) => buckets[k])
-        .map((k) => ({
-            key: k,
-            title: k === "open" && filter.value !== "open" ? "Closed" : GROUPS[k],
-            count: k === "open" && Object.keys(buckets).length === 1 ? total.value : undefined,
-            list: buckets[k],
-        }))
-        .concat(held.value);
+        .map((k) => ({key: k, title: GROUPS[k], count: k === "open" && Object.keys(buckets).length === 1 ? total.value : undefined, list: buckets[k]}));
 });
 
-const held = computed(() =>
-    props.type === "todo" && filter.value === "open"
-        ? store.ticketTodos.map((h) => ({
-              key: `ticket-${h.ticket}`,
-              title: `Ticket ${h.ticket} · ${h.title} (${h.env})`,
-              list: h.todos,
-              env: h.env,
-          }))
-        : []
-);
-
-async function select(n) {
+function select(id) {
     adding.value = false;
-    go(props.type, n);
+    go(props.table, id);
 }
-
-const startNew = () => (props.type === "board" ? go("kanban", 0, "new") : (adding.value = true));
-useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open");
 </script>
 
 <template>
@@ -126,7 +101,7 @@ useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open")
                     icon="search"
                     type="search"
                     :value="query"
-                    placeholder="Search titles, text and files"
+                    placeholder="Search titles and text"
                     aria-label="Find a document"
                     @input="query = $event.target.value"
                     @keydown.esc="query ? (query = '') : $event.target.blur()"
@@ -143,61 +118,55 @@ useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open")
             </template>
             <span class="grow" />
             <template v-if="kind.created_in_viewer">
-                <Btn kind="primary" @click="startNew">
+                <Btn kind="primary" @click="adding = true">
                     <Icon name="plus" :size="12" />
                     <span class="new-word">New {{ kind.title.toLowerCase() }}</span>
                 </Btn>
             </template>
         </div>
         <template v-if="adding">
-            <NewResource :type="type" @made="select" @close="adding = false" />
+            <NewResource :table="table" @made="select" @close="adding = false" />
         </template>
         <template v-if="!listed.length && !library">
-            <EmptyState class="empty" :loading="!hasLoaded(type)">
+            <EmptyState class="empty" :loading="!hasLoaded(table)">
                 No {{ kind.title.toLowerCase() }}s
-                {{
-                    filter === "open"
-                        ? all.length
-                            ? "open"
-                            : "on this environment"
-                        : filters.find((f) => f.key === filter).title.toLowerCase()
-                }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
+                {{ filter === "open" ? (all.length ? "open" : "on this environment") : "closed" }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </EmptyState>
         </template>
         <PagedList :shown="listed.length" :total="total" :more="moreToLoad" :load="loadMore">
-        <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
-            <template #library>
-                <DocumentLibrary
-                    ref="libraryPane"
-                    :docs="listed"
-                    :query="query"
-                    :order="order"
-                    @open="(d) => peek('doc', d.n)"
-                    @clear="query = ''"
-                    @new="adding = true"
-                />
-            </template>
-            <template #document>
-                <div class="cards">
-                    <template v-for="r in listed" :key="r.n">
-                        <div :class="['card-wrap', {shipped: r.data.system}]">
-                            <ResourceCard :resource="r" @click="go(type, r.n)" />
-                            <ResourceEnd :resource="r" />
-                        </div>
-                    </template>
-                </div>
-            </template>
-            <template #check>
-                <div class="cards">
-                    <template v-for="r in listed" :key="r.n">
-                        <CheckCard :resource="r" @click="go(type, r.n)" />
-                    </template>
-                </div>
-            </template>
-            <template #default>
-                <RowGroups :groups="groups" :type="type" />
-            </template>
-        </SwitchCase>
+            <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
+                <template #library>
+                    <DocumentLibrary
+                        ref="libraryPane"
+                        :docs="listed"
+                        :query="query"
+                        :order="order"
+                        @open="(d) => peek('docs', d.id)"
+                        @clear="query = ''"
+                        @new="adding = true"
+                    />
+                </template>
+                <template #document>
+                    <div class="cards">
+                        <template v-for="r in listed" :key="r.id">
+                            <div class="card-wrap">
+                                <ResourceCard :resource="r" @click="go(table, r.id)" />
+                                <ResourceEnd :resource="r" />
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template #check>
+                    <div class="cards">
+                        <template v-for="r in listed" :key="r.id">
+                            <CheckCard :resource="r" @click="go(table, r.id)" />
+                        </template>
+                    </div>
+                </template>
+                <template #default>
+                    <RowGroups :groups="groups" :table="table" />
+                </template>
+            </SwitchCase>
         </PagedList>
     </section>
 </template>

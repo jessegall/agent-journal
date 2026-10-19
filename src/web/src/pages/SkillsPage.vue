@@ -21,7 +21,7 @@ const filter = ref("all");
 const {members: folded, toggle: fold} = useToggledSet();
 
 async function reload() {
-    const got = await api.skills(agent.value ? agent.value.n : 0);
+    const got = await api.skills(agent.value ? agent.value.id : 0);
     if (!loaded.value) {
         folded.value = new Set(groups(got).flatMap((group) => (group.skill ? [] : [group.key])));
     }

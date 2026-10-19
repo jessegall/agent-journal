@@ -1,13 +1,12 @@
 import {computed, ref} from "vue";
-import {rows} from "../sync/rows.js";
 import {stateOf, waitingOn} from "../domain/agentState.js";
 import {agent} from "./leadAgent.js";
-import {useHelpers} from "./helpers.js";
+import {useWorkers} from "./workers.js";
 import {useSharedNow} from "./now.js";
 
-export function useWaiting(helpers = useHelpers().rows, who = agent, works = () => rows("work")) {
+export function useWaiting(workers = useWorkers().rows, who = agent) {
     const now = useSharedNow();
-    const waiting = computed(() => (stateOf(who.value, works()) === "waiting" ? waitingOn(who.value, works(), helpers.value, now.value) : null));
+    const waiting = computed(() => (stateOf(who.value) === "waiting" ? waitingOn(who.value, workers.value, now.value) : null));
     const open = ref(false);
     const anchor = ref(null);
     const toggle = (event) => {

@@ -2,6 +2,7 @@
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
+import {refOf} from "../domain/row.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
@@ -16,13 +17,12 @@ import ShareSettings from "./ShareSettings.vue";
 
 const props = defineProps({resource: {type: Object, required: true}});
 const emit = defineEmits(["close"]);
-const ref_ = computed(() => `${props.resource.type}:${props.resource.n}`);
+const ref_ = computed(() => refOf(props.resource));
 const expires = ref("7d");
 const password = ref("");
 const comments = ref(false);
-const agentReplies = ref(true);
 const waiting = waitingOf(ref_.value);
-const kind = computed(() => KINDS[props.resource.type] || props.resource.type);
+const kind = computed(() => KINDS[props.resource.table] || props.resource.table);
 const opens = ref(null);
 const error = ref("");
 const making = ref(false);
@@ -36,7 +36,7 @@ async function awaitLink(share) {
     const until = Date.now() + WAIT_FOR;
     tunnel.value = "starting";
     while (tunnel.value === "starting") {
-        const got = await api.shareReachable(share.n).catch(() => ({}));
+        const got = await api.tunnelAnswering().catch(() => ({}));
         if (tunnel.value !== "starting") return;
         if (got.reachable) tunnel.value = "ready";
         else if (Date.now() > until) tunnel.value = "late";
@@ -72,13 +72,7 @@ async function create() {
     making.value = true;
     error.value = "";
     try {
-        made.value = await api.create("share", {
-            title: ref_.value,
-            expires: expires.value,
-            password: password.value,
-            comments: comments.value,
-            agent_replies: agentReplies.value,
-        });
+        made.value = await api.create("shares", {target: ref_.value, expires: expires.value, password: password.value, comments: comments.value});
         password.value = "";
         awaitLink(made.value);
     } catch (e) {
@@ -98,7 +92,7 @@ function another() {
 }
 
 async function approve(share) {
-    stopping.value = share.n;
+    stopping.value = share.id;
     try {
         await approveShare(share);
     } catch (e) {
@@ -109,10 +103,10 @@ async function approve(share) {
 }
 
 async function stop(share) {
-    stopping.value = share.n;
+    stopping.value = share.id;
     try {
         await stopShare(share);
-        if (made.value?.n === share.n) made.value = null;
+        if (made.value?.id === share.id) made.value = null;
     } catch (e) {
         error.value = e.message;
     } finally {
@@ -143,7 +137,6 @@ async function stop(share) {
                                     v-model:expires="expires"
                                     v-model:password="password"
                                     v-model:comments="comments"
-                                    v-model:agent-replies="agentReplies"
                                 />
                             </template>
                         </template>

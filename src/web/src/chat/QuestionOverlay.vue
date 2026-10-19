@@ -14,8 +14,8 @@ const GROW = 260;
 const veil = ref(null);
 const card = ref(null);
 const inner = ref(null);
-const n = questionView.n;
-const question = computed(() => answered(rows("question").find((q) => !q.env && q.n === n) || null));
+const id = questionView.id;
+const question = computed(() => answered(rows("questions").find((q) => q.id === id) || null));
 const leaving = ref(false);
 const kept = ref(null);
 const current = computed(() => (leaving.value ? kept.value : question.value || kept.value));
@@ -53,7 +53,7 @@ function hold() {
 }
 
 watchEffect(() => {
-    if (!question.value) holding("question", [n]).catch((error) => console.error(error));
+    if (!question.value) holding("questions", [id]).catch((error) => console.error(error));
 });
 
 async function arrive() {
@@ -96,7 +96,7 @@ async function fadeOut() {
 }
 
 watch(
-    () => question.value?.completed,
+    () => question.value?.answer != null,
     (done, before) => done && !before && setTimeout(leave, ANSWERED_BEAT)
 );
 
@@ -112,11 +112,8 @@ onUnmounted(() => sized.disconnect());
             <section ref="card" class="question-card" role="dialog" aria-label="Question">
                 <div ref="inner">
                     <p class="question-label">Question</p>
-                    <h3 class="question-title">{{ current.title }}</h3>
-                    <template v-if="current.abstract">
-                        <TextDisplay class="question-context" :text="current.abstract" />
-                    </template>
-                    <OptionsPicker :resource="current" @elaborated="leave" />
+                    <TextDisplay class="question-title" :text="current.text" />
+                    <OptionsPicker :question="current" @elaborated="leave" />
                 </div>
             </section>
         </template>

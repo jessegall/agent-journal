@@ -1,51 +1,30 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {momentsOf} from "../domain/moments.js";
 import {open} from "../domain/records.js";
-import {types} from "../domain/spec.js";
-import {doesOf, startWords, startsOnTrigger, wordsText} from "../domain/triggerWords.js";
-import {peek} from "../route.js";
-import Btn from "../kit/Btn.vue";
+import {tables} from "../domain/tables.js";
+import {startWords, wordsText} from "../domain/triggerWords.js";
 import ChoiceList from "../kit/ChoiceList.vue";
 import FormField from "../kit/FormField.vue";
-import NewResource from "./NewResource.vue";
 import Segmented from "../kit/Segmented.vue";
 
 const props = defineProps({resource: Object, bare: Boolean});
-const BY_HAND = "";
 const MODES = [
     {key: "hand", label: "Only when you or the agent start it"},
-    {key: "event", label: "When something happens"},
+    {key: "event", label: "When a row is created"},
     {key: "trigger", label: "When a trigger matches"},
 ];
-const making = ref(false);
 const error = ref("");
-
-const start = computed(() => props.resource.data.starts_on || BY_HAND);
-const editable = computed(() => !props.resource.data.system && !props.resource.completed);
-const stored = computed(() => (!start.value ? "hand" : startsOnTrigger(props.resource) ? "trigger" : "event"));
 const chosen = ref("");
+const stored = computed(() => ((props.resource.trigger_ids || []).length ? "trigger" : props.resource.starts_on ? "event" : "hand"));
 const mode = computed(() => chosen.value || stored.value);
-const kind = computed(() => start.value.split(".")[0]);
-const moment = computed(() => start.value.split(".")[1] || "");
-const kinds = computed(() =>
-    types.value.filter(
-        (t) => (t.in_sidebar || t.needs_attention || t.name === "board") && t.moments?.length && !["sequence", "trigger"].includes(t.name)
-    )
-);
-const triggers = computed(() => open("trigger"));
-const current = computed(() => triggers.value.find((t) => start.value === `trigger:${t.n}`));
-const sentence = computed(() =>
-    start.value
-        ? `Starts by itself ${startWords(props.resource).replace(/^When/, "when")}.`
-        : "It starts only when you or the agent start it."
-);
+const created = computed(() => props.resource.starts_on.split(".")[0]);
+const kinds = computed(() => tables.value.filter((t) => t.in_sidebar && !["sequences", "triggers"].includes(t.name)));
 
 async function save(value) {
     error.value = "";
     try {
-        await api.setStartsOn(props.resource.n, value);
+        await api.setStartsOn(props.resource.id, value);
     } catch (e) {
         error.value = e.message;
     }
@@ -53,22 +32,14 @@ async function save(value) {
 
 function pickMode(key) {
     chosen.value = key === stored.value ? "" : key;
-    if (key === "hand") save(BY_HAND);
+    if (key === "hand") save("");
     if (key === "event" && stored.value !== "event") save(`${kinds.value[0].name}.created`);
 }
 
-const asTrigger = (t) => ({
-    value: `trigger:${t.n}`,
-    label: t.title,
-    hint: wordsText(t.data.words),
-    unavailable: t.data.does === "start" ? "" : `${doesOf(t.data.does).short} Set it to Start a sequence first.`,
-    current: start.value === `trigger:${t.n}`,
-});
-const kindChoices = computed(() => kinds.value.map((t) => ({value: t.name, label: t.title, current: kind.value === t.name})));
-const momentChoices = computed(() =>
-    momentsOf(kind.value).map((m) => ({value: m.value, label: m.label, current: moment.value === m.value}))
+const kindChoices = computed(() => kinds.value.map((t) => ({value: t.name, label: t.title, current: created.value === t.name})));
+const triggerChoices = computed(() =>
+    open("triggers").map((t) => ({value: `trigger:${t.id}`, label: wordsText(t.words) || `Trigger ${t.id}`, current: (props.resource.trigger_ids || []).includes(t.id)}))
 );
-const others = computed(() => triggers.value.filter((t) => t.n !== current.value?.n).map(asTrigger));
 </script>
 
 <template>
@@ -76,42 +47,22 @@ const others = computed(() => triggers.value.filter((t) => t.n !== current.value
         <template v-if="!bare">
             <h3>When it starts</h3>
         </template>
-        <p class="sentence">{{ sentence }}</p>
-        <template v-if="editable">
-            <FormField label="How this sequence starts">
-                <Segmented fill wrap :options="MODES" :value="mode" @pick="pickMode" />
+        <p class="sentence">{{ startWords(resource) }}.</p>
+        <FormField label="How this sequence starts">
+            <Segmented fill wrap :options="MODES" :value="mode" @pick="pickMode" />
+        </FormField>
+        <template v-if="mode === 'event'">
+            <FormField label="Row that starts this sequence when it is created">
+                <ChoiceList :choices="kindChoices" @pick="(table) => save(`${table}.created`)" />
             </FormField>
-            <template v-if="mode === 'event'">
-                <FormField label="Item that starts this sequence">
-                    <ChoiceList :choices="kindChoices" @pick="(type) => save(`${type}.created`)" />
-                </FormField>
-                <FormField label="Change that starts this sequence">
-                    <ChoiceList :choices="momentChoices" @pick="(value) => save(`${kind}.${value}`)" />
-                </FormField>
-            </template>
-            <template v-if="mode === 'trigger'">
-                <template v-if="current">
-                    <FormField label="Trigger that starts this sequence">
-                        <div class="card">
-                            <span class="card-text">
-                                <span class="card-title">{{ current.title }}</span>
-                                <span class="card-note">Trigger {{ current.n }} · {{ wordsText(current.data.words) }}</span>
-                            </span>
-                            <Btn small @click="peek('trigger', current.n)">Open trigger</Btn>
-                        </div>
-                    </FormField>
-                </template>
-                <FormField :label="current ? 'Or pick another trigger' : 'Pick a trigger'">
-                    <ChoiceList stacked :choices="others" @pick="save" />
-                </FormField>
-                <Btn small @click="making = true">Make a new trigger for this sequence</Btn>
-            </template>
+        </template>
+        <template v-if="mode === 'trigger'">
+            <FormField label="Trigger that starts this sequence">
+                <ChoiceList stacked :choices="triggerChoices" @pick="save" />
+            </FormField>
         </template>
         <template v-if="error">
             <p class="error">{{ error }}</p>
-        </template>
-        <template v-if="making">
-            <NewResource type="trigger" :sequence="resource.n" @made="making = false" @close="making = false" />
         </template>
     </section>
 </template>

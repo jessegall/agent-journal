@@ -5,7 +5,6 @@ import {ui} from "../state/ui.js";
 const FOCUS_FOR = 1800;
 const SETTLE = 120;
 
-export const framed = window.parent !== window;
 export const chatOnly = new URLSearchParams(location.search).has("chat");
 export const soloView = new URLSearchParams(location.search).get("view") || "";
 export const floatWindow = chatOnly || Boolean(soloView);

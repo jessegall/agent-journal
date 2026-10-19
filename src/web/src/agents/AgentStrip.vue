@@ -20,7 +20,7 @@ const pick = (name) => (store.board.lens = {...store.board.lens, agent: store.bo
                         <span class="works">#{{ agent.todo }}</span>
                     </template>
                 </button>
-                <button type="button" class="open" title="Open the agent" @click="peek('agent', agent.n)"><Icon name="open" /></button>
+                <button type="button" class="open" title="Open the agent" @click="peek('agents', agent.id)"><Icon name="open" /></button>
             </div>
         </template>
     </div>

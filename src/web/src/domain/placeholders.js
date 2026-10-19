@@ -1,39 +1,21 @@
+import {seconds} from "./row.js";
+
 let made = 0;
 
-export function pendingRow(prefix, row) {
+// A row the viewer draws at once while the journal writes the real one: it has no id yet, and `same` names the fields the real
+// one will have, by which it is known when it arrives.
+export function pendingRow(table, same, row = {}) {
     made += 1;
-    return {
-        ref: `${prefix}${made}`,
-        n: 0,
-        title: "",
-        abstract: "",
-        brief: "",
-        refs: [],
-        seen: ["user"],
-        sections: [],
-        data: {},
-        created: Date.now() / 1000,
-        updated: 0,
-        deleted: 0,
-        completed: 0,
-        who: "user",
-        pending: true,
-        ...row,
-    };
+    return {table, id: 0, key: `pending:${made}`, created_at: new Date().toISOString(), created_by: "user", pending: true, same, ...same, ...row};
 }
 
-const sameRefs = (one, other) => JSON.stringify(one || []) === JSON.stringify(other || []);
-
 const SAME_MOMENT = 60;
-const sameWords = (real, placeholder) => !placeholder.brief || real.brief === placeholder.brief;
-const afterIt = (real, placeholder) => !placeholder.created || real.created >= placeholder.created - SAME_MOMENT;
+const afterIt = (real, placeholder) => seconds(real.created_at) >= seconds(placeholder.created_at) - SAME_MOMENT;
 
 export const answers = (real, placeholder) =>
-    real.n > 0 &&
-    real.type === placeholder.type &&
-    sameRefs(real.refs, placeholder.refs) &&
-    sameWords(real, placeholder) &&
+    real.id > 0 &&
+    real.table === placeholder.table &&
     afterIt(real, placeholder) &&
-    Object.entries(placeholder.data || {}).every(([key, value]) => real.data?.[key] === value);
+    Object.entries(placeholder.same || {}).every(([key, value]) => JSON.stringify(real[key]) === JSON.stringify(value));
 
-export const withoutAnswered = (held, incoming) => held.filter((row) => row.n !== 0 || !incoming.some((real) => answers(real, row)));
+export const withoutAnswered = (held, incoming) => held.filter((row) => row.id !== 0 || !incoming.some((real) => answers(real, row)));

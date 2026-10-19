@@ -2,11 +2,10 @@
 import {computed} from "vue";
 
 const props = defineProps({message: {type: Object, required: true}, tone: {type: String, default: ""}});
-const LABELS = {sent: "Sent", delivered: "Delivered to the agent", read: "Read", filed: "Processed"};
+const LABELS = {sent: "Sent", read: "Read", filed: "Processed"};
 const state = computed(() => {
-    if (props.message.completed) return "filed";
-    if ((props.message.seen || []).includes("agent")) return "read";
-    return props.message.data && props.message.data.delivered ? "delivered" : "sent";
+    if ((props.message.filed || []).length) return "filed";
+    return props.message.read_at ? "read" : "sent";
 });
 </script>
 

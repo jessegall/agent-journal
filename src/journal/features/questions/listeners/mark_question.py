@@ -14,5 +14,5 @@ class MarkQuestion(Listener[Saved]):
         question = event.model
         if not isinstance(question, Question):
             return
-        data = {"kind": "question", "session": question.created_by.id, "row": f"question:{question.id}", "n": question.id, "options": list(question.options), "answer": question.answer}
+        data = {"kind": "question", "session": question.created_by.id, "row": f"questions:{question.id}", "n": question.id, "options": list(question.options), "answer": question.answer}
         self.cards.keyed(question.environment_id, f"question:{question.id}", question.text, data, question.created_by)

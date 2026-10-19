@@ -8,5 +8,5 @@ export function setAuto(on, client = api) {
 }
 
 export function runPlan(plan, client = api) {
-    return client.act("plan", plan.n, planButton(plan)[0]);
+    return client.act("plans", plan.id, planButton(plan)[0]);
 }

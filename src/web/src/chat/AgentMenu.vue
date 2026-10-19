@@ -3,11 +3,11 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {stopAgentNamed} from "../actions/agents.js";
 import {useAnchoredAction} from "../composables/anchored.js";
-import {currentWork} from "../domain/agentState.js";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import {peek, route} from "../route.js";
-import {rows} from "../sync/rows.js";
+import {heldTask} from "../domain/agentState.js";
+import {store} from "../state/store.js";
 import AgentStopConfirm from "./AgentStopConfirm.vue";
 
 const props = defineProps({agent: {type: Object, required: true}});
@@ -15,11 +15,11 @@ const emit = defineEmits(["done"]);
 const stopping = ref(false);
 const {busy, error, run} = useAnchoredAction();
 const environment = computed(() => route.value.env);
-const work = computed(() => currentWork(rows("work"))?.title || "");
+const work = computed(() => heldTask(store.summary, environment.value)?.title || "");
 
 function openPage() {
     emit("done");
-    peek("agent", props.agent.n);
+    peek("agents", props.agent.id);
 }
 
 async function stop() {

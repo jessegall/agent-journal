@@ -3,7 +3,6 @@ import {agentRunningIn} from "../composables/settings.js";
 import {computed, reactive, ref} from "vue";
 import EnvStart from "./EnvStart.vue";
 import NewEnvironment from "./NewEnvironment.vue";
-import {demo, unlessDemo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import FoldGroup from "../kit/FoldGroup.vue";
 import Icon from "../kit/Icon.vue";
@@ -13,12 +12,9 @@ import {choose} from "../state/environment.js";
 import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
 import {rows} from "../sync/rows.js";
-import {isMain} from "../domain/environments.js";
 
-const envs = computed(() => rows("environment").filter((e) => !e.completed && isMain(e)));
-const pages = computed(() => store.pages || []);
-const release = computed(() => store.spec.branch || store.spec.version || "");
-const domains = computed(() => (store.organization && store.organization.domains) || []);
+const envs = computed(() => rows("environments"));
+const release = computed(() => store.spec.version || "");
 const creating = ref(false);
 const folded = reactive({});
 const fold = (key) => {
@@ -45,12 +41,6 @@ function point(e) {
                 <span class="logo" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
                 <span class="project-name label">{{ project }}</span>
             </a>
-            <template v-if="!demo">
-                <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="href.page('hub')">
-                    <Icon name="panel" />
-                    <span class="label">Journals</span>
-                </a>
-            </template>
             <template v-for="g in groups" :key="g.key">
                 <FoldGroup class="group" :label="g.label" :open="!folded[g.key]" @toggle="fold(g.key)">
                     <template v-for="link in g.links" :key="link.key">
@@ -63,45 +53,19 @@ function point(e) {
                             <span :class="['count', {hot: link.hot}]">{{ link.count || "" }}</span>
                         </a>
                     </template>
-                    <template v-if="g.key === 'project'">
-                        <template v-for="p in pages" :key="`${p.plugin}.${p.name}`">
-                            <a
-                                :class="['item', {on: route.page === 'page' && String(route.n) === `${p.plugin}.${p.name}`}]"
-                                :href="href.pluginPage(p)"
-                            >
-                                <Icon :name="p.icon" />
-                                <span class="label">{{ p.title }}</span>
-                                <span :class="['plugin-dot', p.state]" />
-                            </a>
-                        </template>
-                    </template>
-                </FoldGroup>
-            </template>
-            <template v-if="domains.length">
-                <FoldGroup class="group" label="Domains" :open="!folded.organization" @toggle="fold('organization')">
-                    <template v-for="d in domains" :key="d.name">
-                        <a
-                            :class="['item', {on: route.page === 'organization' && route.n === d.name}]"
-                            :href="href.organization(d.name)"
-                        >
-                            <Icon :name="d.icon || 'agents'" />
-                            <span class="label">{{ d.title || d.name }}</span>
-                            <span :class="['count', {hot: d.working.length}]">{{ d.working.length || "" }}</span>
-                        </a>
-                    </template>
                 </FoldGroup>
             </template>
             <FoldGroup class="group" label="Environments" :open="!folded.environments" @toggle="fold('environments')">
-                <template v-for="e in envs" :key="e.n">
+                <template v-for="e in envs" :key="e.id">
                     <div class="env-row">
-                        <a :class="['item', {on: route.env === e.title}]" :href="href.page()" @click="choose(e.title)">
-                            <span :class="['env-dot', {live: agentRunningIn(e.title)}]" />
-                            <span class="label">{{ e.title }}</span>
+                        <a :class="['item', {on: route.env === e.name}]" :href="href.page()" @click="choose(e.name)">
+                            <span :class="['env-dot', {live: agentRunningIn(e.name)}]" />
+                            <span class="label">{{ e.name }}</span>
                         </a>
-                        <EnvStart :env="e" :live="agentRunningIn(e.title)" />
+                        <EnvStart :env="e" :live="agentRunningIn(e.name)" />
                     </div>
                 </template>
-                <button type="button" class="item item-new" :disabled="demo" v-tip="unlessDemo('')" @click="creating = true">
+                <button type="button" class="item item-new" @click="creating = true">
                     <Icon name="plus" />
                     <span class="label">New environment</span>
                 </button>
@@ -204,9 +168,6 @@ function point(e) {
     background: var(--hover);
 }
 
-.hub-item {
-    margin: 0 10px;
-}
 
 .project:hover {
     color: var(--text);
@@ -251,23 +212,6 @@ function point(e) {
     width: 15px;
     height: 15px;
     color: var(--text-3);
-}
-.plugin-dot {
-    width: 6px;
-    height: 6px;
-    margin-left: auto;
-    border-radius: 50%;
-    background: var(--text-3);
-}
-
-.plugin-dot.ready,
-.plugin-dot.starting {
-    background: var(--created);
-}
-
-.plugin-dot.failed,
-.plugin-dot.blocked {
-    background: var(--danger);
 }
 
 .count {
@@ -398,7 +342,6 @@ function point(e) {
 
 .side-wrap.mini .label,
 .side-wrap.mini .count,
-.side-wrap.mini .plugin-dot,
 .side-wrap.mini :deep(.fold-label),
 .side-wrap.mini :deep(.fold-count),
 .side-wrap.mini :deep(.fold-mark) {

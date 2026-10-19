@@ -2,7 +2,6 @@
 import {useAnchoredAction} from "../composables/anchored.js";
 import {api} from "../api/client.js";
 import {PROVIDER_CHOICES} from "../domain/agents.js";
-import {demo, unlessDemo} from "../platform/demo.js";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
@@ -10,16 +9,15 @@ import MenuPanel from "../kit/MenuPanel.vue";
 const props = defineProps({env: {type: Object, required: true}, live: Boolean});
 const {anchor, error, toggle, run: acted} = useAnchoredAction();
 
-const start = (provider) => acted(() => api.launchAgent(props.env.n, provider));
-const stop = () => acted(() => api.stopAgentIn(props.env.n));
+const start = (provider) => acted(() => api.launchAgent(props.env.id, provider));
+const stop = () => acted(() => api.stopAgentIn(props.env.id));
 </script>
 
 <template>
     <button
         type="button"
         :class="['env-start', {open: anchor}]"
-        :disabled="demo"
-        :title="unlessDemo(live ? `Stop the agent in ${env.title}` : `Start an agent in ${env.title}`)"
+        :title="live ? `Stop the agent in ${env.name}` : `Start an agent in ${env.name}`"
         @click.stop.prevent="toggle"
     >
         <Icon :name="live ? 'stop' : 'play'" :size="12" />
@@ -27,11 +25,11 @@ const stop = () => acted(() => api.stopAgentIn(props.env.n));
     <template v-if="anchor">
         <MenuPanel :anchor="anchor" :min-width="220" :max-width="280" @click.stop @close="anchor = null">
             <template v-if="live">
-                <p class="env-start-head">The agent in {{ env.title }} ends its session</p>
+                <p class="env-start-head">The agent in {{ env.name }} ends its session</p>
                 <MenuItem @click="stop">Stop the agent</MenuItem>
             </template>
             <template v-else>
-                <p class="env-start-head">Start an agent in {{ env.title }}</p>
+                <p class="env-start-head">Start an agent in {{ env.name }}</p>
                 <template v-for="p in PROVIDER_CHOICES" :key="p.key">
                     <MenuItem @click="start(p.key)">{{ p.label }}</MenuItem>
                 </template>

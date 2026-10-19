@@ -15,7 +15,6 @@ import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "../rail/RailWaiting.vue";
 import RailTodos from "../rail/RailTodos.vue";
-import FamilyTree from "./FamilyTree.vue";
 import {peek} from "../route.js";
 
 defineProps({
@@ -27,8 +26,8 @@ defineProps({
     floating: Boolean,
 });
 const emit = defineEmits(["feed"]);
-const notices = computed(() => open("notice").filter((notice) => !notice.data.agent));
-const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
+const notices = computed(() => open("notices"));
+const feedKey = computed(() => (agent.value ? `${agent.value.id}:${agent.value.session}` : ""));
 </script>
 
 <template>
@@ -36,24 +35,22 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
         <SwitchCase :value="view">
             <template #chat>
                 <template v-if="migrationPutOff">
-                    <ChatNotice fixed :notice="{n: 0, title: 'A version 3 journal is kept in .journal/version-3, not yet brought across', data: {action: 'migration'}}" />
+                    <ChatNotice fixed :notice="{id: 0, title: 'A version 3 journal is kept in .journal/version-3, not yet brought across', link: 'migration'}" />
                 </template>
                 <PinnedNotices :notices="notices" :without-toggle="floating" />
                 <Thread view="chat" :hidden="hidden" />
             </template>
             <template #feed>
                 <template v-if="agent">
-                    <FileFeed :key="feedKey" :agent="agent.n" :flush="flush" :options="feed" @options="emit('feed', $event)" />
+                    <FileFeed :key="feedKey" :agent="agent.id" :flush="flush" :options="feed" @options="emit('feed', $event)" />
                 </template>
                 <template v-else>
                     <EmptyState title="No agent yet">The file feed shows an agent's edits as it makes them.</EmptyState>
                 </template>
             </template>
             <template #terminal><TerminalWindow :key="level" :level="level" /></template>
-            <template #question><RailWaiting type="question" /></template>
-            <template #suggestion><RailWaiting type="suggestion" /></template>
-            <template #todos><RailTodos @open="peek('todo', $event)" /></template>
-            <template #family><FamilyTree /></template>
+            <template #questions><RailWaiting table="questions" /></template>
+            <template #tasks><RailTodos @open="peek('tasks', $event)" /></template>
             <template #agents><AgentGrid /></template>
             <template #default><RailWaiting /></template>
         </SwitchCase>

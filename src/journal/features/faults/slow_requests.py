@@ -30,7 +30,7 @@ class SlowRequests:
         self.started = time.monotonic()
 
     def measured(self, method: str, path: str, ms: float) -> None:
-        """A request's time, by the path it asked for with its numbers folded, so /api/plan and /api/message are each their own and every message's page is one."""
+        """A request's time, by the path it asked for with its numbers folded, so /journal/plans and /journal/messages are each their own and every message's page is one."""
         if not self.judging():
             return
         budget = self.budget(method)

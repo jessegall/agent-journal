@@ -2,7 +2,6 @@ import {computed} from "vue";
 import {useDetached} from "./detached.js";
 
 const CHAT_BOX = {w: 420, h: 560, top: 96, edge: 24};
-const FAMILY_BOX = {w: 760, h: 520, top: 72, edge: 24};
 
 export function useFloatingView(view, box) {
     const {floats, detach, close} = useDetached();
@@ -23,5 +22,3 @@ export function useFloatingChat() {
     const {floating, toggle, show} = useFloatingView("chat", CHAT_BOX);
     return {floatingChat: floating, toggleChat: toggle, openChat: show};
 }
-
-export const useFloatingFamily = () => useFloatingView("family", FAMILY_BOX);

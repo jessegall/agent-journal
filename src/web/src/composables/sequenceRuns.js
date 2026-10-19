@@ -1,50 +1,25 @@
 import {computed} from "vue";
-import {route} from "../route.js";
+import {refOf} from "../domain/row.js";
 import {rows} from "../sync/rows.js";
 
-const runsOf = (s) =>
-    Object.entries(s.data.runs || {})
-        .map(([key, run]) => ({
-            sequence: s,
-            named: s.title,
-            opens: s.ref,
-            env: key.split("|")[0],
-            about: key.split("|").slice(1).join("|"),
-            step: run.step,
-            at: run.at,
-            titles: run.titles || s.sections.map((part) => part.title),
-        }))
-        .map((r) => ({...r, steps: r.titles.length}))
-        .filter((r) => r.env === route.value.env);
-
-const inHand = computed(() =>
-    rows("sequence")
-        .filter((s) => !s.deleted && !s.completed)
-        .flatMap(runsOf)
-        .reduce((first, r) => (!first || r.at < first.at ? r : first), null)
+// The sequence runs in hand here: each live agent's run, with the sequence's steps.
+const runs = computed(() =>
+    rows("agents")
+        .filter((agent) => agent.sequence && agent.status !== "stopped")
+        .map((agent) => {
+            const sequence = rows("sequences").find((s) => s.id === agent.sequence.sequence_id) || null;
+            const titles = sequence ? sequence.steps : [];
+            return {sequence, named: agent.sequence.title, opens: `sequences:${agent.sequence.sequence_id}`, about: agent.sequence.about, step: agent.sequence.step, titles, steps: titles.length, agent};
+        })
 );
 
 export function useRuns(resource) {
     return computed(() =>
-        (resource().type === "sequence" ? [resource()] : rows("sequence").filter((s) => !s.deleted))
-            .flatMap(runsOf)
-            .filter((r) => resource().type === "sequence" || r.about === resource().ref)
-            .map((r) => ({...r, waiting: !!inHand.value && inHand.value.at !== r.at}))
+        runs.value.filter((r) => (resource().table === "sequences" ? r.sequence?.id === resource().id : r.about === refOf(resource()))).map((r) => ({...r, waiting: false}))
     );
 }
 
 export function useBeingWritten(resource) {
-    const runs = useRuns(resource);
-    return computed(() => resource().type !== "sequence" && runs.value.length > 0);
-}
-
-export function useStepAbout(refs) {
-    return computed(() => {
-        const run = rows("sequence")
-            .filter((s) => !s.deleted)
-            .flatMap(runsOf)
-            .filter((r) => refs().includes(r.about))
-            .reduce((last, r) => (!last || r.at > last.at ? r : last), null);
-        return run ? run.titles[run.step - 1] || "" : "";
-    });
+    const found = useRuns(resource);
+    return computed(() => resource().table !== "sequences" && found.value.length > 0);
 }

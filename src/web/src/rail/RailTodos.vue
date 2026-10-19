@@ -2,27 +2,23 @@
 import {computed, onMounted} from "vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
-import PriorityIcon from "../kit/PriorityIcon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {peek, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {groupOf, GROUPS, planOf} from "../domain/records.js";
-import {store} from "../state/store.js";
-import {useWanted} from "../sync/wanted.js";
+import {closedAt, isClosed} from "../domain/row.js";
 
 const FINISHED_SHOWN = 20;
 
 const props = defineProps({finished: Boolean});
 const emit = defineEmits(["open"]);
 const scope = useScope();
-useWanted("ticketTodos");
-const show = (type, n) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n));
+const show = (table, id) => (scope.env ? peekThere(scope.env, table, id) : peek(table, id));
 
 const groups = computed(() => {
     const buckets = {};
-    for (const r of scope.rows("todo").filter((t) => !t.completed && !t.deleted)) (buckets[groupOf(r)] ||= []).push(r);
-    for (const rows of Object.values(buckets))
-        rows.sort((a, b) => Number(b.data.priority ?? 100) - Number(a.data.priority ?? 100) || a.n - b.n);
+    for (const r of scope.rows("tasks").filter((t) => !isClosed(t))) (buckets[groupOf(r)] ||= []).push(r);
+    for (const rows of Object.values(buckets)) rows.sort((a, b) => a.id - b.id);
     return Object.keys(GROUPS)
         .filter((key) => buckets[key])
         .map((key) => ({key, label: GROUPS[key], rows: buckets[key]}));
@@ -31,21 +27,21 @@ const groups = computed(() => {
 const done = computed(() =>
     props.finished
         ? scope
-              .rows("todo")
-              .filter((t) => t.completed && !t.deleted)
-              .sort((a, b) => b.completed - a.completed)
+              .rows("tasks")
+              .filter(isClosed)
+              .sort((a, b) => closedAt(b) - closedAt(a))
               .slice(0, FINISHED_SHOWN)
         : []
 );
 
-onMounted(() => props.finished && scope.recent && scope.recent("todo", FINISHED_SHOWN));
+onMounted(() => props.finished && scope.recent && scope.recent("tasks", FINISHED_SHOWN));
 </script>
 
 <template>
-    <template v-if="!groups.length && !scope.loaded('todo')">
-        <Skeleton label="Loading the to-dos" />
+    <template v-if="!groups.length && !scope.loaded('tasks')">
+        <Skeleton label="Loading the tasks" />
     </template>
-    <template v-else-if="!groups.length && !done.length && !store.ticketTodos.length">
+    <template v-else-if="!groups.length && !done.length">
         <div class="home-rail-empty">
             <Icon name="work" />
             <p>Nothing is on the list.</p>
@@ -57,19 +53,14 @@ onMounted(() => props.finished && scope.recent && scope.recent("todo", FINISHED_
                 {{ g.label }}
                 <span class="rail-group-n">{{ g.rows.length }}</span>
             </div>
-            <template v-for="t in g.rows" :key="t.n">
-                <button type="button" :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]" @click="emit('open', t.n)">
+            <template v-for="t in g.rows" :key="t.id">
+                <button type="button" :class="['rail-row', {sel: route.open?.table === 'tasks' && route.open?.id === t.id}]" @click="emit('open', t.id)">
                     <span class="rail-row-marks">
                         <Dot :kind="g.key" />
-                        <PriorityIcon :value="Number(t.data.priority ?? 100)" />
-                        <span class="rail-row-n">#{{ t.n }}</span>
+                        <span class="rail-row-n">#{{ t.id }}</span>
                         <template v-if="planOf(t)">
-                            <span
-                                class="rail-row-plan"
-                                :title="`Plan ${planOf(t).n}: ${planOf(t).title}`"
-                                @click.stop="show('plan', planOf(t).n)"
-                            >
-                                Plan {{ planOf(t).n }}
+                            <span class="rail-row-plan" :title="`Plan ${planOf(t).id}: ${planOf(t).title}`" @click.stop="show('plans', planOf(t).id)">
+                                Plan {{ planOf(t).id }}
                             </span>
                         </template>
                     </span>
@@ -82,27 +73,11 @@ onMounted(() => props.finished && scope.recent && scope.recent("todo", FINISHED_
                 Finished
                 <span class="rail-group-n">{{ done.length }}</span>
             </div>
-            <template v-for="t in done" :key="t.n">
-                <button type="button" class="rail-row" @click="emit('open', t.n)">
+            <template v-for="t in done" :key="t.id">
+                <button type="button" class="rail-row" @click="emit('open', t.id)">
                     <span class="rail-row-marks">
                         <Dot kind="done" />
-                        <span class="rail-row-n">#{{ t.n }}</span>
-                    </span>
-                    <span class="rail-row-title">{{ t.title }}</span>
-                </button>
-            </template>
-        </template>
-        <template v-for="held in store.ticketTodos" :key="held.ticket">
-            <div class="rail-group" :title="`Held by: ticket ${held.ticket}'s agent · environment ${held.env}`">
-                Ticket {{ held.ticket }} · {{ held.title }}
-                <span class="rail-group-n">{{ held.todos.length }}</span>
-            </div>
-            <template v-for="t in held.todos" :key="t.n">
-                <button type="button" class="rail-row" @click="peekThere(held.env, 'todo', t.n)">
-                    <span class="rail-row-marks">
-                        <PriorityIcon :value="Number(t.data.priority ?? 100)" />
-                        <span class="rail-row-n">#{{ t.n }}</span>
-                        <span class="rail-row-plan">{{ held.env }}</span>
+                        <span class="rail-row-n">#{{ t.id }}</span>
                     </span>
                     <span class="rail-row-title">{{ t.title }}</span>
                 </button>

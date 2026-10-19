@@ -14,5 +14,5 @@ class Answering:
     def answer(self, question: Question, text: str, by: Actor) -> Question:
         answered = self.questions.save(question.answered(text), by)
         label = f"You answered question {answered.id}" if by.kind == ActorKind.USER else f"Question {answered.id} answered by {by.named}"
-        self.cards.show(answered.environment_id, "", label, "question", "good", "", f"question:{answered.id}", by=by)
+        self.cards.show(answered.environment_id, "", label, "question", "good", "", f"questions:{answered.id}", by=by)
         return answered

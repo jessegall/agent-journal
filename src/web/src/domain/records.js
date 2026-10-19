@@ -1,100 +1,83 @@
-import {meta, types} from "./spec.js";
+import {meta, tables} from "./tables.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-
-const ENDED = ["done", "abandoned"];
-const UNSTARTED = ["building", "ready", "approved"];
+import {createdAt, isClosed, madeBy, refOf} from "./row.js";
 
 export const GROUPS = {
     started: "In progress",
     parked: "Paused",
     blocked: "Blocked",
     planned: "Planned",
-    waiting: "Waiting on others",
     asked: "Needs you",
     open: "Open",
 };
 
-export const open = (type) => rows(type).filter((r) => !r.completed && !r.deleted);
-export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
-export const finishedUnread = (type) => rows(type).filter((r) => r.completed && !r.deleted && !r.seen.includes("user"));
+const UNSTARTED = ["draft", "ready", "reviewing", "approved"];
+
+export const open = (table) => rows(table).filter((r) => !isClosed(r));
+
+// What the user has not seen: the agent's messages not read yet, and the open rows of a table that someone else made.
+const unseen = (r) => (r.table === "messages" ? r.author === "agent" && !r.read_at : madeBy(r) !== "user");
+export const unreadByUser = (table) => open(table).filter(unseen);
+export const finishedUnread = (table) => rows(table).filter((r) => isClosed(r) && unseen(r));
+
 const pointsAt = (link, ref) => link === ref || link.startsWith(`${ref}#`) || link.startsWith(`${ref}:`);
-export const linkedTo = (ref) =>
-    types.value.flatMap((t) => rows(t.name).filter((r) => r.refs.some((link) => pointsAt(link, ref)) && !r.deleted));
+
+// The rows that name another as theirs: a document's or report's links, a plan's tasks, a comment's row, a filed message.
+export const linksOf = (r) => [...(r.links || []), ...(r.on || []), ...(r.comments_on || []), ...(r.task_ids || []).map((id) => `tasks:${id}`), ...(r.filed || []).map((id) => `tasks:${id}`)];
+export const linkedTo = (ref) => tables.value.flatMap((t) => rows(t.name).filter((r) => linksOf(r).some((link) => pointsAt(link, ref))));
 
 export function refParts(ref) {
     const [whole, section = ""] = ref.split("#");
     const [env, ...rest] = whole.includes("/") ? whole.split("/") : ["", whole];
-    const [type, n, lines = ""] = rest.join("/").split(":");
-    return {env, type, n: Number(n), part: section || lines};
+    const [table, id, lines = ""] = rest.join("/").split(":");
+    return {env, table, id: Number(id), part: section || lines};
 }
 
 export function byRef(ref) {
-    const {env, type, n} = refParts(ref);
-    return rows(type).find((r) => r.n === n && (r.env || "") === env) || null;
+    const {table, id} = refParts(ref);
+    return rows(table).find((r) => r.id === id) || null;
 }
 
-export function waitsOn(r) {
-    return [].concat(r.data.after || []).filter((ref) => {
-        const [type, n] = ref.split(":");
-        const other = rows(type).find((x) => x.n === Number(n));
-        return other && !other.deleted && (type === "plan" ? !ENDED.includes(other.data.status) : !other.completed);
-    });
+export function planOf(task) {
+    return task.plan_id ? rows("plans").find((p) => p.id === task.plan_id) || null : null;
 }
 
-export function planOf(r) {
-    return rows("plan").find((p) => !p.deleted && (p.data.phases || []).some((f) => (f.todos || []).includes(r.n))) || null;
+export function planned(task) {
+    const plan = planOf(task);
+    return !!plan && UNSTARTED.includes(plan.state);
 }
 
-export function planned(r) {
-    const plan = planOf(r);
-    return !!plan && UNSTARTED.includes(plan.data.status);
+export const parked = (task) => task.state === "parked";
+
+const asked = (task) => rows("questions").some((q) => !isClosed(q) && (q.text || "").includes(`task ${task.id}`));
+
+export function groupOf(task) {
+    if (task.state === "blocked") return "blocked";
+    if (parked(task)) return "parked";
+    if (planned(task)) return "planned";
+    if (task.state === "started") return "started";
+    return asked(task) ? "asked" : "open";
 }
 
-export function parkedFor(r) {
-    const work =
-        r.type === "work" ? r : r.data.status === "started" && r.data.work ? rows("work").find((w) => w.n === Number(r.data.work)) : null;
-    return work && !work.completed ? work.data.parked || "" : "";
-}
-
-export const parked = (r) => !!parkedFor(r);
-
-export function groupOf(r) {
-    if (r.data.blocked) return "blocked";
-    if (parked(r)) return "parked";
-    if (planned(r)) return "planned";
-    if (waitsOn(r).length) return "waiting";
-    if (r.data.status === "started") return "started";
-    return rows("question").some((q) => !q.completed && q.refs.includes(r.ref)) ? "asked" : "open";
-}
-
-export const state = (r) =>
-    r.data.struck
-        ? "struck"
-        : r.completed
-          ? "done"
-          : r.data.blocked
-            ? "blocked"
-            : parked(r)
-              ? "parked"
-              : planned(r)
-                ? "planned"
-                : r.data.status === "started"
-                  ? "started"
-                  : "open";
+export const state = (task) =>
+    isClosed(task) ? "done" : task.state === "blocked" ? "blocked" : parked(task) ? "parked" : planned(task) ? "planned" : task.state === "started" ? "started" : "open";
 
 export function happened(r) {
-    const kind = meta(r.type);
-    const action = r.completed ? "completed" : "created";
-    const label = (kind.event_labels || {})[action];
-    if (label) return label;
-    return r.completed ? `${kind.title} closed` : `${kind.title} created`;
+    const kind = meta(r.table);
+    return isClosed(r) ? `${kind.title} closed` : `${kind.title} created`;
 }
 
+// The notices the user missed while away: open ones made since a moment, newest first.
 export function missed(since) {
-    return rows("notification")
-        .filter((n) => !n.deleted && !n.completed && n.created * 1000 >= since && !n.seen.includes("user"))
-        .sort((a, b) => b.created - a.created);
+    return rows("notices")
+        .filter((n) => !isClosed(n) && createdAt(n) * 1000 >= since && unseen(n))
+        .sort((a, b) => createdAt(b) - createdAt(a));
 }
 
-export const recordCount = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;
+export const recordCount = (table, key = "open") => (store.counts && store.counts[table] && store.counts[table][key]) || 0;
+
+// How many rows wait on the user across the tables that ask for attention, as the top bar's bell counts them.
+export const waitingCount = () => tables.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length;
+
+export {refOf};

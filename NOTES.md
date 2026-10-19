@@ -240,20 +240,24 @@ C. **Who ran a command.** An agent's shell has no session id. The shim sends `ag
 D. **Supervisor bodies** and `journal claude|codex [args]` in the entry point. The supervisor
    sets `AGENT_JOURNAL_ACTIVE=1`, `JOURNAL_ENV`, `JOURNAL_ROOT` and `JOURNAL_INBOX` for both
    the agent and the server it starts with `journal.py serve`.
-E. **API for the viewer** under `/api`: environments, agents (with state and context), tasks,
-   plans, messages, questions (answer), facts, rules, reminders, entries (`?since=` for live
-   updates), settings (feature switches), skills; the server serves the built viewer at `/`.
-F. **The viewer is version 3's, whole** (the user's ruling on 2026-10-15, reversing the small
-   rebuild): `src/web` is version 3's viewer source and its built `dist`, untouched, with its
-   `node_modules` shared from `v3.bak` by a symlink. The server speaks version 3's API under
-   `/api` from version 4's rows (`src/journal/http/v3/`): a manifest and a settings tree
-   recorded from a live version 3 server (`manifest.json`, `settings.json`, with task and
-   worker names laid in), one shaper per type from a model to the row shape the viewer reads,
-   one reading endpoint per type (`rows_controller.py`: its page, its rows above `from`, its
-   counts), so a type that fails leaves the others answering, events and the event stream from the
-   entries (every row change is an entry now), the bar, the summary, identity, agents,
-   profiles, and the writes the viewer sends (`v3_actions.py`). The viewer polls each type alone;
-   the one dashboard call is gone.
+E. **One API, `/journal`** (task 719, 2026-10-19): the viewer, the share page, a plugin's
+   program and the shim all speak it; `/api` and `src/journal/http/v3` are gone. Each resource
+   has one controller and is answered as its model's own fields with `table` first and a few
+   named additions (a task's `plan_id` and `worker_id`, a message's `filed`, `comments_on` and
+   `mentions`, a plan's outline, an agent's activity). One list protocol for every table:
+   `GET /journal/<table>?limit&before&after&since&ids&closed` answers `{rows, more, counts}`.
+   Acts are `POST /journal/<table>/<id>/<act>`, named as the controller's method. Rows are
+   named by their table everywhere (`tasks:12`). The viewer marks itself with
+   `X-Journal-Viewer: 1`. `tests/test_server.py::test_every_route_the_viewer_names_is_served_and_version_threes_api_is_gone`
+   reads every path the viewer names and fails on one no route serves.
+F. **The viewer reads version 4's rows**: its catalogue of tables (titles, icons, where each is
+   listed) is its own (`src/web/src/domain/tables.js`), the manifest holds only the journal's
+   facts and the features with their options; `domain/row.js` reads what every row answers alike
+   (title, body, closed, times as ISO strings); `domain/acts.js` names what each table offers.
+   Deleted with version 3's API, having no version 4 server: the phone, the board and tickets,
+   the organisation, the hub of journals, hosting and members, the browser extension,
+   suggestions, collections, document revisions, update reports, layout links, agent pause and
+   appoint, agent hooks, work modes, priorities, the plugin services panel, replies on shares.
 D2. **The boot menu** is version 3's, rebuilt in the supervisor and moved to the journal's launcher (`src/journal/launcher`) in plan 8: a banner, then one question
    at a time under it, moved through with ↑ ↓ (or j k), a number to jump, Enter to pick and
    Esc to leave; the space under the banner is cleared before each question. It asks which
@@ -335,16 +339,15 @@ Still to do, in rough order:
   triggers; no hub of journals; no phone; no sharing; no plugins.
 - Memory keyword whispers and the rule review; put-off-work; closed-by-commit; auto mode and
   work mode settings; permission prompts routed to the viewer.
-- Panes now read from the entries: file edits (Edit and Write calls, with the lines added
-  and removed) and the terminal (shell commands and their output). Still served empty:
-  collections, suggestions, dumps, plugins, integrations, secrets, phone, sharing, the hub
-  when the project is under a throwaway path. Each is a shaper or a stub in `http/v3/` away.
+- Panes read from the entries: file edits and the terminal.
 - Chat marks drawn today: commit badges (from the git feature's entries), skills loaded; not yet: subagent marks, thoughts, whispers, test-run cards, reactions.
 - Install from a clone or a release (`install.sh`), upgrade and migrations; the `.pyz` build.
 - `v3.bak/` can go once nothing is left to read from it.
-- A message is one shape whoever wrote it: GET /api/<env>/message serves the user's and the agent's
-  alike, with author, actor, reply_to and acknowledgement in data, and the chat draws a reply at its own
-  number with a one-line quote of what it answers. The comment type is only a user's comment under a row.
+- A message is one shape whoever wrote it: GET /journal/messages serves the user's and the agent's
+  alike, and the chat draws a reply with a one-line quote of what it answers. A comment is a message
+  linked to its row as comments_on, listed under it by GET /journal/comments.
+- Open after task 719: a worker's transcript has a route but no pane in the viewer; vitest's
+  suite in `src/web/tests` still holds tests written against version 3's row shapes.
 
 ## The plan
 

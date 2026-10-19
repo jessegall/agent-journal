@@ -1,18 +1,13 @@
 <script setup>
 import SwitchCase from "./kit/SwitchCase.vue";
 import AboutPage from "./pages/AboutPage.vue";
-import BoardPage from "./pages/BoardPage.vue";
 import CodePage from "./pages/CodePage.vue";
-import CommitPage from "./pages/CommitPage.vue";
 import FilePage from "./pages/FilePage.vue";
 import FilesPage from "./pages/FilesPage.vue";
 import Home from "./pages/Home.vue";
-import HubPage from "./pages/HubPage.vue";
 import Index from "./pages/Index.vue";
 import IntegrationsPage from "./pages/IntegrationsPage.vue";
 import ChartPage from "./pages/ChartPage.vue";
-import OrganizationPage from "./pages/OrganizationPage.vue";
-import PluginPage from "./pages/PluginPage.vue";
 import PluginsPage from "./pages/PluginsPage.vue";
 import ResourcesPage from "./pages/ResourcesPage.vue";
 import SearchPage from "./pages/SearchPage.vue";
@@ -32,7 +27,6 @@ defineProps({page: {type: String, required: true}});
         <template #search><SearchPage /></template>
         <template #files><FilesPage /></template>
         <template #code><CodePage /></template>
-        <template #commit><CommitPage /></template>
         <template #skills><SkillsPage /></template>
         <template #profiles><AgentProfilesPage /></template>
         <template #about><AboutPage /></template>
@@ -40,12 +34,8 @@ defineProps({page: {type: String, required: true}});
         <template #secrets><SecretsPage /></template>
         <template #mcp><IntegrationsPage /></template>
         <template #chart><ChartPage /></template>
-        <template #kanban><BoardPage /></template>
-        <template #organization><OrganizationPage /></template>
         <template #resources><ResourcesPage /></template>
-        <template #page><PluginPage /></template>
-        <template #hub><HubPage /></template>
         <template #file><FilePage /></template>
-        <template #default><Index :type="route.page" /></template>
+        <template #default><Index :table="route.page" /></template>
     </SwitchCase>
 </template>

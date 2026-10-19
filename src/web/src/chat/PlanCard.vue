@@ -1,11 +1,9 @@
 <script setup>
-import {otherPlans, othersLine, PLAN_STATES, reviewersLine, sizeOf, stoppedOf} from "../domain/plans.js";
+import {otherPlans, othersLine, PLAN_STATES, reviewersLine, sizeOf, statusOf, stoppedOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import ChatDock from "../kit/ChatDock.vue";
-import CloseButton from "../kit/CloseButton.vue";
-import {useScope} from "../composables/scope.js";
 import Icon from "../kit/Icon.vue";
 import PlanList from "../layout/PlanList.vue";
 import {approvePlan, startPlan} from "../actions/plans.js";
@@ -16,20 +14,19 @@ import {rows} from "../sync/rows.js";
 
 const PREVIEW_PHASES = 5;
 const props = defineProps({plan: Object, folded: Boolean});
-const scope = useScope();
 const dock = ref(null);
 const listing = ref(false);
 const lifted = ref(false);
 const error = ref("");
-const status = computed(() => props.plan.data.status);
+const status = computed(() => statusOf(props.plan));
 const parked = computed(() => status.value === "parked");
 const reviewing = computed(() => status.value === "reviewing");
-const reviewers = computed(() => (reviewing.value ? reviewersLine(props.plan.data.reviewers || 0) : ""));
-const building = computed(() => status.value === "building" || status.value === "draft");
-const others = computed(() => otherPlans(rows("plan"), props.plan));
-const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
+const reviewers = computed(() => (reviewing.value ? reviewersLine(props.plan.reviewers || 0) : ""));
+const building = computed(() => status.value === "draft");
+const others = computed(() => otherPlans(rows("plans"), props.plan));
+const phases = computed(() => (props.plan.phases || []).map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.task_ids.length})));
 const hidden = computed(() => Math.max(0, phases.value.length - PREVIEW_PHASES));
-const adding = computed(() => (props.plan.data.stage === "todos" ? "Adding to-dos…" : "Adding phases…"));
+const adding = "The agent is still writing the plan…";
 usePlanRows(() => [props.plan]);
 
 async function start() {
@@ -48,7 +45,7 @@ async function start() {
     <ChatDock ref="dock" label="Plan" :kind="status" :folded="folded" :lifted="lifted">
         <template #head>
             <Icon name="plan" class="plan-card-icon" />
-            <button type="button" class="plan-card-title" title="Open plan" @click="peek('plan', plan.n)">
+            <button type="button" class="plan-card-title" title="Open plan" @click="peek('plans', plan.id)">
                 {{ plan.title }}
             </button>
             <Chip class="plan-card-chip" :tone="status === 'ready' ? 'accent' : ''">{{ PLAN_STATES[status] }}</Chip>
@@ -56,7 +53,7 @@ async function start() {
                 <span class="plan-card-reviewers">{{ reviewers }}</span>
             </template>
             <span class="plan-card-size" data-fades>
-                {{ parked ? stoppedOf(plan, rows("todo")) : sizeOf(plan) }}
+                {{ parked ? stoppedOf(plan, rows("tasks")) : sizeOf(plan) }}
             </span>
             <span class="plan-card-acts chat-dock-acts" data-fades>
                 <template v-if="othersLine(others)">
@@ -69,7 +66,7 @@ async function start() {
                         </template>
                     </span>
                 </template>
-                <Btn small @click="peek('plan', plan.n)">Open plan</Btn>
+                <Btn small @click="peek('plans', plan.id)">Open plan</Btn>
                 <template v-if="!reviewing">
                     <Btn
                         kind="primary"
@@ -84,7 +81,6 @@ async function start() {
                     </Btn>
                 </template>
             </span>
-            <CloseButton title="Hide from chat; it stays on the Plans page" @click="scope.api.act('plan', plan.n, 'dismiss')" />
         </template>
         <template v-if="!parked && (phases.length || building)">
             <ol class="plan-card-phases" data-fades>
@@ -93,7 +89,7 @@ async function start() {
                         <span class="plan-card-n">{{ ph.n }}</span>
                         <span class="plan-card-name">{{ ph.title }}</span>
                         <span class="plan-card-rows">
-                            {{ ph.rows ? `${ph.rows} to-do${ph.rows === 1 ? "" : "s"}` : "" }}
+                            {{ ph.rows ? `${ph.rows} task${ph.rows === 1 ? "" : "s"}` : "" }}
                         </span>
                     </li>
                 </template>

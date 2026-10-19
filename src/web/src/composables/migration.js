@@ -1,6 +1,5 @@
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {report} from "../platform/faults.js";
 
 // where bringing the kept version 3 journal across stands, as the journal says it: offered once in a dialog, then a line on Home
 const migration = ref(null);
@@ -13,13 +12,5 @@ export async function loadMigration() {
     migration.value = await api.migration().catch(() => null);
 }
 
-async function sent(request, path) {
-    try {
-        migration.value = await request;
-    } catch (error) {
-        report("threw", error.message, `POST /api/migration/${path}`);
-    }
-}
-
-export const putMigrationOff = () => sent(api.putMigrationOff(), "later");
-export const startMigration = () => sent(api.startMigration(), "start");
+export const putMigrationOff = async () => (migration.value = await api.putMigrationOff());
+export const startMigration = async () => (migration.value = await api.startMigration());

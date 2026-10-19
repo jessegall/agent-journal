@@ -81,8 +81,8 @@ let drawn = "stand";
 const walking = ref(false);
 
 // the agent's row with the system's cards that are its own, which the figure's beats are read from
-const lead = computed(() => withSystemCards(agent.value, rows("message")));
-const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
+const lead = computed(() => withSystemCards(agent.value, rows("messages")));
+const held = computed(() => figureStateOf(agent.value, waitingSince.value, now.value));
 // whether the figure belongs in the chat now: its agent is here, in a state Settings shows it in
 const belongs = computed(() => Boolean(agent.value) && shownIn(store.settings?.voices?.avatar_shown, held.value.state));
 // the stay the figure keeps while nothing calls it anywhere, and the box it was last clicked out of, kept clear of it (perches.js)
@@ -460,7 +460,7 @@ function look() {
         ...beatsAfter(lead.value, seenAt),
         ...cardsAfter(lead.value, knownCards),
         ...testResultsAfter(lead.value, testStates),
-        ...facesAfter(rows("reaction"), seenAt),
+        ...facesAfter(rows("reactions"), seenAt),
     ];
     if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.at));
     const stroll = walkingMoment(body.trip, walkBegan, now.value);

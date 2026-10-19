@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {computed, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -29,11 +29,17 @@ const words = computed(() => query.value.trim());
 const key = computed(() => `${kind.value}|${shelf.value}|${words.value}`);
 const view = computed(() => views[key.value] || null);
 
+// A file is served under its row, so the address names the environment for the browser to open it.
+const addressed = (file) => {
+    const [table, id] = file.row.split(":");
+    return {...file, url: api.fileUrl(table, Number(id), file.name)};
+};
+
 async function fetchPage(at, skip) {
     const asked = {kind: kind.value, shelf: shelf.value, search: words.value, last: PAGE, skip};
-    const got = await api.filesPage(asked);
+    const got = await api.attachments(asked);
     const held = views[at] || {files: []};
-    views[at] = {files: [...held.files, ...got.files], more: got.more, found: got.found};
+    views[at] = {files: [...held.files, ...got.files.map(addressed)], more: got.more, found: got.found};
     counts.value = got.counts;
 }
 

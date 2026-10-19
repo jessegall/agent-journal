@@ -16,8 +16,8 @@ const chosen = computed(() => Boolean(draft.value.kind));
 const pick = (kind) => (draft.value = {...drafted(null), kind: kind.key, fields: kind.fields.map((field) => ({...field, variable: ""}))});
 
 async function create() {
-    const {done, got} = await attempt(() => api.createSecret(creating(draft.value)));
-    if (done) emit("open", got.n);
+    const {done, got} = await attempt(() => api.create("secrets", creating(draft.value)));
+    if (done) emit("open", got.id);
 }
 </script>
 

@@ -1,21 +1,17 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {peek} from "../route.js";
+import {peekRef} from "../route.js";
 
 const props = defineProps({file: Object});
-const kind = computed(() => meta(props.file.type));
-const named = computed(() => props.file.title || `${kind.value.title} ${props.file.n}`);
+const table = computed(() => props.file.row.split(":")[0]);
+const kind = computed(() => meta(table.value));
+const named = computed(() => props.file.title || props.file.row);
 </script>
 
 <template>
-    <button
-        type="button"
-        class="file-source"
-        :title="`Attached to ${kind.title.toLowerCase()} ${file.n}: ${named}`"
-        @click="peek(file.type, file.n)"
-    >
+    <button type="button" class="file-source" :title="`Attached to ${kind.title.toLowerCase()} ${file.row.split(':')[1]}: ${named}`" @click="peekRef(file.row)">
         <Icon :name="kind.icon" :size="11" />
         <span class="file-source-title">{{ named }}</span>
     </button>

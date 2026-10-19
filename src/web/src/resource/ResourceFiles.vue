@@ -6,11 +6,10 @@ import Icon from "../kit/Icon.vue";
 import ResourceBlock from "./ResourceBlock.vue";
 import {openPictures} from "../platform/view.js";
 
-const props = defineProps({resource: {type: Object, required: true}, files: {type: Array, required: true}});
-const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
-const pictures = computed(() =>
-    props.files.filter(([name]) => isPicture(name)).map(([name]) => ({name, url: fileUrl(props.resource.type, props.resource.n, name)}))
-);
+const props = defineProps({resource: {type: Object, required: true}});
+const fileUrl = inject("fileUrl", (table, id, name) => api.fileUrl(table, id, name));
+const url = (name) => fileUrl(props.resource.table, props.resource.id, name);
+const pictures = computed(() => props.resource.files.filter(isPicture).map((name) => ({name, url: url(name)})));
 const showPicture = (name) =>
     openPictures(
         pictures.value,
@@ -20,19 +19,16 @@ const showPicture = (name) =>
 
 <template>
     <ResourceBlock heading="Attached files">
-        <template v-for="[name, description] in files" :key="name">
-            <a class="file" :href="fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
+        <template v-for="name in resource.files" :key="name">
+            <a class="file" :href="url(name)" target="_blank" :title="name">
                 <Icon name="clip" :size="13" />
                 <span class="file-text">
                     <span class="file-name">{{ name }}</span>
-                    <template v-if="description">
-                        <span class="description">{{ description }}</span>
-                    </template>
                 </span>
             </a>
             <template v-if="isPicture(name)">
                 <button type="button" class="file-preview" :title="`Show ${name}`" @click="showPicture(name)">
-                    <img :src="fileUrl(resource.type, resource.n, name)" :alt="name" loading="lazy" />
+                    <img :src="url(name)" :alt="name" loading="lazy" />
                 </button>
             </template>
         </template>

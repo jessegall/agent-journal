@@ -17,8 +17,8 @@ const emit = defineEmits(["close"]);
 const REFRESH_EVERY = 10000;
 const document = ref(null);
 usePoll(
-    `dashboard-${props.plugin.n}-${props.board.name}`,
-    () => api.pluginDashboard(props.plugin.n, props.board.name),
+    `dashboard-${props.plugin.id}-${props.board.name}`,
+    () => api.pluginDashboard(props.plugin.id),
     REFRESH_EVERY,
     (got) => (document.value = got)
 );

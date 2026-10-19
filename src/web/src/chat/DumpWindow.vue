@@ -2,7 +2,7 @@
 import {computed, reactive, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {peekRef, route} from "../route.js";
+import {peekRef} from "../route.js";
 import {startDump, useDump} from "../composables/dump.js";
 import Btn from "../kit/Btn.vue";
 import DumpMadeRow from "./DumpMadeRow.vue";
@@ -32,7 +32,7 @@ watch(
     {immediate: true}
 );
 
-const every = computed(() => rows("dump").filter((d) => !d.deleted));
+const every = computed(() => rows("dumps"));
 const {
     dump,
     items,
@@ -66,12 +66,7 @@ const {
     leave,
     renameCollection: rename,
     renameRow,
-} = useDump(
-    every,
-    computed(() => store.dumpSelected),
-    rows,
-    (d) => `${route.value.env}|dump:${d.n}`
-);
+} = useDump(every, computed(() => store.dumpSelected), rows);
 watch(
     () => store.dumpSelected,
     () => {
@@ -116,7 +111,7 @@ async function send() {
     try {
         const row = await startDump(text, draft.files);
         Object.assign(draft, {text: "", files: []});
-        store.dumpSelected = row.n;
+        store.dumpSelected = row.id;
     } catch (e) {
         draft.error = e.message;
     } finally {

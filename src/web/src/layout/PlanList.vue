@@ -1,5 +1,5 @@
 <script setup>
-import {PLAN_STATES, sizeOf, stoppedOf} from "../domain/plans.js";
+import {PLAN_STATES, sizeOf, statusOf, stoppedOf} from "../domain/plans.js";
 import {ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -20,7 +20,7 @@ usePlanRows(() => props.plans);
 
 function open(p) {
     emit("close");
-    peek("plan", p.n);
+    peek("plans", p.id);
 }
 
 async function run(action, p) {
@@ -38,32 +38,32 @@ async function run(action, p) {
         <MenuPanel ref="menu" :anchor="anchor" @click.stop @close="emit('close')">
             <div class="plan-list-body">
                 <p class="plan-list-head">Other plans</p>
-                <template v-for="p in plans" :key="p.n">
+                <template v-for="p in plans" :key="p.id">
                     <div class="plan-list-row">
                         <Icon name="plan" class="plan-list-icon" />
                         <div class="plan-list-words">
                             <button type="button" class="plan-list-name" title="Open plan" @click="open(p)">{{ p.title }}</button>
                             <span class="plan-list-sub">
-                                <Chip class="plan-list-chip" :tone="p.data.status === 'ready' ? 'accent' : ''">
-                                    {{ PLAN_STATES[p.data.status] }}
+                                <Chip class="plan-list-chip" :tone="statusOf(p) === 'ready' ? 'accent' : ''">
+                                    {{ PLAN_STATES[statusOf(p)] }}
                                 </Chip>
-                                <span>{{ p.data.status === "parked" ? stoppedOf(p, rows("todo")) : sizeOf(p) }}</span>
+                                <span>{{ statusOf(p) === "parked" ? stoppedOf(p, rows("tasks")) : sizeOf(p) }}</span>
                             </span>
                         </div>
                         <span class="plan-list-acts">
-                            <template v-if="p.data.status === 'approved'">
+                            <template v-if="statusOf(p) === 'approved'">
                                 <Btn small @click="run(parkPlan, p)">Pause</Btn>
                             </template>
-                            <template v-if="p.data.status === 'ready'">
+                            <template v-if="statusOf(p) === 'ready'">
                                 <Btn small @click="run(approvePlan, p)">Start</Btn>
                             </template>
-                            <template v-if="p.data.status === 'parked'">
+                            <template v-if="statusOf(p) === 'parked'">
                                 <Btn small @click="run(startPlan, p)">Resume</Btn>
                             </template>
                         </span>
                     </div>
                 </template>
-                <p class="plan-list-hint">{{ running ? "Starting a plan pauses the one that runs, unless it is with a helper." : "One plan runs at a time." }}</p>
+                <p class="plan-list-hint">{{ running ? "Starting a plan pauses the one that runs, unless it is with a worker." : "One plan runs at a time." }}</p>
                 <template v-if="error">
                     <p class="plan-list-error">{{ error }}</p>
                 </template>

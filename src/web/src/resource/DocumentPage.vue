@@ -5,12 +5,12 @@ import {route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
-import PlanTimelinePanel from "./PlanTimelinePanel.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import {useBeingWritten} from "../composables/sequenceRuns.js";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
+import {refOf, sectionsOf} from "../domain/row.js";
 
 const props = defineProps({
     resource: Object,
@@ -20,12 +20,9 @@ const props = defineProps({
 });
 const emit = defineEmits(["close"]);
 const quote = ref("");
-const listedAlready = computed(() => [
-    ...props.linked,
-    ...((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)),
-]);
+const listedAlready = computed(() => [...props.linked, ...(props.resource.table === "plans" ? props.resource.task_ids || [] : []).map((id) => `tasks:${id}`)]);
 const scope = useScope();
-const count = computed(() => scope.rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
+const count = computed(() => scope.rows("comments").filter((c) => c.on.includes(refOf(props.resource))).length);
 const talking = ref(props.focus > 0);
 const shifted = ref(talking.value);
 const panel = ref(talking.value);
@@ -54,7 +51,7 @@ function panelLeft() {
 const aside = ref("comments");
 const running = useBeingWritten(() => props.resource);
 const page = ref(null);
-const quick = computed(() => !props.readOnly && !shifted.value && !running.value && !!meta(props.resource.type)?.takes_comments);
+const quick = computed(() => !props.readOnly && !shifted.value && !running.value && !!meta(props.resource.table)?.takes_comments);
 const SIDE_BY_SIDE = 720;
 
 watch(
@@ -89,8 +86,8 @@ function sectionAt(part) {
     const sections = [...(body.value?.querySelectorAll(".section") || [])];
     const lines = part.match(/^(\d+)(?:-\d+)?$/);
     if (!lines) return sections.find((el) => el.querySelector("h3")?.textContent.trim().toLowerCase() === part.toLowerCase());
-    let at = (props.resource.brief || "").split("\n").length;
-    const index = props.resource.sections.findIndex((section) => {
+    let at = 0;
+    const index = sectionsOf(props.resource.body).findIndex((section) => {
         at += 1 + (section.body || "").split("\n").length;
         return at >= Number(lines[1]);
     });
@@ -98,7 +95,7 @@ function sectionAt(part) {
 }
 
 watch(
-    () => [route.value.sub, props.resource.n],
+    () => [route.value.sub, props.resource.id],
     async ([sub]) => {
         if (!sub) return;
         await nextTick();
@@ -115,7 +112,7 @@ watch(
 <template>
     <div ref="page" :class="['document', {shifted, quick}]">
         <div ref="body" class="document-body">
-            <Highlight :off="!!resource.data?.system || readOnly" @quote="quote = $event">
+            <Highlight :off="readOnly" @quote="quote = $event">
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
                 </slot>
@@ -137,9 +134,6 @@ watch(
                 <SwitchCase :value="aside">
                     <template #running>
                         <SequenceRuns class="running-panel" :resource="resource" panel />
-                    </template>
-                    <template #timeline>
-                        <PlanTimelinePanel :plan="resource" />
                     </template>
                     <template #default>
                         <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />

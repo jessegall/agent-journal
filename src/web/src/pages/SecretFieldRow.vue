@@ -12,7 +12,7 @@ const value = ref("");
 const {busy, failure, attempt} = useAttempt();
 
 async function replace() {
-    const {done} = await attempt(() => api.fillSecret(props.row.n, props.field.name, value.value));
+    const {done} = await attempt(() => api.act("secrets", props.row.id, "fill", {field: props.field.name, value: value.value}));
     if (done) value.value = "";
 }
 </script>
@@ -25,7 +25,7 @@ async function replace() {
         </div>
         <form class="secret-field-form" autocomplete="off" @submit.prevent="replace">
             <TextInput
-                :id="`secret-${row.n}-${field.name}`"
+                :id="`secret-${row.id}-${field.name}`"
                 :value="value"
                 @input="value = $event.target.value"
                 :type="field.hidden ? 'password' : 'text'"

@@ -4,15 +4,16 @@ import CloseButton from "../kit/CloseButton.vue";
 import {computed} from "vue";
 import {go, peek, route} from "../route.js";
 import {missed} from "../domain/records.js";
+import {createdAt, refOf} from "../domain/row.js";
 import {age, span} from "../format/time.js";
 import {ui} from "../state/ui.js";
 
-const lines = computed(() => missed(ui.away.since).map((n) => ({key: n.ref, n: n.n, text: n.title, age: age(n.created)})));
+const lines = computed(() => missed(ui.away.since).map((n) => ({key: refOf(n), id: n.id, text: n.title, age: age(createdAt(n))})));
 const forText = computed(() => (ui.away.since ? `${span((ui.away.back - ui.away.since) / 1000)} away` : "last 24 hours"));
 
-function open(n) {
+function open(id) {
     ui.away.open = false;
-    peek("notification", n);
+    peek("notices", id);
 }
 
 function toInbox() {
@@ -37,7 +38,7 @@ useEscape(
         </div>
         <div class="away-lines">
             <template v-for="d in lines" :key="d.key">
-                <button type="button" class="away-line" @click="open(d.n)">
+                <button type="button" class="away-line" @click="open(d.id)">
                     <span>{{ d.text }}</span>
                     <span class="away-age">{{ d.age }}</span>
                 </button>

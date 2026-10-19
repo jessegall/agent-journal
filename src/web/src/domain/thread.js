@@ -1,97 +1,81 @@
 import {withoutChips} from "../text/words.js";
 import {visibleIn} from "./chatVisibility.js";
+import {refOf, seconds} from "./row.js";
 
 const PROMISED_WITHIN = 5;
 
-const isThought = (m) => (m.data.card || {}).kind === "thought";
-
-const comments = (m) => m.data.comments_on || [];
+// A turn of the chat: a message's own fields, with its kind, who said it, a key that stays while a placeholder becomes the
+// real message, and when, in seconds. A card of the journal's carries what it draws in its data.
+const turnOf = (m, kind, who, extra = {}) => ({...m, kind, who, key: m.key || refOf(m), at: seconds(m.created_at), ...extra});
 
 const spoken = (m) => {
-    if (isThought(m)) return {...m, type: "thought", who: "agent", title: m.brief};
-    if (comments(m).length) return {...m, type: "comment", who: m.seen[0], refs: [...comments(m), ...m.refs]};
-    return {...m, who: m.seen[0]};
+    if (m.data?.kind === "thought") return turnOf(m, "thought", "agent");
+    if ((m.comments_on || []).length) return turnOf(m, "comment", m.author);
+    return turnOf(m, "message", m.author);
 };
 
 const SYSTEM_TURNS = {
-    whisper: (card) => ({type: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
-    skill: (card) => ({type: "skill", title: card.detail, data: {}}),
-    compacted: () => ({type: "compacted", data: {}}),
+    whisper: (card) => ({kind: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
+    skill: (card) => ({kind: "skill", title: card.detail, data: {}}),
+    compacted: () => ({kind: "compacted", data: {}}),
     question: (card, label, m) => ({
-        type: "question",
-        ref: card.row,
-        n: card.n,
-        outcome: card.answer || "",
-        completed: card.answer == null ? 0 : m.updated,
-        data: {
-            options: card.options.map((title) => ({title, description: ""})),
-            pick: 1,
-            chosen: card.answer == null ? 0 : card.options.indexOf(card.answer) + 1,
-            kept: false,
-            answered_by: card.answer == null ? "" : "user",
-            reason: "",
-            final: false,
-            dismissed: false,
-        },
+        kind: "question",
+        question: {id: Number(card.row.split(":")[1]), options: card.options, answer: card.answer ?? null, closedAt: card.answer == null ? 0 : seconds(m.updated_at)},
+        data: {},
     }),
-    made: (card, label) => ({type: "made", made: {type: card.made_type, n: card.n, title: label, abstract: card.abstract}, data: {shows: card.shows}}),
+    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.abstract}, data: {shows: card.shows}}),
     subagent: (card) => ({
-        type: "subagent",
+        kind: "subagent",
         title: card.detail,
         data: {kind: card.agent_type, model: card.model, agent: card.agent, session: card.subagent, finished: card.state !== "running", stopped: card.state === "stopped"},
     }),
     card: (card, label) => ({
-        type: "card",
-        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row, shows: card.shows},
+        kind: "card",
+        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row, shows: card.shows, visitor: card.visitor},
     }),
     plugin: (card, label) => ({
-        type: "card",
+        kind: "card",
         data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.collapsed ? "" : card.detail, title: card.detail, row: card.row},
     }),
 };
 
-const pluginOf = (m) => ((m.data.actor || "").startsWith("plugin:") ? m.data.actor.slice("plugin:".length) : "");
+const pluginOf = (m) => ((m.created_by || "").startsWith("plugin:") ? m.created_by.slice("plugin:".length) : "");
 
-const plainTurn = (m, label) => ({type: "card", data: {icon: pluginOf(m) ? "plug" : "dot", label, name: pluginOf(m)}});
+const plainTurn = (m, label) => ({kind: "card", data: {icon: pluginOf(m) ? "plug" : "dot", label, name: pluginOf(m)}});
 
-const fromSystem = (m) => m.data.author === "system";
+const fromSystem = (m) => m.author === "system";
 
-const byUser = (m) => (m.data.actor || "").startsWith("user");
+const byUser = (m) => (m.created_by || "").startsWith("user");
 
 const systemTurn = (m) => {
-    const card = m.data.card || {};
-    const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.brief, m);
-    return {
-        ...m,
-        who: byUser(m) ? "user" : "agent",
-        title: m.brief,
-        ...turn,
-        data: {...turn.data, side: byUser(m) ? "user" : ""},
-    };
+    const card = m.data || {};
+    const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.text, m);
+    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {...turn, data: {...turn.data, side: byUser(m) ? "user" : ""}});
 };
 
 const promisedFor = (p, m) =>
-    p.data.idempotency && m.data?.idempotency
-        ? p.data.idempotency === m.data.idempotency
-        : withoutChips(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
+    p.idempotency && m.idempotency ? p.idempotency === m.idempotency : withoutChips(m.text) === p.text && seconds(m.created_at) >= seconds(p.created_at) - PROMISED_WITHIN;
 
-const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
+const delivered = (p, m) => m.files.length >= p.files.length;
 
-export function threadTurns(rows, pending, older = false, hidden = []) {
+export const EARLIER = "An earlier message";
+
+// What a message answers: the message it is a reply to, as messages:12.
+export const answered = (m) => (m.reply_to ? `messages:${m.reply_to}` : "");
+
+export function threadTurns(messages, pending, older = false, hidden = []) {
     const keys = new Map();
-    const live = rows.message.filter((m) => !m.deleted && !m.data.window);
-    const said = live.filter((m) => !fromSystem(m));
-    const paged = live.filter((m) => m.completed);
-    const floor = older && live.length ? Math.min(...(paged.length ? paged : live).map((m) => m.created)) : 0;
-    live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
+    const said = messages.filter((m) => !fromSystem(m));
+    const floor = older && messages.length ? Math.min(...messages.map((m) => seconds(m.created_at))) : 0;
+    messages.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(refOf(m), p.key)));
     const turns = [
         ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map(spoken),
-        ...live.filter(fromSystem).map(systemTurn),
-        ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
+        ...messages.filter(fromSystem).map(systemTurn),
+        ...pending.filter((p) => !messages.some((m) => promisedFor(p, m) && delivered(p, m))).map((p) => turnOf(p, "message", "user")),
     ]
-        .filter((t) => t.type === "message" || t.created >= floor)
+        .filter((t) => t.kind === "message" || t.at >= floor)
         .filter(visibleIn(hidden))
-        .sort((a, b) => a.created - b.created);
+        .sort((a, b) => a.at - b.at);
     return {turns: grouped(turns), keys};
 }
 
@@ -112,22 +96,19 @@ const GROUPS = {
         },
     }),
 };
-const groupOf = (t) => (GROUPS[t.type] ? GROUPS[t.type](t) : null);
+const groupOf = (t) => (GROUPS[t.kind] ? GROUPS[t.kind](t) : null);
 
 function folded(run) {
     const group = groupOf(run[0]);
     const last = run[run.length - 1];
     return {
-        ref: `group:${run[0].ref}`,
-        type: "group",
+        key: `group:${run[0].key}`,
+        kind: "group",
         who: "agent",
-        created: last.created,
-        seen: ["agent"],
-        refs: [],
+        at: last.at,
         data: {tone: run.every((t) => t.data.settled) ? "good" : group.tone || "", color: group.color || ""},
-        sections: [],
         title: group.label(run.length, run),
-        brief: "",
+        text: "",
         icon: group.icon,
         turns: run,
     };

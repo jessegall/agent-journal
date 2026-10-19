@@ -1,6 +1,5 @@
 <script setup>
-import {openUpdate} from "../state/overlays.js";
-import {meta, types} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {store} from "../state/store.js";
 import {computed, ref} from "vue";
 import ChoiceCard from "../resource/ChoiceCard.vue";
@@ -8,7 +7,6 @@ import Attachments from "./Attachments.vue";
 import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
 import TurnParent from "./TurnParent.vue";
-import TurnPeer from "./TurnPeer.vue";
 import TurnFromMain from "./TurnFromMain.vue";
 import TurnBriefMarker from "./TurnBriefMarker.vue";
 import TurnText from "./TurnText.vue";
@@ -19,183 +17,98 @@ import {useTurnLinks} from "./turnLinks.js";
 import {useTurnText} from "./turnText.js";
 import {useTurnShape} from "./turnShape.js";
 import {quoted} from "../format/quote.js";
-import {EARLIER, answered} from "../domain/replies.js";
-import {isProcessedPart} from "../format/processed.js";
+import {EARLIER, answered} from "../domain/thread.js";
+import {pendingRow} from "../domain/placeholders.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {optimistic} from "../sync/rows.js";
 import {render} from "../text/index.js";
 
 const props = defineProps({turn: Object});
-const emit = defineEmits(["reply", "grew", "pin"]);
+const emit = defineEmits(["reply", "grew"]);
 const picking = ref(false);
 const bubble = ref(null);
 const FOLD_AT = 420;
-const PEER_FOLD_AT = 140;
-const PEER_KEEP = 96;
 
 const {scope, env, open, openChip} = useTurnLinks();
-const rowsOf = (type) => scope.rows(type);
-const {words, split, html} = useTurnText(() => props.turn, env);
-
-function chipOrUpdate(e) {
-    const update = e.target.closest("[data-update]");
-    if (!update) return openChip(e);
-    e.preventDefault();
-    e.stopPropagation();
-    openUpdate(Number(update.dataset.update), update);
-}
+const rowsOf = (table) => scope.rows(table);
+const {words, html} = useTurnText(() => props.turn, env);
 
 const fromMain = computed(() => Boolean(props.turn.data?.from_main));
 const opening = computed(() => Boolean(props.turn.data?.opening));
 const mine = computed(() => props.turn.who === "user" || fromMain.value);
-const called = (id) => `agent ${id}`;
-const between = computed(() =>
-    props.turn.data?.peer
-        ? `From ${called(props.turn.data.peer)}`
-        : props.turn.data?.sent_to
-          ? `Sent to ${called(props.turn.data.sent_to)}`
-          : ""
-);
-const data = computed(() => props.turn.data);
-const updates = computed(() => split.value.cards);
-const bubbled = computed(
-    () =>
-        Boolean(split.value.text) ||
-        !split.value.cards.length ||
-        Boolean(quoteText.value || files.value.length || results.value.length || resourceComment.value || props.turn.type !== "message")
-);
+const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || props.turn.kind !== "message"));
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
 const answers = computed(() => answered(props.turn));
 const answer = computed(() => {
     if (words.value.quote || !answers.value) return "";
-    const [type, n] = answers.value.split(":");
-    const row = rowsOf(type).find((r) => r.n === Number(n));
-    return row ? quoted(row.brief || row.title).text : EARLIER;
+    const row = rowsOf("messages").find((m) => m.id === props.turn.reply_to);
+    return row ? quoted(row.text).text : EARLIER;
 });
 const quoteText = computed(() => words.value.quote || answer.value);
-const quoteHtml = computed(() => render(quoteText.value, {types: types.value, env: env.value}));
+const quoteHtml = computed(() => render(quoteText.value, {env: env.value}));
 const commentParent = computed(() => {
-    if (props.turn.type !== "comment") return null;
-    const parent = props.turn.refs.find((ref) => {
-        const [type] = ref.split(":");
-        return type !== "comment" && meta(type);
-    });
-    if (!parent) return null;
-    const [type, n] = parent.split(":");
-    return {type, n: Number(n), label: `${meta(type).title.toLowerCase()} ${n}`};
+    if (props.turn.kind !== "comment") return null;
+    const [table, id] = props.turn.comments_on[0].split(":");
+    return meta(table) ? {table, id: Number(id), label: `${meta(table).title.toLowerCase()} ${id}`} : null;
 });
 const resourceComment = computed(() => !!commentParent.value);
 
 function openComment() {
-    if (commentParent.value) open(commentParent.value.type, commentParent.value.n, props.turn.n);
+    if (commentParent.value) open(commentParent.value.table, commentParent.value.id, props.turn.id);
 }
 
 function toQuoted() {
-    const ref = props.turn.refs.find((r) => rowsOf(r.split(":")[0]).length && r !== props.turn.ref);
-    if (ref && focusTurn(ref)) return;
+    if (answers.value && focusTurn(answers.value)) return;
     const head = quoteText.value.slice(0, 40);
-    const hit = rowsOf("message").find((m) => m.n !== props.turn.n && quoted(m.brief || m.title).text.startsWith(head));
-    if (hit) focusTurn(hit.ref);
+    const hit = rowsOf("messages").find((m) => m.id !== props.turn.id && quoted(m.text).text.startsWith(head));
+    if (hit) focusTurn(`messages:${hit.id}`);
 }
 
-function worded(ref, word) {
-    return ref.type && meta(ref.type) ? `${meta(ref.type).title.toLowerCase()} ${ref.n}` : word;
-}
-
-const results = computed(() => {
-    const declared = props.turn.sections
-        .filter(isProcessedPart)
-        .flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)})))
-        .filter((b) => b.ref.type);
-    const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
-    const linked = props.turn.refs
-        .filter((ref) => !named.has(ref) && refOf(ref).type)
-        .map((ref) => ({part: "filed while this message was in hand", word: worded(refOf(ref), ref), ref: refOf(ref)}));
-    const seen = new Set();
-    const quotedMessage = (b) => quoteText.value && b.ref.type === "message" && props.turn.refs.includes(`message:${b.ref.n}`);
-    return [...declared, ...linked]
-        .filter((b) => b.ref.type !== "comment")
-        .filter((b) => !quotedMessage(b))
-        .filter((b) => !b.ref.type || (!seen.has(`${b.ref.type}:${b.ref.n}`) && seen.add(`${b.ref.type}:${b.ref.n}`)))
-        .map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
-});
+// The tasks filed from this message, each a pill that opens it.
+const filed = computed(() => (props.turn.filed || []).map((id) => ({id, word: `task ${id}`})));
 const faces = computed(() => {
     const seen = {};
-    for (const r of rowsOf("reaction").filter((r) => r.refs.includes(props.turn.ref) && !r.deleted))
-        (seen[r.data.face] ||= []).push(r.seen[0]);
+    for (const r of rowsOf("reactions").filter((r) => r.message_id === props.turn.id)) (seen[r.face] ||= []).push(r.author);
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
-const files = computed(() => Object.keys(props.turn.data.files || {}));
-useTurnShape(bubble, {sources: [html, laidOut], holdsCard: () => files.value.length > 0 || props.turn.type === "question"});
-
-function refOf(word) {
-    const m = word.trim().match(/^([\w-]+)[ :](\d+)$/);
-    const type = m && (meta(m[1]) ? m[1] : types.value.find((t) => t.title.toLowerCase() === m[1].toLowerCase())?.name);
-    return type ? {type, n: Number(m[2])} : {type: "", n: 0};
-}
+const files = computed(() => props.turn.files || []);
+useTurnShape(bubble, {sources: [html, laidOut], holdsCard: () => files.value.length > 0 || props.turn.kind === "question"});
 
 async function react(face) {
     picking.value = false;
-    const pending = {
-        ref: `reaction:pending-${Date.now()}`,
-        type: "reaction",
-        n: 0,
-        refs: [props.turn.ref],
-        seen: ["user"],
-        data: {face},
-        deleted: 0,
-    };
-    const reacting = () => scope.api.act(props.turn.type, props.turn.n, "react", {face});
-    await (scope.env ? reacting() : optimistic("reaction", pending, reacting));
+    const reacting = () => scope.api.act("messages", props.turn.id, "react", {face});
+    await (scope.env ? reacting() : optimistic("reactions", pendingRow("reactions", {face, message_id: props.turn.id}, {author: "user"}), reacting));
 }
 
 async function drop() {
-    await scope.api.deleteTurn(props.turn.type, props.turn.n);
+    await scope.api.act("messages", props.turn.id, "delete");
 }
 </script>
 
 <template>
     <div
-        :class="[
-            'thread-turn',
-            {
-                mine,
-                peer: !!between,
-                ask: turn.type === 'question',
-                long,
-                quoting: quoteText,
-                lit: store.focus === turn.ref,
-                'comment-origin': resourceComment,
-                'has-update': updates.length > 0,
-            },
-        ]"
-        :data-ref="turn.ref"
+        :class="['thread-turn', {mine, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
+        :data-ref="turn.key"
         @mouseleave="picking = false"
     >
-        <template v-if="turn.who === 'system'">
-            <span class="thread-from">journal</span>
-        </template>
         <template v-if="opening">
-            <TurnBriefMarker :at="turn.created" />
+            <TurnBriefMarker :at="turn.at" />
         </template>
-        <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble :data-figure-mark="turn.ref" @click="resourceComment && openComment()">
+        <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble :data-figure-mark="turn.key" @click="resourceComment && openComment()">
             <template v-if="fromMain">
-                <TurnFromMain :at="turn.created" />
+                <TurnFromMain :at="turn.at" />
             </template>
             <template v-if="resourceComment">
                 <TurnParent :label="commentParent.label" @open="openComment" />
             </template>
-            <template v-if="between">
-                <TurnPeer :label="between" />
-            </template>
-            <template v-if="results.length || turn.type === 'question'">
-                <div :class="['thread-results', {live: !turn.completed}]">
-                    <template v-if="turn.type === 'question'">
+            <template v-if="filed.length || turn.kind === 'question'">
+                <div :class="['thread-results', {live: turn.kind === 'question' && !turn.question.closedAt}]">
+                    <template v-if="turn.kind === 'question'">
                         <p class="thread-ask-label">Question</p>
                     </template>
-                    <template v-for="b in results" :key="`${b.part}:${b.type}:${b.n}`">
-                        <button type="button" class="thread-pill" :title="b.part" @click.stop="open(b.type, b.n)">
+                    <template v-for="b in filed" :key="b.id">
+                        <button type="button" class="thread-pill" title="filed from this message" @click.stop="open('tasks', b.id)">
                             {{ b.word }}
                         </button>
                     </template>
@@ -204,30 +117,23 @@ async function drop() {
             <template v-if="quoteText">
                 <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
             </template>
-            <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
-                <p class="thread-ask">{{ turn.title }}</p>
-            </template>
-            <TurnText :html="html" :fold-at="between ? PEER_FOLD_AT : FOLD_AT" :keep="between ? PEER_KEEP : 320" @activate="chipOrUpdate" />
-            <template v-if="turn.type === 'question'">
+            <TurnText :html="html" :fold-at="FOLD_AT" :keep="320" @activate="openChip" />
+            <template v-if="turn.kind === 'question'">
                 <TurnQuestion :turn="turn" />
             </template>
-            <template v-if="turn.type === 'message'">
-                <ChoiceCard :resource="turn" />
+            <template v-if="turn.kind === 'message'">
+                <ChoiceCard :message="turn" />
             </template>
             <template v-if="files.length">
-                <Attachments :resource="turn" @grew="emit('grew')" />
+                <Attachments :message="turn" @grew="emit('grew')" />
             </template>
         </div>
-        <template v-for="(card, i) in split.cards" :key="`update-${i}`">
-            <div class="thread-update" @click="chipOrUpdate" v-html="card" />
-        </template>
         <TurnActions
             :turn="turn"
             :text="words.text"
             :picking="picking"
             @update:picking="picking = $event"
             @reply="emit('reply', $event)"
-            @pin="emit('pin', $event)"
             @delete="drop"
             @react="react"
         />
@@ -241,12 +147,6 @@ async function drop() {
 <style scoped>
 .thread-turn.has-update {
     width: min(78%, calc(100% - var(--turn-gutter)));
-}
-
-.thread-update {
-    align-self: stretch;
-    width: 100%;
-    margin: 2px 0;
 }
 
 .thread-turn.peer .thread-bubble {
@@ -377,13 +277,6 @@ button.thread-pill:hover {
 .thread-turn.quoting .thread-bubble {
     min-width: 100%;
     box-sizing: border-box;
-}
-
-.thread-ask {
-    margin: 0 0 6px;
-    font-size: 14.5px;
-    font-weight: 600;
-    color: var(--text);
 }
 
 .thread-turn:hover :deep(.thread-tools) {

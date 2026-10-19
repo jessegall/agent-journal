@@ -1,28 +1,35 @@
 from journal.features.registry import Registry
-from journal.features.voices.chosen_voice import ChosenVoice
-from journal.features.voices.shipped import Shipped
 from journal.http.request import Request
 from journal.http.response import Response
+from journal.models.actor import Actor
 from journal.repositories.settings import Settings
+
+FEATURES = "features"
 
 
 class SettingController:
-    """Every feature with its switch and help, and the switch written back at the project's scope."""
+    """The settings as the settings page holds them: every option under its feature, nested on the first dot, and every feature's switch under features; a save sends a top whole, so a key it drops goes back to its default."""
 
-    def __init__(self, settings: Settings, registry: Registry, chosen: ChosenVoice) -> None:
-        self.settings, self.registry, self.chosen = settings, registry, chosen
+    def __init__(self, settings: Settings, registry: Registry) -> None:
+        self.settings, self.registry = settings, registry
 
     def index(self, request: Request) -> Response:
-        return Response.json([{"name": f.name, "title": f.title, "help": f.help, "on": self.registry.is_on(f), "nudges": [n.title for n in f.nudges], "states": [s.name for s in f.states]} for f in self.registry.features])
-
-    def values(self, request: Request) -> Response:
-        """Every setting as the environment sees it, project values laid over."""
-        return Response.json(self.settings.merged())
-
-    def voice(self, request: Request) -> Response:
-        return Response.json({"chosen": self.chosen.voice().name, "title": self.chosen.title(), "name": self.chosen.first_name(),
-                              "voices": [{"name": v.name, "sample": v.sample.replace("{you}", v.calling.called(self.chosen.title(), self.chosen.first_name(), v.address) or "you")} for v in Shipped.ALL]})
+        return Response.json(self.tree())
 
     def store(self, request: Request) -> Response:
-        key, value = request.body.get("key", ""), request.body.get("value")
-        return Response.json(self.settings.set(key, value, request.actor))
+        """The page keeps the answer as its whole settings tree, so a change answers with all of it."""
+        for top, inner in request.body.items():
+            if isinstance(inner, dict):
+                self.saved(top, inner, request.actor)
+        return Response.json(self.tree())
+
+    def saved(self, top: str, inner: dict, by: Actor) -> None:
+        for name in set(self.settings.project_tree().get(top, {})) - set(inner):
+            self.settings.unset(f"{top}.{name}", by)
+        known = {f.name for f in self.registry.features}
+        for name, value in inner.items():
+            if top != FEATURES or name in known:
+                self.settings.set(f"{top}.{name}", value, by)
+
+    def tree(self) -> dict:
+        return {**self.settings.tree(), FEATURES: {f.name: self.registry.is_on(f) for f in self.registry.features}}

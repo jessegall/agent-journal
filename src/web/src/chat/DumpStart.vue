@@ -59,11 +59,11 @@ const emit = defineEmits(["send", "files", "paste", "remove"]);
             <template v-if="earlier.length">
                 <div class="dump-earlier">
                     <DumpEyebrow>Earlier dumps</DumpEyebrow>
-                    <template v-for="d in earlier" :key="d.n">
-                        <button type="button" class="dump-earlier-row" @click="store.dumpSelected = d.n">
+                    <template v-for="d in earlier" :key="d.id">
+                        <button type="button" class="dump-earlier-row" @click="store.dumpSelected = d.id">
                             <span class="dump-earlier-title">
-                                Dump {{ d.n }}
-                                <template v-if="d.title !== `Dump ${d.n}`">· {{ d.title }}</template>
+                                Dump {{ d.id }}
+                                <template v-if="d.title && d.title !== `Dump ${d.id}`">· {{ d.title }}</template>
                             </span>
                             <DumpPill :phase="d.pill" />
                         </button>

@@ -9,22 +9,22 @@ const KEPT = 200;
 
 export const commandMark = (tool) => MARKS[tool] || "›";
 
-export function useTerminal(level, agentOf = () => agent.value, client = api) {
+export function useTerminal(agentOf = () => agent.value, client = api) {
     const lines = ref([]);
     let showing = 0;
 
     function ask() {
-        const n = agentOf() ? agentOf().n : 0;
-        if (n !== showing) {
-            showing = n;
+        const id = agentOf() ? agentOf().id : 0;
+        if (id !== showing) {
+            showing = id;
             lines.value = [];
         }
         const after = lines.value.length ? lines.value[lines.value.length - 1].at : 0;
-        return n ? client.terminal(n, level, after).then((got) => ({n, lines: got.lines})) : Promise.resolve({n, lines: []});
+        return id ? client.terminal(id, after).then((got) => ({id, lines: got})) : Promise.resolve({id, lines: []});
     }
 
     function take(got) {
-        if (got.n !== showing || !got.lines.length) return;
+        if (got.id !== showing || !got.lines.length) return;
         lines.value = [...lines.value, ...got.lines].slice(-KEPT);
     }
 

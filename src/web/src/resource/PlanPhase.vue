@@ -5,118 +5,86 @@ import {useScope} from "../composables/scope.js";
 import HolderTag from "../kit/HolderTag.vue";
 import PlanRowLine from "./PlanRowLine.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
-import {FINISHED_STATES, grouped, helperName, helperState, helperTag, helpersHolding, holdingRuns} from "../domain/helpers.js";
-import {workMode} from "../composables/settings.js";
+import {FINISHED_STATES, grouped, holdingRuns, workerName, workerState, workerTag, workersHolding} from "../domain/workers.js";
+import {isClosed} from "../domain/row.js";
 import {peek, peekThere} from "../route.js";
 
 const props = defineProps({
     phase: {type: Object, default: null},
     current: {type: Boolean, default: false},
-    boning: {type: Boolean, default: false},
-    skeleton: {type: Boolean, default: false},
-    helpers: {type: Array, default: () => []},
-    helpersLoaded: {type: Boolean, default: true},
+    workers: {type: Array, default: () => []},
+    workersLoaded: {type: Boolean, default: true},
 });
 const emit = defineEmits(["inspect"]);
 const talk = inject("talk", null);
 const scope = useScope();
-const open = (row) => (scope.env ? peekThere(scope.env, row.type, row.n) : peek(row.type, row.n));
-const rows = computed(() => props.phase?.rows || []);
-const done = computed(() => rows.value.length > 0 && rows.value.every((t) => t.completed));
-const closed = computed(() => rows.value.filter((t) => t.completed).length);
-const holders = computed(() => helpersHolding(rows.value, props.helpers));
-const runs = computed(() => holdingRuns(rows.value, props.helpers));
-const closedHolder = (helper) => FINISHED_STATES.has(helperState(helper));
-const loading = computed(() => props.phase?.waiting || 0);
-const bones = computed(() => Math.max(loading.value, props.boning ? 3 - rows.value.length : 0));
-const holdersLoading = computed(() => !props.helpersLoaded && rows.value.some((t) => t.data?.assigned));
-const TITLE_BARS = [{width: "42%", height: 11}];
+const open = (row) => (scope.env ? peekThere(scope.env, "tasks", row.id) : peek("tasks", row.id));
+const rows = computed(() => props.phase.rows);
+const done = computed(() => rows.value.length > 0 && rows.value.every(isClosed));
+const closed = computed(() => rows.value.filter(isClosed).length);
+const holders = computed(() => workersHolding(rows.value, props.workers));
+const runs = computed(() => holdingRuns(rows.value, props.workers));
+const closedHolder = (worker) => FINISHED_STATES.has(workerState(worker));
+const holdersLoading = computed(() => !props.workersLoaded && rows.value.some((t) => t.worker_id));
 const ROW_BARS = [{width: "58%", height: 11}];
 const HOLDER_BARS = [{width: "64px", height: 14}];
 </script>
 
 <template>
-    <template v-if="skeleton">
-        <li class="phase skeleton" aria-hidden="true">
-            <div class="phead">
-                <span class="mark"><Icon name="circle" :size="14" /></span>
-                <SkeletonLine class="ptitle" :bars="TITLE_BARS" />
-            </div>
-        </li>
-    </template>
-    <template v-else>
-        <li :class="['phase', {current, done}]">
-            <div class="phead">
-                <span class="mark"><Icon :name="done ? 'check' : 'circle'" :size="14" /></span>
-                <span class="ptitle">{{ phase.i }}. {{ phase.title }}</span>
-                <template v-if="talk">
-                    <button type="button" class="say" title="Comment on this phase" @click="talk.say(`Phase ${phase.i}: ${phase.title}`)">
-                        <Icon name="bubble" :size="12" />
-                    </button>
+    <li :class="['phase', {current, done}]">
+        <div class="phead">
+            <span class="mark"><Icon :name="done ? 'check' : 'circle'" :size="14" /></span>
+            <span class="ptitle">{{ phase.i ? `${phase.i}. ` : "" }}{{ phase.title }}</span>
+            <template v-if="talk && phase.i">
+                <button type="button" class="say" title="Comment on this phase" @click="talk.say(`Phase ${phase.i}: ${phase.title}`)">
+                    <Icon name="bubble" :size="12" />
+                </button>
+            </template>
+            <span class="phead-end">
+                <template v-if="phase.checkpoint">
+                    <span class="cp">checkpoint</span>
                 </template>
-                <span class="phead-end">
-                    <template v-if="phase.checkpoint">
-                        <span class="cp">checkpoint</span>
-                    </template>
-                    <span class="progress">{{ closed }}/{{ rows.length }}</span>
-                </span>
+                <span class="progress">{{ closed }}/{{ rows.length }}</span>
+            </span>
+        </div>
+        <template v-if="holders.length || holdersLoading">
+            <div class="phead-tags">
+                <template v-if="holdersLoading">
+                    <SkeletonLine class="holders-loading" :bars="HOLDER_BARS" aria-hidden="true" />
+                </template>
+                <template v-for="h in holders" :key="h.id">
+                    <HolderTag :name="workerName(h)" :state="workerTag(h).state" :word="workerTag(h).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
+                </template>
             </div>
-            <template v-if="holders.length || holdersLoading">
-                <div class="phead-tags">
-                    <template v-if="holdersLoading">
-                        <SkeletonLine class="holders-loading" :bars="HOLDER_BARS" aria-hidden="true" />
-                    </template>
-                    <template v-for="h in holders" :key="h.n">
-                        <HolderTag :name="helperName(h)" :state="helperTag(h, workMode).state" :word="helperTag(h, workMode).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
+        </template>
+        <template v-if="phase.complete_when">
+            <div class="when">complete when {{ phase.complete_when }}</div>
+        </template>
+        <template v-for="run in runs" :key="run.rows[0].id">
+            <div :class="['held', {group: grouped(run), closed: run.holder && closedHolder(run.holder)}]">
+                <div class="held-rows">
+                    <template v-for="t in run.rows" :key="t.id">
+                        <PlanRowLine :task="t" @open="open" />
                     </template>
                 </div>
-            </template>
-            <template v-if="phase.when">
-                <div class="when">complete when {{ phase.when }}</div>
-            </template>
-            <template v-for="run in runs" :key="`${run.rows[0].type}-${run.rows[0].n}`">
-                <template v-if="grouped(run)">
-                    <div :class="['held', 'group', {closed: closedHolder(run.holder)}]">
-                        <div class="held-rows">
-                            <template v-for="t in run.rows" :key="`${t.type}-${t.n}`">
-                                <PlanRowLine :todo="t" @open="open" />
-                            </template>
-                        </div>
-                        <span class="bracket" aria-hidden="true" />
-                        <div class="held-tag">
-                            <HolderTag
-                                :name="helperName(run.holder)"
-                                :state="helperTag(run.holder, workMode).state"
-                                :word="helperTag(run.holder, workMode).word"
-                                :closed="closedHolder(run.holder)"
-                                @open="emit('inspect', run.holder)"
-                            />
-                        </div>
+                <span :class="{bracket: grouped(run)}" aria-hidden="true" />
+                <template v-if="run.holder">
+                    <div class="held-tag">
+                        <HolderTag
+                            :name="workerName(run.holder)"
+                            :state="workerTag(run.holder).state"
+                            :word="workerTag(run.holder).word"
+                            :closed="closedHolder(run.holder)"
+                            @open="emit('inspect', run.holder)"
+                        />
                     </div>
                 </template>
-                <template v-else>
-                    <div class="held">
-                        <div class="held-rows"><PlanRowLine :todo="run.rows[0]" @open="open" /></div>
-                        <span aria-hidden="true" />
-                        <template v-if="run.holder">
-                            <div class="held-tag">
-                                <HolderTag
-                                    :name="helperName(run.holder)"
-                                    :state="helperTag(run.holder, workMode).state"
-                                    :word="helperTag(run.holder, workMode).word"
-                                    :closed="closedHolder(run.holder)"
-                                    @open="emit('inspect', run.holder)"
-                                />
-                            </div>
-                        </template>
-                    </div>
-                </template>
-            </template>
-            <template v-for="j in bones" :key="`row-bone-${j}`">
-                <div class="line bones" aria-hidden="true"><SkeletonLine class="row-bone" :bars="ROW_BARS" /></div>
-            </template>
-        </li>
-    </template>
+            </div>
+        </template>
+        <template v-for="j in phase.waiting" :key="`row-bone-${j}`">
+            <div class="line bones" aria-hidden="true"><SkeletonLine class="row-bone" :bars="ROW_BARS" /></div>
+        </template>
+    </li>
 </template>
 
 <style scoped>

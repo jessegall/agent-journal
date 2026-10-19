@@ -1,17 +1,15 @@
 <script setup>
-import {agent, agentOnline} from "../composables/leadAgent.js";
-import {autoOn, steered, workMode} from "../composables/settings.js";
+import {agent} from "../composables/leadAgent.js";
+import {autoOn} from "../composables/settings.js";
 import {oneLine} from "../format/command.js";
 import {store} from "../state/store.js";
 import {barPlans, foldedPlans} from "../domain/plans.js";
-import {currentWork, lineOf, named, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
-import {silentIn} from "../domain/journals.js";
+import {heldTask, lineOf, named, queued, SILENT, silentIn, stateOf, wordOf} from "../domain/agentState.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import PlanMore from "./PlanMore.vue";
 import PSection from "./PSection.vue";
 
 import {computed, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import Dot from "../kit/Dot.vue";
 import WaitMark from "../kit/WaitMark.vue";
 import WaitingPanel from "../chat/WaitingPanel.vue";
@@ -20,88 +18,47 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import Toast from "../kit/Toast.vue";
-import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
-import ConnectionMark from "./ConnectionMark.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
-import HelperList from "../chat/HelperList.vue";
-import {useEveryHelper, useHelpers} from "../composables/helpers.js";
-import {isWorking} from "../domain/helpers.js";
-import {MODES, ORCHESTRATOR} from "../domain/modes.js";
-import Segmented from "../kit/Segmented.vue";
+import WorkerList from "../chat/WorkerList.vue";
+import {useEveryWorker, useWorkers} from "../composables/workers.js";
+import {isWorking} from "../domain/workers.js";
 import {rows} from "../sync/rows.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
-const current = computed(() => currentWork(rows("work")));
-const reported = computed(() => stateOf(agent.value, rows("work")));
+const current = computed(() => heldTask(store.summary, route.value.env));
+const reported = computed(() => stateOf(agent.value));
 const toast = ref(null);
 
-const wanted = ref(null);
-const paused = computed(() => wanted.value ?? reported.value === "paused");
 const silent = computed(() => silentIn(store.summary, route.value.env));
-const state = computed(() => (paused.value ? "paused" : silent.value ? SILENT : reported.value === "paused" ? "idle" : reported.value));
-watch(
-    () => reported.value === "paused",
-    (now) => wanted.value === now && (wanted.value = null)
-);
+const state = computed(() => (silent.value ? SILENT : reported.value));
 
-const mode = workMode;
-const {rows: helpers, refresh: refreshHelpers} = useHelpers();
-const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(helpers);
-const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
-const helpersOut = computed(() => helpers.value.filter(isWorking).length);
-const orchestratingHelpers = computed(() => (mode.value === ORCHESTRATOR ? helpersOut.value : 0));
-const helpersOpen = ref(false);
-const {rows: everyHelper, loaded: everyHelperLoaded, refresh: refreshEveryHelper} = useEveryHelper(helpersOpen);
-const helpersAnchor = ref(null);
-const modeOptions = computed(() =>
-    MODES.map((one) => ({
-        ...one,
-        tip: {title: one.label, line: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note},
-    }))
-);
+const {rows: workers, refresh: refreshWorkers} = useWorkers();
+const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(workers);
+const workersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
+const workersOut = computed(() => workers.value.filter(isWorking).length);
+const workersOpen = ref(false);
+const {rows: everyWorker, loaded: everyWorkerLoaded, refresh: refreshEveryWorker} = useEveryWorker(workersOpen);
+const workersAnchor = ref(null);
 
-function toggleHelpers(e) {
-    helpersAnchor.value = e.currentTarget;
-    helpersOpen.value = !helpersOpen.value;
-    if (helpersOpen.value) refreshEveryHelper();
-}
-const keepMode = (key) => (store.settings = {...store.settings, work_modes: {...store.settings.work_modes, mode: key}});
-
-async function pickMode(key) {
-    const was = mode.value;
-    keepMode(key);
-    try {
-        await api.saveMode(key);
-    } catch (e) {
-        keepMode(was);
-        toast.value = {text: e.message};
-    }
+function toggleWorkers(e) {
+    workersAnchor.value = e.currentTarget;
+    workersOpen.value = !workersOpen.value;
+    if (workersOpen.value) refreshEveryWorker();
 }
 
-async function pauseOrResume() {
-    const next = !paused.value;
-    wanted.value = next;
-    try {
-        await (next ? api.pauseAgent(agent.value.title) : api.resumeAgent(agent.value.title));
-    } catch (e) {
-        wanted.value = null;
-        toast.value = {text: e.message};
-    }
-}
-const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question").filter((q) => !q.env)));
+const waiting = computed(() => queued(rows("tasks"), autoOn.value));
 const line = computed(() => {
-    if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";
     if (waitingNow.value) return current.value ? named(current.value) : "";
-    const text = lineOf(agent.value, rows("work"), waiting.value, helpers.value, orchestratingHelpers.value);
+    const text = lineOf(agent.value, current.value, waiting.value, workers.value);
     return text.startsWith("task ") ? text : oneLine(text, store.summary?.project);
 });
-const inspect = () => peek("work", current.value.n);
-const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());
+const inspect = () => peek("tasks", current.value.id);
+const roll = (event) => (waitingNow.value ? toggleWaiting(event) : current.value && inspect());
 const was = ref("");
 // What the line keeps from the line before it stands still while the rest rolls in. The kept part must be long enough to be a
-// phrase on its own: a shorter one leaves the bar reading "to-do" by itself for the length of the roll, which says the wrong thing.
+// phrase on its own: a shorter one leaves the bar reading "task" by itself for the length of the roll, which says the wrong thing.
 const KEEPS_STILL_FROM = 16;
 const sentence = computed(() => {
     const now = line.value;
@@ -111,8 +68,8 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const bars = computed(() => barPlans(rows("plan")));
-const others = computed(() => foldedPlans(rows("plan")));
+const bars = computed(() => barPlans(rows("plans")));
+const others = computed(() => foldedPlans(rows("plans")));
 const error = ref("");
 
 async function runBar(p) {
@@ -131,7 +88,7 @@ async function runBar(p) {
             <WaitMark class="statusbar-dot" />
         </template>
         <template v-else>
-            <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused, silent: state === SILENT}]" kind="started" solid :size="8" />
+            <Dot :class="['statusbar-dot', {live: state !== 'stopped', silent: state === SILENT}]" kind="started" solid :size="8" />
         </template>
         <span class="statusbar-text">
             <b :class="{silent: state === SILENT}">{{ wordOf(state) }}</b>
@@ -139,7 +96,7 @@ async function runBar(p) {
                 :is="current || waitingNow ? 'button' : 'span'"
                 :type="current || waitingNow ? 'button' : null"
                 :class="['statusbar-roll', {link: current || waitingNow}]"
-                v-tip:roll="waitingNow ? {title: 'Show what the agent needs to go ahead'} : current ? {title: 'Open this work', line: 'Shows what the agent is doing now.'} : null"
+                v-tip:roll="waitingNow ? {title: 'Show what the agent needs to go ahead'} : current ? {title: 'Open this task', line: 'Shows what the agent is doing now.'} : null"
                 @click="roll"
             >
                 <template v-if="sentence.head">
@@ -155,70 +112,47 @@ async function runBar(p) {
                 </template>
             </component>
         </span>
-        <template v-if="state !== 'stopped' && agentOnline">
-            <Btn
-                kind="icon"
-                :class="['statusbar-pause', {paused}]"
-                v-tip:pause="
-                    paused
-                        ? {title: 'Resume', line: 'Tells the agent to continue.'}
-                        : {title: 'Pause', line: 'Stops the agent\'s current turn and holds back the journal\'s reminders.'}
-                "
-                @click="pauseOrResume"
-            >
-                <template v-if="wanted !== null">
-                    <Spinner />
-                </template>
-                <template v-else>
-                    <Icon :name="paused ? 'resume' : 'pause'" />
-                </template>
-            </Btn>
-        </template>
         <span class="statusbar-tools">
-            <template v-if="!steered">
-                <span class="statusbar-agentset">
-                    <Switch
-                        :on="autoOn"
-                        word="auto"
-                        labelled
-                        v-tip:auto="
-                            autoOn
-                                ? {title: 'Auto is on', line: 'The agent works through the to-do list without asking.'}
-                                : {title: 'Auto is off', line: 'The agent asks before picking up the next to-do.'}
-                        "
-                        @change="setAuto"
-                    />
-                    <Segmented class="statusbar-mode" :options="modeOptions" :value="mode" @pick="pickMode" />
-                    <ConnectionMark />
-                    <button
-                        type="button"
-                        :class="['statusbar-helpers', {none: !helpers.length}]"
-                        v-tip:helpers="
-                            helpersOut
-                                ? {title: `${helpersOut} helpers out`, line: 'Opens the list of what they are doing.'}
-                                : {title: 'Helpers', line: 'Agents on other providers that this environment started.'}
-                        "
-                        :aria-expanded="helpersOpen"
-                        @click.stop="toggleHelpers"
-                    >
-                        <Icon name="family" />
-                        {{ helpersOut }}
-                    </button>
-                </span>
-                <template v-if="helpersOpen">
-                    <MenuPanel
-                        :anchor="helpersAnchor"
-                        plain
-                        :min-width="320"
-                        :max-width="380"
-                        :height="helpersHeight"
-                        :gap="12"
-                        @click.stop
-                        @close="helpersOpen = false"
-                    >
-                        <HelperList :rows="everyHelper" :loading="!everyHelperLoaded" @changed="refreshEveryHelper(), refreshHelpers()" @close="helpersOpen = false" />
-                    </MenuPanel>
-                </template>
+            <span class="statusbar-agentset">
+                <Switch
+                    :on="autoOn"
+                    word="auto"
+                    labelled
+                    v-tip:auto="
+                        autoOn
+                            ? {title: 'Auto is on', line: 'The agent works through the task list without asking.'}
+                            : {title: 'Auto is off', line: 'The agent asks before picking up the next task.'}
+                    "
+                    @change="setAuto"
+                />
+                <button
+                    type="button"
+                    :class="['statusbar-helpers', {none: !workers.length}]"
+                    v-tip:workers="
+                        workersOut
+                            ? {title: `${workersOut} workers out`, line: 'Opens the list of what they are doing.'}
+                            : {title: 'Workers', line: 'Agents this environment sent to write a job each.'}
+                    "
+                    :aria-expanded="workersOpen"
+                    @click.stop="toggleWorkers"
+                >
+                    <Icon name="family" />
+                    {{ workersOut }}
+                </button>
+            </span>
+            <template v-if="workersOpen">
+                <MenuPanel
+                    :anchor="workersAnchor"
+                    plain
+                    :min-width="320"
+                    :max-width="380"
+                    :height="workersHeight"
+                    :gap="12"
+                    @click.stop
+                    @close="workersOpen = false"
+                >
+                    <WorkerList :rows="everyWorker" :loading="!everyWorkerLoaded" @changed="refreshEveryWorker(), refreshWorkers()" @close="workersOpen = false" />
+                </MenuPanel>
             </template>
             <Btn
                 kind="icon"
@@ -237,9 +171,8 @@ async function runBar(p) {
     <TransitionGroup name="planbar">
         <PSection
             v-for="bar in bars"
-            :key="bar.n"
+            :key="bar.id"
             :p="bar"
-            :data="bar.data"
             :error="error"
             @run-bar="runBar"
             @failed="error = $event"
@@ -273,10 +206,6 @@ async function runBar(p) {
 
 .statusbar-dot.live {
     --tone: var(--accent);
-}
-
-.statusbar-dot.paused {
-    --tone: var(--danger);
 }
 
 .statusbar-dot.silent {
@@ -379,30 +308,6 @@ async function runBar(p) {
     white-space: nowrap;
 }
 
-.roll-enter-active {
-    transition:
-        opacity 180ms ease,
-        transform 180ms cubic-bezier(0.22, 0.7, 0.3, 1);
-}
-
-.roll-leave-active {
-    position: absolute;
-    transition:
-        opacity 140ms ease,
-        transform 140ms cubic-bezier(0.22, 0.7, 0.3, 1);
-}
-
-.roll-enter-from {
-    opacity: 0;
-    transform: translateY(5px);
-}
-
-.roll-leave-to {
-    opacity: 0;
-    transform: translateY(-5px);
-}
-
-.statusbar-pause.btn,
 .statusbar-square.btn {
     justify-content: center;
     width: 28px;
@@ -410,20 +315,9 @@ async function runBar(p) {
     padding: 0;
 }
 
-.statusbar-pause.btn :deep(.ico),
 .statusbar-square.btn :deep(.ico) {
     width: 15px;
     height: 15px;
-}
-
-.statusbar-pause {
-    position: relative;
-    flex: none;
-    margin-right: 8px;
-}
-
-.statusbar-pause.paused {
-    color: var(--accent-text);
 }
 
 .statusbar-tools {

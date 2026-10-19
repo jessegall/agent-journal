@@ -5,7 +5,6 @@ import Icon from "../kit/Icon.vue";
 import CoverPanel from "./CoverPanel.vue";
 import Toast from "../kit/Toast.vue";
 import {api} from "../api/client.js";
-import {report} from "../platform/faults.js";
 import {useNow} from "../composables/now.js";
 import {store} from "../state/store.js";
 import {covered, followServer, forgetUpdate, locked, stepAt, updatedTo, updating} from "../state/updating.js";
@@ -33,11 +32,6 @@ function showArrival(version) {
 
 const reload = () => window.location.reload();
 
-function cancel() {
-    updating.countdown = null;
-    api.cancelUpdate().catch((error) => report("threw", error.message, "POST /api/update/cancel"));
-}
-
 // The cover asks the server for itself while it is up, so it closes when the journal comes back even if the page's own
 // polling has stopped: a request that fails is a round that found nothing, and the next one goes out all the same.
 const ASK_EVERY_MS = 2000;
@@ -49,7 +43,7 @@ async function askTheServer() {
         store.summary = got;
         followServer(got);
     } catch (error) {
-        report("threw", error.message, "GET /summary while the update cover is up");
+        console.warn("the journal did not answer while the update cover is up", error);
     }
 }
 
@@ -80,9 +74,6 @@ watch(covered, (up) => (up ? watchTheServer() : stopWatching()));
             :step="countdownStep"
             :spinning="countdown.starting"
         >
-            <template v-if="!countdown.starting">
-                <Btn small class="cancel" @click="cancel">Not now</Btn>
-            </template>
         </CoverPanel>
     </template>
     <template v-else-if="locked()">
@@ -108,9 +99,6 @@ watch(covered, (up) => (up ? watchTheServer() : stopWatching()));
 </template>
 
 <style scoped>
-.cancel {
-    margin-top: 10px;
-}
 
 .arrived {
     color: var(--tone-good);

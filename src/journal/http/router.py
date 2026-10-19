@@ -26,7 +26,7 @@ class Router:
         self.routes.append(Route("POST", path, handler))
 
     def dispatch(self, request: Request) -> Response:
-        self.seen.saw(request.path)
+        self.seen.saw(request.headers)
         for route in self.routes:
             params = route.params(request.method, request.path)
             if params is not None:

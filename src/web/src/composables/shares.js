@@ -1,40 +1,40 @@
 import {computed} from "vue";
 import {api} from "../api/client.js";
+import {seconds} from "../domain/row.js";
 import {rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 
-const NAMED = /^(.*?) (?:\((\w+) (\d+)\)|\[\[chip (\w+):(\d+)\|[^\]]*\]\])$/;
 const now = () => Date.now() / 1000;
-const live = (share) => !share.completed && !share.deleted && share.data.token && !(share.data.expires && share.data.expires < now());
+const live = (share) => !share.stopped_at && share.token && !(share.expires_at && seconds(share.expires_at) < now());
 
-export const openShares = computed(() => rows("share").filter((share) => live(share) && share.data.approved));
+export const openShares = computed(() => rows("shares").filter((share) => live(share) && share.approved));
 
-export const waitingShares = computed(() => rows("share").filter((share) => live(share) && !share.data.approved));
+export const waitingShares = computed(() => rows("shares").filter((share) => live(share) && !share.approved));
 
-export const sharesOf = (ref) => computed(() => openShares.value.filter((share) => share.data.target === ref));
+export const sharesOf = (ref) => computed(() => openShares.value.filter((share) => share.target === ref));
 
-export const waitingOf = (ref) => computed(() => waitingShares.value.filter((share) => share.data.target === ref));
+export const waitingOf = (ref) => computed(() => waitingShares.value.filter((share) => share.target === ref));
 
-export const locked = (share) => Boolean(share.data.password);
+export const locked = (share) => Boolean(share.locked);
 
-export const KINDS = {doc: "document", collection: "collection", report: "report", plan: "plan"};
+export const KINDS = {docs: "document", reports: "report", plans: "plan"};
 
+// What a link opens, by the first line the journal names it with, "Launch notes (docs:1)".
 export function itemOf(share) {
-    const first = (share.brief || "").split("\n")[0];
-    const named = NAMED.exec(first);
-    return named ? {title: named[1], ref: share.data.target} : {title: share.title, ref: share.data.target};
+    const first = (share.opens || [])[0] || "";
+    return {title: first.replace(/ \([a-z_]+:\d+\)$/, "") || share.target, ref: share.target};
 }
 
 export function endsOf(share) {
-    if (!share.data.expires) return "never ends";
-    return `ends ${new Date(share.data.expires * 1000).toLocaleDateString(undefined, {day: "numeric", month: "short"})}`;
+    if (!share.expires_at) return "never ends";
+    return `ends ${new Date(share.expires_at).toLocaleDateString(undefined, {day: "numeric", month: "short"})}`;
 }
 
-export const viewsOf = (share) => `${share.data.views || 0} ${share.data.views === 1 ? "view" : "views"}`;
+export const viewsOf = (share) => `${share.views || 0} ${share.views === 1 ? "view" : "views"}`;
 
-export const stopShare = (share) => api.stopShare(share.n);
+export const stopShare = (share) => api.act("shares", share.id, "stop");
 
-export const linksOf = async (ref) => (await api.all("share")).filter((share) => live(share) && share.data.target === ref);
+export const linksOf = async (ref) => (await api.list("shares", {limit: 200})).rows.filter((share) => live(share) && share.target === ref);
 
 export async function stopLinksOf(ref) {
     const links = await linksOf(ref);
@@ -42,7 +42,7 @@ export async function stopLinksOf(ref) {
     return links.length;
 }
 
-export const approveShare = (share) => api.approveShare(share.n);
+export const approveShare = (share) => api.act("shares", share.id, "approve");
 
 export const tunnelStatus = computed(() => store.tunnel);
 
@@ -57,7 +57,7 @@ const UNKNOWN_TUNNEL = {
 };
 
 export async function checkTunnel() {
-    store.tunnel = await api.tunnelStatus().catch(() => UNKNOWN_TUNNEL);
+    store.tunnel = await api.tunnel().catch(() => UNKNOWN_TUNNEL);
     return store.tunnel;
 }
 

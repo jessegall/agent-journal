@@ -3,16 +3,15 @@ import {computed, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import Tile from "../kit/Tile.vue";
 import AgentWindow from "./AgentWindow.vue";
-import TicketAgent from "./TicketAgent.vue";
 import {hiddenBy, hiddenSummary, orchestraOf, ordered, slotsFor} from "../domain/orchestra.js";
+import {agent} from "../composables/leadAgent.js";
+import {useWorkers} from "../composables/workers.js";
 import {store} from "../state/store.js";
-import {peekThere} from "../route.js";
+import {peek, route} from "../route.js";
 import {ui} from "../state/ui.js";
 
-const summary = computed(() => store.summary);
-const every = computed(() =>
-    orchestraOf(summary.value && summary.value.environments, summary.value && [...(summary.value.helpers || []), ...(summary.value.tickets || [])], Date.now() / 1000)
-);
+const {rows: workers} = useWorkers();
+const every = computed(() => orchestraOf(store.summary, workers.value, agent.value, route.value.env));
 const slots = ref([]);
 watch(every, (now) => (slots.value = slotsFor(slots.value, now)), {immediate: true});
 const entries = computed(() =>
@@ -27,19 +26,17 @@ const ROW = 3;
 const empties = computed(() => Math.max(LEAST, Math.ceil(entries.value.length / ROW) * ROW) - entries.value.length);
 const hidden = computed(() => every.value.length - entries.value.length);
 const why = computed(() => hiddenSummary(every.value, ui.agentView).join(", "));
-const openedKey = ref("");
-const opened = computed(() => entries.value.find((e) => e.key === openedKey.value) || null);
-const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.parent, 0, entry.session) : (openedKey.value = entry.key));
+const openEntry = (entry) => peek(entry.opens.table, entry.opens.id, 0, entry.opens.session || "");
 </script>
 
 <template>
     <div class="agent-grid-view">
-        <template v-if="summary && !entries.length">
+        <template v-if="store.summary && !entries.length">
             <p class="agent-grid-note">
                 {{
                     hidden
                         ? `All ${hidden} ${hidden === 1 ? "agent is" : "agents are"} hidden by this pane's view: ${why}. Change it under View in this pane's menu.`
-                        : "No agent is working on a board. When a ticket or a plan starts its own agent, it shows here."
+                        : "No agent is running. An environment's agent, a worker and a subagent each show here while they work."
                 }}
             </p>
         </template>
@@ -53,16 +50,6 @@ const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.pa
                 </Tile>
             </template>
         </div>
-        <template v-if="opened">
-            <TicketAgent
-                :card="opened.card"
-                :env="opened.env"
-                :kind="opened.kind || 'ticket'"
-                :label="opened.label"
-                :plan="opened.plan ? opened.plan.n : 0"
-                @close="openedKey = ''"
-            />
-        </template>
     </div>
 </template>
 

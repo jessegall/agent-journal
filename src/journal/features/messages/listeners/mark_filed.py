@@ -21,4 +21,4 @@ class MarkFiled(Listener[Created]):
         message = self.messages.find(link.source.id)
         filed = ", ".join(f"{ref.type.rstrip('s')} {ref.id}" for ref in self.links.targets(message, Messages.ABOUT))
         key = f"filed:{message.id}"
-        self.cards.keyed(message.environment_id, key, f"Filed {filed} from your message", {"kind": "card", "session": "", "icon": "inbox", "row": f"message:{message.id}", "shows": "filed"}, Actor.system())
+        self.cards.keyed(message.environment_id, key, f"Filed {filed} from your message", {"kind": "card", "session": "", "icon": "inbox", "row": f"messages:{message.id}", "shows": "filed"}, Actor.system())

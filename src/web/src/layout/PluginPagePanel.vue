@@ -5,11 +5,8 @@ import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
 const asked = computed(() => store.pluginPage);
-const plugin = computed(() => rows("plugin").find((p) => !p.deleted && (p.data.manifest || {}).name === asked.value.plugin) || null);
-const board = computed(() => {
-    const name = asked.value.open.split("/")[0];
-    return ((plugin.value?.data.manifest || {}).dashboards || []).find((b) => b.name === name) || null;
-});
+const plugin = computed(() => rows("plugins").find((p) => p.name === asked.value.plugin) || null);
+const board = computed(() => plugin.value?.manifest.dashboard || null);
 const page = computed(() => asked.value.open.split("/").slice(1).join("/"));
 </script>
 
