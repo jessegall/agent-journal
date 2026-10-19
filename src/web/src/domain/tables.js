@@ -143,6 +143,10 @@ const ORDER = Object.keys(TABLES);
 
 export const tables = computed(() => ORDER.map((name) => ({name, ...TABLES[name]})));
 export const meta = (table) => TABLES[table];
+// The table a word names: its own name, the name without its s, or its title, as "tasks", "task" or "Document".
+const WORDS = new Map(ORDER.flatMap((name) => [name, name.replace(/s$/, ""), TABLES[name].title.toLowerCase()].map((word) => [word, name])));
+export const tableOfWord = (word) => WORDS.get(String(word).toLowerCase()) || "";
+export const WORD_PATTERN = [...WORDS.keys()].sort((a, b) => b.length - a.length).join("|");
 export const label = (table, field, fallback) => (TABLES[table]?.labels || {})[field] || fallback;
 
 const NAMED_CLOSES = {

@@ -1,17 +1,10 @@
 <script setup>
-import AttachFiles from "./AttachFiles.vue";
 import CommentToggle from "./CommentToggle.vue";
-import Priority from "./Priority.vue";
 import ResourceActions from "./ResourceActions.vue";
 import ShareButton from "./ShareButton.vue";
 import {SHARED} from "../domain/tables.js";
 
-defineProps({
-    resource: {type: Object, required: true},
-    standing: {type: Boolean, default: false},
-    system: {type: Boolean, default: false},
-    ranked: {type: Boolean, default: false},
-});
+defineProps({resource: {type: Object, required: true}});
 const emit = defineEmits(["edit", "close"]);
 </script>
 
@@ -19,17 +12,11 @@ const emit = defineEmits(["edit", "close"]);
     <div class="controls">
         <ResourceActions :resource="resource" @edit="emit('edit')" @close="emit('close')" />
         <span class="controls-end">
-            <template v-if="standing && !system">
-                <AttachFiles :resource="resource" />
-            </template>
-            <template v-if="SHARED.includes(resource.type) && !system">
+            <template v-if="SHARED.includes(resource.table)">
                 <ShareButton :resource="resource" />
             </template>
             <CommentToggle :resource="resource" />
         </span>
-        <template v-if="ranked">
-            <Priority :resource="resource" />
-        </template>
     </div>
 </template>
 

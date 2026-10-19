@@ -1,22 +1,23 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
+import {label} from "../domain/tables.js";
 
-defineProps({briefLabel: {type: String, default: ""}, error: {type: String, default: ""}});
-const abstract = defineModel("abstract", {type: String, default: ""});
-const brief = defineModel("brief", {type: String, default: ""});
+const props = defineProps({table: {type: String, required: true}, fields: {type: Object, required: true}, error: {type: String, default: ""}});
+const draft = defineModel("draft", {type: Object, required: true});
 const emit = defineEmits(["save", "cancel"]);
+const named = (field) => label(props.table, field, field.charAt(0).toUpperCase() + field.slice(1));
 </script>
 
 <template>
     <form class="edit" @submit.prevent="emit('save')">
-        <textarea
-            v-model="abstract"
-            rows="2"
-            maxlength="200"
-            placeholder="Summary, up to 200 characters"
-            @keydown.esc="emit('cancel')"
-        />
-        <textarea v-model="brief" rows="6" :placeholder="briefLabel || 'Brief'" @keydown.esc="emit('cancel')" />
+        <template v-for="(shape, field) in fields" :key="field">
+            <template v-if="shape === 'line'">
+                <input v-model="draft[field]" class="edit-title" :placeholder="named(field)" @keydown.esc="emit('cancel')" />
+            </template>
+            <template v-else>
+                <textarea v-model="draft[field]" :rows="field === 'body' ? 12 : 4" :placeholder="named(field)" @keydown.esc="emit('cancel')" />
+            </template>
+        </template>
         <div class="edit-row">
             <Btn kind="primary" small @click="emit('save')">Save</Btn>
             <Btn small @click="emit('cancel')">Cancel</Btn>

@@ -7,11 +7,11 @@ defineProps({made: {type: Object, required: true}});
 </script>
 
 <template>
-    <button type="button" class="thread-made" @click="peek(made.type, made.n)">
-        <span class="thread-made-kind">{{ meta(made.type).title }} created</span>
+    <button type="button" class="thread-made" @click="peek(made.table, made.id)">
+        <span class="thread-made-kind">{{ meta(made.table).title }} created</span>
         <span class="thread-made-title">{{ made.title }}</span>
-        <template v-if="made.abstract">
-            <TextDisplay inline class="thread-made-line" :text="made.abstract" />
+        <template v-if="made.line">
+            <TextDisplay inline class="thread-made-line" :text="made.line" />
         </template>
     </button>
 </template>

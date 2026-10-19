@@ -1,39 +1,25 @@
 <script setup>
-import {MENUED, meta} from "../domain/tables.js";
+import {MENUED} from "../domain/tables.js";
 import {computed} from "vue";
-import Chip from "../kit/Chip.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import {originOf} from "../domain/origin.js";
 import Icon from "../kit/Icon.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
 import BeingWritten from "./BeingWritten.vue";
 import Chapters from "./Chapters.vue";
 import ResourceMenu from "./ResourceMenu.vue";
-import DownloadLink from "./DownloadLink.vue";
-import {isUpdate, updateLabel} from "../domain/updates.js";
 import {age} from "../format/time.js";
-import {peek} from "../route.js";
+import {createdAt, sectionsOf, titleOf} from "../domain/row.js";
 
 const props = defineProps({
     resource: {type: Object, required: true},
     kind: {type: Object, required: true},
-    state: {type: Object, default: null},
     writing: {type: Object, default: null},
     readOnly: {type: Boolean, default: false},
     editing: {type: Boolean, default: false},
     body: {default: null},
 });
-const title = defineModel("title", {type: String, default: ""});
-const emit = defineEmits(["close", "follow", "cancel"]);
-const data = computed(() => props.resource.data || {});
-const template = computed(() => data.value.template || "");
-const origin = computed(() => {
-    const [type, n] = (data.value.source || "").split(":");
-    return meta(type) && Number(n) ? {type, n: Number(n), icon: meta(type).icon, title: meta(type).title.toLowerCase()} : null;
-});
-const chaptered = computed(
-    () => props.kind.view === "document" && !["message", "sequence"].includes(props.resource.type) && props.resource.sections.length >= 2
-);
+const emit = defineEmits(["close", "follow"]);
+const sections = computed(() => sectionsOf(props.resource.body));
+const chaptered = computed(() => props.kind.view === "document" && sections.value.length >= 2);
 </script>
 
 <template>
@@ -41,42 +27,15 @@ const chaptered = computed(
         <div class="top">
             <span class="kind">
                 <Icon :name="kind.icon" :size="13" />
-                {{ isUpdate(resource) ? updateLabel(resource) : `${kind.title} ${resource.n}` }}
+                {{ kind.title }} {{ resource.id }}
             </span>
-            <template v-if="originOf(resource)">
-                <Chip class="origin" :title="`From ${originOf(resource)}`">{{ originOf(resource) }}</Chip>
+            <template v-if="resource.state">
+                <span :class="['standing', resource.state]">{{ resource.state }}</span>
             </template>
-            <template v-if="state && !readOnly">
-                <SwitchCase :value="state.key">
-                    <template #replaced>
-                        <button type="button" class="standing replaced" :title="state.hint" @click="peek('doc', state.by)">
-                            {{ state.label }}
-                            <Icon name="arrow" :size="10" />
-                        </button>
-                    </template>
-                    <template #default>
-                        <span :class="['standing', state.key]" :title="state.hint">
-                            <template v-if="state.key === 'final'">
-                                <Icon name="check" :size="10" />
-                            </template>
-                            {{ state.label }}
-                        </span>
-                    </template>
-                </SwitchCase>
-            </template>
-            <template v-if="data.system">
-                <span class="standing system" title="Comes with the journal; it can be read but not changed">
-                    <Icon name="lock" :size="10" />
-                    Comes with the journal
-                </span>
-            </template>
-            <span class="age">{{ age(resource.created) }}</span>
+            <span class="age">{{ age(createdAt(resource)) }}</span>
             <slot name="tools" />
             <template v-if="!readOnly">
-                <template v-if="kind.view === 'document'">
-                    <DownloadLink :resource="resource" />
-                </template>
-                <template v-if="MENUED.includes(resource.type) && !data.system">
+                <template v-if="MENUED.includes(resource.table)">
                     <ResourceMenu :resource="resource" @gone="emit('close')" />
                 </template>
                 <CloseButton :title="`Close the ${kind.title.toLowerCase()}`" @click="emit('close')" />
@@ -85,31 +44,10 @@ const chaptered = computed(
         <template v-if="writing && !readOnly">
             <BeingWritten :writing="writing" @follow="emit('follow')" />
         </template>
-        <template v-if="data.template && !readOnly">
-            <button type="button" class="from" @click="peek('template', Number(template))">
-                <Icon name="docs" :size="11" />
-                Made from template {{ template }}
-            </button>
-        </template>
-        <template v-if="origin && !readOnly">
-            <button type="button" class="from" @click="peek(origin.type, origin.n)">
-                <Icon :name="origin.icon" :size="11" />
-                Came from {{ origin.title }} {{ origin.n }}
-            </button>
-        </template>
-        <template v-if="editing">
-            <input
-                v-model="title"
-                class="edit-title"
-                maxlength="80"
-                placeholder="Title, at most 80 characters"
-                @keydown.esc="emit('cancel')"
-            />
-        </template>
-        <template v-else-if="resource.type !== 'trigger' || data.system || readOnly">
-            <h2 class="title">{{ resource.title }}</h2>
+        <template v-if="!editing">
+            <h2 class="title">{{ titleOf(resource) }}</h2>
             <template v-if="chaptered">
-                <Chapters :sections="resource.sections" :body="body" />
+                <Chapters :sections="sections" :body="body" />
             </template>
         </template>
     </header>

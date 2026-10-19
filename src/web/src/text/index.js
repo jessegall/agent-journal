@@ -149,7 +149,7 @@ function markdown(text) {
     return out.join("");
 }
 
-export function render(text, context = {types: [], env: ""}) {
+export function render(text, context = {env: ""}) {
     return transformed(text, context)
         .map((b) => (b.kind === "text" ? markdown(b.text) : b.html))
         .filter(Boolean)

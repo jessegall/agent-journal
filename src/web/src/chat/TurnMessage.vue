@@ -1,5 +1,5 @@
 <script setup>
-import {meta, tables} from "../domain/tables.js";
+import {meta} from "../domain/tables.js";
 import {store} from "../state/store.js";
 import {computed, ref} from "vue";
 import ChoiceCard from "../resource/ChoiceCard.vue";
@@ -46,7 +46,7 @@ const answer = computed(() => {
     return row ? quoted(row.text).text : EARLIER;
 });
 const quoteText = computed(() => words.value.quote || answer.value);
-const quoteHtml = computed(() => render(quoteText.value, {tables: tables.value, env: env.value}));
+const quoteHtml = computed(() => render(quoteText.value, {env: env.value}));
 const commentParent = computed(() => {
     if (props.turn.kind !== "comment") return null;
     const [table, id] = props.turn.comments_on[0].split(":");

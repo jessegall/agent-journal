@@ -11,7 +11,7 @@ const props = defineProps({
     text: {type: String, required: true},
     picking: {type: Boolean, default: false},
 });
-const emit = defineEmits(["reply", "pin", "delete", "react", "update:picking"]);
+const emit = defineEmits(["reply", "delete", "react", "update:picking"]);
 const copied = ref(false);
 
 async function copy() {
@@ -40,14 +40,11 @@ function react(face) {
         </template>
         <template v-else>
             <button type="button" class="thread-tool" title="React to this" @click.stop="emit('update:picking', true)">React</button>
-            <ReplyTool @reply="emit('reply', {text, ref: turn.ref})" />
-            <button type="button" class="thread-tool" title="Pin this over the chat" @click.stop="emit('pin', {text, ref: turn.ref})">
-                Pin
-            </button>
+            <ReplyTool @reply="emit('reply', {text, ref: turn.key})" />
             <button type="button" class="thread-tool" title="Copy the text" @click.stop="copy">
                 {{ copied ? "Copied" : "Copy" }}
             </button>
-            <template v-if="turn.who === 'user' && !turn.completed">
+            <template v-if="turn.who === 'user' && !(turn.filed || []).length">
                 <button
                     type="button"
                     class="thread-tool"

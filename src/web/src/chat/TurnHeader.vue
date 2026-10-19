@@ -2,12 +2,9 @@
 import {computed} from "vue";
 import ReadTicks from "../kit/ReadTicks.vue";
 import {clock} from "../format/time.js";
-import {writerName} from "../composables/people.js";
 
 const props = defineProps({turn: {type: Object, required: true}});
 const mine = computed(() => props.turn.who === "user");
-const fromPhone = computed(() => String(props.turn.data?.via || "").startsWith("phone:"));
-const writer = computed(() => writerName(props.turn.data));
 </script>
 
 <template>
@@ -15,20 +12,12 @@ const writer = computed(() => writerName(props.turn.data));
         <template v-if="turn.pending">
             <span :class="{'thread-unsent': turn.unsent}">{{ turn.unsent ? "not sent yet, trying again" : "sending" }}</span>
         </template>
-        <template v-else-if="mine || turn.type === 'question'">
-            <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
-            <span class="thread-meta-dot" />
-        </template>
-        <template v-if="writer">
-            <span class="thread-writer">{{ writer }}</span>
-            <span class="thread-meta-dot" />
-        </template>
-        <template v-if="mine && fromPhone">
-            <span>from phone</span>
+        <template v-else-if="mine">
+            <span class="thread-ref">message {{ turn.id }}</span>
             <span class="thread-meta-dot" />
         </template>
         <template v-if="!turn.pending">
-            <span>{{ clock(turn.created) }}</span>
+            <span>{{ clock(turn.at) }}</span>
         </template>
         <template v-if="mine && !turn.pending">
             <ReadTicks :message="turn" />

@@ -1,13 +1,10 @@
-import {tables} from "../domain/tables.js";
 import {computed} from "vue";
 import {quoted} from "../format/quote.js";
 import {render} from "../text/index.js";
-import {standaloneUpdates} from "../text/cards.js";
 import "../text/all.js";
 
 export function useTurnText(turn, env) {
-    const words = computed(() => quoted(turn().brief || turn().title));
-    const split = computed(() => standaloneUpdates(words.value.text, {types: tables.value}));
-    const html = computed(() => render(split.value.text, {types: tables.value, env: env.value}));
-    return {words, split, html};
+    const words = computed(() => quoted(turn().text || turn().title || ""));
+    const html = computed(() => render(words.value.text, {env: env.value}));
+    return {words, html};
 }

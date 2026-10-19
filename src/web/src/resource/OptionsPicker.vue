@@ -1,60 +1,37 @@
 <script setup>
 import {store} from "../state/store.js";
-import {word} from "../domain/tables.js";
 import TextInput from "../kit/TextInput.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
 import {sendMessage} from "../chat/outbox.js";
-import {answer, answered, dismiss} from "../chat/answers.js";
+import {answer, answered} from "../chat/answers.js";
 import {route} from "../route.js";
 
-const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean, steady: Boolean});
+const props = defineProps({question: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean, steady: Boolean});
 const emit = defineEmits(["elaborated"]);
-const question = computed(() => answered(props.resource));
-const given = computed(() => question.value.data);
+const shown = computed(() => answered(props.question));
 const own = ref("");
-const changing = ref(false);
 const elaborated = ref(false);
-const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
-const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and you choose.";
-const optionText = (option = {}) => String(option.title || option.label || option.value || "");
-const options = computed(() =>
-    (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {
-        const value = option && typeof option === "object" ? option : {};
-        return {
-            ...value,
-            title: optionText(value),
-            description: value.description ?? value.text ?? "",
-            code: value.code ?? value.value ?? "",
-        };
-    })
-);
-const pick = computed(() => props.resource.data.pick || 0);
-const multiple = computed(() => Boolean(props.resource.data.multiple));
-const MANY = "; ";
-const chosenMany = computed(() => (multiple.value && question.value.completed ? String(question.value.outcome || "").split(MANY) : []));
-const settled = computed(() => !!question.value.completed && !changing.value);
-const chosen = computed(() =>
-    question.value.data.chosen ? question.value.data.chosen - 1 : options.value.findIndex((o) => o.title === question.value.outcome)
-);
-const dismissed = computed(() => settled.value && Boolean(question.value.data.dismissed));
-const ownWords = computed(() => settled.value && !dismissed.value && chosen.value < 0 && !chosenMany.value.length);
+const options = computed(() => (props.question.options || []).map((title) => ({title, description: "", code: ""})));
+const settled = computed(() => shown.value.answer != null);
+const chosen = computed(() => options.value.findIndex((o) => o.title === shown.value.answer));
+const ownWords = computed(() => settled.value && chosen.value < 0);
+const elaborateText = () => `Elaborate on question ${props.question.id}: ask it again with more context on each option and which you would pick, and you choose.`;
 
 function submit(text) {
     const choice = String(text || "").trim();
     if (!choice) return Promise.resolve();
-    changing.value = false;
     own.value = "";
-    return answer(props.resource, choice);
+    return answer(props.question, choice);
 }
 
 async function elaborate() {
     elaborated.value = true;
     emit("elaborated");
     try {
-        await sendMessage(route.value.env, {brief: ELABORATE, about: props.resource.ref});
+        await sendMessage(route.value.env, {text: elaborateText()});
     } catch (e) {
         elaborated.value = false;
     }
@@ -67,66 +44,43 @@ const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
     <section class="options">
         <OptionList
             :options="options"
-            :chosen="question.completed && chosen >= 0 ? options[chosen].title : ''"
-            :chosen-by="given.answered_by || ''"
-            :reason="given.reason || ''"
-            :suggested="pick - 1"
+            :chosen="settled && chosen >= 0 ? options[chosen].title : ''"
+            chosen-by=""
+            reason=""
+            :suggested="-1"
             :disabled="settled"
             :immediate="immediate"
             :tiles="tiles"
             :steady="steady"
-            :multiple="multiple"
-            :chosen-many="chosenMany"
+            :multiple="false"
+            :chosen-many="[]"
             :hold-seconds="holdSeconds"
-            :send="(choice) => submit([choice].flat().join(MANY))"
+            :send="(choice) => submit([choice].flat().join('; '))"
         />
-        <template v-if="question.unsaved">
+        <template v-if="shown.unsaved">
             <p class="unsaved">
-                Couldn't save “{{ question.unsaved }}” ·
-                <button type="button" @click="submit(question.unsaved)">Try again</button>
+                Couldn't save “{{ shown.unsaved }}” ·
+                <button type="button" @click="submit(shown.unsaved)">Try again</button>
             </p>
         </template>
         <template v-if="settled && !steady">
-            <template v-if="dismissed">
-                <div class="own-words">
-                    <span>Closed</span>
-                    <template v-if="given.reason">
-                        <TextDisplay inline class="own-words-text" :text="given.reason" />
-                    </template>
-                </div>
-            </template>
             <template v-if="ownWords">
                 <div class="own-words">
                     <span>Your own words</span>
-                    <TextDisplay inline class="own-words-text" :text="question.outcome" />
+                    <TextDisplay inline class="own-words-text" :text="shown.answer" />
                 </div>
             </template>
-            <div class="after">
-                <Btn small @click="changing = true">Change choice</Btn>
-            </div>
         </template>
-        <template v-else-if="!buttonsOnly">
+        <template v-else-if="!settled && !buttonsOnly">
             <form class="own" @submit.prevent="submit(own)">
-                <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value">
+                <TextInput :value="own" class="grow" placeholder="Or answer in your own words…" @input="own = $event.target.value">
                     <template #end>
                         <Btn small :disabled="elaborated" v-tip="'Ask the agent for more context on this question'" @click="elaborate">
                             {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
                         </Btn>
-                        <template v-if="resource.type === 'question' && !resource.data.hidden">
-                            <Btn
-                                small
-                                v-tip="'Close the question without answering. Anything you typed is sent as the reason.'"
-                                @click="dismiss(resource, own)"
-                            >
-                                Close
-                            </Btn>
-                        </template>
-                        <Btn kind="primary" small @click="submit(own)">{{ capitalised(word(resource.type, "complete")) }}</Btn>
+                        <Btn kind="primary" small @click="submit(own)">Answer</Btn>
                     </template>
                 </TextInput>
-                <template v-if="changing">
-                    <Btn small @click="changing = false">Keep it</Btn>
-                </template>
             </form>
         </template>
     </section>

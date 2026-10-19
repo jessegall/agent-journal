@@ -1,23 +1,11 @@
 <script setup>
-import {parkedFor} from "../domain/records.js";
-import {peek} from "../route.js";
-
-defineProps({resource: {type: Object, required: true}, blocked: {type: String, default: ""}, waits: {type: Array, required: true}});
+defineProps({resource: {type: Object, required: true}});
 </script>
 
 <template>
     <p class="waits">
-        <template v-if="blocked">Blocked: {{ blocked }}</template>
-        <template v-if="parkedFor(resource)">Paused: {{ parkedFor(resource) }}</template>
-        <template v-if="waits.length">
-            Waits on
-            <template v-for="(ref, i) in waits" :key="ref">
-                <button type="button" class="wait" @click="peek(ref.split(':')[0], Number(ref.split(':')[1]))">
-                    {{ ref.replace("todo:", "to-do ").replace("plan:", "plan ") }}
-                </button>
-                {{ i < waits.length - 1 ? ", " : "" }}
-            </template>
-        </template>
+        <template v-if="resource.blocked_why">Blocked: {{ resource.blocked_why }}</template>
+        <template v-if="resource.parked_why">Parked: {{ resource.parked_why }}</template>
     </p>
 </template>
 

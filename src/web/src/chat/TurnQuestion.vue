@@ -1,16 +1,15 @@
 <script setup>
-import TextDisplay from "../kit/TextDisplay.vue";
+import {computed} from "vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
+import {rows} from "../sync/rows.js";
 
-defineProps({turn: {type: Object, required: true}});
+const props = defineProps({turn: {type: Object, required: true}});
+const question = computed(() => rows("questions").find((q) => q.id === props.turn.question.id) || {table: "questions", ...props.turn.question, text: props.turn.text});
 </script>
 
 <template>
     <div class="turn-question">
-        <template v-if="turn.abstract">
-            <TextDisplay class="thread-context" :text="turn.abstract" />
-        </template>
-        <OptionsPicker :resource="turn" />
+        <OptionsPicker :question="question" />
     </div>
 </template>
 

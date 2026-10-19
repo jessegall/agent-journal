@@ -23,7 +23,7 @@ const SYSTEM_TURNS = {
         question: {id: Number(card.row.split(":")[1]), options: card.options, answer: card.answer ?? null, closedAt: card.answer == null ? 0 : seconds(m.updated_at)},
         data: {},
     }),
-    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: card.n, title: label, abstract: card.abstract}, data: {shows: card.shows}}),
+    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.abstract}, data: {shows: card.shows}}),
     subagent: (card) => ({
         kind: "subagent",
         title: card.detail,

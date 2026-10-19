@@ -11,10 +11,10 @@ const {words} = useTurnText(() => props.turn, env);
 </script>
 
 <template>
-    <div class="thread-turn thought" :data-ref="turn.ref">
-        <TextDisplay class="thought-text" :text="turn.title" />
+    <div class="thread-turn thought" :data-ref="turn.key">
+        <TextDisplay class="thought-text" :text="turn.text" />
         <div class="thread-tools">
-            <ReplyTool title="Reply to this thought, quoting it" @reply="emit('reply', {text: words.text, ref: turn.ref})" />
+            <ReplyTool title="Reply to this thought, quoting it" @reply="emit('reply', {text: words.text, ref: turn.key})" />
         </div>
     </div>
 </template>
