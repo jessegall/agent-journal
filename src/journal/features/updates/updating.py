@@ -1,4 +1,5 @@
 import contextvars
+import subprocess
 import threading
 import time
 from typing import Callable
@@ -101,5 +102,13 @@ class Updating:
         self.problem, self.under_way = " ".join(problems), ""
 
     def pull_plugin(self, by: Actor) -> None:
-        if self.plugins.where(name=PLUGIN):
-            self.installing.upgrade(PLUGIN, None, Where().environment, by)
+        """A fetched plugin is only ever moved to a released version: its latest tag, when newer than the version its own manifest names."""
+        found = [plugin for plugin in self.plugins.where(name=PLUGIN) if not plugin.linked]
+        if not found:
+            return
+        try:
+            released = Release.named(self.source.tags_of(found[0].source))
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise Refused(str(error)) from error
+        if released and released[-1].is_newer_than(Release(found[0].manifest.version)):
+            self.installing.upgrade(PLUGIN, released[-1].tag, Where().environment, by)

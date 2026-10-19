@@ -97,6 +97,11 @@ async function retry() {
             <Btn kind="primary" small @click="retry">Try again</Btn>
         </div>
     </template>
+    <template v-if="upstream && upstream.problem">
+        <div class="band failed" role="alert">
+            <span class="text">The last update did not finish: {{ upstream.problem }}</span>
+        </div>
+    </template>
     <template v-if="visible">
         <div class="band">
             <span class="text">

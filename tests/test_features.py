@@ -16,7 +16,9 @@ from journal.config import Config
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker_state import WorkerState
 from journal.models.actor import Actor
+from journal.models.plugin import Plugin as PluginRow
 from journal.models.plugin_manifest import PluginManifest
+from journal.repositories.plugins import Plugins as PluginRows
 from journal.models.setting import Setting
 from journal.supervisor_reply import SupervisorReply
 from journal.repositories.scope import Scope
@@ -5697,10 +5699,22 @@ class Source:
     def __init__(self, *tags: str) -> None:
         self.tags_asked = []
         self.found = list(tags)
+        self.plugin_found = []
+
+    def tags_of(self, address: str) -> list[str]:
+        return self.plugin_found
 
     def tags(self, prefix: str) -> list[str]:
         self.tags_asked.append(prefix)
         return self.found
+
+
+class Plugins:
+    def __init__(self) -> None:
+        self.upgraded = []
+
+    def upgrade(self, name: str, ref: str, environment: str, by: Actor) -> None:
+        self.upgraded.append((name, ref))
 
 
 class Installer:
@@ -5746,3 +5760,17 @@ def test_nothing_is_installed_on_its_own_when_no_release_is_newer(app):
     installer = Installer()
     updating_with(app, Source("v4.0.0", "v5.0.0"), installer, auto=True).checked()
     assert installer.ran == []
+
+
+def test_the_plugin_is_moved_only_to_its_latest_release_when_newer_than_the_installed_one(app):
+    source, plugins = Source(), Plugins()
+    updating = updating_with(app, source, Installer(), auto=False)
+    updating.installing = plugins
+    manifest = PluginManifest(name="code-commandments", version="1.64.22")
+    app.container.get(PluginRows).save(PluginRow(name="code-commandments", source="https://example.test/plugin.git", manifest=manifest), Actor.system())
+    source.plugin_found = ["v1.64.21", "v1.64.22", "v1.65.0-rc1", "nightly"]
+    updating.pull_plugin(Actor.user(1))
+    assert plugins.upgraded == []
+    source.plugin_found = ["v1.64.22", "v1.64.23", "v1.64.9", "v1.65.0-rc1"]
+    updating.pull_plugin(Actor.user(1))
+    assert plugins.upgraded == [("code-commandments", "v1.64.23")]

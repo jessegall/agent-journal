@@ -29,4 +29,7 @@ class Release:
 
     def upgrades(self, installed: "Release") -> bool:
         """Newer than the installed release and of the same major version: an update never crosses a major."""
-        return self.major == installed.major and self.numbers > installed.numbers
+        return self.major == installed.major and self.is_newer_than(installed)
+
+    def is_newer_than(self, other: "Release") -> bool:
+        return self.numbers > other.numbers
