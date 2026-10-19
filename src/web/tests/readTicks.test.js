@@ -10,21 +10,18 @@ async function ticked(message, tone = "") {
 }
 
 describe("the ticks of a message", () => {
-    test("grow from one to two as it is delivered, and turn read once the agent has read it", async () => {
-        const sent = await ticked({seen: ["user"], data: {}});
-        const delivered = await ticked({seen: ["user"], data: {delivered: true}});
-        const read = await ticked({seen: ["user", "agent"], data: {delivered: true}});
-        expect([sent, delivered, read].map((one) => [one.getAttribute("title"), one.querySelectorAll("path").length])).toEqual([
-            ["Sent", 1],
-            ["Delivered to the agent", 2],
-            ["Read", 2],
+    test("grow from one to two and turn read once the agent has read it", async () => {
+        const sent = await ticked({read_at: null, filed: []});
+        const read = await ticked({read_at: "2026-10-19T10:00:00+00:00", filed: []});
+        expect([sent, read].map((one) => [one.getAttribute("title"), one.querySelectorAll("path").length, one.classList.contains("read")])).toEqual([
+            ["Sent", 1, false],
+            ["Read", 2, true],
         ]);
-        expect([sent, delivered, read].map((one) => one.classList.contains("read"))).toEqual([false, false, true]);
     });
 
-    test("stay a processed message's own colour once it is filed, and keep the read look on the phone's bubble", async () => {
-        const filed = await ticked({seen: ["user", "agent"], completed: 1, data: {}});
-        const read = await ticked({seen: ["user", "agent"], data: {}}, "bubble");
+    test("stay a processed message's own colour once it is filed, and keep the read look on a bubble", async () => {
+        const filed = await ticked({read_at: "2026-10-19T10:00:00+00:00", filed: [4]});
+        const read = await ticked({read_at: "2026-10-19T10:00:00+00:00", filed: []}, "bubble");
         expect([filed.getAttribute("title"), filed.classList.contains("read"), read.classList.contains("read"), read.classList.contains("bubble")]).toEqual(["Processed", false, true, true]);
     });
 });

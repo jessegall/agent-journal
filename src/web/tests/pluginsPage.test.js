@@ -6,21 +6,21 @@ import PluginSetting from "../src/pages/PluginSetting.vue";
 import {pluginFrom} from "../src/composables/plugins.js";
 
 const ROW = {
-    n: 3,
-    title: "Echo",
-    abstract: "Answers what it hears, for the tests.",
-    state: "failing",
-    data: {
-        manifest: {name: "echo", settings: {repeat: {title: "Repeat", type: "number", default: 1}, token: {title: "Token", type: "secret"}}, dashboards: []},
-        version: "1.0.0",
-        source: "/plugins/echo",
-        commit: "",
-        enabled: true,
-        holds: ["tool_starting", "prompt_submitted"],
-        last_fault: "its answer is not JSON",
-        failing_since: Date.now() / 1000 - 120,
-        settings: {chosen: {repeat: 3, token: "secret 7"}},
-    },
+    table: "plugins",
+    id: 3,
+    name: "echo",
+    source: "/plugins/echo",
+    commit_sha: "",
+    enabled: true,
+    status: "failing",
+    manifest: {title: "Echo", description: "Answers what it hears, for the tests.", version: "1.0.0", holds: ["tool_starting", "prompt_submitted"]},
+    last_fault: "its answer is not JSON",
+    failing_since: new Date(Date.now() - 120000).toISOString(),
+    settings: {repeat: 3, token: {secret: 7}},
+    schema: [
+        {key: "repeat", title: "Repeat", kind: "number", default: 1},
+        {key: "token", title: "Token", kind: "secret"},
+    ],
 };
 
 async function mounted(component, props) {

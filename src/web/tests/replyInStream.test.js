@@ -1,7 +1,6 @@
 import {createApp, h, nextTick} from "vue";
-import {beforeEach, expect, test} from "vitest";
+import {expect, test} from "vitest";
 import {threadTurns} from "../src/domain/thread.js";
-import {store} from "../src/state/store.js";
 
 globalThis.ResizeObserver ??= class {
     observe() {}
@@ -11,43 +10,28 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-const TYPES = {message: {title: "Message"}, todo: {title: "To-do"}};
-const base = {deleted: 0, completed: 0, refs: [], sections: [], title: "", abstract: "", updated: 0};
-const message = (n, created, who, brief, fields = {}) => ({
-    ...base,
-    ref: `message:${n}`,
-    type: "message",
-    n,
-    created,
-    seen: [who],
-    brief,
-    data: {author: who},
-    ...fields,
-});
+const at = (seconds) => new Date(seconds * 1000).toISOString();
+const message = (id, seconds, author, text, more = {}) => ({table: "messages", id, created_at: at(seconds), author, text, files: [], data: {}, comments_on: [], idempotency: "", reply_to: null, ...more});
 
 const older = message(1, 10, "user", "Is the footer fixed?");
 const newer = message(2, 20, "user", "And the header?");
-const reply = message(3, 30, "agent", "The footer is fixed.", {refs: ["message:1"], data: {author: "agent", reply_to: 1}});
-const rows = {message: [older, newer, reply], comment: [], question: [], reaction: [], agent: [], doc: []};
-const scope = {env: "", api: {}, rows: (type) => rows[type] || [], loaded: () => true, holding: () => {}, earlier: () => {}};
-
-beforeEach(() => {
-    store.spec = {types: TYPES, priority: Object.keys(TYPES), chat_kinds: {turns: {}}};
-});
+const reply = message(3, 30, "agent", "The footer is fixed.", {reply_to: 1});
+const messages = [older, newer, reply];
+const scope = {env: "", api: {}, rows: (table) => (table === "messages" ? messages : []), loaded: () => true, holding: () => {}, earlier: () => {}};
 
 test("an agent's reply to an older message is a message at its own place, at the foot of the chat", () => {
-    const {turns} = threadTurns(rows, [], "main");
-    expect(turns.map((t) => [t.ref, t.type, t.who])).toEqual([
-        ["message:1", "message", "user"],
-        ["message:2", "message", "user"],
-        ["message:3", "message", "agent"],
+    const {turns} = threadTurns(messages, []);
+    expect(turns.map((t) => [t.key, t.kind, t.who])).toEqual([
+        ["messages:1", "message", "user"],
+        ["messages:2", "message", "user"],
+        ["messages:3", "message", "agent"],
     ]);
 });
 
 test("the reply shows a quote of the older message it answers", async () => {
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {default: TurnMessage} = await import("../src/chat/TurnMessage.vue");
-    const {turns} = threadTurns(rows, [], "main");
+    const {turns} = threadTurns(messages, []);
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(TurnMessage, {turn: turns.at(-1)})});
@@ -58,5 +42,5 @@ test("the reply shows a quote of the older message it answers", async () => {
     const shown = {ref: host.querySelector(".thread-turn").dataset.ref, quote: host.querySelector(".thread-quote").textContent.trim()};
     app.unmount();
     host.remove();
-    expect(shown).toEqual({ref: "message:3", quote: "Is the footer fixed?"});
+    expect(shown).toEqual({ref: "messages:3", quote: "Is the footer fixed?"});
 });
