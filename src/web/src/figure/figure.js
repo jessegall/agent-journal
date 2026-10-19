@@ -958,10 +958,15 @@ const SEARCH_CROUCH = 0.2;
 const CHASE_REACH = 1.4;
 const TAP_LIFT = 0.13;
 
-// rummages through a pile in front of it with the free hand, looking down and from side to side
+// where the glance is across one slow search cycle: one way, a pause, the other way, a pause, back to centre, a longer rest
+function glanceOf(t) {
+    return rise(t, 0, 0.22) - 2 * rise(t, 0.32, 0.62) + rise(t, 0.7, 0.85);
+}
+
+// rummages through a pile in front of it with the free hand, looking down and slowly from side to side
 function search(pose, stance, t) {
     const side = freeSide(stance);
-    const sweep = waveOf(t);
+    const sweep = glanceOf(t);
     crouch(pose, SEARCH_CROUCH);
     breathe(pose, 0);
     trunk(pose, {lean: 26, nod: 20, turn: -SIDES[side] * 28 * sweep, twist: -SIDES[side] * 10 * sweep});
@@ -1505,7 +1510,7 @@ export const CLIPS = [
     {name: "hang_r", frames: 24, fps: 8, loops: true, leaves: 8, postures: HANGING, pose: dangle("r")},
     {name: "enter", frames: 36, fps: 12, loops: false, postures: MOVE, pose: enter},
     {name: "exit", frames: 28, fps: 12, loops: false, postures: MOVE, pose: exit},
-    {name: "search", frames: 12, fps: 10, loops: true, postures: GESTURE, pose: search},
+    {name: "search", frames: 80, fps: 10, loops: true, postures: GESTURE, pose: search},
     {name: "read", frames: READ_FRAMES, fps: READING.fps, loops: true, intro: READING.intro, outro: READING.outro, leaves: READING.pageEvery, postures: GESTURE, pose: read},
     {name: "write", frames: HELD_FRAMES, intro: ACTING.intro, outro: ACTING.outro, leaves: ACTING.hold, fps: ACTING.fps, loops: true, postures: GESTURE, pose: writing},
     {name: "waiting", frames: HELD_FRAMES, intro: ACTING.intro, outro: ACTING.outro, leaves: ACTING.hold, fps: ACTING.fps, loops: true, postures: ["stand", "sit"], pose: waiting},
