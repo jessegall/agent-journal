@@ -22,7 +22,7 @@ class TaskController(Controller[Task]):
     """Tasks with the plan each is in and the worker that holds it; started from the viewer, a task is taken up by the live agent."""
 
     def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: Machine) -> None:
-        self.repository, self.logs, self.workers, self.agents, self.machine = tasks, logs, workers, agents, machine
+        self.repository, self.task_logs, self.workers, self.agents, self.machine = tasks, logs, workers, agents, machine
 
     def rows(self) -> list[Task]:
         return self.repository.shown()
@@ -54,11 +54,11 @@ class TaskController(Controller[Task]):
         return Response.json(self.shown(self.repository.save(task.with_(state=TaskState.OPEN, finished_at=None, outcome=""), request.actor)))
 
     def logs(self, request: Request) -> Response:
-        return Response.json(self.logs.of(self.repository.find(request.number("id"))))
+        return Response.json(self.task_logs.of(self.repository.find(request.number("id"))))
 
     def log(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=request.body.get("line", "")), request.actor), 201)
+        return Response.json(self.task_logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=request.body.get("line", "")), request.actor), 201)
 
     @staticmethod
     def now() -> datetime:

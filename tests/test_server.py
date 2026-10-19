@@ -40,6 +40,7 @@ def test_tasks_live_over_http(server):
     status, started = call(server, "POST", "/journal/tasks/1/start")
     assert status == 200 and started["state"] == "started"
     assert call(server, "POST", "/journal/tasks/1/log", {"line": "halfway"})[0] == 201
+    assert [log["line"] for log in call(server, "GET", "/journal/tasks/1/logs")[1]] == ["halfway"]
     status, done = call(server, "POST", "/journal/tasks/1/finish", {"how": "merged"})
     assert done["state"] == "done" and done["outcome"] == "merged"
     status, listed = call(server, "GET", "/journal/tasks")

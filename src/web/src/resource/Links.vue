@@ -10,13 +10,15 @@ import {age} from "../format/time.js";
 
 const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
 const shown = (ref) => meta(refParts(ref).table) && !meta(refParts(ref).table).nested && !props.except.includes(ref);
+// A comment is drawn under its row with the others, not again as a link.
+const commentless = (r) => !(r.comments_on || r.on || []).length;
 const bar = (ref, direction) => {
     const {table, id} = refParts(ref);
     const r = byRef(ref);
     return {key: `${direction}${ref}`, ref, direction, icon: meta(table).icon, title: r ? titleOf(r) : `${meta(table).title} ${id}`, age: r ? age(updatedAt(r)) : ""};
 };
 const rows = computed(() => {
-    const listed = [...linksOf(props.resource).filter(shown).map((r) => bar(r, "to")), ...linkedTo(refOf(props.resource)).map(refOf).filter(shown).map((r) => bar(r, "from"))];
+    const listed = [...linksOf(props.resource).filter(shown).map((r) => bar(r, "to")), ...linkedTo(refOf(props.resource)).filter(commentless).map(refOf).filter(shown).map((r) => bar(r, "from"))];
     return listed.filter((row, i) => listed.findIndex((other) => other.ref === row.ref) === i);
 });
 const DIRECTIONS = [
