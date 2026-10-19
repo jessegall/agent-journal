@@ -29,6 +29,22 @@ else
   git clone --quiet --depth 1 --branch "$REF" "$REPO" "$TMP/pkg"
   SRC="$TMP/pkg/src"
 fi
+# A version 3 journal is moved whole into .journal/version-3 before anything is written, and is never changed after;
+# should the install fail before the new journal is up, it is put back where it was.
+BACKED=""
+restore() {
+  [ -n "$BACKED" ] || return 0
+  mv .journal/version-3 .journal-version-3 && rm -rf .journal && mv .journal-version-3 .journal
+  echo "the install failed: the version 3 journal is back where it was" >&2
+}
+trap 'code=$?; [ "$code" -eq 0 ] || restore' EXIT
+if [ -f .journal/src/VERSION ] && [ "$(cut -c1 .journal/src/VERSION)" = 3 ]; then
+  mv .journal .journal-version-3
+  mkdir .journal
+  mv .journal-version-3 .journal/version-3
+  BACKED=1
+  echo "the version 3 journal is kept whole in .journal/version-3"
+fi
 mkdir -p .journal/src
 # Each part is copied beside the one in use and renamed into place, so the running hooks and shell runner never find it gone.
 swap() {
@@ -44,4 +60,4 @@ for name in journal supervisor journal.py journal.sh; do
 done
 mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist
 [ -z "$TMP" ] || rm -rf "$TMP"
-JOURNAL_ROOT="$PWD" exec "$PY" .journal/src/journal.py setup here
+JOURNAL_ROOT="$PWD" "$PY" .journal/src/journal.py setup here
