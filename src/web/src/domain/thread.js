@@ -1,17 +1,8 @@
 import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
 import {turnKind, visibleIn} from "./chatVisibility.js";
-import {answered} from "./replies.js";
 
 const PROMISED_WITHIN = 5;
-
-const acknowledged = (m, rows) =>
-    rows.message.some((r) => !r.deleted && r.seen[0] === "agent" && answered(r) === m.ref) ||
-    rows.reaction.some((r) => !r.deleted && r.refs.includes(m.ref) && r.seen[0] === "agent");
-
-const QUOTED = ["message", "comment"];
-
-const filed = (m) => m.refs.filter((r) => !QUOTED.includes(r.split(":")[0]) && meta(r.split(":")[0]));
 
 const hasParent = (c) =>
     c.refs.some((ref) => {
@@ -39,23 +30,6 @@ function onItsRow(c, comments) {
         brief: c.brief.startsWith(">") ? c.brief : `${passage}\n\n${c.brief}`,
     };
 }
-
-const receipt = (m) => {
-    const refs = filed(m);
-    return {
-        ref: `receipt:${m.n}`,
-        type: "receipt",
-        n: m.n,
-        who: "agent",
-        created: m.updated + 0.001,
-        seen: ["agent"],
-        refs,
-        data: {},
-        sections: [],
-        title: `Filed ${refs.map((r) => `${meta(r.split(":")[0]).title.toLowerCase()} ${r.split(":")[1]}`).join(", ")} from your message.`,
-        brief: "",
-    };
-};
 
 const mark = (type, a, at, title, data = {}) => ({
     ref: `${type}:${a.n}:${at}`,
@@ -85,20 +59,23 @@ const visitorComments = (comments) =>
 
 const sessions = (agents) => agents.filter((a) => !a.data.parent);
 
-const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads || []).map((load) => mark("skill", a, load.at, load.skill)));
-
-const compactions = (agents) =>
-    sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Conversation compacted")));
-
 const isThought = (m) => (m.data.card || {}).kind === "thought";
 
 const spoken = (m) => (isThought(m) ? {...m, type: "thought", who: "agent", title: m.brief} : {...m, who: m.seen[0]});
 
 const SYSTEM_TURNS = {
     whisper: (card) => ({type: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
+    skill: (card) => ({type: "skill", title: card.detail, data: {}}),
+    compacted: () => ({type: "compacted", data: {}}),
+    made: (card, label) => ({type: "made", made: {type: card.made_type, n: card.n, title: label, abstract: card.abstract}, data: {shows: card.shows}}),
+    subagent: (card) => ({
+        type: "subagent",
+        title: card.detail,
+        data: {kind: card.agent_type, model: card.model, agent: card.agent, session: card.subagent, finished: card.state !== "running", stopped: card.state === "stopped"},
+    }),
     card: (card, label) => ({
         type: "card",
-        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row},
+        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, title: card.detail, row: card.row, shows: card.shows},
     }),
     plugin: (card, label) => ({
         type: "card",
@@ -126,64 +103,6 @@ const systemTurn = (m) => {
     };
 };
 
-const cards = (agents) =>
-    sessions(agents).flatMap((a) =>
-        (a.data.cards || []).map((c) =>
-            mark("card", a, c.at, c.label, {
-                icon: c.icon,
-                color: AGENT_ICONS.has(c.icon) ? SUBAGENT_COLOR : c.color,
-                tone: AGENT_ICONS.has(c.icon) ? "" : c.tone,
-                helper: c.helper,
-                label: c.label,
-                name: c.name || c.plugin,
-                detail: c.detail,
-                command: c.command,
-                title: c.title,
-                row: c.ref || c.row,
-                page: c.page,
-                settled: c.settled,
-                settledAt: c.settled_at,
-                side: c.side,
-                shows: c.shows,
-                state: c.state === "running" && !c.started ? "" : c.state,
-                started: c.started,
-                depth: c.depth || 0,
-                ended: c.ended,
-                search: c.found === undefined ? null : {label: c.label, found: c.found, reads: c.reads || []},
-            })
-        )
-    );
-
-const subagents = (agents) =>
-    sessions(agents).flatMap((a) =>
-        (a.data.subagent_rows || []).flatMap((sub) => [
-            mark("subagent", a, sub.at, sub.task, {
-                kind: sub.type,
-                model: sub.model,
-                agent: a.n,
-                session: sub.session,
-                refusal: sub.refusal,
-            }),
-            ...(sub.ended && !sub.refusal
-                ? [
-                      mark("subagent", a, sub.ended, sub.task, {
-                          kind: sub.type,
-                          finished: true,
-                          stopped: ["stopped", "killed"].includes(sub.status),
-                          agent: a.n,
-                          session: sub.session,
-                          report: (a.data.subagent_reports || {})[sub.id] || 0,
-                      }),
-                  ]
-                : []),
-        ])
-    );
-
-const madeByAgent = (docs, env) =>
-    docs
-        .filter((d) => !d.deleted && d.seen[0] === "agent" && d.data.environment === env)
-        .map((d) => ({...d, ref: `made:${d.ref}`, type: "made", made: d, who: "agent", seen: ["agent"], refs: [d.ref]}));
-
 const promisedFor = (p, m) =>
     p.data.idempotency && m.data?.idempotency
         ? p.data.idempotency === m.data.idempotency
@@ -191,7 +110,7 @@ const promisedFor = (p, m) =>
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 
-export function threadTurns(rows, pending, env, older = false, hidden = []) {
+export function threadTurns(rows, pending, older = false, hidden = []) {
     const keys = new Map();
     const live = rows.message.filter((m) => !m.deleted && !m.data.window);
     const said = live.filter((m) => !fromSystem(m));
@@ -200,7 +119,6 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [
         ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map(spoken),
-        ...said.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
         ...live.filter(fromSystem).map(systemTurn),
         ...rows.comment
             .filter((c) => !c.deleted && !c.data.visitor)
@@ -210,11 +128,6 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...visitorComments(rows.comment),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...(rows.suggestion || []).filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
-        ...loads(rows.agent || []),
-        ...compactions(rows.agent || []),
-        ...subagents(rows.agent || []),
-        ...cards(rows.agent || []),
-        ...madeByAgent(rows.doc || [], env),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
         .filter((t) => t.type === "message" || t.created >= floor)
@@ -225,7 +138,6 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
 
 const GROUP_FROM = 4;
 export const SUBAGENT_COLOR = "#e2c55c";
-const AGENT_ICONS = new Set(["bot", "agents"]);
 const GROUPS = {
     skill: () => ({key: "skill", icon: "book", tone: "good", label: (n) => `${n} skills loaded`}),
     whisper: () => ({key: "whisper", icon: "rules", label: (n) => `${n} rules and facts recalled`}),

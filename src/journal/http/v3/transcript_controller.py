@@ -27,7 +27,7 @@ class TranscriptController:
 
     def subagent(self, request: Request) -> Response:
         agent, id = self.agents.find(request.number("n")), request.params["session"]
-        if not any(row["session"] == id for row in self.subagents.rows(agent.session)):
+        if not any(row.session == id for row in self.subagents.rows(agent.session)):
             raise NotFound("subagent sessions", id)
         provider = self.providers.named(agent.provider or "claude")
         return self.answer(request, provider, provider.subagent_transcript(self.config.root, agent.session, id))

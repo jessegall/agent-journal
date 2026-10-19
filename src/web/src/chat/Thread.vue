@@ -182,12 +182,8 @@ const thread = computed(() => {
             comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
             question: rows("question").filter((q) => !q.env),
             suggestion: rows("suggestion"),
-            reaction: rows("reaction"),
-            doc: rows("doc"),
-            agent: here ? store.agents : rows("agent"),
         },
         pending.value,
-        scope.env || route.value.env,
         here && !!store.paging.more.message,
         props.hidden
     );

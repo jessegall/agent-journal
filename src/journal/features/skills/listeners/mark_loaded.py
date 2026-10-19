@@ -26,4 +26,4 @@ class MarkLoaded(AgentListener[ToolFinished]):
         agent = self.machine.agent(event.session, event.environment_id)
         self.agents.touch(agent, Actor.system(), skills_loaded={**(agent.skills_loaded or {}), skill.name: self.files.hash_of(skill)})
         self.requiring.paid(agent, skill)
-        self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good")
+        self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good", skill.name, kind="skill")

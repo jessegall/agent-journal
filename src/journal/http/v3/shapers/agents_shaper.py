@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from journal.http.v3.shapers.sequence_in_hand import SequenceInHand
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
@@ -38,11 +40,6 @@ class AgentsShaper(Shaper):
         return [self.row(a, [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in self.agents.in_()]
 
     @staticmethod
-    def commit_cards(entries) -> list[dict]:
-        return [{"key": f"commit:{e.data['sha']}", "label": f"Agent committed {e.data['sha'][:8]} on `{e.data.get('branch', '')}`", "icon": "branch", "tone": "commit", "title": e.data.get("subject", ""), "at": seconds(e.created_at), "state": "", "detail": ""}
-                for e in entries if e.kind == "commit"]
-
-    @staticmethod
     def status_of(state: str, heard: str) -> str:
         """A live agent's status: working when its state is one of work and its last hook says it is busy, else what the hook says."""
         return "working" if state in WORKING and heard == "busy" else heard
@@ -56,19 +53,20 @@ class AgentsShaper(Shaper):
         return thoughts[-1].text
 
     def row(self, a, entries) -> V3Row:
-        hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted", "commit")]
+        hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted")]
         moves = [e for e in hooks if e.kind in STATUS]
         last = moves[-1] if moves else None
         kind = last.kind if last else ""
         status = "stopped" if a.state == "ended" else self.status_of(a.state, STATUS.get(kind, "idle"))
         at = seconds(last.created_at) if last else seconds(a.updated_at)
         state = self.states.named(a.state, a.data)
+        subagents = self.subagents.rows(a.session)
         data = {
             "status": status, "event": EVENT.get(kind, kind), "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "", "file": "", "at": at,
             "provider": a.provider, "model": self.context.model(a.session), "effort": self.context.effort(a.session), "usage": {"windows": self.context.usage(a.session)}, "branch": self.files.branch(), "context": round((self.context.of(a.session) or 0) * 100), "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
             "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thinking(a.session, hooks), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
-            "cards": self.commit_cards(entries), "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
-            "subagent_rows": (subagents := self.subagents.rows(a.session)), "subagents": len(subagents), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
+            "skills": list((a.skills_loaded or {}).keys()),
+            "subagent_rows": [asdict(row) for row in subagents], "subagents": len(subagents), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
             "sequence": self.sequence_of(a), "sequence_history": [self.change_of(e) for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)

@@ -6,6 +6,7 @@ from journal.features.memory.commands.reminder_command import ReminderCommand
 from journal.features.memory.commands.rule_command import RuleCommand
 from journal.features.memory.listeners.hold_at_mark import HoldAtMark
 from journal.features.memory.listeners.hold_writes_while_mark_owed import HoldWritesWhileMarkOwed
+from journal.features.memory.listeners.mark_compacted import MarkCompacted
 from journal.features.memory.listeners.keep_from_stopping_while_mark_owed import KeepFromStoppingWhileMarkOwed
 from journal.features.memory.listeners.review_new_rule import ReviewNewRule
 from journal.features.memory.listeners.whisper import Whisper
@@ -23,7 +24,7 @@ class Memory(Feature):
     name = "memory"
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
-    listeners = (HoldAtMark, HoldWritesWhileMarkOwed, KeepFromStoppingWhileMarkOwed, Whisper, ReviewNewRule)
+    listeners = (HoldAtMark, HoldWritesWhileMarkOwed, KeepFromStoppingWhileMarkOwed, Whisper, ReviewNewRule, MarkCompacted)
     checks = (
         Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
         Entry(NodeKind.CHECK, 'memory_older_than', 'Facts, rules or reminders N days old?', "a fact, rule or reminder here has stood at least N days; the text is N or a setting's name", takes_text=True),

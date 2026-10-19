@@ -399,6 +399,10 @@ def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
     said = body["hookSpecificOutput"]["additionalContext"]
     assert "journal skill" in said and "read the tasks skill before anything else" in said, "a start after a compaction owes the journal skill and the state's own"
     assert sorted(requiring.owed_names(agents.for_session("s1"))) == ["journal", "tasks"]
+    app.runtime().deferred.drain()
+    from journal.repositories.messages import Messages
+    kinds = [m.data.get("kind") for m in app.container.get(Messages).all() if m.author.value == "system"]
+    assert "compacted" in kinds and "skill" in kinds, "a compaction and a skill read are marks in the chat, as messages"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
     assert status == 409 and "skill before anything else" in body["error"]
     read_skill(app, "journal")
@@ -522,6 +526,29 @@ def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     app.runtime().deferred.drain()
     assert any("talks about the journal's commands" in t for t in typed) and any("say you, never the user" in t for t in typed)
 
+
+
+def test_each_subagent_is_one_message_in_the_chat_settled_in_place(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
+    app.runtime().deferred.drain()
+    marks = lambda: [m.data for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
+    assert [(d["detail"], d["state"]) for d in marks()] == [("cut off", "running")], "a dispatch is a message as it starts"
+    hook(app, "Stop")
+    app.runtime().deferred.drain()
+    assert [(d["detail"], d["state"], d["agent"]) for d in marks()] == [("cut off", "stopped", 1)], "and the same message settles when its turn ends"
+
+
+def test_a_document_the_agent_writes_is_a_message_in_its_chat(app, tmp_path):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    (tmp_path / "notes.md").write_text("## Why\nBecause.\n")
+    app.console().run(["doc", "create", "Deploys", "--file", str(tmp_path / "notes.md"), "--abstract", "How a deploy goes"], AGENT)
+    app.console().run(["doc", "create", "Yours", "--file", str(tmp_path / "notes.md"), "--abstract", "the user's own"], USER)
+    app.runtime().deferred.drain()
+    made = [(m.text, m.data["abstract"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "made"]
+    assert made == [("Deploys", "How a deploy goes")], "the agent's document is marked in the chat; the user's own is not"
 
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
@@ -798,6 +825,11 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     tasks = app.container.get(Tasks)
     assert tasks.find(1).state == "done" and tasks.find(2).state == "done" and tasks.find(1).outcome.startswith("commit ")
     assert typed[-1].endswith("closed task 1, task 2")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
+    app.runtime().deferred.drain()
+    from journal.repositories.messages import Messages
+    marks = [m for m in app.container.get(Messages).all() if m.data.get("tone") == "commit"]
+    assert len(marks) == 1 and marks[0].text.startswith("Agent committed ") and marks[0].data["detail"] == "Ship the footer", "the commit is a message in the chat, once"
 
 
 def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_waits(app):
@@ -1145,6 +1177,10 @@ def test_reading_a_message_names_its_files_links_and_captions(app):
     assert "file " in shown and "shot one.png" in shown and "`journal message tag 1 \"shot one.png\"" in shown
     assert 'something to do? file it: `journal task create "<title>" --from 1`' in shown
     assert "(from message 1)" in console.run(["task", "create", "look at the picture", "--from", "1"], AGENT).out
+    console.run(["task", "create", "crop it", "--from", "1"], AGENT)
+    from journal.repositories.messages import Messages
+    filed = [m.text for m in app.container.get(Messages).all() if m.data.get("shows") == "filed"]
+    assert filed == ["Filed task 1, task 2 from your message"], "what is filed from a message is one mark in the chat, naming each row"
     assert console.run(["message", "tag", "1", "shot one.png", "the footer overlapping the form"], AGENT).code == 0
     assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).out
     console.run(["message", "react", "1", "👍"], USER)
