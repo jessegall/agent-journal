@@ -483,6 +483,10 @@ export class ApiClient {
         return this.get(this.here(`/${type}/${n}`));
     }
 
+    readOutput(n) {
+        return this.get(this.here(`/output/${n}/read`));
+    }
+
     create(type, body) {
         return this.post(this.here(`/${type}`), body);
     }

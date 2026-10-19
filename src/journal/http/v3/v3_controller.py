@@ -149,6 +149,10 @@ class V3Controller:
         self.settings.save(request.body, request.actor)
         return Response.json(self.settings.tree())
 
+    def post_mode(self, request: Request) -> Response:
+        self.settings.keep_mode(request.body.get("mode"), request.actor)
+        return Response.json(self.settings.tree())
+
     # rows
 
     def get_one(self, request: Request) -> Response:

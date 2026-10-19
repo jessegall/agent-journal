@@ -874,3 +874,31 @@ def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_
     assert call(server, "POST", "/api/share/domains")[1] == []
     assert call(server, "POST", "/api/share/share_view", {"view": "agents"})[0] == 409
     assert call(server, "POST", "/api/share/_tunnel")[0] == 409, "only the commands are reachable, nothing the commands keep"
+
+
+def test_the_mode_is_kept_and_an_output_is_read_by_its_number(tmp_path: Path):
+    from journal.models.actor import Actor
+    from journal.models.command_output import CommandOutput
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.scope import Scope
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        assert call(server, "POST", "/api/mode", {"mode": "solo"})[1]["work_modes"]["mode"] == "solo"
+        assert call(server, "GET", "/api/settings")[1]["work_modes"]["mode"] == "solo", "kept for the next read"
+        assert call(server, "POST", "/api/mode", {"mode": "remote"})[0] == 409, "only the three modes"
+        folder = tmp_path / "run"
+        folder.mkdir()
+        (folder / "parts").write_text("R\n")
+        (folder / "0.out").write_text("one\ntwo\n")
+        (folder / "0.err").write_text("oops\n")
+        (folder / "0.status").write_text("2\n")
+        (folder / "done").write_text("1")
+        with app.container.get(Scope).of(1):
+            kept = app.container.get(CommandOutputs).save(CommandOutput(chain="run", command="make test", folder=str(folder)), Actor.system())
+        status, read = call(server, "GET", f"/api/output/{kept.id}/read")
+        assert status == 200 and read == {"n": kept.id, "command": "make test", "outcome": "failed with code 2", "lines": ["one", "two", "oops"]}
+        assert call(server, "GET", "/api/output/99/read")[0] == 404
+    finally:
+        app.runtime().stop()
