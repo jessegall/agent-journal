@@ -46,6 +46,7 @@ class AgentActivity:
             "status": "stopped" if agent.state == ENDED else self.status_of(agent.state, STATUS.get(kind, "idle")),
             "heard_at": last.created_at if last else agent.updated_at,
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
+            "tool_running": kind == "ToolStarting",
             "awaiting": awaiting, "awaiting_on": on, "awaiting_since": agent.updated_at if awaiting else None,
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
             "branch": self.files.branch(), "context": round((self.context.of(agent.session) or 0) * 100),

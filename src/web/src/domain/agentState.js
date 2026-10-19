@@ -48,6 +48,7 @@ export function waitingOn(agent, workers = [], now = Date.now() / 1000) {
 }
 
 export function stateOf(agent) {
+    if (agent?.state === "paused") return "paused";
     const reported = agent ? agent.status : "stopped";
     if (reported === "working") return "working";
     if (reported === "idle" && agent.awaiting) return "waiting";
