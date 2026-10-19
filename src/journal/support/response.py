@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 
-from journal.http.json_out import JsonOut
+from journal.http.support.json_out import JsonOut
 from journal.support.not_found import NotFound
 
 

@@ -10,8 +10,8 @@ from journal.features.sharing.feature import Sharing
 from journal.features.sharing.share_password import SharePassword
 from journal.features.sharing.tunnel import HEALTH, MARKER
 from journal.features.sharing.wrong_passwords import WrongPasswords
-from journal.http.json_out import JsonOut
-from journal.http.share_answer import ShareAnswer
+from journal.http.support.json_out import JsonOut
+from journal.http.support.share_answer import ShareAnswer
 from journal.features.sharing.shared_comments import SharedComments
 from journal.http.sharing.shared_data import SharedData
 from journal.http.sharing.visitor_comment import VisitorComment

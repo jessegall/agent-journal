@@ -4,9 +4,9 @@ from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_record import PluginRecord
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.http.controllers.controller import Controller
-from journal.http.model_fields import ModelFields
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.model_fields import ModelFields
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins

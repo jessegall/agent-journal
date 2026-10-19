@@ -4318,7 +4318,7 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app):
 
 def test_a_plugin_runs_as_itself_never_as_the_user(app):
     from journal.features.plugins.plugin_tokens import PluginTokens
-    from journal.http.identity import Identity
+    from journal.http.support.identity import Identity
     from journal.repositories.messages import Messages
     token = app.container.get(PluginTokens).of("echo")
     port = app.server().port

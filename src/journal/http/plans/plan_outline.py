@@ -1,6 +1,6 @@
 from journal.features.plans.plan_control import PlanControl
 from journal.features.workers.subagents import Subagents
-from journal.http.model_fields import ModelFields
+from journal.http.support.model_fields import ModelFields
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
 from journal.repositories.agents import Agents

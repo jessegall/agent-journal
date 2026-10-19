@@ -2,9 +2,9 @@ from journal.features.sharing.share_actions import ShareActions
 from journal.features.sharing.share_targets import ShareTargets
 from journal.features.sharing.tunnel import Tunnel
 from journal.http.controllers.controller import Controller
-from journal.http.model_fields import ModelFields
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.model_fields import ModelFields
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.share import Share
 from journal.repositories.shares import Shares
 

@@ -7,7 +7,7 @@ from journal.support.context_file import ContextFile
 from journal.http.agents.current_work import CurrentWork
 from journal.http.agents.sequence_in_hand import SequenceInHand
 from journal.http.files.project_files import ProjectFiles
-from journal.http.model_fields import ModelFields
+from journal.http.support.model_fields import ModelFields
 from journal.models.agent import Agent
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries

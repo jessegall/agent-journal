@@ -1,6 +1,6 @@
 from journal.features.workers.feature import Workers
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 

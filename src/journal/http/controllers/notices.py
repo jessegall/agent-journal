@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.notice import Notice
 from journal.repositories.notices import Notices
 

@@ -2,10 +2,10 @@ import json
 import time
 from typing import Iterator
 
-from journal.http.json_out import JsonOut
-from journal.http.request import Request
-from journal.http.response import Response
-from journal.http.stream_response import StreamResponse
+from journal.http.support.json_out import JsonOut
+from journal.http.support.request import Request
+from journal.support.response import Response
+from journal.http.support.stream_response import StreamResponse
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope

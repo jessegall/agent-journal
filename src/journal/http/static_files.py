@@ -1,7 +1,7 @@
 import mimetypes
 from pathlib import Path
 
-from journal.http.file_response import FileResponse
+from journal.http.support.file_response import FileResponse
 
 
 class StaticFiles:

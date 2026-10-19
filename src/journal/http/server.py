@@ -4,7 +4,7 @@ from http.server import ThreadingHTTPServer
 from journal.config import Config
 from journal.db.connection import Connection
 from journal.http.handler import Handler
-from journal.http.identity import Identity
+from journal.http.support.identity import Identity
 from journal.http.router import Router
 from journal.http.static_files import StaticFiles
 

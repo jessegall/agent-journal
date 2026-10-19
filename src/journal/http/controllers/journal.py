@@ -8,8 +8,8 @@ from journal.http.agents.current_work import CurrentWork
 from journal.http.journal.environment_standing import EnvironmentStanding
 from journal.http.journal.held_task import HeldTask
 from journal.http.journal.manifest import Manifest
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.environment import Environment
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries

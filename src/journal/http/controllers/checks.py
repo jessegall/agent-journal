@@ -1,7 +1,7 @@
 from journal.features.checks.check_runner import CheckRunner
 from journal.http.controllers.controller import Controller
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.check import Check
 from journal.repositories.checks import Checks
 

@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from journal.features.secrets.login_window import LoginWindow
 from journal.features.secrets.programs import Programs
 from journal.http.controllers.controller import Controller
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
 from journal.support.refused import Refused

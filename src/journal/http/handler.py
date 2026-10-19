@@ -2,15 +2,15 @@ import json
 import traceback
 from urllib.parse import parse_qs, urlsplit
 
-from journal.http.file_response import FileResponse
-from journal.http.identity import Identity
-from journal.http.multipart import Multipart
-from journal.http.pooled_handler import PooledHandler
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.file_response import FileResponse
+from journal.http.support.identity import Identity
+from journal.http.support.multipart import Multipart
+from journal.http.support.pooled_handler import PooledHandler
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.http.router import Router
 from journal.http.static_files import StaticFiles
-from journal.http.stream_response import StreamResponse
+from journal.http.support.stream_response import StreamResponse
 
 
 class Handler(PooledHandler):

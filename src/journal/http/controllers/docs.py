@@ -1,7 +1,7 @@
 from journal.http.controllers.writing_controller import WritingController
 from journal.http.documents.doc_search import DocSearch
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.doc import Doc
 from journal.repositories.docs import Docs
 

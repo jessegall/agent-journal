@@ -1,7 +1,7 @@
 from journal.support.hook import Hook
 from journal.hooks.receiver import Receiver
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.providers.providers import Providers
 
 

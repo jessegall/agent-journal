@@ -3,8 +3,8 @@ from pathlib import Path
 from journal.config import Config
 from journal.features.workers.subagents import Subagents
 from journal.features.workers.worker_runner import WorkerRunner
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.http.transcripts.transcript_page import TranscriptPage
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers

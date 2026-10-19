@@ -5,10 +5,10 @@ from journal.features.faults.slow_requests import SlowRequests
 
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
-from journal.http.request import Request
-from journal.http.response import Response
-from journal.http.route import Handler, Route
-from journal.http.viewer_seen import ViewerSeen
+from journal.http.support.request import Request
+from journal.support.response import Response
+from journal.http.support.route import Handler, Route
+from journal.http.support.viewer_seen import ViewerSeen
 from journal.support.scope import Scope
 
 

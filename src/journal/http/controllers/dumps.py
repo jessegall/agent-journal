@@ -1,9 +1,9 @@
 from journal.features.dumps.filing import Filing
 from journal.http.attachments.attachments import Attachments
 from journal.http.controllers.controller import Controller
-from journal.http.model_fields import ModelFields
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.model_fields import ModelFields
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.dump import Dump
 from journal.repositories.dumps import Dumps
 

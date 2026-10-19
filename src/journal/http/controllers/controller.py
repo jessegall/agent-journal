@@ -4,8 +4,8 @@ from typing import Generic, TypeVar
 from journal.http.counts import Counts
 from journal.http.listed import Listed
 from journal.http.listing import Listing
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.model import Model
 from journal.repositories.repository import Repository
 

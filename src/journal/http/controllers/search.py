@@ -1,6 +1,6 @@
 from journal.features.search.search import Search
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 
 
 class SearchController:

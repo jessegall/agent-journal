@@ -1,8 +1,8 @@
 import json
 from ipaddress import ip_address, ip_network
 
-from journal.http.pooled_handler import PooledHandler
-from journal.http.share_answer import ShareAnswer
+from journal.http.support.pooled_handler import PooledHandler
+from journal.http.support.share_answer import ShareAnswer
 from journal.http.sharing.share_pages import SharePages
 from journal.http.sharing.visitor_comment import VisitorComment
 

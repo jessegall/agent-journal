@@ -9,7 +9,7 @@ from journal.features.shell.writes import Writes
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
-from journal.http.response import Response
+from journal.support.response import Response
 from journal.models.entry import Entry
 from journal.support.tool_input import ToolInput
 from journal.providers.support.turn import Turn

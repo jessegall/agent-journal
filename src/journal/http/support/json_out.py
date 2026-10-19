@@ -3,7 +3,7 @@ from dataclasses import fields, is_dataclass
 from datetime import datetime
 from enum import Enum
 
-from journal.http.model_fields import ModelFields
+from journal.http.support.model_fields import ModelFields
 from journal.support.actor import Actor
 from journal.models.model import Model
 from journal.support.ref import Ref

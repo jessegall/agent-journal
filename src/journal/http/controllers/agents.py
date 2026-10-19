@@ -7,8 +7,8 @@ from journal.features.shell.commands.shell_command import RAN
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.terminal_line import TerminalLine
 from journal.http.controllers.controller import Controller
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.agent import Agent
 from journal.models.entry import Entry
 from journal.providers.providers import Providers

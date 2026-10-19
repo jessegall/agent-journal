@@ -1,6 +1,6 @@
 from journal.features.registry import Registry
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.support.actor import Actor
 from journal.repositories.settings import Settings
 

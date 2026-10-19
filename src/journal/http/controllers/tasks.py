@@ -5,9 +5,9 @@ from journal.engine.machine import Machine
 from journal.features.tasks.states.working import Working
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
-from journal.http.model_fields import ModelFields
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.model_fields import ModelFields
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState

@@ -10,8 +10,8 @@ from journal.features.chart.trial_asked import TrialAsked
 from journal.features.chart.validation import LOCK_WHY, Validation
 from journal.support.states_catalogue import StatesCatalogue
 from journal.http.controllers.listed_workflow import ListedWorkflow
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind

@@ -1,8 +1,8 @@
 from journal.console.console import Console
 from journal.console.where import Where
 from journal.features.plugins.plugin_tokens import PluginTokens
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 
 
 class CliController:

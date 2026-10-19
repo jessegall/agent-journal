@@ -1,6 +1,6 @@
 from journal.http.files.project_files import ProjectFiles
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 
 
 class ProjectFileController:

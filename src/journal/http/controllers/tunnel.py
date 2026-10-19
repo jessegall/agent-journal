@@ -3,8 +3,8 @@ from dataclasses import asdict
 from journal.features.sharing.feature import Sharing
 from journal.features.sharing.tunler import Tunler
 from journal.features.sharing.tunnel import Tunnel
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 from journal.repositories.shares import Shares

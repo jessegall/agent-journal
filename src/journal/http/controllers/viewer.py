@@ -1,6 +1,6 @@
-from journal.http.request import Request
-from journal.http.response import Response
-from journal.http.viewer_seen import ViewerSeen
+from journal.http.support.request import Request
+from journal.support.response import Response
+from journal.http.support.viewer_seen import ViewerSeen
 
 
 class ViewerController:

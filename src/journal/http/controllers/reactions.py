@@ -1,6 +1,6 @@
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
-from journal.http.model_fields import ModelFields
+from journal.http.support.model_fields import ModelFields
 from journal.models.author import Author
 from journal.models.reaction import Reaction
 from journal.repositories.reactions import REACTS, Reactions

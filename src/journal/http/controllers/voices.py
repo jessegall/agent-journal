@@ -2,8 +2,8 @@ from journal.features.voices.calling import Calling
 from journal.features.voices.chosen_voice import ChosenVoice
 from journal.features.voices.feature import Voices
 from journal.features.voices.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 

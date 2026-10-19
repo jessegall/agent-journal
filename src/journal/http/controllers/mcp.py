@@ -4,8 +4,8 @@ from journal.features.mcp.installing import Installing
 from journal.features.mcp.keys import Keys
 from journal.features.mcp.pending_restarts import PendingRestarts
 from journal.http.controllers.listed_server import ListedServer
-from journal.http.request import Request
-from journal.http.response import Response
+from journal.http.support.request import Request
+from journal.support.response import Response
 from journal.repositories.mcp_servers import McpServers
 from journal.support.not_found import NotFound
 
