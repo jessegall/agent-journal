@@ -554,7 +554,13 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app):
     files = app.container.get(ProfileFiles)
     files.write_all()
     assert files.kind_of("researcher") == "subagent" and files.kind_of("nobody") == ""
-    assert files.save("builder", "writes code", "Read, Edit", "worker", "sonnet", "You write.")["kind"] == "worker"
+    from journal.features.profiles.support.profile import Profile
+    (files.config.root / ".codex").mkdir(exist_ok=True)
+    saved = files.save(Profile("builder", "writes code", "Read, Edit", "You write.\nSay \"done\".", "worker"), "sonnet", "gpt-6")
+    assert saved["kind"] == "worker" and saved["model"] == "sonnet" and saved["codex_model"] == "gpt-6"
+    import tomllib
+    codex = tomllib.loads((files.config.root / ".codex" / "agents" / "builder.toml").read_text())
+    assert codex["model"] == "gpt-6" and codex["sandbox_mode"] == "workspace-write" and codex["developer_instructions"] == "You write.\nSay \"done\"."
     assert files.read("builder")["kind"] == "worker" and files.read("planner")["kind"] == "subagent"
     hook(app, "SessionStart")
     refused = app.console().run(["worker", "dispatch", "researcher", "look it up", "--model", "fast"], AGENT)
@@ -1342,6 +1348,10 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
     assert console.run(["search", "for", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
     marks = [m for m in app.container.get(Messages).in_() if m.data.get("kind") == "search"]
     assert marks[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in marks[0].data["detail"], "the mark opens what was found"
+    console.run(["check", "create", "Lint the base repository", "--command", "true", "--every", "0"], AGENT)
+    assert "check 1: Lint the base repository" in console.run(["search", "base", "repository"], AGENT).out, "every model with words of its own is searched, a check among them"
+    only = console.run(["search", "base", "repository", "--model", "plan,check"], AGENT).out
+    assert "plan 1: release" in only and "check 1" in only and "task 1" not in only, "--model narrows to the models named"
 
 
 def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once(app, monkeypatch, tmp_path):
@@ -1492,6 +1502,9 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
     app.runtime().deferred.drain()
     whispers = [line for line in typed if "fact 1: the login uses the old session store" in line]
     assert len(whispers) == 1, "whispered once per row per agent"
+    from journal.repositories.messages import Messages
+    marks = [m for m in app.container.get(Messages).recent(30) if m.data.get("kind") == "whisper"]
+    assert marks and marks[-1].data["row"] == "facts:1", "the mark names the row by its table, so the viewer opens it"
     made = app.console().run(["rule", "create", "Always run the suite before a commit"], AGENT)
     assert "does rule 1 apply to the whole project?" in made.out, "the question comes out of the command that made the rule"
     assert not any("does rule 1" in line for line in typed)
@@ -5067,6 +5080,7 @@ def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app
         app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo parsed > parser.txt && git add parser.txt && git commit -qm 'the parser' && echo half > notes.txt && echo the parser is written"], A.agent("s1"))
         report = next(m.text for m in app.container.get(Messages).in_() if "Lady Lovelace reports" in m.text)
     assert "the parser is written" in report and "its 1 commits were taken into this branch" in report and "the parser" in report.split("taken into this branch:")[1], "its commit is merged and named"
+    assert "(files: parser.txt)" in report, "the files its commits wrote are named in its report, as its own feed of edits"
     assert (root / "parser.txt").exists(), "the worker's file is in the project now"
     assert "it left 1 files uncommitted in its worktree" in report and "notes.txt" in report, "what it never committed is named, not lost"
 
@@ -6331,3 +6345,183 @@ def test_a_piece_of_a_line_the_journal_typed_is_never_taken_for_the_users_words(
     hook(app, "UserPromptSubmit", prompt="and stock sync is off right?")
     app.runtime().deferred.drain()
     assert [m.text for m in app.container.get(Messages).recent(10) if m.author == "user"] == ["and stock sync is off right?"], "the split-off half of the journal's line is the journal's; the user's own words are theirs"
+
+
+def test_the_agent_stays_out_of_a_workers_worktree_and_is_told_how_to_work_there(app):
+    import subprocess
+    root = app.config.root
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    inside = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
+    status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(inside), "content": "x"})
+    assert status == 409 and "worker 1's worktree" in body["error"] and "journal worker say 1" in body["error"], "the worker's worktree is the worker's"
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(inside), "content": "x"}, agent_id="a1")[0] == 200, "a subagent's own tool use is not the agent's"
+    assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(root / "elsewhere.py"), "content": "x"})[0] == 200
+
+
+def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_never_while_it_works_or_holds_uncommitted_work(app):
+    import subprocess
+    from journal.features.workers.support.worker_branch import WorkerBranch
+    from journal.repositories.workers import Workers
+    from journal.support.scope import Scope
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    git("commit", "-q", "--allow-empty", "-m", "start")
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    tree = app.config.home / "worktrees" / "1-Lady-Lovelace"
+    (tree / "parser.py").write_text("PARSE = 1\n")
+    git("add", "parser.py", cwd=tree)
+    git("commit", "-qm", "the parser", cwd=tree)
+    workers = app.container.get(Workers)
+    with app.container.get(Scope).of(1):
+        assert "stays while it works" in app.container.get(WorkerBranch).dropped(workers.find(1)), "never while the worker runs in it"
+        workers.save(workers.find(1).reported(), Actor.system())
+    (tree / "notes.txt").write_text("half\n")
+    kept = app.console().run(["worker", "done", "1"], AGENT).out
+    assert "stays, since 1 files in it are not committed: notes.txt" in kept and tree.is_dir(), "uncommitted work keeps it"
+    (tree / "notes.txt").unlink()
+    gone = app.console().run(["worker", "done", "1"], AGENT).out
+    assert "its worktree and branch are removed; its last commit is kept as refs/journal/worktrees/1-Lady-Lovelace" in gone and not tree.exists()
+    assert git("log", "-1", "--format=%s", "refs/journal/worktrees/1-Lady-Lovelace").stdout.strip() == "the parser", "its last commit can still be taken in"
+
+
+def test_deleting_an_environment_keeps_its_worktree_while_it_holds_work_and_takes_a_merged_one_with_it(app):
+    import subprocess
+    from journal.support.worktree import Worktree
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    git("commit", "-q", "--allow-empty", "-m", "start")
+    tree = Worktree(root, "calm-river").made()
+    (tree / "page.py").write_text("PAGE = 1\n")
+    console = app.console()
+    console.run(["environment", "create", "calm-river"], USER)
+    said = console.run(["environment", "delete", "calm-river"], USER).out
+    assert "stays, since 1 files in it are not committed: page.py" in said and tree.is_dir(), "uncommitted work keeps the worktree"
+    git("add", "page.py", cwd=tree)
+    git("commit", "-qm", "the page", cwd=tree)
+    console.run(["environment", "create", "calm-river"], USER)
+    said = console.run(["environment", "delete", "calm-river"], USER).out
+    assert "stays, since its branch has commits not yet in main" in said and tree.is_dir(), "unmerged commits keep it"
+    git("merge", "-q", "worktree-calm-river")
+    console.run(["environment", "create", "calm-river"], USER)
+    said = console.run(["environment", "delete", "calm-river"], USER).out
+    assert "its worktree and branch are removed, its work already merged" in said and not tree.exists(), "a merged, clean one goes with its environment"
+
+
+def test_a_session_in_a_worktree_is_marked_with_its_branch_once(app):
+    import subprocess
+    from journal.repositories.messages import Messages
+    from journal.support.worktree import Worktree
+    root = app.config.root
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
+    Worktree(root, "main").made()
+    hook(app, "SessionStart")
+    hook(app, "SessionStart", source="compact")
+    app.runtime().deferred.drain()
+    marks = [m.text for m in app.container.get(Messages).recent(20) if m.text.startswith("Working in the worktree")]
+    assert marks == ["Working in the worktree main, on the branch worktree-main"], "one mark a session, naming the worktree and its branch"
+
+
+def test_the_viewer_lists_an_environments_worktree_with_its_branch(app):
+    import subprocess
+    from journal.http.controllers.environments import EnvironmentController
+    from journal.repositories.environments import Environments
+    from journal.support.worktree import Worktree
+    root = app.config.root
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
+    Worktree(root, "calm-river").made()
+    environments = app.container.get(Environments)
+    rows = app.container.get(EnvironmentController).shown_page([environments.named("main"), environments.named("calm-river")])
+    assert [(r["name"], r["worktree"]) for r in rows] == [("main", ""), ("calm-river", "worktree on worktree-calm-river")]
+
+
+def test_a_commit_made_in_a_worktree_closes_its_task_when_a_merge_lands_it_and_never_twice(app):
+    import subprocess
+    from journal.repositories.tasks import Tasks
+    from journal.support.scope import Scope
+    from journal.support.worktree import Worktree
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "trunk")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n.claude/\n")
+    git("add", ".gitignore")
+    git("commit", "-qm", "start")
+    tree = Worktree(root, "main").made()
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "the page", "--start"], AGENT)
+    (tree / "page.py").write_text("PAGE = 1\n")
+    git("add", "page.py", cwd=tree)
+    git("commit", "-qm", "the page\n\nJournal: tasks done 1", cwd=tree)
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m 'the page'"}, tool_response={})
+    state = lambda: app.container.get(Tasks).find(1).state.value
+    with app.container.get(Scope).of(1):
+        assert state() != "done", "a commit made in the worktree closes nothing before it lands"
+    git("merge", "-q", "worktree-main")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git merge worktree-main"}, tool_response={})
+    with app.container.get(Scope).of(1):
+        assert state() == "done", "the merge that lands it closes the task its trailer names"
+    git("merge", "-q", "worktree-main")
+    status, _ = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git merge worktree-main"}, tool_response={})
+    assert status == 200, "a merge that brings nothing new closes nothing twice"
+
+
+def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_fifty_tool_uses(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    made = lambda: hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "gh pr create"}, tool_response={"stdout": "https://github.com/acme/shop/pull/27"})[1]
+    first = made()
+    assert "https://github.com/acme/shop/pull/27 is not pinned" in str(first), "a pull request's address in a command's output is suggested as a pin"
+    assert "is not pinned" not in str(made()), "not again at once"
+    for _ in range(50):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "is not pinned" in str(made()), "suggested again after fifty of the agent's tool uses"
+    app.console().run(["notice", "create", "Pull request 27", "--link", "https://github.com/acme/shop/pull/27", "--label", "Open it"], AGENT)
+    for _ in range(50):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "is not pinned" not in str(made()), "a pinned link is never suggested"
+
+
+def test_dispatches_past_the_most_at_once_wait(app):
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    hook(app, "SessionStart")
+    console = app.console()
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet"], AGENT)
+    refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--model", "sonnet"], AGENT)
+    assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore"})
+    hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore"})
+    assert status == 409 and "1 subagents are running, the most at once" in body["error"], "a subagent past the most at once is held"
+
+
+def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(app):
+    from journal.http.plans.plan_timeline import PlanTimeline
+    from journal.repositories.plans import Plans
+    from journal.support.scope import Scope
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["plan", "create", "the phone", "--brief", "pair it"], USER)
+    console.run(["plan", "add", "1", "pair it", "--brief", "a code pairs"], AGENT)
+    console.run(["task", "start", "1"], AGENT)
+    console.run(["task", "log", "1", "the code is hashed"], AGENT)
+    console.run(["task", "done", "1", "--how", "pairs by code"], AGENT)
+    with app.container.get(Scope).of(1):
+        moments = app.container.get(PlanTimeline).of(app.container.get(Plans).find(1))
+    assert [(m.kind, m.task, m.text) for m in moments] == [("started", 1, ""), ("log", 1, "the code is hashed"), ("done", 1, "pairs by code")], "each start, log line and end, oldest first"

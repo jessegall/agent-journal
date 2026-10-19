@@ -53,7 +53,7 @@ if [ -f .journal/src/VERSION ] && [ "$(cut -c1 .journal/src/VERSION)" = 3 ]; the
   if [ "${AGENT_JOURNAL_YES:-}" != 1 ]; then
     printf 'Go ahead? [y/N] '
     answer=""
-    read -r answer < /dev/tty 2>/dev/null || true
+    { read -r answer < /dev/tty; } 2>/dev/null || true
     case "$answer" in y|Y|yes|Yes) ;; *) echo "Nothing changed."; exit 0 ;; esac
   fi
   port=$(cat .journal/port 2>/dev/null || true)
@@ -73,6 +73,20 @@ if [ -f .journal/src/VERSION ] && [ "$(cut -c1 .journal/src/VERSION)" = 3 ]; the
   mv .journal-version-3 .journal/version-3
   BACKED=1
   echo "the version 3 journal is kept whole in .journal/version-3"
+fi
+# Going back a version: the record was written by the newer code, whose models the older code may not read.
+installed=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' .journal/src/journal/version.py 2>/dev/null || true)
+bringing=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' "$SRC/journal/version.py" 2>/dev/null || true)
+if [ -n "$installed" ] && [ -n "$bringing" ] && "$PY" -c 'import sys; v = lambda s: tuple(int(n) for n in s.split(".")); sys.exit(0 if v(sys.argv[1]) < v(sys.argv[2]) else 1)' "$bringing" "$installed"; then
+  echo "This installs $bringing over $installed: an earlier version. The journal's record was written by $installed, and"
+  echo "$bringing's models may not read it, so the journal may fail to start or lose what it cannot read. Staying on"
+  echo "$installed or later is advised."
+  if [ "${AGENT_JOURNAL_YES:-}" != 1 ]; then
+    printf 'Install the earlier version anyway? [y/N] '
+    answer=""
+    { read -r answer < /dev/tty; } 2>/dev/null || true
+    case "$answer" in y|Y|yes|Yes) ;; *) echo "Nothing changed: $installed stays."; exit 0 ;; esac
+  fi
 fi
 mkdir -p .journal/src
 # Each part is copied beside the one in use and renamed into place, so the running hooks and shell runner never find it gone.

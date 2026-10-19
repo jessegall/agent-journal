@@ -2,14 +2,14 @@ import fcntl
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
+from journal.support.kept_tips import KEPT
 from journal.support.worktree_not_made import WorktreeNotMade
 
 GIT_SECONDS = 60
 JOURNAL = ".journal"
-KEPT = "refs/journal/worktrees"
-"""Where each worktree's last tip is kept, so one whose branch went is made again from it."""
 SKILL_FOLDERS = (".claude/skills", ".agents/skills")
 """Each skill in them is shared when the project does not track it."""
 IF_IGNORED = (".claude/settings.json", ".claude/settings.local.json", ".codex/hooks.json", ".codex/agents", ".claude/agents", "AGENTS.md", "CLAUDE.md")
@@ -33,12 +33,17 @@ class Worktree:
     def badges(self) -> tuple[str, ...]:
         if not self.path.is_dir():
             return ()
-        return (f"worktree on {self.git_in('rev-parse', '--abbrev-ref', 'HEAD').stdout.strip()}",)
+        return (f"worktree on {self.current_branch()}",)
+
+    def current_branch(self) -> str:
+        return self.git_in("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
 
     def made(self) -> Path:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with (self.path.parent / f".{self.name}.lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
+            if self.path.exists() and not self.is_registered():
+                self.moved_aside()
             if not self.path.is_dir():
                 self.added()
             self.shared()
@@ -57,7 +62,35 @@ class Worktree:
         else:
             added = self.git("worktree", "add", "-b", self.branch, str(self.path))
         if added.returncode != 0:
+            self.git("worktree", "prune")
+            if self.path.exists():
+                self.moved_aside()
             raise WorktreeNotMade(self.name, added.stderr.strip())
+
+    def dropped(self) -> str:
+        if not self.path.is_dir():
+            return ""
+        left = [line[3:] for line in self.git_in("status", "--porcelain").stdout.splitlines() if line.strip()]
+        if left:
+            return f"its worktree {self.path} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
+        tip = self.git_in("rev-parse", "HEAD").stdout.strip()
+        if self.git("merge-base", "--is-ancestor", tip, "HEAD").returncode != 0:
+            return f"its worktree {self.path} stays, since its branch has commits not yet in {self.git('rev-parse', '--abbrev-ref', 'HEAD').stdout.strip()}"
+        self.git("update-ref", f"{KEPT}/{self.name}", tip)
+        branch = self.git_in("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        self.git("worktree", "remove", "--force", str(self.path))
+        self.git("branch", "-D", branch)
+        return f"its worktree and branch are removed, its work already merged; its last commit is kept as {KEPT}/{self.name}"
+
+    def is_registered(self) -> bool:
+        listed = self.git("worktree", "list", "--porcelain").stdout.splitlines()
+        return f"worktree {self.path.resolve()}" in listed or f"worktree {self.path}" in listed
+
+    def moved_aside(self) -> Path:
+        aside = self.path.with_name(f"{self.name}.moved-aside-{int(time.time())}")
+        self.path.rename(aside)
+        self.git("worktree", "prune")
+        return aside
 
     def shared(self) -> None:
         wanted = [Path(JOURNAL), *self.untracked(self.skills()), *self.ignored([Path(p) for p in IF_IGNORED if (self.root / p).exists()])]

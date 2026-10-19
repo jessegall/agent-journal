@@ -59,36 +59,38 @@ onUnmounted(() => watcher.disconnect());
 </script>
 
 <template>
-    <Transition name="dialog" appear @after-leave="closed">
-        <div v-if="visible" :class="['dialog', {large, sheet}]" :style="{zIndex: layer}" @click.self="outside">
-            <section
-                ref="panel"
-                :class="['dialog-panel', {fixed: !fits, small, tall, large, wide, sheet, nudged}]"
-                role="dialog"
-                :aria-modal="modal || undefined"
-                :aria-label="modal ? undefined : title"
-                :aria-labelledby="modal ? headingId : undefined"
-                @keydown.capture="unarmed"
-            >
-                <template v-if="!bare">
-                    <header class="dialog-head">
-                        <h3 :id="headingId" ref="heading" :tabindex="modal ? -1 : undefined">{{ title }}</h3>
-                        <template v-if="closable">
-                            <CloseButton @click="close" />
-                        </template>
-                    </header>
-                </template>
-                <div ref="body" :class="['dialog-body', {bare}]">
-                    <slot />
-                </div>
-                <template v-if="$slots.foot">
-                    <footer class="dialog-foot">
-                        <slot name="foot" />
-                    </footer>
-                </template>
-            </section>
-        </div>
-    </Transition>
+    <Teleport to="body">
+        <Transition name="dialog" appear @after-leave="closed">
+            <div v-if="visible" :class="['dialog', {large, sheet}]" :style="{zIndex: layer}" @click.self="outside">
+                <section
+                    ref="panel"
+                    :class="['dialog-panel', {fixed: !fits, small, tall, large, wide, sheet, nudged}]"
+                    role="dialog"
+                    :aria-modal="modal || undefined"
+                    :aria-label="modal ? undefined : title"
+                    :aria-labelledby="modal ? headingId : undefined"
+                    @keydown.capture="unarmed"
+                >
+                    <template v-if="!bare">
+                        <header class="dialog-head">
+                            <h3 :id="headingId" ref="heading" :tabindex="modal ? -1 : undefined">{{ title }}</h3>
+                            <template v-if="closable">
+                                <CloseButton @click="close" />
+                            </template>
+                        </header>
+                    </template>
+                    <div ref="body" :class="['dialog-body', {bare}]">
+                        <slot />
+                    </div>
+                    <template v-if="$slots.foot">
+                        <footer class="dialog-foot">
+                            <slot name="foot" />
+                        </footer>
+                    </template>
+                </section>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <style scoped>

@@ -4,7 +4,7 @@ from journal.support.decision import Decision
 from journal.features.workers.support.named_paths import NamedPaths
 from journal.support.subagents import Subagents
 
-FRESH = ("auditor", "reviewer", "plan-reviewer", "critic", "goal-verifier")
+FRESH = ("auditor", "reviewer", "plan-reviewer", "critic")
 """Kinds whose job is a fresh look, never handed to one that already formed a view."""
 
 

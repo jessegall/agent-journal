@@ -1,0 +1,59 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "the worker is out",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "a write in the worker's worktree",
+      "answer": {
+        "error": "that file is in worker 1's worktree. Lady Lovelace writes there: `journal worker say 1 \"<job>\"`, or wait for its report and merge"
+      },
+      "typed": [],
+      "nudges": [],
+      "counts": {},
+      "read": [
+        {
+          "169": 0,
+          "29": 0,
+          "34": 0,
+          "39": 0
+        }
+      ]
+    },
+    {
+      "name": "a subagent writes in its own worktree",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "a write in the project",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {},
+      "read": [
+        {
+          "169": 0,
+          "29": 0,
+          "34": 0,
+          "39": 0
+        }
+      ]
+    }
+  ]
+}

@@ -5,16 +5,22 @@ from journal.support.response import Response
 from journal.models.environment import Environment
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
+from journal.config import Config
+from journal.http.support.model_fields import ModelFields
+from journal.support.worktree import Worktree
 
 
 class EnvironmentController(Controller[Environment]):
     """The project's environments; an agent is started in one from here, stopped, or the environment removed with everything in it."""
 
-    def __init__(self, environments: Environments, launcher: AgentLauncher, supervisor: SupervisorLink) -> None:
-        self.repository, self.launcher, self.supervisor = environments, launcher, supervisor
+    def __init__(self, environments: Environments, launcher: AgentLauncher, supervisor: SupervisorLink, config: Config) -> None:
+        self.repository, self.launcher, self.supervisor, self.config = environments, launcher, supervisor, config
 
     def rows(self) -> list[Environment]:
         return self.repository.all() or [self.repository.named("main")]
+
+    def shown_page(self, rows: list[Environment]) -> list[dict]:
+        return [{**ModelFields.of(row), "worktree": next(iter(Worktree(self.config.root, row.name).badges()), "")} for row in rows]
 
     def store(self, request: Request) -> Response:
         return Response.json(self.repository.named(request.body.get("name", "main")), 201)
@@ -31,5 +37,6 @@ class EnvironmentController(Controller[Environment]):
         return Response.json(environment)
 
     def remove(self, request: Request) -> Response:
-        self.repository.wipe(self.repository.find(request.number("id")), request.actor)
-        return Response.json({})
+        environment = self.repository.find(request.number("id"))
+        self.repository.wipe(environment, request.actor)
+        return Response.json({"worktree": Worktree(self.config.root, environment.name).dropped()})

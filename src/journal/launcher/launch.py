@@ -15,7 +15,10 @@ from journal.launcher.support.other_hooks import OtherHooks
 from journal.launcher.support.page_wait import PageWait
 from journal.support.project_command import ProjectCommand
 from journal.launcher.support.status_line import StatusLine
-from journal.launcher.support.worktree import Worktree
+from journal.support.worktree import Worktree
+from journal.launcher.support.update_offer import UpdateOffer
+from journal.features.updates.support.release_source import ReleaseSource
+from journal.config import Config
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
@@ -79,9 +82,15 @@ class Launch:
         menu = Menu(self.root, self.package / "journal.py")
         named = self.env or self.worktree or self.resumed_in(menu)
         if not sys.stdin.isatty():
-            return Choice(named or "main", "", self.aside, self.skip)
+            return Choice(named or "main", "", self.aside, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
-        return menu.choose(self.agent, named, self.new, self.aside, self.skip, self.yes)
+        if not self.yes and UpdateOffer(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
+            self.log("updated before the launch: starting again on the new version")
+            os.execv(sys.executable, [sys.executable, *sys.argv])
+        return menu.choose(self.agent, named, self.new, self.aside, self.is_skipping(), self.yes)
+
+    def is_skipping(self) -> bool:
+        return self.skip or any(flag in self.args for flag in SKIP[self.agent])
 
     def resumed_in(self, menu: Menu) -> str:
         resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")
@@ -145,7 +154,7 @@ class Launch:
         path.touch(mode=0o600)
         path.chmod(0o600)
         path.write_text(json.dumps(launch))
-        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}").start()
+        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}", self.log).start()
         try:
             return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
         finally:

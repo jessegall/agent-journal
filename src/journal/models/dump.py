@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass, field
 
 from journal.models.support.dump_item import DumpItem
@@ -11,6 +12,7 @@ TEXT = "text"
 class Dump(Scoped):
     """A pile the user drops in one place, which the agent sorts by subject and files as rows of their own."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "summary", "outcome")
     title: str = ""
     brief: str = ""
     files: tuple[str, ...] = ()

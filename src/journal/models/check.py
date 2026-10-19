@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -10,6 +11,7 @@ from journal.models.model import Model
 class Check(Model):
     """A script that passes or fails about the project, run by hand or every so many minutes."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "command")
     title: str = ""
     brief: str = ""
     """What it checks and what its failure means, in a few lines."""

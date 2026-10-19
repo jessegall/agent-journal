@@ -1,5 +1,6 @@
 from journal.http.controllers.controller import Controller
 from journal.http.plans.plan_outline import PlanOutline
+from journal.http.plans.plan_timeline import PlanTimeline
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.link import Link
@@ -14,8 +15,8 @@ from journal.repositories.tasks import Tasks
 class PlanController(Controller[Plan]):
     """Plans in outline, and the user's moves on one: approve, start, park, finish and abandon."""
 
-    def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline) -> None:
-        self.repository, self.tasks, self.links, self.outline = plans, tasks, links, outline
+    def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline) -> None:
+        self.repository, self.tasks, self.links, self.outline, self.timeline = plans, tasks, links, outline, timeline
 
     def rows(self) -> list[Plan]:
         return self.repository.in_()
@@ -25,6 +26,9 @@ class PlanController(Controller[Plan]):
 
     def shown_page(self, rows: list[Plan]) -> list[dict]:
         return [self.outline.of(plan) for plan in rows]
+
+    def timeline_of(self, request: Request) -> Response:
+        return Response.json(self.timeline.of(self.repository.find(request.number("id"))))
 
     def tasks_of(self, request: Request) -> Response:
         return Response.json(self.repository.tasks_of(self.repository.find(request.number("id"))))

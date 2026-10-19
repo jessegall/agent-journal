@@ -26,13 +26,14 @@ watch(
             tools: props.profile.tools,
             kind: props.profile.kind,
             model: props.profile.model,
+            codex_model: props.profile.codex_model,
             body: props.profile.body,
         };
     },
     {immediate: true}
 );
 const dirty = computed(
-    () => ["description", "tools", "kind", "model", "body"].some((key) => draft.value[key] !== props.profile[key]) || !props.profile.name
+    () => ["description", "tools", "kind", "model", "codex_model", "body"].some((key) => draft.value[key] !== props.profile[key]) || !props.profile.name
 );
 const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.name || "") && draft.value.description.trim());
 </script>
@@ -76,8 +77,11 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             >
                 <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
             </FormField>
-            <FormField label="Model" for="profile-model" help="The least expensive model that reliably fits the work.">
-                <ModelPicker inherits :value="draft.model" @pick="draft.model = $event" />
+            <FormField label="Model on Claude Code" for="profile-model" help="The least expensive model that reliably fits the work.">
+                <ModelPicker provider="claude" inherits :value="draft.model" @pick="draft.model = $event" />
+            </FormField>
+            <FormField label="Model on Codex" for="profile-codex-model" help="The model it runs on when the agent is Codex.">
+                <ModelPicker provider="codex" inherits :value="draft.codex_model" @pick="draft.codex_model = $event" />
             </FormField>
             <FormField label="Instructions" for="profile-body" help="What it is told each time it starts, after the brief.">
                 <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />

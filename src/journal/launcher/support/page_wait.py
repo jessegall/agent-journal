@@ -1,5 +1,6 @@
 import json
 import threading
+from typing import Callable
 import time
 import urllib.request
 import webbrowser
@@ -8,8 +9,8 @@ from pathlib import Path
 from journal.launcher.support.status_line import StatusLine
 from journal.support.supervisor_socket import SupervisorSocket
 
-PATIENCE = 30.0
-"""How long the launch waits for the journal's page before it stops looking."""
+PATIENCE = 600.0
+"""How long the launch waits for the journal's page before it stops looking: a start that brings a version 3 journal across, or a busy machine, takes minutes."""
 TAB_WAIT = 8.0
 """How long the launch listens for an open tab to call the journal before it opens one."""
 
@@ -17,8 +18,8 @@ TAB_WAIT = 8.0
 class PageWait:
     """The launch's watch for the journal's page: the first time the port in the port file answers, the status line and the band show its address and the viewer opens in the browser; a port file a dead journal left answers nothing."""
 
-    def __init__(self, port_file: Path, status: StatusLine, socket: str, band: tuple[str, str], viewer: str) -> None:
-        self.port_file, self.status, self.socket, self.band, self.viewer = port_file, status, socket, band, viewer
+    def __init__(self, port_file: Path, status: StatusLine, socket: str, band: tuple[str, str], viewer: str, log: Callable[[str], None]) -> None:
+        self.port_file, self.status, self.socket, self.band, self.viewer, self.log = port_file, status, socket, band, viewer, log
         """band: the left and middle words of the band, the address going on the right; viewer: the page to open, empty for none."""
 
     def start(self) -> None:
@@ -32,6 +33,7 @@ class PageWait:
                 self.shown(url)
                 return
             time.sleep(0.5)
+        self.log(f"viewer: the journal's page did not answer within {int(PATIENCE)} seconds, so no tab was opened")
 
     def answering(self) -> str:
         url = f"http://127.0.0.1:{self.port_file.read_text().strip()}/" if self.port_file.is_file() else ""
@@ -50,8 +52,13 @@ class PageWait:
             SupervisorSocket.ask(self.socket, {"verb": "band", "left": self.band[0], "middle": self.band[1], "right": url})
         except OSError:
             pass
-        if self.viewer and not self.tab_open(url):
-            webbrowser.open(url + self.viewer, new=2)
+        if not self.viewer:
+            return
+        if self.tab_open(url):
+            self.log(f"viewer: a tab of {url} is open already, so none was opened")
+            return
+        opened = webbrowser.open(url + self.viewer, new=2)
+        self.log(f"viewer: opened {url + self.viewer}" if opened else f"viewer: the browser would not open {url + self.viewer}")
 
     def tab_open(self, url: str) -> bool:
         """Whether a viewer tab calls the journal within a few seconds of its coming up."""

@@ -1,6 +1,7 @@
 import re
 
 from journal.support.cards import Cards
+from journal.support.ref import Ref
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
@@ -29,7 +30,7 @@ class Whisper(AgentListener[AgentEvent]):
             if not line:
                 continue
             self.supervisor.type(event.environment_id, line)
-            self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", f"{noun}:{row.id}", kind="whisper")
+            self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", str(Ref.to(row)), kind="whisper")
         return None
 
     def rows(self):

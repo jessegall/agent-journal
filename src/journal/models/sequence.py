@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass
 
 from journal.models.model import Model
@@ -7,6 +8,7 @@ from journal.models.model import Model
 class Sequence(Model):
     """Steps the agent follows in order, one at a time. Project-wide, so every environment can run it."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("title",)
     title: str = ""
     steps: tuple[str, ...] = ()
     starts_on: str = ""
