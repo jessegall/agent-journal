@@ -1,20 +1,17 @@
 <script setup>
-import HandledNote from "../kit/HandledNote.vue";
-import {writerName} from "../composables/people.js";
 import Byline from "../kit/Byline.vue";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import {useScope} from "../composables/scope.js";
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
-import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
 import {markPassage, passageIn} from "../platform/passage.js";
 import {pendingRow} from "../domain/placeholders.js";
+import {createdAt, refOf} from "../domain/row.js";
 import {optimistic} from "../sync/rows.js";
-import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 
@@ -29,27 +26,16 @@ const emit = defineEmits(["sent"]);
 const talk = inject("talk", null);
 const scope = useScope();
 const list = ref(null);
-const {pending, promise, change, keep, link, keyOf} = usePromised();
-const saved = computed(() => scope.rows("comment").filter((c) => !c.deleted));
-const unsaved = computed(() => pending.value.filter((p) => !p.written || !saved.value.some((c) => c.ref === p.written)));
-watch(unsaved, keep);
-const alive = computed(() => [...saved.value, ...unsaved.value]);
-const thread = computed(() => alive.value.filter((c) => c.refs.includes(props.resource.ref)).map((c) => ({...c, ...quoted(c.brief)})));
-const answers = computed(() => {
-    const by = {};
-    for (const c of alive.value) for (const ref of c.refs) if (ref.startsWith("comment:")) (by[ref] ||= []).push(c);
-    return by;
-});
-const answersTo = (c) => answers.value[`comment:${c.n}`] || [];
-const groups = computed(() => {
-    const replies = props.resource.type === "message" ? thread.value.filter((c) => c.seen[0] === "agent") : [];
-    return [
-        {title: "Replies", rows: replies},
-        {title: "Comments", rows: thread.value.filter((c) => !replies.includes(c))},
-    ].filter((g) => g.rows.length);
-});
+const on = computed(() => refOf(props.resource));
+const thread = computed(() =>
+    scope
+        .rows("comments")
+        .filter((c) => (c.on || []).includes(on.value))
+        .sort((a, b) => createdAt(a) - createdAt(b))
+        .map((c) => ({...c, ...quoted(c.text)}))
+);
 const WHO = {user: "You", agent: "Agent"};
-const who = (c) => writerName(c.data) || c.data?.visitor || WHO[c.seen[0]] || c.seen[0] || "Someone";
+const who = (c) => c.data?.visitor || WHO[c.author] || "Someone";
 const plain = (text) => text.replace(/`/g, "");
 
 async function focusComment() {
@@ -81,81 +67,39 @@ async function show(c) {
     setTimeout(() => markPassage(MARKED, null), MARKED_FOR);
 }
 
-const editing = reactive({n: 0, text: "", error: ""});
+const editing = reactive({id: 0, text: "", error: ""});
 
 function edit(c) {
-    Object.assign(editing, {n: c.n, text: c.brief, error: ""});
+    Object.assign(editing, {id: c.id, text: c.text, error: ""});
 }
 
 async function save() {
     editing.error = "";
     try {
-        await scope.api.updateComment(editing.n, editing.text.trim());
-        editing.n = 0;
+        await scope.api.change("comments", editing.id, {text: editing.text.trim()});
+        editing.id = 0;
     } catch (e) {
         editing.error = e.message;
     }
 }
 
-async function remove(c) {
-    await scope.api.deleteComment(c.n);
-}
-
-const replying = reactive({n: 0, text: ""});
-
-function reply(c) {
-    Object.assign(replying, {n: c.n, text: ""});
-}
-
-async function post(made) {
-    change(made, {failed: false});
-    try {
-        const written = await scope.api.act(made.target.type, made.target.n, made.target.action, {text: made.brief});
-        link(`comment:${written.n}`, made.ref);
-        change(made, {written: `comment:${written.n}`});
-    } catch (e) {
-        change(made, {failed: true});
-    }
-}
-
+const remove = (c) => scope.api.act("comments", c.id, "delete");
 const notSaved = ref("");
 
-function comment(target, refs, brief) {
-    if (!scope.env) return commentHere(target, refs, brief);
-    const made = promise({type: "comment", brief, refs, target});
-    post(made);
-    return made;
-}
-
-function commentHere(target, refs, brief) {
-    const made = pendingRow("comment:pending-", {type: "comment", brief, refs});
+function comment(text) {
     notSaved.value = "";
-    optimistic("comment", made, () => scope.api.act(target.type, target.n, target.action, {text: brief})).catch((e) => {
-        notSaved.value = e.message;
-    });
+    const made = pendingRow("comments", {text, on: [on.value]}, {author: "user"});
+    optimistic("comments", made, () => scope.api.comment(on.value, text)).catch((e) => (notSaved.value = e.message));
     return made;
 }
 
-function answer() {
-    const text = replying.text.trim();
-    if (!text) return;
-    comment({type: "comment", n: replying.n, action: "reply"}, [`comment:${replying.n}`], text);
-    Object.assign(replying, {n: 0, text: ""});
-}
-
-async function quick(text) {
-    comment({type: props.resource.type, n: props.resource.n, action: "comment"}, [props.resource.ref], text);
-}
+const quick = (text) => comment(text);
 
 async function send(text) {
-    const made = comment(
-        {type: props.resource.type, n: props.resource.n, action: "comment"},
-        [props.resource.ref],
-        withQuote(props.quote, text)
-    );
+    const made = comment(withQuote(props.quote, text));
     emit("sent");
     await nextTick();
-    const row = list.value?.querySelector(`[data-comment="${made.ref}"]`);
+    const row = list.value?.querySelector(`[data-comment="${made.key}"]`);
     if (row) row.scrollIntoView({behavior: "smooth", block: "nearest"});
 }
 </script>
@@ -180,100 +124,44 @@ async function send(text) {
                     <p class="none-hint">Select text in the document to comment on that passage.</p>
                 </div>
             </template>
-            <template v-for="group in groups" :key="group.title">
-                <template v-if="groups.length > 1 || !talk">
-                    <SectionHeading>{{ group.title }}</SectionHeading>
-                </template>
-                <template v-for="c in group.rows" :key="keyOf(c)">
-                    <article
-                        :class="['comment', {focused: c.n && c.n === props.focus, handled: c.completed, failed: c.failed}]"
-                        :data-comment="c.pending ? c.ref : c.n"
-                        @mouseenter="hover(c)"
-                        @mouseleave="hover(null)"
-                    >
-                        <Byline :side="c.seen[0]" :name="who(c)" :when="age(c.created)">
-                            <template v-if="!c.pending">
-                                <span class="tools">
-                                    <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
-                                        <Icon name="pencil" :size="12" />
-                                    </button>
-                                    <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
-                                        <Icon name="close" :size="12" />
-                                    </button>
-                                </span>
-                            </template>
-                        </Byline>
-                        <template v-if="c.quote">
-                            <button type="button" class="comment-quote" title="Show this passage in the document" @click="show(c)">
-                                {{ plain(c.quote) }}
-                            </button>
-                        </template>
-                        <template v-if="editing.n && editing.n === c.n">
-                            <textarea v-model="editing.text" rows="3" @keydown.esc="editing.n = 0" @keydown.meta.enter.prevent="save" />
-                            <span class="edit-row">
-                                <Btn kind="primary" small @click="save">Save</Btn>
-                                <Btn small @click="editing.n = 0">Cancel</Btn>
-                                <template v-if="editing.error">
-                                    <span class="error">{{ editing.error }}</span>
-                                </template>
+            <template v-for="c in thread" :key="c.key || c.id">
+                <article
+                    :class="['comment', {focused: c.id && c.id === props.focus}]"
+                    :data-comment="c.id || c.key"
+                    @mouseenter="hover(c)"
+                    @mouseleave="hover(null)"
+                >
+                    <Byline :side="c.author" :name="who(c)" :when="age(createdAt(c))">
+                        <template v-if="!c.pending && c.author === 'user'">
+                            <span class="tools">
+                                <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
+                                    <Icon name="pencil" :size="12" />
+                                </button>
+                                <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
+                                    <Icon name="close" :size="12" />
+                                </button>
                             </span>
                         </template>
-                        <template v-else>
-                            <TextDisplay class="said" :text="c.text" />
-                        </template>
-                        <template v-if="c.failed">
-                            <p class="unsaved">
-                                Couldn't save ·
-                                <button type="button" @click="post(c)">Try again</button>
-                            </p>
-                        </template>
-                        <template v-if="c.completed">
-                            <HandledNote>
-                                <template v-if="c.outcome">
-                                    <TextDisplay :text="c.outcome" />
-                                </template>
-                            </HandledNote>
-                        </template>
-                        <template v-if="answersTo(c).length">
-                            <div class="answers">
-                                <template v-for="a in answersTo(c)" :key="keyOf(a)">
-                                    <div :class="['answer', {failed: a.failed}]" :data-comment="a.pending ? a.ref : a.n">
-                                        <Byline :side="a.seen[0]" :name="who(a)" :when="age(a.created)" small />
-                                        <TextDisplay class="said" :text="a.brief" />
-                                        <template v-if="a.failed">
-                                            <p class="unsaved">
-                                                Couldn't save ·
-                                                <button type="button" @click="post(a)">Try again</button>
-                                            </p>
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template v-if="replying.n && replying.n === c.n">
-                            <div class="reply-box">
-                                <textarea
-                                    v-model="replying.text"
-                                    rows="2"
-                                    placeholder="Reply…"
-                                    @vue:mounted="({el}) => el.focus()"
-                                    @keydown.esc="replying.n = 0"
-                                    @keydown.enter.exact.prevent="answer"
-                                />
-                                <span class="edit-row">
-                                    <Btn kind="primary" small @click="answer">Reply</Btn>
-                                    <Btn small @click="replying.n = 0">Cancel</Btn>
-                                </span>
-                            </div>
-                        </template>
-                        <template v-else-if="!c.pending">
-                            <button type="button" class="comment-reply-open" @click="reply(c)">
-                                <Icon name="reply" :size="11" />
-                                Reply
-                            </button>
-                        </template>
-                    </article>
-                </template>
+                    </Byline>
+                    <template v-if="c.quote">
+                        <button type="button" class="comment-quote" title="Show this passage in the document" @click="show(c)">
+                            {{ plain(c.quote) }}
+                        </button>
+                    </template>
+                    <template v-if="editing.id && editing.id === c.id">
+                        <textarea v-model="editing.text" rows="3" @keydown.esc="editing.id = 0" @keydown.meta.enter.prevent="save" />
+                        <span class="edit-row">
+                            <Btn kind="primary" small @click="save">Save</Btn>
+                            <Btn small @click="editing.id = 0">Cancel</Btn>
+                            <template v-if="editing.error">
+                                <span class="error">{{ editing.error }}</span>
+                            </template>
+                        </span>
+                    </template>
+                    <template v-else>
+                        <TextDisplay class="said" :text="c.text" />
+                    </template>
+                </article>
             </template>
         </section>
     </template>

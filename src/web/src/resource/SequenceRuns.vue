@@ -4,16 +4,17 @@ import CloseButton from "../kit/CloseButton.vue";
 import {peek} from "../route.js";
 import {useRuns} from "../composables/sequenceRuns.js";
 import {useWriting} from "../composables/writing.js";
+import {refOf} from "../domain/row.js";
 
 const props = defineProps({resource: Object, panel: Boolean});
 const BY_HAND = "by hand";
 const runs = useRuns(() => props.resource);
-const writing = useWriting(() => props.resource.ref);
+const writing = useWriting(() => refOf(props.resource));
 const talk = inject("talk", null);
 
 function open(ref) {
-    const [type, n] = ref.split(":");
-    peek(type, Number(n));
+    const [table, id] = ref.split(":");
+    peek(table, Number(id));
 }
 </script>
 
@@ -46,7 +47,7 @@ function open(ref) {
             <template v-for="r in runs" :key="`${r.opens}-${r.about}`">
                 <div class="run">
                     <div class="run-head">
-                        <template v-if="resource.type === 'sequence'">
+                        <template v-if="resource.table === 'sequences'">
                             <span>{{ r.about === BY_HAND ? "Started by hand" : "About" }}</span>
                             <template v-if="r.about !== BY_HAND">
                                 <button type="button" class="run-link" @click="open(r.about)">{{ r.about.replace(":", " ") }}</button>

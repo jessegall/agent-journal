@@ -1,32 +1,24 @@
 <script setup>
 import {meta} from "../domain/tables.js";
-import {store} from "../state/store.js";
 import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, href, route, swap, unpeek} from "../route.js";
-import {PAGE, holding, rows, whole} from "../sync/rows.js";
-import {api} from "../api/client.js";
-import Btn from "../kit/Btn.vue";
-import EmptyState from "../kit/EmptyState.vue";
+import {go, route, unpeek} from "../route.js";
+import {PAGE, holding, isWhole, rows, whole} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
-import Revisions from "./Revisions.vue";
-import CollectionPage from "./CollectionPage.vue";
 import Dialog from "../kit/Dialog.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
-import UpdateReport from "./UpdateReport.vue";
-import {isUpdate} from "../domain/updates.js";
 import {scopeIn} from "../composables/scope.js";
 import {useKept} from "../composables/kept.js";
 import {usePoll} from "../composables/poll.js";
 import {useWindowEvent} from "../composables/windowEvent.js";
 
 const props = defineProps({
-    type: String,
-    n: Number,
+    table: String,
+    id: Number,
     env: {type: String, default: ""},
     depth: {type: Number, default: 0},
     over: Boolean,
@@ -37,66 +29,40 @@ const ELSEWHERE_EVERY = 5000;
 const scope = props.env && props.env !== route.value.env ? scopeIn(props.env) : null;
 if (scope) provide("scope", scope);
 const rowsHere = scope ? scope.rows : rows;
-const stored = computed(() => (props.type ? rowsHere(props.type).find((r) => r.n === props.n) : null) || null);
-const resource = useKept(stored, () => `${props.type}:${props.n}`);
+const stored = computed(() => (props.table ? rowsHere(props.table).find((r) => r.id === props.id) : null) || null);
+const resource = useKept(stored, () => `${props.table}:${props.id}`);
 
 async function readElsewhere() {
-    await scope.holding(props.type, [props.n]);
-    const phases = (resource.value && resource.value.data.phases) || [];
-    await scope.holding(
-        "todo",
-        phases.flatMap((p) => p.todos || [])
-    );
-    await scope.holding(
-        "ticket",
-        phases.flatMap((p) => p.tickets || [])
-    );
-    await scope.recent("comment", PAGE);
+    await scope.holding(props.table, [props.id]);
+    await scope.recent("comments", PAGE);
 }
-if (scope) usePoll(`elsewhere:${props.env}:${props.type}:${props.n}`, readElsewhere, ELSEWHERE_EVERY);
-const broken = computed(() => (!resource.value && props.type ? store.damaged[`${props.type}:${props.n}`] : "") || "");
-const repairAsked = ref(false);
-
-async function askRepair() {
-    await api.create("message", {title: `Please review and repair ${props.type} ${props.n}`, brief: `It cannot be read: ${broken.value}`});
-    repairAsked.value = true;
-}
+if (scope) usePoll(`elsewhere:${props.env}:${props.table}:${props.id}`, readElsewhere, ELSEWHERE_EVERY);
 watchEffect(() => {
-    if (!scope && props.type && props.n && !resource.value) holding(props.type, [props.n]);
+    if (!scope && props.table && props.id && !resource.value) holding(props.table, [props.id]);
 });
 watchEffect(() => {
-    if (!scope && resource.value?.summary) whole(props.type, props.n).catch((error) => console.error(error));
+    if (!scope && resource.value && !isWhole(resource.value)) whole(props.table, props.id).catch((error) => console.error(error));
 });
-watchEffect(() => {
-    const part = resource.value && resource.value.data.part_of;
-    if (!part || props.depth) return;
-    const [type, n] = part.split(":");
-    if (route.value.open) swap(type, Number(n));
-    else go(type, Number(n));
-});
-const kind = computed(() => (props.type ? meta(props.type) : null));
+const kind = computed(() => (props.table ? meta(props.table) : null));
 const kindTitle = computed(() => (kind.value ? kind.value.title : "item"));
 const takesComments = computed(() => !!kind.value?.takes_comments);
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
-const shape = computed(() =>
-    !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : kind.value?.view
-);
+const SHAPES = {plans: "plan", agents: "agent"};
+const shape = computed(() => (!props.table ? "" : SHAPES[props.table] || kind.value?.view));
 const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
-const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
-const close = () => (route.value.open ? unpeek() : go(props.type));
+const panel = computed(() => (["small", "wide", "check"].includes(shape.value) ? "inspector" : shape.value));
+const close = () => (route.value.open ? unpeek() : go(props.table));
 useWindowEvent("keydown", (event) => {
-    if (event.key !== "Escape" || !route.value.open || route.value.open.type !== props.type || route.value.open.n !== props.n) return;
+    if (event.key !== "Escape" || !route.value.open || route.value.open.table !== props.table || route.value.open.id !== props.id) return;
     if (event.target.matches("input, textarea") && event.target.value) return;
     event.preventDefault();
     unpeek();
 });
-const stepTo = (n) => (route.value.open ? swap("report", n) : go("report", n));
-const allUpdates = () => (location.hash = href.reportUpdates());
 const swapping = ref(false);
 let settle = 0;
 watch(
-    () => `${props.type}:${props.n}`,
+    () => `${props.table}:${props.id}`,
     (now, before) => {
         if (!before || !resource.value || before.startsWith(":")) return;
         swapping.value = true;
@@ -108,7 +74,7 @@ watch(
 
 <template>
     <template v-if="shape === 'agent'">
-        <Dialog large bare :open="(!!resource || !!broken) && !leaving" @dismiss="close" @close="emit('gone')">
+        <Dialog large bare :open="!!resource && !leaving" @dismiss="close" @close="emit('gone')">
             <template v-if="resource">
                 <DocumentPage :resource="resource" :focus="focusComment" @close="close">
                     <AgentPage :resource="resource" @close="close" />
@@ -118,7 +84,7 @@ watch(
     </template>
     <template v-else>
         <SidePanel
-            :open="(!!resource || !!broken) && !leaving"
+            :open="!!resource && !leaving"
             :width="panelWidth"
             :depth="depth"
             :over="over"
@@ -126,19 +92,11 @@ watch(
             @dismiss="close"
             @close="emit('gone')"
         >
-            <template v-if="broken">
-                <div class="damaged">
-                    <EmptyState>{{ kindTitle }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
-                    <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
-                        {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
-                    </Btn>
-                </div>
-            </template>
-            <template v-else-if="panel === 'inspector'">
+            <template v-if="panel === 'inspector'">
                 <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
                     <div class="inspector-pages">
                         <Transition name="inspector-page">
-                            <div :key="resource.ref" :class="['inspector-page', shape]">
+                            <div :key="`${resource.table}:${resource.id}`" :class="['inspector-page', shape]">
                                 <template v-if="swapping">
                                     <div class="skeleton">
                                         <span class="blank short" />
@@ -167,22 +125,8 @@ watch(
                                 <PlanPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>
-                        <template #collection>
-                            <DocumentPage :resource="resource" :focus="focusComment" :linked="resource.refs" @close="close">
-                                <CollectionPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
                         <template #document>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                                <template v-if="resource.data.revisions">
-                                    <Revisions :resource="resource" @close="close" />
-                                </template>
-                                <template v-else-if="isUpdate(resource)">
-                                    <ResourceBody :resource="resource" :comments="false" :links="false" @close="close">
-                                        <UpdateReport :resource="resource" @step="stepTo" @all="allUpdates" />
-                                    </ResourceBody>
-                                </template>
-                            </DocumentPage>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close" />
                         </template>
                         <template #default>
                             <ResourceBody :resource="resource" @close="close" />

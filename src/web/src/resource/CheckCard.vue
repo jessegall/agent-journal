@@ -12,7 +12,7 @@ import CheckRuns from "./CheckRuns.vue";
 const props = defineProps({resource: Object});
 const now = useNow();
 const state = computed(() => checkState(props.resource, now.value));
-const every = computed(() => Number(props.resource.data.every || 0));
+const every = computed(() => Number(props.resource.every || 0));
 const {asked, run} = useCheckRun(() => props.resource);
 
 </script>
@@ -22,7 +22,7 @@ const {asked, run} = useCheckRun(() => props.resource);
         <div class="head">
             <Dot glow :size="8" :pulsing="state.verdict === 'running'" />
             <span class="verdict">{{ VERDICTS[state.verdict] }}</span>
-            <span class="n">#{{ resource.n }}</span>
+            <span class="n">#{{ resource.id }}</span>
             <span class="grow" />
             <Btn
                 kind="primary"
@@ -35,7 +35,7 @@ const {asked, run} = useCheckRun(() => props.resource);
             </Btn>
         </div>
         <span class="title">{{ resource.title }}</span>
-        <code class="command">{{ resource.data.command || "no command yet" }}</code>
+        <code class="command">{{ resource.command || "no command yet" }}</code>
         <template v-if="state.verdict === 'running'">
             <CheckProgress :state="state" />
         </template>

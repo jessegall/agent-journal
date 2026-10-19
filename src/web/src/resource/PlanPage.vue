@@ -3,78 +3,53 @@ import CloseButton from "../kit/CloseButton.vue";
 import {computed, ref, watchEffect} from "vue";
 import CommentToggle from "./CommentToggle.vue";
 import ShareButton from "./ShareButton.vue";
-import SideToggle from "./SideToggle.vue";
-import DownloadLink from "./DownloadLink.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
 import TextDisplay from "../kit/TextDisplay.vue";
-import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
 import PlanPageActions from "./PlanPageActions.vue";
-import PlanReviewChoices from "./PlanReviewChoices.vue";
 import PlanPhase from "./PlanPhase.vue";
-import TicketAgent from "../agents/TicketAgent.vue";
-import {useHelpersHolding} from "../composables/helpers.js";
-import {helperCard, helperEnvironment, helperName} from "../domain/helpers.js";
+import {useWorkersHolding} from "../composables/workers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
-import {reviewersLine} from "../domain/plans.js";
-import {rows} from "../sync/rows.js";
+import {PLAN_STATES, reviewersLine, statusOf} from "../domain/plans.js";
+import {peek} from "../route.js";
 
 const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, holding: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const error = ref("");
-const inspected = ref(null);
 const fetching = ref(false);
 const scope = useScope();
-const here = (type) => scope.rows(type).filter((r) => (r.env || "") === (props.resource.env || ""));
-const status = computed(() => props.resource.data.status);
-const reviewers = computed(() => (status.value === "reviewing" ? reviewersLine(props.resource.data.reviewers || 0) : ""));
-const current = computed(() => props.resource.data.current || 1);
-const phases = computed(() =>
-    props.resource.data.phases.map((p, i) => {
-        const named = [
-            ...p.todos.map((n) => here("todo").find((t) => t.n === n)),
-            ...(p.tickets || []).map((n) => here("ticket").find((t) => t.n === n)),
-        ];
-        const rows = named.filter(Boolean);
-        return {...p, i: i + 1, rows, waiting: fetching.value || props.holding ? named.length - rows.length : 0};
-    })
-);
-const {rows: helpers, loaded: helpersLoaded} = useHelpersHolding(computed(() => phases.value.flatMap((p) => p.rows)));
+const status = computed(() => statusOf(props.resource));
+const reviewers = computed(() => reviewersLine(props.resource.reviewers || 0));
+const current = computed(() => props.resource.current_phase || 1);
+const taskOf = (id) => scope.rows("tasks").find((t) => t.id === id);
+const phaseOf = (title, ids, i) => {
+    const rows = ids.map(taskOf).filter(Boolean);
+    return {title, i, rows, waiting: fetching.value || props.holding ? ids.length - rows.length : 0};
+};
+const phases = computed(() => [
+    ...(props.resource.phases || []).map((p, i) => ({...p, ...phaseOf(p.title, p.task_ids, i + 1)})),
+    ...(props.resource.unphased_task_ids?.length ? [phaseOf("Not in a phase", props.resource.unphased_task_ids, 0)] : []),
+]);
+const planned = computed(() => phases.value.flatMap((p) => p.rows));
+const {rows: workers, loaded: workersLoaded} = useWorkersHolding(planned);
 watchEffect(() => {
     if (props.readOnly) return;
-    const known = new Set(here("todo").map((t) => t.n));
-    const missing = props.resource.data.phases.flatMap((p) => p.todos).filter((n) => !known.has(n));
+    const known = new Set(scope.rows("tasks").map((t) => t.id));
+    const missing = (props.resource.task_ids || []).filter((id) => !known.has(id));
     if (!missing.length) return;
     fetching.value = true;
     scope
-        .holding("todo", missing)
+        .holding("tasks", missing)
         .catch((e) => (error.value = e.message))
         .finally(() => (fetching.value = false));
 });
-const data = computed(() => props.resource.data);
-const planned = computed(() => phases.value.flatMap((p) => p.rows));
-const finished = computed(() => planned.value.filter((t) => t.completed).length);
-const building = computed(() => status.value === "building");
-const stage = computed(() => props.resource.data.stage || (phases.value.length ? "todos" : "phases"));
-const button = computed(
-    () =>
-        ({
-            draft: ["approve", "Approve"],
-            ready: ["approve", "Approve"],
-            waiting: ["continue", "Continue"],
-            parked: ["start", "Resume"],
-            done: ["finish", "Close"],
-        })[status.value] || null
-);
+const finished = computed(() => planned.value.filter((t) => t.state === "done").length);
 
-const holdsTickets = computed(() => (props.resource.data.phases || []).some((p) => (p.tickets || []).length));
-const shared = computed(() => props.resource.data.worktree === "shared");
-
-async function run(action, body = {}) {
+async function run(act) {
     error.value = "";
     try {
-        await scope.api.act("plan", props.resource.n, action, body);
+        await scope.api.act("plans", props.resource.id, act);
     } catch (e) {
         error.value = e.message;
     }
@@ -86,22 +61,20 @@ async function run(action, body = {}) {
         <header class="top">
             <span class="kind">
                 <Icon name="flag" :size="13" />
-                Plan {{ resource.n }}
+                Plan {{ resource.id }}
             </span>
             <span :class="['status', status]">
-                {{ status }}
-                <template v-if="['active', 'waiting', 'parked'].includes(status)">· phase {{ current }} of {{ phases.length }}</template>
+                {{ PLAN_STATES[status] || status }}
+                <template v-if="['started', 'waiting', 'parked', 'blocked'].includes(status)">· phase {{ current }} of {{ (resource.phases || []).length }}</template>
             </span>
             <template v-if="reviewers">
                 <span class="reviewers">{{ reviewers }}</span>
             </template>
             <span class="grow" />
             <template v-if="!readOnly">
-                <DownloadLink :resource="resource" />
                 <template v-if="!scope.env">
                     <ShareButton :resource="resource" />
                 </template>
-                <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
                 <template v-if="closable">
                     <CloseButton title="Close the plan" @click="emit('close')" />
@@ -109,29 +82,20 @@ async function run(action, body = {}) {
             </template>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
-        <template v-if="data.goal">
-            <TextDisplay class="goal" :text="data.goal" />
+        <template v-if="resource.blocked_why">
+            <p class="note">Blocked: {{ resource.blocked_why }}</p>
         </template>
         <template v-if="planned.length">
             <div :class="['overall', {pinned: pinProgress}]">
                 <template v-if="pinProgress">
                     <span class="pinned-title">{{ resource.title }}</span>
                 </template>
-                <ProgressBar :value="finished" :max="planned.length" :busy="building" />
+                <ProgressBar :value="finished" :max="planned.length" />
                 <span class="overall-figure">{{ finished }} of {{ planned.length }} done</span>
             </div>
         </template>
         <template v-if="!readOnly">
-            <PlanPageActions
-                :plan="resource"
-                :status="status"
-                :button="button"
-                :holds-tickets="holdsTickets"
-                :shared="shared"
-                :error="error"
-                @run="run"
-            />
-            <PlanReviewChoices :plan="resource" />
+            <PlanPageActions :plan="resource" :error="error" @run="run" />
         </template>
         <template v-if="resource.brief">
             <div class="brief">
@@ -140,33 +104,17 @@ async function run(action, body = {}) {
                 </Folded>
             </div>
         </template>
-        <Sections :sections="resource.sections" />
         <ol class="phases">
             <template v-for="p in phases" :key="p.i">
                 <PlanPhase
                     :phase="p"
-                    :current="p.i === current && (status === 'active' || status === 'waiting')"
-                    :boning="building && stage === 'todos'"
-                    :helpers="helpers"
-                    :helpers-loaded="helpersLoaded"
-                    @inspect="inspected = $event"
+                    :current="p.i === current && ['started', 'waiting'].includes(status)"
+                    :workers="workers"
+                    :workers-loaded="workersLoaded"
+                    @inspect="(worker) => peek('workers', worker.id)"
                 />
             </template>
-            <template v-if="building && stage === 'phases'">
-                <template v-for="i in 2" :key="`phase-bone-${i}`">
-                    <PlanPhase skeleton />
-                </template>
-            </template>
         </ol>
-        <template v-if="inspected">
-            <TicketAgent
-                :card="helperCard(inspected)"
-                :env="helperEnvironment(inspected)"
-                kind="helper"
-                :label="helperName(inspected)"
-                @close="inspected = null"
-            />
-        </template>
     </article>
 </template>
 

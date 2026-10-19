@@ -4,34 +4,21 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import TextInput from "../kit/TextInput.vue";
-import {stepsOf} from "../domain/sequences.js";
-import {peek, route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import StartsOn from "./StartsOn.vue";
 
 const props = defineProps({resource: {type: Object, required: true}});
-const steps = computed(() => props.resource.sections || []);
-const track = computed(() => stepsOf(props.resource, rows("sequence")));
-const own = computed(() => !props.resource.data.system && !props.resource.completed);
-const inHand = computed(
-    () =>
-        new Set(
-            Object.entries(props.resource.data.runs || {})
-                .filter(([key]) => key.split("|")[0] === route.value.env)
-                .map(([, run]) => run.step)
-        )
-);
+const steps = computed(() => props.resource.steps || []);
+const inHand = computed(() => new Set(rows("agents").filter((a) => a.sequence?.sequence_id === props.resource.id).map((a) => a.sequence.step)));
 
 const draft = reactive({open: false, steps: [], error: "", busy: false});
-const titles = ref([]);
+const fields = ref([]);
 let made = 0;
-const card = (step) => ({key: ++made, title: step.title, body: step.body || ""});
-const trimmed = computed(() => draft.steps.map((s) => s.title.trim()));
+const card = (text) => ({key: ++made, text});
+const trimmed = computed(() => draft.steps.map((s) => s.text.trim()));
 const problem = computed(() => {
     if (!draft.steps.length) return "A sequence needs at least one step.";
-    if (trimmed.value.some((t) => !t)) return "Every step needs a title.";
-    if (new Set(trimmed.value).size !== trimmed.value.length) return "Two steps share a title; give each its own.";
+    if (trimmed.value.some((t) => !t)) return "Every step needs its words.";
     return "";
 });
 
@@ -40,9 +27,9 @@ function edit() {
 }
 
 async function add() {
-    draft.steps.push(card({title: "", body: ""}));
+    draft.steps.push(card(""));
     await nextTick();
-    titles.value.at(-1)?.focus();
+    fields.value.at(-1)?.focus();
 }
 
 function move(i, by) {
@@ -55,8 +42,7 @@ async function save() {
     draft.busy = true;
     draft.error = "";
     try {
-        const given = draft.steps.map((s, i) => ({title: trimmed.value[i], body: s.body}));
-        await api.setSteps(props.resource.n, given);
+        await api.setSteps(props.resource.id, trimmed.value);
         draft.open = false;
     } catch (e) {
         draft.error = e.message;
@@ -70,15 +56,9 @@ async function save() {
     <section class="sequence-steps">
         <header class="steps-head">
             <span class="steps-title">Steps</span>
-            <span class="steps-count">{{ draft.open ? draft.steps.length : track.length }}</span>
+            <span class="steps-count">{{ draft.open ? draft.steps.length : steps.length }}</span>
             <span class="grow" />
-            <template v-if="resource.data.system">
-                <span class="steps-locked" title="This sequence comes with the journal and can't be changed">
-                    <Icon name="lock" :size="11" />
-                    Read-only
-                </span>
-            </template>
-            <template v-else-if="own && !draft.open">
+            <template v-if="!draft.open">
                 <Btn small @click="edit">
                     <Icon name="pencil" :size="12" />
                     Edit steps
@@ -87,39 +67,27 @@ async function save() {
         </header>
         <template v-if="!draft.open">
             <ol class="track">
-                <template v-if="!resource.completed">
-                    <li class="stop start">
-                        <span class="node">
-                            <Icon name="bolt" :size="11" />
-                        </span>
-                        <div class="stop-body">
-                            <span class="stop-title">Starts</span>
-                            <StartsOn :resource="resource" bare />
-                        </div>
-                    </li>
-                </template>
-                <template v-for="(s, i) in track" :key="`${i}-${s.title}`">
+                <li class="stop start">
+                    <span class="node">
+                        <Icon name="bolt" :size="11" />
+                    </span>
+                    <div class="stop-body">
+                        <span class="stop-title">Starts</span>
+                        <StartsOn :resource="resource" bare />
+                    </div>
+                </li>
+                <template v-for="(text, i) in steps" :key="`${i}-${text}`">
                     <li :class="['stop', {now: inHand.has(i + 1)}]">
                         <span class="node">{{ i + 1 }}</span>
                         <div class="stop-body">
-                            <span class="stop-title">
-                                {{ s.title }}
-                                <template v-if="inHand.has(i + 1)">
-                                    <span class="now-label">In progress</span>
-                                </template>
-                            </span>
-                            <template v-if="s.from && s.from.n !== track[i - 1]?.from?.n">
-                                <Btn small kind="ghost" class="stop-from" v-tip="`Open sequence ${s.from.n}`" @click="peek('sequence', s.from.n)">
-                                    From {{ s.from.title }}
-                                </Btn>
+                            <template v-if="inHand.has(i + 1)">
+                                <span class="now-label">In progress</span>
                             </template>
-                            <template v-if="s.body">
-                                <TextDisplay class="stop-text" :text="s.body" />
-                            </template>
+                            <TextDisplay class="stop-text" :text="text" />
                         </div>
                     </li>
                 </template>
-                <template v-if="!track.length">
+                <template v-if="!steps.length">
                     <li class="stop">
                         <span class="node empty" />
                         <p class="none">No steps yet.</p>
@@ -137,15 +105,7 @@ async function save() {
                     <li class="step-card">
                         <div class="step-row">
                             <span class="node">{{ i + 1 }}</span>
-                            <TextInput
-                                ref="titles"
-                                :value="s.title"
-                                class="step-title-input"
-                                maxlength="80"
-                                placeholder="Step title"
-                                @input="s.title = $event.target.value"
-                                @keydown.enter.prevent
-                            />
+                            <span class="grow" />
                             <span class="step-tools">
                                 <button type="button" class="step-tool" title="Move up" :disabled="i === 0" @click="move(i, -1)">
                                     <Icon name="up" :size="12" />
@@ -164,7 +124,7 @@ async function save() {
                                 </button>
                             </span>
                         </div>
-                        <textarea v-model="s.body" rows="4" placeholder="What to do in this step. Markdown works here." />
+                        <textarea ref="fields" v-model="s.text" rows="3" placeholder="What to do in this step. Markdown works here." />
                     </li>
                 </template>
             </TransitionGroup>

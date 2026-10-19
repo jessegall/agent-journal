@@ -11,7 +11,7 @@ export const NOT_STARTED = {
     parked: "parked",
 };
 export const PLANNED = ["draft", "ready", "reviewing"];
-export const PLAN_RUNNING = ["started", "waiting", "approved"];
+export const PLAN_RUNNING = ["started", "waiting", "blocked", "approved"];
 export const PLAN_STATES = {
     draft: "Being planned",
     ready: "Ready",
@@ -20,6 +20,7 @@ export const PLAN_STATES = {
     started: "Being worked on",
     waiting: "Needs you",
     parked: "Paused",
+    blocked: "Blocked",
     done: "Closed",
 };
 

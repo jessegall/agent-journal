@@ -1,10 +1,12 @@
+import {seconds as secondsOf} from "./row.js";
+
 const ESTIMATE_CAP = 95;
 
+// A check's standing: its run under way, or its last run. The journal keeps only the last run, so there is no history.
 export function checkState(check, now) {
-    const data = check.data || {};
-    const running = data.running || {};
-    const last = data.last || {};
-    const runs = data.runs || [];
+    const running = check.running || {};
+    const last = {at: secondsOf(check.last_ran_at), ok: check.last_passed === true, took: check.last_took, output: check.last_output, report: check.last_report};
+    const runs = [];
     const expected = Number(last.took || 0);
     if (running.at) {
         const elapsed = Math.max(0, now - running.at);

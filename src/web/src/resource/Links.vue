@@ -4,30 +4,19 @@ import SectionHeading from "../kit/SectionHeading.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
-import {byRef, linkedTo, refParts} from "../domain/records.js";
+import {byRef, linkedTo, linksOf, refParts} from "../domain/records.js";
+import {refOf, titleOf, updatedAt} from "../domain/row.js";
 import {age} from "../format/time.js";
 
 const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
-const skip = (type) => meta(type).nested || (meta(type).fields.options && meta(type).needs_attention);
+const shown = (ref) => meta(refParts(ref).table) && !meta(refParts(ref).table).nested && !props.except.includes(ref);
 const bar = (ref, direction) => {
-    const {type, n, part} = refParts(ref);
+    const {table, id} = refParts(ref);
     const r = byRef(ref);
-    return {
-        key: `${direction}${ref}`,
-        ref,
-        direction,
-        icon: meta(type).icon,
-        title: `${r ? r.title : `${meta(type).title} ${n}`}${part ? ` · ${/^\d/.test(part) ? `lines ${part}` : part}` : ""}`,
-        age: r ? age(r.updated || r.created) : "",
-    };
+    return {key: `${direction}${ref}`, ref, direction, icon: meta(table).icon, title: r ? titleOf(r) : `${meta(table).title} ${id}`, age: r ? age(updatedAt(r)) : ""};
 };
 const rows = computed(() => {
-    const listed = [
-        ...props.resource.refs.filter((r) => !skip(refParts(r).type) && !props.except.includes(r)).map((r) => bar(r, "to")),
-        ...linkedTo(props.resource.ref)
-            .filter((r) => !skip(r.type) && !props.except.includes(r.ref))
-            .map((r) => bar(r.ref, "from")),
-    ];
+    const listed = [...linksOf(props.resource).filter(shown).map((r) => bar(r, "to")), ...linkedTo(refOf(props.resource)).map(refOf).filter(shown).map((r) => bar(r, "from"))];
     return listed.filter((row, i) => listed.findIndex((other) => other.ref === row.ref) === i);
 });
 const DIRECTIONS = [
@@ -38,8 +27,8 @@ const groups = computed(() =>
     DIRECTIONS.map((d) => ({...d, rows: rows.value.filter((r) => r.direction === d.key)})).filter((d) => d.rows.length)
 );
 const open = (ref) => {
-    const {type, n, part} = refParts(ref);
-    peek(type, n, 0, part ? encodeURIComponent(part) : "");
+    const {table, id} = refParts(ref);
+    peek(table, id);
 };
 </script>
 

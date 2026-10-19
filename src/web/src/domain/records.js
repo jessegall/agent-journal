@@ -24,7 +24,7 @@ export const finishedUnread = (table) => rows(table).filter((r) => isClosed(r) &
 const pointsAt = (link, ref) => link === ref || link.startsWith(`${ref}#`) || link.startsWith(`${ref}:`);
 
 // The rows that name another as theirs: a document's or report's links, a plan's tasks, a comment's row, a filed message.
-export const linksOf = (r) => [...(r.links || []), ...(r.on || []), ...(r.task_ids || []).map((id) => `tasks:${id}`), ...(r.filed || []).map((id) => `tasks:${id}`)];
+export const linksOf = (r) => [...(r.links || []), ...(r.on || []), ...(r.comments_on || []), ...(r.task_ids || []).map((id) => `tasks:${id}`), ...(r.filed || []).map((id) => `tasks:${id}`)];
 export const linkedTo = (ref) => tables.value.flatMap((t) => rows(t.name).filter((r) => linksOf(r).some((link) => pointsAt(link, ref))));
 
 export function refParts(ref) {
