@@ -8,7 +8,7 @@ import threading
 import time
 from pathlib import Path
 
-from journal.features.plugins.plugin_folders import PluginFolders
+from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.repositories.plugins import Plugins
 from supervisor.inbox import Inbox
 from supervisor.service import Service

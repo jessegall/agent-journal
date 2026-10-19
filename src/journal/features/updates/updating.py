@@ -5,7 +5,7 @@ import time
 from typing import Callable
 
 from journal.support.where import Where
-from journal.features.plugins.installing import Installing
+from journal.support.plugin_installing import PluginInstalling
 from journal.features.updates.release import Release
 from journal.features.updates.release_installer import ReleaseInstaller
 from journal.features.updates.release_source import ReleaseSource
@@ -25,7 +25,7 @@ FIRST_CHECK_AFTER = 60
 class Updating:
     """The newest release of the installed major version, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, installing: Installing, plugins: Plugins, environments: Environments, scope: Scope) -> None:
+    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, installing: PluginInstalling, plugins: Plugins, environments: Environments, scope: Scope) -> None:
         self.settings, self.source, self.installer, self.installing, self.plugins, self.environments, self.scope = settings, source, installer, installing, plugins, environments, scope
         self.releases: list[Release] = []
         self.problem = ""

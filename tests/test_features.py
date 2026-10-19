@@ -4253,7 +4253,7 @@ def test_the_end_of_a_session_never_begun_makes_no_agent(app):
     assert sessions == ["s1"], "a one-off run of the program, such as claude mcp list, ends a session that never began: no agent is made for it"
 
 def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_path):
-    from journal.features.plugins.manifest_reader import ManifestReader
+    from journal.features.plugins.support.manifest_reader import ManifestReader
     from journal.support.refused import Refused
     reader = app.container.get(ManifestReader)
     good = {"name": "echo", "version": "1.0.0", "program": "run.py", "protocol": 1, "hears": ["tool_starting", "tasks.created"], "holds": ["tool_starting"],
@@ -4317,7 +4317,7 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app):
     assert task.created_by == Actor(ActorKind.PLUGIN, "lint") and task.created_by.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.created_by
 
 def test_a_plugin_runs_as_itself_never_as_the_user(app):
-    from journal.features.plugins.plugin_tokens import PluginTokens
+    from journal.support.plugin_tokens import PluginTokens
     from journal.http.support.identity import Identity
     from journal.repositories.messages import Messages
     token = app.container.get(PluginTokens).of("echo")
@@ -4340,8 +4340,8 @@ def test_a_plugin_runs_as_itself_never_as_the_user(app):
 def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.events.agent.tool_starting import ToolStarting
     from journal.events.models.created import Created
-    from journal.features.plugins.plugin_fault import PluginFault
-    from journal.features.plugins.protocol import Protocol
+    from journal.features.plugins.support.plugin_fault import PluginFault
+    from journal.features.plugins.support.protocol import Protocol
     from journal.models.task import Task
     protocol = app.container.get(Protocol)
     tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2), "main", "working"))
@@ -4407,10 +4407,10 @@ def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
 
 def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
-    from journal.features.plugins.plugin_answers import PluginAnswers
+    from journal.features.plugins.support.plugin_answers import PluginAnswers
     from journal.support.deferred import Deferred
-    from journal.models.plugin_answer import PluginAnswer
-    from journal.models.plugin_card import PluginCard
+    from journal.features.plugins.support.plugin_answer import PluginAnswer
+    from journal.features.plugins.support.plugin_card import PluginCard
     from journal.models.task import Task
     from journal.repositories.entries import Entries
     from journal.repositories.messages import Messages
@@ -4546,7 +4546,7 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app, tmp_path):
 
 
 def test_a_plugins_settings_follow_its_schema_and_its_secret_comes_from_the_user(app):
-    from journal.features.plugins.plugin_runner import PluginRunner
+    from journal.features.plugins.support.plugin_runner import PluginRunner
     from journal.repositories.plugins import Plugins
     from journal.repositories.secrets import Secrets
     from journal.support.secret_values import SecretValues

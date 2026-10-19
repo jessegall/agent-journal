@@ -1,8 +1,8 @@
-from journal.features.plugins.dashboard_document import DashboardDocument
-from journal.features.plugins.installing import Installing
-from journal.features.plugins.plugin_folders import PluginFolders
-from journal.features.plugins.plugin_record import PluginRecord
-from journal.features.plugins.plugin_settings import PluginSettings
+from journal.features.plugins.support.dashboard_document import DashboardDocument
+from journal.support.plugin_installing import PluginInstalling
+from journal.features.plugins.support.plugin_folders import PluginFolders
+from journal.features.plugins.support.plugin_record import PluginRecord
+from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.http.controllers.controller import Controller
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
@@ -16,7 +16,7 @@ from journal.support.scope import Scope
 class PluginController(Controller[Plugin]):
     """What the Plugins page reads and does, as the user: each plugin with whether it is on, failing or off and its settings' schema, never a secret's value; a preview of a source and its install, a setting changed, a plugin switched, upgraded, removed or purged, and its logs, its record and its dashboard."""
 
-    def __init__(self, plugins: Plugins, installing: Installing, settings: PluginSettings, folders: PluginFolders, record: PluginRecord, dashboards: DashboardDocument,
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, settings: PluginSettings, folders: PluginFolders, record: PluginRecord, dashboards: DashboardDocument,
                  scope: Scope, environments: Environments) -> None:
         self.repository, self.installing, self.settings, self.folders, self.record, self.dashboards = plugins, installing, settings, folders, record, dashboards
         self.scope, self.environments = scope, environments

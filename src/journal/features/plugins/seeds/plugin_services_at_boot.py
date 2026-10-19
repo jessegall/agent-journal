@@ -1,4 +1,4 @@
-from journal.features.plugins.plugin_services import PluginServices
+from journal.features.plugins.support.plugin_services import PluginServices
 from journal.features.seed import Seed
 from journal.repositories.plugins import Plugins
 

@@ -3,13 +3,13 @@ import shlex
 from journal.console.console import Console
 from journal.support.where import Where
 from journal.support.cards import Cards
-from journal.features.plugins.plugin_steps import PluginSteps
-from journal.features.plugins.plugin_words import PluginWords
+from journal.features.plugins.support.plugin_steps import PluginSteps
+from journal.features.plugins.support.plugin_words import PluginWords
 from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
-from journal.models.plugin_answer import PluginAnswer
-from journal.models.plugin_card import PluginCard
+from journal.features.plugins.support.plugin_answer import PluginAnswer
+from journal.features.plugins.support.plugin_card import PluginCard
 from journal.repositories.entries import Entries
 
 COMMAND = "plugin_command"

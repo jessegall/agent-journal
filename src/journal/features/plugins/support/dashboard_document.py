@@ -1,7 +1,7 @@
 import json
 
-from journal.features.plugins.plugin_folders import PluginFolders
-from journal.models.dashboard_view import DashboardView
+from journal.features.plugins.support.plugin_folders import PluginFolders
+from journal.features.plugins.support.dashboard_view import DashboardView
 from journal.models.plugin import Plugin
 from journal.repositories.dashboard_rows import DashboardRows
 

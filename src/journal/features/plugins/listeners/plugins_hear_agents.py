@@ -3,13 +3,13 @@ from time import monotonic
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
-from journal.features.plugins.plugin_hearing import PluginHearing
-from journal.features.plugins.plugin_words import PluginWords
+from journal.features.plugins.support.plugin_hearing import PluginHearing
+from journal.features.plugins.support.plugin_words import PluginWords
 from journal.support.decision import Decision
 from journal.support.deferred import Deferred
 from journal.support.floor import Floor
 from journal.models.plugin import Plugin
-from journal.models.plugin_answer import PluginAnswer
+from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.repositories.settings import Settings
 
 CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")

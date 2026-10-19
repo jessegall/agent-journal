@@ -5,13 +5,13 @@ import socket
 import subprocess
 
 from journal.config import Config
-from journal.features.plugins.plugin_fault import PluginFault
-from journal.features.plugins.plugin_folders import PluginFolders
-from journal.features.plugins.plugin_settings import PluginSettings
-from journal.features.plugins.plugin_tokens import PluginTokens
-from journal.features.plugins.protocol import Protocol
+from journal.features.plugins.support.plugin_fault import PluginFault
+from journal.features.plugins.support.plugin_folders import PluginFolders
+from journal.features.plugins.support.plugin_settings import PluginSettings
+from journal.support.plugin_tokens import PluginTokens
+from journal.features.plugins.support.protocol import Protocol
 from journal.models.plugin import Plugin
-from journal.models.plugin_answer import PluginAnswer
+from journal.features.plugins.support.plugin_answer import PluginAnswer
 
 KEPT = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 """The only variables of the journal's own that a plugin's program is given; nothing else of the shell, so no key the user holds reaches it."""

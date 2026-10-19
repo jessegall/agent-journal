@@ -1,6 +1,6 @@
 from journal.console.console import Console
 from journal.support.where import Where
-from journal.features.plugins.plugin_tokens import PluginTokens
+from journal.support.plugin_tokens import PluginTokens
 from journal.http.support.request import Request
 from journal.support.response import Response
 

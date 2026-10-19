@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.plugin_card import PluginCard
+from journal.features.plugins.support.plugin_card import PluginCard
 
 
 @dataclass(frozen=True)

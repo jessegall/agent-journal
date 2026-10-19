@@ -1,4 +1,4 @@
-from journal.features.plugins.record_line import RecordLine
+from journal.features.plugins.support.record_line import RecordLine
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 

@@ -3,9 +3,9 @@ import json
 from dataclasses import asdict
 
 from journal.support.cards import Cards
-from journal.features.plugins.manifest_reader import MANIFEST, ManifestReader
-from journal.features.plugins.plugin_changes import PluginChanges
-from journal.features.plugins.plugin_folders import PluginFolders
+from journal.features.plugins.support.manifest_reader import MANIFEST, ManifestReader
+from journal.features.plugins.support.plugin_changes import PluginChanges
+from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
 from journal.support.refused import Refused

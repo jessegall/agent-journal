@@ -3,9 +3,9 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
-from journal.features.plugins.plugin_preview import PluginPreview
-from journal.features.plugins.installing import Installing
-from journal.features.plugins.plugin_settings import PluginSettings
+from journal.features.plugins.support.plugin_preview import PluginPreview
+from journal.support.plugin_installing import PluginInstalling
+from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
 from journal.support.scope import Scope
 
@@ -16,7 +16,7 @@ SAID = {"needs": "needs", "setup": "runs at install", "installed": "runs at inst
 class PluginCommand(Command):
     noun = "plugin"
 
-    def __init__(self, plugins: Plugins, installing: Installing, cards: Cards, scope: Scope, settings: PluginSettings) -> None:
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: Cards, scope: Scope, settings: PluginSettings) -> None:
         self.plugins, self.installing, self.cards, self.scope, self.schemas = plugins, installing, cards, scope, settings
 
     def arguments(self, verbs) -> None:

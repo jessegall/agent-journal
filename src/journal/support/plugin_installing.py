@@ -9,16 +9,16 @@ from pathlib import Path
 from typing import Iterator
 
 from journal.config import Config
-from journal.features.plugins.plugin_preview import PluginPreview
-from journal.features.plugins.preview_row import PreviewRow
-from journal.features.plugins.manifest_reader import ManifestReader
-from journal.features.plugins.plugin_folders import PluginFolders
-from journal.features.plugins.plugin_changes import PluginChanges
-from journal.features.plugins.plugin_hashes import PluginHashes
-from journal.features.plugins.plugin_runner import PluginRunner
-from journal.features.plugins.plugin_services import PluginServices
-from journal.features.plugins.plugin_settings import PluginSettings
-from journal.features.plugins.plugin_skills import PluginSkills
+from journal.features.plugins.support.plugin_preview import PluginPreview
+from journal.features.plugins.support.preview_row import PreviewRow
+from journal.features.plugins.support.manifest_reader import ManifestReader
+from journal.features.plugins.support.plugin_folders import PluginFolders
+from journal.features.plugins.support.plugin_changes import PluginChanges
+from journal.features.plugins.support.plugin_hashes import PluginHashes
+from journal.features.plugins.support.plugin_runner import PluginRunner
+from journal.features.plugins.support.plugin_services import PluginServices
+from journal.features.plugins.support.plugin_settings import PluginSettings
+from journal.features.plugins.support.plugin_skills import PluginSkills
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
 from journal.models.plugin import Plugin
@@ -33,7 +33,7 @@ STEP_SECONDS = 300
 """The longest a requirement's check, a setup step or the installed command may run."""
 
 
-class Installing:
+class PluginInstalling:
     """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
 
     def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner, services: PluginServices, dashboard: DashboardRows) -> None:

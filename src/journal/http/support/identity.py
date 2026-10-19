@@ -1,5 +1,5 @@
 from journal.http.support.plugin_claim import PluginClaim
-from journal.features.plugins.plugin_tokens import PluginTokens
+from journal.support.plugin_tokens import PluginTokens
 from journal.support.actor import Actor
 from journal.repositories.users import Users
 

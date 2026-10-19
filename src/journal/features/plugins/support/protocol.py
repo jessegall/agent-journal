@@ -6,9 +6,9 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
-from journal.features.plugins.plugin_fault import PluginFault
-from journal.models.plugin_answer import PluginAnswer
-from journal.models.plugin_card import PluginCard
+from journal.features.plugins.support.plugin_fault import PluginFault
+from journal.features.plugins.support.plugin_answer import PluginAnswer
+from journal.features.plugins.support.plugin_card import PluginCard
 
 ANSWERS = ("allow", "refuse", "tell")
 MOST_COMMANDS = 20

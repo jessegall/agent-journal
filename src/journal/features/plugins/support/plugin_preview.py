@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.features.plugins.preview_row import PreviewRow
+from journal.features.plugins.support.preview_row import PreviewRow
 
 
 @dataclass(frozen=True)
