@@ -76,7 +76,7 @@ export function queued(tasks, auto) {
     return auto && tasks.some((t) => t.state === "open" && !t.worker_id);
 }
 
-const WORDS = {working: "Working", waiting: "Waiting", busy: "Busy", compacting: "Busy", [SILENT]: SILENT_WORD};
+const WORDS = {working: "Working", waiting: "Waiting", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
 
 export function wordOf(state) {
     return WORDS[state] || "Idle";

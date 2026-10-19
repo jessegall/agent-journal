@@ -18,7 +18,8 @@ class Workers(Feature):
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
     TIMEOUT = Option("workers.timeout_minutes", "Time limit of a worker run", "Minutes a worker may run before it is stopped and its report says so; 0 sets no limit", 60, unit="min")
-    options = (TIMEOUT,)
+    MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
+    options = (TIMEOUT, MODE)
     states = (Awaiting,)
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)

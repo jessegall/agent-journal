@@ -1,6 +1,7 @@
 import time
 
 from journal.config import Config
+from journal.features.pausing.agent_pause import AgentPause
 from journal.features.sequences.running import Running
 from journal.features.shell.commands.shell_command import RAN
 from journal.http.agents.agent_activity import AgentActivity
@@ -27,9 +28,9 @@ class AgentController(Controller[Agent]):
     """The environment's agents with what each is doing; what the user types or picks for the live one goes to its terminal, and the files it changed and the commands it ran are read from here."""
 
     def __init__(self, agents: Agents, activity: AgentActivity, supervisor: SupervisorLink, entries: Entries, edits: Edits, scope: Scope, environments: Environments,
-                 providers: Providers, running: Running, config: Config) -> None:
+                 providers: Providers, running: Running, config: Config, pausing: AgentPause) -> None:
         self.repository, self.activity, self.supervisor, self.entries, self.file_edits, self.scope = agents, activity, supervisor, entries, edits, scope
-        self.environments, self.providers, self.running, self.config = environments, providers, running, config
+        self.environments, self.providers, self.running, self.config, self.pausing = environments, providers, running, config, pausing
 
     def rows(self) -> list[Agent]:
         return self.repository.in_()
@@ -102,6 +103,12 @@ class AgentController(Controller[Agent]):
         part = entry.data["part"]
         return TerminalLine(agent_id=agent_id, at=entry.data["at"], tool="Journal" if part.split(" ")[0].endswith("journal") else "Bash", command=part,
                             output=entry.data["output"], seconds=entry.data["seconds"], status=entry.data["status"], stepped=False, level="everything")
+
+    def pause(self, request: Request) -> Response:
+        return Response.json(self.shown(self.pausing.pause(self.repository.find(request.number("id")))))
+
+    def resume(self, request: Request) -> Response:
+        return Response.json(self.shown(self.pausing.resume(self.repository.find(request.number("id")))))
 
     def skip_step(self, request: Request) -> Response:
         agent = self.running_agent(request.number("id"))

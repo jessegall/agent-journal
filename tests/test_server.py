@@ -536,7 +536,7 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
     status, read = call(server, "GET", "/journal/chart")
     states = {s["key"]: s for s in read["states"]}
     assert states["following_plan"]["parent"] == "working" and states["working"]["parent"] == "" and states["idle"]["title"] == "Idle"
-    assert read["states"][0]["key"] == "idle" and set(states) == {"idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended", "sorting_dump"}, "the nine states the engine has, the first first; the pauses the agent owed are facts now"
+    assert read["states"][0]["key"] == "idle" and set(states) == {"idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended", "sorting_dump", "paused"}, "the ten states the engine has, the first first; the pauses the agent owed are facts now"
     assert states["awaiting"]["title"] == "Waiting on a worker" and states["awaiting"]["parent"] == ""
     idle = next(w for w in read["workflows"] if w["shipped"] and not w["guarded"])
     assert idle["edited"] is False and idle["failed"] is False and idle["off"] is False
@@ -1012,3 +1012,19 @@ def test_the_search_page_finds_a_task_by_its_words(server):
     call(server, "POST", "/journal/tasks", {"title": "rebuild the viewer", "brief": "every page"})
     status, found = call(server, "GET", "/journal/search?words=viewer%20page")
     assert status == 200 and found["found"][0]["ref"] == "task 1"
+
+
+def test_the_plan_bars_work_mode_and_the_top_bars_pause_are_version_fours_own(server):
+    assert call(server, "GET", "/journal/mode")[1] == {"mode": "builder", "modes": ["builder", "orchestrator", "solo"]}
+    assert call(server, "POST", "/journal/mode", {"mode": "orchestrator"})[1]["mode"] == "orchestrator"
+    assert call(server, "GET", "/journal/settings")[1]["workers"]["mode"] == "orchestrator"
+    assert call(server, "POST", "/journal/mode", {"mode": "boss"})[0] == 409
+    hooked = lambda kind, **body: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s7", **body})
+    hooked("SessionStart")
+    agent = call(server, "GET", "/journal/agents")[1]["rows"][0]
+    paused = call(server, "POST", f"/journal/agents/{agent['id']}/pause")[1]
+    assert paused["state"] == "paused" and paused["doing"] == "you to resume it"
+    assert "the user paused you" in json.dumps(hooked("PreToolUse", tool_name="Read", tool_input={"file_path": "a"})[1])
+    assert call(server, "POST", f"/journal/agents/{agent['id']}/resume")[1]["state"] == agent["state"]
+    assert "the user paused you" not in json.dumps(hooked("PreToolUse", tool_name="Read", tool_input={"file_path": "a"})[1])
+    assert call(server, "POST", f"/journal/agents/{agent['id']}/resume")[0] == 409, "an agent not paused is not resumed"

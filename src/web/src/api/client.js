@@ -263,6 +263,19 @@ export class ApiClient {
         return this.get(this.here(`/agents/${agent}/terminal${query({after})}`));
     }
 
+    // the work mode the plan bar's buttons set, and the pause of an agent
+    saveMode(mode) {
+        return this.post(this.here("/mode"), {mode});
+    }
+
+    pauseAgent(id) {
+        return this.act("agents", id, "pause");
+    }
+
+    resumeAgent(id) {
+        return this.act("agents", id, "resume");
+    }
+
     launchAgent(environment, agent) {
         return this.act("environments", environment, "launch", {agent});
     }
