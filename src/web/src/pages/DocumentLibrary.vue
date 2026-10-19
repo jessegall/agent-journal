@@ -139,8 +139,9 @@ function move(event, direction) {
     overflow-y: auto;
 }
 .document-list {
+    --sticky-top: 0;
     min-width: 0;
-    padding: 6px 8px 40px;
+    padding: 0 8px 40px;
 }
 .no-documents {
     position: relative !important;

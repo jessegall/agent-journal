@@ -30,7 +30,7 @@ const kind = (title, icon, abstract, more = {}) => ({
 });
 
 export const TABLES = {
-    messages: kind("Message", "mail", "What the user left for the agent, or the agent for the user", {in_sidebar: true, listed_under: "results", takes_comments: true}),
+    messages: kind("Message", "mail", "What the user left for the agent, or the agent for the user", {in_sidebar: true, listed_under: "environment", takes_comments: true}),
     questions: kind("Question", "help", "Something the agent asks the user, with choices to pick", {needs_attention: true, labels: {answer: "Answer"}}),
     comments: kind("Comment", "bubble", "What the user said about another row", {nested: true}),
     plans: kind("Plan", "flag", "Ordered phases of tasks with a goal, approved by the user before it runs", {
@@ -56,7 +56,7 @@ export const TABLES = {
     reports: kind("Report", "report", "What was checked and what was found, written for the user", {
         view: "document",
         in_sidebar: true,
-        listed_under: "results",
+        listed_under: "environment",
         needs_attention: true,
         takes_comments: true,
         closed_first: true,
@@ -73,21 +73,21 @@ export const TABLES = {
     }),
     facts: kind("Fact", "pin", "Something true about this environment that a later session would get wrong without", {
         in_sidebar: true,
-        listed_under: "results",
+        listed_under: "environment",
         takes_comments: true,
         created_in_viewer: true,
     }),
     rules: kind("Rule", "list", "A ruling that binds every environment of the project", {
         scope: "project",
         in_sidebar: true,
-        listed_under: "workings",
+        listed_under: "project",
         takes_comments: true,
         created_in_viewer: true,
         labels: {reason: "Reasoning"},
     }),
     reminders: kind("Reminder", "clock", "An instruction said again until it is retired", {
         in_sidebar: true,
-        listed_under: "results",
+        listed_under: "environment",
         takes_comments: true,
         created_in_viewer: true,
     }),
@@ -111,7 +111,7 @@ export const TABLES = {
         view: "document",
         scope: "project",
         in_sidebar: true,
-        listed_under: "workings",
+        listed_under: "project",
         labels: {brief: "Instructions"},
     }),
     triggers: kind("Trigger", "bolt", "Words that the user watches for, and what the journal does when they come up", {

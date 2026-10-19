@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.5
+
+- The Resources page groups its pages under This environment and Whole project, as their rows are kept.
+- The documents list's date heading sticks flush under the search bar, so no row shows above it.
+- A run of the viewer's tests marks itself, so the journal does not report requests as slow while it runs.
+
 ## 4.1.4
 
 - A setting's help says only what it does, in plain words; a workflow that uses the setting shows under it as a link that opens that workflow.

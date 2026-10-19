@@ -14,8 +14,8 @@ export const PAGES = {
 };
 
 export const RESOURCE_GROUPS = [
-    {key: "results", title: "Results", pages: []},
-    {key: "workings", title: "Agent", pages: ["skills", "profiles"]},
+    {key: "environment", title: "This environment", pages: []},
+    {key: "project", title: "Whole project", pages: ["skills", "profiles"]},
 ];
 
 export const pluralTitle = (title) => `${title}s`;
