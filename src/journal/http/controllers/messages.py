@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.features.messages.mentions import Mentions
+from journal.features.messages.support.mentions import Mentions
 from journal.http.attachments.attachments import Attachments
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts

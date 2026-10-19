@@ -2,7 +2,7 @@ from journal.console.console import Console
 from journal.support.where import Where
 from journal.events.agent.turn_written import TurnWritten
 from journal.events.agent_listener import AgentListener
-from journal.features.messages.tags import Tags
+from journal.features.messages.support.tags import Tags
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
 

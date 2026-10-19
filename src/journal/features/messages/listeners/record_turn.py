@@ -3,8 +3,8 @@ import threading
 
 from journal.events.agent.turn_written import TurnWritten
 from journal.events.agent_listener import AgentListener
-from journal.features.messages.faces import Faces
-from journal.features.messages.tags import Tags
+from journal.features.messages.support.faces import Faces
+from journal.features.messages.support.tags import Tags
 from journal.features.registry import Registry
 from journal.support.actor import Actor
 from journal.models.author import Author

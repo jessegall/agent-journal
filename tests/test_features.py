@@ -2414,7 +2414,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
 
 
 def test_a_row_named_in_a_message_is_a_chip_in_the_viewer():
-    from journal.features.messages.mentions import Mentions
+    from journal.features.messages.support.mentions import Mentions
     assert [str(r) for r in Mentions.in_("Please have 2 agents give plan 1 a normal read, following template 3 (Find what is missing), then task 12 and Task 12 again, doc #4")] == ["plans:1", "templates:3", "tasks:12", "docs:4"]
     assert Mentions.in_("the plan is ready; 3 agents; version 4") == []
 

@@ -7,7 +7,7 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.config import Config
-from journal.features.messages.faces import Faces
+from journal.features.messages.support.faces import Faces
 from journal.support.not_found import NotFound
 from journal.repositories.messages import Messages
 from journal.repositories.links import Links
