@@ -41,5 +41,4 @@ class RecordRunChanges(Listener[Updated]):
     def kept(self, agent: Agent, run: SequenceRun, what: str) -> None:
         data = {"session": agent.session, "n": run.sequence_id, "title": run.title, "what": what}
         self.entries.save(Entry(environment_id=agent.environment_id, kind=RUN, actor=Actor.system(), data=data), Actor.system())
-        detail = "\n".join(line for line in (run.text if what.startswith(("started", "moved")) else "", f"about {run.about}" if run.about else "") if line)
-        self.cards.show(agent.environment_id, agent.session, f"Sequence {run.sequence_id}, {run.title}: {what}", "list", "", detail, f"sequences:{run.sequence_id}")
+        self.cards.show(agent.environment_id, agent.session, f"Sequence {run.sequence_id}, {run.title}: {what}", "list", "sequence", row=f"sequences:{run.sequence_id}")

@@ -4791,8 +4791,8 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
     assert "`journal environment here`" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
-    from journal.support.chart_catalogue import McpCatalogue
-    by_key = {e.key: e for e in app.container.get(McpCatalogue).triggers()}
+    from journal.support.chart_catalogue import ChartCatalogue
+    by_key = {e.key: e for e in app.container.get(ChartCatalogue).triggers()}
     assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
 
 
@@ -4906,10 +4906,10 @@ def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_s
 
 def test_each_feature_declares_its_own_checks_and_actions_and_the_catalogue_only_gathers_them(app):
     from journal.features.chart.support.actions import Actions
-    from journal.support.chart_catalogue import McpCatalogue
+    from journal.support.chart_catalogue import ChartCatalogue
     from journal.features.chart.support.checks import Checks
     from journal.features.registry import Registry
-    catalogue, registry = app.container.get(McpCatalogue), app.container.get(Registry)
+    catalogue, registry = app.container.get(ChartCatalogue), app.container.get(Registry)
     declared = [(f.name, e.key) for f in registry.features for e in f.checks + f.actions]
     assert len(declared) == len({k for _, k in declared}), "a key is declared by one feature only"
     assert {e.key for e in catalogue.checks()} == {e.key for f in registry.features for e in f.checks} and {e.key for e in catalogue.actions()} == {e.key for f in registry.features for e in f.actions}
