@@ -20,7 +20,7 @@ class ServiceStart:
         if host is None:
             self.off()
             return []
-        package = Path(__file__).resolve().parents[2]
+        package = Path(__file__).resolve().parents[3]
         environ = {**os.environ, "PYTHONPATH": str(package)}
         return [self.link.start(host, service.name, [sys.executable, "-m", service.module], self.config.root, environ, self.config.home / "runtime" / f"{service.name}.log") for service in self.registry.services()]
 
