@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.dumps.filing import Filing
+from journal.features.dumps.support.filing import Filing
 from journal.repositories.dumps import Dumps
 
 

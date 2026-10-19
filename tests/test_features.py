@@ -6148,7 +6148,7 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app):
 
 
 def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, tmp_path, monkeypatch):
-    from journal.features.dumps.filing import Filing
+    from journal.features.dumps.support.filing import Filing
     from journal.repositories.dumps import Dumps
     typed = []
     catch_typed(app, monkeypatch, typed)

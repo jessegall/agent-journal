@@ -1,4 +1,4 @@
-from journal.features.dumps.filing import Filing
+from journal.features.dumps.support.filing import Filing
 from journal.http.attachments.attachments import Attachments
 from journal.http.controllers.controller import Controller
 from journal.http.support.model_fields import ModelFields

@@ -1,6 +1,6 @@
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
-from journal.features.dumps.filing import OWN_WORDS
+from journal.features.dumps.support.filing import OWN_WORDS
 from journal.support.telling import Telling
 from journal.models.dump import Dump
 
