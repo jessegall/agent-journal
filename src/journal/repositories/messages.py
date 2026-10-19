@@ -79,6 +79,9 @@ class Messages(ScopedRepository[Message]):
     def keyed(self, key: str, by: Actor) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
 
+    def reply_saying(self, n: int, text: str) -> list[Message]:
+        return self.selected("reply_to = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))
+
     def recent(self, last: int) -> list[Message]:
         return self.window(last)
 

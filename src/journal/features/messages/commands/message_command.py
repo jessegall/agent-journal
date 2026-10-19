@@ -40,6 +40,9 @@ class MessageCommand(Command):
 
     def send(self, args: Namespace, where: Where) -> int:
         author = Author.of(where.actor)
+        if args.reply_to and author == Author.AGENT and self.messages.reply_saying(args.reply_to, args.text):
+            print(f"message {args.reply_to} already has this reply in the chat: not sent again")
+            return 0
         message = self.messages.save(Message(author=author, text=args.text, reply_to=args.reply_to), where.actor)
         if args.reply_to and author == Author.AGENT:
             self.messages.mark_read(self.messages.find(args.reply_to), where.actor)

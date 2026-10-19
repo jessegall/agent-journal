@@ -6207,3 +6207,14 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     (folder / "pid").unlink()
     (folder / "done").write_text("0")
     assert outputs.in_background("s1") == [], "a command that ended is no longer in the background"
+
+
+def test_a_second_reply_with_the_same_words_to_the_same_message_is_not_sent_and_the_agent_is_told(app):
+    from journal.repositories.messages import Messages
+    console = app.console()
+    console.run(["message", "send", "Can you look?"], USER)
+    first = console.run(["message", "send", "Looking now.", "--reply-to", "1"], AGENT)
+    again = console.run(["message", "send", "Looking now.", "--reply-to", "1"], AGENT)
+    assert first.code == 0 and again.code == 0 and "already has this reply in the chat: not sent again" in again.out
+    assert [m.text for m in app.container.get(Messages).recent(10) if m.reply_to == 1] == ["Looking now."], "the chat shows the reply once"
+    assert "sent" in console.run(["message", "send", "Found it.", "--reply-to", "1"], AGENT).out, "other words to the same message are sent"
