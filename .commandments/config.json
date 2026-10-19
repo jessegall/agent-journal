@@ -18,8 +18,7 @@
         "SentenceLabelDetector",
         "SentenceLabelScriptDetector",
         "SearchMarkLabelDetector",
-        "RowOutsideRepositoryDetector",
-        "ResourceParsedOutsideRepositoryDetector"
+        "QueryOutsideRepositoryDetector"
     ],
     "parallel": 2,
     "configure": {

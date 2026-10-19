@@ -1,0 +1,41 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["execute", "executemany", "all", "one"]
+            },
+            {
+                "of": "child:func",
+                "all": [
+                    {
+                        "is": "member-access"
+                    },
+                    {
+                        "of": "child:value",
+                        "nameIn": ["connection", "database", "db", "local"]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/repositories/**"
+            },
+            {
+                "file": "src/journal/db/**"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "query-outside-repository",
+        "description": "SQL runs on the connection outside a repository: a query or a write that skips the funnel which bounds every read, stamps the actor and fires the model events.",
+        "rule": "Every query and every write of a model goes through its repository. Put the SQL in the repository as a named method that says what it answers, bounded to a page unless it is asked for every row by name, and call that.",
+        "skill": "rows-through-their-repository"
+    }
+}

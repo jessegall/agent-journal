@@ -1,35 +1,29 @@
 ---
 name: RowsThroughTheirRepository
-description: Load it before reading, writing, parsing or removing a row file, or before changing the repository (RowStore) itself, so every row goes through the one place that owns the rows.
-summary: Rows are read and written only by their repository; its funnel methods are final.
+description: Load it before querying or writing a model's rows, or before changing a repository itself, so every read and write goes through the one place that owns the rows.
+summary: Every query and every write of a model goes through its repository; SQL lives in repositories and the database layer only.
 tier: mandatory
 languages: [python]
 ---
 
 # Rows through their repository
 
-Every row of every type lives in a file that one place owns: the repository each controller holds as `rows`
-(`RowStore`, controllers/stored.py). It parses a row once, keeps the parsed rows in memory, keeps the totals
-and the indexes in step with every write, and refuses a row file written by anything else at run time.
+Every model's rows live in one table that one place owns: its repository in `src/journal/repositories/`.
+SQL runs only there and in `src/journal/db/` (the connection, the schema, the migrations). A repository
+bounds every list to a page, stamps the actor on every write and fires the model events, and keeps any rows it
+holds in memory in step through `written()`.
 
 ## When it fires
 
-- **`row-outside-repository`** - code reads, writes or removes a row file through a controller's `path(...)`:
-  `todos.path(n).write_text(...)`, `rows.path(n).read_text()`.
-- **`resource-parsed-outside-repository`** - code parses a row from text with `resource.load(text)`.
+- **`query-outside-repository`** - code calls `execute`, `executemany`, `all` or `one` on the connection outside
+  the repositories and the database layer: a controller, a shaper, a feature or a listener writing its own SQL.
 
 ## What to do instead
 
-- To read a row: `controller.load(n)`, `controller.find(...)`, `controller.all(...)`, or `rows.peek(n)` for the
-  kept row.
-- To write one: `controller.create`, `update`, `complete`, `delete`; or `rows.persist(row)` when you hold a
-  row already.
-- To remove one: `controller.force_delete(n)`.
-- To ask a question of many rows: `rows.summaries()`, `rows.by(field, value)`, `rows.linked_to(ref)`,
-  `rows.unread(actor)`, `rows.counts(name)`. Add a field to the type's `indexed` if the summaries lack it.
-
-## Never change the repository by accident
-
-The funnel methods of `RowStore` are marked `final` and the check `scripts/checks/repository.py` fails when a
-class extends `RowStore`, replaces one of them, or when a row is read, written, parsed or made past it. An
-upgrade (migrations) may rewrite rows; nothing else may.
+- Name the question in the repository: `tasks.unfinished_count()`, `messages.window(60)`,
+  `messages.sent_with(key)`, `repository.linked(kind)`. Call that.
+- A list reads a page: `all()`, `where()`, `in_()` return the newest page; a read that truly needs every row
+  asks for it by name: `every()`, `every_where()`, `every_in()`.
+- Never filter a whole table in Python (`[m for m in messages.in_() if ...]`): put the condition in the
+  repository's SQL.
+- A write goes through `save`, `touch` or `delete`, never an `UPDATE` of your own.
