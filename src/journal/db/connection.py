@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
 
-from journal.db.masks import Masks
+from journal.support.masks import Masks
 
 
 class Connection:

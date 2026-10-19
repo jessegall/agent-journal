@@ -5138,7 +5138,7 @@ def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app
 
 
 def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, tmp_path, monkeypatch):
-    from journal.db.masks import Masks
+    from journal.support.masks import Masks
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     from journal.models.message import Message

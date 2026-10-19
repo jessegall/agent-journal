@@ -1,5 +1,5 @@
 from journal.config import Config
-from journal.db.masks import Masks
+from journal.support.masks import Masks
 from journal.support.secret_values import SecretValues
 """Phase one: a task is created, linked, updated and deleted in a real database, and every model event is heard with its actor."""
 

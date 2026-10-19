@@ -3,7 +3,7 @@ from journal.container import Container
 from journal.console.console import Console
 from journal.console.standard_commands import StandardCommands
 from journal.db.connection import Connection
-from journal.db.masks import Masks
+from journal.support.masks import Masks
 from journal.db.migrations import MIGRATIONS
 from journal.db.migrator import Migrator
 from journal.db.schema import Schema

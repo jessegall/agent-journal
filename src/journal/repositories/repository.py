@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Callable, Generic, TypeVar
 
-from journal.db.column import Column
+from journal.support.column import Column
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.events.models.created import Created

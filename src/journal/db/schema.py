@@ -1,7 +1,7 @@
 from dataclasses import fields
 from typing import get_type_hints
 
-from journal.db.column import Column
+from journal.support.column import Column
 from journal.db.connection import Connection
 from journal.models.model import Model
 
