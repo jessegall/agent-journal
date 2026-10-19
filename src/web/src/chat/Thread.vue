@@ -12,6 +12,7 @@ import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
 import {useScrollback} from "../composables/scrollback.js";
 import {useFollowing} from "../composables/following.js";
+import {useReadingPlace} from "../composables/readingPlace.js";
 import Skeleton from "../kit/Skeleton.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {markSeen} from "../sync/seen.js";
@@ -166,8 +167,17 @@ watch(
     }
 );
 
+const place = useReadingPlace(scroller);
+
 function settled() {
-    if (!away.value && !store.focus) toBottom(settledOnce.value);
+    if (away.value) place.hold();
+    else if (!store.focus) toBottom(settledOnce.value);
+}
+
+function scrolled() {
+    watchScroll();
+    if (away.value) place.mark();
+    else place.forget();
 }
 
 let grew = null;
@@ -179,7 +189,10 @@ onMounted(() => {
         for (const el of scroller.value?.children || []) grew.observe(el);
     };
     watchRows();
-    added = new MutationObserver(watchRows);
+    added = new MutationObserver(() => {
+        watchRows();
+        settled();
+    });
     if (scroller.value) added.observe(scroller.value, {childList: true});
     if (scroller.value) sizeWatch.observe(scroller.value);
     frame = requestAnimationFrame(() => {
@@ -401,7 +414,7 @@ watch(
                 <div
                     ref="scroller"
                     :class="['thread-scroll', {focusing: store.focus, loading: !ready, hidden: feeding}]"
-                    @scroll.passive="watchScroll"
+                    @scroll.passive="scrolled"
                     @wheel.passive="wheeled"
                     @touchmove.passive="scrolledByHand"
                     @keydown="scrolledByHand"
@@ -580,6 +593,7 @@ watch(
 
 .thread-scroll {
     order: 1;
+    overflow-anchor: none;
     flex: 1;
     min-height: 0;
     transition:
