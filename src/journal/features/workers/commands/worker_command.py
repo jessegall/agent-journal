@@ -40,6 +40,7 @@ class WorkerCommand(Command):
         say = self.verb(verbs, "say", "give a worker that reported its next job, with its memory of the last")
         say.add_argument("n", type=int)
         say.add_argument("brief")
+        say.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
         self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
         self.verb(verbs, "done", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
@@ -83,6 +84,8 @@ class WorkerCommand(Command):
         if self.providers.named(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
             raise Refused(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
         worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=where.session), where.actor)
+        if args.task:
+            self.workers.put_on(worker, args.task, where.actor)
         self.runner.start(worker, where.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0

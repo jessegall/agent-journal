@@ -516,7 +516,10 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
-    assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code == 0
+    console.run(["task", "create", "the lexer"], AGENT)
+    assert console.run(["worker", "say", "1", "now the lexer", "--task", "1"], AGENT).code == 0
+    from journal.repositories.workers import Workers as WorkerRows
+    assert 1 in app.container.get(WorkerRows).holding({1}), "a job said with --task holds that task, so a plan leaves it to the worker"
     told = workers.find(1)
     assert told.state == WorkerState.DISPATCHED and told.brief == "now the lexer" and told.resume == "sess-1" and told.worktree and started[-1].id == 1
     assert Claude().worker_command("now the lexer", "fast", "sess-1")[-2:] == ["--resume", "sess-1"]
