@@ -1,4 +1,4 @@
-from journal.features.updates.updating import Updating
+from journal.features.updates.support.updating import Updating
 from journal.http.support.request import Request
 from journal.support.response import Response
 

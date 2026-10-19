@@ -26,8 +26,8 @@ from journal.repositories.settings import Settings
 from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.support.running import Running
-from journal.features.updates.release import Release
-from journal.features.updates.updating import Updating
+from journal.features.updates.support.release import Release
+from journal.features.updates.support.updating import Updating
 from journal.features.tasks.states.working import Working
 from journal.support.subagents import Subagents
 

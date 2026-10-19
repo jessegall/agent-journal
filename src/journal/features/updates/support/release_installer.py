@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from journal.config import Config
-from journal.features.updates.release import Release
+from journal.features.updates.support.release import Release
 from journal.support.refused import Refused
 
 INSTALL_SCRIPT = "https://raw.githubusercontent.com/jessegall/agent-journal/{tag}/install.sh"

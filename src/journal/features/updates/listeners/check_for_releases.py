@@ -1,6 +1,6 @@
 from journal.events.clock_ticked import ClockTicked
 from journal.events.listener import Listener
-from journal.features.updates.updating import Updating
+from journal.features.updates.support.updating import Updating
 
 
 class CheckForReleases(Listener[ClockTicked]):

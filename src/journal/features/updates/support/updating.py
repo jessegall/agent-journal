@@ -6,9 +6,9 @@ from typing import Callable
 
 from journal.support.where import Where
 from journal.support.plugin_installing import PluginInstalling
-from journal.features.updates.release import Release
-from journal.features.updates.release_installer import ReleaseInstaller
-from journal.features.updates.release_source import ReleaseSource
+from journal.features.updates.support.release import Release
+from journal.features.updates.support.release_installer import ReleaseInstaller
+from journal.features.updates.support.release_source import ReleaseSource
 from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.repositories.environments import Environments
