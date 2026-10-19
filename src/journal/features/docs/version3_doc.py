@@ -11,11 +11,12 @@ class Version3Doc:
 
     @staticmethod
     def read(folder: Path) -> Doc | None:
-        """The document the folder holds; none for a folder with no doc.md, or one version 3 had deleted."""
+        """The document the folder holds; none for a folder with no doc.md, one that holds no row, as version 3 left some empty, or one it had deleted."""
         file = folder / "doc.md"
-        if not file.is_file():
+        text = file.read_text(errors="replace") if file.is_file() else ""
+        if not text.startswith(f"{FENCE}\n"):
             return None
-        _, head, body = file.read_text(errors="replace").split(f"{FENCE}\n", 2)
+        _, head, body = text.split(f"{FENCE}\n", 2)
         row = json.loads(head)
         if row.get("deleted"):
             return None

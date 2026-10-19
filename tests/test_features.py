@@ -433,8 +433,10 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
     for n, (title, deleted) in enumerate((("Audit of the package", 0), ("Gone", 1.0)), 1):
         (old / f"{n:03}").mkdir(parents=True)
         (old / f"{n:03}" / "doc.md").write_text(f'---\n{{"n": {n}, "title": "{title}", "abstract": "what is broken", "deleted": {deleted}}}\n---\n# Findings\n\nThe cleanup pluralises the wrong noun.\n')
+    (old / "003").mkdir()
+    (old / "003" / "doc.md").write_text("")
     console = app.console()
-    assert "1 documents brought in, 0 already here" in console.run(["doc", "import", str(old)], USER).out, "a deleted one stays out"
+    assert "1 documents brought in, 0 already here" in console.run(["doc", "import", str(old)], USER).out, "a deleted one and an empty one stay out"
     assert "0 documents brought in, 1 already here" in console.run(["doc", "import", str(old)], USER).out, "a second import brings nothing twice"
     port = app.server().port
     read = lambda path, env="main": json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}{path}", headers={"X-Journal-Env": env}), timeout=5))
