@@ -5,7 +5,7 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
-from journal.launcher.status_line import StatusLine
+from journal.launcher.support.status_line import StatusLine
 from journal.support.supervisor_socket import SupervisorSocket
 
 PATIENCE = 30.0

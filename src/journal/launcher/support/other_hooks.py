@@ -2,7 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
-from journal.launcher.program_settings import ProgramSettings
+from journal.launcher.support.program_settings import ProgramSettings
 
 FILES = {"claude": (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json"), "codex": (".codex/hooks.json", "~/.codex/hooks.json")}
 

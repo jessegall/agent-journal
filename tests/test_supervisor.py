@@ -6,13 +6,13 @@ import time
 from pathlib import Path
 
 from supervisor.inbox import Inbox
-from journal.launcher.environment_row import EnvironmentRow
-from journal.launcher.program_settings import ProgramSettings
+from journal.support.environment_row import EnvironmentRow
+from journal.launcher.support.program_settings import ProgramSettings
 from journal.launcher.launch import Launch
-from journal.launcher.choice import Choice
+from journal.launcher.support.choice import Choice
 from journal.launcher.menu import Menu
 from journal.launcher.screen import Screen
-from journal.launcher.status_line import StatusLine
+from journal.launcher.support.status_line import StatusLine
 
 
 ROWS = [EnvironmentRow("main", True, "2 hours ago", {"claude": "abc"}), EnvironmentRow("spike")]
@@ -52,7 +52,7 @@ def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_
 
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
-    from journal.launcher.other_hooks import OtherHooks
+    from journal.launcher.support.other_hooks import OtherHooks
     assert not ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
     assert ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
@@ -75,7 +75,7 @@ def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_ag
 
 
 def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_path: Path):
-    from journal.launcher.other_hooks import OtherHooks
+    from journal.launcher.support.other_hooks import OtherHooks
     path = settings_with_other_hooks(tmp_path)
     hooks = OtherHooks(tmp_path, "claude")
     assert hooks.others() == [path]
@@ -91,7 +91,7 @@ def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_pa
 
 
 def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path):
-    from journal.launcher.option import Option
+    from journal.launcher.support.option import Option
     from journal.launcher.screen import Screen as Picker
     assert Picker._moved(0, "\x1b[B", 3) == 1 and Picker._moved(0, "\x1b[A", 3) == 2 and Picker._moved(0, "3", 3) == 2 and Picker._moved(1, "q", 3) == 1
 
@@ -112,7 +112,7 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
 
 
 def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Path):
-    from journal.launcher.other_hooks import OtherHooks
+    from journal.launcher.support.other_hooks import OtherHooks
     path = settings_with_other_hooks(tmp_path)
 
     class Launched(Launch):
@@ -136,7 +136,7 @@ def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, mo
     app = App(Config(tmp_path, port=0))
     app.server().start()
     try:
-        from journal.launcher.page_wait import PageWait
+        from journal.launcher.support.page_wait import PageWait
         status = StatusLine("p", "main", tmp_path)
         PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "").wait()
         assert status.url == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"

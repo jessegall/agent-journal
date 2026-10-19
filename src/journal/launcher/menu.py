@@ -3,12 +3,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-from journal.launcher.answers import Answers
-from journal.launcher.choice import Choice
-from journal.launcher.environment_row import EnvironmentRow
-from journal.launcher.option import Option
-from journal.launcher.other_hooks import OtherHooks
-from journal.launcher.remembered import Remembered
+from journal.launcher.support.answers import Answers
+from journal.launcher.support.choice import Choice
+from journal.support.environment_row import EnvironmentRow
+from journal.launcher.support.option import Option
+from journal.launcher.support.other_hooks import OtherHooks
+from journal.launcher.support.remembered import Remembered
 from journal.launcher.screen import Screen
 from journal.providers.providers import Providers
 

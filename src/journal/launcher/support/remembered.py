@@ -2,7 +2,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from journal.launcher.answers import Answers
+from journal.launcher.support.answers import Answers
 
 
 class Remembered:

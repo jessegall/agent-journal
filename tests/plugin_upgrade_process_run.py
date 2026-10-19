@@ -11,7 +11,7 @@ from supervisor.service import Service
 from supervisor.services import Services
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
-from journal.launcher.project_command import ProjectCommand
+from journal.support.project_command import ProjectCommand
 from tests.test_features import USER, app
 
 SOURCE = "https://github.com/jessegall/code-commandments"

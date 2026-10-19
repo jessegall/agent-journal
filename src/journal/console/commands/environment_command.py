@@ -9,7 +9,7 @@ from journal.support.where import Where
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.shell.commands.shell_command import ENDED, MOVED
-from journal.launcher.environment_row import EnvironmentRow
+from journal.support.environment_row import EnvironmentRow
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents

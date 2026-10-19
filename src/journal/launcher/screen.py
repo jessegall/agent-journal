@@ -4,8 +4,8 @@ import sys
 import termios
 import tty
 
-from journal.launcher.keys import Keys
-from journal.launcher.option import Option
+from journal.launcher.support.keys import Keys
+from journal.launcher.support.option import Option
 
 BOLD, DIM, ACCENT, GOOD, BADGE, RESET = "\x1b[1m", "\x1b[2m", "\x1b[38;5;111m", "\x1b[38;5;114m", "\x1b[38;5;176m", "\x1b[0m"
 SAVE_CURSOR, BACK_TO_SAVED, HIDE_CURSOR, SHOW_CURSOR = "\x1b7", "\x1b8\x1b[J", "\x1b[?25l", "\x1b[?25h"

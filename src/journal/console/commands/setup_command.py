@@ -14,7 +14,7 @@ from journal.providers.providers import Providers
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
 from journal.launcher.dispatcher import Dispatcher
-from journal.launcher.project_command import ProjectCommand
+from journal.support.project_command import ProjectCommand
 
 
 
