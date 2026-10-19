@@ -24,6 +24,7 @@ class McpInstalling:
     def add(self, server: McpServer, by: Actor) -> McpServer:
         saved = self.servers.save(server, by)
         self.applied()
+        self.health.recheck()
         return saved
 
     def keyed(self, server: McpServer, value: str, by: Actor) -> McpServer:
@@ -38,6 +39,7 @@ class McpInstalling:
         if server.key_var:
             self.keys.forget(server.key_var)
         self.applied()
+        self.health.recheck()
 
     def remove_known(self, name: str) -> bool:
         """A server set up in the program itself, taken out there; the agents restart as after any change."""

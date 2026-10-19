@@ -31,6 +31,9 @@ class KeptAnswer(Generic[T]):
         """The next reader starts a new ask."""
         self.asked_at = 0.0
 
+    def is_asking(self) -> bool:
+        return self._asking.locked()
+
     def drop(self) -> None:
         """The answer kept is no longer true: the next reader waits for a new one."""
         self.asked_at = self.asked_on = 0.0

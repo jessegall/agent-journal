@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.6
+
+- The MCP page shows every server as the last check found it as soon as it opens: the first look starts the check, with skeleton rows until it lands, and the check is kept for an hour; adding or removing a server checks again, and Check all is now Refresh.
+
 ## 4.1.5
 
 - The Resources page groups its pages under This environment and Whole project, as their rows are kept.

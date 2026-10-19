@@ -1777,6 +1777,21 @@ def test_a_journal_command_chained_with_anything_else_is_refused(app):
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "python3 -m pytest -q && git commit -m x"})[0] == 200
 
 
+def test_the_mcp_page_shows_every_server_as_the_kept_check_found_it_without_a_refresh(app, monkeypatch):
+    import json as j
+    from journal.support.health import Health
+    from journal.features.mcp.support.health_report import HealthReport
+    from journal.features.mcp.support.known import Known
+    monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"blender": Known("blender", "uvx blender-mcp", "connected", "")}))
+    read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
+    read()
+    deadline = time.monotonic() + 5
+    while not read()["checked_at"] and time.monotonic() < deadline:
+        time.sleep(0.05)
+    shown = read()
+    assert not shown["checking"] and [(s["name"], s["state"]) for s in shown["servers"]] == [("blender", "connected")], "the next read shows the servers as the check found them"
+
+
 def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the_agents_restarted_and_keyed_without(app, monkeypatch, tmp_path):
     import json as j
     from urllib.request import Request as R, urlopen

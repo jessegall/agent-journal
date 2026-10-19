@@ -38,9 +38,11 @@ const WORDS = {
 };
 
 const checkedAt = ref(0);
+const checking = ref(false);
 function take(got) {
     if (!got) return;
     checkedAt.value = got.checked_at || 0;
+    checking.value = got.checking;
     servers.value = got.servers;
     suggested.value = got.suggested;
     restartPending.value = got.restart_pending || [];
@@ -55,6 +57,16 @@ watch(restartPending, (sessions) => {
 });
 onUnmounted(() => clearInterval(waiting));
 
+// while the journal checks the servers, the page reads it again often, so the states arrive as soon as the check does
+const CHECKING_EVERY = 1500;
+let following = 0;
+watch(checking, (on) => {
+    clearInterval(following);
+    if (on) following = setInterval(reload, CHECKING_EVERY);
+});
+onUnmounted(() => clearInterval(following));
+const firstCheck = computed(() => !loaded.value || (!checkedAt.value && checking.value));
+
 const install = (s) => act(s.name, () => api.mcpInstall(s.name));
 const remove = (s) => act(s.name, () => api.mcpRemove(s.name));
 const check = () => act("check", () => api.mcpCheck());
@@ -68,13 +80,13 @@ const signIn = (s) =>
         await api.mcpSignIn(s.name);
         signingIn.value = s.name;
     });
-let checking = 0;
+let signInPolling = 0;
 let checks = 0;
 watch(signingIn, (name) => {
-    clearInterval(checking);
+    clearInterval(signInPolling);
     checks = 0;
     if (!name) return;
-    checking = setInterval(async () => {
+    signInPolling = setInterval(async () => {
         const got = await api.mcpCheck();
         servers.value = got.servers;
         const server = got.servers.find((s) => s.name === name);
@@ -82,7 +94,7 @@ watch(signingIn, (name) => {
         if (!server || server.state === "connected" || checks >= 18) signingIn.value = "";
     }, 10000);
 });
-onUnmounted(() => clearInterval(checking));
+onUnmounted(() => clearInterval(signInPolling));
 
 // how a suggested server is let in, in words
 function letIn(suggestion) {
@@ -104,7 +116,7 @@ function letIn(suggestion) {
             <template v-if="checkedAt">
                 <span class="integrations-checked">States checked {{ ago(checkedAt) }}</span>
             </template>
-            <Btn kind="ghost" :busy="busy === 'check'" :disabled="!servers.length" @click="check">Check all</Btn>
+            <Btn kind="ghost" :busy="busy === 'check' || checking" :disabled="!servers.length" @click="check">Refresh</Btn>
         </header>
 
         <template v-if="notice">
@@ -117,8 +129,8 @@ function letIn(suggestion) {
             </p>
         </template>
 
-        <template v-if="!loaded">
-            <ul class="integrations-list" aria-label="Loading the MCP servers">
+        <template v-if="firstCheck">
+            <ul class="integrations-list" aria-label="Checking the MCP servers">
                 <template v-for="n in 3" :key="n">
                     <li class="integration">
                         <SkeletonLine

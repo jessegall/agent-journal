@@ -17,14 +17,16 @@ class McpController:
         self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending
 
     def index(self, request: Request) -> Response:
-        """The journal's own servers and, after them, the ones the program has from elsewhere: shown with their state, not managed from here."""
-        own = [self.row(s) for s in self.servers.all()]
-        elsewhere = [self.known_row(k) for name, k in self.health.of_all().servers.items() if name not in {s.name for s in own}]
+        """The journal's own servers and, after them, the ones the program has from elsewhere, each as the last check found it; the first read starts the check."""
+        report = self.health.of_all()
+        own = [self.row(self.installing.checked_one(s, report)) for s in self.servers.all()]
+        elsewhere = [self.known_row(k) for name, k in report.servers.items() if name not in {s.name for s in own}]
         present = [*own, *elsewhere]
         return Response.json({
             "servers": present,
             "restart_pending": self.pending.sessions(),
             "checked_at": self.health.checked_at,
+            "checking": self.health.is_checking(),
             "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
         })
 
