@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+from dataclasses import asdict
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
@@ -24,6 +25,7 @@ from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.sequences.running import Running
 from journal.features.tasks.states.working import Working
+from journal.features.workers.subagents import Subagents
 
 from tests.replay import catch_typed
 
@@ -553,6 +555,22 @@ def test_a_document_the_agent_writes_is_a_message_in_its_chat(app, tmp_path):
     app.runtime().deferred.drain()
     made = [(m.text, m.data["abstract"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "made"]
     assert made == [("Deploys", "How a deploy goes")], "the agent's document is marked in the chat; the user's own is not"
+
+def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_turn_or_session(app):
+    send = lambda kind, **extra: hook(app, kind, session_id="s7", **extra)
+    rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s7")]
+    send("SessionStart", source="startup")
+    send("PreToolUse", tool_name="Agent", tool_input={"description": "no model named", "prompt": "read"}, tool_use_id="t-refused")
+    send("PreToolUse", tool_name="Agent", tool_input={"description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
+    send("PreToolUse", tool_name="Agent", tool_input={"description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
+    send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a7"}, tool_use_id="t-bg")
+    assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
+    send("Stop")
+    assert [(r["running"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running")], "a call with no answer ends with its turn; one in the background goes on"
+    send("SessionStart", source="compact")
+    assert rows()[1]["running"] is True, "a compaction ends no subagent"
+    send("SessionEnd")
+    assert [r["running"] for r in rows()] == [False, False], "a subagent with no stop ends with its session"
 
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
@@ -1251,7 +1269,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
     assert "failed with code 1: pytest -q" in typed[-1] and "2 failed" in typed[-1]
     cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
-    assert len(cards) == 2 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["detail"] == "pytest -q\n2 failed", "the card names the command and how it ended"
+    assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["detail"] == "pytest -q\n2 failed", "the one mark of the moved command is settled in place: it names the command and how it ended"
     console.run(["shell", "moved", "c2", "pytest -q", "--file", "/tmp/out/c2"], AGENT)
     console.run(["shell", "ended", "c2", "--status", "0", "--file", "/tmp/out/c2", "--last", "........ [ 76%]\n....... [100%]"], AGENT)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
@@ -1687,9 +1705,8 @@ def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(a
 
 
 def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app):
-    from journal.http.v3.shapers.agents_shaper import AgentsShaper
     hook(app, "SessionStart")
-    rows = lambda: app.container.get(AgentsShaper).rows()[0].data["subagent_rows"]
+    rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s1")]
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "sonnet", "subagent_type": "researcher", "prompt": "read"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a1"})
     assert rows()[0]["running"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
@@ -2114,14 +2131,13 @@ def test_a_workflow_holds_one_trigger(app):
 
 
 def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app):
-    from journal.http.v3.shapers.agents_shaper import AgentsShaper
     hook(app, "SessionStart")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Herr Gropius draws", "model": "opus", "subagent_type": "designer", "prompt": "draw"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Herr Gropius draws"}, tool_response={"isAsync": True, "agentId": "g1"})
     for _ in range(60):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
         hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"}, tool_response="x")
-    rows = app.container.get(AgentsShaper).rows()[0].data["subagent_rows"]
+    rows = [asdict(row) for row in app.container.get(Subagents).rows("s1")]
     assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["running"] is True
 
 
@@ -2301,7 +2317,7 @@ def test_the_card_and_release_actions(app):
     actions.perform("show_card", "The journal did a thing", ctx())
     card = app.container.get(Messages).in_()[-1]
     assert card.author == "system" and card.created_by == Actor.system() and card.text == "The journal did a thing"
-    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": ""}
+    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": "", "key": ""}
 
 
 def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_rows(app):
@@ -2785,7 +2801,6 @@ def test_the_fillers_name_the_sequence_in_hand(app):
 
 
 def test_a_refused_dispatch_leaves_no_running_subagent_behind(app):
-    from journal.http.v3.shapers.agents_shaper import AgentsShaper
     from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     console = app.console()
@@ -2794,7 +2809,7 @@ def test_a_refused_dispatch_leaves_no_running_subagent_behind(app):
     console.run(["message", "read", "1"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "opus", "prompt": "read the plan", "subagent_type": "researcher"})
     assert status == 409 and "answer message 1 first" in body["error"], "the dispatch is held until the message is answered"
-    rows = app.container.get(AgentsShaper).rows()[0].data["subagent_rows"]
+    rows = [asdict(row) for row in app.container.get(Subagents).rows("s1")]
     assert rows == [], "a dispatch the journal refused never ran and is no subagent"
 
 

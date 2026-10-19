@@ -1,3 +1,5 @@
+import time
+
 from journal.engine.cards import Cards
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_finished import ToolFinished
@@ -22,8 +24,8 @@ class MarkSubagents(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> None:
         if not self.moves(event):
             return
-        by, agent = Actor.agent(event.session), self.agents.for_session(event.session).id
-        for row in self.subagents.rows(event.session):
+        by, agent, now = Actor.agent(event.session), self.agents.for_session(event.session).id, time.time()
+        for row in [row for row in self.subagents.rows(event.session) if row.is_current(now)]:
             self.marked(event, row, agent, by)
 
     @staticmethod

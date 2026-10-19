@@ -123,27 +123,14 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
         hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
         for kind, extra in (("SessionStart", {}), ("PreToolUse", {"tool_name": "Agent", "tool_input": {"description": "review the login", "prompt": "read the login flow and report", "subagent_type": "reviewer", "model": "sonnet"}}), ("PostToolUse", {"tool_name": "Agent", "tool_input": {}, "tool_response": "fine"})):
             urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        agents = json.dumps(call(server, "GET", "/api/agent")[1])
-        assert '"task": "review the login"' in agents and '"type": "reviewer"' in agents and '"status": "done"' in agents
+        marks = lambda: [m["data"]["card"] for m in call(server, "GET", "/api/message?completed=1&last=200")[1]["rows"] if m["data"]["card"].get("kind") == "subagent"]
+        for _ in range(50):
+            if marks() and marks()[0]["state"] == "done":
+                break
+            time.sleep(0.1)
+        assert [(c["detail"], c["agent_type"], c["state"]) for c in marks()] == [("review the login", "reviewer", "done")], "a subagent is a message in the chat, settled when it answers"
     finally:
         app.runtime().stop()
-
-
-def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_turn_or_session(server):
-    send = lambda kind, **extra: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s7", **extra})
-    rows = lambda: next(a for a in call(server, "GET", "/api/agent")[1]["rows"] if a["title"] == "s7")["data"]["subagent_rows"]
-    send("SessionStart", source="startup")
-    send("PreToolUse", tool_name="Agent", tool_input={"description": "no model named", "prompt": "read"}, tool_use_id="t-refused")
-    send("PreToolUse", tool_name="Agent", tool_input={"description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
-    send("PreToolUse", tool_name="Agent", tool_input={"description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
-    send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a7"}, tool_use_id="t-bg")
-    assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
-    send("Stop")
-    assert [(r["running"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running")], "a call with no answer ends with its turn; one in the background goes on"
-    send("SessionStart", source="compact")
-    assert rows()[1]["running"] is True, "a compaction ends no subagent"
-    send("SessionEnd")
-    assert [r["running"] for r in rows()] == [False, False], "a subagent with no stop ends with its session"
 
 
 def test_request_threads_leave_no_connection_behind(server):
@@ -450,7 +437,7 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         assert [(r["data"]["author"], r["brief"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
         assert card["seen"] == ["system"] and card["completed"] and card["data"]["actor"] == "system"
-        assert card["data"]["card"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "check:3"}
+        assert card["data"]["card"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "check:3", "key": ""}
     finally:
         app.runtime().stop()
 
@@ -750,7 +737,6 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
     send("PreToolUse", tool_name="Agent", tool_input={"description": "read it", "prompt": "read", "model": "haiku"}, tool_use_id="t1")
     send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a5"}, tool_use_id="t1")
     agent = next(a for a in call(server, "GET", "/api/agent")[1]["rows"] if a["title"] == "s5")
-    assert agent["data"]["subagent_rows"][0]["session"] == "a5"
     page = call(server, "GET", f"/api/agent/{agent['n']}/transcript")[1]
     assert [(t["kind"], t["text"], t["tools"]) for t in page["turns"]] == [("human", "fix the login", []), ("agent", "Looking.", ["Read"]), ("tool", "", [])], "a tool result is a heading, its text asked for"
     assert call(server, "GET", f"/api/agent/{agent['n']}/transcript?entry=3")[1]["text"] == "file text"

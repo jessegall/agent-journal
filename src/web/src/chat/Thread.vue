@@ -1,4 +1,5 @@
 <script setup>
+import {subagentsOf} from "../domain/subagents.js";
 import {openQuestion, questionView, updateView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
@@ -130,7 +131,7 @@ const reportDock = computed(() => dockedReport(rows("report")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
 const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.value].filter(Boolean).length);
 const thought = computed(() => (owner.value && owner.value.data.thinking) || "");
-const helping = computed(() => ((owner.value && owner.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
+const helping = computed(() => (owner.value ? subagentsOf(owner.value.n) : []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
     owner.value && owner.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
 );

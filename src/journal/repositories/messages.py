@@ -47,7 +47,9 @@ class Messages(ScopedRepository[Message]):
         return self.in_()[-last:]
 
     def thoughts_of(self, session: str, last: int = 60) -> list[Message]:
-        return [m for m in self.recent(last) if m.is_thought and m.created_by == Actor.agent(session)]
+        """The session's latest thoughts, oldest first."""
+        rows = self.selected("environment_id = ? AND created_by = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (self.scope.id, Actor.agent(session).stamp, Message.THOUGHT, last))
+        return list(reversed(rows))
 
     def mark_read(self, message: Message, by: Actor) -> Message:
         return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc)), by)

@@ -23,11 +23,15 @@ class Subagents:
         return sum(1 for row in self.rows(session) if row.running and named.search(row.brief))
 
     def rows(self, session: str) -> list[Dispatch]:
+        return self.paired(self.entries.dispatches(session))
+
+    @staticmethod
+    def paired(dispatches) -> list[Dispatch]:
         """Each dispatch of a subagent, its finish paired to its start by the tool use's id, by order only when a hook carries none, so a start that never finished leaves the others alone: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch. A call with no answer when its turn ends was cut off, and a subagent in the background with no stop when its session ends went with it."""
         rows: list[Dispatch] = []
         open_: dict[str, int] = {}
         background: dict[str, int] = {}
-        for e in self.entries.dispatches(session):
+        for e in dispatches:
             at = e.created_at.timestamp()
             if e.kind in ENDS:
                 Subagents.stopped(rows, open_, at)

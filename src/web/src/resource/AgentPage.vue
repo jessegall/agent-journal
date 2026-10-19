@@ -1,4 +1,5 @@
 <script setup>
+import {subagentsOf} from "../domain/subagents.js";
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
 import {stopAgentNamed} from "../actions/agents.js";
@@ -26,7 +27,7 @@ if (env)
     );
 const data = computed(() => props.resource.data);
 const environment = computed(() => env || route.value.env);
-const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
+const subagents = computed(() => subagentsOf(props.resource.n).filter((r) => r.session));
 const picked = computed(() => subagents.value.find((r) => r.session === route.value.sub) || null);
 const skills = computed(() => (picked.value ? picked.value.skills : data.value.skills) || []);
 const links = useAgentLinks(api, () => [props.resource.n, picked.value ? picked.value.session : ""]);

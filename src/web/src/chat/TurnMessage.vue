@@ -48,11 +48,7 @@ function chipOrUpdate(e) {
 const fromMain = computed(() => Boolean(props.turn.data?.from_main));
 const opening = computed(() => Boolean(props.turn.data?.opening));
 const mine = computed(() => props.turn.who === "user" || fromMain.value);
-const subagentTask = (id) =>
-    rowsOf("agent")
-        .flatMap((agent) => agent.data.subagent_rows || [])
-        .find((sub) => sub.task_id === id)?.task;
-const called = (id) => subagentTask(id) ?? `agent ${id}`;
+const called = (id) => `agent ${id}`;
 const between = computed(() =>
     props.turn.data?.peer
         ? `From ${called(props.turn.data.peer)}`

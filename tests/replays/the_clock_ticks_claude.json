@@ -55,7 +55,7 @@
       "name": "a minute with a task parked",
       "answer": null,
       "typed": [
-        "[journal] task 1, the footer, is still parked: can you continue it now? It was parked because: the header first. `journal task resume 1` picks it up again"
+        "[journal] task 1 is still parked: can you continue it now? It was parked because: the header first. `journal task resume 1` picks it up again"
       ],
       "nudges": [
         "tasks.parked_still"

@@ -98,7 +98,7 @@ class ShellCommand(Command):
     def moved(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
-        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part)
+        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", "", args.part, key=f"background:{args.chain}")
         print(Shell.MOVED.about(part=args.part, file=args.file).rendered())
         return 0
 
@@ -108,7 +108,7 @@ class ShellCommand(Command):
         part = self.moved_part(args.chain)
         outcome = "finished" if args.status == 0 else f"failed with code {args.status}"
         said = self.said_last(args.last)
-        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", "\n".join(line for line in (part, said) if line))
+        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", "\n".join(line for line in (part, said) if line), key=f"background:{args.chain}")
         live = self.agents.live()
         if live:
             line = self.nudger.say(live, Shell.ENDED.about(part=part, outcome=outcome, last=args.last[-300:], file=args.file))

@@ -156,7 +156,7 @@ def test_clock_ticks_as_the_shipped_workflow_equals_the_two_listeners(journals, 
     the_clock_ticks(with_workflow, right, provider)
     by_name = {s["name"]: s for s in left.record()}
     assert by_name["quiet for a minute"]["typed"] == [] and "nothing has happened for half an hour" in str(by_name["quiet for half an hour"]["typed"]) and by_name["quiet for half an hour again"]["typed"] == [], "the listener checks in at half an hour, once inside the window"
-    assert "task 1, the footer, is still parked" in str(by_name["a minute with a task parked"]["typed"]) and by_name["a minute more"]["typed"] == [], "and asks after the parked task, once inside the window"
+    assert "task 1 is still parked" in str(by_name["a minute with a task parked"]["typed"]) and by_name["a minute more"]["typed"] == [], "and asks after the parked task, once inside the window"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 
 

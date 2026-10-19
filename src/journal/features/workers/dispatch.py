@@ -1,5 +1,7 @@
 from dataclasses import dataclass, replace
 
+CURRENT_SECONDS = 60.0
+
 
 @dataclass(frozen=True)
 class Dispatch:
@@ -15,6 +17,10 @@ class Dispatch:
     status: str = "running"
     running: bool = True
     ended: float = 0.0
+
+    def is_current(self, now: float) -> bool:
+        """Still out, or ended within the last minute: a dispatch the chat's mark can still be waiting on; an older one is history."""
+        return self.running or now - self.ended < CURRENT_SECONDS
 
     def answered(self, session: str) -> "Dispatch":
         return replace(self, session=session)

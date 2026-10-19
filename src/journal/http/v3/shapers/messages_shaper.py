@@ -2,6 +2,8 @@ from journal.features.messages.mentions import Mentions
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import AGENT, USER, V3Row, seconds, viewer_ref
 from journal.models.author import Author
+from journal.models.message import Message
+from journal.models.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 
@@ -19,7 +21,9 @@ class MessagesShaper(Shaper):
     def rows(self) -> list[V3Row]:
         """Every message, the user's, the agent's and the system's cards alike, a reply standing at its own number with the message it answers in reply_to."""
         open_ = {m.id for m in self.messages.unanswered()} | {m.id for m in self.messages.unread()}
-        return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in self.links.targets(m, "about")], [viewer_ref(ref) for ref in self.links.targets(m, Messages.COMMENTS_ON)]) for m in self.messages.in_()]
+        about = self.links.targets_by_source(Message.table(), Messages.ABOUT)
+        commented = self.links.targets_by_source(Message.table(), Messages.COMMENTS_ON)
+        return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in about.get(Ref.to(m), [])], [viewer_ref(ref) for ref in commented.get(Ref.to(m), [])]) for m in self.messages.in_()]
 
     @staticmethod
     def closed_at(author: str, answered: bool, read: float) -> float:

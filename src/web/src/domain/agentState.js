@@ -17,7 +17,7 @@ export function waitsFor(works) {
     return awaiting ? `for ${awaiting}` : "";
 }
 
-const RUN_KINDS = {shell_rows: "command", subagent_rows: "subagent", monitor_rows: "background run"};
+const RUN_KINDS = {shell_rows: "command", monitor_rows: "background run"};
 const RUN_ROWS = Object.keys(RUN_KINDS);
 
 export function backgroundRun(agent) {

@@ -1,4 +1,5 @@
 <script setup>
+import {subagentsOf} from "../domain/subagents.js";
 import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
 import {demo, unlessDemo} from "../platform/demo.js";
@@ -33,7 +34,7 @@ const activityCounts = computed(() => [
     {
         key: "subagents",
         icon: "agents",
-        n: live(props.data && props.data.subagent_rows),
+        n: live(agent.value ? subagentsOf(agent.value.n) : []),
         title: "Subagents: helpers the agent started",
     },
     {

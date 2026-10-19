@@ -3,6 +3,10 @@ from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.settings import PROJECT
 
 
+DISPATCHES = "(kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task')))"
+"""The entries that start, answer or close a subagent's dispatch."""
+
+
 class Entries(ScopedRepository[Entry]):
     model = Entry
 
@@ -49,9 +53,7 @@ class Entries(ScopedRepository[Entry]):
 
     def dispatches(self, session: str) -> list[Entry]:
         """Every dispatch of a subagent in a session, however long ago: the Agent tool's starts and finishes, the subagents' own stops and the turn and session ends that close what never answered, oldest first."""
-        return self.selected("environment_id = ? AND json_extract(data, '$.session_id') = ? "
-                             "AND (kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task'))) ORDER BY id",
-                             (self.scope.id, session))
+        return self.selected(f"environment_id = ? AND json_extract(data, '$.session_id') = ? AND {DISPATCHES} ORDER BY id", (self.scope.id, session))
 
     def agent_calls(self, last: int = 500) -> list[Entry]:
         """The newest dispatches of a subagent here, across every session: the Agent tool's starts, newest first."""

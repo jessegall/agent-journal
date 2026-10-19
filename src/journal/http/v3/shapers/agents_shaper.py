@@ -1,12 +1,9 @@
-from dataclasses import asdict
-
 from journal.http.v3.shapers.sequence_in_hand import SequenceInHand
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.tasks.states.working import Working
-from journal.features.workers.subagents import Subagents
 from journal.hooks.context_file import ContextFile
 from journal.http.v3.project_files import ProjectFiles
 from journal.http.v3.shapers.shaper import Shaper
@@ -32,12 +29,19 @@ class AgentsShaper(Shaper):
 
     type = "agent"
 
-    def __init__(self, agents: Agents, entries: Entries, states: StatesCatalogue, context: ContextFile, files: ProjectFiles, messages: Messages, subagents: Subagents) -> None:
-        self.agents, self.entries, self.states, self.context, self.files, self.messages, self.subagents = agents, entries, states, context, files, messages, subagents
+    def __init__(self, agents: Agents, entries: Entries, states: StatesCatalogue, context: ContextFile, files: ProjectFiles, messages: Messages) -> None:
+        self.agents, self.entries, self.states, self.context, self.files, self.messages = agents, entries, states, context, files, messages
 
     def rows(self) -> list[V3Row]:
+        """Every agent of the environment: a live one with what it is doing and its thought, read from the entries; an ended one from its own row alone. Its subagents are the chat's subagent messages."""
         recent = list(reversed(self.entries.of_kind_in(KEPT)))
-        return [self.row(a, [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in self.agents.in_()]
+        rows = []
+        for a in self.agents.in_():
+            if a.state == "ended":
+                rows.append(self.row(a, []))
+                continue
+            rows.append(self.row(a, [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]))
+        return rows
 
     @staticmethod
     def status_of(state: str, heard: str) -> str:
@@ -60,13 +64,12 @@ class AgentsShaper(Shaper):
         status = "stopped" if a.state == "ended" else self.status_of(a.state, STATUS.get(kind, "idle"))
         at = seconds(last.created_at) if last else seconds(a.updated_at)
         state = self.states.named(a.state, a.data)
-        subagents = self.subagents.rows(a.session)
         data = {
             "status": status, "event": EVENT.get(kind, kind), "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "", "file": "", "at": at,
             "provider": a.provider, "model": self.context.model(a.session), "effort": self.context.effort(a.session), "usage": {"windows": self.context.usage(a.session)}, "branch": self.files.branch(), "context": round((self.context.of(a.session) or 0) * 100), "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
             "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thinking(a.session, hooks), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "skills": list((a.skills_loaded or {}).keys()),
-            "subagent_rows": [asdict(row) for row in subagents], "subagents": len(subagents), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
+            "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
             "sequence": self.sequence_of(a), "sequence_history": [self.change_of(e) for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
         return V3Row.of("agent", a, title=a.session, seen=[SYSTEM, AGENT], data=data)

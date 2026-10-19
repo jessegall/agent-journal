@@ -1,4 +1,5 @@
 <script setup>
+import {subagentsOf} from "../domain/subagents.js";
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
@@ -117,8 +118,8 @@ function openSkills() {
                         <CrewList
                             heading="Subagents"
                             :agent="agent ? agent.n : 0"
-                            :rows="data.subagent_rows || []"
-                            :total="data.subagents || 0"
+                            :rows="subagentsOf(agent ? agent.n : 0)"
+                            :total="subagentsOf(agent ? agent.n : 0).length"
                             started="dispatched"
                             @open="openSession"
                         />
