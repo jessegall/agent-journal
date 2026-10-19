@@ -1,3 +1,5 @@
+from typing import Callable
+
 from journal.models.actor import Actor
 from journal.models.migrated_row import MigratedRow
 from journal.models.model import Model
@@ -20,6 +22,11 @@ class MigratedRows(Repository[MigratedRow]):
         """The row a version 3 reference such as message:185 or doc:7 became: one of the environment's rows, else one of the project's."""
         kind, _, n = ref.partition(":")
         return self.brought_as(f"environments/{environment}/{kind}/{n}") or self.brought_as(f"project/{kind}/{n}")
+
+    def bring(self, source: str, made: Callable[[], Model], by: Actor) -> None:
+        """The row made and recorded in one transaction: one that fails to come across leaves nothing half written behind."""
+        with self.connection.transaction():
+            self.record(source, made(), by)
 
     def record(self, source: str, row: Model, by: Actor) -> None:
         self.save(MigratedRow(source=source, target=str(Ref.to(row))), by)

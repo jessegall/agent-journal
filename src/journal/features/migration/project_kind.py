@@ -30,7 +30,11 @@ class ProjectKind:
                 continue
             if self.ledger.is_brought(source):
                 continue
-            self.ledger.record(source, self.made(row, by), by)
+            try:
+                self.ledger.bring(source, lambda: self.made(row, by), by)
+            except Exception as fault:
+                skipped.append(f"{self.kind} {row.n}: could not be brought: {fault}")
+                continue
             count += 1
         return Brought(self.title, count, tuple(skipped))
 

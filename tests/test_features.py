@@ -5343,7 +5343,7 @@ def test_every_version_3_message_comes_across_with_its_author_time_reply_and_att
     with zipfile.ZipFile(messages / "packed" / "2023-11-14.zip", "w") as packed:
         packed.write(messages / "old.md", "001.md")
     (messages / "old.md").unlink()
-    version_3_row(messages, "message", 2, "the answer", seen=["agent"], refs=["message:1"], created=1700000200.0)
+    version_3_row(messages, "message", 2, "the answer", seen=["agent", "user"], refs=["message:1"], created=1700000200.0, updated=1700000250.0)
     version_3_row(messages, "message", 3, "a picture", created=1700000300.0)
     (messages / "3").mkdir()
     (messages / "3" / "shot.png").write_bytes(b"png")
@@ -5356,6 +5356,7 @@ def test_every_version_3_message_comes_across_with_its_author_time_reply_and_att
     old, answer, picture = brought
     assert old.created_at.timestamp() == 1700000000.0 and old.read_at is not None, "its own time, and read"
     assert answer.author == "agent" and answer.reply_to == old.id, "the reply still points at what it answers"
+    assert answer.read_at.timestamp() == 1700000250.0 and picture.read_at is None, "read when the other side saw it, so the viewer has nothing to mark read"
     assert picture.files == ("shot.png",) and (app.config.files / "message" / str(picture.id) / "shot.png").read_bytes() == b"png"
 
 
@@ -5541,3 +5542,39 @@ def test_a_small_version_3_journal_comes_across_counted_kind_by_kind_and_a_secon
     for line in ("| environments | 1 |", "| messages | 2 |", "| tasks | 2 |", "| comments | 1 |", "| reactions | 1 |", "| facts | 1 |", "| rules | 1 |", "| secrets | 1 |", "| agents | 1 |"):
         assert line in first, line
     assert "| messages | 0 |" in second and "| tasks | 0 |" in second and "| secrets | 0 |" in second, "a second run brings nothing twice"
+
+
+def test_a_version_3_row_that_cannot_come_across_is_reported_and_the_migration_goes_on(app):
+    from journal.features.migration.migrator import Migrator
+    from journal.repositories.messages import Messages
+    from journal.repositories.reports import Reports
+    kept = app.config.home / "version-3"
+    version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
+    version_3_row(kept / "environments" / "main" / "message", "message", 1, "broken", seen=["nobody"])
+    version_3_row(kept / "environments" / "main" / "message", "message", 2, "fine")
+    migrator = app.container.get(Migrator)
+    with app.container.get(Scope).of(MAIN):
+        assert migrator.run(migrator.begin(Actor.user(1)), Actor.user(1)).state == "done", "nothing stops the run"
+        texts = [m.text for m in app.container.get(Messages).every()]
+        body = app.container.get(Reports).all()[-1].body
+    assert "fine" in texts and "broken" not in texts
+    assert "message 1 in main: could not be brought:" in body, "the row is named with its error"
+
+
+def test_resuming_a_plans_parked_task_follows_the_plan_again_so_finishing_it_starts_the_next(app):
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "add", "1", "second"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1", "2"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "park", "1", "something first"], AGENT)
+    console.run(["task", "resume", "1"], AGENT)
+    assert app.container.get(Machine).current("s1").name == "following_plan", "a resumed plan task is followed again"
+    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    assert app.container.get(Tasks).find(2).state == "started", "so finishing it starts the next"

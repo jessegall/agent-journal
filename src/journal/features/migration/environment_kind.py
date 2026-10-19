@@ -36,7 +36,11 @@ class EnvironmentKind:
                     continue
                 if self.ledger.is_brought(source):
                     continue
-                self.ledger.record(source, self.made(row, into, folder / "environments" / environment.title / self.kind / str(row.n), by), by)
+                try:
+                    self.ledger.bring(source, lambda: self.made(row, into, folder / "environments" / environment.title / self.kind / str(row.n), by), by)
+                except Exception as fault:
+                    skipped.append(f"{self.kind} {row.n} in {environment.title}: could not be brought: {fault}")
+                    continue
                 count += 1
         return Brought(self.title, count, tuple(skipped))
 

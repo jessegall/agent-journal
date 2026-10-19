@@ -32,7 +32,7 @@ from journal.repositories.scope import Scope
 
 
 class Migrator:
-    """Brings the kept version 3 journal across, kind by kind, and says what came in a report; a kind that fails ends the run as failed and leaves the offer open."""
+    """Brings the kept version 3 journal across, kind by kind, and says what came in a report; nothing that fails stops it: a row or a kind that cannot come across is named in the report with its error, and the run goes on."""
 
     def __init__(self, backup: Version3Backup, migrations: Version3Migrations, reports: Reports, scope: Scope, environments: BringEnvironments, messages: BringMessages, todos: BringTodos, work: BringWork, plans: BringPlans, questions: BringQuestions, facts: BringFacts, rules: BringRules, reminders: BringReminders, docs: BringDocs, old_reports: BringReports, checks: BringChecks, triggers: BringTriggers, sequences: BringSequences, templates: BringTemplates, settings: BringSettings, agents: BringAgents, helpers: BringHelpers, secrets: BringSecrets, comments: BringComments, reactions: BringReactions) -> None:
         self.backup, self.migrations, self.reports, self.scope = backup, migrations, reports, scope
@@ -42,12 +42,16 @@ class Migrator:
         return self.migrations.save(self.migrations.current().begun(), by)
 
     def run(self, migration: Version3Migration, by: Actor) -> Version3Migration:
-        try:
-            brought = [kind.bring(self.backup.folder, by) for kind in self.kinds]
-        except Exception as fault:
-            return self.migrations.save(migration.failed(str(fault)), by)
+        brought = [self.brought(kind, by) for kind in self.kinds]
         self.reports.save(self.report(brought), by)
         return self.migrations.save(migration.done(), by)
+
+    def brought(self, kind, by: Actor) -> Brought:
+        """One kind brought across; a kind that cannot be read at all is named in the report, and the run goes on with the next."""
+        try:
+            return kind.bring(self.backup.folder, by)
+        except Exception as fault:
+            return Brought(kind.title, 0, (f"the whole kind could not be read: {fault}",))
 
     def report(self, brought: list[Brought]) -> Report:
         rows = "\n".join(one.line() for one in brought)

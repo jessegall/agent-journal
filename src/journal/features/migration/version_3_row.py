@@ -52,6 +52,12 @@ class Version3Row:
         """When it was completed: read, answered, done or struck; none while it is open."""
         return datetime.fromtimestamp(self.completed, timezone.utc) if self.completed else None
 
+    def read_at(self) -> datetime | None:
+        """When the other side read it: its completion, or, for a row seen by more than its author, its last change."""
+        if self.completed:
+            return self.closed_at()
+        return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.seen) > 1 else None
+
     def author(self) -> str:
         """Who made it: user, agent or system."""
         return self.seen[0]
@@ -61,7 +67,3 @@ class Version3Row:
 
     def is_deleted(self) -> bool:
         return bool(self.deleted)
-
-    def is_unread(self) -> bool:
-        """A message the user has not seen yet."""
-        return self.is_open() and "user" not in self.seen

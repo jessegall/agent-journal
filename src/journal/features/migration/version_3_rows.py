@@ -1,12 +1,7 @@
-import time
 import zipfile
 from pathlib import Path
 
 from journal.features.migration.version_3_row import Version3Row
-
-RECENT = 30 * 24 * 3600
-"""An environment touched within this many seconds is still in use."""
-
 
 class Version3Rows:
     """The rows of a version 3 journal kept in .journal/version-3: each kind's loose files and the closed ones packed into daily zips."""
@@ -44,13 +39,7 @@ class Version3Rows:
         return rows
 
     def is_in_use(self, environment: Version3Row) -> bool:
-        """Main, or holding open to-dos or questions or unread messages, or touched in the last thirty days."""
-        name = environment.title
-        if name == "main" or environment.data.get("kind") == "main":
+        """Main, or holding open to-dos or questions: work still waits there. Unread agent messages and recent events do not count, since nearly every old environment has them."""
+        if environment.title == "main" or environment.data.get("kind") == "main":
             return True
-        if any(row.is_open() for kind in ("todo", "question") for row in self.of(name, kind)):
-            return True
-        if any(row.is_unread() for row in self.of(name, "message")):
-            return True
-        events = self.folder / "environments" / name / "events.jsonl"
-        return events.is_file() and time.time() - events.stat().st_mtime < RECENT
+        return any(row.is_open() for kind in ("todo", "question") for row in self.of(environment.title, kind))
