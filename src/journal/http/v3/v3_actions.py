@@ -259,6 +259,13 @@ class V3Actions:
     def message_edit(self, n: int, body: ActionBody, by):
         return self.messages.save(self.messages.find(n).with_(text=body.text or body.brief), by)
 
+    def message_set(self, n: int, body: ActionBody, by):
+        """The buttons pressed on a message's card, so the chat shows them spent."""
+        message = self.messages.find(n)
+        if body.key != "pressed":
+            return message
+        return self.messages.save(message.with_(data={**message.data, "pressed": list(body.values)}), by)
+
     def message_delete(self, n: int, body: ActionBody, by):
         self.messages.delete(self.messages.find(n), by)
         return {}

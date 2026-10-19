@@ -11,9 +11,12 @@ from journal.features.sharing.share_password import SharePassword
 from journal.features.sharing.tunnel import HEALTH, MARKER
 from journal.features.sharing.wrong_passwords import WrongPasswords
 from journal.http.share_answer import ShareAnswer
+from journal.http.v3.shared_comments import SharedComments
 from journal.http.v3.shared_data import SharedData
+from journal.http.v3.visitor_comment import VisitorComment
 from journal.models.actor import Actor
 from journal.models.share import Share
+from journal.refused import Refused
 from journal.repositories.scope import Scope
 from journal.repositories.shares import Shares
 
@@ -26,28 +29,21 @@ GONE = ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=d
 
 
 class SharePages:
-    """What the share server answers: its health, and a link's page, the page's data and its files. A link that is unknown, waiting, stopped or ended opens nothing."""
+    """What the share server answers: its health, and a link's page, the page's data, its files and a visitor's comment. A link that is unknown, waiting, stopped or ended opens nothing."""
 
-    def __init__(self, shares: Shares, data: SharedData, registry: Registry, scope: Scope, wrong: WrongPasswords) -> None:
-        self.shares, self.data, self.registry, self.scope, self.wrong = shares, data, registry, scope, wrong
+    def __init__(self, shares: Shares, data: SharedData, comments: SharedComments, registry: Registry, scope: Scope, wrong: WrongPasswords) -> None:
+        self.shares, self.data, self.comments, self.registry, self.scope, self.wrong = shares, data, comments, registry, scope, wrong
         self._unlocked: dict[int, str] = {}
 
     def get(self, path: str, authorization: str | None, place: str) -> ShareAnswer:
         address = path.split("?", 1)[0]
-        parts = [unquote(part) for part in address.split("/") if part]
+        parts = self.parts(path)
         if parts == [HEALTH]:
             return ShareAnswer(200, MARKER.encode(), "text/plain")
-        if len(parts) < 2 or parts[0] != "s":
-            return self.gone(404)
-        share = self.shares.by_token(parts[1])
-        if share is None or not share.approved or not self.sharing_on(share):
-            return self.gone(404)
-        if not share.is_live(datetime.now(timezone.utc)):
-            return self.gone(410)
-        locked = self.locked(share, self.password(authorization), place)
-        if locked:
-            return locked
-        rest = parts[2:]
+        shut = self.shut(parts, authorization, place)
+        if shut:
+            return shut
+        share, rest = self.shares.by_token(parts[1]), parts[2:]
         if not rest:
             return self.page(share, address)
         if rest == ["data.json"]:
@@ -55,6 +51,35 @@ class SharePages:
         if rest[0] == "assets" and len(rest) == 2:
             return self.asset(rest[1])
         return self.gone(404)
+
+    def post(self, path: str, comment: VisitorComment, authorization: str | None, place: str) -> ShareAnswer:
+        """A visitor's comment, the one thing a link takes."""
+        parts = self.parts(path)
+        shut = self.shut(parts, authorization, place)
+        if shut:
+            return shut
+        if parts[2:] != ["comment"]:
+            return self.gone(404)
+        try:
+            made = self.comments.leave(self.shares.by_token(parts[1]), comment)
+        except Refused as refused:
+            return ShareAnswer(409, json.dumps({"error": str(refused)}).encode(), "application/json")
+        return ShareAnswer(201, json.dumps(made).encode(), "application/json")
+
+    @staticmethod
+    def parts(path: str) -> list[str]:
+        return [unquote(part) for part in path.split("?", 1)[0].split("/") if part]
+
+    def shut(self, parts: list[str], authorization: str | None, place: str) -> ShareAnswer | None:
+        """What keeps a link from opening: unknown, waiting, switched off, stopped or ended, or locked by its password; nothing when it opens."""
+        if len(parts) < 2 or parts[0] != "s":
+            return self.gone(404)
+        share = self.shares.by_token(parts[1])
+        if share is None or not share.approved or not self.sharing_on(share):
+            return self.gone(404)
+        if not share.is_live(datetime.now(timezone.utc)):
+            return self.gone(410)
+        return self.locked(share, self.password(authorization), place)
 
     def sharing_on(self, share: Share) -> bool:
         with self.scope.of(share.environment_id):

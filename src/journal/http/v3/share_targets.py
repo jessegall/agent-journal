@@ -40,6 +40,14 @@ class ShareTargets:
         target = self.of(share)
         return viewer_ref(target) if target else ""
 
+    def shown(self, share: Share) -> list[Ref]:
+        """The rows the link's page shows: the row, and for a plan its tasks."""
+        target = self.of(share)
+        if target is None:
+            return []
+        tasks = self.plans.tasks_of(self.plans.find(target.id)) if target.type == "plans" else []
+        return [target, *(Ref.to(task) for task in tasks)]
+
     def opens(self, named: str) -> list[str]:
         """What a link to the row opens, one line each, as the share dialog lists it: the row, and for a plan its tasks."""
         ref = self.named(named)

@@ -23,7 +23,7 @@ class Message(Scoped):
     captions: dict = field(default_factory=dict)
     """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     data: dict = field(default_factory=dict)
-    """Its metadata: a system message's card (its kind, icon, tone, detail, the row it opens and the session it belongs to), or an agent's thought (kind thought)."""
+    """Its metadata: a system message's card (its kind, icon, tone, detail, the row it opens and the session it belongs to), an agent's thought (kind thought), or the buttons a message offers and those pressed."""
 
     @property
     def is_agents_reply(self) -> bool:

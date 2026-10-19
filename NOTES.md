@@ -602,8 +602,13 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
 - **Share links** (the `sharing` feature): a `Share` row per link, linked to the doc, report or plan it opens as `shares`;
   the share server is a second loopback listener (`ShareServer`) that answers `/s/<token>/`, its `data.json`, its assets and
   `/health`, nothing else; the tunnel is `tunler <port> --domain=<name>` run by the supervisor that hosts the journal while a
-  link is open, its name and ports kept in `.journal/sharing.json`. Not ported yet: the agent's `journal share` command and
-  its Accept in the chat, visitor comments, shared views and layouts, the phone, the watchdog that restarts the tunnel.
+  link is open, its name and ports kept in `.journal/sharing.json`. `journal share create|opens|stop|list` is the feature's
+  command and goes through `ShareActions`, the viewer's own path: a link the agent makes waits, and a message of the agent's
+  with Accept and Deny buttons asks the user (a press is recorded on the message as `pressed`). A visitor's comment, on a link
+  made with comments, is posted to `/s/<token>/comment` and becomes a card of the system's in the chat, linked to the row as
+  `comments_on`; it is never a message of the user's, so it never reaches the agent as the user's words. Version 3's hold
+  until the agent agrees, the user's button letting the agent act on it, and trusted comments through a password are not
+  ported. Not ported yet either: shared views and layouts, the phone, the watchdog that restarts the tunnel.
 - **A read never makes an environment**: `Environments.existing(name)` is the one lookup for every route and answers not
   found; the runtime makes `main` at boot. The browser's stray `#/settings` had made four environments named settings.
 - **The supervisor's Enter**: typed half a second after the line has reached the terminal, each piece in a write of its own;

@@ -865,6 +865,61 @@ def test_a_locked_link_opens_only_with_its_password(sharing):
     assert visit(share_server, f"/s/{token}/data.json", "open sesame")[0] == 200
 
 
+def share_command(server, *argv: str, session: str = "s1") -> dict:
+    """The journal share command as the shim sends it, the agent's when a session is named, else the user's at their terminal."""
+    return call(server, "POST", "/cli", {"argv": ["share", *argv], "env": "main", "session": session})[1]
+
+
+def test_a_link_the_agent_makes_waits_for_the_users_accept_in_the_chat(sharing):
+    server, share_server = sharing
+    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/api/doc", {"title": "Launch notes", "brief": "## Why\nBecause."})
+    assert share_command(server, "opens", "doc:1")["out"].strip() == "Launch notes (doc 1)"
+    made = share_command(server, "create", "doc:1", "--comments")
+    assert made["code"] == 0 and "waiting for the user's Accept in the chat" in made["out"], made
+    token = call(server, "GET", "/api/share")[1]["rows"][0]["data"]["token"]
+    assert visit(share_server, f"/s/{token}/data.json")[0] == 404, "the agent's link opens nothing until the user accepts it"
+    card = next(m for m in call(server, "GET", "/api/message")[1]["rows"] if m["data"]["buttons"])
+    assert [b["label"] for b in card["data"]["buttons"]] == ["Accept", "Deny"] and "- Launch notes (doc 1)" in card["brief"] and "Visitors can leave comments" in card["brief"]
+    accept = card["data"]["buttons"][0]
+    assert call(server, "POST", f"/api/{accept['type']}/{accept['n']}/{accept['action']}", {})[1]["data"]["approved"], "Accept opens the link through the viewer's own path"
+    assert call(server, "POST", f"/api/message/{card['n']}/set", {"key": "pressed", "value": ["Accept"]})[1]["data"]["pressed"] == ["Accept"], "the card shows Accept spent"
+    assert visit(share_server, f"/s/{token}/data.json")[0] == 200
+    assert "doc:1  open" in share_command(server, "list")["out"]
+    assert share_command(server, "stop", "1")["code"] == 0 and visit(share_server, f"/s/{token}/data.json")[0] == 410
+    assert ", open" in share_command(server, "create", "doc:1", session="")["out"], "a link the user makes at their terminal opens at once"
+
+
+def comment(share_server, token: str, given: dict, header: str = "1"):
+    """A visitor's comment as the share page posts it: the status and the JSON answer."""
+    from http.client import HTTPConnection
+    connection = HTTPConnection("127.0.0.1", share_server.port, timeout=5)
+    connection.request("POST", f"/s/{token}/comment", json.dumps(given), {"Content-Type": "application/json", "X-Shared-Comment": header})
+    reply = connection.getresponse()
+    answer = reply.status, reply.read()
+    connection.close()
+    return answer[0], json.loads(answer[1]) if answer[1].startswith(b"{") else {}
+
+
+def test_a_visitor_comments_on_a_shared_document_and_it_comes_to_the_chat(sharing):
+    server, share_server = sharing
+    call(server, "POST", "/api/settings", {"sharing": {"host": "tunler.example"}})
+    call(server, "POST", "/api/doc", {"title": "Launch notes", "brief": "## Why\nBecause."})
+    token = call(server, "POST", "/api/share", {"title": "doc:1", "comments": True})[1]["data"]["token"]
+    closed = call(server, "POST", "/api/share", {"title": "doc:1"})[1]["data"]["token"]
+    status, made = comment(share_server, token, {"about": "doc:1", "name": "Ana", "text": "The second step is unclear."})
+    assert status == 201 and made["name"] == "Ana" and made["about"] == "doc:1", made
+    assert comment(share_server, token, {"about": "doc:1", "name": "Ana", "text": "x"}, header="")[0] == 400, "only the share page's own request is taken"
+    assert comment(share_server, token, {"about": "doc:2", "name": "Ana", "text": "x"})[0] == 409, "a comment is only on what the link opens"
+    assert comment(share_server, closed, {"about": "doc:1", "name": "Ana", "text": "x"})[1]["error"] == "this link does not take comments"
+    shown = json.loads(visit(share_server, f"/s/{token}/data.json")[1])
+    assert shown["share"]["comments"] and [c["text"] for c in shown["comments"]] == ["The second step is unclear."], "the page shows the comments left on it"
+    chat = [m for m in call(server, "GET", "/api/message?closed=1")[1]["rows"] if m["data"]["comments_on"] == ["doc:1"]]
+    assert len(chat) == 1
+    assert chat[0]["brief"] == "Ana commented on doc 1 through a shared link" and chat[0]["data"]["card"]["detail"] == "The second step is unclear."
+    assert chat[0]["data"]["author"] == "system", "a visitor's words are the journal's card in the chat, never a message of the user's the agent would take as theirs"
+
+
 def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("PATH", str(tmp_path))
