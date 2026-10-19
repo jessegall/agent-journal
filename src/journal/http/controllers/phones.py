@@ -4,8 +4,6 @@ from journal.features.phone.support.pairing import Pairing
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
 from journal.repositories.phones import Phones
-from journal.support.actor_kind import ActorKind
-from journal.support.refused import Refused
 from journal.support.response import Response
 
 
@@ -24,9 +22,5 @@ class PhoneController:
         return Response.json({"phones": [{key: value for key, value in ModelFields.of(phone).items() if key != "key"} for phone in live]})
 
     def disconnect(self, request: Request) -> Response:
-        """The phone stops being paired at once, from the desk; only the user disconnects it."""
-        if request.actor.kind != ActorKind.USER:
-            raise Refused("only the user disconnects a phone")
-        phone = self.phones.anywhere(int(request.params["id"]))
-        self.phones.save(phone.ended(datetime.now(timezone.utc)), request.actor)
+        phone = self.pairing.disconnect(self.phones.anywhere(int(request.params["id"])), request.actor, datetime.now(timezone.utc))
         return Response.json({"disconnected": phone.id})

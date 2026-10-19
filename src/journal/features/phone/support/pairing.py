@@ -43,6 +43,7 @@ class Pairing:
             self.codes.save(older.closed(now), by)
         code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
         made = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, until=now + timedelta(minutes=CODE_MINUTES)), by)
+        self.tunnel.settle()
         return PairingOffer(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, until=made.until)
 
     def pair(self, given: str, device: str, now: datetime) -> PairedPhone:
@@ -58,7 +59,16 @@ class Pairing:
         name = " ".join(device.split())[:DEVICE_LONGEST] or "A phone"
         phone = self.phones.save(Phone(environment_id=found.environment_id, name=name, key=self.hashed(key), expires_at=now + timedelta(days=found.days), last_seen_at=now), Actor.system())
         self.cards.show(found.environment_id, "", f"A phone paired: {name}", "phone")
+        self.tunnel.settle()
         return PairedPhone(phone, key)
+
+    def disconnect(self, phone: Phone, by: Actor, now: datetime) -> Phone:
+        """The phone stops being paired at once, from the desk; only the user disconnects it."""
+        if not by.is_the_user():
+            raise Refused("only the user disconnects a phone")
+        ended = self.phones.save(phone.ended(now), by)
+        self.tunnel.settle()
+        return ended
 
     def refuse_a_second(self, now: datetime) -> None:
         live = self.phones.live(now)

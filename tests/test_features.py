@@ -6554,6 +6554,7 @@ def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(a
 
 def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
     from datetime import datetime, timedelta, timezone
+    from journal.features.sharing.support.tunnel import Tunnel
     from journal.features.phone.support.pairing import Pairing
     from journal.repositories.messages import Messages
     from journal.repositories.settings import Settings
@@ -6565,6 +6566,7 @@ def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
     with pytest.raises(Refused, match="1, 7, 30 days"):
         pairing.offer(3, Actor.user(1), now)
     first = pairing.offer(7, Actor.user(1), now)
+    assert app.container.get(Tunnel).is_wanted(now), "a live code keeps the tunnel open, so the phone can reach the journal"
     assert first.link.startswith("https://") and ".tunler.example/p/#" in first.link and len(first.short) == 9, "a link through the tunnel and a short code in two halves"
     newer = pairing.offer(7, Actor.user(1), now)
     with pytest.raises(Refused, match="pairs no phone"):
@@ -6578,7 +6580,9 @@ def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
         pairing.pair(newer.short, "Android", now)
     listed = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/phones", headers={"X-Journal-Env": "main"}), timeout=5))["phones"]
     assert [p["name"] for p in listed] == ["iPhone of Jesse"] and "key" not in listed[0], "the desk sees the phone, never its key's hash"
+    assert app.container.get(Tunnel).is_wanted(now), "a paired phone keeps the tunnel open, with no link shared"
     assert viewer(app, f"phones/{paired.phone.id}/disconnect")["disconnected"] == paired.phone.id
+    assert not app.container.get(Tunnel).is_wanted(datetime.now(timezone.utc)), "with the phone disconnected and no code live, nothing keeps it open"
     assert pairing.offer(7, Actor.user(1), now).short, "once it is disconnected, another phone may pair"
 
 

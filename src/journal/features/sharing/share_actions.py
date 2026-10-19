@@ -6,7 +6,6 @@ from journal.features.sharing.support.share_password import SharePassword
 from journal.features.sharing.share_targets import ShareTargets
 from journal.features.sharing.support.tunnel import Tunnel
 from journal.support.actor import Actor
-from journal.support.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.support.ref import Ref
@@ -28,7 +27,7 @@ class ShareActions:
     def create(self, named: str, expires: str, password: str, comments: bool, by: Actor) -> Share:
         """A link the user made opens at once; one the agent made waits for the user's Accept on the card it puts in the chat."""
         target = self.targets.named(named)
-        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=by.kind == ActorKind.USER,
+        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=by.is_the_user(),
                                        password=SharePassword.hashed(password) if password else "", comments=comments), by)
         self.targets.link(share, target, by)
         if share.approved:

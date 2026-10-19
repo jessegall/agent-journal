@@ -1,7 +1,6 @@
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
 from journal.support.telling import Telling
-from journal.support.actor_kind import ActorKind
 from journal.models.dump import Dump
 from journal.repositories.dumps import Dumps
 
@@ -15,7 +14,7 @@ class TellArrival(Listener[Saved]):
     def handle(self, event: Saved) -> None:
         from journal.features.dumps.feature import DumpsFeature
         dump = event.model
-        if not isinstance(dump, Dump) or event.by.kind != ActorKind.USER or dump.is_completed:
+        if not isinstance(dump, Dump) or not event.by.is_the_user() or dump.is_completed:
             return
         in_hand, waiting = self.dumps.in_hand(), dump.waiting()
         if in_hand and in_hand.id == dump.id and waiting:

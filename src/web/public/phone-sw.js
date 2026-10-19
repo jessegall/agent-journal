@@ -82,8 +82,9 @@ self.addEventListener("push", (event) => {
         (async () => {
             const waiting = await told();
             if (self.navigator.setAppBadge) await self.navigator.setAppBadge(waiting.length).catch(() => {});
+            // the lock screen shows only how many things wait: what they are stays inside the app
             const title = waiting.length > 1 ? `${waiting.length} things need you` : "Your agent needs you";
-            const body = waiting.length ? waiting[0].title : "Open the journal to see what waits.";
+            const body = "Open the journal to see what waits.";
             const data = {ref: waiting.length ? waiting[0].ref : ""};
             await self.registration.showNotification(title, {body, tag: TAG, renotify: true, icon: "./icon-192.png", data});
         })(),

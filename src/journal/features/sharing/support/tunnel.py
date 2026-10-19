@@ -1,6 +1,7 @@
 import os
 import socket
 from dataclasses import asdict
+from datetime import datetime, timezone
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -12,6 +13,8 @@ from journal.features.sharing.support.tunler_status import TunlerStatus
 from journal.features.sharing.support.tunnel_cause import TunnelCause
 from journal.features.sharing.support.tunnel_service import TunnelService
 from journal.support.refused import Refused
+from journal.repositories.pairing_codes import PairingCodes
+from journal.repositories.phones import Phones
 from journal.repositories.settings import Settings
 from journal.repositories.shares import Shares
 from journal.supervisor_link import SupervisorLink
@@ -37,8 +40,9 @@ OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new
 class Tunnel:
     """The tunler process that gives the share server its web address: started under the supervisor that hosts the journal while a link is open, stopped while none is, and asked whether its address answers."""
 
-    def __init__(self, tunler: Tunler, place: SharePlace, settings: Settings, link: SupervisorLink, shares: Shares, config: Config) -> None:
+    def __init__(self, tunler: Tunler, place: SharePlace, settings: Settings, link: SupervisorLink, shares: Shares, phones: Phones, codes: PairingCodes, config: Config) -> None:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
+        self.phones, self.codes = phones, codes
         self.log = config.home / "runtime" / f"{SERVICE}.log"
         self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_KEPT, False)
 
@@ -77,11 +81,14 @@ class Tunnel:
         return []
 
     def settle(self) -> None:
-        """Running while a link opens, stopped while none does."""
-        if self.shares.open_anywhere():
+        """Running while a link opens, a phone is paired or a code to pair one is live; stopped while none is."""
+        if self.is_wanted(datetime.now(timezone.utc)):
             self.start()
         else:
             self.stop()
+
+    def is_wanted(self, now: datetime) -> bool:
+        return self.shares.open_anywhere() or bool(self.phones.live(now)) or bool(self.codes.open(now))
 
     def start(self) -> None:
         """Started for the share server's port and the journal's name; one running for another port or name is stopped first, and one running for these is left as it is."""

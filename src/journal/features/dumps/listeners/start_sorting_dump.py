@@ -2,7 +2,6 @@ from journal.engine.machine import Machine
 from journal.events.listener import Listener
 from journal.events.models.created import Created
 from journal.features.dumps.states.sorting_dump import SortingDump
-from journal.support.actor_kind import ActorKind
 from journal.models.dump import Dump
 from journal.repositories.agents import Agents
 
@@ -15,7 +14,7 @@ class StartSortingDump(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         dump = event.model
-        if not isinstance(dump, Dump) or event.by.kind != ActorKind.USER:
+        if not isinstance(dump, Dump) or not event.by.is_the_user():
             return
         agent = self.agents.live()
         if agent is None or agent.state == SortingDump.name:

@@ -837,6 +837,43 @@ def test_the_phone_page_installs_from_the_tunnels_listener_as_an_app(sharing):
     assert visit(share_server, "/p/settings")[0] == 404, "nothing else of the journal is under /p/"
 
 
+def phone_call(share_server, method: str, path: str, body: dict | None = None, origin: str = "", cookie: str = ""):
+    """What the phone app gets from the tunnel's listener: the status, the JSON and the headers."""
+    from http.client import HTTPConnection
+    connection = HTTPConnection("127.0.0.1", share_server.port, timeout=5)
+    headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json", **({"Cookie": cookie} if cookie else {})}
+    connection.request(method, path, body=json.dumps(body or {}).encode() if method == "POST" else None, headers=headers)
+    reply = connection.getresponse()
+    raw = reply.read()
+    answer = reply.status, json.loads(raw) if raw else {}, dict(reply.getheaders())
+    connection.close()
+    return answer
+
+
+def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(sharing):
+    server, share_server = sharing
+    call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
+    origin = f"https://{call(server, 'GET', '/journal/tunnel')[1]['address']}"
+    offer = call(server, "POST", "/journal/phones/connect", {"days": 7})[1]
+    code = offer["link"].split("#")[1]
+    assert phone_call(share_server, "POST", "/p/pair", {"code": code}, origin="https://elsewhere.example")[0] == 403, "a write from another site is refused"
+    status, standing, headers = phone_call(share_server, "POST", "/p/pair", {"code": code, "device": "iPhone"}, origin=origin)
+    cookie = headers["Set-Cookie"]
+    assert status == 200 and standing["phone"] == "iPhone" and cookie.startswith("__Host-phone=") and all(part in cookie for part in ("Secure", "HttpOnly", "SameSite=Strict", "Path=/", "Max-Age=")), "the key lives in a __Host- cookie the page's scripts cannot read"
+    kept = cookie.split(";", 1)[0]
+    assert phone_call(share_server, "GET", "/p/state", cookie=kept)[1]["phone"] == "iPhone", "the phone is known by its cookie"
+    assert phone_call(share_server, "GET", "/p/state")[0] == 401 and phone_call(share_server, "GET", "/p/state", cookie="__Host-phone=guessed")[0] == 401, "without its key, no phone"
+    status, sent, _ = phone_call(share_server, "POST", "/p/api/journal/messages", {"text": "from the train"}, origin=origin, cookie=kept)
+    assert status == 201 and sent["created_by"] == f"phone:{standing['id']}" and sent["author"] == "user", "the phone writes as itself, its words the user's"
+    assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/api/journal/messages", cookie=kept)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
+    assert phone_call(share_server, "GET", "/p/api/journal/secrets", cookie=kept)[0] == 403, "no secret is ever read from a phone"
+    assert phone_call(share_server, "POST", "/p/api/journal/settings", {"messages": {"hold_after": 9}}, origin=origin, cookie=kept)[0] == 403, "nor a setting changed"
+    assert phone_call(share_server, "GET", "/p/api/journal/messages?env=elsewhere", cookie=kept)[0] == 403, "nor another environment reached"
+    assert phone_call(share_server, "GET", "/p/api/journal/messages")[0] == 401, "nothing at all without the phone's key"
+    assert phone_call(share_server, "POST", "/p/disconnect", {}, origin=origin, cookie=kept)[0] == 200, "the phone disconnects itself"
+    assert phone_call(share_server, "GET", "/p/state", cookie=kept)[0] == 410, "a disconnected phone is told so"
+
+
 def test_a_share_link_opens_its_document_through_the_share_server_and_nothing_else(sharing):
     server, share_server = sharing
     call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
