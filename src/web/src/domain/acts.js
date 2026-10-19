@@ -44,3 +44,8 @@ const EDITS = {
 };
 
 export const editsOf = (row) => (isClosed(row) ? {} : EDITS[row.table] || {});
+
+// The fields a new row of the table is written with in the viewer.
+const CREATES = {...EDITS, checks: {title: "line", command: "line", brief: "text"}, dumps: {brief: "text"}};
+
+export const createsOf = (table) => CREATES[table] || {};

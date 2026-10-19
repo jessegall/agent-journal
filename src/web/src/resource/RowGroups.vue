@@ -3,7 +3,7 @@ import {onMounted, ref} from "vue";
 import {goIn, route} from "../route.js";
 import ResourceEnd from "./ResourceEnd.vue";
 import ResourceRow from "./ResourceRow.vue";
-defineProps({groups: Array, type: String});
+defineProps({groups: Array, table: String});
 const settled = ref(false);
 onMounted(() => setTimeout(() => (settled.value = true), 400));
 </script>
@@ -22,13 +22,13 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
                     <p class="group-why">{{ g.why }}</p>
                 </template>
                 <TransitionGroup tag="div" class="rows" :name="settled ? 'row' : ''">
-                    <template v-for="(r, i) in g.list" :key="r.n">
+                    <template v-for="(r, i) in g.list" :key="r.id">
                         <div class="row-wrap" :style="{'--i': i}">
                             <slot name="row" :resource="r">
                                 <ResourceRow
                                     :resource="r"
-                                    :selected="r.n === route.n && (g.env || route.env) === route.env"
-                                    @click="goIn(g.env || route.env, type, r.n)"
+                                    :selected="r.id === route.n && (g.env || route.env) === route.env"
+                                    @click="goIn(g.env || route.env, table, r.id)"
                                 />
                                 <ResourceEnd :resource="r" />
                             </slot>

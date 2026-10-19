@@ -7,51 +7,26 @@ import Dialog from "../kit/Dialog.vue";
 import FormField from "../kit/FormField.vue";
 import TriggerEditor from "./TriggerEditor.vue";
 
-const props = defineProps({sequence: {type: Number, default: 0}});
 const emit = defineEmits(["made", "close"]);
-const blank = () => ({
-    title: "",
-    when: "words",
-    fact: "message.unanswered.created",
-    over: 5,
-    only_when: "any",
-    timing: 0,
-    most: 3,
-    words: [],
-    words_in: "both",
-    does: props.sequence ? "start" : "nudge",
-    text: "",
-    sequences: props.sequence ? [props.sequence] : [],
-});
+const blank = () => ({words: [], action: "nudge", text: ""});
 const draft = reactive(blank());
 const error = ref("");
 
 const missing = computed(() => {
-    if (draft.when === "words" && !draft.words.length) return "Add at least one word.";
-    if (draft.does !== "start" && !draft.text.trim()) return `Write ${doesOf(draft.does).ask.toLowerCase()}.`;
-    return draft.title.trim() ? "" : "Give it a name.";
+    if (!draft.words.length) return "Add at least one word.";
+    if (draft.action === "sequence") return draft.text ? "" : "Pick the sequence it starts.";
+    return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });
 
 function start({name, ...fields}) {
-    Object.assign(draft, blank(), fields, {sequences: draft.sequences});
+    Object.assign(draft, blank(), fields);
 }
-
-const watching = () =>
-    draft.when === "state"
-        ? {when: "state", fact: draft.fact, over: draft.over, only_when: draft.only_when, timing: draft.timing, most: draft.most}
-        : {words: draft.words, words_in: draft.words_in};
 
 async function submit() {
     error.value = "";
     try {
-        const made = await api.create("trigger", {
-            title: draft.title.trim(),
-            ...watching(),
-            does: draft.does,
-            text: draft.does === "start" ? "" : draft.text,
-        });
-        if (draft.does === "start") await Promise.all(draft.sequences.map((n) => api.setStartsOn(n, `trigger:${made.n}`)));
-        emit("made", made.n);
+        const made = await api.create("triggers", {...draft});
+        emit("made", made.id);
     } catch (e) {
         error.value = e.message;
     }

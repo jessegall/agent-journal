@@ -4,20 +4,16 @@ import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import MarkedText from "../kit/MarkedText.vue";
-import {standing} from "../domain/documents.js";
 import {ago} from "../format/time.js";
-import {whole} from "../sync/rows.js";
-import ChoiceCard from "./ChoiceCard.vue";
-import ResourceFiles from "./ResourceFiles.vue";
+import {refOf, titleOf, updatedAt} from "../domain/row.js";
+import {isWhole, whole} from "../sync/rows.js";
 
 const props = defineProps({doc: {type: Object, default: null}, words: {type: Array, default: () => []}, searching: Boolean});
 const emit = defineEmits(["open", "hide"]);
-const state = computed(() => props.doc && standing(props.doc));
-const files = computed(() => Object.entries(props.doc?.data.files || {}));
 watchEffect(() => {
-    if (props.doc?.summary) whole("doc", props.doc.n).catch((error) => console.error(error));
+    if (props.doc && !isWhole(props.doc)) whole("docs", props.doc.id).catch((error) => console.error(error));
 });
-const empty = computed(() => props.doc && !props.doc.abstract && !props.doc.brief && !props.doc.sections.length);
+const empty = computed(() => props.doc && !props.doc.abstract && !props.doc.body);
 </script>
 
 <template>
@@ -28,31 +24,18 @@ const empty = computed(() => props.doc && !props.doc.abstract && !props.doc.brie
             </EmptyState>
         </template>
         <template v-else>
-            <article :key="doc.ref" class="preview-document">
+            <article :key="refOf(doc)" class="preview-document">
                 <header class="preview-top">
-                    <span>This is a preview. Open the whole document to edit, comment, share or close it.</span>
+                    <span>This is a preview. Open the whole document to edit, comment or share it.</span>
                     <Btn kind="primary" @click="emit('open', doc)">Open the whole document</Btn>
                     <Btn kind="icon" v-tip="'Hide the preview'" aria-label="Hide the preview" @click="emit('hide')">×</Btn>
                 </header>
                 <div class="preview-content">
-                    <p class="preview-meta">Document {{ doc.n }} · {{ state.label }} · changed {{ ago(doc.updated || doc.created) }}</p>
-                    <h2><MarkedText :text="doc.title" :words="words" /></h2>
-                    <template v-if="['answer', 'approve', 'answered'].includes(state.key)"><ChoiceCard :resource="doc" preview /></template>
-                    <template v-if="state.key === 'writing'">
-                        <p class="preview-note">
-                            {{ empty ? "No text yet. " : "" }}The agent is still writing this document. It becomes final when finished.
-                        </p>
-                    </template>
-                    <template v-if="empty && state.key !== 'writing'"><p class="preview-note">No text yet.</p></template>
+                    <p class="preview-meta">Document {{ doc.id }} · changed {{ ago(updatedAt(doc)) }}</p>
+                    <h2><MarkedText :text="titleOf(doc)" :words="words" /></h2>
+                    <template v-if="empty"><p class="preview-note">No text yet.</p></template>
                     <template v-if="doc.abstract"><TextDisplay :text="doc.abstract" /></template>
-                    <template v-if="doc.brief"><TextDisplay :text="doc.brief" /></template>
-                    <template v-for="section in doc.sections" :key="section.title">
-                        <section class="preview-section">
-                            <h3>{{ section.title }}</h3>
-                            <TextDisplay :text="section.body" />
-                        </section>
-                    </template>
-                    <template v-if="files.length"><ResourceFiles :resource="doc" :files="files" /></template>
+                    <template v-if="doc.body"><TextDisplay :text="doc.body" /></template>
                 </div>
             </article>
         </template>
