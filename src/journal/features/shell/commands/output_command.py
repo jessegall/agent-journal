@@ -1,10 +1,11 @@
-import re
 from argparse import Namespace
 from pathlib import Path
 
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.shell.output_files import OutputFiles
+from journal.features.shell.reader import Reader
+from journal.features.shell.readers import Readers
 from journal.models.command_output import CommandOutput
 from journal.refused import Refused
 from journal.repositories.command_outputs import CommandOutputs
@@ -18,8 +19,8 @@ class OutputCommand(Command):
 
     noun = "output"
 
-    def __init__(self, outputs: CommandOutputs) -> None:
-        self.outputs = outputs
+    def __init__(self, outputs: CommandOutputs, readers: Readers) -> None:
+        self.outputs, self.readers = outputs, readers
 
     def arguments(self, verbs) -> None:
         read = self.verb(verbs, "read", "an output: its command, how it ended, its length and its first and last lines, or the part the options name")
@@ -28,6 +29,7 @@ class OutputCommand(Command):
         read.add_argument("--tail", type=int, help="the last so many lines")
         read.add_argument("--lines", help="a range of lines, such as 100-160")
         read.add_argument("--grep", help="the lines matching a pattern, with their numbers")
+        read.add_argument("--reader", help="the lines a reader of the project's picks, by its name")
         listed = self.verb(verbs, "list", "the newest outputs, one a line: number, how it ended, command")
         listed.add_argument("--last", type=int, default=20)
 
@@ -37,9 +39,11 @@ class OutputCommand(Command):
         if not files.is_kept():
             raise Refused(f"output {output.id} has no files left")
         lines = files.lines()
+        if args.reader:
+            print("\n".join(self.readers.named(args.reader).read(lines)))
+            return 0
         if args.grep:
-            pattern = re.compile(args.grep)
-            print("\n".join(f"{i}: {line}" for i, line in enumerate(lines, 1) if pattern.search(line)))
+            print("\n".join(Reader("grep", "the lines matching a pattern", args.grep).read(lines)))
             return 0
         if args.lines:
             first, _, last = args.lines.partition("-")

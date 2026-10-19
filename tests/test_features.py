@@ -5186,6 +5186,11 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     assert console.run(["output", "read", "1", "--grep", "line 4[29]"], AGENT).out == "42: line 42\n49: line 49\n"
     assert console.run(["output", "read", "1", "--tail", "1"], AGENT).out == "line 50\n"
     assert "failed with code 1" in console.run(["output", "list"], AGENT).out
+    assert console.run(["reader", "add", "forties", "--pattern", "line 4[0-1]$", "--about", "lines in the early forties"], AGENT).code == 0
+    assert (app.config.readers / "forties.pattern").read_text() == "# lines in the early forties\nline 4[0-1]$\n", "a reader is a file of the project's"
+    assert console.run(["reader", "list"], AGENT).out == "forties: lines in the early forties\n"
+    assert console.run(["output", "read", "1", "--reader", "forties"], AGENT).out == "40: line 40\n41: line 41\n"
+    assert console.run(["output", "read", "1", "--reader", "nothing"], AGENT).code == 1, "an unknown reader is refused"
 
 
 def test_a_trailing_tail_is_dropped_before_the_command_runs_and_a_head_is_left(app):

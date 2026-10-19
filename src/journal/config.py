@@ -24,6 +24,11 @@ class Config:
         return Path.home() / ".journal" / "status"
 
     @property
+    def readers(self) -> Path:
+        """The project's output readers, kept in its journal so they travel with it."""
+        return self.home / "readers"
+
+    @property
     def port_file(self) -> Path:
         return self.home / "port"
 
