@@ -4,8 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, Iterator
 
-from journal.features.shell.reads import Reads
-from journal.features.shell.writes import Writes
+from journal.support.reads import Reads
+from journal.support.writes import Writes
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind

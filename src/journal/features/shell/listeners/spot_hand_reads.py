@@ -6,7 +6,7 @@ from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
-from journal.features.shell.readers import Readers
+from journal.features.shell.support.readers import Readers
 
 KEPT = 25
 """The reads of outputs remembered per session."""

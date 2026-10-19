@@ -1593,15 +1593,15 @@ def test_a_message_read_through_a_pipe_is_refused(app):
 
 def test_every_line_of_the_shell_corpus_is_cut_into_its_parts():
     """tests/shell_corpus.jsonl holds over 4,000 commands in many styles with the parts each is cut into; one marked shell is cut differently by a real shell, and is kept whole here, which runs the same."""
-    from journal.features.shell.chain import Chain
+    from journal.support.chain import Chain
     cases = [json.loads(line) for line in (Path(__file__).parent / "shell_corpus.jsonl").read_text().splitlines()]
     wrong = [case["line"] for case in cases if Chain.split(case["line"]) != case["parts"]]
     assert not wrong, f"{len(wrong)} of {len(cases)} lines cut differently, the first: {wrong[:3]}"
 
 
 def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
-    from journal.features.shell.chain import Chain
-    from journal.features.shell.doing import Doing
+    from journal.support.chain import Chain
+    from journal.features.shell.support.doing import Doing
     assert Chain.split('a $(b; c) && (d; e) || f; g "h && i" | tail -1') == ["a $(b; c)", "(d; e) || f", 'g "h && i" | tail -1']
     assert Chain.split("for f in a b; do echo $f; done && if true; then echo y; fi; case $x in a) echo a;; esac && ls") == ["for f in a b; do echo $f; done", "if true; then echo y; fi", "case $x in a) echo a;; esac", "ls"]
     assert Chain.split("echo `echo a; echo b` && cat <<EOF && echo x\nbody; with && stuff\nEOF") == ["echo `echo a; echo b`", "cat <<EOF && echo x\nbody; with && stuff\nEOF"]
@@ -1736,7 +1736,7 @@ def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
 
 
 def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
-    from journal.features.shell.writes import Writes
+    from journal.support.writes import Writes
     assert [Writes.of(c) for c in ("sed -i '' s/a/b/ f.py", "cat f.py | head -3", "echo hi > /dev/null", "echo hi > out.txt", "git status; git log", "git checkout -- f.py", "`journal task create` x", "python3 - <<'EOF'\nfrom pathlib import Path\nPath('x').write_text('y')\nEOF", "python3 -c 'print(1)'", "grep -rn 'a > b' src | tee found.txt", 'echo "a > b"')] == [True, False, False, True, False, True, False, True, False, True, False]
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)

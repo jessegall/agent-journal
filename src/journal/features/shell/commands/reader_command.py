@@ -4,8 +4,8 @@ from pathlib import Path
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.shell.reader import Reader
-from journal.features.shell.readers import Readers
+from journal.features.shell.support.reader import Reader
+from journal.features.shell.support.readers import Readers
 from journal.support.refused import Refused
 
 NAME = re.compile(r"[a-z0-9][a-z0-9-]*")

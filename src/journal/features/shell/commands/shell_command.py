@@ -7,11 +7,11 @@ from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.engine.nudger import Nudger
-from journal.features.shell.chain import Chain
-from journal.features.shell.doing import Doing
-from journal.features.shell.output_files import OutputFiles
-from journal.features.shell.output_log import OutputLog
-from journal.features.shell.writes import Writes
+from journal.support.chain import Chain
+from journal.features.shell.support.doing import Doing
+from journal.features.shell.support.output_files import OutputFiles
+from journal.features.shell.support.output_log import OutputLog
+from journal.support.writes import Writes
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.command_outputs import CommandOutputs

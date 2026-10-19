@@ -3,9 +3,9 @@ from pathlib import Path
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.shell.output_files import OutputFiles
-from journal.features.shell.reader import Reader
-from journal.features.shell.readers import Readers
+from journal.features.shell.support.output_files import OutputFiles
+from journal.features.shell.support.reader import Reader
+from journal.features.shell.support.readers import Readers
 from journal.models.command_output import CommandOutput
 from journal.support.refused import Refused
 from journal.repositories.command_outputs import CommandOutputs

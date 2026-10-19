@@ -1,5 +1,5 @@
-from journal.features.shell.chain import Chain
-from journal.features.shell.writes import Writes
+from journal.support.chain import Chain
+from journal.support.writes import Writes
 
 READERS = {"cat", "head", "tail", "sed", "less", "more", "bat"}
 """Commands that print the files they name."""

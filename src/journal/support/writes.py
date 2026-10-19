@@ -1,6 +1,6 @@
 import re
 
-from journal.features.shell.chain import Chain
+from journal.support.chain import Chain
 
 COMMANDS = {"sed": ("-i",), "tee": (), "cp": (), "mv": (), "rm": (), "mkdir": (), "touch": (), "rsync": (), "ln": (), "chmod": (), "chown": (), "truncate": (), "dd": (), "patch": (), "install": (), "rmdir": ()}
 """Commands that change files, with the flag that makes them do so when one is needed."""

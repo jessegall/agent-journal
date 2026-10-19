@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from journal.config import Config
-from journal.features.shell.reader import Reader
-from journal.features.shell.script_reader import ScriptReader
+from journal.features.shell.support.reader import Reader
+from journal.features.shell.support.script_reader import ScriptReader
 from journal.support.refused import Refused
 
 KINDS = {".pattern": Reader.from_file, ".sh": ScriptReader.from_file}

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from journal.features.shell.output_files import OutputFiles
+from journal.features.shell.support.output_files import OutputFiles
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
 from journal.support.response import Response

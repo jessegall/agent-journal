@@ -17,7 +17,7 @@ from journal.features.migration.version_3_backup import Version3Backup
 from journal.features.chart.support.context import Context
 from journal.features.registry import Registry
 from journal.support.requiring import Requiring
-from journal.features.shell.chain import Chain
+from journal.support.chain import Chain
 from journal.features.tasks.states.working import Working
 from journal.features.questions.states.waiting import Waiting
 from journal.features.workers.states.awaiting import Awaiting

@@ -1,6 +1,6 @@
 import re
 
-from journal.features.shell.part import Part
+from journal.features.shell.support.part import Part
 
 WRAPPED = re.compile(r"^eval '(.*)'(?: < /dev/null)?$", re.S)
 """Claude Code runs the agent's command as eval '<command>' < /dev/null between its own set-up and a pwd, without the < /dev/null when the command has a heredoc: the command inside is what the agent wrote."""
