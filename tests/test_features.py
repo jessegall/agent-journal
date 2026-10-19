@@ -459,7 +459,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
 
 
 def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
-    from journal.engine.typed_lines import TypedLines
+    from journal.support.typed_lines import TypedLines
     import threading
     import traceback
     typed, stacks = [], []
@@ -3168,7 +3168,7 @@ def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_
 
 def test_the_rules_doc_rules_on_every_state_the_engine_knows(app):
     from pathlib import Path
-    from journal.engine.states_catalogue import StatesCatalogue
+    from journal.support.states_catalogue import StatesCatalogue
     doc = (Path(__file__).resolve().parents[1] / "docs" / "the-rules.md").read_text()
     table = doc.split("## Every state, and who holds its conduct")[1].split("## ")[0]
     names = app.container.get(StatesCatalogue).names()
@@ -4375,7 +4375,7 @@ def echo_heard(app, name="echo") -> list[str]:
 
 def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
     from journal.db.connection import Connection
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     from journal.repositories.entries import Entries
     from journal.models.task import Task
     from journal.repositories.tasks import Tasks
@@ -4408,7 +4408,7 @@ def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
 def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
     from journal.features.plugins.plugin_answers import PluginAnswers
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     from journal.models.plugin_answer import PluginAnswer
     from journal.models.plugin_card import PluginCard
     from journal.models.task import Task
@@ -4484,7 +4484,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
 
 def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(app, tmp_path):
     import shutil
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     from journal.repositories.plugins import Plugins
     folder = tmp_path / "echo"
     shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
@@ -4630,7 +4630,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
 
 def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tmp_path):
     import shutil
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     from journal.repositories.plugins import Plugins
     console, plugins = app.console(), app.container.get(Plugins)
     folder = tmp_path / "echo"
@@ -4685,7 +4685,7 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
 
 
 def test_a_plugins_record_lists_what_it_did(app):
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     from journal.models.task import Task
     from journal.repositories.tasks import Tasks
     echo(app)
@@ -4731,7 +4731,7 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
 
 
 def test_a_plugins_line_after_the_reply_reaches_the_agent_at_its_next_hook(app):
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     echo(app, hears=["tool_finished", "tool_starting"], holds=["tool_starting"])
     hook(app, "SessionStart")
     hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": "notice.py"}, tool_response={})
@@ -5969,7 +5969,7 @@ def test_no_wait_closes_a_loop_and_the_migration_drops_only_the_link_that_would(
 
 
 def test_a_row_whose_text_names_another_is_linked_to_it_off_the_writes_thread(app):
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     from journal.support.ref import Ref
     from journal.repositories.links import Links
     hook(app, "SessionStart")

@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
 from journal.features.sequences.running import Running

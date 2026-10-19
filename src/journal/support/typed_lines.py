@@ -1,7 +1,7 @@
 import time
 
-from journal.engine.held_line import HeldLine
-from journal.engine.typed_line import TypedLine
+from journal.support.held_line import HeldLine
+from journal.engine.support.typed_line import TypedLine
 
 
 class TypedLines:

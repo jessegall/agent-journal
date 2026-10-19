@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener

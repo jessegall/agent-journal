@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.walk import FAILED, WALKED
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
 from journal.support.walk_failure import WalkFailure

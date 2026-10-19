@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
 
-from journal.engine.typed_lines import TypedLines
+from journal.support.typed_lines import TypedLines
 from journal.repositories.counts import Counts
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments

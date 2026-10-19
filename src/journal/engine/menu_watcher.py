@@ -1,9 +1,9 @@
 import threading
 import time
 
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.states.ended import Ended
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.models.agent import Agent
 from journal.providers.menu import ESCAPE, Menu
 from journal.repositories.agents import Agents

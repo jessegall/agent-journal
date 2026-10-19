@@ -13,7 +13,7 @@ from journal.features.floor import Floor
 from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.models.entry import Entry

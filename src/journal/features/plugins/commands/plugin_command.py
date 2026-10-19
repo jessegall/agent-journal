@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.features.plugins.plugin_preview import PluginPreview
 from journal.features.plugins.installing import Installing
 from journal.features.plugins.plugin_settings import PluginSettings

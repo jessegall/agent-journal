@@ -3,7 +3,7 @@ from journal.events.models.updated import Updated
 from journal.events.listener import Listener
 from journal.features.plugins.plugin_hearing import PluginHearing
 from journal.features.plugins.plugin_updated import PluginUpdated
-from journal.engine.deferred import Deferred
+from journal.support.deferred import Deferred
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
 from journal.repositories.scope import Scope

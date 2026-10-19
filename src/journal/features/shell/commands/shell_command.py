@@ -5,7 +5,7 @@ from pathlib import Path
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.features.shell.chain import Chain
 from journal.features.shell.doing import Doing

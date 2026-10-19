@@ -1,7 +1,7 @@
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.states.ended import Ended
-from journal.engine.features_known import FeaturesKnown
+from journal.support.features_known import FeaturesKnown
 
 
 class StatesCatalogue:

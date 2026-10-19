@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.support.plugin_manifest import PluginManifest
 from journal.support.actor import Actor

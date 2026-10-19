@@ -5,8 +5,8 @@ import time
 from pathlib import Path
 
 from journal.config import Config
-from journal.engine.held_line import HeldLine
-from journal.engine.typed_lines import TypedLines
+from journal.support.held_line import HeldLine
+from journal.support.typed_lines import TypedLines
 from journal.support.old_supervisor import OldSupervisor
 from journal.support.supervisor_announcement import SupervisorAnnouncement
 from journal.support.supervisor_reply import SupervisorReply

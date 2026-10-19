@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
 from journal.models.question import Question

@@ -1,7 +1,7 @@
 import time
 
 from journal.db.masks import Masks
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 

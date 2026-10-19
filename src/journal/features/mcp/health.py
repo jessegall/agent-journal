@@ -2,7 +2,7 @@ import re
 import subprocess
 
 from journal.config import Config
-from journal.engine.kept_answer import KeptAnswer
+from journal.support.kept_answer import KeptAnswer
 from journal.features.mcp.health_report import HealthReport
 from journal.features.mcp.known import Known
 

@@ -1,5 +1,5 @@
 from journal.engine.states.paused import Paused
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.tasks.states.working import Working

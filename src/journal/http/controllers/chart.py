@@ -8,7 +8,7 @@ from journal.features.chart.traces import Traces
 from journal.features.chart.trial import Trial
 from journal.features.chart.trial_asked import TrialAsked
 from journal.features.chart.validation import LOCK_WHY, Validation
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.http.controllers.listed_workflow import ListedWorkflow
 from journal.http.request import Request
 from journal.http.response import Response

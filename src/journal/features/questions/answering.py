@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
 from journal.models.question import Question

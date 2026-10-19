@@ -1,4 +1,4 @@
-from journal.engine.typed_lines import TypedLines
+from journal.support.typed_lines import TypedLines
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink

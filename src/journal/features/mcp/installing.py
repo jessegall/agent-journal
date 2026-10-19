@@ -9,7 +9,7 @@ from journal.models.mcp_server import McpServer
 from journal.support.refused import Refused
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
-from journal.engine.turn import Turn
+from journal.support.turn import Turn
 from journal.repositories.mcp_servers import McpServers
 from journal.supervisor_link import SupervisorLink
 

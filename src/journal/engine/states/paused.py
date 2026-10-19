@@ -5,8 +5,8 @@ from journal.engine.agent_state import AgentState
 from journal.engine.resume import Resume
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
-from journal.engine.transition import Transition
-from journal.engine.said import Said
+from journal.support.transition import Transition
+from journal.support.said import Said
 
 
 

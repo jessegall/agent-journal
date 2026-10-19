@@ -4,8 +4,8 @@ import re
 import time
 
 from journal.config import Config
-from journal.engine.cards import Cards
-from journal.engine.deferred import Deferred
+from journal.support.cards import Cards
+from journal.support.deferred import Deferred
 from journal.engine.nudger import Nudger
 from journal.features.faults.feature import Faults
 from journal.support.actor import Actor

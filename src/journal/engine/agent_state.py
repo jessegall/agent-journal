@@ -2,9 +2,9 @@ import re
 from dataclasses import dataclass, fields
 from typing import ClassVar
 
-from journal.engine.permission import Permission
+from journal.support.permission import Permission
 from journal.events.agent.agent_event import AgentEvent
-from journal.engine.said import Said
+from journal.support.said import Said
 
 
 @dataclass(frozen=True)
@@ -26,15 +26,15 @@ class AgentState:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", event.__name__).lower()
 
     def stay(self, *says: Said) -> "Transition":
-        from journal.engine.transition import Transition
+        from journal.support.transition import Transition
         return Transition(self, says)
 
     def go(self, to: "AgentState", *says: Said) -> "Transition":
-        from journal.engine.transition import Transition
+        from journal.support.transition import Transition
         return Transition(to, says)
 
     def refuse(self, why: Said) -> "Transition":
-        from journal.engine.transition import Transition
+        from journal.support.transition import Transition
         return Transition(self, (), why)
 
     def session_ended(self, event: AgentEvent) -> "Transition":

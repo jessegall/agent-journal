@@ -2,7 +2,7 @@ import re
 from journal.features.chart.catalogue import Catalogue
 from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.features.chart.fault import Fault
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.support.drawn_line import NO, THEN, YES, DrawnLine
 from journal.support.drawn_node import DrawnNode

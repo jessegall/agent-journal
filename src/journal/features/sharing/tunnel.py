@@ -5,7 +5,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from journal.config import Config
-from journal.engine.kept_answer import KeptAnswer
+from journal.support.kept_answer import KeptAnswer
 from journal.features.sharing.share_place import SharePlace
 from journal.features.sharing.tunler import Tunler
 from journal.features.sharing.tunler_status import TunlerStatus

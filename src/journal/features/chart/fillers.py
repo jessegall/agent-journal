@@ -3,7 +3,7 @@ from copy import copy
 from datetime import datetime, timezone
 import re
 
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.checks import Checks

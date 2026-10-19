@@ -1,7 +1,7 @@
 import time
 
-from journal.engine.features_known import FeaturesKnown
-from journal.engine.said import Said
+from journal.support.features_known import FeaturesKnown
+from journal.support.said import Said
 from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.entry import Entry

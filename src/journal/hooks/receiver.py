@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
@@ -7,7 +7,7 @@ from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.events.listener import Listener
 from journal.events.decision import Decision
-from journal.engine.deferred import Deferred
+from journal.support.deferred import Deferred
 from journal.providers.hook import Hook
 from journal.hooks.transcript_turns import TranscriptTurns
 from journal.hooks.translation import Translation

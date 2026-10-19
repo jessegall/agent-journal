@@ -1,7 +1,7 @@
 from dataclasses import dataclass, replace
 
 from journal.engine.agent_state import AgentState
-from journal.engine.permission import Permission
+from journal.support.permission import Permission
 
 
 

@@ -1,5 +1,5 @@
 from journal.engine.nudger import Nudger
-from journal.engine.said import Said
+from journal.support.said import Said
 from journal.repositories.agents import Agents
 from journal.supervisor_link import SupervisorLink
 

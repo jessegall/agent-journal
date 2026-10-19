@@ -1,5 +1,5 @@
 import re
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.features.chart.seeds.guard import Guard
 from journal.features.chart.catalogue import FORMER_TITLES, Catalogue
 from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS

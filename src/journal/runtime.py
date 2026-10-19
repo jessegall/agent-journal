@@ -13,7 +13,7 @@ from journal.events.models.deleted import Deleted
 from journal.events.bus import Bus
 from journal.features.registry import Registry
 from journal.features.switched import Switched
-from journal.engine.deferred import Deferred
+from journal.support.deferred import Deferred
 from journal.config import Config
 from journal.container import Container
 from journal.repositories.scope import Scope

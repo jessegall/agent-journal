@@ -14,7 +14,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.events.decision import Decision
-from journal.engine.deferred import Deferred
+from journal.support.deferred import Deferred
 from journal.repositories.entries import Entries
 from journal.repositories.scope import Scope
 
@@ -91,7 +91,7 @@ def test_every_hook_kind_translates(app):
 
 
 def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
-    from journal.engine.deferred import Deferred
+    from journal.support.deferred import Deferred
     ran = []
     deferred = Deferred()
     deferred.start()

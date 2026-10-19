@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.engine.permission import Permission
+from journal.support.permission import Permission
 from journal.engine.states.paused import Paused
 
 

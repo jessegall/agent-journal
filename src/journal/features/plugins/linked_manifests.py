@@ -2,7 +2,7 @@ import hashlib
 import json
 from dataclasses import asdict
 
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.features.plugins.manifest_reader import MANIFEST, ManifestReader
 from journal.features.plugins.plugin_changes import PluginChanges
 from journal.features.plugins.plugin_folders import PluginFolders

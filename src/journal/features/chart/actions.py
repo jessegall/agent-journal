@@ -1,7 +1,7 @@
 import re
 from dataclasses import replace
 
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
@@ -17,7 +17,7 @@ from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts
 from journal.features.registry import Registry
-from journal.engine.said import Said
+from journal.support.said import Said
 from journal.features.sequences.running import Running
 from journal.events.decision import Decision
 from journal.support.refused import Refused

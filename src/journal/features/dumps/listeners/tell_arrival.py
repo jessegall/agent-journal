@@ -1,6 +1,6 @@
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
-from journal.engine.telling import Telling
+from journal.support.telling import Telling
 from journal.support.actor_kind import ActorKind
 from journal.models.dump import Dump
 from journal.repositories.dumps import Dumps

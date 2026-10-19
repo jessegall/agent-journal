@@ -1,4 +1,4 @@
-from journal.engine.deferred import Deferred
+from journal.support.deferred import Deferred
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
 from journal.features.mentions.mentioned import Mentioned

@@ -7,7 +7,7 @@ from journal.db.masks import Masks
 from journal.db.migrations import MIGRATIONS
 from journal.db.migrator import Migrator
 from journal.db.schema import Schema
-from journal.engine.features_known import FeaturesKnown
+from journal.support.features_known import FeaturesKnown
 from journal.events.bus import Bus
 from journal.runtime import Runtime
 from journal.features.registry import Registry

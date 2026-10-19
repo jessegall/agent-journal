@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.console.where import Where
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.features.tasks.states.stuck import Stuck
 from journal.repositories.scope import Scope

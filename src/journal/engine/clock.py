@@ -2,7 +2,7 @@ import threading
 import time
 
 from journal.engine.states.ended import Ended
-from journal.engine.states_catalogue import StatesCatalogue
+from journal.support.states_catalogue import StatesCatalogue
 from journal.events.agent.ticked import Ticked
 from journal.events.clock_ticked import ClockTicked
 from journal.events.bus import Bus

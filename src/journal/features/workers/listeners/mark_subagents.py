@@ -1,6 +1,6 @@
 import time
 
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting

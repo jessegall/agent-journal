@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.events.agent.compacting import Compacting
 from journal.events.agent_listener import AgentListener
 

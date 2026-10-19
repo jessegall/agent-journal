@@ -1,6 +1,6 @@
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
-from journal.engine.telling import Telling
+from journal.support.telling import Telling
 from journal.models.dump import Dump
 from journal.repositories.dumps import Dumps
 

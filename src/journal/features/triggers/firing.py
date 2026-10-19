@@ -1,4 +1,4 @@
-from journal.engine.cards import Cards
+from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.features.sequences.running import Running

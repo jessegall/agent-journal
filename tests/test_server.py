@@ -413,7 +413,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 
 
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
-    from journal.engine.cards import Cards
+    from journal.support.cards import Cards
     from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.settings import Settings

@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
-from journal.engine.kept_answer import KeptAnswer
+from journal.support.kept_answer import KeptAnswer
 from journal.features.sharing.tunler_login import TunlerLogin
 from journal.features.sharing.tunler_status import TunlerStatus
 from journal.features.sharing.tunler_version import TunlerVersion
