@@ -1,3 +1,4 @@
+from journal.http.v3.row_counts import RowCounts
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import V3Row, seconds
 from journal.models.task_state import TaskState
@@ -16,6 +17,12 @@ class TodosShaper(Shaper):
 
     def rows(self) -> list[V3Row]:
         return [self.row(t) for t in self.tasks.shown()]
+
+    def counts(self, rows: list[V3Row]) -> RowCounts:
+        return RowCounts(all=self.count_all(), open=self.tasks.unfinished_count(), unread=self.tasks.unseen_by_user())
+
+    def count_all(self) -> int:
+        return self.tasks.counted_in()
 
     @staticmethod
     def row(t) -> V3Row:
