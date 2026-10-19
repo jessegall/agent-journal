@@ -927,6 +927,15 @@ def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_
     assert call(server, "GET", "/journal/tunnel/domains")[1] == []
 
 
+def test_a_slow_answer_is_asked_once_given_from_memory_and_asked_again_once_dropped():
+    from journal.support.kept_answer import KeptAnswer
+    asked = []
+    kept = KeptAnswer(lambda: asked.append(1) or len(asked), 60, 0)
+    assert (kept.given(), kept.given(), len(asked)) == (1, 1, 1), "the first reader waits for it, the next is given it at once"
+    kept.drop()
+    assert (kept.given(), len(asked)) == (2, 2), "an answer no longer true is waited for again"
+
+
 def test_an_output_is_read_by_its_id(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.command_output import CommandOutput

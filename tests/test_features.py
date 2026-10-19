@@ -6122,13 +6122,13 @@ def test_an_update_never_crosses_a_major_version(app):
 
 
 def test_a_newer_release_is_installed_on_its_own_only_when_the_setting_is_on(app):
-    source, installer = Source("v4.0.0", "v4.1.0", "v4.1.1", "v5.0.0"), Installer()
+    source, installer = Source("v4.0.0", "v4.1.0", "v4.99.0", "v5.0.0"), Installer()
     off = updating_with(app, source, installer, auto=False)
     off.checked()
-    assert installer.ran == [] and off.standing()["latest"] == "4.1.1" and source.tags_asked == ["v4."]
+    assert installer.ran == [] and off.standing()["latest"] == "4.99.0" and source.tags_asked == ["v4."]
     on = updating_with(app, source, installer, auto=True)
     on.checked()
-    assert installer.ran == ["v4.1.1"] and on.problem == ""
+    assert installer.ran == ["v4.99.0"] and on.problem == ""
 
 
 def test_nothing_is_installed_on_its_own_when_no_release_is_newer(app):

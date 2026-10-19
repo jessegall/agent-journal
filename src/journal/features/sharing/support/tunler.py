@@ -16,6 +16,8 @@ from journal.support.refused import Refused
 ELSEWHERE = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))
 STATUS_SECONDS = 5
 STATUS_KEPT = 60
+LISTS_KEPT = 3600
+"""Seconds tunler's version and domains are kept before they are asked again: they change only by a login, an update or a release, which ask again at once."""
 COMMAND_SECONDS = 30
 DOWNLOAD_SECONDS = 60
 KILLED = -9
@@ -27,10 +29,12 @@ NOT_WORKING = "what the server sent is not a working tunler, so nothing was repl
 
 
 class Tunler:
-    """The tunler program on this machine, which gives the journal its web address: its status, asked at most once a minute, its login, its version and the domains its account holds."""
+    """The tunler program on this machine, which gives the journal its web address: its status, its version and the domains its account holds, each asked at most once a minute, and its login."""
 
     def __init__(self) -> None:
         self._status = KeptAnswer(lambda: self.asked(), STATUS_KEPT, TunlerStatus(installed=False))
+        self._domains: KeptAnswer[list[str]] = KeptAnswer(lambda: self.asked_domains(), LISTS_KEPT, [])
+        self._versions: dict[str, KeptAnswer[TunlerVersion]] = {}
 
     def command(self) -> str:
         return shutil.which("tunler") or next((str(path) for path in (self.local(), Path.home() / "go" / "bin" / "tunler", *ELSEWHERE) if path.is_file()), "")
@@ -42,11 +46,13 @@ class Tunler:
 
     def status(self) -> TunlerStatus:
         """Tunler's status, asked once while the journal waits and kept after: a later one past its time is asked again on a thread of its own."""
-        return self._status.now() if self._status.asked_on else self._status.fresh()
+        return self._status.given()
 
     def forget(self) -> None:
-        """Tunler is asked again now, after a change such as a login."""
+        """Tunler is asked again now, after a change such as a login: its status at once, its domains and versions when next read."""
         self._status.fresh()
+        self._domains.drop()
+        self._versions.clear()
 
     def asked(self) -> TunlerStatus:
         command = self.command()
@@ -68,6 +74,7 @@ class Tunler:
         if master:
             hidden["TUNLER_MASTER_PASSWORD"] = master
         ok, output = self.told("login", username, f"--host={host}", hidden=hidden)
+        self.forget()
         if ok:
             return TunlerLogin(connected=True)
         lines = output.splitlines() or ["tunler refused the login"]
@@ -76,10 +83,14 @@ class Tunler:
 
     def log_out(self) -> None:
         ok, output = self.told("logout")
+        self.forget()
         if not ok:
             raise Refused(output or "tunler did not log out")
 
     def versions(self, host: str) -> TunlerVersion:
+        return self._versions.setdefault(host, KeptAnswer(lambda: self.asked_versions(host), LISTS_KEPT, TunlerVersion("", "", False))).given()
+
+    def asked_versions(self, host: str) -> TunlerVersion:
         ok, output = self.told("update", "--check", "--json", f"--host={host}")
         try:
             reported = json.loads(output) if ok else {}
@@ -104,17 +115,22 @@ class Tunler:
 
     def update(self) -> str:
         ok, output = self.told("update")
+        self.forget()
         if not ok:
             raise Refused(output or "tunler did not update")
         return output.splitlines()[-1] if output else "tunler is up to date"
 
     def domains(self) -> list[str]:
+        return self._domains.given()
+
+    def asked_domains(self) -> list[str]:
         ok, output = self.told("domains")
         return [line.strip() for line in output.splitlines() if line.strip()] if ok else []
 
     def release(self, domain: str, host: str) -> str:
         """Why the domain was not given back to the server; empty when it was."""
         ok, output = self.told("release", domain.removesuffix(f".{host}"))
+        self.forget()
         return "" if ok else output or f"tunler did not release {domain}"
 
     def install(self, host: str) -> str:
@@ -163,7 +179,6 @@ class Tunler:
         done = self.ran([command, *words], COMMAND_SECONDS, hidden)
         if done is None:
             return False, f"tunler {words[0]} did not finish"
-        self.forget()
         return done.returncode == 0, (done.stdout if done.returncode == 0 else done.stderr or done.stdout).strip()
 
     @staticmethod
