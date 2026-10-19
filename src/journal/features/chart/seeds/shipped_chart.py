@@ -81,7 +81,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 24
+DRAWINGS_VERSION = 25
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -109,7 +109,7 @@ VOICE = "[voices.voice] how to talk to the user. {{voice}}"
 REMIND = "[etiquette.remind] chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
 PLAN_NEXT = "[plans.next] plan {{followed_plan}}: task {{plan_next_task}} is next. {{plan_next_briefing}}"
 PLAN_WAITING = "[plans.waiting] plan {{followed_plan}}: no task can start now; {{plan_tasks_left}} parked, blocked or waiting. `journal task list` says what each waits on; when one can go on, `journal plan start {{followed_plan}}` takes it up"
-CHECK_BACKGROUND = "[shell.check_background] {{background_outputs}} still in the background. look at each with `journal output read <n> --tail 5`. Still going: carry on. Hung or stuck: stop it and say why"
+CHECK_BACKGROUND = "[shell.check_background] output {{background_outputs}} still running. look at it; hung or stuck: stop it and say why"
 REPORTS_WAITING = "[workers.reports_waiting] {{reports_waiting}} reported and you have not acted on it yet. read its report, then give it its next job (`journal worker say <n> \"<job>\"`), stop it, or `journal worker done <n>` once its work is merged or used"
 VERSION_3 = "[migration.version_3] a version 3 journal is kept whole in .journal/version-3, not yet brought across. the user brings it across from the viewer; never start it yourself"
 STALE = "[memory.stale] these are {{stale_after}} days old or more, check they still hold: {{stale}}. strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest"

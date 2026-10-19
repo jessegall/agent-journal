@@ -6198,12 +6198,12 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     running = outputs.save(CommandOutput(environment_id=1, chain="c1", command="python3 -m pytest -q", session="s1", folder=str(folder), moved=True), Actor.system())
     tick = lambda: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=time.time(), quiet_for=30.0))
     tick()
-    assert not any("still in the background" in line for line in typed), "a command moved to the background a moment ago is left to run"
+    assert not any("still running" in line for line in typed), "a command moved to the background a moment ago is left to run"
     app.container.get(Connection).execute("UPDATE command_outputs SET created_at = ? WHERE id = ?", ((datetime.now(timezone.utc) - timedelta(minutes=6)).isoformat(), running.id))
     tick()
     tick()
-    named = [line for line in typed if "still in the background" in line]
-    assert len(named) == 1 and f"output {running.id}, python3 -m pytest -q, still in the background" in named[0], "past five minutes the agent is told to look at it, once until five more pass"
+    named = [line for line in typed if "still running" in line]
+    assert len(named) == 1 and f"output {running.id} still running" in named[0] and "pytest" not in named[0], "past five minutes the agent is told to look at it, once until five more pass"
     (folder / "pid").write_text(str(os.getpid()))
     assert [o.id for o in outputs.in_background("s1")] == [running.id], "a chain whose runner lives is still in the background"
     (folder / "pid").write_text("99999999")
@@ -6307,3 +6307,27 @@ def test_a_worktree_for_a_worker_in_a_project_with_no_commit_is_refused_in_plain
     hook(app, "SessionStart")
     refused = app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
     assert refused.code == 1 and "the project has no commit yet" in refused.err
+
+
+def test_another_sessions_message_is_shown_as_theirs_and_claude_codes_notices_are_not_the_users_words(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    hook(app, "UserPromptSubmit", prompt='<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="Coco" from-mode="bypass">\nthe report is ready\n</cross-session-message>')
+    hook(app, "UserPromptSubmit", prompt="[Cross-session delivery notice] Your message to another session was held by that session (recipient: uds:/tmp/cc-socks/2.sock).")
+    app.runtime().deferred.drain()
+    said = app.container.get(Messages).recent(10)
+    peer = [m for m in said if m.data.get("kind") == "peer"]
+    assert len(peer) == 1 and peer[0].author == "system" and peer[0].data["peer"] == "Coco" and peer[0].text == "the report is ready", "named as the session that sent it"
+    assert not [m for m in said if m.author == "user"], "neither the peer's words nor Claude Code's notice is the user's"
+
+
+def test_a_piece_of_a_line_the_journal_typed_is_never_taken_for_the_users_words(app):
+    from journal.repositories.messages import Messages
+    from journal.support.typed_lines import TypedLines
+    hook(app, "SessionStart")
+    from journal.repositories.environments import Environments
+    app.container.get(TypedLines).typed(app.container.get(Environments).existing("main").id, "[journal] output 69, ssh root@host 'php -r \"echo 5)), PHP_EOL;\"' still running. look at it")
+    hook(app, "UserPromptSubmit", prompt="5)), PHP_EOL;\"' still running. look at it")
+    hook(app, "UserPromptSubmit", prompt="and stock sync is off right?")
+    app.runtime().deferred.drain()
+    assert [m.text for m in app.container.get(Messages).recent(10) if m.author == "user"] == ["and stock sync is off right?"], "the split-off half of the journal's line is the journal's; the user's own words are theirs"

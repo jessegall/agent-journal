@@ -33,6 +33,7 @@ const SYSTEM_TURNS = {
         kind: "card",
         data: {icon: card.icon, tone: card.tone, label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, shows: card.shows, visitor: card.visitor},
     }),
+    peer: (card) => ({kind: "message", data: {peer: card.peer}}),
     plugin: (card, label) => ({
         kind: "card",
         data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.collapsed ? "" : card.detail, title: card.detail, row: card.row},

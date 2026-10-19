@@ -254,7 +254,7 @@ class Fillers:
         return run.text if run else ""
 
     def background_outputs(self, ctx: Context) -> str:
-        return "; ".join(f"output {o.id}, {o.headline()}," for o in self.outputs.in_background(ctx.session))
+        return ", ".join(str(o.id) for o in self.outputs.in_background(ctx.session))
 
     def quiet_minutes(self, ctx: Context) -> str:
         """How many minutes the agent has been quiet, at a tick."""

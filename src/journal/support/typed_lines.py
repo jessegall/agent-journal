@@ -3,6 +3,9 @@ import time
 from journal.support.held_line import HeldLine
 from journal.engine.support.typed_line import TypedLine
 
+RECENT = 60.0
+"""How long a line the journal typed is known as its own, so a piece of one the terminal split is never taken for the user's words."""
+
 
 class TypedLines:
     """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost. A line for an agent with one still unconfirmed is held, since a line typed while the agent holds another in its queue lands in its prompt box and its Enter only breaks the line."""
@@ -10,6 +13,7 @@ class TypedLines:
     def __init__(self) -> None:
         self._waiting: list[TypedLine] = []
         self._held: list[HeldLine] = []
+        self._recent: list[TypedLine] = []
 
     def is_waiting(self, environment_id: int) -> bool:
         """Whether a line typed to the environment's agent is not yet seen back."""
@@ -26,7 +30,13 @@ class TypedLines:
         return held
 
     def typed(self, environment_id: int, line: str) -> None:
-        self._waiting.append(TypedLine(environment_id, line, time.time()))
+        now = time.time()
+        self._waiting.append(TypedLine(environment_id, line, now))
+        self._recent = [t for t in self._recent if now - t.at < RECENT] + [TypedLine(environment_id, line, now)]
+
+    def carries(self, environment_id: int, prompt: str) -> bool:
+        words = prompt.strip()
+        return bool(words) and any(t.environment_id == environment_id and words in t.line for t in self._recent if time.time() - t.at < RECENT)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
         """The oldest waiting line with these words is confirmed; False when none was waiting."""

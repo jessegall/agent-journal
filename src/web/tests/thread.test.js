@@ -94,3 +94,12 @@ describe("older turns", () => {
         expect(got.map((t) => t.id)).toEqual([1, 4, 2]);
     });
 });
+
+describe("a message from another session", () => {
+    test("is a message bubble naming the session that sent it, with its words", () => {
+        const [turn] = turns([card(7, 10, {kind: "peer", peer: "Coco"}, "the report is ready")]);
+        expect(turn.kind).toBe("message");
+        expect(turn.data.peer).toBe("Coco");
+        expect(turn.text).toBe("the report is ready");
+    });
+});
