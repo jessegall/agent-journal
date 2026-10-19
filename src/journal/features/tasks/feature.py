@@ -65,15 +65,18 @@ class Tasks(Feature):
 A task is one unit of work with a life: open, started, done. Only one is in hand at a time. A quick edit
 needs no task; file one for work that is an item of its own, that waits, or that the user should see tracked.
 
-- `journal task create "<title>" --brief "<what and where to start>"` files one; add `--start` to take it at once.
+- `journal task create "<title>" --brief "<what and where to start>"` files one; add `--start` to take it at once, and
+  `--from <message n>` when it comes from one of the user's messages.
+- `journal task rename <n> "<title>"` says the title again when the first one was wrong.
 - `journal task start <n>` takes a task in hand. `journal task list` shows every task here.
 - `journal task log <n> "<where it stands>"` after each step that matters; before a compaction, always.
 - `journal task done <n> --how "<outcome>"` finishes it. The output names the next open task.
 - One task in hand at a time: a second start is refused until the first is done or parked. `journal task park <n> "<why>"`
-  sets it aside for something else first; `journal task resume <n>` picks it up. Park for choice, never for being stuck.
+  sets a started task aside for something else first; `journal task resume <n>` picks it up. Park for choice, never for being stuck.
 - A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
-  `journal task unblock <n>` opens it again when what it waited on came.
+  `journal task unblock <n>` opens it again when what it waited on came. `journal task block <n> --on question:12`
+  (or `--on task:7`) opens it by itself once that row is answered or closed.
 - Waiting on something outside your hands, a command, a run or a person: `journal await "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
 - Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named

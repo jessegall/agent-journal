@@ -20,4 +20,5 @@ Documents are the project's, the same in every environment.
 - `journal doc create "<title>" --file <path> --abstract "<one line>"` writes one from a markdown file, its `##` headings
   as sections.
 - `journal doc show <n>` prints it; `journal doc list` names them.
+- `journal doc import <folder>` brings in the documents version 3 kept, each folder's doc.md.
 """, keywords=("doc", "docs", "document", "documents"))

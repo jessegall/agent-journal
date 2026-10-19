@@ -71,7 +71,8 @@ trigger for each event it needs, its counts shared by them; the canvas shows eac
 and a line says a count with {{value.<name>}}.
 
 - `journal chart show` prints every workflow in its event's order; `journal chart catalogue` lists everything a node may be.
-- `journal chart new "<title>" --on <event> [--for <state>]` makes one, at the end of its event's list; `journal chart order <event> <n>...` sets the order.
+- `journal chart new "<title>" --on <event> [--for <state>]` makes one, at the end of its event's list; `journal chart order <event> <n>...` sets the order;
+  `journal chart drop <n>` takes a workflow out, with its nodes.
 - `journal chart node <trigger|check|action> <key> [--text "<line>"] --in <n>`, `journal chart line <from> <to> [--port yes|no]`,
   `journal chart remove <n>` edit one by hand, a default workflow only with `--edit-default`, since an edit changes how
   the journal drives the agent; the Workflows page edits it as a drawing. `journal chart reset <n>` brings a shipped

@@ -42,8 +42,7 @@ The journal keeps this project's durable state beside the code and tells you wha
 moments you would otherwise get wrong. Every command is `journal <noun> <verb>`; `journal <noun> --help`
 lists the verbs.
 
-- **task**: what you are working on. A file write with no task started is refused; `journal task start <n>`
-  or `journal task create "<title>" --start`. Log where it stands with `journal task log <n> "<line>"`, finish
+- **task**: what you are working on: `journal task start <n>` or `journal task create "<title>" --start`. Log where it stands with `journal task log <n> "<line>"`, finish
   with `journal task done <n> --how "<outcome>"`.
 - **plan**: ordered tasks. `journal plan start <n>` follows it: finishing a task starts the next.
 - **message** and **question**: what you and the user say to each other. Answer unread messages first;
@@ -51,6 +50,11 @@ lists the verbs.
 - **fact**, **rule**, **reminder**: what must survive the context window. At a context mark, writes wait
   until you record one or say `journal nothing survives "<why>"`.
 - **sequence**, **worker**, **skill**: steps to follow, agents that write for you, and these files.
+- **shell**: a long command moves to the background; read any output by its number with `journal output read <n>`;
+  `journal reader add` keeps a reader that picks the lines worth seeing.
+- `journal environment here` after a compaction or a takeover lists what is in flight.
+- `journal await "<what>"` when you wait on something outside your hands, then end your turn.
+- Also: **report**, **doc**, **check**, **chart**, **plugin**, **secret**, **template**, **notice**; `journal <noun> --help` lists the verbs.
 - `journal stuck "<why>"` when you are truly stuck: the journal stays quiet until your next tool use.
 
 A line from the journal is an instruction, never a message: act on it, and write nothing about it in the chat.

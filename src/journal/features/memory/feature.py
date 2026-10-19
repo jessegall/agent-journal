@@ -55,6 +55,7 @@ At a mark of the context window, writes wait until you decide what must survive 
 - A **rule** binds the whole project, worded as the ruling itself: `journal rule create "Always ..." --reason "<why>"`.
   Only the user makes one; right after, read it again as one.
 - A **reminder** is what to keep doing here: `journal reminder create "<do this>"`.
+- One that no longer holds: `journal <fact|rule|reminder> strike <n>`.
 - Nothing worth keeping: `journal nothing survives "<why>"`.
 - `--keywords a,b` on any of them: when you write or run one of those words, the row is whispered back to you.
 - Facts, rules and reminders are handed to you at every session start.

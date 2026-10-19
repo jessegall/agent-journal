@@ -27,6 +27,8 @@ outside the project, and never in the journal; the journal masks a value anywher
 
 - A task needs a key you do not have: `journal secret request "<name>" --why "<what for>"`, with `--kind login` for a
   username and password. The user fills it on the Secrets page; never ask for a value in the chat.
+- `journal secret create "<title>" [--kind <kind>] [--brief "<how it is used>"]` makes an empty one;
+  `journal secret update <n> [--title "<title>"] [--brief "<how it is used>"]` changes it.
 - `journal secret list` names the secrets and what each waits for; `journal secret show <n>` shows its fields, which are
   filled and the programs it may go to.
 - Use one with `journal secret run <n or name> -- <program> <args>`: the program gets the hidden value on its input,
@@ -45,6 +47,7 @@ outside the project, and never in the journal; the journal masks a value anywher
   variables while it runs.
 - A value you made yourself, such as a generated password, goes in with `journal secret store <n> <field> <file>`,
   which deletes the file.
+- `journal secret where` names the file the values live in; `journal secret delete <n>` puts one away.
 - A deleted secret keeps its values thirty days for `journal secret restore <n>`, then they go.
 """, keywords=("secret", "secrets", "api key", "token", "password", "login"))
     listeners = (AlarmOnLeak, KeepOutOfPrivate, TellAllowed, AskWhenExpired, PurgeAfterThirtyDays)

@@ -30,7 +30,7 @@ stop, say you a line, show a card in the chat or run journal commands as itself.
   `journal plugin settings <name>` shows a plugin's settings.
 - A plugin's hold is followed like any other: do what it asks, or tell the user why you cannot. A journal command and
   the read of a skill always go through.
-- Only the user installs, upgrades, switches on or configures a plugin. When one would help, propose it:
+- Install, upgrade, enable, disable, configure and remove are the user's to run. When one would help, propose it:
   `journal plugin propose <folder or git address> --why "<what for>"` shows the user a card with all it would run.
 - Never write into `.journal/plugins`: an installed plugin's files are the user's to change. A plugin's own folder,
   when the user asks you to work on it, is yours to change; the journal switches the plugin off until the user has

@@ -71,6 +71,7 @@ The user leaves messages; you answer them before anything else.
   first, then the work. A face answers only a message of a few words.
 - After a compaction, a fresh start or a takeover, `journal environment here` shows what is in flight, the latest
   messages among it, and is owed before any other write; `journal message recent` shows the latest messages alone.
+- A picture in a message is named once you have looked: `journal message tag <n> <file> "<what it shows>"`.
 - A turn that only answers a journal line and changes nothing is kept out of the chat by itself; say in the chat only what
   the user needs to know.
 - Other tags, each opening a line of its own, run the command they stand for with the turn's words as its text:

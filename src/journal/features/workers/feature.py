@@ -39,13 +39,14 @@ class Workers(Feature):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" "<bounded brief>" --model <model> [--worktree]`: name it after a
+- `journal worker dispatch "<Name>" "<bounded brief>" --model <model> [--provider claude|codex] [--worktree]`: name it after a
   distinguished figure with a twist on their trade, give it one job, and name the least expensive model that fits.
 - `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.
 - A worker reports with `journal worker report <n> "<what it found or did>"`; you are told, and told again when
   the last one is back. `journal worker list` shows who is out.
-- A report is acted on once you give the worker its next job, stop it, or `journal worker done <n>` when its work is
-  merged or used; until then you are told of it again at each stop and every so many tool uses.
+- A report is acted on once you give the worker its next job, `journal worker stop <n>` it, or `journal worker done <n>`
+  when its work is merged or used; until then you are told again at once and every three minutes.
+- A worker that runs past 60 minutes is stopped and its report says so (setting workers.timeout_minutes, 0 for no limit).
 - Related work goes back to the worker that knows it: `journal worker say <n> "<next job>"` sends a worker that
   reported out again with its memory of the last job, in the same worktree. Never dispatch a fresh worker for
   work one already out has done part of.
