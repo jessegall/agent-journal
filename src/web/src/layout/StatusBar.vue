@@ -92,7 +92,7 @@ const waiting = computed(() => queued(rows("tasks"), autoOn.value));
 const line = computed(() => {
     if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";
-    if (waitingNow.value) return current.value ? named(current.value) : "";
+    if (waitingNow.value && current.value) return named(current.value);
     const text = lineOf(agent.value, current.value, waiting.value, workers.value);
     return text.startsWith("task ") ? text : oneLine(text, store.summary?.project);
 });

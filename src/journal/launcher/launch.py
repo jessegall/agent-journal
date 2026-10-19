@@ -82,12 +82,15 @@ class Launch:
         menu = Menu(self.root, self.package / "journal.py")
         named = self.env or self.worktree or self.resumed_in(menu)
         if not sys.stdin.isatty():
-            return Choice(named or "main", "", self.aside, self.skip)
+            return Choice(named or "main", "", self.aside, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         if not self.yes and UpdateOffer(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
             self.log("updated before the launch: starting again on the new version")
             os.execv(sys.executable, [sys.executable, *sys.argv])
-        return menu.choose(self.agent, named, self.new, self.aside, self.skip, self.yes)
+        return menu.choose(self.agent, named, self.new, self.aside, self.is_skipping(), self.yes)
+
+    def is_skipping(self) -> bool:
+        return self.skip or any(flag in self.args for flag in SKIP[self.agent])
 
     def resumed_in(self, menu: Menu) -> str:
         resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")

@@ -1342,6 +1342,10 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
     assert console.run(["search", "for", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
     marks = [m for m in app.container.get(Messages).in_() if m.data.get("kind") == "search"]
     assert marks[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in marks[0].data["detail"], "the mark opens what was found"
+    console.run(["check", "create", "Lint the base repository", "--command", "true", "--every", "0"], AGENT)
+    assert "check 1: Lint the base repository" in console.run(["search", "base", "repository"], AGENT).out, "every model with words of its own is searched, a check among them"
+    only = console.run(["search", "base", "repository", "--model", "plan,check"], AGENT).out
+    assert "plan 1: release" in only and "check 1" in only and "task 1" not in only, "--model narrows to the models named"
 
 
 def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once(app, monkeypatch, tmp_path):

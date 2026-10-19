@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass
 
 from journal.models.model import Model
@@ -7,6 +8,7 @@ from journal.models.model import Model
 class Template(Model):
     """Saved instructions and a starting outline for new items, written once and used many times. Project-wide."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "purpose", "brief")
     title: str = ""
     applies_to: tuple[str, ...] = ()
     """The kinds of row it is for, such as plan or doc; empty means any."""

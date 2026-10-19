@@ -397,3 +397,19 @@ def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_jou
     assert offer.newest().version == f"{major}.99.0", "the newest of the same major, never the next major"
     assert not offer.installed_newer() and installed == [], "Start as it is installs nothing"
     assert offer.installed_newer() and installed == [f"{major}.99.0"], "Update installs it before the journal starts"
+
+
+def test_every_start_asks_to_skip_the_permission_prompts_with_skip_selected_even_when_carrying_on(tmp_path: Path, monkeypatch):
+    asked = []
+    menu = menu_answering(tmp_path, monkeypatch, ["", "", ""])
+    picked = menu.screen.pick
+    monkeypatch.setattr(menu.screen, "pick", lambda heading, notes, options, default: asked.append((heading, default)) or picked(heading, notes, options, default))
+    choice = menu.choose("claude")
+    assert choice.resume == "abc" and choice.skip_prompts, "carrying on main's conversation still starts with the prompts skipped"
+    assert ("Run without permission prompts", 0) in asked, "the question is asked, with skip under the cursor"
+
+
+def test_a_start_command_that_skips_the_prompts_itself_is_not_asked(tmp_path: Path):
+    assert Launch.parse(["claude", "--dangerously-skip-permissions"], tmp_path).is_skipping()
+    assert Launch.parse(["codex", "--dangerously-bypass-approvals-and-sandbox"], tmp_path).is_skipping()
+    assert Launch.parse(["claude", "--skip"], tmp_path).is_skipping() and not Launch.parse(["claude"], tmp_path).is_skipping()

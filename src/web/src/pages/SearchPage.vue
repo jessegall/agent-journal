@@ -3,6 +3,7 @@ import EmptyState from "../kit/EmptyState.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import TextInput from "../kit/TextInput.vue";
 import Icon from "../kit/Icon.vue";
+import Switch from "../kit/Switch.vue";
 import {nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {tableOfWord} from "../domain/tables.js";
@@ -12,9 +13,31 @@ const q = ref(route.value.q);
 const found = ref([]);
 const searching = ref(false);
 const input = ref(null);
+const models = ref([]);
+const picked = ref([]);
+const conversations = ref(false);
 let request = 0;
 
-onMounted(() => nextTick(() => input.value?.focus()));
+onMounted(async () => {
+    nextTick(() => input.value?.focus());
+    models.value = (await api.search("")).models;
+});
+
+// No model picked searches them all; picking one narrows the search to the picked.
+function pick(model) {
+    picked.value = picked.value.includes(model) ? picked.value.filter((m) => m !== model) : [...picked.value, model];
+    run();
+}
+
+function everything() {
+    picked.value = [];
+    run();
+}
+
+function withConversations(on) {
+    conversations.value = on;
+    run();
+}
 
 // A find names its row as "task 12"; a line of a conversation names no row and opens nothing.
 const opens = (find) => {
@@ -30,7 +53,7 @@ async function run() {
     searching.value = Boolean(words);
     if (!words) return;
     try {
-        const got = await api.search(words);
+        const got = await api.search(words, {models: picked.value, conversations: conversations.value});
         if (current === request) found.value = got.found;
     } finally {
         if (current === request) searching.value = false;
@@ -58,6 +81,13 @@ watch(
             <Icon name="search" />
             <TextInput ref="input" :value="q" placeholder="Search everything on this environment…" autofocus @input="q = $event.target.value" />
         </form>
+        <div class="narrow">
+            <button type="button" :class="['model', {on: !picked.length}]" @click="everything()">Everything</button>
+            <template v-for="model in models" :key="model">
+                <button type="button" :class="['model', {on: picked.includes(model)}]" @click="pick(model)">{{ model.replace("_", " ") }}</button>
+            </template>
+            <Switch class="conversations" :on="conversations" word="Also search the agents' conversations" beside @change="withConversations" />
+        </div>
         <template v-if="searching">
             <Skeleton class="cards" shape="cards" :count="3" label="Searching" />
         </template>
@@ -78,6 +108,34 @@ watch(
 </template>
 
 <style scoped>
+.narrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0 4px;
+}
+
+.model {
+    padding: 2px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.model.on {
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--text);
+}
+
+.conversations {
+    margin-left: auto;
+}
+
 .search {
     padding: 18px 22px;
 }
