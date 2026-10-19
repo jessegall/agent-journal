@@ -1039,3 +1039,13 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   worker still out is watched again.
 - Words the hooks missed are swept from the transcript each tick, read on from the hooks' own position past the
   seconds the hooks have (`messages.sweep_after`, 10 by default).
+
+## Rulings of 2026-10-20
+
+- A workflow is self-contained: it checks every condition it acts on itself, auto mode among them, and never counts on
+  an earlier workflow stopping the walk to keep it from acting. Stop the later workflows (formerly Run no later
+  workflows) is a side effect a workflow may opt into. The shipped checkpoint wait checks auto mode is off, the
+  carry-on and the log ask check a task is in hand, and no shipped workflow stops the later ones any more (message 7165).
+- The state of an agent that ran `journal await` is named Waiting, beside Waiting on a question and Waiting on a worker.
+- A setting's help says what it does in plain words; the workflows that read it show under it as links (message 7014).
+- Tunler's version and domains, and the MCP servers' check, are kept for an hour and asked again after a change.

@@ -51,7 +51,7 @@ const emit = defineEmits(["drag", "remove", "open-message", "select", "text", "p
                 <Icon name="lock" :size="11" class="chart-node-lock" :title="LOCK_WHY" />
             </template>
             <template v-if="stopsTheWalk(node)">
-                <span class="chart-node-stops" :title="STOPS_WHY">no later workflows</span>
+                <span class="chart-node-stops" :title="STOPS_WHY">stops the later ones</span>
             </template>
             <template v-if="waiting">
                 <span class="chart-node-waiting" title="An agent's last walk of this workflow stopped here">

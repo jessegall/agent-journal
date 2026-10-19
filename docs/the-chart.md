@@ -41,7 +41,7 @@ journal clears the compiled graphs, so the next walk reads the edit.
 Every shipped workflow holds one concern, and the run order and the end of a walk carry the design: at an event the
 Always workflows run first, then each state's in the order its state ships at, a child state before its parent (the
 agent following a plan runs its own workflows and then Working's), and the first workflow that keeps the agent from
-stopping, or says Run no later workflows, ends the walk so nothing after it runs. Two kinds of number are read: the
+stopping, or says Stop the later workflows, ends the walk so nothing after it runs. Two kinds of number are read: the
 readings, which the journal takes from its own record (edits since the log, uses since the newest unread message,
 owed since a message was read and left unanswered, namings of an unread inbox, lines since the etiquette reminder),
 and the counts a workflow keeps itself, each its own and for each agent. What the agent owes the journal, the journal skill and a state's skill, the
@@ -154,7 +154,7 @@ action, so one broken step never silences what follows.
 ## When the chart is walked
 
 An agent event walks its workflows in two parts. Those that can change the hook's answer or move the agent, any with a
-hold, a held stop, a line said, a move or Run no later workflows, walk before the hook is answered. Those that only
+hold, a held stop, a line said, a move or Stop the later workflows, walk before the hook is answered. Those that only
 type into the terminal, show a card or start a sequence walk after the reply on the deferred worker, in the same run
 order, so the agent never waits on them; a walk ended in the first part ends the second part too. A tick, answered by
 no hook, walks them all at once.
@@ -225,7 +225,7 @@ which the page marks Claude only.
 
 A lock marks the journal's law. A locked workflow runs first at its event, keeps the head of the list, and cannot
 be deleted or turned off. A locked step, the holds the journal ships as guards of its protocol, cannot be taken
-out, reworded or turned off, and you cannot put a check or Run no later workflows before it on its path: nothing the user
+out, reworded or turned off, and you cannot put a check or Stop the later workflows before it on its path: nothing the user
 adds decides whether the law runs. What you can do around it: add steps after it, change the numbers in its text,
 and Reset to default, which draws it back. A workflow holding a locked step cannot be turned off either. The page
 shows the lock on the row and on the card, with one line saying why, and the save, the commands and the order

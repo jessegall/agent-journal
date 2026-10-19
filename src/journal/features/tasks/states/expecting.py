@@ -9,7 +9,7 @@ class Expecting(Paused):
     """The agent waits for something outside its hands, named in words. Stopping is quiet; its own next tool use is working again and takes it back, through the workflow Expecting; every five quiet minutes it is asked to look."""
 
     name = "expecting"
-    title = "Expecting something outside"
+    title = "Waiting"
     what: str = ""
 
     def awaiting(self) -> tuple[str, str]:

@@ -1622,6 +1622,8 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     assert Chain.split("for f in a b; do echo $f; done && if true; then echo y; fi; case $x in a) echo a;; esac && ls") == ["for f in a b; do echo $f; done", "if true; then echo y; fi", "case $x in a) echo a;; esac", "ls"]
     assert Chain.split("echo `echo a; echo b` && cat <<EOF && echo x\nbody; with && stuff\nEOF") == ["echo `echo a; echo b`", "cat <<EOF && echo x\nbody; with && stuff\nEOF"]
     assert Chain.split('[[ -n a && -n b ]] && echo ok; echo "${x:-a;b}" && (( 1 && 1 ))') == ["[[ -n a && -n b ]]", "echo ok", 'echo "${x:-a;b}"', "(( 1 && 1 ))"]
+    loop = "for f in $files; do sed -i '' 's/a/b/g; s/c/d/g' \"$f\"; done"
+    assert Chain.split(f'files=$(git grep -l "x y" -- src tests); echo "$files"; {loop}; sed -n 1,2p notes.md') == ['files=$(git grep -l "x y" -- src tests)', 'echo "$files"', loop, "sed -n 1,2p notes.md"], "a loop over a list, with ; inside its quotes and its body, is one part"
     assert Chain.split("for x in a b; echo $x && echo y; echo z; repeat 2 echo r && echo s; echo t") == ["for x in a b; echo $x && echo y", "echo z", "repeat 2 echo r && echo s", "echo t"]
     assert Chain.split("seq 2 | while read -r n; do echo $n; done; echo after") == ["seq 2 | while read -r n; do echo $n; done", "echo after"]
     assert Chain.split("for i in 1; do echo done; done; echo fi && case a in a) echo one;& b) echo two;; esac") == ["for i in 1; do echo done; done", "echo fi", "case a in a) echo one;& b) echo two;; esac"]
@@ -3440,18 +3442,18 @@ def test_a_stop_here_node_ends_the_events_walk_so_no_later_workflow_runs(app):
     after = add(first, "action", "say", "--text", "[chart] never said")
     link(t1, speaks)
     link(speaks, stop)
-    assert "leads out of Run no later workflows" in console.run(["chart", "line", str(stop), str(after)], USER).err, "nothing follows a Run no later workflows"
+    assert "leads out of Stop the later workflows" in console.run(["chart", "line", str(stop), str(after)], USER).err, "nothing follows a Stop the later workflows"
     second = int(console.run(["chart", "new", "Later one", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
     t2 = next(n.id for n in charts.nodes_of(charts.find(second)) if n.key == "tool_finished")
     later = add(second, "action", "say", "--text", "[chart] the later one speaks")
     link(t2, later)
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
-    assert "first speaks" in said(body) and "the later one speaks" not in said(body) and "never said" not in said(body), "the walk ends at Run no later workflows: nothing after it, no later workflow"
+    assert "first speaks" in said(body) and "the later one speaks" not in said(body) and "never said" not in said(body), "the walk ends at Stop the later workflows: nothing after it, no later workflow"
     walked = entries.of_kind(WALKED, 3)[0]
     assert walked.data["stopped_at"] == stop and [w for w in walked.data["workflows"] if charts.find(w).state] == [first] and second not in walked.data["workflows"], "the record says where the walk stopped and that the later workflow never ran"
-    assert any("Run no later workflows in this workflow skips" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Run no later workflows skips, by name"
+    assert any("when it does, these do not run" in w and "Later one" in w for w in app.container.get(Validation).warnings(charts.find(first))), "the save warns what the Stop the later workflows skips, by name"
     out = console.run(["chart", "try", "tool_finished"], AGENT).out
-    assert "would run no later workflows of the event" in out and "the later one speaks" not in out, "the dry run says where it would stop"
+    assert "would stop the later workflows of the event" in out and "the later one speaks" not in out, "the dry run says where it would stop"
 
 
 def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_command(app):

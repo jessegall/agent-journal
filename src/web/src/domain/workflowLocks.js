@@ -1,7 +1,7 @@
 // a locked workflow or step is the journal's law: what the pages say about it and which controls they take away
 export const LOCK_WHY = "Locked: this step ships with the journal and always runs here.";
 export const LOCK_RULE =
-    "You can add steps after it, change its numbers and reset to default; it cannot be taken out, reworded or turned off, and you cannot put a check or Run no later workflows before it.";
+    "You can add steps after it, change its numbers and reset to default; it cannot be taken out, reworded or turned off, and you cannot put a check or Stop the later workflows before it.";
 
 export function stayOn(workflow) {
     if (!workflow) return "";

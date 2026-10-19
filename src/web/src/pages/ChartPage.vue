@@ -113,7 +113,7 @@ const detailLines = computed(() => {
     if (node.kind === "check")
         lines.push(...readingLines(standing.value).filter((l) => (node.text || "").startsWith(l.label.split(",")[0])));
     if (node.locked) lines.push({label: "Locked", words: LOCK_WHY});
-    if (stopsTheWalk(node)) lines.push({label: "No later workflows", words: STOPS_WHY});
+    if (stopsTheWalk(node)) lines.push({label: "Stops the later workflows", words: STOPS_WHY});
     return lines;
 });
 const MAIN_LINES = ["Message", "Count now"];
@@ -520,7 +520,7 @@ const trialWords = computed(() => {
     if (!ran) return "";
     const would = ran.would.length ? ran.would.join(" ") : "the journal would do nothing.";
     const order = ran.titles && ran.titles.length ? ` It would run ${ran.titles.join(", then ")}.` : "";
-    const stopped = ran.stopped_at ? ` It would run no later workflows after step ${ran.stopped_at}.` : "";
+    const stopped = ran.stopped_at ? ` It would stop the later workflows after step ${ran.stopped_at}.` : "";
     return `Test run: ${would}${order}${stopped}${ran.assumed ? ` It assumed ${ran.assumed}.` : ""} Plugins are not asked in a test run.`;
 });
 const states = ref([]);

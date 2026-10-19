@@ -44,7 +44,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.ACTION, 'count_begin', 'Start a count if not started', "sets the agent's count named in the text to zero only when this workflow has not started it, so it is not reset on every event", takes_text=True),
         Entry(NodeKind.ACTION, 'count_one', 'Count one', "adds one to the agent's count named in the text", takes_text=True),
         Entry(NodeKind.ACTION, 'run_workflow', 'Run a workflow', 'runs the workflow named in the text by its title, from its trigger on, as part of this event and in place, so one workflow is used in several; a workflow cannot run itself, directly or through another', takes_text=True),
-        Entry(NodeKind.ACTION, 'stop_here', 'Run no later workflows', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),
+        Entry(NodeKind.ACTION, 'stop_here', 'Stop the later workflows', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),
         Entry(NodeKind.ACTION, 'show_card', 'Show a card in the chat', 'a card in the chat with the message, so the user sees what the journal did', takes_text=True),
         Entry(NodeKind.ACTION, 'wait_outside', 'Wait for something outside', 'the agent waits for what the text names, it stays in effect until the agent uses a tool itself, you send it a word, or Send the agent back runs; one wait at a time', takes_text=True),
         Entry(NodeKind.ACTION, 'mark_stuck', 'Mark the agent stuck', "the agent is stuck for the reason in the text, and the journal says nothing until the agent's next tool use; one wait at a time", takes_text=True),
@@ -64,7 +64,7 @@ The journal's conduct toward the agent is workflows: each answers the events it 
 event's workflows run in the order the user sets, the locked guards first, then the Always ones, then the states'.
 A trigger is an event, a check a yes or no question, an action what the journal does; lines join them, then from a
 trigger or an action, yes or no from a check, one line per port. A locked workflow or step ships with the journal and cannot be removed:
-not deleted, not turned off, not reworded or gated; a Run no later workflows node ends the event's walk for everything after
+not deleted, not turned off, not reworded or gated; a Stop the later workflows node ends the event's walk for everything after
 it; the first hold of an event wins and one move per event is taken. A workflow keeps its own counts for each agent:
 started, counted one and read by name, Wait here until a count reaches N waiting until it has; a workflow may hold a
 trigger for each event it needs, its counts shared by them; the canvas shows each agent's count and where it waits,

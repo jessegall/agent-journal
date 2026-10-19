@@ -81,7 +81,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 25
+DRAWINGS_VERSION = 26
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -554,14 +554,8 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 240, 92, (Guard("plan_at_checkpoint"), Guard("auto_mode")), "block_stop", CHECKPOINT_PASSED)
 
     def checkpoint_waits_for_the_user(self, chart: Chart, ends: list) -> list:
-        """A plan at a checkpoint with auto mode off: the agent is told the user looks first, and the walk stops so no later workflow tells it to carry on."""
-        checkpoint = self.node(chart, NodeKind.CHECK, "plan_at_checkpoint", x=240, y=92)
-        looks = self.node(chart, NodeKind.ACTION, "say", CHECKPOINT, x=240, y=184)
-        stop = self.node(chart, NodeKind.ACTION, "stop_here", x=240, y=276)
-        self.chain(ends, checkpoint)
-        self.line(checkpoint, looks, YES)
-        self.line(looks, stop, THEN)
-        return [(checkpoint, NO), (stop, THEN)]
+        """A plan at a checkpoint with auto mode off: the agent is told the user looks first."""
+        return self.guarded(chart, ends, 240, 92, (Guard("plan_at_checkpoint"), Guard("auto_mode", passes=NO)), "say", CHECKPOINT)
 
     def ask_about_parked(self, chart: Chart, ends: list) -> list:
         """As the clock ticks on an agent at rest with a parked task: after a minute of quiet, ask whether it can go on."""
@@ -592,7 +586,7 @@ class ShippedChart(Seed):
 
     def carry_on(self, chart: Chart, ends: list) -> list:
         """A task in hand at a stop or a session start: carry on."""
-        return self.guarded(chart, ends, 240, 92, (), "say", CARRY_ON)
+        return self.guarded(chart, ends, 240, 92, (Guard("task_in_hand"),), "say", CARRY_ON)
 
     def where_the_work_stands(self, chart: Chart, ends: list) -> list:
         """A session going on after its context was compacted, with a task in hand: the task, its last log line whole and the files not committed."""
@@ -600,7 +594,7 @@ class ShippedChart(Seed):
 
     def ask_for_a_log(self, chart: Chart, ends: list) -> list:
         """A task in hand whose log is old, at a stop or a session start: log where it stands."""
-        return self.guarded(chart, ends, 240, 92, (Guard("log_stale_over", "10 minutes"),), "say", LOG_OLD)
+        return self.guarded(chart, ends, 240, 92, (Guard("task_in_hand"), Guard("log_stale_over", "10 minutes")), "say", LOG_OLD)
 
     def working_at_tick(self, chart: Chart, ends: list) -> list:
         """A task in hand as the clock ticks: still open after a quiet quarter hour."""

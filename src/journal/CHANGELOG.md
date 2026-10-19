@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.7
+
+- Every shipped workflow checks what it acts on itself: the checkpoint wait checks auto mode is off, the carry-on and the log ask check a task is in hand, and none counts on an earlier one stopping the walk.
+- Run no later workflows is now Stop the later workflows, and the note about it says plainly what does not run.
+- The state of an agent waiting on something it named with journal await is called Waiting.
+
 ## 4.1.6
 
 - The MCP page shows every server as the last check found it as soon as it opens: the first look starts the check, with skeleton rows until it lands, and the check is kept for an hour; adding or removing a server checks again, and Check all is now Refresh.
