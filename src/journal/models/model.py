@@ -11,7 +11,6 @@ class Model:
     """A row. Data only; it never touches the database. Every row says who made it and who last changed it."""
 
     text_fields: ClassVar[tuple[str, ...]] = ()
-    handed_to_agent: ClassVar[bool] = False
 
     id: int | None = None
     created_at: datetime | None = None

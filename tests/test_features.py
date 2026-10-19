@@ -6092,8 +6092,10 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
     notes = tmp_path / "notes.md"
     notes.write_text("The ideas, sorted.\n")
     assert made(console.run(["dump", "create", "a list of ideas"], USER)) == 1
-    from journal.repositories.agents import Agents
-    assert app.container.get(Agents).for_session("s1").sequence_runs, "the user's dump starts the sorting sequence for the agent here"
+    machine = app.container.get(Machine)
+    assert machine.current("s1").name == "sorting_dump", "the user's dump moves the agent into sorting it"
+    stop = hook(app, "Stop")[1]
+    assert stop.get("decision") == "block" and "dump 1 is not filed yet" in stop.get("reason", ""), "the stop is held while the dump is open"
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
     filing.attach(1, "a.png", Where("main").actor)
     assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).out and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).out
@@ -6103,6 +6105,7 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
     assert console.run(["dump", "filed", "1", "a.png", "x", "--refs", "docs:99"], AGENT).code != 0, "a row that is not there is refused"
     assert console.run(["dump", "failed", "1", "a.png", "unreadable"], AGENT).out.endswith("closed: 1 filed, 1 failed\n")
     assert typed[-1].startswith("[journal] dump 1 is filed (1 filed, 1 failed)")
+    assert machine.current("s1").name == "idle", "the dump filed, the agent is back where it was"
     assert console.run(["dump", "stop", "1"], AGENT).code != 0 and console.run(["dump", "remove", "1"], AGENT).code != 0, "only the user stops or removes"
     assert app.container.get(Dumps).find(1).made_refs() == ["docs:1"]
     console.run(["dump", "remove", "1"], USER)

@@ -35,15 +35,6 @@ FILING_A_WRITTEN_DOCUMENT = Sequence(
         "Tell the user in one or two plain lines what the document concludes, then its reference on a line of its own, like doc 41, never in backticks",
     ),
 )
-SORTING_DUMPED_FILES = Sequence(
-    title="Sort dumped files",
-    starts_on="dump.created",
-    steps=(
-        "Read each item: `journal dump items <dump n>` lists what was dropped; read an item in full and at once record what it is with `journal dump note <dump n> <item> \"<what it is>\"`, before you open the next; split pasted text that holds several things with `journal dump split <dump n> \"Summary, Transcript, Link\"`, and name the dump for what the pile is about with `journal dump name <dump n> \"<name>\"`",
-        "File each subject: one document per subject, never one big document, named for what it is about and not after its file; write a summary, the decisions or the action items where they help, and make action items to-dos; never make a plan or start work. Log each step with `journal dump log <dump n> \"<short title>\"`, file each item as soon as it is ready with `journal dump filed <dump n> <item> \"<what you did>\" --refs \"<ref, ref>\"` (or `journal dump failed`), and ask only what you cannot tell with `journal dump ask <dump n> \"<question>\" --guesses \"<one>|<two>\"`; talk to the user in the dump with `journal dump say`, never in the chat",
-        "Summarise and suggest next steps: once every item is filed the dump closes; sum up what you filed and where with `journal dump offer <dump n> '[...]' --summary \"<two or three plain lines>\"`, offering up to four next steps as {\"ask\": \"<question>\", \"label\": \"<button>\"}, or '[]' for none",
-    ),
-)
 UPDATE_WORDS = ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up", "what happened since",
                 "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken", "praat me bij", "bijpraten", "wat is er gebeurd")
 """The words that start Writing an update, as a shipped trigger."""
@@ -52,5 +43,6 @@ CHECKING_WORDS = ("check the instruction files", "check agents.md", "check claud
 """The words that start Checking the instruction files, as a shipped trigger."""
 WORDS = {WRITING_AN_UPDATE.title: UPDATE_WORDS, CHECKING_THE_INSTRUCTION_FILES.title: CHECKING_WORDS}
 """The words each shipped sequence starts on, written as a trigger with the sequence and never again, so a project may take them off."""
-SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FILING_A_WRITTEN_DOCUMENT, SORTING_DUMPED_FILES)
+RETIRED = ("Sort dumped files",)
+SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FILING_A_WRITTEN_DOCUMENT)
 """The sequences the journal ships: written at boot when a sequence of that title is not there yet, and brought up to date while nobody but the journal has changed it, so a project may edit its copy."""

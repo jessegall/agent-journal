@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from journal.features.seed import Seed
-from journal.features.sequences.shipped import SHIPPED, WORDS
+from journal.features.sequences.shipped import RETIRED, SHIPPED, WORDS
 from journal.models.actor import Actor
 from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
@@ -23,6 +23,10 @@ class ShippedSequences(Seed):
                 self.sequences.save(sequence, Actor.system())
             elif standing.updated_by == Actor.system() and (standing.steps, standing.finishes_in) != (sequence.steps, sequence.finishes_in):
                 self.sequences.save(replace(standing, steps=sequence.steps, finishes_in=sequence.finishes_in), Actor.system())
+        for title in RETIRED:
+            standing = present.get(title)
+            if standing is not None and standing.updated_by == Actor.system():
+                self.sequences.delete(standing, Actor.system())
         for title, words in WORDS.items():
             if title not in present and not self.triggers.starting(title):
                 self.triggers.save(Trigger(words=words, action=TriggerAction.SEQUENCE, text=title), Actor.system())

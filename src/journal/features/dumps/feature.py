@@ -1,6 +1,8 @@
 from journal.engine.nudge import Nudge
 from journal.features.dumps.commands.dump_command import DumpCommand
-from journal.features.dumps.listeners.carry_on_filing import CarryOnFiling
+from journal.features.dumps.states.sorting_dump import SortingDump
+from journal.features.dumps.listeners.follow_dump import FollowDump
+from journal.features.dumps.listeners.start_sorting_dump import StartSortingDump
 from journal.features.dumps.listeners.tell_answer import TellAnswer
 from journal.features.dumps.listeners.tell_arrival import TellArrival
 from journal.features.dumps.listeners.tell_choice import TellChoice
@@ -14,15 +16,16 @@ class DumpsFeature(Feature):
     title = "Dumps"
     help = "The agent sorts files you drop together by subject and files each as a row of its own."
     commands = (DumpCommand,)
-    listeners = (TellArrival, TellAnswer, TellChoice, TellFiled, CarryOnFiling)
+    states = (SortingDump,)
+    listeners = (StartSortingDump, FollowDump, TellArrival, TellAnswer, TellChoice, TellFiled)
 
     ARRIVED = Nudge(name, "arrived", "dump {{n}} has {{count}} to file - journal dump items {{n}}", "load journal-dumps if it is not loaded, then file it step by step. Tell the user what you do with journal dump log; ask only in the dump window, never in the chat.", repeat_after=300)
-    CARRY_ON = Nudge(name, "carry_on", "dump {{n}} still has {{count}} to file - carry on filing it", "finish it without waiting for the user: journal dump items {{n}} shows what is left. Ask only what you cannot tell, with journal dump ask.", repeat_after=300)
+    STILL_OPEN = Nudge(name, "still_open", "dump {{n}} is not filed yet: carry on filing it", "journal dump items {{n}} shows what is left; ask only what you cannot tell, with journal dump ask. The dump is done once every item is filed or failed.", repeat_after=0)
     ANSWERED = Nudge(name, "answered", "the user answered your question on dump {{n}} - {{answer}}", "carry on filing with that answer. The question was: {{question}}", repeat_after=0)
     FILED = Nudge(name, "filed", "dump {{n}} is filed ({{outcome}}) - sum it up for the user", """sum up what you filed and where in two or three lines, with any next step worth taking as a button on the dump: journal dump offer {{n}} '[{"ask": "Want me to plan the mobile layout?", "label": "Plan it"}]' --summary "<what you filed and where>", or '[]' for none. Start nothing yourself.""", repeat_after=0)
     CHOSE = Nudge(name, "chose", "the user chose {{label}} for dump {{n}}", "carry that step out, and log it on the dump.", repeat_after=0)
     DECIDE = Nudge(name, "decide", "the user left dump {{n}} to you - finish it", "take the next step you think best and file anything still open yourself, logging each step on the dump. Nothing waits for the user.", repeat_after=0)
-    nudges = (ARRIVED, CARRY_ON, ANSWERED, FILED, CHOSE, DECIDE)
+    nudges = (ARRIVED, STILL_OPEN, ANSWERED, FILED, CHOSE, DECIDE)
 
     skill = Skill("dumps", "File what the user dropped in a dump: sort the pile by subject into rows of their own; load it when a dump arrives", """
 # Dumps
