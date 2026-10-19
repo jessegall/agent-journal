@@ -14,7 +14,7 @@ class QuestionsShaper(Shaper):
 
     @staticmethod
     def row(q) -> V3Row:
-        answered = q.answer is not None
+        answered = q.is_answered()
         options = [{"title": o, "description": ""} for o in q.options]
         chosen = next((i + 1 for i, o in enumerate(q.options) if answered and o == q.answer), 0)
         return V3Row.of("question", q, title=q.text, seen=[AGENT, USER] if answered else [AGENT], outcome=q.answer, completed=seconds(q.updated_at) if answered else 0.0,

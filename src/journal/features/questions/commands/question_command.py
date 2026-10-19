@@ -61,7 +61,7 @@ class QuestionCommand(Command):
                 print(f"  {link.kind} message {message.id} from the {message.author}: {message.text}")
             else:
                 print(f"  {link.kind} {other}")
-        if question.answer is not None:
+        if question.is_answered():
             print("  act on the answer")
         return 0
 

@@ -58,6 +58,10 @@ class AdvancePlan(Listener[Updated]):
             blocked = [str(t.id) for t in self.plans.tasks_of(plan) if t.state in (TaskState.BLOCKED, TaskState.PARKED)]
             print(PlansFeature.WAITING.about(n=plan.id, blocked=f"tasks {', '.join(blocked)} wait" if len(blocked) > 1 else f"task {blocked[0]} waits").rendered())
             return
+        if self.tasks.in_hand() is not None:
+            self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id))
+            print(PlansFeature.NEXT.about(n=plan.id, task=following.id).rendered())
+            return
         started = self.tasks.save(following.started(datetime.now(timezone.utc)), event.by)
         self.machine.move(event.by.id, task.environment_id, FollowingPlan(plan_id=plan.id, task_id=started.id))
         print(PlansFeature.NEXT.about(n=plan.id, task=started.id, title=started.title).rendered())

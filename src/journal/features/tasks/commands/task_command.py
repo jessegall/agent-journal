@@ -127,7 +127,14 @@ class TaskCommand(Command):
         return 0
 
     def _name_next(self, done: Task) -> None:
+        """With nothing in hand, a parked task is named before any open one: it was started and put aside for the work just done."""
         from journal.features.tasks.feature import Tasks
+        if self.tasks.in_hand() is not None:
+            return
+        parked = self.tasks.in_state(TaskState.PARKED)
+        if parked:
+            print(Tasks.PARKED_STILL.about(n=parked[0].id, why=parked[0].parked_why).rendered())
+            return
         open_ = self.plans.free()
         if open_:
             print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())

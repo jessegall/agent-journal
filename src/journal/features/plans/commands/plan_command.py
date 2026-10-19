@@ -12,6 +12,7 @@ from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
+from journal.models.task_state import TaskState
 from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
@@ -134,8 +135,10 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         if plan.state not in (PlanState.APPROVED, PlanState.PARKED, PlanState.STARTED):
             raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
-        plan = self.plans.save(plan.started(), where.actor)
         task = self.plans.next_task(plan)
+        if task is not None:
+            self.tasks.refuse_second(task.started(datetime.now(timezone.utc)))
+        plan = self.plans.save(plan.started(), where.actor)
         if task is None:
             print(f"plan {plan.id} has no open task")
             return 1
@@ -147,6 +150,8 @@ class PlanCommand(Command):
 
     def park(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(self.plans.find(args.n).parked(), where.actor)
+        for task in [t for t in self.plans.tasks_of(plan) if t.state == TaskState.STARTED]:
+            self.tasks.save(task.parked(f"plan {plan.id} was parked"), where.actor)
         self.stop_following(plan, where)
         print(f"plan {plan.id} parked")
         return 0

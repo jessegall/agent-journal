@@ -1618,7 +1618,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
     app.console().run(["task", "create", "second"], AGENT)
     hook(app, "SessionStart", session_id="s2")
     refused = app.console().run(["task", "start", "2"], Where("main", "s2"))
-    assert refused.code == 1 and "task 1 is in progress" in refused.err, "another session cannot start a second"
+    assert refused.code == 1 and "task 1 is in hand" in refused.err, "another session cannot start a second"
     app.console().run(["task", "park", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
 
@@ -5148,7 +5148,8 @@ def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app, mo
     command = dict(tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
     hook(app, "PostToolUse", **command)
     assert app.container.get(Tasks).find(1).state == "started", "the head was not made by this command"
-    app.console().run(["task", "park", "2", "later"], AGENT)
+    for line in (["task", "park", "1", "first"], ["task", "start", "2"], ["task", "park", "2", "later"], ["task", "resume", "1"]):
+        app.console().run(line, AGENT)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "New\n\nJournal: tasks done 1 and 2 now"], cwd=root, check=True)
     hook(app, "PostToolUse", **command)
     assert app.container.get(Tasks).find(1).state == "done" and app.container.get(Tasks).find(2).state == "parked"
@@ -5166,3 +5167,37 @@ def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder
     with app.container.get(Scope).of(MAIN):
         kept = app.container.get(CommandOutputs).every()
     assert [o.chain for o in kept] == ["run1", "run2"] and not folders[0].exists() and folders[2].exists(), "the newest kept, the oldest gone with its files"
+
+
+def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app):
+    from journal.repositories.plans import Plans
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "add", "1", "second"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1", "2"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "aside", "--start"], AGENT)
+    refused = console.run(["plan", "start", "1"], AGENT)
+    assert refused.code == 1 and "task 3 is in hand" in refused.err, "a plan's start obeys the one task in hand"
+    assert app.container.get(Plans).find(1).state == "approved", "a refused start leaves the plan as it was"
+    assert console.run(["task", "park", "2", "x"], AGENT).code == 1, "a task never started is not parked"
+    console.run(["task", "park", "3", "the plan first"], AGENT)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["plan", "park", "1"], AGENT)
+    tasks = app.container.get(Tasks)
+    assert tasks.find(1).state == "parked" and tasks.in_hand() is None, "a parked plan parks its task in hand"
+    done = console.run(["task", "resume", "1"], AGENT)
+    assert done.code == 0
+    out = console.run(["task", "done", "1", "--how", "h"], AGENT).out
+    assert "task 3 is still parked" in out, "with nothing in hand, a parked task is named first"
+    console.run(["task", "resume", "3"], AGENT)
+    console.run(["task", "done", "3", "--how", "h"], AGENT)
+    console.run(["task", "start", "2"], AGENT)
+    console.run(["task", "done", "2", "--how", "h"], AGENT)
+    assert app.container.get(Plans).find(1).state == "done", "a parked plan whose last task closes is done"

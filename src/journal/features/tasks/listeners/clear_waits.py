@@ -5,7 +5,6 @@ from journal.models.actor import Actor
 from journal.models.question import Question
 from journal.models.ref import Ref
 from journal.models.task import Task
-from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
 from journal.repositories.tasks import Tasks
 from journal.supervisor_link import SupervisorLink
@@ -28,8 +27,8 @@ class ClearWaits(Listener[Updated]):
     def ended(event: Updated) -> bool:
         model, was = event.model, event.was
         if isinstance(model, Question):
-            return model.answer is not None and (was is None or was.answer is None)
-        return isinstance(model, Task) and model.state in (TaskState.DONE, TaskState.CANCELLED)
+            return model.is_answered() and (was is None or not was.is_answered())
+        return isinstance(model, Task) and model.is_closed()
 
     def cleared(self, task: Task, ref: Ref) -> None:
         from journal.features.tasks.feature import Tasks as TasksFeature

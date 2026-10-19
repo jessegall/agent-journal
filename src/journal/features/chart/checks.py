@@ -261,7 +261,7 @@ class Checks:
 
     def question_answered(self, ctx: Context) -> bool:
         event = ctx.event
-        return isinstance(event, Updated) and isinstance(event.model, Question) and event.model.answer is not None and event.was is not None and event.was.answer is None
+        return isinstance(event, Updated) and isinstance(event.model, Question) and event.model.is_answered() and event.was is not None and not event.was.is_answered()
 
     def agent_waits_on_the_question(self, ctx: Context) -> bool:
         state = self.state(ctx)
