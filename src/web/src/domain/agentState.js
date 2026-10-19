@@ -12,8 +12,13 @@ export function currentWork(works) {
     return open.find((w) => !w.data.awaiting) || open[0] || null;
 }
 
-export function waitsFor(works) {
-    const awaiting = currentWork(works)?.data.awaiting;
+function awaited(agent, works) {
+    if (agent?.data.awaiting) return agent.data;
+    return currentWork(works)?.data || {};
+}
+
+export function waitsFor(agent, works) {
+    const awaiting = awaited(agent, works).awaiting;
     return awaiting ? `for ${awaiting}` : "";
 }
 
@@ -63,20 +68,19 @@ export function waitingFor({text, on, since}, {runs = [], helpers = [], now = Da
 }
 
 export function waitingOn(agent, works, helpers = [], now = Date.now() / 1000) {
-    const work = currentWork(works);
+    const wait = awaited(agent, works);
     const runs = RUN_ROWS.flatMap((kind) => (agent?.data[kind] || []).map((entry) => ({...entry, kind: RUN_KINDS[kind]})));
-    const text = work?.data.awaiting;
-    if (!text) return null;
-    return waitingFor({text, on: work?.data.awaiting_on, since: Number(work?.data.awaiting_since || 0)}, {runs, helpers, now});
+    if (!wait.awaiting) return null;
+    return waitingFor({text: wait.awaiting, on: wait.awaiting_on, since: Number(wait.awaiting_since || 0)}, {runs, helpers, now});
 }
 
 export function stateOf(agent, works) {
     if (agent && agent.data.paused) return "paused";
     const reported = agent ? agent.data.status : "stopped";
     if (reported === "working") return "working";
-    if (reported === "idle" && waitsFor(works)) return "waiting";
+    if (reported === "idle" && waitsFor(agent, works)) return "waiting";
     if (reported === "idle" && backgroundRun(agent)) return "running";
-    return REPORTED.includes(reported) ? reported : waitsFor(works) ? "waiting" : currentWork(works) ? "working" : "busy";
+    return REPORTED.includes(reported) ? reported : waitsFor(agent, works) ? "waiting" : currentWork(works) ? "working" : "busy";
 }
 
 const ENDINGS = {

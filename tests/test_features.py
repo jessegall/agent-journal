@@ -4983,3 +4983,13 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp
     app.runtime().deferred.drain()
     assert [s.id for s in secrets.all()] == [recent.id], "the one deleted thirty days ago is gone, the recent one kept for a restore"
     assert values.values() == {"RECENT_KEY": "b", "LIVE_KEY": "d"}, "its values and the old retired one go with it"
+
+
+def test_an_agents_wait_is_on_its_own_row_with_or_without_a_task(app):
+    from journal.http.v3.shapers.agents_shaper import AgentsShaper
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["await", "the suite"], AGENT)
+    with app.container.get(Scope).of(MAIN):
+        row = app.container.get(AgentsShaper).rows()[0]
+    assert row.data["awaiting"] == "the suite" and row.data["awaiting_since"], "the bar reads a wait from the agent's row, which changes when its state does"

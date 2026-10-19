@@ -477,8 +477,8 @@ async function use(tool) {
 .box-area {
     display: block;
     width: 100%;
-    min-height: 74px;
-    padding: 11px 12px 4px;
+    min-height: 118px;
+    padding: 11px 12px 48px;
     border: 0;
     background: none;
     resize: none;
@@ -487,10 +487,17 @@ async function use(tool) {
 }
 
 .compose-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 4px 8px 8px 10px;
+    border-radius: 0 0 12px 12px;
+    background: color-mix(in srgb, #141518 70%, transparent);
+    backdrop-filter: blur(6px);
 }
 
 .compose-attach {

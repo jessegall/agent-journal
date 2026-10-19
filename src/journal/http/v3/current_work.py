@@ -26,13 +26,20 @@ class CurrentWork:
 
     def of(self, agent: Agent) -> AgentWork | None:
         state = self.states.named(agent.state, agent.data)
-        awaiting, on = "", ""
         while isinstance(state, Paused):
-            awaiting, on = (awaiting, on) if awaiting else state.awaiting()
             state = self.states.resumed(state)
         if not isinstance(state, Working):
             return None
         try:
-            return AgentWork(self.tasks.find(state.task_id), awaiting, on)
+            return AgentWork(self.tasks.find(state.task_id), *self.awaited(agent))
         except NotFound:
             return None
+
+    def awaited(self, agent: Agent) -> tuple[str, str]:
+        """What the agent waits for and on what, from the topmost pause that names it, with a task in hand or none."""
+        state = self.states.named(agent.state, agent.data)
+        while isinstance(state, Paused):
+            if state.awaiting()[0]:
+                return state.awaiting()
+            state = self.states.resumed(state)
+        return "", ""
