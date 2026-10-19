@@ -1,6 +1,10 @@
 <script setup>
 import {agent} from "../composables/leadAgent.js";
-import {autoOn} from "../composables/settings.js";
+import {autoOn, workMode} from "../composables/settings.js";
+import {MODES} from "../domain/modes.js";
+import {api} from "../api/client.js";
+import Segmented from "../kit/Segmented.vue";
+import Spinner from "../kit/Spinner.vue";
 import {oneLine} from "../format/command.js";
 import {store} from "../state/store.js";
 import {barPlans, foldedPlans} from "../domain/plans.js";
@@ -31,7 +35,14 @@ const reported = computed(() => stateOf(agent.value));
 const toast = ref(null);
 
 const silent = computed(() => silentIn(store.summary, route.value.env));
-const state = computed(() => (silent.value ? SILENT : reported.value));
+const wanted = ref(null);
+const paused = computed(() => wanted.value ?? agent.value?.state === "paused");
+const state = computed(() => (paused.value ? "paused" : silent.value ? SILENT : reported.value));
+watch(
+    () => agent.value?.state === "paused",
+    (now) => wanted.value === now && (wanted.value = null)
+);
+const running = computed(() => Boolean(agent.value) && agent.value.status !== "stopped");
 
 const {rows: workers, refresh: refreshWorkers} = useWorkers();
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(workers);
@@ -41,6 +52,36 @@ const workersOpen = ref(false);
 const {rows: everyWorker, loaded: everyWorkerLoaded, refresh: refreshEveryWorker} = useEveryWorker(workersOpen);
 const workersAnchor = ref(null);
 
+const modeOptions = computed(() =>
+    MODES.map((one) => ({
+        ...one,
+        tip: {title: one.label, line: one.key === "solo" && workersOut.value ? `${one.note} Workers already out keep going until they finish.` : one.note},
+    }))
+);
+const keepMode = (key) => (store.settings = {...store.settings, workers: {...store.settings.workers, mode: key}});
+
+async function pickMode(key) {
+    const was = workMode.value;
+    keepMode(key);
+    try {
+        await api.saveMode(key);
+    } catch (e) {
+        keepMode(was);
+        toast.value = {text: e.message};
+    }
+}
+
+async function pauseOrResume() {
+    const next = !paused.value;
+    wanted.value = next;
+    try {
+        await (next ? api.pauseAgent(agent.value.id) : api.resumeAgent(agent.value.id));
+    } catch (e) {
+        wanted.value = null;
+        toast.value = {text: e.message};
+    }
+}
+
 function toggleWorkers(e) {
     workersAnchor.value = e.currentTarget;
     workersOpen.value = !workersOpen.value;
@@ -49,13 +90,14 @@ function toggleWorkers(e) {
 
 const waiting = computed(() => queued(rows("tasks"), autoOn.value));
 const line = computed(() => {
+    if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";
     if (waitingNow.value) return current.value ? named(current.value) : "";
     const text = lineOf(agent.value, current.value, waiting.value, workers.value);
     return text.startsWith("task ") ? text : oneLine(text, store.summary?.project);
 });
 const inspect = () => peek("tasks", current.value.id);
-const roll = (event) => (waitingNow.value ? toggleWaiting(event) : current.value && inspect());
+const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());
 const was = ref("");
 // What the line keeps from the line before it stands still while the rest rolls in. The kept part must be long enough to be a
 // phrase on its own: a shorter one leaves the bar reading "task" by itself for the length of the roll, which says the wrong thing.
@@ -88,7 +130,7 @@ async function runBar(p) {
             <WaitMark class="statusbar-dot" />
         </template>
         <template v-else>
-            <Dot :class="['statusbar-dot', {live: state !== 'stopped', silent: state === SILENT}]" kind="started" solid :size="8" />
+            <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused, silent: state === SILENT}]" kind="started" solid :size="8" />
         </template>
         <span class="statusbar-text">
             <b :class="{silent: state === SILENT}">{{ wordOf(state) }}</b>
@@ -112,6 +154,25 @@ async function runBar(p) {
                 </template>
             </component>
         </span>
+        <template v-if="running">
+            <Btn
+                kind="icon"
+                :class="['statusbar-pause', {paused}]"
+                v-tip:pause="
+                    paused
+                        ? {title: 'Resume', line: 'Tells the agent to carry on where it stopped.'}
+                        : {title: 'Pause', line: 'The agent finishes the step it is on, then waits until you resume it or write to it.'}
+                "
+                @click="pauseOrResume"
+            >
+                <template v-if="wanted !== null">
+                    <Spinner />
+                </template>
+                <template v-else>
+                    <Icon :name="paused ? 'resume' : 'pause'" />
+                </template>
+            </Btn>
+        </template>
         <span class="statusbar-tools">
             <span class="statusbar-agentset">
                 <Switch
@@ -125,6 +186,7 @@ async function runBar(p) {
                     "
                     @change="setAuto"
                 />
+                <Segmented class="statusbar-mode" :options="modeOptions" :value="workMode" @pick="pickMode" />
                 <button
                     type="button"
                     :class="['statusbar-helpers', {none: !workers.length}]"
@@ -206,6 +268,20 @@ async function runBar(p) {
 
 .statusbar-dot.live {
     --tone: var(--accent);
+}
+
+.statusbar-dot.paused {
+    --tone: var(--danger);
+}
+
+.statusbar-pause {
+    position: relative;
+    flex: none;
+    margin-right: 8px;
+}
+
+.statusbar-pause.paused {
+    color: var(--accent-text);
 }
 
 .statusbar-dot.silent {
@@ -308,6 +384,7 @@ async function runBar(p) {
     white-space: nowrap;
 }
 
+.statusbar-pause.btn,
 .statusbar-square.btn {
     justify-content: center;
     width: 28px;
@@ -315,6 +392,7 @@ async function runBar(p) {
     padding: 0;
 }
 
+.statusbar-pause.btn :deep(.ico),
 .statusbar-square.btn :deep(.ico) {
     width: 15px;
     height: 15px;

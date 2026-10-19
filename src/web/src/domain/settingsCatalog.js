@@ -1,4 +1,3 @@
-import {providerName} from "./agents.js";
 
 
 export const COUNTED = ["percent", "uses", "minutes"];
@@ -176,28 +175,7 @@ function settingRow(f, setting, settings) {
     });
 }
 
-function modelRows(f, setting, settings) {
-    const saved = {...setting.default, ...((settings[f.name] || {})[setting.name] || {})};
-    const defaults = Object.fromEntries(f.settings.map((s) => [s.name, s.default]));
-    return Object.entries(setting.choices).map(([provider, models]) => {
-        const value = models.includes(saved[provider]) ? saved[provider] : setting.default[provider];
-        const named = setting.labels[provider] || {};
-        return row({
-            key: `${f.name}:${setting.name}:${provider}`,
-            kind: "choice",
-            label: `${setting.title} on ${providerName(provider)}`,
-            hint: setting.abstract,
-            indent: Boolean(setting.under),
-            options: (models.length ? models : [value]).map((key) => ({key, label: named[key] || key})),
-            value,
-            shipped: setting.default[provider],
-            target: {path: [f.name, setting.name], provider, saved, sparse: true, shipped: setting.default, defaults},
-        });
-    });
-}
-
-const settingRows = (f, setting, settings) =>
-    setting.kind === "models" ? modelRows(f, setting, settings) : [settingRow(f, setting, settings)];
+const settingRows = (f, setting, settings) => [settingRow(f, setting, settings)];
 
 function featureRows(f, settings, extras) {
     const declared = f.settings.filter((s) => s.kind !== "map" && !s.hidden);

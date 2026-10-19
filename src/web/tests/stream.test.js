@@ -19,12 +19,12 @@ class FakeSource {
 vi.stubGlobal("EventSource", FakeSource);
 
 const reload = vi.fn();
-const takeEvents = vi.fn();
+const takeEntries = vi.fn();
 const wakePolls = vi.fn();
 vi.mock("../src/api/client.js", () => ({api: {stream: () => new FakeSource()}}));
 vi.mock("../src/chat/outbox.js", () => ({startOutbox: vi.fn()}));
 vi.mock("../src/composables/poll.js", () => ({wakePolls: () => wakePolls()}));
-vi.mock("../src/sync/rows.js", () => ({reload: () => reload(), takeEvents: (e) => takeEvents(e)}));
+vi.mock("../src/sync/rows.js", () => ({reload: () => reload(), takeEntries: (e) => takeEntries(e)}));
 
 const {listen} = await import("../src/sync/stream.js");
 const {store} = await import("../src/state/store.js");
@@ -32,7 +32,7 @@ const {store} = await import("../src/state/store.js");
 beforeEach(() => {
     vi.useFakeTimers();
     sources.length = 0;
-    [reload, takeEvents, wakePolls].forEach((fn) => fn.mockClear());
+    [reload, takeEntries, wakePolls].forEach((fn) => fn.mockClear());
     store.offline = false;
     listen();
     sources[0].onopen();
@@ -80,11 +80,11 @@ test("a stream the browser gave up on is opened again, one the browser retries i
     expect(sources[0].closed).toBe(true);
 });
 
-test("an event is taken, and a damaged one reloads the rows", () => {
+test("an entry is taken, and a damaged one reloads the rows", () => {
     sources[0].onmessage({data: JSON.stringify({id: 4})});
     expect(reload).not.toHaveBeenCalled();
     sources[0].onmessage({data: "{nope"});
-    expect(takeEvents.mock.calls).toEqual([[[{id: 4}]]]);
+    expect(takeEntries.mock.calls).toEqual([[[{id: 4}]]]);
     expect(reload).toHaveBeenCalledTimes(1);
 });
 

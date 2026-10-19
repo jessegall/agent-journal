@@ -1,7 +1,6 @@
 import {createApp, h, nextTick} from "vue";
-import {beforeEach, expect, test} from "vitest";
+import {expect, test} from "vitest";
 import {threadTurns} from "../src/domain/thread.js";
-import {store} from "../src/state/store.js";
 
 globalThis.ResizeObserver ??= class {
     observe() {}
@@ -11,54 +10,33 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-const TYPES = {message: {title: "Message"}, check: {title: "Check"}, rule: {title: "Rule"}};
-const base = {deleted: 0, completed: 0, refs: [], sections: [], title: "", abstract: "", updated: 0};
-const message = (n, created, who, brief, data = {}) => ({
-    ...base,
-    ref: `message:${n}`,
-    type: "message",
-    n,
-    created,
-    seen: [who],
-    brief,
-    data: {author: who, ...data},
-});
-const card = (kind, fields) => ({card: {kind, session: "s1", icon: "", tone: "", detail: "", row: "", ...fields}});
+const at = (seconds) => new Date(seconds * 1000).toISOString();
+const message = (id, seconds, author, text, data = {}, more = {}) => ({table: "messages", id, created_at: at(seconds), created_by: author === "user" ? "user:1" : "system", author, text, files: [], comments_on: [], idempotency: "", data, ...more});
+const card = (kind, fields) => ({kind, session: "s1", icon: "", tone: "", detail: "", row: "", ...fields});
 
-const rows = {
-    message: [
-        message(1, 10, "user", "Run the lint?"),
-        message(2, 20, "agent", "Running it now."),
-        message(3, 30, "system", "Check lint passed", card("card", {icon: "check", tone: "good", detail: "all clean", row: "check:3"})),
-        message(4, 40, "system", "Reminded the agent about rule 2", card("whisper", {icon: "rules", row: "rule:2"})),
-    ],
-    comment: [],
-    question: [],
-    reaction: [],
-    agent: [],
-    doc: [],
-};
-const scope = {env: "", api: {}, rows: (type) => rows[type] || [], loaded: () => true, holding: () => {}, earlier: () => {}};
-
-beforeEach(() => {
-    store.spec = {types: TYPES, priority: Object.keys(TYPES), chat_kinds: {turns: {}}};
-});
+const messages = [
+    message(1, 10, "user", "Run the lint?"),
+    message(2, 20, "agent", "Running it now."),
+    message(3, 30, "system", "Check lint passed", card("card", {icon: "check", tone: "good", detail: "all clean", row: "checks:3"})),
+    message(4, 40, "system", "Reminded the agent about rule 2", card("whisper", {icon: "rules", row: "rules:2"})),
+];
+const scope = {env: "", api: {}, rows: () => [], loaded: () => true, holding: () => {}, earlier: () => {}};
 
 test("the user's words, the agent's and the system's cards are one stream by number", () => {
-    const {turns} = threadTurns(rows, [], "main");
-    expect(turns.map((t) => [t.ref, t.type])).toEqual([
-        ["message:1", "message"],
-        ["message:2", "message"],
-        ["message:3", "card"],
-        ["message:4", "whisper"],
+    const {turns} = threadTurns(messages, []);
+    expect(turns.map((t) => [t.key, t.kind])).toEqual([
+        ["messages:1", "message"],
+        ["messages:2", "message"],
+        ["messages:3", "card"],
+        ["messages:4", "whisper"],
     ]);
-    expect(turns[3].data.row).toBe("rule:2");
+    expect(turns[3].data.row).toBe("rules:2");
 });
 
 test("a system message is drawn as a card with its label and detail", async () => {
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {default: Turn} = await import("../src/chat/Turn.vue");
-    const {turns} = threadTurns(rows, [], "main");
+    const {turns} = threadTurns(messages, []);
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(Turn, {turn: turns[2]})});
@@ -74,32 +52,26 @@ test("a system message is drawn as a card with its label and detail", async () =
     };
     app.unmount();
     host.remove();
-    expect(shown).toEqual({ref: "message:3", label: "Check lint passed", detail: "all clean"});
+    expect(shown).toEqual({ref: "messages:3", label: "Check lint passed", detail: "all clean"});
 });
 
 test("a card for the user's own act sits on the user's side", () => {
-    const answered = message(5, 50, "system", "You answered question 9", {
-        actor: "user:1",
-        ...card("card", {icon: "question", tone: "good"}),
-    });
-    const {turns} = threadTurns({...rows, message: [...rows.message, answered]}, [], "main");
-    const mine = turns.find((t) => t.ref === "message:5");
+    const answered = message(5, 50, "system", "You answered question 9", card("card", {icon: "question", tone: "good"}), {created_by: "user:1"});
+    const {turns} = threadTurns([...messages, answered], []);
+    const mine = turns.find((t) => t.key === "messages:5");
     expect([mine.who, mine.data.side]).toEqual(["user", "user"]);
-    expect(turns.find((t) => t.ref === "message:3").data.side).toBe("");
+    expect(turns.find((t) => t.key === "messages:3").data.side).toBe("");
 });
 
 test("a plugin's card is drawn by its kind with the plugin's name on it, and its settled replacement stands in its place", async () => {
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {default: Turn} = await import("../src/chat/Turn.vue");
-    const sin = (label, detail, updated) => ({
-        ...message(5, 50, "system", label, {actor: "plugin:lint", ...card("plugin", {plugin: "lint", card: "sin", key: "a.py", icon: "warn", tone: "warn", detail})}),
-        updated,
-    });
+    const sin = (label, detail) => message(5, 50, "system", label, card("plugin", {plugin: "lint", card: "sin", key: "a.py", icon: "warn", tone: "warn", detail}), {created_by: "plugin:lint"});
     const drawn = async (row) => {
-        const {turns} = threadTurns({...rows, message: [...rows.message, row]}, [], "main");
+        const {turns} = threadTurns([...messages, row], []);
         const host = document.createElement("div");
         document.body.append(host);
-        const app = createApp({render: () => h(Turn, {turn: turns.find((t) => t.ref === "message:5")})});
+        const app = createApp({render: () => h(Turn, {turn: turns.find((t) => t.key === "messages:5")})});
         app.provide("scope", scope);
         app.directive("tip", {});
         app.mount(host);
@@ -111,13 +83,13 @@ test("a plugin's card is drawn by its kind with the plugin's name on it, and its
         host.remove();
         return shown;
     };
-    expect(await drawn(sin("A sin in a.py", "a long method", 50))).toEqual({label: "A sin in a.py", name: "lint", detail: "a long method"});
-    expect(await drawn(sin("a.py is clean", "", 60))).toEqual({label: "a.py is clean", name: "lint", detail: ""});
+    expect(await drawn(sin("A sin in a.py", "a long method"))).toEqual({label: "A sin in a.py", name: "lint", detail: "a long method"});
+    expect(await drawn(sin("a.py is clean", ""))).toEqual({label: "a.py is clean", name: "lint", detail: ""});
 });
 
 test("a plugin's plain message is a card of the plugin's, not a crash", () => {
-    const said = message(6, 60, "system", "heard message 4", {actor: "plugin:echo", card: {}});
-    const {turns} = threadTurns({...rows, message: [...rows.message, said]}, [], "main");
-    const turn = turns.find((t) => t.ref === "message:6");
-    expect([turn.type, turn.data.icon, turn.data.name, turn.data.label]).toEqual(["card", "plug", "echo", "heard message 4"]);
+    const said = message(6, 60, "system", "heard message 4", {}, {created_by: "plugin:echo"});
+    const {turns} = threadTurns([...messages, said], []);
+    const turn = turns.find((t) => t.key === "messages:6");
+    expect([turn.kind, turn.data.icon, turn.data.name, turn.data.label]).toEqual(["card", "plug", "echo", "heard message 4"]);
 });

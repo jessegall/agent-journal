@@ -27,38 +27,51 @@ const {drawnIn, pointedView} = await import("../src/figure/places.js");
 const {CLIPS} = await import("../src/figure/figure.js");
 
 const NOW = 10_000;
-const agent = (data) => ({n: 1, title: "claude-1", data: {status: "working", at: NOW, ...data}});
-const stateAt = (data, waitingSince = 0, now = NOW) => figureStateOf(agent(data), [], waitingSince, now).state;
+const at = (seconds) => new Date(seconds * 1000).toISOString();
+// An agent as the journal answers it; "running" says the last hook started the tool and "since" is when it was heard.
+const agent = ({running, since = NOW, cards, person_at, ...fields} = {}) => ({
+    table: "agents",
+    id: 1,
+    session: "claude-1",
+    state: "working",
+    status: "working",
+    tool: "",
+    tool_running: Boolean(running),
+    awaiting: "",
+    heard_at: at(since),
+    data: {cards, person_at},
+    ...fields,
+});
+const stateAt = (fields, waitingSince = 0, now = NOW) => figureStateOf(agent(fields), waitingSince, now).state;
 
 test("the figure does what the tool in flight says the agent does, and thinks between tools", () => {
-    expect(stateAt({event: "PreToolUse", tool: "Read"})).toBe("reading");
-    expect(stateAt({event: "PreToolUse", tool: "Grep"})).toBe("searching");
-    expect(stateAt({event: "PreToolUse", tool: "Edit"})).toBe("writing");
-    expect(stateAt({event: "PreToolUse", tool: "Bash"})).toBe("running");
-    expect(stateAt({event: "PostToolUse", tool: "Bash", at: NOW - 30})).toBe("thinking");
+    expect(stateAt({running: true, tool: "Read"})).toBe("reading");
+    expect(stateAt({running: true, tool: "Grep"})).toBe("searching");
+    expect(stateAt({running: true, tool: "Edit"})).toBe("writing");
+    expect(stateAt({running: true, tool: "Bash", since: NOW - 120})).toBe("running");
+    expect(stateAt({tool: "Bash", since: NOW - 30})).toBe("thinking");
 });
 
 test("a stopped, paused or compacting agent keeps its figure, plainly not working; absence is never a state", () => {
     expect(stateAt({status: "stopped"})).toBe("stopped");
     expect(clipOf("stopped")).toBe("sleep");
-    expect(stateAt({paused: true})).toBe("paused");
+    expect(stateAt({state: "paused"})).toBe("paused");
     expect(stateAt({status: "compacting"})).toBe("compacting");
     expect(clipOf("a state nobody named")).toBe("idle");
 });
 
 test("an idle agent's figure falls asleep only after a long while, timed from the agent's own row", () => {
-    expect(stateAt({status: "idle", at: NOW - 10})).toBe("idle");
-    expect(stateAt({status: "idle", at: NOW - ASLEEP_AFTER})).toBe("asleep");
+    expect(stateAt({status: "idle", since: NOW - 10})).toBe("idle");
+    expect(stateAt({status: "idle", since: NOW - ASLEEP_AFTER})).toBe("asleep");
 });
 
 test("something waiting on the user is the asking state, timed from when it arrived", () => {
-    expect(figureStateOf(agent({status: "idle"}), [], NOW - 30, NOW)).toEqual({state: "asking", since: NOW - 30});
-    expect(stateAt({status: "idle", asking: {tool: "Bash"}})).toBe("asking");
+    expect(figureStateOf(agent({status: "idle"}), NOW - 30, NOW)).toEqual({state: "asking", since: NOW - 30});
 });
 
 test("while the agent works the figure shows the work, as the bar says Working, even with something waiting on the user", () => {
-    expect(stateAt({event: "PreToolUse", tool: "Grep"}, NOW - 30)).toBe("searching");
-    expect(stateAt({event: "PostToolUse", tool: "Grep", at: NOW - 30}, NOW - 30)).toBe("thinking");
+    expect(stateAt({running: true, tool: "Grep"}, NOW - 30)).toBe("searching");
+    expect(stateAt({tool: "Grep", since: NOW - 30}, NOW - 30)).toBe("thinking");
 });
 
 test("a beat fires only for what reached the row after it was last seen, oldest first", () => {
@@ -231,14 +244,10 @@ test("reads have their own working state; search tools and search-only shells ke
     expect(clipOf("reading")).toBe("read");
     expect(WORKING.has("reading")).toBe(true);
     expect(RESTS.has("reading")).toBe(false);
-    expect(stateAt({event: "PreToolUse", tool: "Bash", effect: "reads"})).toBe("reading");
-    expect(stateAt({event: "PreToolUse", tool: "Bash", effect: "searches"})).toBe("searching");
     for (const tool of ["Grep", "Glob", "WebSearch", "WebFetch"]) {
-        expect(stateAt({event: "PreToolUse", tool}), tool).toBe("searching");
+        expect(stateAt({running: true, tool}), tool).toBe("searching");
     }
-    expect(stateAt({event: "PreToolUse", tool: "Write", effect: "reads"})).toBe("writing");
-    expect(stateAt({event: "PostToolUse", tool: "Read", at: NOW - 30})).toBe("thinking");
-    expect(stateAt({event: "PostToolUse", tool: "Bash", effect: "reads", at: NOW - 30})).toBe("thinking");
+    expect(stateAt({tool: "Read", since: NOW - 30})).toBe("thinking");
 });
 
 test("a book opens once, keeps reading across loops, and closes only when asked to finish", () => {
@@ -282,11 +291,11 @@ test("the layers give way highest first: a fall beats a beat, a beat waits for t
 });
 
 test("each prop is chosen for its tools, and stays a moment after a quick tool finishes", () => {
-    const prop = (data) => clipOf(stateAt({status: "working", ...data}));
-    ["Read"].forEach((tool) => expect(prop({event: "PreToolUse", tool})).toBe("read"));
-    ["Grep", "Glob"].forEach((tool) => expect(prop({event: "PreToolUse", tool})).toBe("search"));
-    ["Edit", "Write"].forEach((tool) => expect(prop({event: "PreToolUse", tool})).toBe("write"));
-    expect(prop({event: "PostToolUse", tool: "Read", at: NOW - 1})).toBe("read");
-    expect(prop({event: "PostToolUse", tool: "Grep", at: NOW - 1})).toBe("search");
-    expect(prop({event: "PostToolUse", tool: "Read", at: NOW - 10})).toBe("think");
+    const prop = (fields) => clipOf(stateAt(fields));
+    ["Read"].forEach((tool) => expect(prop({running: true, tool})).toBe("read"));
+    ["Grep", "Glob"].forEach((tool) => expect(prop({running: true, tool})).toBe("search"));
+    ["Edit", "Write"].forEach((tool) => expect(prop({running: true, tool})).toBe("write"));
+    expect(prop({tool: "Read", since: NOW - 1})).toBe("read");
+    expect(prop({tool: "Grep", since: NOW - 1})).toBe("search");
+    expect(prop({tool: "Read", since: NOW - 10})).toBe("think");
 });

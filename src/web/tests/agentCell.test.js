@@ -1,5 +1,6 @@
 import {describe, expect, test} from "vitest";
 import {orchestraOf, splitTask} from "../src/domain/orchestra.js";
+import {store} from "../src/state/store.js";
 
 describe("the name an agent's cell is titled with", () => {
     test("a subagent dispatched as 'Name: job' is titled with the name and keeps the job below", () => {
@@ -8,8 +9,8 @@ describe("the name an agent's cell is titled with", () => {
     });
 
     test("a subagent is titled with its name and its Kind line says only subagent", () => {
-        const environment = {name: "main", owner: "", subagents: [{session: "s1", parent: "p", task: "Coco Rams: draw the plan card", type: "designer", running: true, started: 1}]};
-        const [cell] = orchestraOf([environment], [], 1000);
-        expect(cell).toMatchObject({name: "Coco Rams", title: "draw the plan card", label: "Subagent", of: "", sub: true});
+        store.rows = {messages: [{table: "messages", id: 1, author: "system", created_at: new Date(1000).toISOString(), data: {kind: "subagent", agent: 7, detail: "Coco Rams: draw the plan card", agent_type: "designer", subagent: "s1", state: "running"}}]};
+        const [cell] = orchestraOf({environments: []}, [], {id: 7}, "main");
+        expect(cell).toMatchObject({name: "Coco Rams", title: "draw the plan card", label: "Subagent", sub: true});
     });
 });

@@ -3,21 +3,20 @@ import {pluginFrom} from "../src/composables/plugins.js";
 import {settingGroups, visibleSettings} from "../src/domain/pluginSettings.js";
 import {resets, resettable} from "../src/domain/settingsCatalog.js";
 
-const row = (manifest, chosen = {}) =>
-    pluginFrom({n: 4, title: "Standup", abstract: "", data: {manifest: {name: "standup", settings: manifest}, settings: {chosen}}});
+const plugin = (schema, settings = {}) => pluginFrom({table: "plugins", id: 4, name: "standup", manifest: {title: "Standup"}, settings, schema, status: "on", enabled: true, source: "", commit_sha: "", last_fault: "", failing_since: null});
 
 describe("plugin settings", () => {
-    test("a setting that waits on another shows only when it is chosen", () => {
-        const plugin = row({mode: {type: "options", options: ["a", "b"], default: "a"}, extra: {when: {mode: "b"}}});
-        expect(visibleSettings(plugin).map((s) => s.key)).toEqual(["mode"]);
-        const chosen = row({mode: {type: "options", options: ["a", "b"], default: "a"}, extra: {when: {mode: "b"}}}, {mode: "b"});
-        expect(visibleSettings(chosen).map((s) => s.key)).toEqual(["mode", "extra"]);
+    test("every setting of the schema shows, with its saved value", () => {
+        const shown = plugin([{key: "mode", kind: "choice", choices: ["a", "b"], default: "a"}, {key: "extra", kind: "text"}], {mode: "b"});
+        expect(visibleSettings(shown).map((s) => [s.key, s.value])).toEqual([
+            ["mode", "b"],
+            ["extra", ""],
+        ]);
     });
 
-    test("settings group by name and count their switches", () => {
-        const plugin = row({one: {type: "flag", group: "Rules", default: true}, two: {type: "text", group: "Rules"}, three: {type: "text"}});
-        const groups = settingGroups(plugin);
-        expect(groups.map((g) => g.name)).toEqual(["Rules", ""]);
+    test("the settings are one group that counts its switches", () => {
+        const groups = settingGroups(plugin([{key: "one", kind: "flag", default: true}, {key: "two", kind: "text"}]));
+        expect(groups.map((g) => g.name)).toEqual([""]);
         expect(groups[0].flags.map((s) => s.key)).toEqual(["one"]);
     });
 });

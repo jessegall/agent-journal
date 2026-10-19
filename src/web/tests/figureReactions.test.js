@@ -115,7 +115,7 @@ test("every moment a reaction waits for is one the journal makes, from cards sha
         {at: 2, key: "tests:2", icon: "check", state: "failed", ended: 3},
     ];
     const agent = {data: {cards, person_at: 2}};
-    const faces = FACES.map((face, n) => ({deleted: false, seen: ["user"], created: 2, data: {face}, refs: [`message:${n}`]}));
+    const faces = FACES.map((face, n) => ({table: "reactions", id: n + 1, author: "user", created_at: new Date(2000).toISOString(), face, message_id: n}));
     const made = new Set([
         ...beatsAfter(agent, 1),
         ...cardsAfter(agent, new Set()),

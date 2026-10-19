@@ -2,8 +2,9 @@ import {createApp, h, nextTick} from "vue";
 import {describe, expect, test, vi} from "vitest";
 import RailTodos from "../src/rail/RailTodos.vue";
 
-const todo = (n, title, completed = 0) => ({n, title, completed, deleted: 0, ref: `todo:${n}`, refs: [], data: {}});
-const rows = [todo(1, "Still open"), todo(2, "Finished early", 100), todo(3, "Finished late", 300), {...todo(4, "Gone", 400), deleted: 1}];
+const at = (seconds) => new Date(seconds * 1000).toISOString();
+const task = (id, title, finished = 0) => ({table: "tasks", id, title, state: finished ? "done" : "open", finished_at: finished ? at(finished) : null, plan_id: null});
+const rows = [task(1, "Still open"), task(2, "Finished early", 100), task(3, "Finished late", 300)];
 
 async function shown(props, scope) {
     const host = window.document.createElement("div");
@@ -14,8 +15,8 @@ async function shown(props, scope) {
     return host;
 }
 
-describe("the to-dos list of an agent", () => {
-    test("lists the to-dos it finished too, the latest first, and leaves out deleted ones", async () => {
+describe("the tasks list of an agent", () => {
+    test("lists the tasks it finished too, the latest first", async () => {
         const host = await shown({finished: true});
         const titles = [...host.querySelectorAll(".rail-row-title")].map((one) => one.textContent);
         expect(titles).toEqual(["Still open", "Finished late", "Finished early"]);
@@ -27,6 +28,6 @@ describe("the to-dos list of an agent", () => {
         expect([...plain.querySelectorAll(".rail-row-title")].map((one) => one.textContent)).toEqual(["Still open"]);
         const recent = vi.fn();
         await shown({finished: true}, {recent});
-        expect(recent).toHaveBeenCalledWith("todo", 20);
+        expect(recent).toHaveBeenCalledWith("tasks", 20);
     });
 });

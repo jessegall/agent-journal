@@ -15,6 +15,7 @@ from journal.http.controllers.journal import JournalController
 from journal.http.controllers.mcp import McpController
 from journal.http.controllers.messages import MessageController
 from journal.http.controllers.migration import MigrationController
+from journal.http.controllers.mode import ModeController
 from journal.http.controllers.notices import NoticeController
 from journal.http.controllers.nudges import NudgeController
 from journal.http.controllers.outputs import OutputController
@@ -79,6 +80,9 @@ class Routes:
         router.post(f"{API}/settings", settings.store)
         router.get(f"{API}/updates", get(UpdateController).index)
         router.post(f"{API}/updates", get(UpdateController).update)
+        mode = get(ModeController)
+        router.get(f"{API}/mode", mode.show)
+        router.post(f"{API}/mode", mode.choose)
         router.get(f"{API}/migration", migration.show)
         router.post(f"{API}/migration/later", migration.later)
         router.post(f"{API}/migration/start", migration.start)
@@ -171,7 +175,7 @@ class Routes:
         router.get(f"{API}/agents/{{id}}/terminal", agents.terminal)
         router.get(f"{API}/agents/{{id}}/transcript", transcripts.of_agent)
         router.get(f"{API}/agents/{{id}}/subagents/{{session}}/transcript", transcripts.of_subagent)
-        self.acts(router, "agents", agents, "shell", "control")
+        self.acts(router, "agents", agents, "shell", "control", "pause", "resume")
         router.post(f"{API}/agents/{{id}}/skip-step", agents.skip_step)
         router.post(f"{API}/agents/{{id}}/end-sequence", agents.end_sequence)
         router.get(f"{API}/skills", skills.index)

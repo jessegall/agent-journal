@@ -346,8 +346,14 @@ Still to do, in rough order:
 - A message is one shape whoever wrote it: GET /journal/messages serves the user's and the agent's
   alike, and the chat draws a reply with a one-line quote of what it answers. A comment is a message
   linked to its row as comments_on, listed under it by GET /journal/comments.
-- Open after task 719: a worker's transcript has a route but no pane in the viewer; vitest's
-  suite in `src/web/tests` still holds tests written against version 3's row shapes.
+- The work mode (Builder, Orchestrator, Solo) is the workers feature's `workers.mode` option,
+  set by `POST /journal/mode` from the plan bar; nothing in the journal reads it yet, as under
+  version 3's last route. The pause button moves the agent into the pausing feature's
+  `paused` state (`POST /journal/agents/<id>/pause` and `/resume`): every tool call is
+  refused until the user resumes it or writes to it.
+- Open: a worker's transcript has a route but no pane in the viewer; an automatic update's
+  "Not now" has no route to cancel it; the context control no longer says when the
+  conversation was last compacted.
 
 ## The plan
 

@@ -13,19 +13,17 @@ vi.mock("../src/api/client.js", () => ({
             return later({environment: "main"});
         },
         identity: () => later({}),
-        pages: () => later([]),
     },
 }));
 vi.mock("../src/route.js", () => ({route: {value: {env: "main", page: ""}}, go: vi.fn(), knowPages: vi.fn(), PAGES: []}));
-vi.mock("../src/domain/spec.js", () => ({types: {value: []}}));
 vi.mock("../src/sync/rows.js", () => ({
     load: () => {
         order.push("messages asked");
         return later([]);
     },
-    recallEvents: () => {},
+    recallEntries: () => {},
     reload: () => Promise.resolve(),
-    rows: () => [{title: "main", deleted: false}],
+    rows: () => [{name: "main"}],
 }));
 vi.mock("../src/sync/stream.js", () => ({listen: () => order.push("listening")}));
 

@@ -66,7 +66,7 @@ export const answered = (m) => (m.reply_to ? `messages:${m.reply_to}` : "");
 export function threadTurns(messages, pending, older = false, hidden = []) {
     const keys = new Map();
     const said = messages.filter((m) => !fromSystem(m));
-    const floor = older && messages.length ? Math.min(...messages.map((m) => seconds(m.created_at))) : 0;
+    const floor = older && said.length ? Math.min(...said.map((m) => seconds(m.created_at))) : 0;
     messages.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(refOf(m), p.key)));
     const turns = [
         ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map(spoken),

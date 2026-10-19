@@ -1,24 +1,24 @@
 import {describe, expect, test, vi} from "vitest";
 
 vi.mock("../src/sync/rows.js", () => ({
-    rows: (type) => (type === "message" ? [{n: 17785, data: {files: {"IMG_1201.png": "", "notes.txt": ""}}}] : []),
+    rows: (table) => (table === "messages" ? [{table: "messages", id: 17785, files: ["IMG_1201.png", "notes.txt"]}] : []),
 }));
 
 const {render} = await import("../src/text/index.js");
 await import("../src/text/all.js");
 
-const context = {types: [{name: "message", title: "Message"}], env: "main"};
+const context = {env: "main"};
 
 describe("a file the agent names", () => {
     test("shows the picture of an attachment named on a line of its own", () => {
         const html = render("Here is the screen:\nmessage 17785 IMG_1201.png\nIt is cut off.", context);
         expect(html).toContain('<img class="file-card-image" src="');
-        expect(html).toContain("/api/message/17785/files/IMG_1201.png?env=main");
+        expect(html).toContain("/journal/messages/17785/files/IMG_1201.png?env=main");
         expect(html).toContain("Here is the screen:");
     });
 
     test("shows the picture when the server has already turned the message number into a marker", () => {
-        const html = render("[[chip message:17785|message 17785]] IMG_1201.png", context);
+        const html = render("[[chip messages:17785|message 17785]] IMG_1201.png", context);
         expect(html).toContain('<img class="file-card-image" src="');
     });
 

@@ -48,6 +48,7 @@ export function waitingOn(agent, workers = [], now = Date.now() / 1000) {
 }
 
 export function stateOf(agent) {
+    if (agent?.state === "paused") return "paused";
     const reported = agent ? agent.status : "stopped";
     if (reported === "working") return "working";
     if (reported === "idle" && agent.awaiting) return "waiting";
@@ -76,7 +77,7 @@ export function queued(tasks, auto) {
     return auto && tasks.some((t) => t.state === "open" && !t.worker_id);
 }
 
-const WORDS = {working: "Working", waiting: "Waiting", busy: "Busy", compacting: "Busy", [SILENT]: SILENT_WORD};
+const WORDS = {working: "Working", waiting: "Waiting", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
 
 export function wordOf(state) {
     return WORDS[state] || "Idle";
