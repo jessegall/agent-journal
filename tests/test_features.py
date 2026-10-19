@@ -1276,6 +1276,21 @@ def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_me
     assert messages.unanswered() == [], "a face on a message answers it, whatever its length"
 
 
+def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app, tmp_path):
+    text = tmp_path / "doc.md"
+    hook(app, "SessionStart")
+    text.write_text("The opening line.\n\n## Install\n\n- curl the script\n- run journal claude\n\n## Commands\n\n```sh\n# not a heading\njournal task list\n```\n")
+    console = app.console()
+    made = console.run(["doc", "create", "Guide", "--file", str(text), "--abstract", "how to start"], AGENT)
+    assert made.code == 0, made.err
+    shown = console.run(["doc", "show", "1"], AGENT).out
+    assert "how to start" in shown and "1  Install" in shown and "2  Commands" in shown and "curl the script" not in shown, "the outline, never the text"
+    assert "not a heading" not in shown, "a # in a code block is no heading"
+    assert console.run(["doc", "show", "1", "--section", "install", "--bullets"], AGENT).out.endswith("- curl the script\n- run journal claude\n")
+    assert "2 Commands: journal task list" in console.run(["doc", "show", "1", "--grep", "task list"], AGENT).out
+    assert console.run(["doc", "show", "1", "--section", "9"], AGENT).code == 1
+
+
 def test_wispr_flow_is_among_the_suggested_mcp_services():
     from journal.features.mcp.catalogue import SUGGESTED
     suggested = {s.name: s for s in SUGGESTED}

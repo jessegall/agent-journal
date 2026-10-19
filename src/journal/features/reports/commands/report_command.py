@@ -4,6 +4,7 @@ from pathlib import Path
 
 from journal.console.command import Command
 from journal.console.where import Where
+from journal.support.outline import Outline
 from journal.models.link import Link
 from journal.models.ref import Ref
 from journal.models.report import Report
@@ -28,7 +29,9 @@ class ReportCommand(Command):
         create.add_argument("--body", default="", help="the report, as markdown; ## headings are its sections")
         create.add_argument("--file", default="", help="a file holding the body instead")
         create.add_argument("--about", default=[], nargs="*", help="the rows it is about, as plans:1 or tasks:12, apart by spaces or commas")
-        self.verb(verbs, "show", "a report").add_argument("n", type=int)
+        show = self.verb(verbs, "show", "a report: its outline, then one section at a time")
+        show.add_argument("n", type=int)
+        Outline.arguments(show)
         self.verb(verbs, "list", "every report here")
 
     def create(self, args: Namespace, where: Where) -> int:
@@ -51,8 +54,7 @@ class ReportCommand(Command):
 
     def show(self, args: Namespace, where: Where) -> int:
         report = self.reports.find(args.n)
-        print(f"report {report.id}: {report.title}")
-        print(report.body)
+        print("\n".join([*filter(None, (f"report {report.id}: {report.title}", report.abstract)), *Outline.of(report.body).told(args)]))
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
