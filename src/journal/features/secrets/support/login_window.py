@@ -3,7 +3,7 @@ import threading
 from datetime import datetime, timezone
 
 from journal.support.mcp_installing import McpInstalling
-from journal.features.secrets.browser_logins import BrowserLogins
+from journal.features.secrets.support.browser_logins import BrowserLogins
 from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message

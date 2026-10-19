@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.secrets.browser_logins import WINDOW
-from journal.features.secrets.login_window import LoginWindow
-from journal.features.secrets.programs import Programs
-from journal.features.secrets.secret_run import SecretRun
+from journal.features.secrets.support.browser_logins import WINDOW
+from journal.features.secrets.support.login_window import LoginWindow
+from journal.features.secrets.support.programs import Programs
+from journal.features.secrets.support.secret_run import SecretRun
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.secret import Secret

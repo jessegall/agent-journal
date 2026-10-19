@@ -1,5 +1,5 @@
 from journal.support.masks import Masks
-from journal.features.secrets.output_mask import OutputMask
+from journal.support.output_mask import OutputMask
 from journal.models.plugin import Plugin
 
 NEUTRAL = {"[journal]": "(journal)", "[!reply:": "(!reply:"}

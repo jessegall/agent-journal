@@ -5248,7 +5248,7 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     import json as j
     import time
     from journal.support.mcp_installing import McpInstalling
-    from journal.features.secrets.browser_logins import BrowserLogins
+    from journal.features.secrets.support.browser_logins import BrowserLogins
     from journal.models.mcp_server import McpServer
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind

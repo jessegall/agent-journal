@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from journal.features.secrets.login_window import LoginWindow
-from journal.features.secrets.programs import Programs
+from journal.features.secrets.support.login_window import LoginWindow
+from journal.features.secrets.support.programs import Programs
 from journal.http.controllers.controller import Controller
 from journal.http.support.request import Request
 from journal.support.response import Response
