@@ -995,3 +995,9 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   nudges built from its `name` are in order.
 
 - **Updates (task 28).** `features/updates`: `Updating` reads the v4.* tags from GitHub at most hourly on a thread of its own (first look a minute after boot), and with `updates.auto` on installs the newest release of the same major by running its `install.sh` (`AGENT_JOURNAL_REF`, `AGENT_JOURNAL_YES`) from the project root; the install's own `journal setup` restarts the journal. The code-commandments plugin, when installed, is upgraded first through `Installing.upgrade`. The viewer's `/releases`, `/update` and `/changelog` are in `http/v3/updates_controller.py`. Open: the plugin is pulled to its newest commit, not its newest tag; `src/web/dist` needs a rebuild for the new UpgradeBand.
+
+## Dumps (ported from version 3, 2026-10-19)
+
+`features/dumps`: a `Dump` model and `Dumps` repository, `Filing` (everything done to a dump, shared by the `journal dump` command and the viewer's `DumpActions` in `http/v3`), five listeners that tell the agent (arrival, answer, choice, filed, carry on), and the `journal-dumps` skill. Files are kept under `config.files/dump/<n>`.
+- Decided: no collections. Version 4 has no Collection model, so the dump itself is the collection: `journal dump name` renames it, and each row the agent files is a `dump_filed` link from the dump to the row. Removing a dump deletes the docs, reports, tasks and plans linked to it that were made after it was dropped.
+- Left out for now: a pasted transcript becoming a dump (needs the message kind transcript); an offered step that runs a command (offers are `{ask, label}` only).

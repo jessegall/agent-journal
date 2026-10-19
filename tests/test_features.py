@@ -5965,3 +5965,28 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app):
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=50", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         assigned = {row["title"]: row["data"]["assigned"] for row in json.loads(reply.read())["rows"]}
     assert assigned == {"delegated": "helper:1", "mine": ""}, "the viewer sees which worker holds which task"
+
+
+def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, tmp_path, monkeypatch):
+    from journal.features.dumps.filing import Filing
+    from journal.repositories.dumps import Dumps
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    console, filing = app.console(), app.container.get(Filing)
+    notes = tmp_path / "notes.md"
+    notes.write_text("The ideas, sorted.\n")
+    assert made(console.run(["dump", "create", "a list of ideas"], USER)) == 1
+    made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
+    filing.attach(1, "a.png", Where("main").actor)
+    assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).out and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).out
+    assert typed[-1].startswith("[journal] dump 1 has 2 items to file"), typed
+    console.run(["dump", "note", "1", "text", "a list of ideas"], AGENT)
+    assert console.run(["dump", "filed", "1", "text", "made a doc", "--refs", "doc:1"], AGENT).code == 0
+    assert console.run(["dump", "filed", "1", "a.png", "x", "--refs", "docs:99"], AGENT).code != 0, "a row that is not there is refused"
+    assert console.run(["dump", "failed", "1", "a.png", "unreadable"], AGENT).out.endswith("closed: 1 filed, 1 failed\n")
+    assert typed[-1].startswith("[journal] dump 1 is filed (1 filed, 1 failed)")
+    assert console.run(["dump", "stop", "1"], AGENT).code != 0 and console.run(["dump", "remove", "1"], AGENT).code != 0, "only the user stops or removes"
+    assert app.container.get(Dumps).find(1).made_refs() == ["docs:1"]
+    console.run(["dump", "remove", "1"], USER)
+    assert app.container.get(Dumps).find(1).removed_refs == ("docs:1",) and console.run(["doc", "list"], AGENT).out == ""

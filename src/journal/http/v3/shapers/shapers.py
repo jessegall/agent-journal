@@ -1,5 +1,6 @@
 from journal.http.v3.shapers.agents_shaper import AgentsShaper
 from journal.http.v3.shapers.comments_shaper import CommentsShaper
+from journal.http.v3.shapers.dumps_shaper import DumpsShaper
 from journal.http.v3.shapers.environments_shaper import EnvironmentsShaper
 from journal.http.v3.shapers.memory_shaper import MemoryShaper
 from journal.http.v3.shapers.messages_shaper import MessagesShaper
@@ -31,7 +32,7 @@ from journal.repositories.sequences import Sequences
 from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 
-EMPTY = ("notification", "suggestion", "tool", "browser", "feature", "ticket", "board", "worktree", "critique", "dump", "record", "output", "collection", "phone")
+EMPTY = ("notification", "suggestion", "tool", "browser", "feature", "ticket", "board", "worktree", "critique", "record", "output", "collection", "phone")
 
 
 class Shapers:
@@ -41,7 +42,7 @@ class Shapers:
         get = container.get
         own = [
             get(MessagesShaper), get(CommentsShaper), get(NoticesShaper), get(TodosShaper), get(WorksShaper), get(QuestionsShaper), get(RulesShaper), get(PlansShaper),
-            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(ProfilesShaper), get(ReactionsShaper), get(SecretsShaper), get(SharesShaper), get(PluginsShaper),
+            get(EnvironmentsShaper), get(NudgesShaper), get(AgentsShaper), get(WorkersShaper), get(DumpsShaper), get(ProfilesShaper), get(ReactionsShaper), get(SecretsShaper), get(SharesShaper), get(PluginsShaper),
             MemoryShaper(get(Facts), "fact", {"keywords": [], "keywords_in": "both"}), MemoryShaper(get(Reminders), "reminder", {"whom": "", "until": ""}),
             WritingShaper(get(Reports).in_, get(Reports).every_linked, "report", {"kind": "", "number": 0, "docked": False, "dismissed": False, "items": []}),
             WritingShaper(get(Docs).all, get(Docs).every_linked, "doc", {"status": "final", "written": True, "revisions": 1, "hidden": False}),

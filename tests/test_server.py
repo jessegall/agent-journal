@@ -961,3 +961,27 @@ def test_the_mode_is_kept_and_an_output_is_read_by_its_number(tmp_path: Path):
         assert call(server, "GET", "/api/output/99/read")[0] == 404
     finally:
         app.runtime().stop()
+
+
+def test_a_dump_is_dropped_with_files_and_acted_on_through_the_viewer(server):
+    def upload(n: int, name: str, text: str):
+        boundary = "b0undary"
+        body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: text/plain\r\n\r\n{text}\r\n--{boundary}--\r\n").encode()
+        request = HttpRequest(f"http://127.0.0.1:{server.port}/api/dump/{n}/upload", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"})
+        try:
+            with urlopen(request, timeout=5) as reply:
+                return reply.status, json.loads(reply.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+
+    n = call(server, "POST", "/api/dump", {"brief": "some ideas"})[1]["n"]
+    row = upload(n, "a.txt", "hello")[1]
+    assert row["title"] == f"Dump {n}" and row["brief"] == "some ideas" and row["data"]["files"] == {"a.txt": ""} and row["completed"] == 0
+    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/api/dump/{n}/files/a.txt?env=main", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        assert reply.read() == b"hello"
+    assert call(server, "POST", f"/api/dump/{n}/name", {"title": "Ideas"})[1]["title"] == "Ideas"
+    stopped = call(server, "POST", f"/api/dump/{n}/stop")[1]
+    assert stopped["completed"] > 0 and stopped["data"]["stopped"] and stopped["outcome"] == "stopped, 0 filed, 2 left out"
+    assert 400 <= upload(n, "b.txt", "more")[0] < 500, "a closed dump takes no more files"
+    assert [r["n"] for r in call(server, "GET", "/api/dump?last=5&completed=true")[1]["rows"]] == [n]
+    assert call(server, "POST", f"/api/dump/{n}/dismiss")[1]["data"]["dismissed"] is True

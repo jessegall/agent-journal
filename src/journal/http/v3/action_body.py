@@ -37,6 +37,8 @@ class ActionBody:
     host: str = ""
     domain: str = ""
     comments: bool = False
+    pick: int = -1
+    """The number of an offered step."""
     sent: frozenset[str] = frozenset()
     """The names the viewer sent, so an update changes only those and keeps the rest."""
 
@@ -45,7 +47,8 @@ class ActionBody:
         texts = {name: str(payload[name]) for name in ("title", "brief", "text", "body", "about", "idempotency", "key", "value", "does", "how", "face", "ref", "kind", "field", "agent", "expires", "password", "endpoint", "username", "master_password", "host", "domain") if payload.get(name) is not None}
         lists = {name: tuple(payload[name]) for name in ("secret_fields", "programs", "proposed") if payload.get(name) is not None}
         words = payload.get("words") or ()
-        return cls(**texts, **lists,
+        picks = {"pick": int(payload["pick"])} if str(payload.get("pick", "")).lstrip("-").isdigit() else {}
+        return cls(**texts, **lists, **picks,
                    options=tuple(cls.titled(option) for option in payload.get("options") or ()),
                    steps=tuple(title for title in (cls.titled(step) for step in payload.get("steps") or ()) if title),
                    words=tuple(w.strip() for w in (words.split(",") if isinstance(words, str) else words) if w.strip()),
