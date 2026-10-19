@@ -8,7 +8,7 @@ from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
-from journal.features.git.head_commit import HeadCommit
+from journal.features.git.support.head_commit import HeadCommit
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
 from journal.support.actor import Actor
