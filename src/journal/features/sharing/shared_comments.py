@@ -1,4 +1,4 @@
-from journal.features.sharing.sent_comments import SentComments
+from journal.features.sharing.support.sent_comments import SentComments
 from journal.features.sharing.share_targets import ShareTargets
 from journal.support.actor import Actor
 from journal.models.author import Author

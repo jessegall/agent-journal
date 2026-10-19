@@ -7,9 +7,9 @@ from urllib.parse import unquote
 
 from journal.features.registry import Registry
 from journal.features.sharing.feature import Sharing
-from journal.features.sharing.share_password import SharePassword
-from journal.features.sharing.tunnel import HEALTH, MARKER
-from journal.features.sharing.wrong_passwords import WrongPasswords
+from journal.features.sharing.support.share_password import SharePassword
+from journal.features.sharing.support.tunnel import HEALTH, MARKER
+from journal.features.sharing.support.wrong_passwords import WrongPasswords
 from journal.http.support.json_out import JsonOut
 from journal.http.support.share_answer import ShareAnswer
 from journal.features.sharing.shared_comments import SharedComments

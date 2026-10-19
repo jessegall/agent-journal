@@ -1,5 +1,5 @@
 from journal.features.seed import Seed
-from journal.features.sharing.tunnel import Tunnel
+from journal.features.sharing.support.tunnel import Tunnel
 
 
 class TunnelAtBoot(Seed):

@@ -2,7 +2,7 @@ import threading
 from http.server import ThreadingHTTPServer
 
 from journal.db.connection import Connection
-from journal.features.sharing.share_place import SharePlace
+from journal.support.share_place import SharePlace
 from journal.http.support.share_handler import ShareHandler
 from journal.http.sharing.share_pages import SharePages
 

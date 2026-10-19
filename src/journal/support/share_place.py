@@ -4,7 +4,7 @@ import secrets
 from dataclasses import asdict, replace
 
 from journal.config import Config
-from journal.features.sharing.kept_place import KeptPlace
+from journal.features.sharing.support.kept_place import KeptPlace
 
 NAME_BYTES = 12
 PREFIX_LETTERS = 20

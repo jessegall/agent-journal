@@ -1,6 +1,6 @@
 from journal.features.sharing.share_actions import ShareActions
 from journal.features.sharing.share_targets import ShareTargets
-from journal.features.sharing.tunnel import Tunnel
+from journal.features.sharing.support.tunnel import Tunnel
 from journal.http.controllers.controller import Controller
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request

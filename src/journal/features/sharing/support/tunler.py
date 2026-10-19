@@ -8,9 +8,9 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from journal.support.kept_answer import KeptAnswer
-from journal.features.sharing.tunler_login import TunlerLogin
-from journal.features.sharing.tunler_status import TunlerStatus
-from journal.features.sharing.tunler_version import TunlerVersion
+from journal.features.sharing.support.tunler_login import TunlerLogin
+from journal.features.sharing.support.tunler_status import TunlerStatus
+from journal.features.sharing.support.tunler_version import TunlerVersion
 from journal.support.refused import Refused
 
 ELSEWHERE = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))

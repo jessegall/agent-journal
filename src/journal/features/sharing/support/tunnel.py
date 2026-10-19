@@ -6,11 +6,11 @@ from urllib.request import urlopen
 
 from journal.config import Config
 from journal.support.kept_answer import KeptAnswer
-from journal.features.sharing.share_place import SharePlace
-from journal.features.sharing.tunler import Tunler
-from journal.features.sharing.tunler_status import TunlerStatus
-from journal.features.sharing.tunnel_cause import TunnelCause
-from journal.features.sharing.tunnel_service import TunnelService
+from journal.support.share_place import SharePlace
+from journal.features.sharing.support.tunler import Tunler
+from journal.features.sharing.support.tunler_status import TunlerStatus
+from journal.features.sharing.support.tunnel_cause import TunnelCause
+from journal.features.sharing.support.tunnel_service import TunnelService
 from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 from journal.repositories.shares import Shares

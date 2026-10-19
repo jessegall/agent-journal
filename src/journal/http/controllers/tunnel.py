@@ -1,8 +1,8 @@
 from dataclasses import asdict
 
 from journal.features.sharing.feature import Sharing
-from journal.features.sharing.tunler import Tunler
-from journal.features.sharing.tunnel import Tunnel
+from journal.features.sharing.support.tunler import Tunler
+from journal.features.sharing.support.tunnel import Tunnel
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.refused import Refused

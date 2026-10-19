@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.sharing.tunnel import Tunnel
+from journal.features.sharing.support.tunnel import Tunnel
 from journal.features.sharing.share_actions import ShareActions
 from journal.features.sharing.share_targets import ShareTargets
 from journal.models.share import Share

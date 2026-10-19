@@ -1,4 +1,4 @@
-from journal.features.sharing.recent_counts import RecentCounts
+from journal.features.sharing.support.recent_counts import RecentCounts
 
 
 class SentComments(RecentCounts):

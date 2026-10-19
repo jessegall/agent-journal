@@ -2,9 +2,9 @@ import re
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from journal.features.sharing.share_password import SharePassword
+from journal.features.sharing.support.share_password import SharePassword
 from journal.features.sharing.share_targets import ShareTargets
-from journal.features.sharing.tunnel import Tunnel
+from journal.features.sharing.support.tunnel import Tunnel
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
 from journal.models.author import Author
