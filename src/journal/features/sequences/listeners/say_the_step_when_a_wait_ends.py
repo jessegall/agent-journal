@@ -3,7 +3,7 @@ from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
 from journal.features.registry import Registry
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.models.agent import Agent
 from journal.supervisor_link import SupervisorLink
 

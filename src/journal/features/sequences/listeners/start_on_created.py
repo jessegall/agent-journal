@@ -1,6 +1,6 @@
 from journal.events.models.created import Created
 from journal.events.listener import Listener
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.support.actor_kind import ActorKind
 from journal.models.scoped import Scoped
 from journal.repositories.sequences import Sequences

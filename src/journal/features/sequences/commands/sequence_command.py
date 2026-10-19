@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.models.sequence import Sequence
 from journal.support.scope import Scope
 from journal.support.sequence_run import SequenceRun

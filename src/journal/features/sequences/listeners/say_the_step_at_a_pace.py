@@ -5,7 +5,7 @@ from journal.engine.states.paused import Paused
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.repositories.questions import Questions
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink

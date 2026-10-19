@@ -9,7 +9,7 @@ from journal.events.agent.ticked import Ticked
 from journal.features.chart.support.checks import Checks
 from journal.features.chart.support.context import Context
 from journal.features.tasks.task_briefing import TaskBriefing
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.stop_words import ago
 from journal.features.tasks.states.working import Working

@@ -2,7 +2,7 @@ import time
 
 from journal.config import Config
 from journal.features.pausing.agent_pause import AgentPause
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.features.shell.commands.shell_command import RAN
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.terminal_line import TerminalLine

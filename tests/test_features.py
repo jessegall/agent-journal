@@ -25,7 +25,7 @@ from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.support.where import Where
 from journal.engine.machine import Machine
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.features.updates.release import Release
 from journal.features.updates.updating import Updating
 from journal.features.tasks.states.working import Working
@@ -5344,7 +5344,7 @@ def test_an_agents_wait_is_on_its_own_row_with_or_without_a_task(app):
 
 def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app):
     from journal.engine.machine import Machine
-    from journal.features.sequences.running import Running
+    from journal.support.running import Running
     console = app.console()
     release = console.run(["sequence", "create", "release", "--steps", "one | two | three"], USER).out.split()[1].rstrip(":")
     hook(app, "SessionStart")

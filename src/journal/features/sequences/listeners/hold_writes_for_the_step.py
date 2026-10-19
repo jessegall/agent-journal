@@ -5,7 +5,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.support.said import Said
-from journal.features.sequences.running import Running
+from journal.support.running import Running
 from journal.support.requiring import Requiring
 from journal.support.decision import Decision
 from journal.support.sequence_run import SequenceRun
