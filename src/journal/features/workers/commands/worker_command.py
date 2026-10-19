@@ -37,6 +37,7 @@ class WorkerCommand(Command):
         say.add_argument("brief")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
         self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
+        self.verb(verbs, "done", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
         self.verb(verbs, "list", "every worker out")
 
     def dispatch(self, args: Namespace, where: Where) -> int:
@@ -78,6 +79,11 @@ class WorkerCommand(Command):
         self.runner.stop(args.n)
         self.workers.save(self.workers.find(args.n).stopped(), where.actor)
         print(f"worker {args.n} stopped")
+        return 0
+
+    def done(self, args: Namespace, where: Where) -> int:
+        worker = self.workers.save(self.workers.find(args.n).done(), where.actor)
+        print(f"worker {worker.id}'s report is acted on")
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:

@@ -667,12 +667,12 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
         marks = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
     assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /api/plan", 2, 95), ("Slow request: GET /api/message/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
     assert sum("over its budget of 50 ms" in t for t in typed) == 2, "the agent is told the first time of each"
-    mark = app.config.home / "runtime" / "tests.running"
-    mark.parent.mkdir(parents=True, exist_ok=True)
-    mark.write_text(str(os.getpid()))
-    assert not slow.judging(), "nothing is judged while the test suite runs"
-    mark.write_text("999999")
+    runtime = app.config.home / "runtime"
+    runtime.mkdir(parents=True, exist_ok=True)
+    (runtime / "tests.running.999999").touch()
     assert slow.judging(), "a mark left by a run that died is stale"
+    (runtime / f"tests.running.{os.getpid()}").touch()
+    assert not slow.judging(), "nothing is judged while any test run is on, whatever other runs left their marks or took them away"
 
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
@@ -1087,36 +1087,39 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
 def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, monkeypatch):
     from journal.features.plans.states.following_plan import FollowingPlan
     from journal.repositories.plans import Plans
+    from journal.repositories.tasks import Tasks
     from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    console.run(["plan", "create", "p", "--brief", "b"], USER)
-    console.run(["plan", "add", "1", "first"], USER)
-    console.run(["plan", "add", "1", "second"], USER)
-    console.run(["plan", "phase", "1", "one", "--when", "w", "--checkpoint"], USER)
-    console.run(["plan", "phase", "1", "two", "--when", "w"], USER)
-    console.run(["plan", "todos", "1", "1", "1"], USER)
-    console.run(["plan", "todos", "1", "2", "2"], USER)
-    console.run(["plan", "ready", "1"], USER)
-    console.run(["plan", "approve", "1"], USER)
+    for n, title in ((1, "p"), (2, "q")):
+        console.run(["plan", "create", title, "--brief", "b"], USER)
+        console.run(["plan", "add", str(n), f"{title} first"], USER)
+        console.run(["plan", "add", str(n), f"{title} second"], USER)
+        console.run(["plan", "phase", str(n), "one", "--when", "w", "--checkpoint"], USER)
+        console.run(["plan", "phase", str(n), "two", "--when", "w"], USER)
+        console.run(["plan", "todos", str(n), "1", str(2 * n - 1)], USER)
+        console.run(["plan", "todos", str(n), "2", str(2 * n)], USER)
+        console.run(["plan", "approve", str(n)], USER)
+    settings = app.container.get(Settings)
+    settings.save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1"], AGENT)
     machine, plans = app.container.get(Machine), app.container.get(Plans)
-    assert machine.current("s1") == FollowingPlan(plan_id=1) and plans.at_checkpoint(plans.find(1)).title == "one", "the plan waits at its checkpoint with no task in hand; the agent keeps following it"
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    assert machine.current("s1") == FollowingPlan(plan_id=1) and plans.at_checkpoint(plans.find(1)).title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "auto off: the checkpoint waits for the user's look, said at the stop"
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
-    status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and "in auto mode it does not stop you" in body["reason"], "auto on: the checkpoint is no stop, said by the plan state's own workflow"
+    assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
     hook(app, "SessionStart", session_id="s2")
     assert machine.current("s2") == FollowingPlan(plan_id=1, task_id=2), "a session that starts while the plan runs follows it, at its task in hand"
-    console.run(["plan", "park", "1"], AGENT)
+    console.run(["task", "done", "2"], AGENT)
+    settings.save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
+    console.run(["plan", "start", "2"], AGENT)
+    console.run(["task", "done", "3"], AGENT)
+    assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4), "in auto mode a checkpoint never stops the plan"
+    console.run(["plan", "park", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
-
 
 def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app, monkeypatch, tmp_path):
     import json as j
@@ -2138,9 +2141,9 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["chart", "line", "--edit-default", str(trigger), str(quiet)], USER)
     console.run(["chart", "line", "--edit-default", str(quiet), str(say), "--port", "yes"], USER)
     live = console.run(["chart", "try", "ticked", "--state", "expecting"], AGENT).out
-    assert f"nodes {trigger}, {quiet}, {say}" in live and "assumed: quiet for 3600 s" in live, "a tick trial stands in an hour's quiet unless told otherwise, so it shows what a tick does"
+    assert f"{trigger}, {quiet}, {say}" in live and "assumed: quiet for 3600 s" in live, "a tick trial stands in an hour's quiet unless told otherwise, so it shows what a tick does"
     scripted = console.run(["chart", "try", "ticked", "--quiet", "400", "--state", "expecting"], AGENT).out
-    assert f"nodes {trigger}, {quiet}, {say}" in scripted and "assumed: quiet for 400 s, the agent expecting" in scripted, "the trial takes a quiet time and a state and says it assumed them"
+    assert f"{trigger}, {quiet}, {say}" in scripted and "assumed: quiet for 400 s, the agent expecting" in scripted, "the trial takes a quiet time and a state and says it assumed them"
     assert "no state is called flying" in console.run(["chart", "try", "ticked", "--state", "flying"], AGENT).err
     as_working = console.run(["chart", "try", "tool_starting", "--state", "working", "--provider", "codex"], AGENT).out
     assert "walked as the state working" in as_working and "assumed: the agent working, a codex agent" in as_working, "the trial walks as the state given, with the provider's tool names"
@@ -5689,3 +5692,28 @@ def test_a_row_whose_text_names_another_is_linked_to_it_off_the_writes_thread(ap
     with app.container.get(Scope).of(MAIN):
         mentions = [(link.source.type, link.target) for link in app.container.get(Links).every() if link.kind == "mentions"]
     assert ("messages", Ref("tasks", 1)) in mentions and Ref("tasks", 99) not in [t for _, t in mentions], "linked to what exists, not to what does not"
+
+
+def test_a_worker_report_not_acted_on_is_named_until_it_is(app):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    workers = app.container.get(Workers)
+    with app.container.get(Scope).of(MAIN):
+        worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(), Actor.system())
+    assert "worker 1 (Lady Lovelace) reported and you have not acted on it yet" in json.dumps(hook(app, "Stop")[1])
+    app.console().run(["worker", "done", str(worker.id)], AGENT)
+    assert "not acted on it yet" not in json.dumps(hook(app, "Stop")[1]), "once acted on it is named no more"
+
+
+def test_the_tasks_list_and_its_open_count_leave_out_a_plans_tasks(app):
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["task", "create", "loose"], USER)
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "planned"], USER)
+    assert app.container.get(Tasks).unfinished_count() == 1, "the plan's task is counted on its plan"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=50", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        rows = {row["title"]: row["data"]["hidden"] for row in json.loads(reply.read())["rows"]}
+    assert rows == {"loose": False, "planned": True}, "hidden from the Tasks list, still there for its plan"

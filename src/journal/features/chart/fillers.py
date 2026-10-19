@@ -13,6 +13,7 @@ from journal.features.tasks.states.working import Working
 from journal.models.question import Question
 from journal.models.task_state import TaskState
 from journal.models.worker import Worker
+from journal.repositories.workers import Workers
 from journal.repositories.counts import Counts
 from journal.features.registry import Registry
 from journal.features.skills.requiring import Requiring
@@ -40,8 +41,9 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
+        self.workers = workers
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
         self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
         self.chosen, self.checks, self.task_logs, self.config, self.running = chosen, checks, task_logs, config, running
@@ -129,6 +131,10 @@ class Fillers:
         from journal.features.messages.feature import Messages as MessagesFeature
         unread = self.messages.unread()
         return MessagesFeature.inbox(unread).rendered() if unread else ""
+
+    def reports_waiting(self, ctx: Context) -> str:
+        """The workers whose reports wait to be acted on, by number and name."""
+        return ", ".join(f"worker {w.id} ({w.name})" for w in self.workers.reports_waiting())
 
     def unread_count(self, ctx: Context) -> str:
         """How many messages are unread."""

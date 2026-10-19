@@ -64,8 +64,9 @@ class Tasks(ScopedRepository[Task]):
             raise Refused(f"task {other.id} is in hand: finish it, or park it with `journal task park {other.id} \"<why>\"`, before task {task.id} is started")
 
     def unfinished_count(self) -> int:
-        """How many tasks are not yet done or cancelled, counted by the database."""
-        return self.connection.one("SELECT count(*) AS n FROM tasks WHERE environment_id = ? AND state NOT IN (?, ?)", (self.scope.id, TaskState.DONE.value, TaskState.CANCELLED.value))["n"]
+        """How many tasks under no plan are not yet done or cancelled, counted by the database: a plan's tasks are counted on the plan."""
+        return self.connection.one("SELECT count(*) AS n FROM tasks WHERE environment_id = ? AND state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
+                                   (self.scope.id, TaskState.DONE.value, TaskState.CANCELLED.value))["n"]
 
     def unseen_by_user(self) -> int:
         """How many unfinished tasks the user did not make, so has not yet seen."""

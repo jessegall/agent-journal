@@ -10,14 +10,20 @@ from journal.models.task_state import TaskState
 from journal.refused import Refused
 from journal.repositories.not_found import NotFound
 from journal.repositories.plans import Plans
+from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 
 
 class PlanControl:
     """Starting, parking and abandoning a plan, the one way for the command and the viewer alike: the task in hand and the agent following the plan move with it. The session is the agent's that follows, empty when none does."""
 
-    def __init__(self, plans: Plans, tasks: Tasks, machine: Machine) -> None:
-        self.plans, self.tasks, self.machine = plans, tasks, machine
+    def __init__(self, plans: Plans, tasks: Tasks, machine: Machine, settings: Settings) -> None:
+        self.plans, self.tasks, self.machine, self.settings = plans, tasks, machine, settings
+
+    def holds(self, plan: Plan) -> bool:
+        """Whether the plan stands at a checkpoint for the user's look: only out of auto mode, since in auto mode a checkpoint never stops it."""
+        from journal.features.tasks.feature import Tasks as TasksFeature
+        return not self.settings.option(TasksFeature.AUTO) and self.plans.at_checkpoint(plan) is not None
 
     def start(self, plan: Plan, session: str, by: Actor) -> Nudge:
         """The plan started: its parked task resumed first, else its next open task; with none to start the agent follows it and is told what waits. Only an approved, parked or started plan starts."""

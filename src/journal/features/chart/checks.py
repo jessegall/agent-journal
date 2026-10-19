@@ -170,6 +170,9 @@ class Checks:
     def related_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.related())
 
+    def worker_report_waiting(self, ctx: Context) -> bool:
+        return bool(self.workers.reports_waiting())
+
     def version_3_waiting(self, ctx: Context) -> bool:
         return self.backup.is_waiting()
 

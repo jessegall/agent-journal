@@ -37,7 +37,7 @@ class AdvancePlan(Listener[Updated]):
         if plan.state != PlanState.STARTED:
             self.moved(session, task, self.machine.states.first())
             return
-        if self.plans.at_checkpoint(plan) is not None:
+        if self.control.holds(plan):
             self.moved(session, task, FollowingPlan(plan_id=plan.id))
             return
         following = self.plans.next_task(plan)

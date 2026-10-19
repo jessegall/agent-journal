@@ -22,13 +22,13 @@ from journal.repositories.scope import Scope
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
 """Every test, and every journal a test boots, keeps its secret values in a scratch folder, never the user's own."""
 
-TESTS_MARK = Path(__file__).resolve().parent.parent / ".journal" / "runtime" / TESTS_RUNNING
+TESTS_MARK = Path(__file__).resolve().parent.parent / ".journal" / "runtime" / f"{TESTS_RUNNING}.{os.getpid()}"
 
 
 def pytest_sessionstart(session) -> None:
     """The checkout's own journal is told a run is on, so its profiler does not blame itself for the machine the suite crowds."""
     if TESTS_MARK.parent.is_dir():
-        TESTS_MARK.write_text(str(os.getpid()))
+        TESTS_MARK.touch()
 
 
 def pytest_sessionfinish(session, exitstatus) -> None:

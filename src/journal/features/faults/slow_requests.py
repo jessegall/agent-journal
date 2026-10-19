@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import re
 import time
@@ -16,7 +17,7 @@ from journal.supervisor_link import SupervisorLink
 SETTLING_SECONDS = 60.0
 """After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
 TESTS_RUNNING = "tests.running"
-"""The file the test suite keeps in the journal's runtime folder while it runs, holding its process number: its servers crowd the machine."""
+"""The start of the name of the mark each test run keeps in the journal's runtime folder while it runs, ended by its own process number: runs side by side each keep their own, and their servers crowd the machine."""
 
 
 class SlowRequests:
@@ -47,9 +48,12 @@ class SlowRequests:
         return (self.config.root / "src" / "journal").is_dir() and settled and not busy and not self.is_testing()
 
     def is_testing(self) -> bool:
-        """The suite's mark names a process still running; one left by a run that died is stale."""
-        mark = self.config.home / "runtime" / TESTS_RUNNING
-        pid = mark.read_text().strip() if mark.is_file() else ""
+        """A test run is on: one of the marks the runs leave, each named by its own process, names a process still running; a mark left by a run that died is stale."""
+        return any(self.is_running(mark) for mark in (self.config.home / "runtime").glob(f"{TESTS_RUNNING}.*"))
+
+    @staticmethod
+    def is_running(mark: Path) -> bool:
+        pid = mark.suffix.lstrip(".")
         if not pid.isdigit():
             return False
         try:

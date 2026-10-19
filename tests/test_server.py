@@ -585,7 +585,7 @@ def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude
     assert status == 200 and read == {"profiles": []}, "a fresh journal has no agents folder yet"
     status, saved = call(server, "POST", "/journal/profiles/critic", {"description": "Reads a design through one lens.", "tools": "Read, Grep", "model": "sonnet", "body": "You are a critic.\n\nSay what is wrong."})
     assert status == 200 and saved["name"] == "critic" and saved["shipped"] is False and saved["path"] == ".claude/agents/critic.md"
-    assert (journal_root / ".claude/agents/critic.md").read_text() == "---\nname: critic\ndescription: Reads a design through one lens.\ntools: Read, Grep\nmodel: sonnet\n---\n\nYou are a critic.\n\nSay what is wrong.\n"
+    assert (journal_root / ".claude/agents/critic.md").read_text() == "---\nname: critic\ndescription: Reads a design through one lens.\ntools: Read, Grep\nkind: subagent\nmodel: sonnet\n---\n\nYou are a critic.\n\nSay what is wrong.\n"
     status, read = call(server, "GET", "/journal/profiles")
     assert [p["name"] for p in read["profiles"]] == ["critic"] and read["profiles"][0]["uses"] == 0 and read["profiles"][0]["body"] == "You are a critic.\n\nSay what is wrong."
     status, one = call(server, "GET", "/journal/profiles/critic")

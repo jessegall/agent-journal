@@ -122,8 +122,7 @@ Run the whole suite after every change; it is cheap.
 `events/` (`models/` and `agent/`), `engine/` (the state machine), `features/` (states,
 nudges, listeners, commands per subject), `hooks/`, `http/`, `console/`, `providers/`, `launcher/` (the
 picker and the launch file a supervisor starts from). `src/supervisor/` is a separate stdlib-only package that
-knows no journal concept: it runs the processes it is handed and answers its protocol. `v3.bak/` is the old tree, read as a
-guide and never imported. NOTES.md holds the decisions and what is still open.
+knows no journal concept: it runs the processes it is handed and answers its protocol. NOTES.md holds the decisions and what is still open.
 
 @AGENTS.md
 

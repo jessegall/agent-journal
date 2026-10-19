@@ -1,9 +1,0 @@
-from features.family_tree.tree import family
-from framework.parts import Command, Context
-
-
-class ShowFamily(Command):
-    name = "family"
-
-    def run(self, context: Context, agents):
-        return family(agents)

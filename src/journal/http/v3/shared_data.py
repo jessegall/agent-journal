@@ -32,7 +32,7 @@ class SharedData:
             return []
         if kind != "plan":
             return [row]
-        return [row, *(TodosShaper.row(task) for task in self.plans.tasks_of(self.plans.find(target.id)))]
+        return [row, *(TodosShaper.row(task, False) for task in self.plans.tasks_of(self.plans.find(target.id)))]
 
     @staticmethod
     def shown(row: V3Row, refs: list[str]) -> dict:

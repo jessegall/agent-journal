@@ -1,4 +1,5 @@
 from journal.http.v3.shapers.shaper import Shaper
+from journal.features.plans.plan_control import PlanControl
 from journal.http.v3.v3_row import V3Row, seconds
 from journal.models.plan_state import PlanState
 from journal.features.workers.subagents import Subagents
@@ -11,8 +12,8 @@ STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.REVIE
 class PlansShaper(Shaper):
     type = "plan"
 
-    def __init__(self, plans: Plans, agents: Agents, subagents: Subagents) -> None:
-        self.plans, self.agents, self.subagents = plans, agents, subagents
+    def __init__(self, plans: Plans, agents: Agents, subagents: Subagents, control: PlanControl) -> None:
+        self.plans, self.agents, self.subagents, self.control = plans, agents, subagents, control
 
     def rows(self) -> list[V3Row]:
         return [self.row(p) for p in self.plans.in_()]
@@ -29,7 +30,7 @@ class PlansShaper(Shaper):
 
     def status(self, p) -> str:
         """Version 3's word for the plan's state; a started plan standing at a checkpoint waits for the user."""
-        if p.state == PlanState.STARTED and self.plans.at_checkpoint(p) is not None:
+        if p.state == PlanState.STARTED and self.control.holds(p):
             return "waiting"
         return STATUS[p.state]
 

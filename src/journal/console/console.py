@@ -55,7 +55,14 @@ class Console:
         """A noun with a default verb takes it when the line names none."""
         command = self.commands.get(argv[0]) if argv else None
         verb = getattr(command, "default_verb", "")
-        return [argv[0], verb, *argv[1:]] if verb and argv[1:2] != [verb] else argv
+        return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in self.verbs_of(command)) else argv
+
+    @staticmethod
+    def verbs_of(command) -> set[str]:
+        """The verbs a noun declares, read from the parser it builds."""
+        verbs = argparse.ArgumentParser().add_subparsers()
+        command.arguments(verbs)
+        return set(verbs.choices)
 
     def captured(self, argv: list[str], where: Where, out: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(argv)
