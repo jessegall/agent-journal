@@ -554,7 +554,13 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app):
     files = app.container.get(ProfileFiles)
     files.write_all()
     assert files.kind_of("researcher") == "subagent" and files.kind_of("nobody") == ""
-    assert files.save("builder", "writes code", "Read, Edit", "worker", "sonnet", "You write.")["kind"] == "worker"
+    from journal.features.profiles.support.profile import Profile
+    (files.config.root / ".codex").mkdir(exist_ok=True)
+    saved = files.save(Profile("builder", "writes code", "Read, Edit", "You write.\nSay \"done\".", "worker"), "sonnet", "gpt-6")
+    assert saved["kind"] == "worker" and saved["model"] == "sonnet" and saved["codex_model"] == "gpt-6"
+    import tomllib
+    codex = tomllib.loads((files.config.root / ".codex" / "agents" / "builder.toml").read_text())
+    assert codex["model"] == "gpt-6" and codex["sandbox_mode"] == "workspace-write" and codex["developer_instructions"] == "You write.\nSay \"done\"."
     assert files.read("builder")["kind"] == "worker" and files.read("planner")["kind"] == "subagent"
     hook(app, "SessionStart")
     refused = app.console().run(["worker", "dispatch", "researcher", "look it up", "--model", "fast"], AGENT)

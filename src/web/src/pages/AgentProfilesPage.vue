@@ -23,11 +23,11 @@ onMounted(reload);
 
 const matching = computed(() => {
     const words = query.value.toLowerCase().split(/\s+/).filter(Boolean);
-    return rows.value.filter((p) => words.every((w) => `${p.name} ${p.description} ${p.kind} ${p.model}`.toLowerCase().includes(w)));
+    return rows.value.filter((p) => words.every((w) => `${p.name} ${p.description} ${p.kind} ${p.model} ${p.codex_model}`.toLowerCase().includes(w)));
 });
 const panel = computed(() =>
     making.value
-        ? {name: "", description: "", tools: "Read, Grep, Glob", kind: "subagent", model: "sonnet", body: "", shipped: false, uses: 0}
+        ? {name: "", description: "", tools: "Read, Grep, Glob", kind: "subagent", model: "sonnet", codex_model: "gpt-6-sol", body: "", shipped: false, uses: 0}
         : rows.value.find((p) => p.name === opened.value) || null
 );
 const usedWords = (p) =>
@@ -87,7 +87,7 @@ async function save(profile, fields) {
                         <ListRow :title="profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">
-                                    <span class="profile-model">{{ profile.kind }} · {{ profile.model || "the agent's model" }}</span>
+                                    <span class="profile-model">{{ profile.kind }} · {{ profile.model || "the agent's model" }} on Claude · {{ profile.codex_model || "the agent's model" }} on Codex</span>
                                     <span :class="['profile-used', {never: !profile.uses}]">{{ usedWords(profile) }}</span>
                                 </span>
                             </template>
