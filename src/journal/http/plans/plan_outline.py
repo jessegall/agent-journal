@@ -1,4 +1,4 @@
-from journal.features.plans.plan_control import PlanControl
+from journal.features.plans.support.plan_control import PlanControl
 from journal.support.subagents import Subagents
 from journal.http.support.model_fields import ModelFields
 from journal.models.plan import Plan

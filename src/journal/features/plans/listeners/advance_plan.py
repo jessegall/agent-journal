@@ -6,7 +6,7 @@ from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
-from journal.features.plans.plan_control import PlanControl
+from journal.features.plans.support.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.models.plan_state import PlanState
 from journal.models.task import Task
