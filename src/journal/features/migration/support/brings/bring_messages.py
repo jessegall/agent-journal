@@ -2,8 +2,8 @@ import shutil
 from pathlib import Path
 
 from journal.config import Config
-from journal.features.migration.environment_kind import EnvironmentKind
-from journal.features.migration.version_3_row import Version3Row
+from journal.features.migration.support.environment_kind import EnvironmentKind
+from journal.features.migration.support.version_3_row import Version3Row
 from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.environment import Environment

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from journal.features.migration.brought import Brought
+from journal.features.migration.support.brought import Brought
 from journal.features.registry import Registry
 from journal.support.actor import Actor
 from journal.models.setting import Setting

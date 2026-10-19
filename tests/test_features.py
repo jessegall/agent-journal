@@ -5618,7 +5618,7 @@ def version_3_row(folder, kind: str, n: int, brief: str = "", **header) -> None:
 
 
 def test_only_the_version_3_environments_still_in_use_are_brought_across_and_never_twice(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.environments import Environments
     from journal.repositories.reports import Reports
     kept = app.config.home / "version-3"
@@ -5639,7 +5639,7 @@ def test_only_the_version_3_environments_still_in_use_are_brought_across_and_nev
 
 def test_every_version_3_message_comes_across_with_its_author_time_reply_and_attachment(app):
     import zipfile
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.messages import Messages
     kept = app.config.home / "version-3"
     version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
@@ -5689,7 +5689,7 @@ def test_the_mcp_list_answers_at_once_and_asks_the_program_on_a_thread_of_its_ow
 
 
 def test_version_3_comments_and_reactions_come_across_on_their_rows(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.support.ref import Ref
     from journal.repositories.links import Links
     from journal.repositories.messages import Messages
@@ -5715,7 +5715,7 @@ def test_version_3_comments_and_reactions_come_across_on_their_rows(app):
 
 
 def test_version_3_todos_become_tasks_in_their_states_with_their_work_logs(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.task_logs import TaskLogs
     from journal.repositories.tasks import Tasks
     kept = app.config.home / "version-3"
@@ -5740,7 +5740,7 @@ def test_version_3_todos_become_tasks_in_their_states_with_their_work_logs(app):
 
 
 def test_version_3_plans_keep_their_state_phases_and_tasks_and_questions_their_answers(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.plans import Plans
     from journal.repositories.questions import Questions
     kept = app.config.home / "version-3"
@@ -5764,7 +5764,7 @@ def test_version_3_plans_keep_their_state_phases_and_tasks_and_questions_their_a
 
 
 def test_version_3_facts_rules_reminders_documents_and_reports_come_across_and_struck_ones_stay(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.docs import Docs
     from journal.repositories.facts import Facts
     from journal.repositories.reminders import Reminders
@@ -5795,7 +5795,7 @@ def test_version_3_facts_rules_reminders_documents_and_reports_come_across_and_s
 
 
 def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_where_they_fit(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.checks import Checks
     from journal.repositories.sequences import Sequences
     from journal.repositories.settings import Settings
@@ -5826,7 +5826,7 @@ def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_
 
 
 def test_a_small_version_3_journal_comes_across_counted_kind_by_kind_and_a_second_run_brings_nothing(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.reports import Reports
     kept = app.config.home / "version-3"
     version_3_row(kept / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
@@ -5852,7 +5852,7 @@ def test_a_small_version_3_journal_comes_across_counted_kind_by_kind_and_a_secon
 
 
 def test_a_version_3_row_that_cannot_come_across_is_reported_and_the_migration_goes_on(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.messages import Messages
     from journal.repositories.reports import Reports
     kept = app.config.home / "version-3"
@@ -5944,7 +5944,7 @@ def test_a_plan_parks_and_restarts_on_its_parked_task_only_once_approved_holds_i
 
 
 def test_no_wait_closes_a_loop_and_the_migration_drops_only_the_link_that_would(app):
-    from journal.features.migration.migrator import Migrator
+    from journal.features.migration.support.migrator import Migrator
     from journal.repositories.reports import Reports
     from journal.repositories.tasks import Tasks
     console = app.console()

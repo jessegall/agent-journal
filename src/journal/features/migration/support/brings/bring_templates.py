@@ -1,5 +1,5 @@
-from journal.features.migration.shipped_kind import ShippedKind
-from journal.features.migration.version_3_row import Version3Row
+from journal.features.migration.support.shipped_kind import ShippedKind
+from journal.features.migration.support.version_3_row import Version3Row
 from journal.support.actor import Actor
 from journal.models.template import Template
 from journal.repositories.migrated_rows import MigratedRows

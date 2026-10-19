@@ -1,8 +1,8 @@
 import contextvars
 import threading
 
-from journal.features.migration.migrator import Migrator
-from journal.features.migration.version_3_backup import Version3Backup
+from journal.features.migration.support.migrator import Migrator
+from journal.support.version_3_backup import Version3Backup
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.repositories.version3_migrations import Version3Migrations

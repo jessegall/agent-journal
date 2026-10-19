@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from journal.features.migration.brought import Brought
-from journal.features.migration.version_3_rows import Version3Rows
+from journal.features.migration.support.brought import Brought
+from journal.features.migration.support.version_3_rows import Version3Rows
 from journal.support.actor import Actor
 from journal.repositories.environments import Environments
 from journal.repositories.migrated_rows import MigratedRows
