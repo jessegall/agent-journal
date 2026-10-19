@@ -5,7 +5,7 @@ import {shown} from "./shown.js";
 
 const MODELS = ["gpt-5-codex-max", "gpt-5-codex-mini", "gpt-5.1-codex", "gpt-5.1-codex-mini", "gpt-5.2", "gpt-5.2-codex", "gpt-5.3-codex"];
 
-const row = {kind: "choice", label: "Model", value: MODELS[0], options: MODELS.map((key) => ({key, label: key})), hint: "", example: ""};
+const row = {kind: "choice", label: "Model", value: MODELS[0], options: MODELS.map((key) => ({key, label: key})), hint: "", example: "", readers: []};
 
 describe("a long list of options in Settings", () => {
     test("is one segmented group that wraps onto another line, on the page and on the phone sheet, never a column of cards", async () => {

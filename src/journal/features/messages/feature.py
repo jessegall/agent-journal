@@ -25,11 +25,11 @@ class Messages(Feature):
     title = "Messages"
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
-    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it; the guards' workflow reads it against the count of uses owed", 0, unit="tool uses")
-    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer; 0 holds the first; read against the count of uses owed", 0, unit="tool uses")
+    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses the agent may make after reading a message before it is asked to answer it", 0, unit="tool uses")
+    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses the agent may make after reading a message before its tools wait for the answer; 0 holds the first", 0, unit="tool uses")
     SWEEP_AFTER = Option("messages.sweep_after", "Look for missed words older than", "Seconds the hooks have to bring the agent's words to the chat before the transcript is looked through for any they missed", 10, unit="seconds")
-    REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read; the guards' workflow reads it against the count of uses since the message came", 3, unit="tool uses")
-    HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read; read against the count of namings", 5, unit="reminders")
+    REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
+    HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
     listeners = (HintReplyByTag, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     checks = (

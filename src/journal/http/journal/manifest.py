@@ -34,13 +34,16 @@ class Manifest:
                 for f in self.registry.features]
 
     def read_by(self) -> dict[str, list[dict]]:
-        """Which workflow's node reads each setting: a check node whose text ends with the setting's key, alone or after a count's name; a setting no node names does nothing, and the page says so."""
+        """The workflows that read each setting, once each: those with a check node whose text ends with the setting's key, alone or after a count's name."""
         readers: dict[str, list[dict]] = {}
         for chart in self.charts.all():
             for node in self.charts.nodes_of(chart):
                 words = node.text.split()
-                if node.kind == NodeKind.CHECK and words and "." in words[-1]:
-                    readers.setdefault(words[-1], []).append({"workflow": chart.title, "node": node.id})
+                if node.kind != NodeKind.CHECK or not words or "." not in words[-1]:
+                    continue
+                reader = {"workflow": chart.title, "id": chart.id}
+                if reader not in readers.setdefault(words[-1], []):
+                    readers[words[-1]].append(reader)
         return readers
 
     def groups(self) -> list[dict]:

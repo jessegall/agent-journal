@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.4
+
+- A setting's help says only what it does, in plain words; a workflow that uses the setting shows under it as a link that opens that workflow.
+
 ## 4.1.3
 
 - The sharing dialog opens at once: tunler's version and domains are kept for an hour instead of asked on every look, and a tunler command that only reads no longer asks tunler's status again; a login, an update or a release asks again at once.

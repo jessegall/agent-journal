@@ -457,7 +457,7 @@ def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_w
     manifest = call(server, "GET", "/journal/manifest")[1]
     feature = lambda name: next(f for f in manifest["features"] if f["name"] == name)
     hold_after = next(s for s in feature("messages")["options"] if s["name"] == "hold_after")
-    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold the tools while a read message stays unanswered"} and all(r["node"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
+    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold the tools while a read message stays unanswered"} and all(r["id"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
     auto = next(s for s in feature("tasks")["options"] if s["name"] == "auto")
     assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
 

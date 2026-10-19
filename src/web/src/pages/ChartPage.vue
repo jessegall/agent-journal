@@ -12,6 +12,7 @@ import {cardTitle, limitNote, messageShown} from "../domain/cardTitle.js";
 import {CARD, KIND, PORT_AT, placeholderOf, STOPS_WHY, stopsTheWalk, WORD} from "../domain/chartCard.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import DropList from "../kit/DropList.vue";
@@ -194,7 +195,9 @@ async function load() {
     workflows.value = got.workflows;
     catalogue.value = got.catalogue;
     states.value = got.states;
-    await pick(pickedEvent.value, current.value);
+    const asked = workflows.value.find((w) => w.id === route.value.n);
+    if (asked) await pick(asked.event, asked.id);
+    else await pick(pickedEvent.value, current.value);
 }
 onMounted(load);
 onMounted(() => window.addEventListener("resize", fit));

@@ -25,9 +25,9 @@ class Tasks(Feature):
     states = (Idle, Working, Stuck, Expecting)
     commands = (TaskCommand, AwaitCommand, StuckCommand)
     AUTO = Option("tasks.auto", "Work the list on its own", "At a stop with tasks open, the next one holds the stop until it is taken up; off, the agent stops and waits for you", True, kind="switch")
-    FIRST_AFTER = Option("tasks.first_nudge_after", "Ask for a log after", "Edits with nothing logged before the agent is asked where the task stands; Working's workflow reads it against the edits count", 25, unit="edits")
-    NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between namings of the task in hand, so drift is noticed; read against the edits count", 25, unit="edits")
-    LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits with nothing logged before the next write waits for a log line; read against the edits count, a held write not counted", 50, unit="edits")
+    FIRST_AFTER = Option("tasks.first_nudge_after", "Ask for a log after", "Edits without a log line before the agent is asked where its task stands", 25, unit="edits")
+    NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between reminders of the task in hand, so drift is noticed", 25, unit="edits")
+    LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits without a log line before the agent's next write waits for one", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
     listeners = (SpotPolling, ClearWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     checks = (
