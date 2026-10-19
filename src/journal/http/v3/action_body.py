@@ -15,6 +15,8 @@ class ActionBody:
     agent: str = "claude"
     key: str = ""
     value: str = ""
+    values: tuple[str, ...] = ()
+    """The value when the viewer sent a list, such as the buttons pressed on a card."""
     steps: tuple[str, ...] = ()
     words: tuple[str, ...] = ()
     does: str = ""
@@ -47,6 +49,7 @@ class ActionBody:
                    options=tuple(cls.titled(option) for option in payload.get("options") or ()),
                    steps=tuple(title for title in (cls.titled(step) for step in payload.get("steps") or ()) if title),
                    words=tuple(w.strip() for w in (words.split(",") if isinstance(words, str) else words) if w.strip()),
+                   values=tuple(str(v) for v in payload["value"]) if isinstance(payload.get("value"), list) else (),
                    helpers=bool(payload.get("helpers")),
                    comments=bool(payload.get("comments")),
                    sent=frozenset(payload))

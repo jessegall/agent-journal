@@ -17,7 +17,7 @@ class Messages(ScopedRepository[Message]):
     ABOUT = "about"
     """The link from a message of the user's to a task filed from it."""
     COMMENTS_ON = "comments_on"
-    """The link from a message of the user's to the row it was written under in the viewer: a comment on a task, a doc, a plan."""
+    """The link from a comment to the row it was written under: the user's in the viewer, or a visitor's on a shared page."""
 
     model = Message
 
@@ -75,6 +75,10 @@ class Messages(ScopedRepository[Message]):
     def unseen_by_user(self) -> int:
         """How many of the agent's messages the user has not seen yet."""
         return self.connection.one("SELECT count(*) AS n FROM messages WHERE environment_id = ? AND author = ? AND read_at IS NULL", (self.scope.id, Author.AGENT.value))["n"]
+
+    def from_visitors(self, share_id: int) -> list[Message]:
+        """The comments visitors left through a link, oldest first."""
+        return self.selected("environment_id = ? AND json_extract(data, '$.share') = ? ORDER BY id", (self.scope.id, share_id))
 
     def keyed(self, key: str, by: Actor) -> list[Message]:
         return self.selected("environment_id = ? AND json_extract(data, '$.key') = ? AND created_by = ?", (self.scope.id, key, by.stamp))

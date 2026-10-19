@@ -1,6 +1,7 @@
 from journal.http.v3.shapers.shapers import Shapers
 from journal.http.v3.shapers.todos_shaper import TodosShaper
 from journal.http.v3.share_targets import ShareTargets
+from journal.http.v3.shared_comments import SharedComments
 from journal.http.v3.v3_row import V3Row, seconds, viewer_ref
 from journal.models.share import Share
 from journal.repositories.plans import Plans
@@ -10,18 +11,18 @@ SHOWN = ("title", "abstract", "brief", "sections", "created", "updated", "comple
 
 
 class SharedData:
-    """What the share page reads of a link: the row it opens, and a plan's tasks, each with only the fields a visitor sees."""
+    """What the share page reads of a link: the row it opens, and a plan's tasks, each with only the fields a visitor sees, and the comments visitors left."""
 
-    def __init__(self, shapers: Shapers, targets: ShareTargets, plans: Plans, scope: Scope) -> None:
-        self.shapers, self.targets, self.plans, self.scope = shapers, targets, plans, scope
+    def __init__(self, shapers: Shapers, targets: ShareTargets, plans: Plans, scope: Scope, comments: SharedComments) -> None:
+        self.shapers, self.targets, self.plans, self.scope, self.comments = shapers, targets, plans, scope, comments
 
     def of(self, share: Share) -> dict:
         target = self.targets.of(share)
         with self.scope.of(share.environment_id):
             rows = self.rows(target) if target else []
         refs = [row.ref for row in rows]
-        return {"share": {"target": viewer_ref(target) if target else "", "expires": seconds(share.expires_at), "comments": False},
-                "rows": {row.ref: self.shown(row, refs) for row in rows}, "comments": [], "timelines": {}, "types": {}}
+        return {"share": {"target": viewer_ref(target) if target else "", "expires": seconds(share.expires_at), "comments": share.comments},
+                "rows": {row.ref: self.shown(row, refs) for row in rows}, "comments": self.comments.of(share) if share.comments else [], "timelines": {}, "types": {}}
 
     def rows(self, target) -> list[V3Row]:
         """The target's row, and for a plan the rows of its tasks."""
