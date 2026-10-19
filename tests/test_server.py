@@ -823,6 +823,20 @@ def test_the_settings_page_has_its_system_and_sharing_tabs(server):
     assert saved["sharing"]["host"] == "tunler.example"
 
 
+def test_the_phone_page_installs_from_the_tunnels_listener_as_an_app(sharing):
+    _, share_server = sharing
+    assert visit(share_server, "/p")[0] == 301, "the page's address ends in a slash, so its files are found beside it"
+    status, page, headers = visit(share_server, "/p/")
+    assert status == 200 and b"manifest.webmanifest" in page and "manifest-src 'self'" in headers["Content-Security-Policy"], "the phone page, allowed its manifest"
+    status, worker, headers = visit(share_server, "/p/sw.js")
+    assert status == 200 and headers["Service-Worker-Allowed"] == "/p/" and headers["Cache-Control"] == "no-cache", "the service worker may serve all of /p/ and is never kept stale"
+    status, manifest, _ = visit(share_server, "/p/manifest.webmanifest")
+    assert status == 200 and json.loads(manifest)["scope"] == "/p/" and json.loads(manifest)["display"] == "standalone"
+    status, icon, headers = visit(share_server, "/p/icon-192.png")
+    assert status == 200 and icon.startswith(b"\x89PNG") and headers["Content-Type"] == "image/png"
+    assert visit(share_server, "/p/settings")[0] == 404, "nothing else of the journal is under /p/"
+
+
 def test_a_share_link_opens_its_document_through_the_share_server_and_nothing_else(sharing):
     server, share_server = sharing
     call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})

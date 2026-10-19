@@ -2,6 +2,7 @@ import json
 from ipaddress import ip_address, ip_network
 
 from journal.http.support.pooled_handler import PooledHandler
+from journal.http.phone.phone_pages import PhonePages
 from journal.http.support.share_answer import ShareAnswer
 from journal.http.sharing.share_pages import SharePages
 from journal.http.sharing.visitor_comment import VisitorComment
@@ -18,9 +19,10 @@ HEADERS = {
 
 
 class ShareHandler(PooledHandler):
-    """One exchange with a visitor of a link: a read or a comment, answered by the share pages; every other method is refused."""
+    """One exchange through the tunnel: a link's read or comment, answered by the share pages, or the phone's, answered by the phone pages under /p/; every other method is refused."""
 
     pages: SharePages
+    phone: PhonePages
     server_version = "share"
     sys_version = ""
 
@@ -28,7 +30,12 @@ class ShareHandler(PooledHandler):
         return None
 
     def do_GET(self) -> None:
+        if self.is_phone():
+            return self.send(self.phone.get(self.path))
         self.send(self.pages.get(self.path, self.headers.get("Authorization"), self.place()))
+
+    def is_phone(self) -> bool:
+        return self.path == "/p" or self.path.startswith(("/p/", "/p?"))
 
     def do_HEAD(self) -> None:
         self.do_GET()
