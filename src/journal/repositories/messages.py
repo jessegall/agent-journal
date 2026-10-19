@@ -30,12 +30,12 @@ class Messages(ScopedRepository[Message]):
         return self.selected("author = ? AND read_at IS NULL ORDER BY id", (Author.USER.value,))
 
     def unanswered(self) -> list[Message]:
-        """The user's messages read and not heard back on: no reply, no face on one of a few words, and no message of the agent's in the chat since the read; only those read after the agent last spoke can be one."""
+        """The user's messages read and not heard back on: no reply, no face, and no message of the agent's in the chat since the read; only those read after the agent last spoke can be one, and a line typed in the terminal never is, since the agent answers it in its own turn."""
         spoke = self.last_spoken()
         since = "" if spoke is None else " AND read_at > ?"
         params = (Author.USER.value,) + (() if spoke is None else (spoke,))
         read = self.selected(f"author = ? AND read_at IS NOT NULL{since} ORDER BY id", params)
-        return [m for m in read if not self.answered(m) and not (m.takes_a_face and self.reacted_by_agent(m))]
+        return [m for m in read if not m.is_typed_in_terminal and not self.answered(m) and not self.reacted_by_agent(m)]
 
     def last_spoken(self) -> str | None:
         """When the agent last said something to the user: not a thought, not a turn that only acknowledged a journal line."""

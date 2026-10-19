@@ -17,7 +17,7 @@ class DeliverMessage(Listener[Created]):
     def handle(self, event: Created) -> None:
         from journal.features.messages.feature import Messages
         message = event.model
-        if not isinstance(message, Message) or message.author != Author.USER:
+        if not isinstance(message, Message) or message.author != Author.USER or message.read_at:
             return
         agent = self.agents.live()
         if agent is None:

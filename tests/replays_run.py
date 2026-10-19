@@ -58,7 +58,7 @@ def test_prompt_sent_as_the_shipped_workflow_equals_the_listener(journals, monke
     right = Replay(with_workflow, monkeypatch)
     prompts_with_unread(with_workflow, right, provider)
     answers = [s["answer"] for s in left.record() if s["answer"] is not None]
-    assert "new message 1" in str(answers[0]) and "new messages 1, 2, 3" in str(answers[1]) and "4 messages unread" in str(answers[2]) and "unread" not in str(answers[3]), "the listener names one, a few, many, and not again inside the window"
+    assert "new message 1" in str(answers[0]) and "new messages 1, 3, 4" in str(answers[1]) and "4 messages unread" in str(answers[2]) and "unread" not in str(answers[3]), "the listener names one, a few, many, and not again inside the window"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 
 

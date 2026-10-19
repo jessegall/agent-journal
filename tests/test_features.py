@@ -340,13 +340,13 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     hook(app, "MessageDisplay", message="[!reply:1] On it, the login is next.")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).in_()
-    assert [m.author for m in messages] == ["user", "agent"]
-    assert messages[1].reply_to == 1 and messages[1].text == "On it, the login is next."
+    assert [m.author for m in messages] == ["user", "user", "agent"] and messages[1].text == "hi", "the line typed in the terminal is the user's message too"
+    assert messages[2].reply_to == 1 and messages[2].text == "On it, the login is next."
     assert messages[0].read_at is not None
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
-    console.run(["message", "send", "> On it, the login is next.\n> More of the agent's words.\n\nGood, and the logout too.", "--reply-to", "2"], USER)
-    shown = console.run(["message", "read", "3"], AGENT).out
-    assert "message 3 from the user, a reply to message 2: Good, and the logout too." in shown and "On it" not in shown, "a reply names what it answers by number and never repeats its words"
+    console.run(["message", "send", "> On it, the login is next.\n> More of the agent's words.\n\nGood, and the logout too.", "--reply-to", "3"], USER)
+    shown = console.run(["message", "read", "4"], AGENT).out
+    assert "message 4 from the user, a reply to message 3: Good, and the logout too." in shown and "On it" not in shown, "a reply names what it answers by number and never repeats its words"
 
 
 def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
@@ -1128,7 +1128,7 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "read and answered, the write goes on"
 
 
-def test_a_message_read_gets_words_before_the_next_tool_call_and_a_face_answers_only_a_few_words(app):
+def test_a_message_read_gets_an_answer_before_the_next_tool_call(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "can you look at the footer, the header and the menu before lunch?"], USER)
@@ -1138,15 +1138,13 @@ def test_a_message_read_gets_words_before_the_next_tool_call_and_a_face_answers_
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 1"})[0] == 200, "a journal command goes through"
     own = str(app.config.home / "files" / "message" / "1" / "shot.png")
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": own})[0] == 200, "a look at the message's own file is part of reading it"
-    app.console().run(["message", "react", "1", "👍"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 409, "a face is no answer to a message of many words"
     hook(app, "MessageDisplay", message="Understood, looking at all three now.")
     app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200, "words in the chat after the read are the answer"
     app.console().run(["message", "send", "thanks!"], USER)
     app.console().run(["message", "read", "3"], AGENT)
     app.console().run(["message", "react", "3", "🙏"], AGENT)
-    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200, "a few words take a face"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200, "a face answers a message"
 
 
 def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app):
@@ -1260,6 +1258,23 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     assert any("plan 2: task 4, q second is next" in line for line in typed), "the workflow tells the agent its next task"
     console.run(["plan", "park", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
+
+def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_message(app, monkeypatch):
+    from journal.repositories.messages import Messages
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    hook(app, "UserPromptSubmit", prompt="a face is a reply, whatever the length of the message")
+    hook(app, "UserPromptSubmit", prompt="[journal] new message 1")
+    messages = app.container.get(Messages)
+    texts = [m.text for m in messages.in_() if m.author == "user"]
+    assert texts == ["a face is a reply, whatever the length of the message"] and not any("new message" in line for line in typed), "the user's own line, read already and not typed back; the journal's lines stay out"
+    app.console().run(["message", "send", "a long message from the viewer that wants an answer of some kind before work goes on"], USER)
+    app.console().run(["message", "read", "2"], AGENT)
+    app.console().run(["message", "react", "2", "👍"], AGENT)
+    assert messages.unanswered() == [], "a face on a message answers it, whatever its length"
+
 
 def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app):
     hook(app, "SessionStart")
@@ -1393,6 +1408,8 @@ def test_a_session_silent_for_an_hour_is_ended(app):
     hook(app, "SessionStart")
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=3601.0))
     assert app.container.get(Machine).current("s1").name == "ended"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert app.container.get(Machine).current("s1").name != "ended", "a session that goes on after an hour's silence lives: it is not left ended"
 
 
 def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
@@ -6075,7 +6092,8 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
     notes = tmp_path / "notes.md"
     notes.write_text("The ideas, sorted.\n")
     assert made(console.run(["dump", "create", "a list of ideas"], USER)) == 1
-    assert any("Sort dumped files" in line or "sequence" in line for line in typed), "the user's dump starts the sorting sequence for the agent here"
+    from journal.repositories.agents import Agents
+    assert app.container.get(Agents).for_session("s1").sequence_runs, "the user's dump starts the sorting sequence for the agent here"
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
     filing.attach(1, "a.png", Where("main").actor)
     assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).out and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).out
