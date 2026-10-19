@@ -13,6 +13,7 @@ import SkillPanel from "./layout/SkillPanel.vue";
 import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {dismissNewFeature, loadNewFeatures, newFeature, turnOffNewFeature, useNewFeature} from "./composables/newFeature.js";
+import {loadMigration, migrationOffered, putMigrationOff, startMigration} from "./composables/migration.js";
 import {firstChoice, loadProfilesUntilLoaded, figureVoice, profilesLoaded} from "./composables/profiles.js";
 import {floorsShown} from "./composables/voiceFigure.js";
 import {store} from "./state/store.js";
@@ -22,6 +23,7 @@ import {ui} from "./state/ui.js";
 defineProps({home: {type: Boolean, required: true}});
 
 onMounted(loadNewFeatures);
+onMounted(loadMigration);
 // the voice's figure is named by the profiles, so they load with the page, not with the flat figure that is only its fallback
 if (!profilesLoaded.value) loadProfilesUntilLoaded();
 </script>
@@ -47,6 +49,16 @@ if (!profilesLoaded.value) loadProfilesUntilLoaded();
     <ProjectFlash />
     <template v-if="firstChoice">
         <FirstChoiceDialog />
+    </template>
+    <template v-else-if="migrationOffered">
+        <NewFeatureDialog
+            eyebrow="Version 3"
+            title="This project has a version 3 journal"
+            text="It is kept whole in .journal/version-3. Bring everything across into this journal? The backup stays as it is."
+            button="Bring it across"
+            @use="startMigration"
+            @dismiss="putMigrationOff"
+        />
     </template>
     <template v-else-if="newFeature">
         <NewFeatureDialog

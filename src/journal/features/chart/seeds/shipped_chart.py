@@ -29,6 +29,7 @@ STATELESS = (
     (":session_started:voice", "Tell the agent how to talk to the user", "say_voice"),
     (":tool_finished:etiquette", "Remind the agent what a journal line is every {etiquette.remind_every} lines", "remind_what_a_line_is"),
     (":session_started:stale", "Ask whether facts, rules and reminders {memory.stale_after} days old still hold", "ask_about_old_memory"),
+    (":session_started:version_3", "Tell the agent a version 3 journal waits to be brought across", "tell_of_version_3"),
     (":prompt_submitted:inbox", "Say what is unread", "shared_inbox"),
     (":idle:inbox", "Say what is unread", "shared_inbox"),
     (":tool_starting:unread_held", "Hold a write while messages stay unread after {messages.hold_after_reminders} reminders", "hold_write_while_unread"),
@@ -99,6 +100,7 @@ REMINDERS = "[briefing.reminders] reminders here: {{reminders}}"
 WAITING = "[briefing.waiting] waiting for you here: {{waiting}}. `journal task list`, `journal message unread`, `journal question list`"
 VOICE = "[voices.voice] how to talk to the user. {{voice}}"
 REMIND = "[etiquette.remind] chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
+VERSION_3 = "[migration.version_3] a version 3 journal is kept whole in .journal/version-3, not yet brought across. the user brings it across from the viewer; never start it yourself"
 STALE = "[memory.stale] these are {{stale_after}} days old or more, check they still hold: {{stale}}. strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest"
 WHERE = "[briefing.where] after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}}. pick up from there, and log what the summary does not say"
 UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages. `journal message unread` before any other write"
@@ -428,6 +430,10 @@ class ShippedChart(Seed):
     def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
         return self.guarded(chart, ends, 720, 92, (Guard("after_compaction", passes=NO), Guard("memory_older_than", "memory.stale_after")), "say", STALE)
+
+    def tell_of_version_3(self, chart: Chart, ends: list) -> list:
+        """A version 3 journal kept by the installer and not yet brought across: the agent knows it is there and leaves it to the user."""
+        return self.guarded(chart, ends, 720, 92, (Guard("version_3_waiting"),), "say", VERSION_3)
 
     def say_voice(self, chart: Chart, ends: list) -> list:
         """How to talk to the user, from the chosen voice."""

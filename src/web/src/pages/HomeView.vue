@@ -8,6 +8,8 @@ import EmptyState from "../kit/EmptyState.vue";
 import {open} from "../domain/records.js";
 import Thread from "../chat/Thread.vue";
 import PinnedNotices from "../chat/PinnedNotices.vue";
+import ChatNotice from "../chat/ChatNotice.vue";
+import {migrationPutOff} from "../composables/migration.js";
 import FileFeed from "../chat/FileFeed.vue";
 import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
@@ -33,6 +35,9 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
     <div :class="['home-view', view]">
         <SwitchCase :value="view">
             <template #chat>
+                <template v-if="migrationPutOff">
+                    <ChatNotice fixed :notice="{n: 0, title: 'A version 3 journal is kept in .journal/version-3, not yet brought across', data: {action: 'migration'}}" />
+                </template>
                 <PinnedNotices :notices="notices" :without-toggle="floating" />
                 <Thread view="chat" :hidden="hidden" />
             </template>

@@ -93,6 +93,19 @@ export class ApiClient {
         return this.post("/new-feature", {id});
     }
 
+    // whether a version 3 journal is kept in .journal/version-3, and where bringing it across stands
+    migration() {
+        return this.get("/migration");
+    }
+
+    putMigrationOff() {
+        return this.post("/migration/later", {});
+    }
+
+    startMigration() {
+        return this.post("/migration/start", {});
+    }
+
     changelog(skip = 0) {
         return this.get(`/changelog?skip=${skip}`);
     }

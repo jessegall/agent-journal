@@ -12,6 +12,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.created import Created
 from journal.events.models.updated import Updated
+from journal.features.migration.version_3_backup import Version3Backup
 from journal.features.chart.context import Context
 from journal.features.registry import Registry
 from journal.features.skills.requiring import Requiring
@@ -66,10 +67,11 @@ class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
-                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup) -> None:
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
+        self.backup = backup
         self.rules, self.facts, self.reminders, self.agents, self.questions = rules, facts, reminders, agents, questions
         self.task_logs = task_logs
         self.requiring = requiring
@@ -167,6 +169,9 @@ class Checks:
 
     def related_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.related())
+
+    def version_3_waiting(self, ctx: Context) -> bool:
+        return self.backup.is_waiting()
 
     def approved_plan(self, ctx: Context) -> bool:
         return bool(self.plans.approved())

@@ -764,3 +764,29 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     assert agent["counts"] == {"reminders": 2} and agent["waits"] is True and agent["port"] == "no", "the agent waits at the last check's No with its count"
     assert "uses" in agent["readings"] and "uses" in standing["readings"] and standing["readings"]["uses"], "a reading a check compares is served with what it counts"
     assert {"number": 3, "setting": ""} in standing["limits"].values() and {"number": 5, "setting": ""} in standing["limits"].values(), "each count check's number is served"
+
+
+def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):
+    import time
+    from journal.repositories.reports import Reports
+    from journal.repositories.scope import Scope
+    app = App(Config(tmp_path, port=0))
+    app.runtime().boot()
+    server = app.server()
+    server.start()
+    try:
+        assert call(server, "GET", "/api/migration")[1] == {"kept": False, "state": "offered"}, "no backup, nothing to offer"
+        (app.config.home / "version-3").mkdir()
+        assert call(server, "GET", "/api/migration")[1] == {"kept": True, "state": "offered"}
+        later = call(server, "POST", "/api/migration/later", {})
+        assert later[1].get("state") == "later", later
+        assert call(server, "POST", "/api/migration/start", {})[1]["state"] == "running"
+        for _ in range(50):
+            if call(server, "GET", "/api/migration")[1]["state"] == "done":
+                break
+            time.sleep(0.1)
+        assert call(server, "GET", "/api/migration")[1]["state"] == "done"
+        with app.container.get(Scope).of(1):
+            assert [r.title for r in app.container.get(Reports).all()] == ["The version 3 journal brought across"], "what came across is said in a report"
+    finally:
+        server.stop()

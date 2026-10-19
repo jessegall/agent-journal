@@ -7,6 +7,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {useScope} from "../composables/scope.js";
 import {isRef, peekRef, route} from "../route.js";
+import {startMigration} from "../composables/migration.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
 const emit = defineEmits(["closing"]);
@@ -32,6 +33,7 @@ const force = () => run(() => api.forceAgent(props.notice.data.session));
 const permit = (allow) => run(() => api.permitAgent(props.notice.data.session, allow));
 const allowPasskey = () => run(() => api.allowPhonePasskey(props.notice.data.phone));
 const refusePasskey = () => run(() => api.refusePhonePasskey(props.notice.data.phone));
+const bringAcross = () => run(startMigration);
 const ANSWERS = new Set(["permission", "passkey"]);
 const controls = computed(() => props.notice.data.action || "none");
 const awaitsAnswer = computed(() => ANSWERS.has(controls.value));
@@ -67,6 +69,9 @@ function close() {
                     <Btn small :disabled="working" @click="permit(true)">Allow</Btn>
                     <Btn small :disabled="working" @click="permit(false)">Deny</Btn>
                 </template>
+            </template>
+            <template #migration>
+                <Btn small :busy="working" @click="bringAcross">Bring it across</Btn>
             </template>
             <template #passkey>
                 <Btn small :disabled="working" @click="allowPasskey">Allow</Btn>

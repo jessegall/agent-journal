@@ -12,6 +12,8 @@ KEPT = 25
 """The reads of outputs remembered per session."""
 OUTPUT = re.compile(r"outputs/[\w.-]+|(?<=journal output read )\d+")
 """Where a command names one output: its folder or its number."""
+WHOLE = re.compile(r"\s*journal output read \d+\s*")
+"""A plain read of an output's summary, which no reader could do better."""
 
 
 class SpotHandReads(AgentListener[ToolStarting]):
@@ -27,7 +29,7 @@ class SpotHandReads(AgentListener[ToolStarting]):
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.shell.feature import Shell
         command = event.input.get("command", "") if event.tool == "Bash" else ""
-        if not OUTPUT.search(command) or "--reader" in command:
+        if not OUTPUT.search(command) or "--reader" in command or WHOLE.fullmatch(command):
             return None
         matching = next((r for r in self.readers.all() if r.matches(command) and r.name not in self._tipped[event.session]), None)
         if matching is not None:

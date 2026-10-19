@@ -1,6 +1,7 @@
 from journal.container import Container
 from journal.http.router import Router
 from journal.http.v3.documents_controller import DocumentsController
+from journal.http.v3.migration_controller import MigrationController
 from journal.http.v3.plugins_controller import PluginsController
 from journal.http.v3.rows_controller import RowsController
 from journal.http.v3.transcript_controller import TranscriptController
@@ -23,6 +24,10 @@ class V3Routes:
         router.post(f"{API}/identity", c.post_identity)
         router.get(f"{API}/agent-controls/{{provider}}", c.get_agent_controls)
         router.get(f"{API}/health", c.get_health)
+        migration = self.container.get(MigrationController)
+        router.get(f"{API}/migration", migration.get)
+        router.post(f"{API}/migration/later", migration.later)
+        router.post(f"{API}/migration/start", migration.start)
         router.get(f"{API}/bar", c.get_bar)
         router.get(f"{API}/settings", c.get_settings)
         router.post(f"{API}/settings", c.post_settings)
