@@ -1,7 +1,7 @@
-from journal.features.voices.calling import Calling
-from journal.features.voices.chosen_voice import ChosenVoice
+from journal.features.voices.support.calling import Calling
+from journal.support.chosen_voice import ChosenVoice
 from journal.features.voices.feature import Voices
-from journal.features.voices.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
+from journal.support.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.refused import Refused

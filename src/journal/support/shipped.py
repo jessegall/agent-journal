@@ -1,5 +1,5 @@
-from journal.features.voices.calling import Calling
-from journal.features.voices.voice import Voice
+from journal.features.voices.support.calling import Calling
+from journal.features.voices.support.voice import Voice
 
 HISTORICAL = "name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer."
 STREET = "give it a nickname with a street feel that fits the job, such as Big Mike the Builder or Slick Rita the Reviewer."

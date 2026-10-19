@@ -1,8 +1,8 @@
 import subprocess
 
 from journal.config import Config
-from journal.features.voices.shipped import Shipped
-from journal.features.voices.voice import Voice
+from journal.support.shipped import Shipped
+from journal.features.voices.support.voice import Voice
 from journal.repositories.settings import Settings
 
 

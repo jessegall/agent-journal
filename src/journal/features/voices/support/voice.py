@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.features.voices.calling import Calling
+from journal.features.voices.support.calling import Calling
 
 PLAIN_WORDS = ("The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, "
                "whatever the voice. Code, commit messages, docs, reports and briefs are always in plain language.")
