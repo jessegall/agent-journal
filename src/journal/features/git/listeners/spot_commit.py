@@ -9,11 +9,11 @@ from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
 from journal.features.git.head_commit import HeadCommit
 from journal.events.agent_listener import AgentListener
+from journal.events.decision import Decision
 from journal.models.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.environments import Environments
-from journal.supervisor_link import SupervisorLink
 
 COMMIT = "commit"
 TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)?)+)\s*(.*)$", re.MULTILINE)
@@ -21,34 +21,36 @@ TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)
 
 
 class SpotCommit(AgentListener[ToolFinished]):
-    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, and a Journal: tasks done line in its message finishes those tasks and says so."""
+    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, and a Journal: tasks done line in its message finishes those tasks and says so in the reply to that command."""
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger, supervisor: SupervisorLink) -> None:
-        self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger, self.supervisor = config, cards, messages, console, environments, agents, nudger, supervisor
+    blocking = True
 
-    def handle(self, event: ToolFinished) -> None:
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger) -> None:
+        self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger = config, cards, messages, console, environments, agents, nudger
+
+    def handle(self, event: ToolFinished) -> Decision | None:
         command = event.input.get("command", "") if event.tool == "Bash" else ""
         if "git commit" not in command:
-            return
+            return None
         head = self.head()
         by = Actor.agent(event.session)
         if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", by):
-            return
+            return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject, "shows": "commits"}, by)
-        self.close_named(event, head.sha, head.body)
+        return self.close_named(event, head.sha, head.body)
 
-    def close_named(self, event: ToolFinished, sha: str, body: str) -> None:
+    def close_named(self, event: ToolFinished, sha: str, body: str) -> Decision | None:
         from journal.features.tasks.feature import Tasks
         numbers = [int(n) for found in TRAILER.finditer(body) for n in re.findall(r"\d+", found.group(1))]
         if not numbers:
-            return
+            return None
         where = Where(self.environments.find(event.environment_id).name, event.session)
         closed = [n for n in numbers if self.console.run(["task", "done", str(n), "--how", f"commit {sha[:8]}"], where).code == 0]
-        if closed:
-            line = self.nudger.say(self.agents.for_session(event.session), Tasks.CLOSED_BY_COMMIT.about(sha=sha[:8], tasks=", ".join(f"task {n}" for n in closed)))
-            if line:
-                self.supervisor.type(event.environment_id, line)
+        if not closed:
+            return None
+        line = self.nudger.say(self.agents.for_session(event.session), Tasks.CLOSED_BY_COMMIT.about(sha=sha[:8], tasks=", ".join(f"task {n}" for n in closed)))
+        return Decision.tell(line) if line else None
 
     def head(self) -> HeadCommit | None:
         try:

@@ -882,11 +882,12 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "footer", "--start"], AGENT)
     app.console().run(["task", "create", "margin"], AGENT)
-    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
+    reply = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
     app.runtime().deferred.drain()
     tasks = app.container.get(Tasks)
     assert tasks.find(1).state == "done" and tasks.find(2).state == "done" and tasks.find(1).outcome.startswith("commit ")
-    assert typed[-1].endswith("closed task 1, task 2")
+    assert "closed task 1, task 2" in reply["hookSpecificOutput"]["additionalContext"], "the commit's outcome comes back with the commit itself"
+    assert not any("closed task" in line for line in typed), "never typed into the prompt as a new turn"
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
     app.runtime().deferred.drain()
     from journal.repositories.messages import Messages
@@ -1160,8 +1161,9 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
     app.runtime().deferred.drain()
     whispers = [line for line in typed if "fact 1: the login uses the old session store" in line]
     assert len(whispers) == 1, "whispered once per row per agent"
-    app.console().run(["rule", "create", "Always run the suite before a commit"], AGENT)
-    assert typed[-1].startswith("[journal] does rule 1 apply to the whole project?")
+    made = app.console().run(["rule", "create", "Always run the suite before a commit"], AGENT)
+    assert "does rule 1 apply to the whole project?" in made.out, "the question comes out of the command that made the rule"
+    assert not any("does rule 1" in line for line in typed)
 
 
 def test_auto_mode_answers_a_stop_with_the_next_task(app):
