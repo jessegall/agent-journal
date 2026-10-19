@@ -14,7 +14,7 @@ from journal.events.models.model_event import ModelEvent
 from journal.events.models.created import Created
 from journal.events.models.updated import Updated
 from journal.features.migration.version_3_backup import Version3Backup
-from journal.features.chart.context import Context
+from journal.features.chart.support.context import Context
 from journal.features.registry import Registry
 from journal.features.skills.requiring import Requiring
 from journal.features.shell.chain import Chain

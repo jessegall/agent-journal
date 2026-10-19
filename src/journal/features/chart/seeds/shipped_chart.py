@@ -1,8 +1,8 @@
 import re
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.chart.seeds.guard import Guard
-from journal.features.chart.catalogue import FORMER_TITLES, Catalogue
-from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
+from journal.support.chart_catalogue import FORMER_TITLES, ChartCatalogue
+from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.support.title import LONGEST
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.registry import Registry
@@ -139,7 +139,7 @@ CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, settings: Settings, states: StatesCatalogue, agents: Agents, counts: Counts, registry: Registry) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: Settings, states: StatesCatalogue, agents: Agents, counts: Counts, registry: Registry) -> None:
         self.states, self.agents, self.counts, self.registry = states, agents, counts, registry
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         self.drawings: dict[str, Drawing] = {}

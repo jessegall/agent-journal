@@ -8,10 +8,10 @@ from journal.engine.states.paused import Paused
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.stuck import Stuck
 from journal.engine.nudger import Nudger
-from journal.features.chart.context import Context
+from journal.features.chart.support.context import Context
 from journal.events.agent.prompt_submitted import PromptSubmitted
-from journal.features.chart.checks import Checks
-from journal.features.chart.fillers import Fillers
+from journal.features.chart.support.checks import Checks
+from journal.support.fillers import Fillers
 from journal.features.skills.requiring import Requiring
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents

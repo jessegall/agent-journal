@@ -1,6 +1,6 @@
-from journal.features.chart.assumptions import Assumptions
-from journal.features.chart.checks import Checks
-from journal.features.chart.context import Context
+from journal.features.chart.support.assumptions import Assumptions
+from journal.features.chart.support.checks import Checks
+from journal.features.chart.support.context import Context
 
 
 class AssumedChecks(Checks):

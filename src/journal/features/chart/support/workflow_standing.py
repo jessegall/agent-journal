@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from journal.features.chart.agent_standing import AgentStanding
+from journal.features.chart.support.agent_standing import AgentStanding
 
 
 class WorkflowStanding(TypedDict):

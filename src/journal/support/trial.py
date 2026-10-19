@@ -12,13 +12,13 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
 from journal.events.models.created import Created
 from journal.events.models.updated import Updated
-from journal.features.chart.assumed_checks import AssumedChecks
-from journal.features.chart.assumptions import Assumptions
-from journal.features.chart.checks import Checks
-from journal.features.chart.context import Context
-from journal.features.chart.trial_result import TrialResult
-from journal.features.chart.fillers import Fillers
-from journal.features.chart.walk import Walk
+from journal.features.chart.support.assumed_checks import AssumedChecks
+from journal.features.chart.support.assumptions import Assumptions
+from journal.features.chart.support.checks import Checks
+from journal.features.chart.support.context import Context
+from journal.features.chart.support.trial_result import TrialResult
+from journal.support.fillers import Fillers
+from journal.features.chart.support.walk import Walk
 from journal.support.actor import Actor
 from journal.models.worker_state import WorkerState
 

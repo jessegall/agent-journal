@@ -2,11 +2,11 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.chart.catalogue import Catalogue
+from journal.support.chart_catalogue import ChartCatalogue
 from journal.features.chart.seeds.shipped_chart import EVENT_ORDER, ShippedChart
-from journal.features.chart.assumptions import Assumptions
-from journal.features.chart.trial import Trial
-from journal.features.chart.validation import LOCK_RULE, LOCK_WHY, TEXT_LIMIT, Validation
+from journal.features.chart.support.assumptions import Assumptions
+from journal.support.trial import Trial
+from journal.support.validation import LOCK_RULE, LOCK_WHY, TEXT_LIMIT, Validation
 from journal.support.refused import Refused
 from journal.support.drawn_line import PORTS, THEN, DrawnLine
 from journal.support.drawn_node import DrawnNode
@@ -21,7 +21,7 @@ from journal.support.scope import Scope
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope) -> None:
         self.charts, self.entries, self.validation, self.shipped, self.trial, self.scope = charts, catalogue, validation, shipped, trial, scope
 
     def arguments(self, verbs) -> None:

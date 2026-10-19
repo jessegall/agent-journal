@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
 from journal.events.agent.ticked import Ticked
-from journal.features.chart.agent_standing import AgentStanding
-from journal.features.chart.checks import COUNT_CHECKS, READINGS, Checks
-from journal.features.chart.context import Context
-from journal.features.chart.walk import WALKED
-from journal.features.chart.workflow_standing import WorkflowStanding
+from journal.features.chart.support.agent_standing import AgentStanding
+from journal.features.chart.support.checks import COUNT_CHECKS, READINGS, Checks
+from journal.features.chart.support.context import Context
+from journal.features.chart.support.walk import WALKED
+from journal.features.chart.support.workflow_standing import WorkflowStanding
 from journal.features.registry import Registry
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind

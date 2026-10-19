@@ -1,7 +1,7 @@
 from dataclasses import replace
 
-from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.walk import FAILED, WALKED
+from journal.support.chart_catalogue import ChartCatalogue
+from journal.features.chart.support.walk import FAILED, WALKED
 from journal.support.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
@@ -18,7 +18,7 @@ LOOK_BACK = 400
 class Traces:
     """What the page says about a workflow's last walk and its last failure, read from the entries the walk leaves."""
 
-    def __init__(self, entries: Entries, catalogue: Catalogue, charts: Charts, states: StatesCatalogue) -> None:
+    def __init__(self, entries: Entries, catalogue: ChartCatalogue, charts: Charts, states: StatesCatalogue) -> None:
         self.entries, self.catalogue, self.charts, self.states = entries, catalogue, charts, states
 
     def last_walk(self, chart: Chart) -> WalkRun | None:

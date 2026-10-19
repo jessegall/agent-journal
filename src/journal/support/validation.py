@@ -1,7 +1,7 @@
 import re
-from journal.features.chart.catalogue import Catalogue
-from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
-from journal.features.chart.fault import Fault
+from journal.support.chart_catalogue import ChartCatalogue
+from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
+from journal.features.chart.support.fault import Fault
 from journal.support.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.support.drawn_line import NO, THEN, YES, DrawnLine
@@ -31,7 +31,7 @@ def law_words(text: str) -> str:
 class Validation:
     """What makes a workflow wrong, found before it is saved: a node the catalogue does not know, more than one trigger, a line to nowhere or into a trigger, a check with no line out at all, a port that does not fit the node it leaves, a cycle of checks. A check with one line ends the path on the other answer."""
 
-    def __init__(self, catalogue: Catalogue, charts: Charts, states: StatesCatalogue) -> None:
+    def __init__(self, catalogue: ChartCatalogue, charts: Charts, states: StatesCatalogue) -> None:
         self.catalogue, self.charts, self.states = catalogue, charts, states
 
     def binding_faults(self, chart: Chart) -> list[Fault]:

@@ -1,13 +1,13 @@
 from dataclasses import asdict
 
-from journal.features.chart.catalogue import Catalogue
+from journal.support.chart_catalogue import ChartCatalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
-from journal.features.chart.fillers import Fillers
-from journal.features.chart.standing import Standing
-from journal.features.chart.traces import Traces
-from journal.features.chart.trial import Trial
-from journal.features.chart.trial_asked import TrialAsked
-from journal.features.chart.validation import LOCK_WHY, Validation
+from journal.support.fillers import Fillers
+from journal.support.standing import Standing
+from journal.support.traces import Traces
+from journal.support.trial import Trial
+from journal.support.trial_asked import TrialAsked
+from journal.support.validation import LOCK_WHY, Validation
 from journal.support.states_catalogue import StatesCatalogue
 from journal.http.controllers.listed_workflow import ListedWorkflow
 from journal.http.support.request import Request
@@ -32,7 +32,7 @@ NEW_TITLE = "New workflow"
 class ChartController:
     """The workflow page: every workflow by title, one read whole with its nodes and lines, saved whole as the user, made, taken out, the shipped one reset, and any event tried dry."""
 
-    def __init__(self, charts: Charts, catalogue: Catalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue, standing: Standing) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue, standing: Standing) -> None:
         self.charts, self.catalogue, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
         self.traces, self.states, self.standing = traces, states, standing
 

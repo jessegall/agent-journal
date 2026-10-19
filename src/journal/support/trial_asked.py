@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.features.chart.assumptions import Assumptions
+from journal.features.chart.support.assumptions import Assumptions
 
 
 @dataclass(frozen=True)

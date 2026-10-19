@@ -23,7 +23,7 @@ OWN = ("agents", "entries", "links", "counts")
 """The engine's own tables, which a walk writes itself when it moves an agent, records itself, draws a line or counts: a trigger on them would walk without end, so no workflow may name them."""
 
 
-class Catalogue:
+class ChartCatalogue:
     """Everything a node may be: a trigger for each agent event and each row event, and the checks and actions the features declare, gathered here and defined nowhere else."""
 
     def __init__(self, registry: Registry) -> None:

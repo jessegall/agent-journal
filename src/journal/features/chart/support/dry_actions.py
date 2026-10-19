@@ -1,5 +1,5 @@
-from journal.features.chart.context import Context
-from journal.features.chart.fillers import Fillers
+from journal.features.chart.support.context import Context
+from journal.support.fillers import Fillers
 from journal.support.decision import Decision
 
 
@@ -10,7 +10,7 @@ class DryActions:
         self.fillers, self.ledger = fillers, {} if ledger is None else ledger
 
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
-        from journal.features.chart.actions import NAMED
+        from journal.features.chart.support.actions import NAMED
         if key == "stop_here":
             return Decision.tell("would run no later workflows of the event")
         if key in ("count_start", "count_one"):

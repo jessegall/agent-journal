@@ -6,8 +6,8 @@ import re
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.events.agent.ticked import Ticked
-from journal.features.chart.checks import Checks
-from journal.features.chart.context import Context
+from journal.features.chart.support.checks import Checks
+from journal.features.chart.support.context import Context
 from journal.features.tasks.task_briefing import TaskBriefing
 from journal.features.sequences.running import Running
 from journal.features.tasks.states.expecting import Expecting
@@ -74,7 +74,7 @@ class Fillers:
 
     def taken_over_at(self, ctx: Context) -> str:
         """The time of day the other session that worked here last did anything."""
-        from journal.features.chart.checks import TAKEN_OVER_WITHIN
+        from journal.features.chart.support.checks import TAKEN_OVER_WITHIN
         others = self.agents.others_lately(ctx.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN) if ctx.session else []
         return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
 

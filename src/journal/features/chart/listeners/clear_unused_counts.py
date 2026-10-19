@@ -1,6 +1,6 @@
 from journal.support.cards import Cards
 from journal.events.models.updated import Updated
-from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS
+from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS
 from journal.events.listener import Listener
 from journal.support.actor import Actor
 from journal.models.chart import Chart

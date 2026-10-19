@@ -2,11 +2,11 @@ from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
-from journal.features.chart.catalogue import OWN
-from journal.features.chart.context import Context
+from journal.support.chart_catalogue import OWN
+from journal.features.chart.support.context import Context
 from journal.engine.machine import Machine
 from journal.engine.states.ended import Ended
-from journal.features.chart.walk import Walk
+from journal.features.chart.support.walk import Walk
 from journal.events.listener import Listener
 from journal.models.scoped import Scoped
 from journal.repositories.agents import Agents

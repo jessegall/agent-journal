@@ -249,7 +249,7 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
 
 def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_is_named(app, monkeypatch):
     from datetime import datetime, timedelta, timezone
-    from journal.features.chart.fillers import Fillers
+    from journal.support.fillers import Fillers
     from journal.features.checks.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     from journal.repositories.tasks import Tasks
@@ -1744,8 +1744,8 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
-    from journal.features.chart.checks import Checks
-    from journal.features.chart.context import Context
+    from journal.features.chart.support.checks import Checks
+    from journal.features.chart.support.context import Context
     from journal.events.agent.idle import Idle as IdleEvent
     from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
@@ -2610,8 +2610,8 @@ def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app):
 def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do(app):
     from journal.events.agent.tool_starting import ToolStarting
     from journal.events.models.created import Created
-    from journal.features.chart.checks import Checks
-    from journal.features.chart.context import Context
+    from journal.features.chart.support.checks import Checks
+    from journal.features.chart.support.context import Context
     from journal.models.author import Author
     from journal.models.message import Message
     from journal.repositories.environments import Environments
@@ -2646,8 +2646,8 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
 def test_the_checks_for_quiet_time_workers_and_questions(app):
     from journal.events.agent.ticked import Ticked
     from journal.events.models.updated import Updated
-    from journal.features.chart.checks import Checks
-    from journal.features.chart.context import Context
+    from journal.features.chart.support.checks import Checks
+    from journal.features.chart.support.context import Context
     from journal.repositories.environments import Environments
     from journal.repositories.questions import Questions
     from journal.repositories.workers import Workers
@@ -2682,8 +2682,8 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
 
 def test_the_card_and_release_actions(app):
     from journal.events.agent.ticked import Ticked
-    from journal.features.chart.actions import Actions
-    from journal.features.chart.context import Context
+    from journal.features.chart.support.actions import Actions
+    from journal.features.chart.support.context import Context
     from journal.support.actor import Actor
     from journal.repositories.environments import Environments
     from journal.repositories.messages import Messages
@@ -2711,8 +2711,8 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     from journal.events.agent.ticked import Ticked
     from journal.events.agent.tool_starting import ToolStarting
     from journal.events.models.updated import Updated
-    from journal.features.chart.fillers import Fillers
-    from journal.features.chart.context import Context
+    from journal.support.fillers import Fillers
+    from journal.features.chart.support.context import Context
     from journal.repositories.environments import Environments
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
@@ -2943,7 +2943,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
 
 def test_the_walk_runs_the_state_workflow_found_by_the_state_and_its_parents(app):
     import json
-    from journal.features.chart.walk import Walk
+    from journal.features.chart.support.walk import Walk
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3060,7 +3060,7 @@ def test_a_default_workflow_is_changed_by_command_only_with_the_flag_and_the_rev
 def test_the_page_reads_each_workflows_last_walk_and_its_last_failure(app, monkeypatch):
     import json as j
     from urllib.request import urlopen
-    from journal.features.chart.actions import Actions
+    from journal.features.chart.support.actions import Actions
     read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart", headers={"X-Journal-Env": "main"}), timeout=5))["workflows"]
     assert all(w["last_walk"] == {} and w["last_failure"] == {} for w in read()), "nothing walked yet"
     hook(app, "SessionStart")
@@ -3136,7 +3136,7 @@ def test_a_workflow_is_compiled_once_and_an_edit_is_seen_at_the_next_walk(app, m
 
 def test_the_busiest_walk_stays_inside_its_budget_and_a_runaway_path_is_cut_off_and_recorded(app):
     import time
-    from journal.features.chart.walk import STEPS
+    from journal.features.chart.support.walk import STEPS
     from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
     hook(app, "SessionStart")
@@ -3178,8 +3178,8 @@ def test_the_rules_doc_rules_on_every_state_the_engine_knows(app):
 
 def test_the_fillers_name_the_sequence_in_hand(app):
     from journal.events.agent.idle import Idle
-    from journal.features.chart.context import Context
-    from journal.features.chart.fillers import Fillers
+    from journal.features.chart.support.context import Context
+    from journal.support.fillers import Fillers
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3266,7 +3266,7 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     assert "two tools" not in said(body) and "every second tool" not in said(body), "a new start puts the count back at nought, and nought is no Nth"
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "d"})
     assert "every second tool" in said(body), "the second use since the new start is an Nth again"
-    from journal.features.chart.walk import WALKED
+    from journal.features.chart.support.walk import WALKED
     from journal.repositories.entries import Entries
     with scope.of(1):
         walks = [e.data["trigger"] for e in app.container.get(Entries).of_kind(WALKED, 100)]
@@ -3353,7 +3353,7 @@ def test_a_triggers_workflows_run_in_the_users_order_stateless_ones_always_and_a
 
 
 def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run_at_their_place(app):
-    from journal.features.chart.walk import FAILED, WALKED
+    from journal.features.chart.support.walk import FAILED, WALKED
     from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
     console, charts, entries = app.console(), app.container.get(Charts), app.container.get(Entries)
@@ -3388,8 +3388,8 @@ def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run
 
 
 def test_a_stop_here_node_ends_the_events_walk_so_no_later_workflow_runs(app):
-    from journal.features.chart.validation import Validation
-    from journal.features.chart.walk import WALKED
+    from journal.support.validation import Validation
+    from journal.features.chart.support.walk import WALKED
     from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
     console, charts, entries = app.console(), app.container.get(Charts), app.container.get(Entries)
@@ -3545,8 +3545,8 @@ def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
 
 
 def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the_skills_owed(skilled):
-    from journal.features.chart.context import Context
-    from journal.features.chart.fillers import Fillers
+    from journal.features.chart.support.context import Context
+    from journal.support.fillers import Fillers
     from journal.features.skills.requiring import Requiring
     from journal.repositories.agents import Agents
     app = skilled
@@ -3978,8 +3978,8 @@ def test_two_walks_of_one_agent_at_once_lose_no_count(app, monkeypatch):
     import threading
     import time
     from journal.events.agent.tool_finished import ToolFinished
-    from journal.features.chart.context import Context
-    from journal.features.chart.walk import Walk
+    from journal.features.chart.support.context import Context
+    from journal.features.chart.support.walk import Walk
     from journal.repositories.charts import Charts
     from journal.repositories.counts import Counts
     console = app.console()
@@ -4038,7 +4038,7 @@ def test_a_line_says_a_workflows_count_by_name(app):
     assert "reminder 3" in tried, "a dry walk says the count as its ledger raised it over the live one"
 
 def test_the_walk_records_where_each_workflow_stopped_with_its_counts(app):
-    from journal.features.chart.walk import WALKED
+    from journal.features.chart.support.walk import WALKED
     from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
     from journal.support.scope import Scope
@@ -4104,7 +4104,7 @@ def test_editing_keeps_a_workflows_counts_and_clears_one_no_node_names(app):
     assert any("The count reminders is no longer used in" in c for c in cards), "and the chat says so"
 
 def test_the_canvas_refuses_a_count_named_like_a_reading_and_warns_of_one_nothing_counts(app):
-    from journal.features.chart.validation import Validation
+    from journal.support.validation import Validation
     from journal.repositories.charts import Charts
     console, charts = app.console(), app.container.get(Charts)
     made, trigger = own_workflow(console, charts, "idle", "tool_finished")
@@ -4180,7 +4180,7 @@ def test_a_skill_owed_as_a_link_moves_onto_the_agent_at_boot(tmp_path: Path, mon
         second.runtime().stop()
 
 def test_a_hold_after_reminders_drawn_by_hand_holds_where_the_shipped_one_does(app):
-    from journal.features.chart.standing import Standing
+    from journal.support.standing import Standing
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
     console, charts, settings = app.console(), app.container.get(Charts), app.container.get(Settings)
@@ -4791,13 +4791,13 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
     assert "`journal environment here`" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
-    from journal.features.chart.catalogue import McpCatalogue
+    from journal.support.chart_catalogue import McpCatalogue
     by_key = {e.key: e for e in app.container.get(McpCatalogue).triggers()}
     assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
 
 
 def test_no_workflow_holds_a_journal_command_or_the_read_of_a_skills_file(skilled):
-    from journal.features.chart.validation import Validation
+    from journal.support.validation import Validation
     from journal.repositories.charts import Charts
     app = skilled
     console, charts = app.console(), app.container.get(Charts)
@@ -4855,7 +4855,7 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
 
 def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at_boot_and_still_walks(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
-    from journal.features.chart.validation import Validation
+    from journal.support.validation import Validation
     from journal.support.drawn_line import DrawnLine
     from journal.support.drawn_node import DrawnNode
     from journal.models.node import Node
@@ -4905,9 +4905,9 @@ def test_a_shipped_workflow_titled_by_its_state_and_event_takes_the_title_that_s
 
 
 def test_each_feature_declares_its_own_checks_and_actions_and_the_catalogue_only_gathers_them(app):
-    from journal.features.chart.actions import Actions
-    from journal.features.chart.catalogue import McpCatalogue
-    from journal.features.chart.checks import Checks
+    from journal.features.chart.support.actions import Actions
+    from journal.support.chart_catalogue import McpCatalogue
+    from journal.features.chart.support.checks import Checks
     from journal.features.registry import Registry
     catalogue, registry = app.container.get(McpCatalogue), app.container.get(Registry)
     declared = [(f.name, e.key) for f in registry.features for e in f.checks + f.actions]
@@ -4924,8 +4924,8 @@ def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_f
     from journal.events.agent.prompt_submitted import PromptSubmitted
     from journal.events.agent.ticked import Ticked
     from journal.events.agent.tool_starting import ToolStarting
-    from journal.features.chart.checks import Checks
-    from journal.features.chart.context import Context
+    from journal.features.chart.support.checks import Checks
+    from journal.features.chart.support.context import Context
     hook(app, "SessionStart")
     checks = app.container.get(Checks)
     at = lambda event, provider="claude": Context(event=event, session="s1", environment_id=1, provider=provider)
@@ -4946,8 +4946,8 @@ def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_f
 
 def test_the_counts_the_inbox_reminders_read_come_from_the_record_and_no_workflow_keeps_them(app):
     from journal.events.agent.tool_starting import ToolStarting
-    from journal.features.chart.checks import Checks
-    from journal.features.chart.context import Context
+    from journal.features.chart.support.checks import Checks
+    from journal.features.chart.support.context import Context
     from journal.repositories.charts import Charts
     from journal.support.scope import Scope
     console, checks, charts = app.console(), app.container.get(Checks), app.container.get(Charts)

@@ -4,10 +4,10 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
-from journal.features.chart.actions import Actions
-from journal.features.chart.checks import COUNT_CHECKS, Checks
-from journal.features.chart.context import Context
-from journal.features.chart.dry_actions import DryActions
+from journal.features.chart.support.actions import Actions
+from journal.features.chart.support.checks import COUNT_CHECKS, Checks
+from journal.features.chart.support.context import Context
+from journal.features.chart.support.dry_actions import DryActions
 from journal.support.decision import Decision
 from journal.support.floor import Floor
 from journal.engine.agent_state import AgentState
