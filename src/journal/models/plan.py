@@ -8,7 +8,7 @@ from journal.support.refused import Refused
 
 @dataclass(frozen=True)
 class Plan(Scoped):
-    """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, held in review while reviewers read it, approved by the user, then followed: finishing one task starts the next."""
+    """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, held in review while reviewers read it, counting those still out, approved by the user, then followed: finishing one task starts the next."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief")
 
@@ -16,6 +16,7 @@ class Plan(Scoped):
     brief: str = ""
     state: PlanState = PlanState.DRAFT
     blocked_why: str = ""
+    reviewers: int = 0
 
     def ready(self) -> "Plan":
         return self.moved(PlanState.READY)

@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.1
+
+- A plan in review shows its reviewers still out as they come back: the plan keeps the count itself, so the chat card and the plan page no longer say a reviewer is reading after it has reported.
+
 ## 4.1.0
 
 Worktrees work as they did in version 3.

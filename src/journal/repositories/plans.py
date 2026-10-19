@@ -79,6 +79,9 @@ class Plans(ScopedRepository[Plan]):
         ids = {t.id for t in phased}
         return phased + [t for t in self.tasks_of(plan) if t.id not in ids]
 
+    def in_review(self) -> list[Plan]:
+        return self.where(state=PlanState.REVIEWING)
+
     def approved(self) -> list[Plan]:
         """The plans the user approved that are not started yet."""
         return self.where(state=PlanState.APPROVED)

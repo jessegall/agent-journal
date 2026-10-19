@@ -2040,6 +2040,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
 
 
 def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved(app):
+    from journal.repositories.plans import Plans
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console = app.console()
@@ -2055,7 +2056,11 @@ def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "map the plugins", "prompt": "Map version 3 plugins.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u2", tool_response={"isAsync": True, "agentId": "r2"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "researcher", "model": "sonnet"}, tool_use_id="u1", tool_response={"isAsync": True, "agentId": "r1"})
     assert "1 of its reviewers are still out" in console.run(["plan", "ready", "1"], AGENT).err
+    app.runtime().deferred.drain()
+    assert app.container.get(Plans).find(1).reviewers == 1, "the plan the viewer reads counts its reviewer out"
     hook(app, "SubagentStop", agent_id="r1")
+    app.runtime().deferred.drain()
+    assert app.container.get(Plans).find(1).reviewers == 0, "the reviewer back, the plan says so without anything else changing it"
     assert console.run(["plan", "ready", "1"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
     assert console.run(["plan", "approve", "1"], USER).code == 0
 
