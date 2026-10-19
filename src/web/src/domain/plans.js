@@ -124,8 +124,12 @@ export function rowsOf(p) {
     return p.data.phases.flatMap((ph) => ph.todos);
 }
 
+// a plan's rows finished as done; a row given up is closed but not done
 export function doneOf(p, todos) {
-    return rowsOf(p).filter((n) => (todos.find((t) => t.n === n) || {}).completed).length;
+    return rowsOf(p).filter((n) => {
+        const row = todos.find((t) => t.n === n);
+        return row && row.completed && row.data?.status !== "abandoned";
+    }).length;
 }
 
 // A row a helper has finished on its branch, closed only once that branch is merged.
