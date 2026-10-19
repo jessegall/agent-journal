@@ -7,6 +7,7 @@ from journal.http.v3.plugins_controller import PluginsController
 from journal.http.v3.rows_controller import RowsController
 from journal.http.v3.share_controller import ShareController
 from journal.http.v3.transcript_controller import TranscriptController
+from journal.http.v3.updates_controller import UpdatesController
 from journal.http.v3.v3_controller import V3Controller
 
 API = "/api"
@@ -21,11 +22,15 @@ class V3Routes:
     def mount(self, router: Router) -> Router:
         c = self.container.get(V3Controller)
         for path, handler in (("manifest", c.get_manifest), ("identity", c.get_identity), ("summary", c.get_summary), ("agents", c.get_agents), ("pages", c.get_pages), ("journals", c.get_journals),
-                              ("new-feature", c.get_new_feature), ("upstream", c.get_empty), ("releases", c.get_empty_list), ("extension", c.get_empty), ("hosting", c.get_empty)):
+                              ("new-feature", c.get_new_feature), ("upstream", c.get_empty), ("extension", c.get_empty), ("hosting", c.get_empty)):
             router.get(f"{API}/{path}", handler)
         router.post(f"{API}/identity", c.post_identity)
         router.get(f"{API}/agent-controls/{{provider}}", c.get_agent_controls)
         router.get(f"{API}/health", c.get_health)
+        updates = self.container.get(UpdatesController)
+        router.get(f"{API}/releases", updates.releases)
+        router.get(f"{API}/changelog", updates.changelog)
+        router.post(f"{API}/update", updates.update)
         migration = self.container.get(MigrationController)
         router.get(f"{API}/migration", migration.get)
         router.post(f"{API}/migration/later", migration.later)

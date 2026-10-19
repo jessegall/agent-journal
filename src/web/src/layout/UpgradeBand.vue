@@ -5,7 +5,6 @@ import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
-import Notice from "../kit/Notice.vue";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
 import {hostedOn} from "../composables/settings.js";
@@ -16,15 +15,7 @@ const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
-const visible = computed(
-    () =>
-        !hostedOn.value &&
-        upstream.value &&
-        upstream.value.newer &&
-        (!upstream.value.installs || upstream.value.changed?.length) &&
-        dismissed.value !== upstream.value.latest
-);
-const changed = computed(() => upstream.value?.changed || []);
+const visible = computed(() => !hostedOn.value && upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
 const stale = computed(() => {
     const serving = store.spec && store.spec.build;
@@ -46,7 +37,7 @@ watch(now, (at, before) => {
 
 onMounted(async () => {
     try {
-        upstream.value = await api.upstream();
+        upstream.value = await api.releases();
     } catch (e) {}
 });
 
@@ -59,17 +50,17 @@ function dismiss() {
     remember("journal.upgrade.dismissed", dismissed.value);
 }
 
-async function upgrade(always = false, yes = false) {
+async function upgrade(always = false) {
     running.value = true;
     lines.value = [];
     try {
-        if (always) await saveSettings({features: {auto_update: true}});
+        if (always) await saveSettings({updates: {auto: true}});
     } catch (e) {
         lines.value = [e.message];
         running.value = false;
         return;
     }
-    await runUpdate(upstream.value.latest, yes);
+    await runUpdate(upstream.value.latest);
     running.value = false;
 }
 
@@ -106,20 +97,12 @@ async function retry() {
             <Btn kind="primary" small @click="retry">Try again</Btn>
         </div>
     </template>
-    <template v-if="visible && changed.length">
-        <Notice tone="need" class="changed-files">
-            These files changed since the journal wrote them: {{ changed.join(", ") }}. Updating will copy them into .journal/attic before
-            replacing them.
-            <template v-if="lines.length">
-                <span>{{ lines.join(" · ") }}</span>
-            </template>
-            <template #actions>
-                <Btn small @click="dismiss">Keep your changes</Btn>
-                <Btn kind="primary" small :disabled="running" @click="upgrade(false, true)">Update anyway</Btn>
-            </template>
-        </Notice>
+    <template v-if="upstream && upstream.problem">
+        <div class="band failed" role="alert">
+            <span class="text">The last update did not finish: {{ upstream.problem }}</span>
+        </div>
     </template>
-    <template v-else-if="visible">
+    <template v-if="visible">
         <div class="band">
             <span class="text">
                 Agent journal {{ upstream.latest }} is out — this is {{ upstream.installed }}.
@@ -128,8 +111,8 @@ async function retry() {
                 </template>
             </span>
             <template v-if="!lines.length">
-                <Btn kind="primary" small :busy="running" @click="upgrade(false)">Update</Btn>
-                <Btn small :class="{dimmed: running}" :disabled="running" @click="upgrade(true)">Update and turn on auto-update</Btn>
+                <Btn kind="primary" small :busy="running" @click="upgrade(false)">Update now</Btn>
+                <Btn small :class="{dimmed: running}" :disabled="running" @click="upgrade(true)">Update now and install new releases on its own</Btn>
             </template>
             <Btn small @click="dismiss">Not now</Btn>
         </div>
@@ -137,9 +120,6 @@ async function retry() {
 </template>
 
 <style scoped>
-.changed-files {
-    margin: 6px 12px;
-}
 .band {
     flex: none;
     display: flex;

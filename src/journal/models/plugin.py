@@ -14,6 +14,8 @@ class Plugin(Model):
     """The git address or the folder it was installed from."""
     commit_sha: str = ""
     """The commit it was installed at, for one installed from git."""
+    release: str = ""
+    """The release tag it was installed or upgraded at, when that commit carries one; a release is compared with a release, never with the manifest's own version."""
     linked: bool = False
     """Read where it lies rather than copied into the journal's plugins folder."""
     enabled: bool = True
