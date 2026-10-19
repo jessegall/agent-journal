@@ -6,7 +6,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.features.sequences.running import Running
-from journal.features.skills.requiring import Requiring
+from journal.support.requiring import Requiring
 from journal.support.decision import Decision
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries

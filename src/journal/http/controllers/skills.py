@@ -1,5 +1,5 @@
 from journal.features.registry import Registry
-from journal.features.skills.skill_files import SkillFiles
+from journal.support.skill_files import SkillFiles
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.repositories.agents import Agents

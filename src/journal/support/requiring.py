@@ -5,7 +5,7 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.features.registry import Registry
 from journal.support.skill import Skill
-from journal.features.skills.skill_files import SkillFiles
+from journal.support.skill_files import SkillFiles
 from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.repositories.agents import Agents

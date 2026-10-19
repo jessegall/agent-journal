@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.features.skills.skill_files import SkillFiles
+from journal.support.skill_files import SkillFiles
 
 
 class SkillCommand(Command):

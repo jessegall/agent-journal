@@ -12,7 +12,7 @@ from journal.features.chart.support.context import Context
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.features.chart.support.checks import Checks
 from journal.support.fillers import Fillers
-from journal.features.skills.requiring import Requiring
+from journal.support.requiring import Requiring
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts

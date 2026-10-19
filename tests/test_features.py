@@ -599,7 +599,7 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
 
 
 def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
-    from journal.features.skills.requiring import Requiring
+    from journal.support.requiring import Requiring
     from journal.repositories.agents import Agents
     app = skilled
     hook(app, "SessionStart")
@@ -1816,7 +1816,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
 
 
 def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_standing_until_the_read(skilled):
-    from journal.features.skills.requiring import Requiring
+    from journal.support.requiring import Requiring
     from journal.repositories.agents import Agents
     app = skilled
     hook(app, "SessionStart")
@@ -3547,7 +3547,7 @@ def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
 def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the_skills_owed(skilled):
     from journal.features.chart.support.context import Context
     from journal.support.fillers import Fillers
-    from journal.features.skills.requiring import Requiring
+    from journal.support.requiring import Requiring
     from journal.repositories.agents import Agents
     app = skilled
     agents, requiring, fillers = app.container.get(Agents), app.container.get(Requiring), app.container.get(Fillers)
@@ -3614,7 +3614,7 @@ def test_an_agent_standing_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact
     second = App(Config(tmp_path, port=0))
     second.runtime().start()
     try:
-        from journal.features.skills.requiring import Requiring
+        from journal.support.requiring import Requiring
         from journal.repositories.agents import Agents
         from journal.support.scope import Scope
         with second.container.get(Scope).of(MAIN):

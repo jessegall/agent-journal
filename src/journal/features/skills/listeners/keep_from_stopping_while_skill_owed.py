@@ -2,7 +2,7 @@ from journal.engine.machine import Machine
 from journal.features.registry import Registry
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
-from journal.features.skills.requiring import Requiring
+from journal.support.requiring import Requiring
 from journal.support.decision import Decision
 
 

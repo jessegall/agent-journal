@@ -19,8 +19,8 @@ from journal.models.worker import Worker
 from journal.repositories.workers import Workers
 from journal.repositories.counts import Counts
 from journal.features.registry import Registry
-from journal.features.skills.requiring import Requiring
-from journal.features.skills.skill_files import SkillFiles
+from journal.support.requiring import Requiring
+from journal.support.skill_files import SkillFiles
 from journal.features.voices.chosen_voice import ChosenVoice
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages

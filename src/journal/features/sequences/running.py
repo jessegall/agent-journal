@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from journal.engine.machine import Machine
 from journal.support.said import Said
 from journal.features.shell.chain import Chain
-from journal.features.skills.requiring import Requiring
+from journal.support.requiring import Requiring
 from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.sequence import Sequence

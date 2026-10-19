@@ -57,7 +57,7 @@ class Runtime:
     def started_up(self) -> None:
         self.share_server.start()
         self.boot()
-        from journal.features.skills.skill_files import SkillFiles
+        from journal.support.skill_files import SkillFiles
         self.container.get(SkillFiles).write_all()
         self.deferred.start()
         self.clock.start()

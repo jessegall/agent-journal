@@ -16,7 +16,7 @@ from journal.events.models.updated import Updated
 from journal.features.migration.version_3_backup import Version3Backup
 from journal.features.chart.support.context import Context
 from journal.features.registry import Registry
-from journal.features.skills.requiring import Requiring
+from journal.support.requiring import Requiring
 from journal.features.shell.chain import Chain
 from journal.features.tasks.states.working import Working
 from journal.features.questions.states.waiting import Waiting

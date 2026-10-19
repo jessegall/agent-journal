@@ -1,7 +1,7 @@
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.shell.chain import Chain
-from journal.features.skills.skill_files import SkillFiles
+from journal.support.skill_files import SkillFiles
 from journal.support.decision import Decision
 from journal.providers.providers import Providers
 
