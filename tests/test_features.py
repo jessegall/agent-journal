@@ -614,6 +614,12 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
         marks = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
     assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /api/plan", 2, 95), ("Slow request: GET /api/message/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
     assert sum("over its budget of 50 ms" in t for t in typed) == 2, "the agent is told the first time of each"
+    mark = app.config.home / "runtime" / "tests.running"
+    mark.parent.mkdir(parents=True, exist_ok=True)
+    mark.write_text(str(os.getpid()))
+    assert not slow.judging(), "nothing is judged while the test suite runs"
+    mark.write_text("999999")
+    assert slow.judging(), "a mark left by a run that died is stale"
 
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()

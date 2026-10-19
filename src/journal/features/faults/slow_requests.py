@@ -15,6 +15,8 @@ from journal.supervisor_link import SupervisorLink
 
 SETTLING_SECONDS = 60.0
 """After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
+TESTS_RUNNING = "tests.running"
+"""The file the test suite keeps in the journal's runtime folder while it runs, holding its process number: its servers crowd the machine."""
 
 
 class SlowRequests:
@@ -39,10 +41,22 @@ class SlowRequests:
         return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
 
     def judging(self) -> bool:
-        """Only in the journal's own checkout, once it has settled after a start or an update, and on a machine not busier than it has cores."""
+        """Only in the journal's own checkout, once it has settled after a start or an update, while the test suite is not running, and on a machine not busier than it has cores."""
         settled = time.monotonic() - self.started > SETTLING_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
-        return (self.config.root / "src" / "journal").is_dir() and settled and not busy
+        return (self.config.root / "src" / "journal").is_dir() and settled and not busy and not self.is_testing()
+
+    def is_testing(self) -> bool:
+        """The suite's mark names a process still running; one left by a run that died is stale."""
+        mark = self.config.home / "runtime" / TESTS_RUNNING
+        pid = mark.read_text().strip() if mark.is_file() else ""
+        if not pid.isdigit():
+            return False
+        try:
+            os.kill(int(pid), 0)
+        except ProcessLookupError:
+            return False
+        return True
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
         key = f"slow:{method} {route}"
