@@ -168,6 +168,7 @@ function settingRow(f, setting, settings) {
         label: setting.title,
         hint: readBy(setting),
         unit: setting.unit,
+        provider: setting.provider,
         indent: Boolean(setting.under),
         options: setting.kind === "choice" ? choiceOptions(setting) : [],
         example: (setting.examples || {})[value] || "",

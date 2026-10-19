@@ -7,6 +7,7 @@ class ProfileShown(TypedDict):
     name: str
     description: str
     tools: str
+    kind: str
     model: str
     body: str
     shipped: bool

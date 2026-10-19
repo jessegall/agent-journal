@@ -25,4 +25,7 @@ class ProfileController:
         body = request.body
         if not str(request.params["name"]).replace("-", "").replace("_", "").isalnum():
             return Response.refused("a profile's name is letters, digits, dashes and underscores")
-        return Response.json(self.files.save(request.params["name"], body.get("description", "").strip(), body.get("tools", "").strip(), body.get("model", "").strip(), body.get("body", "").strip()))
+        if body.get("kind", "subagent") not in ("worker", "subagent"):
+            return Response.refused("a profile is a worker or a subagent")
+        return Response.json(self.files.save(request.params["name"], body.get("description", "").strip(), body.get("tools", "").strip(), body.get("kind", "subagent"), body.get("model", "").strip(), body.get("body", "").strip()))
+

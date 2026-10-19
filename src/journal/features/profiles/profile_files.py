@@ -35,14 +35,18 @@ class ProfileFiles:
         text = path.read_text()
         head, _, body = text.partition("\n---\n") if text.startswith("---\n") else ("", "", text)
         fields = dict(line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)
-        return ProfileShown(name=name, description=fields.get("description", "").strip(), tools=fields.get("tools", "").strip(), model=fields.get("model", "").strip(),
+        return ProfileShown(name=name, description=fields.get("description", "").strip(), tools=fields.get("tools", "").strip(), kind=fields.get("kind", "subagent").strip(), model=fields.get("model", "").strip(),
                             body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
 
-    def save(self, name: str, description: str, tools: str, model: str, body: str) -> ProfileShown:
+    def kind_of(self, name: str) -> str:
+        """Whether the profile of this name is a worker or a subagent; empty when there is none."""
+        return self.read(name)["kind"] if (self.folder() / f"{name}.md").is_file() else ""
+
+    def save(self, name: str, description: str, tools: str, kind: str, model: str, body: str) -> ProfileShown:
         """A profile written as Claude reads it: the front matter, then the instructions."""
         path = self.folder() / f"{name}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(f"---\nname: {name}\ndescription: {description}\ntools: {tools}\nmodel: {model}\n---\n\n{body}\n")
+        path.write_text(f"---\nname: {name}\ndescription: {description}\ntools: {tools}\nkind: {kind}\nmodel: {model}\n---\n\n{body}\n")
         return self.read(name)
 
     def write_all(self) -> list[Path]:

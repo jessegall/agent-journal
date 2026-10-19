@@ -15,7 +15,7 @@ class Profile:
     body: str
 
     def claude_text(self, model: str) -> str:
-        return f"---\nname: {self.name}\ndescription: {self.description}\ntools: {self.tools}\nmodel: {model}\n---\n\n{self.body} {self.REPORTS}\n"
+        return f"---\nname: {self.name}\ndescription: {self.description}\ntools: {self.tools}\nkind: subagent\nmodel: {model}\n---\n\n{self.body} {self.REPORTS}\n"
 
     def codex_text(self, model: str) -> str:
         return (f'name = "{self.name}"\ndescription = "{self.description}"\nmodel = "{model}"\nsandbox_mode = "read-only"\n'

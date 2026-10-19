@@ -3,6 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
+from journal.features.profiles.profile_files import ProfileFiles
 from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.worker_reports import WorkerReports
 from journal.features.workers.worker_runner import WorkerRunner
@@ -17,9 +18,9 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope) -> None:
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles) -> None:
         self.workers, self.messages, self.machine = workers, messages, machine
-        self.runner, self.reports, self.scope = runner, reports, scope
+        self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
         dispatch = self.verb(verbs, "dispatch", "send a worker to write one bounded job")
@@ -39,6 +40,8 @@ class WorkerCommand(Command):
         self.verb(verbs, "list", "every worker out")
 
     def dispatch(self, args: Namespace, where: Where) -> int:
+        if self.profiles.kind_of(args.name) == "subagent":
+            raise Refused(f"{args.name} is a subagent profile: it only reads, so send it with the Agent tool, naming it as subagent_type; a worker is for work that writes")
         worker = Worker(name=args.name, brief=args.brief, provider=args.provider, model=args.model, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
         self.runner.start(worker, where.actor)

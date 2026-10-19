@@ -5,6 +5,7 @@ import Btn from "./Btn.vue";
 import Chip from "./Chip.vue";
 import ColorSwatch from "./ColorSwatch.vue";
 import FormField from "./FormField.vue";
+import ModelPicker from "./ModelPicker.vue";
 import ResetButton from "./ResetButton.vue";
 import Segmented from "./Segmented.vue";
 import Switch from "./Switch.vue";
@@ -17,7 +18,7 @@ const props = defineProps({row: {type: Object, required: true}, sheet: Boolean, 
 const emit = defineEmits(["change", "timing", "act"]);
 
 const id = useId();
-const field = computed(() => ["number", "text", "choice"].includes(props.row.kind));
+const field = computed(() => ["number", "text", "choice", "model"].includes(props.row.kind));
 const resettable = computed(() => canReset(props.row));
 
 function reset() {
@@ -54,6 +55,9 @@ function reset() {
                     </template>
                     <template #choice>
                         <Segmented wrap :fill="sheet" :options="row.options" :value="row.value" @pick="emit('change', $event)" />
+                    </template>
+                    <template #model>
+                        <ModelPicker :provider="row.provider" :value="row.value" @pick="emit('change', $event)" />
                     </template>
                 </SwitchCase>
             </FormField>
