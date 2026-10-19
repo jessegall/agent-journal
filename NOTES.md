@@ -1001,3 +1001,30 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 `features/dumps`: a `Dump` model and `Dumps` repository, `Filing` (everything done to a dump, shared by the `journal dump` command and the viewer's `DumpActions` in `http/v3`), five listeners that tell the agent (arrival, answer, choice, filed, carry on), and the `journal-dumps` skill. Files are kept under `config.files/dump/<n>`.
 - Decided: no collections. Version 4 has no Collection model, so the dump itself is the collection: `journal dump name` renames it, and each row the agent files is a `dump_filed` link from the dump to the row. Removing a dump deletes the docs, reports, tasks and plans linked to it that were made after it was dropped.
 - Left out for now: a pasted transcript becoming a dump (needs the message kind transcript); an offered step that runs a command (offers are `{ask, label}` only).
+
+## Rulings of 2026-10-19
+
+- Every read of a scoped model is scoped in the base repository (`ScopedRepository.selected`); no repository writes
+  `environment_id = ?` by hand. A read with no environment set is refused. A read across environments says so by
+  name: `across_environments`, `selected_everywhere`, `agents.everywhere()`, `with_project` for the project's own rows.
+  A seed whose rows belong to environments is an `EnvironmentSeed`, run once inside each environment's scope.
+- The supervisor restarts a kept service however often it dies, the wait capped at 30 seconds; it never gives up.
+- Workflows are behaviour toward the agent only: keeping it going, holding its stop, nudging it. A hint on a command's
+  output is the engine's (a feature's listener), never a workflow's, and no workflow changes a command's output.
+- Sorting a dump is a state of the engine (`SortingDump`, a pause), not a sequence and not a workflow: a dump the user
+  drops moves the agent into it, the stop is held until the dump is filed, save while the user's answer is awaited.
+- A blocked task never blocks its plan; a plan whose every task left is blocked blocks itself and opens when one opens.
+  `journal plan block` and `journal task block` take `--on` and `--until "<command>"`; an `--until` command is a check
+  kept off the lists, and one that cannot run holds every stop with its error.
+- A face on a message answers it, whatever its length. A line the user types in the agent's terminal is their message
+  in the chat, read already and never owed a tagged answer.
+- A question's options name who acts, the agent or the user, never I, we or you.
+- Docstrings: one short line at the top of a class; none on fields or methods.
+- Helper classes leave their domain's folder: `<domain>/support/` when only that domain uses them, `src/journal/support/`
+  when several do (task 729, after the viewer's API is moved).
+- An agent marked ended after an hour's silence comes back the moment it takes a prompt or uses a tool; the machine
+  refuses an agent with no session.
+- A worker outlives a restart of the journal: its output goes to files, its process id is on its row, and at boot every
+  worker still out is watched again.
+- Words the hooks missed are swept from the transcript each tick, read on from the hooks' own position past the
+  seconds the hooks have (`messages.sweep_after`, 10 by default).
