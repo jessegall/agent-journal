@@ -10,14 +10,16 @@ from journal.models.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
+from journal.refused import Refused
 from journal.repositories.scope import Scope
+from journal.repositories.workers import Workers
 
 
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, machine: Machine, answering: Answering, messages: Messages, links: Links, scope: Scope) -> None:
-        self.questions, self.machine, self.answering, self.messages, self.links, self.scope = questions, machine, answering, messages, links, scope
+    def __init__(self, questions: Questions, machine: Machine, answering: Answering, messages: Messages, links: Links, scope: Scope, workers: Workers) -> None:
+        self.questions, self.machine, self.answering, self.messages, self.links, self.scope, self.workers = questions, machine, answering, messages, links, scope, workers
 
     def arguments(self, verbs) -> None:
         ask = self.verb(verbs, "ask", "ask the user something and wait")
@@ -30,6 +32,8 @@ class QuestionCommand(Command):
         self.verb(verbs, "show", "a question whole: its words, its choices, the answer and the messages linked to it").add_argument("n", type=int)
 
     def ask(self, args: Namespace, where: Where) -> int:
+        if not where.session or self.workers.by_session(where.session):
+            raise Refused("nobody can answer a question asked from here: put it in the worker's report instead")
         environment = self.scope.id
         options = tuple(o.strip() for o in args.options.split(",") if o.strip())
         question = self.questions.save(Question(text=args.text, options=options), where.actor)

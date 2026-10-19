@@ -349,7 +349,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == ("lexer done", "sess-2")
     assert Claude().worker_outcome("plain words", "") == ("plain words", "")
     assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m", "")[:2] == ["codex", "exec"]
-    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done", "0192f3a4-aaaa-bbbb")
+    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done\nsession id: 0192f3a4-aaaa-bbbb\nwork", "0192f3a4-aaaa-bbbb"), "stderr stays beside stdout"
 
 
 def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
@@ -5045,3 +5045,49 @@ def test_an_approved_plan_not_started_holds_the_stop_until_it_is(app):
     assert "plan 1 is approved and not started" in hook(app, "Stop")[1]["reason"]
     console.run(["plan", "start", "1"], AGENT)
     assert "is approved and not started" not in json.dumps(hook(app, "Stop")[1]), "a started plan holds nothing"
+
+
+def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(app):
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--model", "sonnet"], AGENT)
+    from journal.repositories.workers import Workers
+    workers = app.container.get(Workers)
+    workers.save(workers.find(1).with_(session="w1"), USER.actor)
+    assert "worker's report" in app.console().run(["question", "ask", "Which?"], USER).err
+    assert app.console().run(["question", "ask", "Which?"], Where("main", "w1")).code != 0
+    assert app.console().run(["question", "ask", "Which?"], AGENT).code == 0
+
+
+def test_a_worker_past_its_time_limit_is_stopped_and_reported(app):
+    from journal.features.workers.feature import Workers as WorkersFeature
+    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.models.actor import Actor as A
+    from journal.repositories.messages import Messages
+    from journal.repositories.settings import Settings
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--model", "sonnet"], AGENT)
+    app.container.get(Settings).set(WorkersFeature.TIMEOUT.key, 0.02, USER.actor)
+    worker = app.container.get(Workers).find(1)
+    app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo half done; sleep 30"], A.agent("s1"))
+    assert any("stopped after" in m.text and "half done" in m.text for m in app.container.get(Messages).in_())
+
+
+def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app, monkeypatch):
+    import subprocess
+    from journal.repositories.tasks import Tasks
+    catch_typed(app, monkeypatch, [])
+    root = app.config.root
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    old = {"GIT_COMMITTER_DATE": "2020-01-01T00:00:00", "GIT_AUTHOR_DATE": "2020-01-01T00:00:00"}
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Old\n\nJournal: tasks done 1 and 2 earlier"], cwd=root, check=True, env={**os.environ, **old})
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "footer", "--start"], AGENT)
+    app.console().run(["task", "create", "margin"], AGENT)
+    command = dict(tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
+    hook(app, "PostToolUse", **command)
+    assert app.container.get(Tasks).find(1).state == "started", "the head was not made by this command"
+    app.console().run(["task", "park", "2", "later"], AGENT)
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "New\n\nJournal: tasks done 1 and 2 now"], cwd=root, check=True)
+    hook(app, "PostToolUse", **command)
+    assert app.container.get(Tasks).find(1).state == "done" and app.container.get(Tasks).find(2).state == "parked"
