@@ -24,6 +24,10 @@ class Reader:
     def text(self) -> str:
         return f"# {self.about}\n{self.pattern}\n"
 
+    def matches(self, command: str) -> bool:
+        """The command does this reader's work by hand: it searches for the same pattern."""
+        return self.pattern in command
+
     def read(self, lines: list[str]) -> list[str]:
         found = re.compile(self.pattern)
         return [f"{i}: {line}" for i, line in enumerate(lines, 1) if found.search(line)]

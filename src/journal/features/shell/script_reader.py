@@ -22,6 +22,10 @@ class ScriptReader:
         about = next((line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")), "")
         return cls(path.stem, about, path)
 
+    def matches(self, command: str) -> bool:
+        """A script's work cannot be told from a command line."""
+        return False
+
     def read(self, lines: list[str]) -> list[str]:
         """The script's own lines; it runs freely, since the agent wrote it for this project."""
         try:

@@ -5277,3 +5277,19 @@ def test_a_plan_started_with_every_task_closed_is_done_and_one_with_no_task_is_n
     assert plans.find(1).state == "done", "a parked plan whose last task closes is done"
     console.run(["plan", "start", "2"], AGENT)
     assert plans.find(2).state == "started", "a plan with no task yet is not finished"
+
+
+def test_the_same_hand_read_of_outputs_coming_back_among_the_last_reads_brings_one_tip_to_write_a_reader(app):
+    hook(app, "SessionStart")
+    tip = lambda command: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    assert "write" not in tip("journal output read 12 --grep FAILED") + tip("ls src") + tip("journal output read 40 --reader failed")
+    assert "you read outputs this way again: journal output read <output> --grep FAILED" in tip("journal output read 31 --grep FAILED"), "a different output, the same read"
+    assert "this way again" not in tip("journal output read 33 --grep FAILED"), "once for each shape"
+
+
+def test_a_hand_read_that_does_a_readers_work_is_pointed_at_the_reader(app):
+    hook(app, "SessionStart")
+    app.console().run(["reader", "add", "failed-tests", "--pattern", "^FAILED", "--about", "the failing tests"], AGENT)
+    said = lambda command: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    assert "reader failed-tests already reads this: the failing tests" in said("journal output read 7 --grep '^FAILED'")
+    assert "already reads this" not in said("journal output read 9 --grep '^FAILED'"), "said once"

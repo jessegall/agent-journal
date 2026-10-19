@@ -7,6 +7,7 @@ from journal.features.shell.commands.output_command import OutputCommand
 from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.features.shell.commands.shell_command import ShellCommand
 from journal.features.shell.listeners.read_narrowly import ReadNarrowly
+from journal.features.shell.listeners.spot_hand_reads import SpotHandReads
 from journal.features.shell.listeners.refuse_mixed_journal import RefuseMixedJournal
 from journal.features.skill import Skill
 
@@ -23,13 +24,15 @@ class Shell(Feature):
     COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 200, unit="characters")
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, KEPT)
-    listeners = (RefuseMixedJournal, ReadNarrowly)
+    listeners = (RefuseMixedJournal, ReadNarrowly, SpotHandReads)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
     )
 
     MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends; its output is in {{file}}. Carry on with what does not wait on it", repeat_after=0)
     ENDED = Nudge(name, "ended", "output {{n}} {{outcome}}", "its output is in {{file}}", repeat_after=0)
+    USE_READER = Nudge(name, "use_reader", "reader {{reader}} already reads this: {{about}}", "`journal output read N --reader {{reader}}`", repeat_after=0)
+    READER_TIP = Nudge(name, "reader_tip", "you read outputs this way again: {{command}}", "a reader does it for you: `journal reader add <name> --pattern <regex> --about \"<what it picks>\"`, then `journal output read N --reader <name>`", repeat_after=0)
     NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
     ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
     nudges = (MOVED, ENDED, ALONE)
