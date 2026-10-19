@@ -197,7 +197,7 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch)
 
 
 def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked_until_a_command_passes(app, monkeypatch):
-    from journal.features.checks.check_runner import CheckRunner
+    from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     from journal.repositories.plans import Plans
     from journal.supervisor_link import SupervisorLink
@@ -250,7 +250,7 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
 def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_is_named(app, monkeypatch):
     from datetime import datetime, timedelta, timezone
     from journal.support.fillers import Fillers
-    from journal.features.checks.check_runner import CheckRunner
+    from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     from journal.repositories.tasks import Tasks
     from journal.supervisor_link import SupervisorLink
@@ -679,7 +679,7 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
 
 def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
     import time as clock
-    from journal.features.checks.check_runner import CheckRunner
+    from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": 3, "group": "value objects"}]}'
     app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; sleep 1.5; echo 2/3; sleep 1.5; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)

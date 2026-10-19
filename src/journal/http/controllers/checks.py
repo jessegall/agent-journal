@@ -1,4 +1,4 @@
-from journal.features.checks.check_runner import CheckRunner
+from journal.features.checks.support.check_runner import CheckRunner
 from journal.http.controllers.controller import Controller
 from journal.http.support.request import Request
 from journal.support.response import Response
