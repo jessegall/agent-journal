@@ -6471,3 +6471,19 @@ def test_a_commit_made_in_a_worktree_closes_its_task_when_a_merge_lands_it_and_n
     git("merge", "-q", "worktree-main")
     status, _ = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git merge worktree-main"}, tool_response={})
     assert status == 200, "a merge that brings nothing new closes nothing twice"
+
+
+def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_fifty_tool_uses(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    made = lambda: hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "gh pr create"}, tool_response={"stdout": "https://github.com/acme/shop/pull/27"})[1]
+    first = made()
+    assert "https://github.com/acme/shop/pull/27 is not pinned" in str(first), "a pull request's address in a command's output is suggested as a pin"
+    assert "is not pinned" not in str(made()), "not again at once"
+    for _ in range(50):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "is not pinned" in str(made()), "suggested again after fifty of the agent's tool uses"
+    app.console().run(["notice", "create", "Pull request 27", "--link", "https://github.com/acme/shop/pull/27", "--label", "Open it"], AGENT)
+    for _ in range(50):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "is not pinned" not in str(made()), "a pinned link is never suggested"
